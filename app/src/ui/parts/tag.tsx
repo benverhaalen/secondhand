@@ -41,7 +41,7 @@ function TagBody({ state, word, place = 'inline', quiet = false }: TagProps) {
     <View
       {...mark('tag', { state, fit: 'content', ...(quiet ? { quiet: 'true' } : {}) })}
       accessibilityLabel={word ?? t.word}
-      style={[{ height: size.tagH, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: space.s1, paddingLeft: space.s1, paddingRight: space.s2, alignSelf: 'flex-start', ...FLAT }, fill, edge]}>
+      style={[{ height: size.tagH, borderRadius: radius.pill, borderCurve: 'continuous', flexDirection: 'row', alignItems: 'center', gap: space.s1, paddingLeft: space.s1, paddingRight: space.s2, alignSelf: 'flex-start', ...FLAT }, fill, edge]}>
       <Icon name={t.icon} size={size.tagIcon as 16} tone={quiet ? 'ink' : t.iconInk ?? (t.ink === 'ink-2' ? 'ink-2' : 'ink')} />
       <Txt role="body" tone={soft && !quiet ? 'ink-2' : 'ink'} lines={1}>{word ?? t.word}</Txt>
     </View>

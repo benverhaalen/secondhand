@@ -39,8 +39,8 @@ export function RangeSkeleton() {
   const c = useColors();
   return (
     <View {...mark('range', { skeleton: 'true' })} accessibilityLabel="Loading" style={{ gap: space.s1 }}>
-      <View style={{ height: 60, justifyContent: 'center' }}><View style={{ width: '70%', height: 44, borderRadius: radius.pill, backgroundColor: c.gray }} /></View>
-      <View style={{ height: 20, justifyContent: 'center' }}><View style={{ width: '60%', height: 14, borderRadius: radius.pill, backgroundColor: c.gray }} /></View>
+      <View style={{ height: 60, justifyContent: 'center' }}><View style={{ width: '70%', height: 44, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} /></View>
+      <View style={{ height: 20, justifyContent: 'center' }}><View style={{ width: '60%', height: 14, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} /></View>
     </View>
   );
 }
@@ -85,7 +85,7 @@ export function SaleRow({ id, site, sold, line, counted, onToggle }: {
         {sold ? <Txt role="caption" lines={1}>{counted ? line : 'Left out'}</Txt> : null}
       </View>
       {sold ? (
-        <View style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, backgroundColor: counted ? c.ink : c.surface,
+        <View style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: counted ? c.ink : c.surface,
           borderWidth: 2, borderColor: counted ? c.ink : c.ink2, alignItems: 'center', justifyContent: 'center', ...FLAT }}>
           {counted ? <Icon name="tick-02" size={12} tone="page" /> : null}
         </View>

@@ -24,16 +24,16 @@ export function StateBar({ parts, onOpen }: { parts: StatePart[]; onOpen: (id: s
   return (
     <View {...mark('state-bar')} style={{ gap: space.s3 }}>
       <View accessibilityLabel={parts.map(p => `${p.count} ${p.word.toLowerCase()}`).join(', ')} style={{ height: BAR, flexDirection: 'row', gap: GAP }}>
-        {parts.map(p => <View key={p.id} style={{ flex: p.count / total, borderRadius: radius.pill, backgroundColor: fill(p) }} />)}
+        {parts.map(p => <View key={p.id} style={{ flex: p.count / total, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: fill(p) }} />)}
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 }}>
         {parts.map(p => (
           <View key={p.id} style={{ flexBasis: '48%', flexGrow: 1 }}>
             <Press id={p.id} onPress={() => onOpen(p.id)} round={false}>
               {({ pressed }) => (
-                <View style={{ minHeight: 72, borderRadius: radius.photo, padding: space.s4, gap: space.s1, backgroundColor: pressed ? c.grayPress : c.gray }}>
+                <View style={{ minHeight: 72, borderRadius: radius.photo, borderCurve: 'continuous', padding: space.s4, gap: space.s1, backgroundColor: pressed ? c.grayPress : c.gray }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
-                    <View style={{ width: BAR, height: BAR, borderRadius: radius.pill, backgroundColor: fill(p) }} />
+                    <View style={{ width: BAR, height: BAR, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: fill(p) }} />
                     <Txt role="headline" lines={1}>{String(p.count)}</Txt>
                     <View style={{ flex: 1 }} />
                     <Icon name={p.icon} size={20} tone="ink-2" />

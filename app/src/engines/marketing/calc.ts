@@ -225,7 +225,8 @@ export function calculate(x: MarketingInput) {
     const likersRule = levers.sites[x.site].rules.likers_offer as { min_discount: number; shipping_discount_required?: boolean } | null;
     const shippingReady = !likersRule?.shipping_discount_required || (Number.isSafeInteger(x.shipping_discount_cents) && x.shipping_discount_cents! > 0 && x.shipping_discount_cents! <= x.ship_cents);
     const repeat = FACTS['offer.seller.repeat_h'][x.site].v;
-    const cooldown_days = repeat === UNKNOWN ? 'unknown' as const : repeat === null ? null : Math.ceil(Number(fact('offer.seller.repeat_h', x.site)) / 24); // Fixed: 24 hours per day; unknown is not no wait.
+    const HOURS_A_DAY = 24; // Fixed: a unit, not a clock.
+    const cooldown_days = repeat === UNKNOWN ? 'unknown' as const : repeat === null ? null : Math.ceil(Number(fact('offer.seller.repeat_h', x.site)) / HOURS_A_DAY); // unknown is not no wait.
     const offerOn = repeat !== UNKNOWN && offer !== null && offer >= x.floor_cents && shippingReady && money(x.keep(offer, winner.shipping_mode), 'offer_keep_cents') - (x.shipping_discount_cents ?? 0) >= money(x.keep(x.floor_cents, winner.shipping_mode), 'floor_keep_cents');
     const promotion = x.promotion;
     const net = winner.path[0].net_cents;

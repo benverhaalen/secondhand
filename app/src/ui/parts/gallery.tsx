@@ -26,7 +26,7 @@ export function Gallery({ id, photos, label }: { id: string; photos: PhotoSrc[];
   };
   return (
     <View {...mark('gallery', { photos: String(photos.length) })} style={{ gap: space.s3 }}>
-      <View testID={id} accessibilityLabel={`${label}, photo ${at + 1} of ${photos.length}`} onLayout={e => setW(e.nativeEvent.layout.width)} style={{ width: '100%', aspectRatio: 1, borderRadius: radius.photo, overflow: 'hidden' }}>
+      <View testID={id} accessibilityLabel={`${label}, photo ${at + 1} of ${photos.length}`} onLayout={e => setW(e.nativeEvent.layout.width)} style={{ width: '100%', aspectRatio: 1, borderRadius: radius.photo, borderCurve: 'continuous', overflow: 'hidden' }}>
         {w ? (
           <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={settle} onScroll={settle} scrollEventThrottle={64} scrollEnabled={photos.length > 1}>
             {photos.map((p, i) => <View key={i} style={{ width: w }}><Photo src={p} label={`${label}, photo ${i + 1}`} fit="fill" /></View>)}
@@ -35,7 +35,7 @@ export function Gallery({ id, photos, label }: { id: string; photos: PhotoSrc[];
       </View>
       <View style={{ height: space.s2, flexDirection: 'row', justifyContent: 'center', gap: space.s2 }}>
         {photos.length > 1 ? photos.map((_, i) => (
-          <View key={i} style={{ width: space.s2, height: space.s2, borderRadius: radius.pill, backgroundColor: i === at ? c.ink : c.gray }} />
+          <View key={i} style={{ width: space.s2, height: space.s2, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: i === at ? c.ink : c.gray }} />
         )) : null}
       </View>
     </View>

@@ -29,7 +29,7 @@ export function SearchField({ id, value = '', placeholder, working = false, onSu
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const submit = () => { setEditing(false); const t = draft.trim(); if (t) onSubmit?.(t); };
-  const box = { height: size.buttonH, borderRadius: radius.pill, backgroundColor: c.gray, flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingLeft: space.s4, paddingRight: space.s1 } as const;
+  const box = { height: size.buttonH, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray, flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingLeft: space.s4, paddingRight: space.s1 } as const;
   const trail = (
     <View style={{ width: size.pillCardH, height: size.pillCardH, alignItems: 'center', justifyContent: 'center' }}>
       {working ? <ActivityIndicator size="small" color={c.ink2} /> : onCamera ? <IconButton id={`${id}-camera`} icon="camera-01" label="Search with a photo" look="plain" onPress={onCamera} /> : null}

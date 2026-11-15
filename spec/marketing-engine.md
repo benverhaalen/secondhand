@@ -271,6 +271,16 @@ Each runs in a day on real pages through the harness and the information engines
 | Re-plan | a sold comp injected for a live test item | the plan changes and `score.change` streams within 1 s |
 | Update rules | a fixed sequence of offer outcomes through the Beta update with forgetting | the posterior equals the closed form to the cent |
 
+## Open from the audit (checked 2026-11-15)
+
+Each row of the Marketing section of [engines/audit.md](engines/audit.md) was checked against the code. 18 of 21 are closed. These 3 are still open, worst first.
+
+| # | What is wrong | Where (file:line today) | Fix | Test that proves it |
+|---|---|---|---|---|
+| MK-A1 | The D1 basis gate is gone from `calculate`. `sales_12m` and `sales_90d` are still on the input type but nothing reads them, so a thin comp set can still produce a listing plan. Unclear whether `basisLevel` now covers it. | `app/src/engines/marketing/calc.ts:24` | Skip with `too_few` when `sales_12m < 6` or `sales_90d < 2` (either one fails), as `determinations/money.md` D1 says. | `sales_12m` 5 and `sales_90d` 5 gives verdict skip, reason `too_few`. 6 and 1 gives skip. 6 and 2 gives list. |
+| MK-A2 | The learned effects are not read when candidates are scored: offer accept rate, sale rate, free-ship uplift and promo lift. Callers pass opaque curves. | `calc.ts:183` | Declare the four params and resolve their current scoped values when building and scoring candidates. | Set `free_ship_uplift` to 1.2 for the site. The winning free-shipping candidate's `p_sale` rises by 20 percent (capped at 1) against the prior of 1.0, and `param_versions` lists the param. |
+| MK-A3 | No sale, view, offer or strategy event updates the marketing params. They are read at `calc.ts:161` and never observed, so section 3.5 of this page is not applied. | `calc.ts:161` | On each event call `observe` on the `marketing_*` params at site, segment and person scope, with parent pooling. | After 20 sale events at ebay in one segment, a read of `marketing_vis_exponent` for that scope has `version` above 0 and `n_eff` about 20. The same read of another person's `holding_cost` is unchanged. |
+
 ## 8. Worked example
 
 *Every number in this section is an example.* A used Patagonia Better Sweater quarter-zip, men's M, gray, good condition with light pilling on one cuff, 9 photos. The person picked balanced. Two sites shown.

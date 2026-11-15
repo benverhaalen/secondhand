@@ -27,7 +27,7 @@ The full table, per site, verb and field with the line that extracts each, is [r
 | Shipping price | no | no | no | one listing (live) | no |
 | Rank, promoted mark, photo count, category, price-drop history | **not extracted on any site** | | | | |
 
-What the terms let us do (*sourced*, quoted in the full table): eBay's API licence bars using its content "to suggest or model prices", so eBay API rows never train a weight; eBay page reads run under Nate's ruling; Poshmark's terms bar automated collection and share, like and repost are only suggested; Mercari is read only on a person's own request; Dupe may be displayed.
+What the terms let us do (*sourced*, quoted in the full table): eBay's API licence bars using its content "to suggest or model prices", so eBay API rows never train a weight; eBay page reads run under Nate's ruling; every site is read ([Nate](../../product/words.md#2026-11-15-nate-we-read-everything-the-poshmark-rule-is-only-about-share-like-and-repost): "We read everything"), and the one Poshmark rule is that share, like and repost are suggestions the person taps; Dupe may be displayed but its rows are not kept.
 
 Four facts shape everything below (*inferred* from the table):
 
@@ -59,6 +59,61 @@ How the measures live in the registry (*sourced*: `app/src/engines/param/param.t
 | A9 | **Photo count effect** | `ρ_{s,k}`: log hazard ratio per photo band (1, 2–3, 4–6, 7+) | photo count | covariate in A2's model | model row; guard `[−1, 1]` | 0 | photo engine (how many shots per site and kind) | P1, once photo count is extracted (AD7): **no adapter reads it today** |
 | A10 | **Seller history effect** | `η_{s,k}`: log hazard ratio for a seller with under 10 past sales | the seller's sold count (storefront, live on all four sites) | covariate in A2's model | model row; guard `[−2, 1]` | 0 | platform analytics: what a new account on a site can expect | P1 |
 
+### A11: whether the brand matters
+
+From [Nate](../../product/words.md#2026-11-15-nate-identify-the-product-find-the-same-thing-off-brand-and-learn-whether-the-brand-matters): "find off brand similar types of the same quality, material, but different brand, and developing insights on whether people care more about the specific main brand or not". Three joined pieces: what the item is apart from its brand (the attribute record), finding the same thing under another brand (a search mode), and the measure. The first two are named fixes AD9 to AD12 below; the measure is here.
+
+**The attribute record.** Two items are the same kind of thing at the same quality when they agree on: `kind`, `material`, `construction` (the build that sets quality: welt or cemented sole, solid wood or veneer, enamelled cast iron or steel), `quality_tier` (a stated grade, where the kind has one), `size_class`, and `condition` class (new, used). Brand, model and colour are left out. What each source gives today (*sourced*: [the field inventory](../../research/list/nate/readable-fields-by-site.md); capture's fields in [fields-by-kind.md](../determinations/fields-by-kind.md)):
+
+| Attribute | eBay page | Poshmark | Mercari | Depop | Dupe | Capture |
+|---|---|---|---|---|---|---|
+| kind | title text only | title, no category field | title | slug | title | the kind vote |
+| material | title text only | title text only | title text only | slug text only | title text only | `material` and, for apparel, `fabric`, read from the label |
+| construction | title text only | title text only | title text only | no | title text only | not a field |
+| quality tier | no | no | no | no | no | not a field |
+| size class | no | `size` | `size` | no | no | `size_label` and measurements |
+| condition | no | `condition` | `condition` | no | `secondhand` flag | condition axes |
+| brand (to leave out) | title | `brand` | `brand` | `brand` | title | the tag, `rn_ca` |
+
+So today only kind, size and condition are fields on any site, and only on Poshmark and Mercari. Material and construction are words in a title, and quality tier is nowhere. The record must be built by a rule pass over the title and the person's own capture, before any model (AD9, AD10).
+
+**The measure.** For a kind `k`, a brand `b`, an attribute record `r`, and a cell `c` (one source and one condition class, so used is compared only with used and a Dupe retail row only with Dupe retail rows):
+
+- `B` = rows of brand `b` matching the item at `exact` or `likely_same_model`;
+- `O` = rows whose attributes all agree with `r`, whose brand is not `b`, labelled `similar_other_brand`;
+- the **brand premium** `θ_{k,b,c} = median_{i∈B} ln p_i − median_{j∈O} ln p_j`, shown as the ratio `e^θ` ("asks so many times what the matched set asks");
+- the **brand sensitivity** of a kind, the insight Nate asked for: `S_k`, the share of the variance of log price across `B ∪ O` that the brand-or-not split explains (between-group sum of squares over total), averaged over the items of the kind with each item's count. Near 0: within matched attributes, the brand barely moves the price. Near 1: the brand is most of the price. Beside it, `τ_k`, the spread of `θ` across the brands measured in the kind.
+
+Where rows carry them, the same comparison is made for time to sell (A1's hazard, brand against matched set, from the panel P1) and for engagement (likes per day since listing). Those wait on the panel and on AD12.
+
+| Part | A11 |
+|---|---|
+| Fields | price, brand, title words for material and construction, size, condition, site, the match label |
+| Estimator, and why | difference of medians on log price, with a percentile bootstrap interval resampling rows within each set. Medians because asking prices have long tails and a few listings at absurd prices. Log because brand effects are multiplicative |
+| Pooling | `θ̃_{k,b} = (n·θ_{k,b} + κ·μ_k) / (n + κ)`, with `n` the smaller of the two sides' counts, `μ_k` the mean premium of the kind's measured brands, and `κ` the registry's pooling weight |
+| Row and update | a derived value recomputed when a search lands, stored as a model row per `(kind, brand)` refreshed nightly; forgets at the registry's 30-day half-life |
+| Prior | `θ` 0 (no premium), so a brand with no evidence reads as no premium, with its interval saying so |
+| Guard | at least `brand_premium_min_side` rows on each side (a param, prior 5); every required attribute agreeing; the match label stated. Otherwise the answer is "not known yet", with the counts. Where no off-brand set can exist at the record (a specific phone, a console, an e-reader), it says "brand-locked" instead of a number. A set sold as "compatible with" a trademarked toy line is excluded: it can be a counterfeit |
+| Changes | recommendation and style: "the same thing for less" shows `e^θ` and the matched rows; listing: whether the title leads with the brand (high `S_k`) or with the material and build (low `S_k`); capture: ask for the brand only in kinds where it matters (fewer questions where it doesn't); valuation: an off-brand comp enters a thin basis at the `similar` level only after dividing out `e^θ̃` |
+| Proof | below |
+
+**What it can and cannot claim.**
+
+- It can say, with counts and an interval: "On Poshmark used listings on a stated day, Carhartt Detroit jackets ask `e^θ` times what blanket-lined duck canvas work jackets of other brands ask, on `n_B` against `n_O` listings, interval such and such". That is a fact about asking prices at matched observed attributes.
+- It cannot say buyers pay that. Asking is not sold; a sold row on Poshmark shows the last ask, not what was paid (A5).
+- It cannot say the brand causes the gap. The matched set agrees on the attributes we can read. Stitching, fabric weight and durability we cannot read, so `θ` is the brand plus whatever unmeasured quality travels with it. It is an upper bound on what the name alone is worth. Bronnenberg et al. (2015) show why that matters: for physically identical headache remedies, pharmacists choose the national brand 9% of the time against 26% for the average shopper, so part of a brand premium can be what buyers do not know rather than what the item is (*sourced*, abstract).
+- "People care about the brand" is an inference from revealed prices and, later, sell-through. It is not a survey. Steenkamp, van Heerde and Geyskens (2010) find, from 22,623 survey respondents in 23 countries, that the premium people will pay runs through the quality they perceive the brand to have over the alternative (*sourced*, abstract). Our measure sees the outcome of that perception, not the perception.
+- Search results are a sample of what is listed and shown first, not of what exists.
+
+**How it is proved, on current data only.**
+
+1. *Development reading, now:* the benchmark's 20 market items, branded rows from the composed product's search over every source it reaches (Dupe read live and shown, never kept, so not counted), off-brand rows from the same search with the attribute query and the brand left out, per item and kind, with counts and intervals. Labelled a development reading. Four items are left out as brand-locked or excluded: the iPhone 13, the Switch OLED, the Kindle Paperwhite, and the LEGO set.
+2. *Stability:* the same reading repeated on a later day. A measure whose sign flips from one day to the next for the same item and cell is not a measure; it is dropped for that kind. Bar: the second day's `θ` lies inside the first day's interval for at least 80% of item-cells with both sides above the guard.
+3. *Asks against sales:* the premium on Poshmark's sold search (sold at the last ask) against the premium on live asks. If they differ beyond both intervals, the live-ask premium is reported as what sellers hope, not what sells.
+4. *Use (L3):* in the panel, for branded items with a thin basis, does adding off-brand comps divided by `e^θ̃` lower the error of the valuation on listings that later sell, against the valuation without them? Paired, with its interval. Only this rung lets `θ` change a price a person sees.
+
+The research behind it is in [brand-premium-sources.md](../../research/price/nate/brand-premium-sources.md).
+
 ### Registered and not proposed for trust now
 
 | Measure | Why not now | What would change it |
@@ -89,7 +144,7 @@ On today's market, not on old data ([Nate](../../product/words.md#2026-11-15-nat
 
 **S0: the code, on synthetic markets.** Each estimator recovers a known truth within its interval: a two-kind market with hazards 0.02 and 0.10 a day; interval-censored sales from reads 1 to 7 days apart; listings first met part-way through their life; a competing "ended unsold" risk; offers that take exactly 20% on half of sales. A listing still live at the end of observation is censored there, never dropped. This proves the arithmetic, not the market.
 
-**P1: the live panel (needs Nate's decision on which sites, [credibility.md](credibility.md#decisions-that-are-nates)).** Every listing the product's own searches return for the [benchmark's](../benchmark.md) fixed items enters the panel at its first read, with its ask, listed date, likes or watchers, the seller's sold count, and our valuation frozen at that moment. It is re-read with the site's still-up read every two to three days, at the site's pace, until it is sold, ended or gone, or 60 days pass. What it gives today: A1 by site, kind and age; A2; A7, the only source with likes over time; A10; the price drops sellers make; and, as a by-product, a score of our own valuation against what happened (credibility exhibit 3). What it cannot give: the price a buyer paid on Poshmark, Mercari or Depop (only the last ask), so not A3 or A4.
+**P1: the live panel, on every site ([Nate](../../product/words.md#2026-11-15-nate-we-read-everything-the-poshmark-rule-is-only-about-share-like-and-repost): "We read everything").** Every listing the product's own searches return for the [benchmark's](../benchmark.md) fixed items enters the panel at its first read, with its ask, listed date, likes or watchers, the seller's sold count, and our valuation frozen at that moment. It is re-read with the site's still-up read every two to three days, at the site's pace, until it is sold, ended or gone, or 60 days pass. What it gives today: A1 by site, kind and age; A2; A7, the only source with likes over time; A10; the price drops sellers make; and, as a by-product, a score of our own valuation against what happened (credibility exhibit 3). What it cannot give: the price a buyer paid on Poshmark, Mercari or Depop (only the last ask), so not A3 or A4.
 
 - *Design.* Listings entering in the first two weeks fit; listings entering in weeks three and four are tested, with follow-up to day 60 of the panel. Contestants on the same test listings: B0, one hazard for every site; B1, per site and kind, unpooled; A1, pooled by site, kind and age; then A1 with A2, A7 and A10 added one at a time.
 - *Primary score:* log loss of "sold within 14 days of first read", weighted by the inverse probability of censoring. Brier, the 30-day horizon once follow-up allows, and a 10-bin calibration table are reported beside it. Valuation's D10 bar (AUC of at least 0.6, calibration within 5 points; [valuation.md §9](valuation.md#9-proof)) is reported too, since AD2 replaces D10's curve only if A1 meets it.
@@ -123,12 +178,17 @@ Sent to the orchestrator for each owning lead; this page does not edit their cod
 | AD6 | platform analytics | expected sales for a new account read A10 | a seller with 2 past sales gets a lower expected count than one with 50, same item |
 | AD7 | harness (orchestrator) | extract photo count, category, rank and the promoted mark where the page shows them | a recorded search page yields rank 1 to n and the promoted flag |
 | AD8 | watcher and harness (integration, orchestrator) | the panel recorder: every listing a product search returns is stored as an `observation` at first read with our frozen valuation, and re-read with still-up at the site's pace until it resolves | a listing read live then sold yields one interval-censored sale with both read times |
+| AD9 | identity (engines) | an attribute record per row that does not depend on brand: `kind`, `material`, `construction`, `quality_tier`, `size_class`, `condition`, filled by a rule pass over the title with a word list per kind before any model; `reconcile` gains the level `similar_other_brand`, decided on those attributes with brand, model and colour left out, carrying which attributes agreed | "Wrangler cowboy cut jeans 32x32 medium wash" against a Levi's 501 32x32 record is `similar_other_brand` with `kind`, `size_class` agreeing; "Levi's 505" is not, since its brand is the item's |
+| AD10 | capture | material and construction read from the label or asked once, and only in kinds whose attribute record needs them | a jacket with a readable fabric label is never asked its material; one without is asked once |
+| AD11 | search (integration) | a search can carry the attribute record and a `brand: other` mode: the query is built from the attributes, rows naming the item's brand are dropped, and each row is labelled with how it matched and which attributes agreed. Dupe first for retail, Poshmark for used, eBay and Facebook as they land | a `brand: other` search for a Le Creuset record returns no row with "le creuset" in its title, and every row carries its match label |
+| AD12 | search (integration) | search result rows keep the `likes` and `listed_at` the Poshmark, Mercari and Depop readers already parse; today's composed rows drop them | a Poshmark row in a `/v1/search` result carries `likes` and `listed_at` |
 
 ## 7. What is proved first
 
 1. **S0** for A1, A3, A4, A5 and A6: the synthetic markets above, written as failing tests first. Needs nothing but the repo.
-2. **P1**, once Nate decides which sites may be re-read and AD8 lands: A1 against B0 and B1, then A2, A7 and A10 one at a time.
+2. **P1**, once AD8 lands: A1 against B0 and B1, then A2, A7 and A10 one at a time.
 3. **P2**, once one account is linked: A3, A4, A5, A6.
+4. **A11, development reading**, today, on the benchmark's market items from public Poshmark and Dupe rows; then its stability on a second day.
 
 ## Not found
 
