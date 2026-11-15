@@ -39,7 +39,7 @@ One JSON object per line, one per answer. Fixed 2026-11-15; ours and every rival
 | `sites[]` | the marketplaces the answer drew on |
 | `facts[]` | `{kind, count}` for the twelve kinds of row 2: `sold_prices, live_listings, official_price, discounts, product_reviews, seller_reviews, demand_trend, time_to_sell, fees_per_site, you_keep, same_item_elsewhere, price_history` |
 | `numbers[]` | `{name, value_cents, citation_id, evidence[]}`: row 3 counts the share with a citation or evidence |
-| `reads[]` | `{site, lane, ms, outcome, rows, warm}` from `searched[]`; lanes are `plain`, `cloud_browser`, `own_browser`, `official`, `mcp`; the first read of a site in a run is cold (`warm: false`), later reads warm; repeated job snapshots count once |
+| `reads[]` | `{site, lane, ms, outcome, rows, warm}` from `searched[]`; lanes are `plain`, `cloud_browser`, `own_browser`, `official`, `mcp`, `api`; the first read of a site in a run is cold (`warm: false`), later reads warm; repeated job snapshots count once |
 | `cost` | `{browser_s, proxy_bytes, model_calls, cents}`; missing usage and unknown rates stay null; rates and source lines live in [costs.mjs](costs.mjs), with cloud time billed by started minute per read |
 | `cited_facts` | count of `numbers[]` with a citation or evidence |
 | `lane` | `plain` on baseline records; per-site lanes are in `reads[]` |
@@ -47,7 +47,7 @@ One JSON object per line, one per answer. Fixed 2026-11-15; ours and every rival
 | `delist[]` | `{site, sold_at, ended_at}` for question `delist`, else null |
 | `raw_ref` | the saved raw answer, relative to the run folder |
 
-The added fields are optional when reading old records. The runner maps source lanes `public_page` to `plain` and `harness` to `cloud_browser`. Browser seconds come from browser-lane read times; proxy bytes and model calls require usage in the response’s `cost` object and otherwise remain null. An approximate account-day cost or a token price does not supply a per-read or per-call rate.
+The added fields are optional when reading old records. The runner maps source lanes `public_page` to `plain`, `harness` to `cloud_browser`, and `treg` and `apify` (paid third-party APIs, priced per call) to `api`. Browser seconds come from browser-lane read times; proxy bytes and model calls require usage in the response’s `cost` object and otherwise remain null. An approximate account-day cost or a token price does not supply a per-read or per-call rate.
 
 The baseline fetch is injected as `run({tool: 'baseline', fetch})`; tests use [the recorded Poshmark page](fixtures/run/poshmark.html), copied unchanged from `spec/fixtures/pages/poshmark.html`. Redirects are recorded without following them so each item makes at most one request. Missing queries produce `no_query` without a request.
 

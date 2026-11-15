@@ -105,8 +105,8 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
   function readsOf(searched) {
     return searched.map(read=>{
       const source=sources.find(s=>s.site===read.site);
-      const lane=tool==='baseline'?'plain':({public_page:'plain',harness:'cloud_browser'}[source?.lane] ?? source?.lane);
-      if(!['plain','cloud_browser','own_browser','official','mcp'].includes(lane)) throw new Error(`unknown source lane: ${read.site}`);
+      const lane=tool==='baseline'?'plain':({public_page:'plain',harness:'cloud_browser',treg:'api',apify:'api'}[source?.lane] ?? source?.lane);
+      if(!['plain','cloud_browser','own_browser','official','mcp','api'].includes(lane)) throw new Error(`unknown source lane: ${read.site}`);
       const warm=seenSites.has(read.site); seenSites.add(read.site);
       return {site:read.site,lane,ms:read.ms,outcome:read.outcome,rows:read.count,warm};
     });
