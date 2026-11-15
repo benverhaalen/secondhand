@@ -100,7 +100,10 @@ The briefs are in the side-session notes folder of the orchestrator's group (`bu
    Built from Ben's work in the repo: `brand/tokens.css`, `brand/constitution.md`, `brand/coder-card.md`, `product/ui-constitution.md`, `product/frontend-standard.md`, `product/copy.md`.
 7. The cap state on the web: the GitHub widget and links from features/buy. Ask Nate for the LinkedIn addresses.
 8. The photo pass-over (features/assist "Open"): the identify step reads the photo, and the conversation gets only the attributes.
-9. Vercel: after Nate's `vercel login`, `cd web && vercel deploy` makes a preview. He said yes to Vercel, but ask again before production and before setting any env var there.
+9. Vercel: the first preview is up (2026-11-15 about 06:00 Central, Nate's yes and his login): `https://secondhand-bsuoa5b26-nategareliks-projects.vercel.app`. Deployment protection is on, so it answers 302 to anyone not signed in to his Vercel account.
+   - The project `secondhand` has its root directory set to `web`, and is deployed from the repo root with `vercel deploy --yes`. The root `.vercelignore` uploads only `web/`, `log/` and `brand/`, because the site imports `log/` and copies `brand/tokens.css`.
+   - Linking the GitHub repo failed: his account has no access to `benverhaalen/secondhand`. So deploys are by CLI, not on push.
+   - Production, a custom domain, turning protection off, and any env var (`SECONDHAND_API_ORIGIN`) each wait on Nate's yes.
 10. DBX-A1 (above). The store tool can call `measures.why`, `why_summary`, `shown_prices` and `price_basis` today (the third Databricks lead, 11:10 UTC).
 
 Older notes kept for the next reader:

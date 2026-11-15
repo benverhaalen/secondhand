@@ -20,6 +20,18 @@ Draft, revised after Ben's direction ([words](../../product/words.md#2026-11-14-
 
 Then [measure](../measure/). The item lies on a white sheet from the first shot, so every image carries a white-balance reference. The list is chosen per item type, and shots capture automatically once they are sharp.
 
+**Where photo bytes go** (decision brief, capture lead, 2026-11-15; F21 in [capture engine §8](../../spec/engines/capture.md#8-what-is-wrong-named-fixes-and-their-tests)):
+
+```
+Question: where does a kept photo's file live, so identify, photo scoring and studio can read it?
+Decides: agent (the means); a billed bucket would be Nate's
+Common answer: a presigned S3 upload. Dropped for now: it adds a billed service and a key, and one always-on server with a disk is already the plan (finalization SV1, SV4).
+A: our own route, PUT /v1/captures/:id/photos/:photo_id/bytes, owner checked, size and type checked against the photo row, EXIF stripped, written through a photo-store port to the server's data folder. Rests on finalization.md SV1 and SV4 [the plan]. Wrong if uploads over mobile data through our server are slower than the 9 s identify budget (spec/features/identify.md), or the disk fills.
+B: presigned bucket (S3, R2, Supabase Storage). Rests on the same port. Wrong if its bill or key handling is not worth it at our volume.
+C: Databricks Volume. Rests on spec/product.md (files V). Wrong if a write from the phone path through the workspace is slower than A; today the served app touches the workspace in one place only (audit item 9).
+Recommend: A behind the port, because it needs no new service, key or bill and works on the dev server today. Strongest rival: B, which the same port takes later without a route change.
+```
+
 Research: [capture tech docs, 2026-11](../../research/capture/nate/capture-tech-docs-2026-11.md): Object Capture still needs LiDAR; a LiDAR phone can still fail a scan; expo-camera has no depth; Vision reads UPC-A as EAN-13.
 
 ## Decided

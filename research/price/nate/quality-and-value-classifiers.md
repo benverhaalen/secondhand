@@ -1,4 +1,4 @@
-# Which classifiers, scoring models and ranking structures that judge one piece of content or product above another have been published, leaked or reverse-engineered as of November 2026, and what in their design could score and improve a used-goods listing and its price?
+# Which classifiers, scoring models and ranking structures that judge one piece of content or product above another have been published, leaked or worked out by outsiders as of November 2026, and what in their design could score and improve a used-goods listing and its price?
 Researched 2026-11-14 by Nate (Claude Code retriever, Sonnet 5.5). Feature: price.
 
 Evidence marks: *observed* means I opened the source and it says so, with URL and the source's date. *observed (highlight)* means I saw the passage only in a search-result excerpt of that URL, not the full page. *asserted* means the source claims it without showing, or I am relaying a press report. *inferred* is my reasoning. "Unopened" means I did not open the link.

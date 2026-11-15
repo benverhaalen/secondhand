@@ -1,0 +1,212 @@
+{
+ "recorded": "Real POST /v1/search handler and jobs.framesAfter, in-process fake ports, no network; mirrors app/src/edge/api/search.test.ts :706–721, Mercari without an account is needs_account; 2026-11-15",
+ "start": {
+  "id": "job_8tkpo",
+  "kind": "search",
+  "state": "running",
+  "stages": [
+   {
+    "name": "site:mercari",
+    "state": "running",
+    "started_at": "2026-11-15T12:01:40.660Z",
+    "ended_at": null,
+    "found": {
+     "sources_searched": 0,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {}
+    }
+   }
+  ],
+  "stream": "/v1/jobs/job_8tkpo/events"
+ },
+ "frames": [
+  {
+   "id": 1,
+   "event": "job.state",
+   "data": {
+    "job_id": "job_8tkpo",
+    "kind": "search",
+    "state": "running",
+    "at": "2026-11-15T12:01:40.660Z"
+   }
+  },
+  {
+   "id": 2,
+   "event": "job.stage",
+   "data": {
+    "job_id": "job_8tkpo",
+    "stage": "site:mercari",
+    "state": "arrived",
+    "at": "2026-11-15T12:01:40.660Z",
+    "found": {
+     "sources_searched": 1,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {
+      "mercari": 0
+     }
+    }
+   }
+  },
+  {
+   "id": 3,
+   "event": "answer.partial",
+   "data": {
+    "job_id": "job_8tkpo",
+    "site": "mercari",
+    "product": null,
+    "results": [],
+    "identity": {
+     "by": "default",
+     "model_ok": false
+    },
+    "official": [],
+    "sites_pending": [],
+    "answer": {
+     "id": "job_8tkpo",
+     "kind": "listings_matching",
+     "slots": {
+      "text": "levi 501"
+     },
+     "protocol_version": 1,
+     "facts": [],
+     "found": {
+      "sources_searched": 1,
+      "results_found": 0,
+      "results_used": 0,
+      "dropped_by_reason": {},
+      "sites": {
+       "mercari": 0
+      }
+     },
+     "searched": [
+      {
+       "site": "mercari",
+       "route_id": "mercari.search.page",
+       "query": "levi 501",
+       "outcome": "needs_account",
+       "ms": 0,
+       "reason": "needs the person's account"
+      }
+     ],
+     "stage": "first",
+     "ms": {
+      "first": null,
+      "settled": null
+     }
+    }
+   }
+  },
+  {
+   "id": 4,
+   "event": "answer.settled",
+   "data": {
+    "job_id": "job_8tkpo",
+    "product": null,
+    "results": [],
+    "identity": {
+     "by": "default",
+     "model_ok": false
+    },
+    "official": [],
+    "sites_pending": [],
+    "found": {
+     "sources_searched": 1,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {
+      "mercari": 0
+     }
+    },
+    "searched": [
+     {
+      "site": "mercari",
+      "kind": "search",
+      "url": null,
+      "outcome": "needs_account",
+      "ms": 0,
+      "count": 0,
+      "reason": "needs the person's account"
+     }
+    ],
+    "answer": {
+     "id": "job_8tkpo",
+     "kind": "listings_matching",
+     "slots": {
+      "text": "levi 501"
+     },
+     "protocol_version": 1,
+     "facts": [],
+     "found": {
+      "sources_searched": 1,
+      "results_found": 0,
+      "results_used": 0,
+      "dropped_by_reason": {},
+      "sites": {
+       "mercari": 0
+      }
+     },
+     "searched": [
+      {
+       "site": "mercari",
+       "route_id": "mercari.search.page",
+       "query": "levi 501",
+       "outcome": "needs_account",
+       "ms": 0,
+       "reason": "needs the person's account"
+      }
+     ],
+     "stage": "settled",
+     "ms": {
+      "first": null,
+      "settled": 0
+     }
+    }
+   }
+  },
+  {
+   "id": 5,
+   "event": "job.state",
+   "data": {
+    "job_id": "job_8tkpo",
+    "kind": "search",
+    "state": "done",
+    "at": "2026-11-15T12:01:40.661Z",
+    "result": {
+     "product": null,
+     "results": [],
+     "identity": {
+      "by": "default",
+      "model_ok": false
+     },
+     "official": [],
+     "sites_pending": [],
+     "found": {
+      "sources_searched": 1,
+      "results_found": 0,
+      "results_used": 0,
+      "dropped_by_reason": {},
+      "sites": {
+       "mercari": 0
+      }
+     },
+     "searched": [
+      {
+       "site": "mercari",
+       "kind": "search",
+       "url": null,
+       "outcome": "needs_account",
+       "ms": 0,
+       "count": 0,
+       "reason": "needs the person's account"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

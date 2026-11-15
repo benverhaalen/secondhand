@@ -12,7 +12,7 @@ Each job makes one kind of record, and that record has one home page that a pers
 |---|---|---|---|---|---|---|
 | Appraise an item | "appraises an item based on what the secondhand market prices it at now" | Kind, Label, Condition | `/worth`, the value page | a `valuation` with `capture_id` | if kept: an `item` in state `kept`, on Sell's **Kept** shelf, counted in You > Worth. If sold: an `item` draft, as for Sell. Otherwise: **Recent** on Buy | Sell > Kept, or Buy > Recent |
 | Sell an item | "selling an item goes through that flow" | every stage | `/item/[id]` at its review | an `item` in state `review` (the draft), with its `capture` | Sell's **In progress** shelf until it is posted, then Live | Sell > In progress |
-| Track an item | "tracking a brewers jersey secondhand" | Kind, Label | `/want?q=`, a new want with the most to pay | a `want` with `product_id` | Buy's **Watching** shelf. What it finds goes to New matches and, when it fits the price, to Today | Buy > Watching |
+| Track an item | "tracking a brewers jersey secondhand" | Kind, Label | `/want?q=`, a new want with the most to pay | a `want` with `product_id` | Buy's **Looking for** group, one card per want. What it finds goes to New matches and, when it fits the price, to Today | Buy > Looking for |
 | Find an item | "finding out what an item is" | Kind, Label | `/product/[id]`, what it is, new and used | the `capture` with its confirmed `product_id` | **Recent** on Buy, under the search field | Buy > Recent |
 
 Typed words or a pasted link do the same jobs. They come in through Buy's search field ("Find an item or paste a link"), or through a link shared into the app, which opens that job's sheet on New (`?sheet=`, `?link=`). The pencils on New are gone (Ben, 11:29).
@@ -20,7 +20,7 @@ Typed words or a pasted link do the same jobs. They come in through Buy's search
 ## Why these homes
 
 - **A draft is a thing being sold, so it lives with the things being sold.** Sell's job is "see everything you sell by where it is". A draft is the first place a thing can be, and Sell's In progress shelf already holds `review`. Photos keeps unfinished edits in the library the same way, not in a separate drafts app.
-- **A tracked item is a want, and wants live on Buy.** Buy's job is "find a thing, or see what your searches found". Watching is already that shelf ([pages §6.12](../pages.md#612-buy-tab)). eBay's Saved searches and Depop's Saved items sit on the buyer side too.
+- **A tracked item is a want, and wants live on Buy.** Buy's job is "find a thing, or see what your searches found". Looking for is already that group; Watching holds single saved listings ([pages §6.12](../pages.md#612-buy-tab)). eBay's Saved searches and Depop's Saved items sit on the buyer side too.
 - **A find and an unkept appraisal are lookups, so they share one history.** Neither one is owned or being sold. They are things the person looked up. The App Store and Shazam keep lookups as a Recent list beside the search field. A person who appraised a jacket at a garage sale looks for it again where they look things up. *Inferred*: we have no user study for this.
 - **A kept appraisal is something owned.** Keep it moves it onto Sell's Kept shelf, and its value counts in You > Worth. The lookup history then drops it, so one thing is never in two homes.
 

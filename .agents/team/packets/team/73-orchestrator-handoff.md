@@ -4,6 +4,23 @@ Updated: November 15, 2026, about 10:15 UTC. Owner: Nate. Agent: Claude Code, th
 
 The orchestrator holds the whole backend for Nate: it starts and briefs the team leads, takes the problems that change what was imagined, owns the site harnesses and the cloud browser (`app/src/edge/harness/`, `app/src/edge/browser/`), and records what Nate says in [words](../../../../product/words.md). Read first: [packet 55](55-team-leads-and-mac-workers.md), [completion](../../../../spec/plans/completion.md), [where the backend is not optimized](../../../../spec/plans/optimization-gaps.md), then the lead handoffs below.
 
+## 0a. Where things stand at 12:50 UTC on 2026-11-15 (the times written as "Central" elsewhere in this packet are UTC; the machine clock read 05:30 CST at 11:30 UTC)
+
+The audit is written and pushed: [audit of main](../../../../spec/plans/audit-2026-11-15.md), with the three evidence sweeps and five expert reviews in [its folder](../../../../spec/plans/audit-2026-11-15/). Ben's plan was read after it. Every fix, by lead, with its proof, is in [the finalization spec](../../../../spec/plans/finalization.md): read that before anything below, which is older.
+
+Leads running, all fresh Opus sessions started on Nate's word ("Lets address all fixes", "Get this going too"), each owning one section of the spec:
+
+| Lead | Spec section | Session name |
+|---|---|---|
+| Server core, one program first | 2 (SV0 to SV10) | lead-server |
+| Search and sources | 3 (SR1 to SR10) | lead-search |
+| Engines and the buying conversation | 4 (EN, BC) | lead-engines-3 |
+| Databricks and the jobs | 5 (DB0 to DB8); moves the guard alert to daily after 19:00 UTC | lead-data |
+| The app wired to the server | 6 (AP1 to AP5) | lead-app-wiring |
+| Identify, classify, clarifying questions (capture) | 7 | lead-identify |
+
+The orchestrator no longer builds in the harness: the search lead owns it. Open with Nate: the nine items in the spec's section 9, the posting question with Ben first.
+
 ## 0. Read this first: the wrap-up of 2026-11-15, about 11:45 Central
 
 **What happens next, in Nate's order** ([words](../../../../product/words.md), the entries from 10:00 on): the lead sessions are wrapped up and archived; then "first fully audit and review through the codebase", forming our own opinion of the code as it stands; only after that, read Ben's session's new plan called "whats left" and compare; then write `spec/plans/finalization.md` (what works, what does not, what is left, and the decisions), and start new leads to see it through. The website is ours to build once the system and every feature work. Judging is science-fair style.

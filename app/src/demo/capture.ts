@@ -135,7 +135,7 @@ export const ENDS: Record<Mode, { label: string; to: string }> = {
   // What's it worth values the product the camera read, so the page shows the jacket that was shot.
   worth: { label: 'See what it’s worth', to: `/worth?product=${PRODUCT.id}` },
   // Track ends on a new want for what the camera read, where the person says the most they would pay; it then lives on
-  // Buy's Watching shelf. Find ends on the product page: what it is, new and used.
+  // Buy's Looking for group. Find ends on the product page: what it is, new and used.
   track: { label: 'Watch for it', to: `/want?q=${encodeURIComponent(`${PRODUCT.brand} ${PRODUCT.model}`)}` },
   find: { label: 'See what it is', to: `/product/${PRODUCT.id}` },
 };
