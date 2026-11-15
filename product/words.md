@@ -2633,3 +2633,10 @@ Nate, the orchestrator's session, 2026-11-15, about 15:31 and 15:34 UTC by the m
 > You can easily identify on each error and why, utilize documentation and focused subagent sent to assist you
 
 Used in: the full check's failures, each diagnosed by one focused seat while the orchestrator merges; the packet to Ben after main is green.
+## 2026-11-15 — Ben: typography and spacing follow the brand
+
+Source: Ben's direct messages in the selling UI chat; recorded November 15, 2026.
+
+> ensure you are using the right fonts in tune with the brand guidelines at certiain sizes
+
+> also ensure spacing is all up to standard with the brand
