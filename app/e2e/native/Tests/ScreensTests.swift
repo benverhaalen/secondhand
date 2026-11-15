@@ -37,7 +37,9 @@ final class ScreensTests: XCTestCase {
       _ = app.wait(for: .runningForeground, timeout: 20)
       app.open(url)
       Thread.sleep(forTimeInterval: settle)
-      app.swipeUp(velocity: .slow); app.swipeDown(velocity: .slow) // lets the interruption monitor run
+      // Answer a system permission alert directly, without touching the app (a swipe would scroll the screen).
+      let alert = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.firstMatch
+      if alert.exists { for label in ["Allow", "OK", "Allow Full Access"] where alert.buttons[label].exists { alert.buttons[label].tap(); Thread.sleep(forTimeInterval: 1); break } }
       XCTAssertEqual(app.state, .runningForeground, "\(r[0]) left the app (crash?)")
       keep(r[0], app)
     }
