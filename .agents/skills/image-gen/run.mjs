@@ -16,6 +16,7 @@ const RULE_DOC = /\b(?:AGENTS|CLAUDE|constitution|ledger|coder-card|ui-constitut
 const PATH = /(?:^|[\s"'(])(?:~|\.{1,2})?\/[\w.-]+\/[\w.-]/;
 const IMAGE = /\.(png|jpe?g|webp)$/i;
 const BUSY_EVERY = 5;       // ticks between new calls while the machine is busy: a call costs CPU only as it starts
+const GRACE_MS = 3000;      // after SIGTERM, how long a stopped call gets before SIGKILL
 const ONE_IMAGE = '\n\nMake one image. Save it as image.png in this folder. Reply with one line.';
 const inputsOf = j => j.inputs ?? [];
 // The prompt a call gets: the job's words, then one line per attached image saying how to use it.
@@ -69,36 +70,64 @@ export function cleanHome(folder, auth = join(homedir(), '.codex', 'auth.json'))
   return folder;
 }
 
-const codex = ({ folder, prompt, inputs, model, pids }) => new Promise((done, fail) => {
+const codex = ({ folder, prompt, inputs, model, pids, seconds }) => new Promise((done, fail) => {
   const child = spawn('codex', ['exec', '--ephemeral', '--skip-git-repo-check', '-s', 'workspace-write', '-m', model, '-C', folder, prompt, ...inputs.flatMap(i => ['-i', i])], { stdio: ['ignore', 'pipe', 'pipe'] });
-  let tail = '';
+  let tail = '', late = false;
   pids.add(child.pid);
+  const timer = setTimeout(() => { late = true; stop([child.pid]); }, seconds * 1000);
   for (const s of [child.stdout, child.stderr]) s.on('data', d => { tail = (tail + d).slice(-4000); });
   child.on('error', fail);
-  child.on('close', status => { pids.delete(child.pid); status === 0 ? done(tail) : fail(new Error(`codex exit ${status}: ${tail.slice(-300)}`)); });
+  child.on('close', status => {
+    clearTimeout(timer); pids.delete(child.pid);
+    if (late) fail(new Error(`stopped after ${seconds} second${seconds === 1 ? '' : 's'}`));
+    else status === 0 ? done(tail) : fail(new Error(`codex exit ${status}: ${tail.slice(-300)}`));
+  });
 });
 
-// The machine right now: the one-minute load, and what these calls and everything they started are using (cpu 100 is one core; mem in MB).
-export function machine(pids = new Set()) {
-  if (process.platform === 'win32') return { load1: 0, cpu: 0, mem: 0 }; // no ps and no load average there
-  const rows = execFileSync('ps', ['-A', '-o', 'pid=,ppid=,%cpu=,rss='], { encoding: 'utf8' }).trim().split('\n').map(l => l.trim().split(/\s+/).map(Number));
+const processes = () => execFileSync('ps', ['-A', '-o', 'pid=,ppid=,%cpu=,rss='], { encoding: 'utf8' }).trim().split('\n').map(l => l.trim().split(/\s+/).map(Number));
+// The given processes and everything they started, found before any of them ends: an orphan's parent becomes pid 1.
+function family(pids, rows = processes()) {
   const ours = new Set(pids);
   for (let grew = true; grew;) { grew = false; for (const [pid, ppid] of rows) if (ours.has(ppid) && !ours.has(pid)) { ours.add(pid); grew = true; } }
-  const mine = rows.filter(([pid]) => ours.has(pid));
-  return { load1: loadavg()[0], cpu: mine.reduce((n, r) => n + r[2], 0), mem: mine.reduce((n, r) => n + r[3], 0) / 1024 };
+  return ours;
 }
 
-export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2000, cores = cpus().length, base = '.' } = {}) {
+// Ends calls and what they started: SIGTERM, then SIGKILL for whatever is still there after the grace.
+export function stop(pids, grace = GRACE_MS) {
+  const all = process.platform === 'win32' ? new Set(pids) : family(pids);
+  const send = signal => { for (const pid of all) { try { process.kill(pid, signal); } catch (e) { if (e.code !== 'ESRCH') throw e; } } };
+  send('SIGTERM');
+  return new Promise(ended => setTimeout(() => { send('SIGKILL'); ended(all); }, grace));
+}
+
+// Megabytes the machine has swapped in and out since it started. Swapping, not CPU, is what took Ben's Mac to load 66 to 89.
+function swapped() {
+  if (process.platform === 'darwin') {
+    const vm = execFileSync('vm_stat', { encoding: 'utf8' }), n = k => Number(new RegExp(`${k}:\\s+(\\d+)`).exec(vm)[1]);
+    return (n('Swapins') + n('Swapouts')) * Number(/page size of (\d+)/.exec(vm)[1]) / 2 ** 20;
+  }
+  const vm = readFileSync('/proc/vmstat', 'utf8'), n = k => Number(new RegExp(`^${k} (\\d+)`, 'm').exec(vm)[1]);
+  return (n('pswpin') + n('pswpout')) * 4096 / 2 ** 20;
+}
+
+// The machine right now: the one-minute load, megabytes swapped so far, and what these calls and everything they started are using (cpu 100 is one core; mem in MB).
+export function machine(pids = new Set()) {
+  if (process.platform === 'win32') return { load1: 0, cpu: 0, mem: 0, swap: 0 }; // no ps, load average or swap counters there
+  const rows = processes(), ours = family(pids, rows), mine = rows.filter(([pid]) => ours.has(pid));
+  return { load1: loadavg()[0], cpu: mine.reduce((n, r) => n + r[2], 0), mem: mine.reduce((n, r) => n + r[3], 0) / 1024, swap: swapped() };
+}
+
+export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2000, cores = cpus().length, base = '.', pids = new Set() } = {}) {
   const problems = check(plan);
   if (problems.length) throw new Error(problems.join('\n'));
   const out = resolve(plan.out), repo = insideRepo(out);
   if (repo) throw new Error(`${out} is inside ${repo}: Codex would read that tree's AGENTS.md into every call. Put out somewhere outside a repo`);
-  const { max = 24, load = 0.7, ramp = 2, model = 'gpt-6-astra' } = plan;
+  const { max = 24, load = 0.7, ramp = 2, swap = 10, timeout = 600, model = 'gpt-6-astra' } = plan;
   const jobs = plan.jobs.map(j => ({ id: j.id, role: j.role ?? 'generator', state: 'waiting', after: j.after ?? [], makes: j.makes ?? 'image', job: j }));
   const byId = new Map(jobs.map(j => [j.id, j]));
-  const folderOf = id => join(out, id), running = new Set(), pids = new Set();
-  const peak = { running: 0, load: 0, cpu: 0, mem: 0 };
-  let held = 0, quiet = BUSY_EVERY, finish;
+  const folderOf = id => join(out, id), running = new Set();
+  const peak = { running: 0, load: 0, cpu: 0, mem: 0, swap: 0 };
+  let held = 0, quiet = BUSY_EVERY, finish, last;
   const over = () => jobs.every(j => !['waiting', 'running'].includes(j.state));
 
   async function start(j) {
@@ -109,7 +138,7 @@ export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2
     log?.job(j.id, 'image', 'running');
     const prompt = promptOf(j.job);
     const inputs = inputsOf(j.job).map(i => i.job ? join(folderOf(i.job), 'image.png') : resolve(base, i.file));
-    const call = { id: j.id, folder, prompt, inputs, model, pids }, t0 = Date.now();
+    const call = { id: j.id, folder, prompt, inputs, model, pids, seconds: timeout }, t0 = Date.now();
     try {
       if (readdirSync(folder).length) throw new Error(`${folder} already holds files: a call starts in an empty folder`);
       const input = { job: j.id, role: j.role, inputs: inputs.length, prompt_len: prompt.length, running: running.size };
@@ -132,12 +161,16 @@ export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2
   await new Promise(settled => {
     const tick = () => {
       const now = probe(pids), ratio = now.load1 / cores, busy = ratio >= load;
-      peak.load = Math.max(peak.load, ratio); peak.cpu = Math.max(peak.cpu, now.cpu); peak.mem = Math.max(peak.mem, now.mem);
-      log?.note('machine', { load1: now.load1, cpu_pct: Math.round(now.cpu), mem_mb: Math.round(now.mem), running: running.size });
+      if (!last) { last = now; return; } // swapping is a rate, so the first tick only measures
+      const swapping = (now.swap - last.swap) / (tickMs / 1000), short = swapping > swap;
+      last = now;
+      peak.load = Math.max(peak.load, ratio); peak.cpu = Math.max(peak.cpu, now.cpu); peak.mem = Math.max(peak.mem, now.mem); peak.swap = Math.max(peak.swap, swapping);
+      log?.note('machine', { load1: now.load1, cpu_pct: Math.round(now.cpu), mem_mb: Math.round(now.mem), swap_mb_s: Math.round(swapping), running: running.size });
       for (const j of jobs) if (j.state === 'waiting' && j.after.some(d => ['failed', 'skipped'].includes(byId.get(d).state))) { j.state = 'skipped'; j.why = 'what it waits for failed'; }
       const ready = jobs.filter(j => j.state === 'waiting' && j.after.every(d => byId.get(d).state === 'done'));
-      const room = Math.min(max - running.size, busy ? (quiet >= BUSY_EVERY ? 1 : 0) : ramp);
-      if (busy && ready.length) held++;
+      // Each new call takes memory a swapping machine does not have, so while it swaps, calls run one at a time.
+      const room = short ? (running.size ? 0 : 1) : Math.min(max - running.size, busy ? (quiet >= BUSY_EVERY ? 1 : 0) : ramp);
+      if ((busy || short) && ready.length) held++;
       quiet++;
       for (const j of ready.slice(0, Math.max(room, 0))) { start(j); quiet = 0; }
       if (over()) finish();
@@ -159,12 +192,19 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const sink = line => { const e = JSON.parse(line); if (e.event === 'job.state') consoleSink(`${e.ts.slice(11, 19)} ${e.state.padEnd(7)} ${e.job}${e.reason ? `  ${e.reason}` : ''}`); };
   process.env.CODEX_HOME ??= cleanHome(join(out, '.codex-home'));
   const session = `s_${Date.now().toString(36)}`, file = join(out, 'logs', `job.image-${session}.jsonl`);
-  const log = createLog({ src: 'job.image', build: `image-gen+${sha}`, session, sink: teeSink(fileSink(file), sink), config: { max: plan.max, load: plan.load, ramp: plan.ramp, model: plan.model, jobs: plan.jobs?.length } });
-  const done = await run(plan, { log, base: dirname(resolve(process.argv[2])) }).catch(e => { log.error('image.run', e); log.end(); console.error(e.message); process.exit(1); });
+  const log = createLog({ src: 'job.image', build: `image-gen+${sha}`, session, sink: teeSink(fileSink(file), sink), config: { max: plan.max, load: plan.load, ramp: plan.ramp, swap: plan.swap, timeout: plan.timeout, model: plan.model, jobs: plan.jobs?.length } });
+  // A runner that is stopped takes its calls with it, so none is left running on its own.
+  const pids = new Set();
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.once(signal, async () => {
+    const ended = await stop(pids);
+    log.note('stopped', { signal, processes: ended.size }, 'warn'); log.end();
+    process.exit(1);
+  });
+  const done = await run(plan, { log, pids, base: dirname(resolve(process.argv[2])) }).catch(e => { log.error('image.run', e); log.end(); console.error(e.message); process.exit(1); });
   log.end();
   writeFileSync(join(out, 'run.json'), JSON.stringify(done, null, 2));
   const { peak } = done;
-  console.log(`\n${done.jobs.length - done.failed} of ${done.jobs.length} done. Most at once: ${peak.running} of ${done.max}. Load at its peak: ${(peak.load * done.cores).toFixed(1)} on ${done.cores} cores (new calls slow above ${(done.load * done.cores).toFixed(1)}). These calls at their peak: ${peak.cpu.toFixed(0)}% of one core, ${(peak.mem / 1024).toFixed(1)} GB. Slowed on ${done.held} ticks.`);
+  console.log(`\n${done.jobs.length - done.failed} of ${done.jobs.length} done. Most at once: ${peak.running} of ${done.max}. Load at its peak: ${(peak.load * done.cores).toFixed(1)} on ${done.cores} cores (new calls slow above ${(done.load * done.cores).toFixed(1)}). These calls at their peak: ${peak.cpu.toFixed(0)}% of one core, ${(peak.mem / 1024).toFixed(1)} GB. Swapping at its peak: ${peak.swap.toFixed(0)} MB a second. Slowed on ${done.held} ticks.`);
   console.log(`Call times: node spec/log.mjs ${file}`);
   process.exitCode = done.failed ? 1 : 0;
 }
