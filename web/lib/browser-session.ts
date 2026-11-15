@@ -1,6 +1,6 @@
 export type Profile = { name?: string; photo?: string };
 export type BrowserSession = { accessToken: string; expiresAt: number; profile: Profile };
-type AuthRoute = 'email/start' | 'email/verify' | 'google' | 'refresh' | 'signout';
+type AuthRoute = 'email/start' | 'email/verify' | 'google' | 'apple' | 'refresh' | 'signout';
 type AuthBody = { access_token?: unknown; expires_at?: unknown; user?: { id?: unknown } };
 const profileKey = 'secondhand-profile';
 const sessionEventKey = 'secondhand-session-change';
@@ -10,7 +10,7 @@ let current: BrowserSession | null | undefined;
 let refreshInFlight: Promise<BrowserSession | null> | undefined;
 
 export async function authRequest(route: AuthRoute, body: Record<string, string>) {
-  const changesAccount = route === 'google' || route === 'email/verify' || route === 'signout';
+  const changesAccount = route === 'google' || route === 'apple' || route === 'email/verify' || route === 'signout';
   if (changesAccount && refreshInFlight) await refreshInFlight.catch(() => undefined);
   const send = () => fetch('/v1/auth/' + route, {
     method: 'POST',

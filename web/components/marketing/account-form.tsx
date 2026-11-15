@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+import { appleNonce } from '../../lib/apple-nonce';
 import { accountDestination } from '../../lib/auth-navigation';
 import { authRequest, getSession, rememberSession, sessionSnapshot, signOutSession, subscribeToSession, type Profile } from '../../lib/browser-session';
 
@@ -10,6 +11,9 @@ type GoogleIdentity = {
   initialize(config: { client_id: string; callback: (response: { credential: string }) => void }): void;
   renderButton(parent: HTMLElement, config: { theme: 'filled_black'; shape: 'pill'; size: 'large'; text: 'signup_with' | 'signin_with'; width: number }): void;
 };
+type AppleIdentity = { init(config: { clientId: string; scope: 'email'; redirectURI: string; nonce: string; usePopup: true }): void };
+type AppleResult = CustomEvent<{ authorization?: { id_token?: string }; error?: string }>;
+const apple = () => (window as Window & { AppleID?: { auth?: AppleIdentity } }).AppleID?.auth;
 const identity = () => (window as Window & { google?: { accounts?: { id?: GoogleIdentity } } }).google?.accounts?.id;
 
 function googleProfile(credential: string): Profile {
@@ -23,17 +27,19 @@ function googleProfile(credential: string): Profile {
   } catch { return {}; }
 }
 
-export function AccountForm({ mode, googleClientId, destination }: { mode: 'signin' | 'signup'; googleClientId?: string; destination: string }) {
+export function AccountForm({ mode, googleClientId, appleClientId, destination }: { mode: 'signin' | 'signup'; googleClientId?: string; appleClientId?: string; destination: string }) {
   const router = useRouter();
   const googleButton = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
+  const nonce = useRef('');
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [pending, setPending] = useState<'email/start' | 'email/verify' | 'google' | null>(null);
+  const [pending, setPending] = useState<'email/start' | 'email/verify' | 'google' | 'apple' | null>(null);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
   const [googleProblem, setGoogleProblem] = useState(false);
+  const [appleProblem, setAppleProblem] = useState(false);
   const signup = mode === 'signup';
 
   useEffect(() => {
@@ -42,7 +48,7 @@ export function AccountForm({ mode, googleClientId, destination }: { mode: 'sign
     return () => { active = false; };
   }, [destination, router]);
 
-  async function submit(route: 'email/start' | 'email/verify' | 'google', body: Record<string, string>) {
+  async function submit(route: 'email/start' | 'email/verify' | 'google' | 'apple', body: Record<string, string>) {
     if (busy.current) return;
     busy.current = true;
     setPending(route);
@@ -64,6 +70,7 @@ export function AccountForm({ mode, googleClientId, destination }: { mode: 'sign
       } else {
         const messages = {
           'google': 'Google sign-in could not finish. Try again or use email.',
+          'apple': 'Apple sign-in could not finish. Try again or use email.',
           'email/start': 'We couldn’t send a code. Try again.',
           'email/verify': 'We couldn’t verify that code. Try again.',
         };
@@ -91,6 +98,31 @@ export function AccountForm({ mode, googleClientId, destination }: { mode: 'sign
     api.renderButton(parent, { theme: 'filled_black', shape: 'pill', size: 'large', text: signup ? 'signup_with' : 'signin_with', width: Math.floor(parent.clientWidth) });
   }
 
+  // Apple's script draws its own button into #appleid-signin and reports the result as a document event.
+  async function showAppleButton() {
+    const api = apple();
+    if (!api || !appleClientId) { setAppleProblem(true); return; }
+    const fresh = await appleNonce();
+    nonce.current = fresh.nonce;
+    api.init({ clientId: appleClientId, scope: 'email', redirectURI: window.location.origin + '/signin', nonce: fresh.hashed, usePopup: true });
+  }
+  useEffect(() => {
+    const done = (event: Event) => {
+      const token = (event as AppleResult).detail?.authorization?.id_token;
+      if (token) void submit('apple', { identity_token: token, nonce: nonce.current });
+    };
+    const failed = (event: Event) => {
+      // closing the popup is a choice, not a failure
+      if ((event as AppleResult).detail?.error !== 'popup_closed_by_user') setError('Apple sign-in could not finish. Try again or use email.');
+    };
+    document.addEventListener('AppleIDSignInOnSuccess', done);
+    document.addEventListener('AppleIDSignInOnFailure', failed);
+    return () => { document.removeEventListener('AppleIDSignInOnSuccess', done); document.removeEventListener('AppleIDSignInOnFailure', failed); };
+  });
+
+  const offered = Boolean((googleClientId && !googleProblem) || (appleClientId && !appleProblem));
+  const missing = [googleClientId && googleProblem && 'Google', appleClientId && appleProblem && 'Apple'].filter(Boolean).join(' and ');
+
   function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const address = email.trim();
@@ -103,8 +135,10 @@ export function AccountForm({ mode, googleClientId, destination }: { mode: 'sign
       <h1>{signup ? 'Create your account' : 'Sign in to secondhand'}</h1>
       {googleClientId && <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" onReady={showGoogleButton} onError={() => setGoogleProblem(true)} />}
       {googleClientId && !googleProblem && <div className="google-account-button" ref={googleButton} />}
-      {googleClientId && googleProblem && <p className="account-quiet">Google sign-in is unavailable here. Use email to continue.</p>}
-      {googleClientId && !googleProblem && <div className="account-divider">or use email</div>}
+      {appleClientId && <Script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" strategy="afterInteractive" onReady={() => void showAppleButton().catch(() => setAppleProblem(true))} onError={() => setAppleProblem(true)} />}
+      {appleClientId && !appleProblem && <div id="appleid-signin" className="apple-account-button" data-color="white" data-border="false" data-type={signup ? 'continue' : 'sign-in'} data-border-radius="50" data-height="44" />}
+      {missing && <p className="account-quiet">{missing} sign-in is unavailable here. Use email to continue.</p>}
+      {offered && <div className="account-divider">or use email</div>}
       <form onSubmit={send}>
         {step === 'email' ? <label>Email address<input type="email" name="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} required /></label>
           : <label>Six-digit code<input type="text" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={code} onChange={event => setCode(event.target.value)} required autoFocus /></label>}

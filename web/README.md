@@ -81,7 +81,7 @@ See `components/desktop/README.md` for the workspace and server boundaries.
 
 `/signin` and `/signup` accept email codes. With a Google OAuth web client configured, they also offer the Google Identity Services button. Both call the existing auth endpoints through the same-origin `/v1` rewrite. Set `SECONDHAND_API_ORIGIN` for the web build and add the public web origin to `SECONDHAND_WEB_ORIGINS` on the API when it runs on another origin.
 
-For Google, set `NEXT_PUBLIC_SECONDHAND_GOOGLE_CLIENT_ID` in the web build and include the same client ID in the API’s `GOOGLE_CLIENT_IDS`. Register the public origin with that Google web client. Email requires the API’s configured email sender. Browser sessions use the API’s HttpOnly refresh cookie. The web client does not save tokens in browser storage.
+For Google, set `NEXT_PUBLIC_SECONDHAND_GOOGLE_CLIENT_ID` in the web build and include the same client ID in the API’s `GOOGLE_CLIENT_IDS`. Register the public origin with that Google web client. For Apple, create a Services ID under the app’s Apple Developer team, add the public domain and `https://<domain>/signin` as its return URL, set `NEXT_PUBLIC_SECONDHAND_APPLE_CLIENT_ID` to that Services ID in the web build, and add it to the API’s `APPLE_CLIENT_IDS` beside the app’s bundle ID. Apple does not accept `localhost`, so the button is tested on a deployed origin. Email requires the API’s configured email sender. Browser sessions use the API’s HttpOnly refresh cookie. The web client does not save tokens in browser storage.
 
 
 ### Brand fonts
