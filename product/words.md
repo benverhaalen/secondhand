@@ -2472,3 +2472,11 @@ Nate, the orchestrator's session, 2026-11-15, about 14:24 UTC.
 > we need to stop agents from merging and working on top of eachother. ensure they halt at good poitns and we full focus on developing and carving out the needed fixes
 
 Acted on at once: every lead told to finish the step it is in, park the rest on its branch, write its handoff and stop; from then the orchestrator is the only one who merges to main, one change at a time.
+
+## 2026-11-15 nate a full packet of plans for Ben, then back to building and wiring the backend
+Nate, the orchestrator's session, 2026-11-15, about 14:35 UTC.
+> Give ben a full packet of plans, and ill compact and you will return to full /goal build and test and wire the backend to see it working
+
+Used in: [packet 97](../.agents/team/packets/team/97-the-plan-from-here-for-ben.md).
+
+*Orchestrator's note, 14:26 UTC by the machine clock:* the times on Nate's entries above from "organize, shut down what is finished" onward were written from memory and run up to fifteen minutes fast; their order is right.

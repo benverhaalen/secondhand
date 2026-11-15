@@ -34,7 +34,7 @@ A deploy creates and updates resources only; it runs no job and no SQL. The SQL 
 ## On Mac branches, not on main
 
 - `w/dbx-alert-1` (3f76e334): the alert change above. Tests pass. Held for 19:00 by Nate's ruling.
-- `w/dbx-audit-1`: DB19 (the rights audit covers live observation bases and flags a frozen dataset in a current-price metric, additive to the views the dashboard reads). Brief `brief-dbx-audit-1.txt` in the orchestrator's notes. The worker was still running at 14:25; when it reports, the lead commits its files on the branch and leaves it there.
+- `w/dbx-audit-1` (2 files, `databricks/sql/05_audit.sql`, `databricks/test_governance.mjs`; committed by the lead at 14:27 on the branch as c10da7e3): DB19, the rights audit covers live observation bases and flags a frozen dataset in a current-price metric, additive to the columns the dashboard and Genie read. Checks pass: `test_governance.mjs` 18, `test_genie.mjs` 32, `test_dashboard.mjs` 13. **Before running its SQL on the workspace:** it treats `asking_p50_cents` and `sold_p50_cents` as current-price metrics, and the citations already stored for those metrics rest on frozen datasets, so `rights_audit_summary.violations` (which Genie answers from) will likely move off zero. Count `dataset_in_current_metric` rows first and decide with Nate whether those stored citations are historical readings (then the rule needs a historical-metric exception) or real violations.
 - Every other `dbx-*` branch is merged (`dbx-export-1`, `dbx-terms-1`, `dbx-rights-1`) or obsolete.
 
 ## Left, in order

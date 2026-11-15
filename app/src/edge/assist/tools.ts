@@ -235,8 +235,22 @@ async function searchMarket(x: Extract<Input, { query: string }>, d: ToolDeps, s
   if (!d.searchJob) return fail(r, 'not_connected', 'search job is not connected');
   const port = d.searchJob;
   const { id } = await port.start({ query: x.query.trim(), caller: d.caller, person_id: d.person_id, signal });
+  return readSearchJob(id, x, d, signal, r, false);
+}
+
+export function searchJobResult(job_id: string, deps: ToolDeps & { signal: AbortSignal }): Promise<SearchToolResult> {
+  const r = empty('search_market', new Date(deps.now()).toISOString());
+  r.widgets = ['listings'];
+  r.not_built = ['answers from live reads only; stored rows (MI2) are not built'];
+  return readSearchJob(job_id, { query: '' }, deps, deps.signal, r, true);
+}
+
+function readSearchJob(id: string, x: Extract<Input, { query: string }>, d: ToolDeps, signal: AbortSignal,
+  r: ToolResult, snapshot: boolean): Promise<SearchToolResult> {
+  const port = d.searchJob;
+  if (!port) return Promise.reject(new Error('search job is not connected'));
   const first_id = `${id}:first`;
-  return new Promise<ToolResult>((resolve, reject) => {
+  return new Promise<SearchToolResult>((resolve, reject) => {
     let cursor = 0, first = true, late = 0, settled = false, closed = false;
     let off: (() => void) | undefined;
     const stop = () => { closed = true; off?.(); signal.removeEventListener('abort', abort); };
@@ -244,11 +258,24 @@ async function searchMarket(x: Extract<Input, { query: string }>, d: ToolDeps, s
     const pump = () => {
       if (closed) return;
       try {
-        for (const frame of port.framesAfter(id, cursor)) {
+        let frames = port.framesAfter(id, cursor);
+        if (first && snapshot && frames.length) {
+          const settledFrame = frames.findLast(frame => frame.event === 'answer.settled');
+          const partials = frames.filter(frame => frame.event === 'answer.partial');
+          if (settledFrame) frames = frames.filter(frame => frame.id >= settledFrame.id);
+          else if (partials.length) {
+            const rows = new Map<string, SearchOffer>();
+            for (const frame of partials) for (const row of frame.data.results as SearchOffer[]) rows.set(row.id, row);
+            const latest = partials.at(-1)!;
+            frames = [{ ...latest, data: { ...latest.data, results: [...rows.values()] } },
+              ...frames.filter(frame => frame.id > latest.id)];
+          }
+        }
+        for (const frame of frames) {
           cursor = frame.id;
           if (frame.event === 'job.state' && frame.data.state === 'failed') {
             d.log.error('assist.search.job', frame.data.error ?? new Error('search job failed'));
-            stop(); if (first) resolve(fail(r, 'failed', 'search job failed')); return;
+            stop(); if (first) resolve({ ...fail(r, 'failed', 'search job failed'), result_id: first_id }); return;
           }
           if (!['answer.partial', 'answer.settled', 'answer.late'].includes(frame.event)) continue;
           const snapshot = { ...r, counts: {} };
