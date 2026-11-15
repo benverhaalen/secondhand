@@ -22,7 +22,7 @@ from lab import deltaE_ciede2000, rgb2lab  # noqa: E402
 from lay import layout, proportions  # noqa: E402
 from seeded_faults import item_mask  # noqa: E402
 
-BAND = {"tape": 0.08, "photo": 0.12}
+BAND = {"tape": 0.08, "photo": 0.08}  # photo: only when the real photo is laid flat; honest pants redraws read 1 to 6%
 PRINT_MIN_INLIERS = 14
 PRINT_NCC = 0.45
 COLOR_DRAWN = 10.0  # before push-back: past this the model drew a differently colored item, and no correction is trusted
