@@ -1,0 +1,106 @@
+# Item (app/behavior/item/[id]/index.json) on a phone or simulator: the same states as app/e2e/item.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/item.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/item.yaml
+# Amounts are matched, not "You keep": the money line is moving to "You get" (Ben, 06:19).
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+# live, with an offer on top: what they keep, the time left, Accept and Counter.
+- openLink: ${URL}/--/item/it_jacket
+- extendedWaitUntil:
+    visible: "2 offers"
+    timeout: 30000
+- assertVisible: ".*\\$81.55.*"
+- assertVisible: "Accept \\$85"
+- assertVisible: ".*Third cheapest of 14 like it.*"
+# Counter shows three amounts with the lowest named; one under the lowest says so on its button.
+- tapOn: { id: "counter" }
+- assertVisible: "Counter. Your lowest is \\$70."
+- tapOn: { id: "counter-amount-other" }
+- inputText: "60"
+- pressKey: Enter
+- assertVisible: "Send \\$60, under your lowest"
+# Photos: two named choices, neither on; a live change waits for an Approve naming the listings (edge-cases §6).
+- openLink: ${URL}/--/item/it_jacket
+- extendedWaitUntil:
+    visible: "2 offers"
+    timeout: 10000
+- scrollUntilVisible:
+    element: { id: "photos" }
+- tapOn: { id: "photos" }
+- assertVisible: "Clean up"
+- assertVisible: "Enhance with AI"
+- assertNotVisible: { id: "photos-apply" }
+- tapOn: { id: "clean-up" }
+- assertVisible: "Update the photos on 2 listings"
+- tapOn: { id: "photos-apply" }
+- assertVisible: "Updated on 2 listings"
+- tapOn: { id: "photos-apply-undo" }
+# A field locks from its More sheet.
+- openLink: ${URL}/--/item/it_jacket
+- scrollUntilVisible:
+    element: { id: "more-brand" }
+- tapOn: { id: "more-brand" }
+- tapOn: { id: "lock-field" }
+- assertVisible: "From the tag. Locked"
+- tapOn: { id: "field-done" }
+# Keep it ends the listings, with Undo.
+- scrollUntilVisible:
+    element: { id: "keep" }
+- tapOn: { id: "keep" }
+- assertVisible: "Kept. Took down 2 listings."
+- tapOn: { id: "keep-undo" }
+# review: one question on one card; an answer fills the field (edge-cases §7).
+- openLink: ${URL}/--/item/it_switch
+- extendedWaitUntil:
+    visible: "Do the Joy-Cons drift\\?"
+    timeout: 10000
+- tapOn: { id: "ask-fact-joy_con_drift-no" }
+- assertVisible: "Every question answered. Ready to plan"
+- assertNotVisible: "Do the Joy-Cons drift\\?"
+# slow: the one change is the pill, with Undo.
+- openLink: ${URL}/--/item/it_lamp
+- extendedWaitUntil:
+    visible: "Lower to \\$38 on 2 sites"
+    timeout: 10000
+- tapOn: { id: "lower" }
+- assertVisible: "Lowered to \\$38 on 2 sites"
+- tapOn: { id: "lower-undo" }
+# sold for a pickup: Delete is refused while the sale is open, and says why.
+- openLink: ${URL}/--/item/it_chair
+- extendedWaitUntil:
+    visible: "Pickup today"
+    timeout: 10000
+- assertVisible: "Handed over"
+- scrollUntilVisible:
+    element: "Can’t delete while the sale is open"
+- tapOn: "Can’t delete while the sale is open"
+- assertNotVisible: "Delete this item\\?"
+# sold to ship, done, kept.
+- openLink: ${URL}/--/item/it_kindle
+- extendedWaitUntil:
+    visible: "Ship by Tuesday"
+    timeout: 10000
+- assertVisible: "Ship it"
+- openLink: ${URL}/--/item/it_levis
+- extendedWaitUntil:
+    visible: "Sold for \\$44 in 9 days"
+    timeout: 10000
+- openLink: ${URL}/--/item/it_dunks
+- extendedWaitUntil:
+    visible: "What it’s worth now"
+    timeout: 10000
+- assertVisible: "Sell again"
+# didn't load, and offline.
+- openLink: ${URL}/--/item/it_jacket?state=failed
+- extendedWaitUntil:
+    visible: "Can’t open this item"
+    timeout: 10000
+- assertVisible: "Go to Sell"
+- openLink: ${URL}/--/item/it_jacket?state=offline
+- extendedWaitUntil:
+    visible: "Offline. Changes send when you’re back."
+    timeout: 10000

@@ -1,0 +1,580 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "00000000000000000000000000000101",
+        "question": [
+          "Which sources supply our comps, and how many allow training?"
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000102",
+        "question": [
+          "How accurate was each contestant on the latest backtest, for which families and dates?"
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000103",
+        "question": [
+          "What is the median sold price for a kind with at least 30 sales?"
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000104",
+        "question": [
+          "Which parameter changes were promoted or rolled back?"
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000105",
+        "question": [
+          "Why is this number what it is?"
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "secondhand.market.comp",
+        "column_configs": [
+          {
+            "column_name": "brand",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "category",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "condition",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "data",
+            "description": [
+              "Writer provenance: dataset:<source>, synthetic, example or live:<site>. Always label synthetic and example rows as such."
+            ]
+          },
+          {
+            "column_name": "kind",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "may_model",
+            "description": [
+              "the source allows training; permission alone does not establish that a row was used."
+            ]
+          },
+          {
+            "column_name": "price_cents",
+            "description": [
+              "Money in integer US cents. Divide by 100 to show dollars and say so."
+            ]
+          },
+          {
+            "column_name": "site",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "source",
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          }
+        ]
+      },
+      {
+        "identifier": "secondhand.market.comp_daily"
+      },
+      {
+        "identifier": "secondhand.market.product"
+      },
+      {
+        "identifier": "secondhand.measures.backtest_headline"
+      },
+      {
+        "identifier": "secondhand.measures.backtest_run"
+      },
+      {
+        "identifier": "secondhand.measures.bench_coverage"
+      },
+      {
+        "identifier": "secondhand.measures.bench_speed"
+      },
+      {
+        "identifier": "secondhand.measures.citation_coverage"
+      },
+      {
+        "identifier": "secondhand.measures.decisions_by_policy"
+      },
+      {
+        "identifier": "secondhand.measures.guard_violations"
+      },
+      {
+        "identifier": "secondhand.measures.hidden_numbers"
+      },
+      {
+        "identifier": "secondhand.measures.never_automated"
+      },
+      {
+        "identifier": "secondhand.measures.param_moves"
+      },
+      {
+        "identifier": "secondhand.measures.param_timeline"
+      },
+      {
+        "identifier": "secondhand.measures.policies_in_force"
+      },
+      {
+        "identifier": "secondhand.measures.rights_audit_summary"
+      },
+      {
+        "identifier": "secondhand.measures.valuation_accuracy"
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "00000000000000000000000000000300",
+        "content": [
+          "Money is integer US cents; show dollars by dividing by 100 and say so.",
+          "A price statistic (median, average, percentile) over fewer than 30 sold rows is not answered. Say \"too few: N sales\" with the actual N, including zero, and name what would resolve it: a wider date range or the parent kind. Count the requested set before calculating a price statistic. Use sold rows only; asking and ended-unsold prices are not sales.",
+          "Every accuracy answer names the dataset, the families and the date range from secondhand.measures.backtest_run and secondhand.measures.backtest_headline. Never call it today's market. The backtest is StockX sneaker sales, Off-White x Nike and Yeezy 350, 2017-09 to 2019-02 unless the table says otherwise. Include counts; refuse accuracy cells marked too_few. Distinguish configured test_from/test_to (exclusive end, possibly open) from observed sales dates. Unknown families or dates must be stated as unknown, never guessed. Families absent from the dataset are a gap, including furniture, one-off and unbranded items and Depop, Poshmark, Mercari and Facebook sales.",
+          "Rows whose data is synthetic or example are never presented as real; say which they are. Keep data provenance groups separate in summaries.",
+          "For \"Why is this number what it is\" or \"where does number X come from\", use SELECT * FROM secondhand.measures.why('<id>'), substituting a literal shown number id, and report equal exactly. A false or null equal is not verified; include its reason. No rows means the id is unresolved. Do not pass a subquery into why().",
+          "Only rows with may_model = true were used to train; when asked what a model learned from, use secondhand.market.comp_for_model counts. These counts show eligible inputs; do not claim every eligible row was used in a particular fit without its fit evidence."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "id": "00000000000000000000000000000201",
+        "question": [
+          "How many comps come from each source, and what share allows modelling?"
+        ],
+        "sql": [
+          "SELECT c.source, c.data, count(*) AS n,",
+          "       count_if(c.may_model = true) AS model_eligible,",
+          "       count_if(c.may_model = true) / nullif(count(*), 0) AS model_eligible_share,",
+          "       min(c.at) AS first_at, max(c.at) AS last_at",
+          "FROM secondhand.market.comp c",
+          "GROUP BY c.source, c.data",
+          "ORDER BY c.source, c.data"
+        ],
+        "usage_guidance": [
+          "Model eligibility is permission, not evidence of actual use in a fit. Use comp_for_model counts for questions about training inputs."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000202",
+        "question": [
+          "What is the median sold price by kind where at least 30 sales are available?"
+        ],
+        "sql": [
+          "SELECT c.kind, c.data, count(*) AS n,",
+          "       min(c.at) AS first_at, max(c.at) AS last_at,",
+          "       CASE WHEN count(*) >= 30 THEN percentile_approx(c.price_cents, 0.5) / 100.0 END AS median_dollars",
+          "FROM secondhand.market.comp c",
+          "WHERE c.price_type = 'sold'",
+          "GROUP BY c.kind, c.data",
+          "HAVING count(*) >= 30",
+          "ORDER BY c.kind, c.data"
+        ],
+        "usage_guidance": [
+          "Money is integer US cents. median_dollars divides cents by 100. Count sold rows first for a requested kind; below 30 refuse with its count and suggest a wider date range or the parent kind."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000203",
+        "question": [
+          "Show the latest backtest headline for each contestant and dataset, including its families and dates."
+        ],
+        "sql": [
+          "SELECT h.run_id, h.contestant, h.data AS headline_data,",
+          "       r.source AS dataset, r.data AS run_data, r.test_from, r.test_to,",
+          "       f.families, f.sales_from, f.sales_to,",
+          "       h.n, h.priced, h.hit_rate,",
+          "       CASE WHEN h.priced >= 30 THEN h.within_20 END AS within_20,",
+          "       CASE WHEN h.priced >= 30 THEN h.median_ape END AS median_ape,",
+          "       CASE WHEN h.priced >= 30 THEN h.coverage END AS coverage,",
+          "       h.priced < 30 AS too_few",
+          "FROM secondhand.measures.backtest_headline h",
+          "JOIN secondhand.measures.backtest_run r ON r.run_id = h.run_id",
+          "LEFT JOIN (",
+          "  SELECT e.run_id, e.contestant,",
+          "         sort_array(collect_set(coalesce(c.family_id, c.kind))) AS families,",
+          "         min(c.at) AS sales_from, max(c.at) AS sales_to",
+          "  FROM secondhand.measures.backtest_estimate e",
+          "  JOIN secondhand.market.comp c ON c.comp_id = e.item_id",
+          "  GROUP BY e.run_id, e.contestant",
+          ") f ON f.run_id = h.run_id AND f.contestant = h.contestant",
+          "QUALIFY row_number() OVER (",
+          "  PARTITION BY r.source, h.contestant ORDER BY r.started_at DESC, r.run_id DESC",
+          ") = 1",
+          "ORDER BY r.source, h.contestant"
+        ],
+        "usage_guidance": [
+          "Report both the configured test window (test_to is exclusive and may be open) and observed sales_from/sales_to. Families come from the held-out item ids, not all market rows. If unavailable, say the family coverage is unknown. State historical scope and gaps; never claim accuracy on today's market."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000204",
+        "question": [
+          "How often was the primary contestant within 20 percent, by kind and price band?"
+        ],
+        "sql": [
+          "SELECT a.run_id, a.contestant, a.data, r.source AS dataset,",
+          "       h.data AS headline_data, r.data AS run_data, r.test_from, r.test_to,",
+          "       f.families, f.sales_from, f.sales_to,",
+          "       a.kind, a.price_band, a.n, a.priced, a.within_20, a.too_few",
+          "FROM secondhand.measures.valuation_accuracy a",
+          "JOIN secondhand.measures.backtest_run r ON r.run_id = a.run_id",
+          "JOIN secondhand.measures.backtest_headline h",
+          "  ON h.run_id = a.run_id AND h.contestant = a.contestant",
+          "LEFT JOIN (",
+          "  SELECT e.run_id, e.contestant,",
+          "         sort_array(collect_set(coalesce(c.family_id, c.kind))) AS families,",
+          "         min(c.at) AS sales_from, max(c.at) AS sales_to",
+          "  FROM secondhand.measures.backtest_estimate e",
+          "  JOIN secondhand.market.comp c ON c.comp_id = e.item_id",
+          "  GROUP BY e.run_id, e.contestant",
+          ") f ON f.run_id = h.run_id AND f.contestant = h.contestant",
+          "WHERE a.contestant = 'product_90d_median'",
+          "ORDER BY r.source, a.kind, a.price_band"
+        ],
+        "usage_guidance": [
+          "The primary contestant is product_90d_median. too_few cells have no accuracy answer: report their priced count. Each cell retains its kind; families and sales dates describe the run and contestant, not that cell."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000205",
+        "question": [
+          "Show the parameter walk moves in order."
+        ],
+        "sql": [
+          "SELECT m.run_id, m.month, m.name, m.scope, m.action, m.version, m.value,",
+          "       m.held_out_score, m.champion_version, m.champion_score, m.diff, m.noise,",
+          "       m.reason, m.data",
+          "FROM secondhand.measures.param_moves m",
+          "ORDER BY m.run_id, m.name, m.scope, m.month,",
+          "         CASE m.action WHEN 'rollback' THEN 0 WHEN 'propose' THEN 1 WHEN 'promote' THEN 2 WHEN 'hold' THEN 3 END,",
+          "         m.version"
+        ],
+        "usage_guidance": [
+          "Within a month, rollback precedes the proposal and its promote/hold verdict. The table stores no event timestamp; do not claim a finer event order."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000206",
+        "question": [
+          "How many never-automated actions were allowed?"
+        ],
+        "sql": [
+          "SELECT count(*) AS allowed, sort_array(collect_set(n.data)) AS data",
+          "FROM secondhand.measures.never_automated n",
+          "WHERE n.allow = true"
+        ],
+        "usage_guidance": [
+          "The expected allowed count is 0. Report observed violations if nonzero. Zero violations alone does not prove never decisions were exercised; count all never_automated rows separately if asked."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000207",
+        "question": [
+          "Which tables have an owner filter?"
+        ],
+        "sql": [
+          "SELECT g.table_catalog, g.table_schema, g.table_name,",
+          "       g.has_row_filter, g.direct_filter_count, g.has_owner_tag",
+          "FROM secondhand.measures.governance_coverage g",
+          "WHERE g.table_schema = 'core'",
+          "ORDER BY g.table_name"
+        ],
+        "usage_guidance": [
+          "Direct filter assignments and owner tags are separate evidence. A tag alone does not prove an ABAC policy is installed. has_row_filter combines direct assignments with matching tags; report that distinction."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000208",
+        "question": [
+          "Why is this shown number what it is?"
+        ],
+        "sql": [
+          "SELECT * FROM secondhand.measures.why('<id>')"
+        ],
+        "usage_guidance": [
+          "Substitute the shown number id for <id> before execution. Use a literal id, never a subquery argument. Report equal exactly, including false or null and its reason; never infer that a number is verified from the presence of basis rows."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000209",
+        "question": [
+          "What rows could the model learn from, by source?"
+        ],
+        "sql": [
+          "SELECT c.source, c.data, count(*) AS n,",
+          "       count_if(c.may_model = true) AS allowed_training_rows,",
+          "       min(c.at) AS first_at, max(c.at) AS last_at",
+          "FROM secondhand.market.comp_for_model c",
+          "GROUP BY c.source, c.data",
+          "ORDER BY c.source, c.data"
+        ],
+        "usage_guidance": [
+          "Only rows with may_model = true are eligible for training. These are eligible input counts; actual fitted subsets require the fit evidence, not this count alone."
+        ]
+      },
+      {
+        "id": "0000000000000000000000000000020a",
+        "question": [
+          "Were any forbidden source rows used in citation bases?"
+        ],
+        "sql": [
+          "SELECT a.citations_checked, a.basis_rows_checked, a.violations",
+          "FROM secondhand.measures.rights_audit_summary a"
+        ],
+        "usage_guidance": [
+          "This audit checks citation bases; it does not by itself prove all fits used allowed inputs."
+        ]
+      }
+    ]
+  },
+  "benchmarks": {
+    "questions": [
+      {
+        "id": "00000000000000000000000000000401",
+        "question": [
+          "Count comps by source and show the share permitted for modelling."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT c.source, c.data, count(*) AS n,",
+              "       count_if(c.may_model = true) AS model_eligible,",
+              "       count_if(c.may_model = true) / nullif(count(*), 0) AS model_eligible_share,",
+              "       min(c.at) AS first_at, max(c.at) AS last_at",
+              "FROM secondhand.market.comp c",
+              "GROUP BY c.source, c.data",
+              "ORDER BY c.source, c.data"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Report model eligibility as permission, not actual training use. Include data labels, counts and dates."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000402",
+        "question": [
+          "Show median sold prices by kind for groups with at least 30 sales."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT c.kind, c.data, count(*) AS n,",
+              "       min(c.at) AS first_at, max(c.at) AS last_at,",
+              "       CASE WHEN count(*) >= 30 THEN percentile_approx(c.price_cents, 0.5) / 100.0 END AS median_dollars",
+              "FROM secondhand.market.comp c",
+              "WHERE c.price_type = 'sold'",
+              "GROUP BY c.kind, c.data",
+              "HAVING count(*) >= 30",
+              "ORDER BY c.kind, c.data"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Show n and dates for every group, preserve data labels, and state that dollars are cents divided by 100."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000403",
+        "question": [
+          "Compare the latest backtest headline per contestant and dataset with its families and sales dates."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT h.run_id, h.contestant, h.data AS headline_data,",
+              "       r.source AS dataset, r.data AS run_data, r.test_from, r.test_to,",
+              "       f.families, f.sales_from, f.sales_to,",
+              "       h.n, h.priced, h.hit_rate,",
+              "       CASE WHEN h.priced >= 30 THEN h.within_20 END AS within_20,",
+              "       CASE WHEN h.priced >= 30 THEN h.median_ape END AS median_ape,",
+              "       CASE WHEN h.priced >= 30 THEN h.coverage END AS coverage,",
+              "       h.priced < 30 AS too_few",
+              "FROM secondhand.measures.backtest_headline h",
+              "JOIN secondhand.measures.backtest_run r ON r.run_id = h.run_id",
+              "LEFT JOIN (",
+              "  SELECT e.run_id, e.contestant,",
+              "         sort_array(collect_set(coalesce(c.family_id, c.kind))) AS families,",
+              "         min(c.at) AS sales_from, max(c.at) AS sales_to",
+              "  FROM secondhand.measures.backtest_estimate e",
+              "  JOIN secondhand.market.comp c ON c.comp_id = e.item_id",
+              "  GROUP BY e.run_id, e.contestant",
+              ") f ON f.run_id = h.run_id AND f.contestant = h.contestant",
+              "QUALIFY row_number() OVER (",
+              "  PARTITION BY r.source, h.contestant ORDER BY r.started_at DESC, r.run_id DESC",
+              ") = 1",
+              "ORDER BY r.source, h.contestant"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Every accuracy answer must name dataset, families, configured test dates and observed sales dates. StockX covers Off-White x Nike and Yeezy 350 in 2017-09 to 2019-02 unless rows say otherwise. Never claim today's market. Depop, Poshmark, Mercari, Facebook, furniture, one-off and unbranded sales remain gaps unless the selected dataset covers them."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000404",
+        "question": [
+          "Show within-20 accuracy by kind and price band for product_90d_median."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT a.run_id, a.contestant, a.data, r.source AS dataset,",
+              "       h.data AS headline_data, r.data AS run_data, r.test_from, r.test_to,",
+              "       f.families, f.sales_from, f.sales_to,",
+              "       a.kind, a.price_band, a.n, a.priced, a.within_20, a.too_few",
+              "FROM secondhand.measures.valuation_accuracy a",
+              "JOIN secondhand.measures.backtest_run r ON r.run_id = a.run_id",
+              "JOIN secondhand.measures.backtest_headline h",
+              "  ON h.run_id = a.run_id AND h.contestant = a.contestant",
+              "LEFT JOIN (",
+              "  SELECT e.run_id, e.contestant,",
+              "         sort_array(collect_set(coalesce(c.family_id, c.kind))) AS families,",
+              "         min(c.at) AS sales_from, max(c.at) AS sales_to",
+              "  FROM secondhand.measures.backtest_estimate e",
+              "  JOIN secondhand.market.comp c ON c.comp_id = e.item_id",
+              "  GROUP BY e.run_id, e.contestant",
+              ") f ON f.run_id = h.run_id AND f.contestant = h.contestant",
+              "WHERE a.contestant = 'product_90d_median'",
+              "ORDER BY r.source, a.kind, a.price_band"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Name dataset, families and run dates. Report each cell's n and priced count. Do not reveal accuracy for too_few cells; refuse with their count."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000405",
+        "question": [
+          "List the parameter walk moves in order with their verdicts."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT m.run_id, m.month, m.name, m.scope, m.action, m.version, m.value,",
+              "       m.held_out_score, m.champion_version, m.champion_score, m.diff, m.noise,",
+              "       m.reason, m.data",
+              "FROM secondhand.measures.param_moves m",
+              "ORDER BY m.run_id, m.name, m.scope, m.month,",
+              "         CASE m.action WHEN 'rollback' THEN 0 WHEN 'propose' THEN 1 WHEN 'promote' THEN 2 WHEN 'hold' THEN 3 END,",
+              "         m.version"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Keep run, month, scope and data visible. No event timestamp exists; do not invent an order within identical move keys."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000406",
+        "question": [
+          "How many actions marked never were allowed? The invariant expects zero."
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT count(*) AS allowed FROM secondhand.measures.never_automated n WHERE n.allow = true"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Expected allowed = 0. Report a nonzero result as a violation, not as zero. Count comes from the table, not this note."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000407",
+        "question": [
+          "Which core tables have a direct owner filter, and which only have matching owner tags?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT g.table_catalog, g.table_schema, g.table_name,",
+              "       g.has_row_filter, g.direct_filter_count, g.has_owner_tag",
+              "FROM secondhand.measures.governance_coverage g",
+              "WHERE g.table_schema = 'core'",
+              "ORDER BY g.table_name"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Separate direct_filter_count from has_owner_tag. Tags do not prove installed ABAC policies."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000408",
+        "question": [
+          "How many citation bases violate source modelling rights?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": [
+              "SELECT a.citations_checked, a.basis_rows_checked, a.violations",
+              "FROM secondhand.measures.rights_audit_summary a"
+            ]
+          }
+        ],
+        "evaluation_note": [
+          "Report checked citation and basis counts with violations; do not extend this result to all model fits."
+        ]
+      },
+      {
+        "id": "00000000000000000000000000000409",
+        "question": [
+          "What is the median sold price among the earliest 10 StockX sales in dataset stockx_2019?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": []
+          }
+        ],
+        "evaluation_note": [
+          "Must refuse with the count: say 'too few: N sales' using the actual N, even if zero. Count with SELECT count(*) AS n FROM (SELECT c.comp_id FROM secondhand.market.comp c WHERE c.source = 'stockx_2019' AND c.price_type = 'sold' ORDER BY c.at ASC NULLS LAST, c.comp_id LIMIT 10) s. Do not give a median. Suggest a wider date range or the parent kind. State dataset and dates available; do not invent them."
+        ]
+      },
+      {
+        "id": "0000000000000000000000000000040a",
+        "question": [
+          "What is the average sold price among the latest 20 StockX sales in dataset stockx_2019?"
+        ],
+        "answer": [
+          {
+            "format": "SQL",
+            "content": []
+          }
+        ],
+        "evaluation_note": [
+          "Must refuse with the count: say 'too few: N sales' using the actual N, even if zero. Count with SELECT count(*) AS n FROM (SELECT c.comp_id FROM secondhand.market.comp c WHERE c.source = 'stockx_2019' AND c.price_type = 'sold' ORDER BY c.at DESC NULLS LAST, c.comp_id LIMIT 20) s. Do not give an average. Suggest a wider date range or the parent kind. State dataset and dates available; do not invent them."
+        ]
+      }
+    ]
+  }
+}
