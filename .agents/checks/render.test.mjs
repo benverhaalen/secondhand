@@ -1,4 +1,5 @@
-import { test, before, after } from 'node:test';
+import { test, describe, before, after } from 'node:test';
+import { availableParallelism } from 'node:os';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -327,4 +328,7 @@ test('render: a pill drawn on the child of its pressable, and a large amount who
   assert.deepEqual((await ids(app('<div data-part="amount" style="margin:16px 20px;height:52px;overflow:visible"><span style="font-size:50px;line-height:52px;display:block">$46.95</span></div>'), 'app')).filter(o => o.startsWith('B34')), []);
 });
 CASES.push(['U1', 'a pressable whose child fill covers only part of it', app('<div role="button" style="margin:16px 20px;width:160px;height:48px;cursor:pointer"><div style="width:80px;height:24px;background:var(--gray)"><span style="font-size:15px">Counter</span></div></div>'), /U1 .*no fill and no outline/, 'app']);
-for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
+// Each case renders in its own page of the one browser, so they run side by side.
+describe('render: each rule fails on the output it exists to catch', { concurrency: availableParallelism() }, () => {
+  for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
+});
