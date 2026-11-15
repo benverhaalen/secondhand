@@ -1,0 +1,89 @@
+{
+ "site": "depop",
+ "account_id": "acc_fx3",
+ "user_id": "u_fx1",
+ "taken_at": "2026-11-10T09:30:00Z",
+ "route": "signed_in",
+ "notifications": [
+  {
+   "external_id": "de3-n1",
+   "kind": "sale",
+   "ref": "de3-100274",
+   "at": "2026-11-10T09:20:00Z"
+  }
+ ],
+ "listings": [
+  {
+   "external_id": "de3-100237",
+   "state": "live",
+   "price_cents": 3500,
+   "likes": 3,
+   "watchers": 1,
+   "views": 55
+  },
+  {
+   "external_id": "de3-100274",
+   "state": "sold",
+   "price_cents": 2500,
+   "likes": 3,
+   "watchers": 0,
+   "views": 22
+  },
+  {
+   "external_id": "de3-100311",
+   "state": "live",
+   "price_cents": 6000,
+   "likes": 2,
+   "watchers": 2,
+   "views": 75
+  },
+  {
+   "external_id": "de3-100348",
+   "state": "ended",
+   "price_cents": 1800,
+   "likes": 0,
+   "watchers": 0,
+   "views": 9
+  }
+ ],
+ "offers": [
+  {
+   "external_id": "de3-o1",
+   "listing_external_id": "de3-100311",
+   "amount_cents": 5000,
+   "state": "open",
+   "buyer_ref_hash": "af1371b827c0"
+  },
+  {
+   "external_id": "de3-o2",
+   "listing_external_id": "de3-100237",
+   "amount_cents": 3000,
+   "state": "open",
+   "buyer_ref_hash": "729e60ef1fe7"
+  }
+ ],
+ "messages": [
+  {
+   "external_id": "de3-m1",
+   "thread_ref": "de3-t1",
+   "listing_external_id": "de3-100311",
+   "at": "2026-11-10T08:30:00Z",
+   "from": "buyer"
+  },
+  {
+   "external_id": "de3-m2",
+   "thread_ref": "de3-t2",
+   "listing_external_id": "de3-100237",
+   "at": "2026-11-10T09:25:00Z",
+   "from": "buyer"
+  }
+ ],
+ "orders": [
+  {
+   "external_order_id": "de3-ord1",
+   "listing_external_id": "de3-100274",
+   "state": "paid",
+   "price_cents": 2500
+  }
+ ]
+}

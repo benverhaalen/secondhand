@@ -1,0 +1,61 @@
+{
+ "site": "poshmark",
+ "account_id": "acc_fx4",
+ "user_id": "u_fx1",
+ "taken_at": "2026-11-10T09:15:00Z",
+ "route": "signed_in",
+ "notifications": [],
+ "listings": [
+  {
+   "external_id": "po4-100348",
+   "state": "live",
+   "price_cents": 1800,
+   "likes": 0,
+   "watchers": 0,
+   "views": 9
+  },
+  {
+   "external_id": "po4-100274",
+   "state": "live",
+   "price_cents": 2500,
+   "likes": 3,
+   "watchers": 0,
+   "views": 22
+  },
+  {
+   "external_id": "po4-100237",
+   "state": "live",
+   "price_cents": 4000,
+   "likes": 3,
+   "watchers": 1,
+   "views": 40
+  },
+  {
+   "external_id": "po4-100311",
+   "state": "live",
+   "price_cents": 6000,
+   "likes": 1,
+   "watchers": 2,
+   "views": 75
+  }
+ ],
+ "offers": [
+  {
+   "external_id": "po4-o1",
+   "listing_external_id": "po4-100311",
+   "amount_cents": 5000,
+   "state": "open",
+   "buyer_ref_hash": "1f6c62c7f011"
+  }
+ ],
+ "messages": [
+  {
+   "external_id": "po4-m1",
+   "thread_ref": "po4-t1",
+   "listing_external_id": "po4-100311",
+   "at": "2026-11-10T08:30:00Z",
+   "from": "buyer"
+  }
+ ],
+ "orders": []
+}

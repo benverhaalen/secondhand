@@ -1,0 +1,89 @@
+{
+ "site": "facebook",
+ "account_id": "acc_fx2",
+ "user_id": "u_fx1",
+ "taken_at": "2026-11-10T09:30:00Z",
+ "route": "signed_in",
+ "notifications": [
+  {
+   "external_id": "fa2-n1",
+   "kind": "sale",
+   "ref": "fa2-100274",
+   "at": "2026-11-10T09:20:00Z"
+  }
+ ],
+ "listings": [
+  {
+   "external_id": "fa2-100237",
+   "state": "live",
+   "price_cents": 3500,
+   "likes": 3,
+   "watchers": 1,
+   "views": 55
+  },
+  {
+   "external_id": "fa2-100274",
+   "state": "sold",
+   "price_cents": 2500,
+   "likes": 3,
+   "watchers": 0,
+   "views": 22
+  },
+  {
+   "external_id": "fa2-100311",
+   "state": "live",
+   "price_cents": 6000,
+   "likes": 2,
+   "watchers": 2,
+   "views": 75
+  },
+  {
+   "external_id": "fa2-100348",
+   "state": "ended",
+   "price_cents": 1800,
+   "likes": 0,
+   "watchers": 0,
+   "views": 9
+  }
+ ],
+ "offers": [
+  {
+   "external_id": "fa2-o1",
+   "listing_external_id": "fa2-100311",
+   "amount_cents": 5000,
+   "state": "open",
+   "buyer_ref_hash": "855a288c423d"
+  },
+  {
+   "external_id": "fa2-o2",
+   "listing_external_id": "fa2-100237",
+   "amount_cents": 3000,
+   "state": "open",
+   "buyer_ref_hash": "1c67e04b5054"
+  }
+ ],
+ "messages": [
+  {
+   "external_id": "fa2-m1",
+   "thread_ref": "fa2-t1",
+   "listing_external_id": "fa2-100311",
+   "at": "2026-11-10T08:30:00Z",
+   "from": "buyer"
+  },
+  {
+   "external_id": "fa2-m2",
+   "thread_ref": "fa2-t2",
+   "listing_external_id": "fa2-100237",
+   "at": "2026-11-10T09:25:00Z",
+   "from": "buyer"
+  }
+ ],
+ "orders": [
+  {
+   "external_order_id": "fa2-ord1",
+   "listing_external_id": "fa2-100274",
+   "state": "paid",
+   "price_cents": 2500
+  }
+ ]
+}
