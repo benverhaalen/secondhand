@@ -14,7 +14,9 @@
     "Each postable site shows its returns rule in one caption line (edge-cases §10 Returns terms: the person assumes they can refuse a return).",
     "A typed price over 3 times the top or under a third of the bottom of the range asks once with the range; Preview and Save wait for 'Yes' (edge-cases §3 and ways-out §6.7 'Oops, $500, I meant $50').",
     "For a draft the foot is Preview listings, which closes the sheet and opens the Post preview with the price and site flips; for a live item it is an Approve that saves (pages.md §6.7 pill: Preview listings; nothing goes public from the plan).",
-    "The sheet is a route, drawn over the item, sliding up from the foot and back down; a drag on the grabber closes it (Sheets open from their origin and close the way they came (frontend standard, Emil))."
+    "The sheet is a route, drawn over the item, sliding up from the foot and back down; a drag on the grabber closes it (Sheets open from their origin and close the way they came (frontend standard, Emil)).",
+    "Prices across sites shows the rule this item uses, the account's (Same take-home for a new seller) unless the person picks another for this item: its name, its reason in one line, and each site's numbers a tap under it (Ben 06:51 and 06:53, product/words.md; decisions.md 2026-11-15 cross-listing starts on same take-home). A demo item posted before the rule was a choice carries Same price as its own (agent proposal).",
+    "A pick that changes nothing public still brings up Save once the person makes it, an ending or a ship method included (pages §6.7: the foot comes when something changes)."
   ],
   "states": [
     {
@@ -28,7 +30,8 @@
         "~Posts at $95.",
         "~$80.78",
         "Not posting here",
-        "Nov 24: drops to $90"
+        "Nov 24: drops to $90",
+        "Same price"
       ],
       "absent": [
         "Save: $95 on 2 sites"
@@ -62,7 +65,9 @@
       "shows": "Preview listings",
       "also": [
         "~$209.85",
-        "Not allowed here. Headphones, speakers and consoles are banned; cameras, film and lenses are allowed"
+        "Not allowed here. Headphones, speakers and consoles are banned; cameras, film and lenses are allowed",
+        "Same take-home",
+        "You get the same money wherever it sells. Sites with higher fees show a higher price."
       ],
       "why": "a draft: the foot is Preview listings (pages §6.7 pill)"
     },
@@ -90,7 +95,8 @@
       "route": "/item/it_jacket/plan?state=failed",
       "shows": "Can’t open this item",
       "also": [
-        "It was deleted, or it didn’t load."
+        "It was deleted, or it didn’t load.",
+        "Try again"
       ],
       "why": "what failed; Try again is in the controls, missing"
     },
@@ -161,13 +167,14 @@
       "after": [
         "choice-fast"
       ],
-      "missing": true
+      "then": "gone-by",
+      "shows": "~By "
     },
     {
       "id": "price-track",
       "control": "the price track with the sold prices as ticks",
       "on_tap": "drags the price along the sold prices (pages §6.7 row 2, the posture slider)",
-      "missing": true
+      "then": "save-plan"
     },
     {
       "id": "plan-price",
@@ -204,11 +211,58 @@
       "id": "accept-mode",
       "control": "Ask me before every offer",
       "on_tap": "sets accept mode to Ask me under any choice (ways-out §6.7)",
-      "missing": true
+      "then": "save-plan",
+      "shows": "Off while every offer asks you"
+    },
+    {
+      "id": "plan-spread",
+      "control": "Prices across sites: Same take-home",
+      "on_tap": "opens the four rules, each with its reason, to pick one for this item",
+      "route": "/item/it_switch/plan",
+      "shows": "Every site shows one price, so buyers who look around see the same thing. You get less where fees are higher.",
+      "then": "plan-spread-same_price"
+    },
+    {
+      "id": "plan-spread-same_price",
+      "control": "Same price, in the rules",
+      "on_tap": "puts one price on every site for this item",
+      "route": "/item/it_switch/plan",
+      "after": [
+        "plan-spread"
+      ],
+      "shows": "Every site shows one price, so buyers who look around see the same thing. You get less where fees are higher."
+    },
+    {
+      "id": "spread-why",
+      "control": "See the numbers, beside the rule",
+      "on_tap": "opens the rule: its reason first, then See the numbers",
+      "route": "/item/it_switch/plan",
+      "shows": "Same take-home",
+      "then": "spread-numbers"
+    },
+    {
+      "id": "spread-numbers",
+      "control": "See the numbers",
+      "on_tap": "shows each site’s price, its fees, what they are charged on, and what you get",
+      "route": "/item/it_switch/plan",
+      "after": [
+        "spread-why"
+      ],
+      "shows": "Lists at $247"
+    },
+    {
+      "id": "spread-done",
+      "control": "Done",
+      "on_tap": "closes the rule",
+      "route": "/item/it_switch/plan",
+      "after": [
+        "spread-why"
+      ],
+      "gone": "See the numbers"
     },
     {
       "id": "site-ebay",
-      "control": "eBay switch",
+      "control": "eBay switch, read as Post on eBay",
       "on_tap": "skips eBay, kept as You skipped it",
       "shows": "You skipped it"
     },
@@ -314,8 +368,7 @@
       "control": "Try again",
       "on_tap": "loads the plan again (frontend-standard §4 Error)",
       "route": "/item/it_jacket/plan?state=failed",
-      "goes": "/item/it_jacket/plan",
-      "missing": true
+      "goes": "/item/it_jacket/plan"
     }
   ],
   "route": "/item/it_jacket/plan",
