@@ -91,3 +91,21 @@ test('a post whose outcome is unknown is reconciled, not marked failed or posted
   const res = await postCrosslist(plans, post, (_p, site) => site === 'ebay');
   assert.equal(res.find(r => r.site === 'ebay')?.state, 'reconcile');
 });
+
+test('each spread prices the other sites its own way, keeps the same floor, and gives a plain reason before the numbers', () => {
+  const at = (spread: Parameters<typeof planItem>[1]['spread'], extra = {}) => planItem(tee(), { rows, linked: LINKED, spread, ...extra });
+  const keepSame = at('same_keep'), samePrice = at('same_price'), home = at('home_first');
+  const market = at('site_market', { site_market: (_l: SourceListing, site: Site) => (site === 'ebay' ? 4200 : undefined) });
+  for (const d of samePrice.sites) if (d.price_cents !== undefined) assert.equal(d.price_cents, 3000);
+  const on = (p: typeof keepSame, site: Site) => p.sites.find(d => d.site === site)!;
+  assert.ok(on(home, 'ebay').price_cents! > on(keepSame, 'ebay').price_cents!);
+  assert.equal(on(market, 'ebay').price_cents, 4200);
+  assert.equal(on(market, 'poshmark').price_cents, on(keepSame, 'poshmark').price_cents, 'no market range falls back to the same take-home');
+  for (const p of [keepSame, samePrice, home, market]) {
+    assert.deepEqual(p.sites.map(d => d.floor_cents), keepSame.sites.map(d => d.floor_cents));
+    for (const d of p.sites.filter(d => d.price_cents !== undefined)) {
+      assert.ok(!/\$|\d/.test(d.why!.says), `the reason is words, not numbers: ${d.why!.says}`);
+      assert.match(d.why!.numbers, /you keep \$/);
+    }
+  }
+});
