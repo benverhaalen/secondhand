@@ -1,0 +1,121 @@
+{
+  "max": 2,
+  "load": 0.7,
+  "ramp": 1,
+  "swap": 10,
+  "timeout": 600,
+  "jobs": [
+    {
+      "id": "cam-merge",
+      "prompt": "Job: revise one iPhone screen of secondhand, an app that sells a person's used things for them. This is the camera. The person photographs one item and the app reads what it is (brand, kind, material, size, flaws) so they type nothing. Attached image 2 is the last round. Three reviewers and the founder asked for changes.\nWhat changed:\n- The stages the item needs sit across the top as a centered row of small circles: empty until done, a check once done. No words inside them.\n- Directly under that row, centered, one short instruction that changes with what the app still needs (for example the back, or the tag for size and fabric).\n- The person presses the shutter for every photo. Nothing is captured for them, and nothing says it is.\n- When the app recognizes a fact it shows it briefly near the top as the fact and a check (for example a brand name), on its own ground.\n- Anything the app decided stays the person's to confirm.\n- If the person saved a lowest price, a small lock and that amount stay visible. No other price on this screen.\nYou are the designer. Within what is fixed, decide the placement, the sizes and the wording yourself.\nFixed: a full-screen live camera with no tab bar, a way to close, and a shutter that is always there. The look is in attached image 1.\nIt fails if:\n- the item is drawn or 3D in place of a real photo of a real used thing in daylight, or is not the largest thing on the screen\n- the person must read more than a few words to know what to do next\n- a fact the app has read cannot be told apart from a fact it still needs\n- a marketplace is named in words, or any text is misspelled or too small to read on a phone\n- a meaning is carried by color alone, or text sits on the camera view with no ground under it\n- the gradient is on more than one surface, or anything is decoration that says nothing true about the work\n- it looks like a form laid over a camera\nPortrait, 1170 by 2532. The screen only: no phone frame, no caption, no notes.",
+      "inputs": [
+        {
+          "file": "inputs/today-light.jpg",
+          "take": "The app's look on another screen: its type, pill buttons, hairline cards, soft gradient and wordmark. Match this look, and its calm.",
+          "leave": "Its layout and its content. You are designing a different screen."
+        },
+        {
+          "file": "round-1/cam-clearing.jpg",
+          "take": "The last round of this screen. Keep what works: the item as the largest thing, one grounded instruction, read facts kept apart from needed facts, the shutter and the taken-photo thumbnail.",
+          "leave": "Its step pills, its wording about automatic capture, and anything the brief below changes."
+        }
+      ]
+    },
+    {
+      "id": "cam-hands",
+      "prompt": "Job: revise one iPhone screen of secondhand, an app that sells a person's used things for them. This is the camera. The person photographs one item and the app reads what it is (brand, kind, material, size, flaws) so they type nothing. Attached image 2 is the last round. Three reviewers and the founder asked for changes.\nWhat changed:\n- The stages the item needs sit across the top as a centered row of small circles: empty until done, a check once done. No words inside them.\n- Directly under that row, centered, one short instruction that changes with what the app still needs (for example the back, or the tag for size and fabric).\n- The person presses the shutter for every photo. Nothing is captured for them, and nothing says it is.\n- When the app recognizes a fact it shows it briefly near the top as the fact and a check (for example a brand name), on its own ground.\n- Anything the app decided stays the person's to confirm.\n- If the person saved a lowest price, a small lock and that amount stay visible. No other price on this screen.\nYou are the designer. Within what is fixed, decide the placement, the sizes and the wording yourself.\nOne hand is holding the item. Design so the whole screen works with the thumb of the other hand, and nothing needed sits where that thumb cannot reach.\nFixed: a full-screen live camera with no tab bar, a way to close, and a shutter that is always there. The look is in attached image 1.\nIt fails if:\n- the item is drawn or 3D in place of a real photo of a real used thing in daylight, or is not the largest thing on the screen\n- the person must read more than a few words to know what to do next\n- a fact the app has read cannot be told apart from a fact it still needs\n- a marketplace is named in words, or any text is misspelled or too small to read on a phone\n- a meaning is carried by color alone, or text sits on the camera view with no ground under it\n- the gradient is on more than one surface, or anything is decoration that says nothing true about the work\n- it looks like a form laid over a camera\nPortrait, 1170 by 2532. The screen only: no phone frame, no caption, no notes.",
+      "inputs": [
+        {
+          "file": "inputs/today-light.jpg",
+          "take": "The app's look on another screen: its type, pill buttons, hairline cards, soft gradient and wordmark. Match this look, and its calm.",
+          "leave": "Its layout and its content. You are designing a different screen."
+        },
+        {
+          "file": "round-1/cam-clearing.jpg",
+          "take": "The last round of this screen. Keep what works: the item as the largest thing, one grounded instruction, read facts kept apart from needed facts, the shutter and the taken-photo thumbnail.",
+          "leave": "Its step pills, its wording about automatic capture, and anything the brief below changes."
+        }
+      ]
+    },
+    {
+      "id": "buy-merge",
+      "prompt": "Job: revise one iPhone screen of secondhand, an app that sells a person's used things for them and also helps them buy used. This is the Buy tab: one search across five used marketplaces and official stores, which keeps looking after the person leaves. Attached image 2 is the last round. Three reviewers asked for changes.\nWhat changed:\n- One entry field for words or a pasted listing link, with a camera button inside it. Not three controls.\n- The new match says it once. Its card holds a two-word price read with an icon (for example a fair price), the asking price delivered and the fair range delivered, on the same basis, and one main action that opens the listing.\n- One quiet line says the search is still running and alerts are on.\n- No browsing feed and no suggested items.\n- More room and lighter type than the last round, closer to attached image 1.\nYou are the designer. Within what is fixed, decide the placement, the sizes and the wording yourself.\nFixed: the header with the wordmark and the tab bar from attached image 1, unchanged, with Buy selected. The look is in attached image 1.\nIt fails if:\n- an item has no real photo, or its photo is not the largest thing in its group\n- a marketplace is named in words in place of its small square logo\n- a price does not say what it is (delivered, fair range, asking), or a number appears that a stranger could not explain\n- the person must read more than a few words to know what to do next\n- any text is misspelled or too small to read on a phone, or a meaning is carried by color alone\n- the gradient sits behind more than the one thing that matters most\n- the same news is announced more than once\nPortrait, 1170 by 2532. The screen only: no phone frame, no caption, no notes.",
+      "inputs": [
+        {
+          "file": "inputs/today-light.jpg",
+          "take": "The app's look on another screen: its type, pill buttons, hairline cards, soft gradient and wordmark. Match this look, and its calm.",
+          "leave": "Its layout and its content. You are designing a different screen."
+        },
+        {
+          "file": "../../buy/design/round-1/buy-hunting.jpg",
+          "take": "The last round of this screen. Keep what works: the wordmark header and tab bar, the three shelves, a new match first with a large real photo, the small square marketplace logo, the delivered price over its fair range.",
+          "leave": "Its three separate entry controls, its repeated announcements (heading, bell and New all saying one thing), and anything the brief below changes."
+        }
+      ]
+    },
+    {
+      "id": "buy-one",
+      "prompt": "Job: revise one iPhone screen of secondhand, an app that sells a person's used things for them and also helps them buy used. This is the Buy tab: one search across five used marketplaces and official stores, which keeps looking after the person leaves. Attached image 2 is the last round. Three reviewers asked for changes.\nWhat changed:\n- One entry field for words or a pasted listing link, with a camera button inside it. Not three controls.\n- The new match says it once. Its card holds a two-word price read with an icon (for example a fair price), the asking price delivered and the fair range delivered, on the same basis, and one main action that opens the listing.\n- One quiet line says the search is still running and alerts are on.\n- No browsing feed and no suggested items.\n- More room and lighter type than the last round, closer to attached image 1.\nYou are the designer. Within what is fixed, decide the placement, the sizes and the wording yourself.\nThis screen does one thing well. Decide what that one thing is for someone waiting on a specific item, and give it the room; everything else gets as little as it can.\nFixed: the header with the wordmark and the tab bar from attached image 1, unchanged, with Buy selected. The look is in attached image 1.\nIt fails if:\n- an item has no real photo, or its photo is not the largest thing in its group\n- a marketplace is named in words in place of its small square logo\n- a price does not say what it is (delivered, fair range, asking), or a number appears that a stranger could not explain\n- the person must read more than a few words to know what to do next\n- any text is misspelled or too small to read on a phone, or a meaning is carried by color alone\n- the gradient sits behind more than the one thing that matters most\n- the same news is announced more than once\nPortrait, 1170 by 2532. The screen only: no phone frame, no caption, no notes.",
+      "inputs": [
+        {
+          "file": "inputs/today-light.jpg",
+          "take": "The app's look on another screen: its type, pill buttons, hairline cards, soft gradient and wordmark. Match this look, and its calm.",
+          "leave": "Its layout and its content. You are designing a different screen."
+        },
+        {
+          "file": "../../buy/design/round-1/buy-hunting.jpg",
+          "take": "The last round of this screen. Keep what works: the wordmark header and tab bar, the three shelves, a new match first with a large real photo, the small square marketplace logo, the delivered price over its fair range.",
+          "leave": "Its three separate entry controls, its repeated announcements (heading, bell and New all saying one thing), and anything the brief below changes."
+        }
+      ]
+    },
+    {
+      "id": "cam-critic",
+      "role": "critic",
+      "makes": "critique.json",
+      "after": [
+        "cam-merge",
+        "cam-hands"
+      ],
+      "prompt": "You are a senior product designer reviewing two revisions of one iPhone screen: the camera of secondhand, where a person photographs one used item, pressing the shutter themselves, and the app reads what it is so they type nothing. Stages show as a row of circles that turn to checks, with one instruction under them. You did not make them. Image 1 is the plain revision. Image 2 was pushed on one thing: working one-handed, with the thumb, while the other hand holds the item.\nDo three things.\n1. Fail a design only for these, and tie each failure to a place in the image:\n- the item is drawn or 3D in place of a real photo of a real used thing in daylight, or is not the largest thing on the screen\n- the person must read more than a few words to know what to do next\n- a fact the app has read cannot be told apart from a fact it still needs\n- a marketplace is named in words, or any text is misspelled or too small to read on a phone\n- a meaning is carried by color alone, or text sits on the camera view with no ground under it\n- the gradient is on more than one surface, or anything is decoration that says nothing true about the work\n- it looks like a form laid over a camera\n2. Say whether the push in image 2 earned its place: what it gives the person that image 1 does not, and what it costs.\n3. Name the one to build, and what to take from the other.\nThen split what must change into exact fixes (a size, a gap, a color, a word) and feel notes. Compare both with image 3, the app's look: say where either is louder or heavier than it.\nWrite critique.json in this folder: {\"images\":[{\"file\":\"\",\"verdict\":\"pass or fail\",\"failures\":[{\"rule\":\"\",\"place\":\"\",\"issue\":\"\"}]}],\"push\":{\"earned\":\"yes or no\",\"gives\":\"\",\"costs\":\"\"},\"build\":\"\",\"take_from_other\":[\"\"],\"exact_fixes\":[\"\"],\"feel_notes\":[\"\"]}. Reply with one line.",
+      "inputs": [
+        {
+          "job": "cam-merge",
+          "take": "Design 1, the plain revision."
+        },
+        {
+          "job": "cam-hands",
+          "take": "Design 2, the pushed revision."
+        },
+        {
+          "file": "inputs/today-light.jpg",
+          "take": "The app's look that both should match."
+        }
+      ]
+    },
+    {
+      "id": "buy-critic",
+      "role": "critic",
+      "makes": "critique.json",
+      "after": [
+        "buy-merge",
+        "buy-one"
+      ],
+      "prompt": "You are a senior product designer reviewing two revisions of one iPhone screen: the Buy tab of secondhand, one search across used marketplaces that keeps looking after the person leaves. You did not make them. Image 1 is the plain revision. Image 2 was pushed on one thing: doing one thing well for someone waiting on a specific item.\nDo three things.\n1. Fail a design only for these, and tie each failure to a place in the image:\n- an item has no real photo, or its photo is not the largest thing in its group\n- a marketplace is named in words in place of its small square logo\n- a price does not say what it is (delivered, fair range, asking), or a number appears that a stranger could not explain\n- the person must read more than a few words to know what to do next\n- any text is misspelled or too small to read on a phone, or a meaning is carried by color alone\n- the gradient sits behind more than the one thing that matters most\n- the same news is announced more than once\n2. Say whether the push in image 2 earned its place: what it gives the person that image 1 does not, and what it costs.\n3. Name the one to build, and what to take from the other.\nThen split what must change into exact fixes (a size, a gap, a color, a word) and feel notes. Compare both with image 3, the app's look: say where either is louder or heavier than it.\nWrite critique.json in this folder: {\"images\":[{\"file\":\"\",\"verdict\":\"pass or fail\",\"failures\":[{\"rule\":\"\",\"place\":\"\",\"issue\":\"\"}]}],\"push\":{\"earned\":\"yes or no\",\"gives\":\"\",\"costs\":\"\"},\"build\":\"\",\"take_from_other\":[\"\"],\"exact_fixes\":[\"\"],\"feel_notes\":[\"\"]}. Reply with one line.",
+      "inputs": [
+        {
+          "job": "buy-merge",
+          "take": "Design 1, the plain revision."
+        },
+        {
+          "job": "buy-one",
+          "take": "Design 2, the pushed revision."
+        },
+        {
+          "file": "inputs/today-light.jpg",
+          "take": "The app's look that both should match."
+        }
+      ]
+    }
+  ]
+}
