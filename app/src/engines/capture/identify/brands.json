@@ -13,12 +13,14 @@
     {
       "brand": "Amazon",
       "aliases": [],
-      "data": "example"
+      "data": "example",
+      "common_word": true
     },
     {
       "brand": "Apple",
       "aliases": [],
-      "data": "example"
+      "data": "example",
+      "common_word": true
     },
     {
       "brand": "Birkenstock",
@@ -33,7 +35,8 @@
     {
       "brand": "Champion",
       "aliases": [],
-      "data": "example"
+      "data": "example",
+      "common_word": true
     },
     {
       "brand": "Dr. Martens",

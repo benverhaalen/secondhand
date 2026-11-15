@@ -2,7 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createLog, memorySink } from '../../../../../log/index.js';
+import { checkLog } from '../../../../../spec/log.mjs';
 import { memoryStore } from '../../param/param.ts';
+import { bound } from './ladder.ts';
 import { identify, type IdentifyInput, type IdentifyPorts } from './identify.ts';
 
 const root = new URL('../../../../../', import.meta.url);
@@ -10,23 +12,30 @@ const json = (path: string): unknown => JSON.parse(readFileSync(new URL(path, ro
 const record = json('spec/items/capture-real/2026-11-15.json') as {items: {item: string; manifest: string; photos: {file: string; role: string}[]; state: {capture_id: string; type: string}}[]};
 const visualFixture = JSON.parse(readFileSync(new URL('./fixtures/visual.json', import.meta.url), 'utf8')) as {reply: {title: string; rank: number}[]};
 const modelFixture = JSON.parse(readFileSync(new URL('./fixtures/model.json', import.meta.url), 'utf8')) as {reply: unknown};
+const tagLines = JSON.parse(readFileSync(new URL('./fixtures/tag-lines.json', import.meta.url), 'utf8')) as {items: Record<string, string[]>};
 function logger() {
   const sink = memorySink();
   return {sink, log: createLog({src: 'job.identify', build: 'test', seed: 1, sink})};
 }
-const input: IdentifyInput = {capture_id: 'cap_unknown', family: 'apparel', photos: [{key: 'front', role: 'front'}, {key: 'tag', role: 'tag', text: [{line: 'XL MADE IN MEXICO', confidence: 0}]}]};
+const input: IdentifyInput = {capture_id: 'cap_unknown', family: 'apparel', photos: [{key: 'front', role: 'front'}, {key: 'tag', role: 'tag', text: [{line: 'Size XL MADE IN MEXICO', confidence: 0}]}]};
 
 for (const row of record.items) test(`${row.item}: the real tag confirms its brand without visual or model calls`, async () => {
   const {read} = json(row.manifest) as {read: {tag_text: string}};
+  assert.equal(tagLines.items[row.item].join(' '), read.tag_text);
   const calls: string[] = [];
   const capture: IdentifyInput = {capture_id: row.state.capture_id, family: row.state.type,
-    photos: row.photos.map(photo => ({key: photo.file, role: photo.role, file_ref: photo.file, ...(photo.role === 'tag' ? {text: [{line: read.tag_text, confidence: 0}]} : {})}))};
+    photos: row.photos.map(photo => ({key: photo.file, role: photo.role, file_ref: photo.file, ...(photo.role === 'tag' ? {text: tagLines.items[row.item].map(line => ({line, confidence: 0}))} : {})}))};
   const {log} = logger();
   const out = await identify(capture, {visual: async () => {calls.push('visual'); return [];}, model: async () => {calls.push('model'); return {};}}, memoryStore(), log);
   assert.equal(out.action, 'confirm');
   assert.equal(out.set[0]?.brand, {'carhartt-pants': 'Carhartt', 'chico-hoodie': 'Russell Athletic', 'marquette-tee': 'Fruit of the Loom'}[row.item]);
   assert.ok(out.set[0].rests_on.some(line => line.includes('on the tag')));
   assert.ok(out.facts.every(fact => fact.confidence === 0 && capture.photos.some(photo => photo.key === fact.ref)));
+  const expected = {'carhartt-pants': ['38x36', 'Mexico'], 'chico-hoodie': ['XXL', 'Mexico'], 'marquette-tee': ['XL', 'Honduras']}[row.item];
+  assert.ok(expected);
+  assert.deepEqual(out.facts.filter(fact => fact.field === 'size_label').map(fact => fact.value), [expected[0]]);
+  assert.deepEqual(out.facts.filter(fact => fact.field === 'origin').map(fact => fact.value), [expected[1]]);
+  if (row.item === 'carhartt-pants') assert.equal(out.set[0].model, undefined);
   assert.deepEqual(calls, []);
 });
 
@@ -41,14 +50,147 @@ test('code abstention opens visual search but visual evidence cannot enter the c
   const proposed = found.candidates as {brand: string; c: number; rests_on: string[]}[];
   const nike = proposed.find(row => row.brand === 'Nike')!;
   assert.ok(nike.c <= 0.5);
-  const total = visualFixture.reply.reduce((sum, hit) => sum + 1 / hit.rank, 0);
-  assert.ok(Math.abs(nike.c - 0.5 * (1 + 1 / 2 + 1 / 3) / total) < 1e-12);
+  assert.ok(Math.abs(nike.c - 0.40145985401459855) < 1e-12);
   assert.deepEqual(nike.rests_on, ['3 of 5 similar listings']);
   assert.equal(sink.lines.filter(line => JSON.parse(line).event === 'user.input').length, 1);
   assert.equal(sink.lines.filter(line => JSON.parse(line).event === 'job.stage').length, 4);
   assert.ok(!sink.text().includes(visualFixture.reply[0].title));
   log.end();
+  assert.deepEqual(checkLog(sink.text()).problems, []);
   if (process.env.IDENTIFY_TEST_LOG) writeFileSync(process.env.IDENTIFY_TEST_LOG, sink.text());
+});
+
+function untrusted(value: unknown): never { return value as never; }
+const empty: IdentifyInput = {capture_id: 'cap_boundary', family: null, photos: [{key: 'front', role: 'front'}, {key: 'tag', role: 'tag'}]};
+const codePhoto = {key: 'front', role: 'front', codes: [{symbology: 'UPC-A', payload: '012345678905'}]};
+for (const [cause, text] of [['confidence outside unit interval', [{line: 'x', confidence: 2}]], ['non-string line', [{line: 42, confidence: 1}]], ['non-array text', {}]] as const)
+  test(`phone text ${cause} fails tag alone with a logged reason`, async () => {
+    const {log, sink} = logger();
+    const out = await identify({...empty, photos: [codePhoto, {key: 'tag', role: 'tag', text: untrusted(text)}]}, {
+      catalogue: async () => ({brand: 'Carhartt'}), model: async () => ({family: 'apparel'}),
+    }, memoryStore(), log);
+    assert.equal(out.stages.find(stage => stage.name === 'tag')?.state, 'failed');
+    assert.equal(out.stages.find(stage => stage.name === 'code')?.state, 'arrived');
+    assert.equal(out.stages.find(stage => stage.name === 'model')?.state, 'arrived');
+    assert.equal(out.set[0]?.brand, 'Carhartt');
+    assert.ok(sink.lines.some(line => JSON.parse(line).event === 'error'));
+  });
+
+for (const [name, bad, stage] of [
+  ['visual', [null], 'visual'], ['visual', 'oops', 'visual'], ['visual', {}, 'visual'],
+  ['visual', [{title: 'Nike', rank: 1.5}], 'visual'], ['visual', [{title: 'a'.repeat(301), rank: 1}], 'visual'],
+  ['barcode', [{symbology: 'QR', payload: 42}], 'code'], ['barcode', {}, 'code'],
+  ['ocr', [{line: 42, confidence: 1}], 'tag'], ['ocr', [{line: 'x', confidence: 2}], 'tag'], ['ocr', {}, 'tag'],
+  ['catalogue', {brand: 42}, 'code'], ['catalogue', {brand: ''}, 'code'], ['catalogue', {brand: 'x'.repeat(61)}, 'code'],
+  ['catalogue', {brand: 'Nike', family: 'spaceship'}, 'code'], ['catalogue', {brand: 'Nike', kind: 42}, 'code'],
+  ['model', 'oops', 'model'],
+  ['visual', Array(1), 'visual'], ['barcode', Array(1), 'code'], ['ocr', Array(1), 'tag'],
+] as const) test(`${name} malformed reply ${Array.isArray(bad) && bad.length && !(0 in bad) ? 'sparse array' : JSON.stringify(bad).slice(0, 60)} fails its own stage`, async () => {
+  const {log, sink} = logger();
+  const ports: IdentifyPorts = {
+    barcode: async () => [], ocr: async () => [], visual: async () => [], model: async () => ({family: 'apparel'}),
+    [name]: async () => untrusted(bad),
+  };
+  const capture = name === 'catalogue' ? {...empty, photos: [codePhoto, empty.photos[1]]} : empty;
+  const out = await identify(capture, ports, memoryStore(), log);
+  assert.equal(out.stages.find(row => row.name === stage)?.state, 'failed');
+  assert.equal(out.stages.length, 4);
+  assert.ok(out.stages.filter(row => row.name !== stage).every(row => row.state !== 'failed'));
+  assert.ok(sink.lines.some(line => JSON.parse(line).event === 'error'));
+});
+
+for (const [name, stage] of [['barcode', 'code'], ['catalogue', 'code'], ['model', 'model']] as const)
+  test(`throwing ${name} port cannot discard other stages`, async () => {
+    const {log, sink} = logger();
+    const out = await identify({...empty, photos: [name === 'catalogue' ? codePhoto : empty.photos[0], {key: 'tag', role: 'tag', text: [{line: 'Size XL', confidence: 1}]}]}, {
+      [name]: async () => {throw new Error(`recorded ${name} failure`);}, visual: async () => [{title: 'Nike', rank: 1}],
+    }, memoryStore(), log);
+    assert.equal(out.stages.find(row => row.name === stage)?.state, 'failed');
+    assert.ok(out.facts.some(fact => fact.value === 'XL'));
+    assert.equal(out.stages.length, 4);
+    assert.ok(sink.text().includes(`recorded ${name} failure`));
+  });
+
+test('visual-only brand is returned in others below the set bar with evidence', async () => {
+  const out = await identify(empty, {visual: async () => [{title: 'Nike', rank: 1}]}, memoryStore(), logger().log);
+  assert.deepEqual(out.set, []);
+  assert.equal(out.action, 'ask');
+  assert.equal(out.others[0]?.brand, 'Nike');
+  assert.equal(out.others[0]?.c, 0.5);
+  assert.deepEqual(out.others[0]?.rests_on, ['1 of 1 similar listings']);
+});
+
+test('others obeys fitted cap and score order and never duplicates set members', async () => {
+  const params = memoryStore();
+  const prior = bound(params, 'identity_max_pick');
+  const row = params.propose({name: 'identity_max_pick', scope: {}, family: 'scalar', value_or_hyperparams: 2, prior,
+    fitted_on_ids_hash: null, n_eff: 40, metric: 'held_out', held_out_score: 1, guard_lo: 1, guard_hi: null}, 0);
+  params.promote('identity_max_pick', {}, row.version, 0, '2026-11-15T00:00:00Z');
+  const out = await identify(empty, {visual: async () => [{title: 'Nike', rank: 1}, {title: 'Adidas', rank: 2}, {title: 'Carhartt', rank: 3}]}, params, logger().log);
+  assert.deepEqual(out.others.map(row => row.brand), ['Nike', 'Adidas']);
+  assert.ok(out.others.every(row => row.c < 0.6 && !out.set.some(member => member.product_id === row.product_id)));
+});
+
+test('visual stage that never ran is planned with the skip reason', async () => {
+  for (const [capture, ports, reason] of [
+    [input, {}, 'no visual port'],
+    [{...input, photos: [{key: 'tag', role: 'tag', text: [{line: 'Nike', confidence: 1}]}]}, {visual: async () => []}, 'identity set already found'],
+    [{...input, photos: []}, {visual: async () => []}, 'no front photo'],
+  ] as const) {
+    const out = await identify(untrusted(capture), ports, memoryStore(), logger().log);
+    assert.deepEqual(out.stages.find(row => row.name === 'visual'), {name: 'visual', state: 'planned', found: {skipped: reason}});
+  }
+});
+
+test('photo order cannot preserve a redundant brand-only candidate', async () => {
+  const photos = [{key: 'a', role: 'tag', text: [{line: 'Carhartt', confidence: 1}]}, {key: 'z', role: 'tag', text: [{line: 'Carhartt B324', confidence: 1}]}];
+  const a = await identify({...empty, photos}, {}, memoryStore(), logger().log);
+  const b = await identify({...empty, photos: [...photos].reverse()}, {}, memoryStore(), logger().log);
+  assert.deepEqual(a, b);
+  assert.equal(a.action, 'confirm');
+  assert.equal(a.set.length, 1);
+  assert.equal(a.set[0].model, 'B324');
+});
+
+test('raw barcode payloads never enter input, port or catalogue evidence logs', async () => {
+  for (const payload of ['private-example-payload', '00012345678905']) for (const phone of [true, false]) {
+    const {log, sink} = logger();
+    const codes = [{symbology: 'QR', payload}];
+    await identify({...empty, photos: [{key: 'front', role: 'front', ...(phone ? {codes} : {})}]}, {
+      barcode: async () => codes, catalogue: async () => ({brand: 'Nike'}),
+    }, memoryStore(), log);
+    assert.ok(!sink.text().includes(payload));
+    assert.ok(sink.text().includes('QR'));
+  }
+});
+
+test('model strings over eighty characters are dropped while bounded model strings survive', async () => {
+  for (const length of [80, 81]) {
+    const {log, sink} = logger();
+    const out = await identify(empty, {model: async () => ({brand: 'Nike', model: 'x'.repeat(length)})}, memoryStore(), log);
+    assert.equal(out.others[0]?.model, length === 80 ? 'x'.repeat(length) : undefined);
+    if (length === 81) assert.ok(sink.text().includes('identify model field dropped'));
+  }
+});
+
+test('family param scope stays a family and kind ids use the qualified table key', async () => {
+  const params = memoryStore();
+  const scopes: unknown[] = [];
+  const read = params.read.bind(params);
+  params.read = (name, scope) => {scopes.push(scope); return read(name, scope);};
+  await identify({...empty, family: 'apparel', kind: 'pants'}, {visual: async () => [{title: 'Nike', rank: 1}]}, params, logger().log);
+  assert.ok(scopes.length > 0);
+  assert.ok(scopes.every(scope => JSON.stringify(scope) === JSON.stringify({kind: 'apparel.pants'})));
+  scopes.length = 0;
+  await identify({...empty, family: 'apparel'}, {visual: async () => [{title: 'Nike', rank: 1}]}, params, logger().log);
+  assert.ok(scopes.every(scope => JSON.stringify(scope) === JSON.stringify({kind: 'apparel'})));
+});
+
+test('unrelated company cue in care text cannot confirm Apple', async () => {
+  const out = await identify({...input, photos: [{key: 'tag', role: 'tag', text: [{line: 'Wash with apple juice. Acme Co.', confidence: 1}]}]}, {}, memoryStore(), logger().log);
+  assert.deepEqual(out.set, []);
+  assert.deepEqual(out.others, []);
+  assert.equal(out.action, 'ask');
 });
 
 test('without a visual port the recorded model proposal is capped at rung four', async () => {

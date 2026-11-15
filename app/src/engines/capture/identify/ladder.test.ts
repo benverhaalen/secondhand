@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { memoryStore } from '../../param/param.ts';
 import { candidates, conformal_set, action, label, bound } from './ladder.ts';
 
@@ -46,11 +46,16 @@ test('priors come from declarations with the Python identity names', () => {
   const store = memoryStore();
   assert.equal(bound(store, 'identity_q_kind'), 0.6);
   assert.equal(bound(store, 'identity_max_pick'), 4);
-  const python = readFileSync(new URL('../../../../../jobs/identity/params.py', import.meta.url), 'utf8');
+  const python: unknown = JSON.parse(execFileSync('./.venv/bin/python', ['-c',
+    'import json; from jobs.identity.params import DECLARED; print(json.dumps({row["name"]: row["prior"] for row in DECLARED}))'],
+    {cwd: new URL('../../../../../', import.meta.url), encoding: 'utf8'}));
+  assert.ok(typeof python === 'object' && python !== null);
   for (const [rung, prior] of [[1, 1], [2, 0.8], [3, 0.5], [4, 0.3]]) {
     assert.equal(bound(store, `identity_rung_${rung}` as 'identity_rung_1'), prior);
-    assert.ok(python.includes(rung === 1 ? '(1, 1.)' : `(${rung}, .${String(prior).split('.')[1]})`));
+    assert.equal(Reflect.get(python, `identity_rung_${rung}`), prior);
   }
+  assert.equal(Reflect.get(python, 'identity_q_kind'), 0.6);
+  assert.equal(Reflect.get(python, 'identity_max_pick'), 4);
 });
 
 test('fitted scoped rung weights and the fitted pick cap replace their priors', () => {
