@@ -20,6 +20,14 @@ FORGET_DAYS = 30
 POOL_KAPPA = {"name": "param_pool_kappa", "family": "scalar", "prior": 20}
 
 
+def complete_row(row: dict) -> dict:
+    unknown = set(row) - set(FIELDS)
+    if unknown:
+        raise ValueError(f"unknown param keys {sorted(unknown)}")
+    defaults = {"origin": "fit"}
+    return {key: row.get(key, defaults.get(key)) for key in FIELDS}
+
+
 class Unknown(Exception):
     pass
 
@@ -203,6 +211,7 @@ class MemoryStore:
         return next((r for r in self._rows(name, scope) if r["status"] == "champion"), None)
 
     def propose(self, row: dict, expect_version: int) -> dict:
+        row = complete_row(row)
         if row.get("held_out_score") is None or math.isnan(row["held_out_score"]):
             raise ValueError(f"a fit wrote {row.get('name')} without its held-out score")
         if row.get("family") not in FAMILIES:
