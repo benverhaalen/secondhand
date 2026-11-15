@@ -24,6 +24,7 @@ export type SiteProfile = {
   listing: Record<string, unknown> | null;                   // the platform-fit.json entry: title, description, tags, photos, price limits
   clocks: Record<string, Fact>;                              // the spec/sites.mjs facts for this site, with their marks
   storefront: { shows: StorefrontField[]; mark: Fact['mark']; src: string };
+  headed: boolean;                                           // the site refuses a headless browser: run a real window (a virtual display on a server)
 };
 
 const P = 'research/list/ben/platforms/';
@@ -61,8 +62,12 @@ function clocksFor(site: Site): Record<string, Fact> {
   }));
 }
 
+// Observed 2026-11-15 (research/cross-cutting/nate/runs/bp-1.md): headless Chrome got 403 from Depop ("Forbidden") and a challenge
+// page from Mercari ("Just a moment..."); the same Chrome headed got each site's real search page with no challenge.
+const HEADED: Site[] = ['depop', 'mercari'];
+
 export const PROFILES: Record<Site, SiteProfile> = Object.fromEntries(SITES.map(site => [site, {
-  site, ...BASE[site], listing: FIT.platforms[site === 'facebook' ? 'facebook' : site] ?? null, clocks: clocksFor(site),
+  site, ...BASE[site], headed: HEADED.includes(site), listing: FIT.platforms[site === 'facebook' ? 'facebook' : site] ?? null, clocks: clocksFor(site),
 }])) as Record<Site, SiteProfile>;
 
 export const hasVerb = (site: Site, verb: Verb): true | Absent => PROFILES[site]?.verbs[verb] ?? { absent: `${verb} is not a verb on ${site}` };
