@@ -32,6 +32,7 @@ USING (
     ('mercari', true, false, 'none', true, false, NULL, 'Public active comps are stored and shown as counts and ranges with source links, per spec/data-use.md.', NULL, 'Agent proposal', '2026-11-15T13:41:00Z', 'Missing: Nate ruling clearing mercari direct page content for modelling or sharing. Strictest model and share rights until then.'),
     ('poshmark', true, false, 'none', true, false, NULL, 'Public active comps are stored and shown as counts and ranges with source links, per spec/data-use.md.', NULL, 'Agent proposal', '2026-11-15T13:41:00Z', 'Missing: Nate ruling clearing poshmark direct page content for modelling or sharing. Strictest model and share rights until then.'),
     ('depop', true, false, 'none', true, false, NULL, 'Public active comps are stored and shown as counts and ranges with source links, per spec/data-use.md.', NULL, 'Agent proposal', '2026-11-15T13:41:00Z', 'Missing: Nate ruling clearing depop direct page content for modelling or sharing. Strictest model and share rights until then.'),
+    ('brand', true, false, 'none', true, false, NULL, 'Official retail reads are stored and shown with source links, per spec/product.md.', NULL, 'Agent proposal', '2026-11-15T13:41:00Z', 'Missing: no ruling on official-retail modelling or sharing exists. Strictest model and share rights until then.'),
     ('facebook:apify', true, true, 'hackathon_demo', true, false, NULL, concat('Nate: Yes, Apify too', chr(59), ' apify for fb marketpalce only. Facebook Marketplace through Apify may fit demo models. Product scope is not granted.'), NULL, 'Nate, product/words.md 2026-11-15 about 07:05 Central and corrected DB11 brief 13:41 UTC', '2026-11-15T13:41:00Z', 'Facebook is the only live Apify source. No clearance for a shipped model or redistribution.'),
     ('dupe', false, false, 'none', true, false, 0, concat('Request-only lookup', chr(59), ' no storage or model rights recorded.'), NULL, 'Agent proposal, request-only source policy', '2026-11-15T00:00:00Z', 'not stored past the request')
   AS rights(source, may_store, may_model, may_model_scope, may_show, may_share, ttl_hours, clause, clause_url, decided_by, decided_at, note)
@@ -41,7 +42,9 @@ WHEN MATCHED THEN UPDATE SET
   target.may_store = target.may_store AND s.may_store,
   target.may_model = target.may_model AND s.may_model,
   target.may_model_scope = CASE
-    WHEN target.may_model_scope = 'none' OR s.may_model_scope = 'none' THEN 'none'
+    WHEN target.may_model_scope IS NULL OR s.may_model_scope IS NULL
+      OR target.may_model_scope NOT IN ('hackathon_demo', 'product')
+      OR s.may_model_scope NOT IN ('hackathon_demo', 'product') THEN 'none'
     WHEN target.may_model_scope = 'hackathon_demo' OR s.may_model_scope = 'hackathon_demo' THEN 'hackathon_demo'
     ELSE 'product' END,
   target.may_show = target.may_show AND s.may_show,

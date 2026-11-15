@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 import guard
-from secondhand_log import create_log, memory_sink
+from secondhand_log import create_log, memory_sink, is_masked_key
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -146,8 +146,8 @@ def test_every_source_has_explicit_demo_and_product_clearance_with_the_original_
     sql, records = rights_rows()
     rights = {r['source']: r for r in records}
     manifests = [json.loads(p.read_text()) for p in (ROOT / 'jobs/valuation/data/manifests').glob('*.json')]
-    assert len(rights) == len(records) == 15
-    assert set(rights) == {m['source'] for m in manifests} | {'nber_ebay_bo', 'ebay_api', 'dupe', 'ebay', 'ebay:treg', 'mercari', 'poshmark', 'depop', 'facebook:apify'}
+    assert len(rights) == len(records) == 16
+    assert set(rights) == {m['source'] for m in manifests} | {'nber_ebay_bo', 'ebay_api', 'dupe', 'ebay', 'ebay:treg', 'mercari', 'poshmark', 'depop', 'brand', 'facebook:apify'}
     for manifest in manifests:
         row = rights[manifest['source']]
         assert bool(row['may_model']) == manifest['may_model']
@@ -254,6 +254,19 @@ RIGHTS_BAD_ROWS += [
        'log_event_message_text') for i, key in enumerate(('text', 'content', 'body', 'prompt', 'text_format', 'messageFormat'))],
 ]
 
+MESSAGE_KEYS = ('context', 'textured', 'pretext', 'content_types', 'message_id',
+                'text', 'message_text', 'body', 'buyerMessage', 'messages', 'bodies',
+                'textFormat', 'TEXTFormat', 'preTEXT', 'textual', 'contextId',
+                'message_types', 'text_types', 'bodyTypes')
+MESSAGE_CASES = [(json.dumps({key: 'fixture words'}), False if key == 'content_types' else is_masked_key(key))
+                 for key in MESSAGE_KEYS]
+MESSAGE_CASES += [(json.dumps({'text': ''}), True), (r'{"con\u0074ext":"training"}', False),
+                  (r'{"\u0074ext\u0046ormat":"fixture words"}', True)]
+RIGHTS_BAD_ROWS += [
+    ('log_event', {'session': 's_words', 'seq': i, 'body': body}, 'log_event_message_text')
+    for i, (body, masked) in enumerate(MESSAGE_CASES) if masked
+]
+
 
 RIGHTS_CLEAN_ROWS = [
     ('observation', {'id': 'obs_public', 'site': 'ebay', 'via': 'treg', '_evidence_may_model': False}),
@@ -267,6 +280,10 @@ RIGHTS_CLEAN_ROWS += [
     ('log_event', {'session': 's_encoded_clean', 'seq': 1, 'body': r'{"message\u0049d":"msg_fixture"}'}),
     ('log_event', {'session': 's_encoded_clean', 'seq': 2, 'body': r'{"message":{"m\u0061sked":"key"}}'}),
     ('log_event', {'session': 's_encoded_clean', 'seq': 3, 'body': r'{"mess\u0061ge\u005fid":"msg_fixture"}'}),
+]
+RIGHTS_CLEAN_ROWS += [
+    ('log_event', {'session': 's_words', 'seq': i, 'body': body})
+    for i, (body, masked) in enumerate(MESSAGE_CASES) if not masked
 ]
 
 
@@ -298,12 +315,12 @@ def test_live_sources_have_only_nates_demo_model_clearance_and_strict_unknown_ri
     sql, records = rights_rows()
     rights = {r['source']: r for r in records}
     assert not {'ebay:apify', 'mercari:apify'} & rights.keys()
-    for source in ('ebay', 'ebay:treg', 'mercari', 'poshmark', 'depop'):
+    for source in ('ebay', 'ebay:treg', 'mercari', 'poshmark', 'depop', 'brand'):
         row = rights[source]
         assert row['may_store'] and row['may_show']
         assert not row['may_model'] and not row['may_share']
         assert row['may_model_scope'] == 'none'
-        if source in ('mercari', 'poshmark', 'depop'):
+        if source in ('mercari', 'poshmark', 'depop', 'brand'):
             assert row['decided_by'] == 'Agent proposal'
             assert 'missing' in row['note'].lower()
     row = rights['facebook:apify']
@@ -322,8 +339,8 @@ def test_live_sources_have_only_nates_demo_model_clearance_and_strict_unknown_ri
     db.close()
 
 
-@pytest.mark.parametrize('old_scope,new_scope', [('none', 'product'), ('hackathon_demo', 'product'),
-                                               ('product', 'none'), ('product', 'hackathon_demo')])
+@pytest.mark.parametrize('old_scope', ['none', 'hackathon_demo', 'product', 'Product', 'unknown', '', None])
+@pytest.mark.parametrize('new_scope', ['none', 'hackathon_demo', 'product', 'Product', 'unknown', '', None])
 def test_rerunning_source_merge_never_loosens_existing_rights(old_scope, new_scope):
     sql, _ = rights_rows()
     assignments = sql.split('WHEN MATCHED THEN UPDATE SET', 1)[1].split('  target.clause =', 1)[0].strip().rstrip(',')
@@ -337,7 +354,8 @@ def test_rerunning_source_merge_never_loosens_existing_rights(old_scope, new_sco
     db.execute('UPDATE source_rights AS target SET ' + assignments + ' FROM seed AS s')
     row = db.execute('SELECT * FROM source_rights').fetchone()
     scopes = ('none', 'hackathon_demo', 'product')
-    assert row == (0, 0, min((old_scope, new_scope), key=scopes.index), 0, 0, 1)
+    scope = min((old_scope, new_scope), key=scopes.index) if old_scope in scopes and new_scope in scopes else 'none'
+    assert row == (0, 0, scope, 0, 0, 1), 'MERGE must refuse unknown scopes on either side'
     db.close()
 
 
@@ -391,7 +409,6 @@ def test_write_door_resolves_rights_from_stored_or_pending_references(pending, t
     {'message_id': 'msg_fixture', 'message_ids': ['msg_fixture'], 'text_count': 2, 'content_hash': 'hash_fixture'},
     {'text': None, 'message': {'masked': 'key'}},
     {'nested': [{'body': {'masked': 'key'}}, {'message_type': 'reply'}]},
-    {'text': ''},
     {'messageId': 'msg_fixture', 'textCount': 2, 'contentHash': 'hash_fixture'},
 ])
 def test_log_ids_counts_null_and_masked_text_are_allowed(body):

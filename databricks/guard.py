@@ -9,6 +9,8 @@ from __future__ import annotations
 import re
 from datetime import datetime, timezone
 
+from secondhand_log import MASK_NOT_WHEN_LAST, MASK_WORDS
+
 BASIS_LEVELS = ('variant', 'product', 'family', 'kind', 'prior')
 DATA_TABLES = ('observation', 'evidence', 'citation', 'guarded_number', 'claim_check',
                'event', 'job', 'decision', 'storefront_snapshot', 'log_event')
@@ -26,16 +28,25 @@ def _json_key_word(word):
 _JSON_KEY_CHAR = r'(?:[^"\\]|\\(?:["\\/bfnrt]|u[0-9a-f]{4}))'
 _JSON_LOWER_OR_DIGIT = r'(?:(?-i:[a-z0-9])|\\u00(?:3[0-9]|6[1-9a-f]|7[0-9a]))'
 _JSON_UPPER = r'(?:(?-i:[A-Z])|\\u00(?:4[1-9a-f]|5[0-9a]))'
-_SAFE_SUFFIX = '|'.join(map(_json_key_word, ('ids', 'id', 'count', 'type', 'len', 'length', 'at', 'ms', 'in', 'out', 'hash')))
-_MESSAGE_FIELDS = '|'.join(map(_json_key_word, ('text', 'message', 'body', 'content', 'prompt')))
+_JSON_SEPARATOR = r'(?:[^a-z0-9"\\]|\\(?:["\\/bfnrt]|u(?!(?:003[0-9]|00[46][1-9a-f]|00[57][0-9a]))[0-9a-f]{4}))'
+_WORD_START = (r'(?:' + _JSON_KEY_CHAR + r'*(?:' + _JSON_SEPARATOR + r'|'
+               + _JSON_LOWER_OR_DIGIT + r'(?=' + _JSON_UPPER + r')))?')
+# Use the logger's words and safe suffixes. The guard also permits content_types,
+# a collection of type labels rather than message content.
+_SAFE_SUFFIX = '|'.join(map(_json_key_word, MASK_NOT_WHEN_LAST))
+_MESSAGE_WORDS = [word + suffix for word in MASK_WORDS if word in ('text', 'message', 'body', 'content', 'prompt')
+                  for suffix in ('', 's', 'es')]
+_MESSAGE_FIELDS = '|'.join(
+    _json_key_word(word) + r'(?="|' + _JSON_SEPARATOR + r')|'
+    + _json_key_word(word[:-1]) + r'(?-i:' + word[-1] + r'|\\u' + format(ord(word[-1]), '04x')
+    + r')(?=' + _JSON_UPPER + r')' for word in _MESSAGE_WORDS)
 # core.log_event.body contains the remaining envelope. Match its keys at any depth,
 # retaining the logger's safe suffixes and {"masked":"key"} placeholders.
 MESSAGE_TEXT_PATTERN = re.compile(
-    r'(?i)"(?!(?:' + _JSON_KEY_CHAR + r'*(?:[^a-z0-9"\\]|\\u00(?:5f|2d)|'
-    + _JSON_LOWER_OR_DIGIT + r'(?=' + _JSON_UPPER + r')))?'
-    r'(?:' + _SAFE_SUFFIX + r')")' + _JSON_KEY_CHAR + r'*(?:' + _MESSAGE_FIELDS + r')' + _JSON_KEY_CHAR + r'*"\s*:\s*'
+    r'(?i)"(?!' + _json_key_word('content_types') + r'")(?!' + _WORD_START + r'(?:' + _SAFE_SUFFIX + r')")'
+    + _WORD_START + r'(?:' + _MESSAGE_FIELDS + r')' + _JSON_KEY_CHAR + r'*"\s*:\s*'
     r'(?!null\b|\{\s*"' + _json_key_word('masked') + r'"\s*:\s*"' + _json_key_word('key')
-    + r'"\s*\})(?:"(?:[^"\\]|\\.)+"|\[|\{)')
+    + r'"\s*\})(?:"(?:[^"\\]|\\.)*"|\[|\{)')
 
 REFUSAL_SCHEMA = 'refused_at TIMESTAMP, job STRING, table_name STRING, row_id STRING, rule STRING, data STRING'
 

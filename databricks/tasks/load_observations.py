@@ -14,6 +14,8 @@ from typing import NamedTuple
 
 RIGHTS = ('may_store', 'may_model', 'may_show', 'may_share')
 SCOPES = ('none', 'hackathon_demo', 'product')
+LIVE_SITES = ('ebay', 'mercari', 'poshmark', 'depop', 'facebook', 'brand')
+PROVIDERS = ('apify', 'treg')
 SCOPE_COMMENT = 'hackathon_demo or product: what this row may be used for; shown-only rows are hackathon_demo with may_model false on their evidence'
 NEW_COLUMNS = {
     'observation': {
@@ -147,11 +149,13 @@ def _ttl_days(ttl):
 
 def _source_rights(row, policies):
     # site is the product.md id. A provider never borrows the direct page's rights.
+    if row['site'] not in LIVE_SITES or row['via'] is not None and row['via'] not in PROVIDERS:
+        raise ValueError('source has no rights row')
     source = row['site'] + (':' + row['via'] if row['via'] else '')
     policy = policies.get(source)
     if policy is None or row['via'] == 'apify' and row['site'] != 'facebook':
         raise ValueError('source has no rights row')
-    if row['site'] == 'ebay' and row['may_model']:
+    if row['may_model'] and (row['site'] == 'ebay' or re.search(r'^ebay|_ebay|ebay_', source, re.I)):
         raise ValueError('ebay content never models')
     for right in RIGHTS:
         if row[right] and not policy[right]:

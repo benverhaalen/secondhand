@@ -12,17 +12,19 @@ from types import ModuleType, SimpleNamespace
 import pytest
 
 from tasks import load_observations as loader
+from test_guard import rights_rows
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / 'spec/fixtures/observations/landing.jsonl'
-# The frozen SV7 example predates Nate's Facebook-only Apify correction.
+# The frozen SV7 example predates the provider and official-retail rights corrections.
 LINES = FIXTURE.read_text().splitlines()
 first = json.loads(LINES[0])
 first.update(site='facebook', data='live:facebook', source_route='com.facebook.apify.search')
 LINES[0] = json.dumps(first)
-TEST_RIGHTS = [dict(source=source, may_store=True, may_model=True, may_show=True,
-                    may_share=True, may_model_scope='product')
-               for source in ('facebook:apify', 'brand')]
+retail = json.loads(LINES[1])
+retail.update(may_model=False, use_scope='none')
+LINES[1] = json.dumps(retail)
+TEST_RIGHTS = sorted(rights_rows()[1], key=lambda row: row['source'] != 'facebook:apify')
 BASE = json.loads(LINES[0])
 
 
@@ -42,7 +44,7 @@ def test_fixture_keeps_rights_prices_and_shared_owners_with_count_by_scope():
     assert [r['line'] for r in rejects] == [3, 4, 5]
     for reject, reason in zip(rejects, ('dupe', 'user_id', 'use_scope')):
         assert reason in reject['reason']
-    assert Counter(r['use_scope'] for r in observations) == {'hackathon_demo': 1, 'product': 1}
+    assert Counter(r['use_scope'] for r in observations) == {'hackathon_demo': 1, 'none': 1}
     for row in observations + evidence:
         assert row['user_id'] is None
         assert row['version'] == 1
@@ -157,7 +159,8 @@ def test_one_bad_line_does_not_stop_the_following_public_read():
                                   {'may_show': False}, {'may_share': True}, {'ttl': '1d'}])
 def test_same_evidence_cannot_replace_per_row_rights(change):
     other = {**BASE, 'id': 'obs_1111111111111111', **change}
-    result = parse([LINES[0], json.dumps(other)])
+    policy = {**TEST_RIGHTS[0], 'may_model_scope': 'product', 'may_share': True}
+    result = loader.parse([LINES[0], json.dumps(other)], source_rights=[policy])
     assert len(result.observations) == len(result.evidence) == 1
     assert result.rejects == [{'line': 2, 'reason': 'evidence rights conflict'}]
     assert result.evidence[0]['may_model'] is False
@@ -335,6 +338,7 @@ def test_empty_folder_has_no_writes(runtime):
 
 def test_existing_evidence_conflict_is_rejected_and_counted_on_a_later_file(runtime):
     loader.main()
+    runtime.spark.source_rights = [{**TEST_RIGHTS[0], 'may_model_scope': 'product'}]
     new_path = runtime.path.replace('search_demo.jsonl', 'search_later.jsonl')
     directory = runtime.path.rsplit('/', 1)[0]
     runtime.entries[directory].append(SimpleNamespace(path=new_path, is_directory=False))
@@ -399,6 +403,45 @@ def test_missing_source_rights_fail_closed():
     assert result.rejects == [{'line': 1, 'reason': 'source has no rights row'}]
 
 
+@pytest.mark.parametrize('site,via,models,scope', [
+    ('nber_ebay_bo', None, True, 'hackathon_demo'),
+    ('facebook:apify', None, True, 'hackathon_demo'),
+    ('EBAY', None, True, 'none'),
+    ('ebay_api', None, False, 'none'),
+    ('ebay_comps_cc0', None, False, 'none'),
+    ('ebay_api', None, True, 'hackathon_demo'),
+    ('ebay_comps_cc0', None, True, 'hackathon_demo'),
+    ('stockx_2019', None, False, 'none'),
+    ('unknown', None, False, 'none'),
+    ('facebook', 'unknown', False, 'none'),
+])
+def test_live_line_cannot_select_dataset_provider_or_unknown_source_rights(site, via, models, scope):
+    source = site + (':' + via if via else '')
+    policy = dict(source=source, may_store=True, may_model=True, may_show=True,
+                  may_share=True, may_model_scope='product')
+    row = {**BASE, 'site': site, 'data': 'live:' + site, 'via': via,
+           'may_model': models, 'use_scope': scope}
+    result = loader.parse([json.dumps(row)], source_rights=[policy])
+    assert result.observations == result.evidence == []
+    assert result.rejects == [{'line': 1, 'reason': 'source has no rights row'}]
+
+
+def test_brand_fixture_with_permitted_rights_lands_from_the_sql_registry():
+    _, policies = rights_rows()
+    row = {**json.loads(FIXTURE.read_text().splitlines()[1]), 'may_model': False, 'use_scope': 'none'}
+    result = loader.parse([json.dumps(row)], source_rights=policies)
+    assert result.rejects == [], 'official retail needs a real brand rights row'
+    assert result.observations[0]['channel'] == 'official_retail'
+    assert result.evidence[0]['may_model'] is False
+
+
+def test_original_brand_fixture_cannot_claim_model_rights_from_the_sql_registry():
+    _, policies = rights_rows()
+    result = loader.parse([FIXTURE.read_text().splitlines()[1]], source_rights=policies)
+    assert result.observations == result.evidence == []
+    assert result.rejects == [{'line': 1, 'reason': 'may_model exceeds source rights'}]
+
+
 @pytest.mark.parametrize('site', ['ebay', 'mercari'])
 def test_apify_other_sites_have_no_rights_row_even_when_direct_source_exists(site):
     row = {**BASE, 'site': site, 'data': 'live:' + site}
@@ -412,12 +455,12 @@ def test_ebay_model_right_is_refused_by_every_route_even_with_overpermissive_sou
     row = {**BASE, 'site': 'ebay', 'data': 'live:ebay', 'via': via, 'may_model': True}
     policy = {**TEST_RIGHTS[0], 'source': 'ebay' + (':' + via if via else '')}
     result = loader.parse([json.dumps(row)], source_rights=[policy])
-    assert result.rejects == [{'line': 1, 'reason': 'ebay content never models'}]
+    reason = 'source has no rights row' if via == 'another_route' else 'ebay content never models'
+    assert result.rejects == [{'line': 1, 'reason': reason}]
     assert result.observations == result.evidence == []
 
 
 def test_live_source_rows_match_the_loader_and_facebook_model_rights_survive_untouched():
-    from test_guard import rights_rows
     _, policies = rights_rows()
     for site, via in [('ebay', 'treg'), ('ebay', None), ('mercari', None),
                       ('poshmark', None), ('depop', None), ('facebook', 'apify')]:
