@@ -11,21 +11,53 @@ const TERMINAL = new Set(['done', 'failed']);
 const EXAMPLE_USER = 'usr_8f2k', EXAMPLE_VISITOR = 'vis_example01';
 const INTERNAL = ['user_id', 'event_id', 'idempotency_key', 'args', 'attempts', 'created_at'];
 
+export type ApiJobRow = Omit<JobRow, 'kind'> & { kind: JobRow['kind'] | 'assist' };
+
 export function jobsOn(st: Store) {
+  const claimedSeedIds = new Set<string>();
+  const assistJobs = new Map<string, ApiJobRow>();
+  const readJob = (id: string): ApiJobRow | undefined => assistJobs.get(id) ?? st.getJob(id);
   const log = new Map<string, SseFrame[]>(), ears = new Map<string, Set<() => void>>();
   const wake = (key: string) => [...(ears.get(key) ?? [])].forEach((f) => f());
   // shortcut: the seeded example visitor job is open to any visitor, since the example sends no X-Visitor-Id; goes when the examples stop being served.
-  const owns = (row: JobRow, who: string) => row.user_id === who || (row.user_id === EXAMPLE_VISITOR && who.startsWith('vis_'));
+  const owns = (row: ApiJobRow, who: string) => row.user_id === who || (row.user_id === EXAMPLE_VISITOR && who.startsWith('vis_'));
   const s = {
     st,
+    owner: (id: string) => readJob(id)?.user_id,
+    start(j: Partial<ApiJobRow> & Pick<ApiJobRow, 'kind' | 'id'>, owner: string): ApiJobRow {
+      const old = readJob(j.id);
+      if (!claimedSeedIds.has(j.id) && (!old || old.user_id === owner || old.user_id === EXAMPLE_VISITOR && owner.startsWith('vis_'))) {
+        claimedSeedIds.add(j.id);
+        if (old) { const { kind: _kind, ...patch } = j; return s.update(j.id, { ...patch, user_id: owner }); }
+        return s.put(j, owner);
+      }
+      return s.put({ ...j, id: `job_${crypto.randomUUID().replaceAll('-', '')}` }, owner);
+    },
     // `id` is kept when given: the example jobs have fixed ids, and the memory store's updateJob accepts an id patch.
-    put(j: Partial<JobRow> & Pick<JobRow, 'kind'>, owner: string): JobRow {
-      const { id, ...rest } = j;
+    put(j: Partial<ApiJobRow> & Pick<ApiJobRow, 'kind'>, owner: string): ApiJobRow {
+      if (j.kind === 'assist') {
+        const row: ApiJobRow = { event_id: 'seed', idempotency_key: `seed:${j.id}`, args: {}, attempts: 0, trace_id: '', created_at: new Date(0).toISOString(), stages: [], state: 'queued', ...j, id: j.id ?? `job_${crypto.randomUUID().replaceAll('-', '')}`, kind: 'assist', user_id: owner };
+        assistJobs.set(row.id, row);
+        return row;
+      }
+      const { id, ...rest } = { ...j, kind: j.kind };
       const { row } = st.insertJob({ event_id: 'seed', idempotency_key: `seed:${id ?? crypto.randomUUID()}`, args: {}, attempts: 0, trace_id: '', created_at: new Date(0).toISOString(), stages: [], state: 'queued', ...rest, user_id: owner });
       return id ? st.updateJob(row.id, { id }) : row;
     },
-    get: (id: string, who: string) => { const r = st.getJob(id); return r && owns(r, who) ? r : undefined; },
-    view: (r: JobRow) => Object.fromEntries(Object.entries(r).filter(([k, v]) => !INTERNAL.includes(k) && !(k === 'trace_id' && v === ''))),
+    update(id: string, patch: Partial<Omit<ApiJobRow, 'kind'>>) {
+      const row = assistJobs.get(id);
+      if (row) { const next = { ...row, ...patch }; assistJobs.set(id, next); return next; }
+      return st.updateJob(id, patch);
+    },
+    finish(id: string, result: unknown) {
+      const row = readJob(id);
+      if (!row) throw new Error(`no job ${id}`);
+      const ended_at = new Date().toISOString();
+      s.update(id, { result, state: 'done', stages: row.stages.map(stage => ({ ...stage, state: 'arrived', ended_at })) });
+      s.append(id, 'job.state', { job_id: id, state: 'done' });
+    },
+    get: (id: string, who: string) => { const r = readJob(id); return r && owns(r, who) ? r : undefined; },
+    view: (r: ApiJobRow) => Object.fromEntries(Object.entries(r).filter(([k, v]) => !INTERNAL.includes(k) && !(k === 'trace_id' && v === ''))),
     // A refused frame is never stored: a stage with no found{} or a fact with no name and value is a bug in the writer.
     append(key: string, event: string, data: Record<string, unknown>, id?: number): SseFrame {
       const bad = (m: string) => new ApiError('invalid', `${event}: ${m}`, 'frame');
@@ -37,7 +69,7 @@ export function jobsOn(st: Store) {
       const list = log.get(key) ?? []; log.set(key, list);
       const f = { id: id ?? (list.at(-1)?.id ?? 0) + 1, event, data };
       list.push(f);
-      if (event === 'job.state' && typeof data.state === 'string' && st.getJob(key)) st.updateJob(key, { state: data.state as JobRow['state'] });
+      if (event === 'job.state' && typeof data.state === 'string' && readJob(key)) s.update(key, { state: data.state as JobRow['state'] });
       wake(key);
       return f;
     },
@@ -84,7 +116,7 @@ function sse(s: JobStore, key: string, from: number, closeWhenDone: boolean): Re
       const pump = () => {
         if (closed) return;
         for (const f of s.framesAfter(key, cursor)) { c.enqueue(enc.encode(encode(f))); cursor = f.id; }
-        const row = s.st.getJob(key);
+        const row = s.get(key, s.owner(key) ?? '');
         if (closeWhenDone && row && TERMINAL.has(row.state)) stop();
       };
       const off = s.listen(key, pump);

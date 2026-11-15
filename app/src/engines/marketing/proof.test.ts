@@ -35,6 +35,7 @@ test('money scoring rejects impossible overlapping sale probabilities', () => {
 test('new comp fingerprint causes a reproducible replan with a new citation', () => {
   const x = fixture('ebay'); const before = calculate(x);
   const after = calculate({ ...x, adjusted_cents: x.adjusted_cents.map(p => p - 400), comp_rows: [...x.comp_rows, { id: 'new_sale', source: 'fixture:sold', at: x.as_of, price_cents: 4600 }] });
+  assert.ok('citation_id' in before); assert.ok('citation_id' in after);
   assert.notEqual(after.citation_id, before.citation_id);
   assert.notDeepEqual(after.price, before.price);
 });

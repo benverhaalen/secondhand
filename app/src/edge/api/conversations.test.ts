@@ -96,3 +96,13 @@ test('conversations: owned Expo files bind auth and export the contract method',
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
 });
+
+test('conversation reads validate stored incoming messages through handleMessages', async () => {
+  const { ports } = await import('./conversations.ts');
+  const read = ports.read_messages;
+  try {
+    ports.read_messages = async account => (await read(account)).map(row => ({ ...row, sent_at: 'not-a-date' }));
+    const response = await call(examples.find(e => e.name === 'conversations.messages')!);
+    assert.equal(response.status, 503);
+  } finally { ports.read_messages = read; }
+});

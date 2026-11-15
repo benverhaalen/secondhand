@@ -3,11 +3,12 @@ import { beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
-import { handlers, manifest } from './market.ts';
+import { handlers, manifest, resetFollows } from './market.ts';
 
 const prefixes = ["products","trends","index","follows"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
 beforeEach(() => {
+  resetFollows();
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
@@ -95,4 +96,37 @@ test('market: owned Expo files bind auth and export the contract method', async 
     assert.ok(source.includes("export const " + method + " = route('" + entry.endpoint + "'"), relative);
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
+});
+
+test('follows read the market engine and exclude another user records', async () => {
+  const { ports } = await import('./market.ts');
+  const read = ports.read;
+  try {
+    ports.read = async () => [{ id: 'fo_foreign', user_id: 'usr_other', product_id: 'pr_4hd1', state: 'active', channel: 'push', version: 1 }];
+    const response = await call(examples.find(e => e.name === 'follows.list')!);
+    assert.deepEqual((await response.json()).data, []);
+  } finally { ports.read = read; }
+});
+
+test('follow edits compare and increment the current stored version', async () => {
+  const e = examples.find(e => e.name === 'follows.mute')!;
+  const first = await call(e); assert.equal(first.status, 200);
+  const stale = await call(e); assert.equal(stale.status, 409);
+  const next = await call(e, { body: { version: 2, muted: false } });
+  assert.equal(next.status, 200); assert.equal((await next.json()).version, 3);
+});
+
+test('a follow changed after validation refuses the submitted stale version', async () => {
+  const { ports } = await import('./market.ts');
+  const read = ports.read;
+  let reads = 0;
+  try {
+    ports.read = async user => {
+      const rows = await read(user);
+      if (++reads === 2) { rows[0].version = 2; await ports.write(rows[0], 1); }
+      return rows;
+    };
+    const response = await call(examples.find(e => e.name === 'follows.mute')!);
+    assert.equal(response.status, 409);
+  } finally { ports.read = read; }
 });

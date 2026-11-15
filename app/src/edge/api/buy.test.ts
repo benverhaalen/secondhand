@@ -96,3 +96,37 @@ test('buy: owned Expo files bind auth and export the contract method', async () 
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
 });
+
+test('compare orders other offers by the buying engine delivered total', async () => {
+  const { ports } = await import('./buy.ts');
+  const read = ports.read, verdict = ports.verdict;
+  try {
+    ports.verdict = async () => ({ verdict: 'a little high', citation_id: 'ci_fresh' });
+    ports.read = async () => {
+      const rows = await read();
+      return [...rows, { ...rows[1], id: 'cheapest', listing_id: 'cheapest', site: 'depop', price_cents: 1000 }];
+    };
+    const response = await call(examples.find(e => e.name === 'compare')!);
+    const body = await response.json();
+    assert.equal(body.others[0].site, 'depop');
+    assert.equal(body.others[0].delivered_cents.amount_cents, 1000);
+    assert.equal(body.citation_id, 'ci_fresh');
+  } finally { ports.read = read; ports.verdict = verdict; }
+});
+
+test('compare refuses an outdated verdict after its offer prices change', async () => {
+  const { ports } = await import('./buy.ts');
+  const read = ports.read;
+  try {
+    ports.read = async () => (await read()).map(row => row.id === 'mt_77' ? { ...row, price_cents: 1000 } : row);
+    const response = await call(examples.find(e => e.name === 'compare')!);
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).failed_step, 'compare');
+  } finally { ports.read = read; }
+});
+
+test('a comparison verdict belongs to its selected target, not just the offer set', async () => {
+  const response = await call(examples.find(e => e.name === 'compare')!, { body: { url: 'https://www.ebay.com/itm/000000000001' } });
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).failed_step, 'compare');
+});

@@ -20,6 +20,7 @@ test('planted auto accept under the floor never accepts, and firm posture propos
 });
 test('buying opener chooses expected surplus under max_pay and always asks', () => {
   const d = opener('ebay', 8000, [5000, 6800, 7500, 9000], p => p === 6800 ? .8 : .1);
+  assert.ok(d, 'an affordable candidate with positive surplus produces an opener');
   assert.equal(d.amount_cents, 6800); assert.equal(d.kind, 'buy_offer'); assert.equal(d.ask, true);
   assert.equal(d.binding, true);
 });

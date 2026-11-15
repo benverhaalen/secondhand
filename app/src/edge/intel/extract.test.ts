@@ -13,7 +13,7 @@ const SCHEMAS: Record<string, ExtractorSchemaDef> = {
   depop: { baseSelector: 'li.B382Gq_listItem', fields: [{ name: 'id', selector: 'a', type: 'attribute', attribute: 'href', pattern: '/products/([^/]+)/' }, { name: 'title', selector: 'a', type: 'attribute', attribute: 'aria-label' }, { name: 'price_cents', selector: 'p', type: 'text' }, { name: 'url', selector: 'a', type: 'attribute', attribute: 'href' }] },
   ebay: { baseSelector: 'li.s-item', fields: [{ name: 'id', selector: 'a', type: 'attribute', attribute: 'href', pattern: '/itm/(\\d+)' }, { name: 'title', selector: '.s-item__title', type: 'text' }, { name: 'price_cents', selector: '.s-item__price', type: 'text' }, { name: 'url', selector: 'a', type: 'attribute', attribute: 'href' }] },
   facebook: { baseSelector: 'div[role=main] > a', fields: [{ name: 'id', type: 'attribute', attribute: 'href', pattern: '/item/(\\d+)' }, { name: 'title', selector: '[data-title]', type: 'text' }, { name: 'price_cents', selector: '[data-price]', type: 'text' }, { name: 'url', type: 'attribute', attribute: 'href' }] },
-  mercari: { baseSelector: '[data-testid=ItemContainer]', fields: [{ name: 'id', selector: 'a', type: 'attribute', attribute: 'href', pattern: '/item/([^/]+)/' }, { name: 'title', selector: '[data-testid=ItemName]', type: 'text' }, { name: 'price_cents', selector: '[data-testid=ItemPrice]', type: 'text' }, { name: 'url', selector: 'a', type: 'attribute', attribute: 'href' }] },
+  mercari: { baseSelector: 'div[data-itemprice][data-itemstatus]', fields: [{ name: 'id', type: 'attribute', attribute: 'id' }, { name: 'title', selector: '[data-testid=ItemName]', type: 'text' }, { name: 'price_cents', type: 'attribute', attribute: 'data-itemprice', unit: 'cents' }, { name: 'url', selector: 'a', type: 'attribute', attribute: 'href' }] },
   poshmark: { baseSelector: 'div.tile-grid-redesign', fields: [{ name: 'id', selector: 'a', type: 'attribute', attribute: 'href', pattern: '-([0-9a-f]{24})$' }, { name: 'title', selector: '.tile-grid-redesign__title', type: 'text' }, { name: 'price_cents', selector: '.tile-grid-redesign__price-current', type: 'text' }, { name: 'url', selector: 'a.tile-grid-redesign__meta-link', type: 'attribute', attribute: 'href' }] },
 };
 const isSchemaPrompt = (p: string): boolean => p.includes('CSS-selector extraction schema');
@@ -162,4 +162,21 @@ test('template_key: same shape shares a key, a different layout head does not', 
   assert.equal(await k('https://a.test/item/111111', '<title>x</title>'), await k('https://a.test/item/222222', '<title>y</title>'));
   assert.notEqual(await k('https://a.test/item/111111', '<title>x</title>'), await k('https://a.test/item/111111', '<title>x</title><meta name="viewport" content="a">'));
   assert.notEqual(await k('https://a.test/item/111111', ''), await k('https://b.test/item/111111', ''));
+});
+
+ test('attribute prices in cents are not multiplied or mixed with discounted display prices', async () => {
+  const schema = { ...SCHEMAS.mercari, fields: SCHEMAS.mercari.fields.map(f => ({ ...f })) };
+  const r = await extract({ url: 'https://www.mercari.com/search/', html: '<div id="m1" data-itemprice="15793" data-itemstatus="on_sale"><a href="/us/item/m1/"><p data-testid="ItemName">Jacket</p><p>$157.93<span>$174.99</span></p></a></div>' }, FACTS, { cache: memoryCache(), llm: fake(() => schema), log });
+  assert.equal(r.rung, 3);
+  assert.deepEqual(r.rows, [{ id: 'm1', title: 'Jacket', price_cents: 15793, url: '/us/item/m1/' }]);
+});
+
+test('a cents unit on a title is rejected and refined instead of inventing a NaN title', async () => {
+  let calls = 0;
+  const llm = fake(() => ++calls === 1 ? { ...SCHEMAS.mercari, fields: SCHEMAS.mercari.fields.map(f => f.name === 'title' ? { ...f, unit: 'cents' } : f) } : SCHEMAS.mercari);
+  const html = readFileSync(new URL('mercari.html', FIX), 'utf8');
+  const result = await extract({ url: 'https://www.mercari.com/search/', html }, FACTS, { cache: memoryCache(), llm, log });
+  assert.equal(result.rung, 3);
+  assert.equal(llm.schemaCalls, 2);
+  assert.equal(result.rows[0].title, 'Carhartt Detroit Jacket WJ097 VRS Large Regular');
 });
