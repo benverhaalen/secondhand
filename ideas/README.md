@@ -14,7 +14,8 @@ Sorted by what to pick up first once the demo works: the ones that reuse the mos
 | 4 | [Treg rebuilt on Databricks](treg-on-databricks.md) | Nate | Price and watch working through Treg |
 | 5 | [More marketplaces](more-marketplaces.md) | Ben | The five core sites working |
 | 6 | [Dark mode](dark-mode.md) | Ben | The brand ratified in light, and the main screens existing |
-| 7 | [A public launch](public-launch.md) | Ben and Nate | The hackathon ending |
+| 7 | [Hot items and a pricing model that learns from signals](hot-items-and-learned-pricing.md) | Ben | Signals logged per site, and a few hundred finished listings |
+| 8 | [A public launch](public-launch.md) | Ben and Nate | The hackathon ending |
 
 ## Adding or taking an idea
 

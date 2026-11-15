@@ -153,7 +153,7 @@ Step 1, the determinations:
 | Share of `W_s` titles using the term | Winner use | 0.5 (tuneable) | Closest available signal to what buyers click on this product |
 | Site search suggestions for the product query (harness `search`, prefix typed) | Buyer search terms | 0.3 (tuneable) | What buyers type; suggestions are not counts, so below winners |
 | Share of all `C_s` titles | Common vocabulary | 0.2 (tuneable) | Familiar words help matching, weaker than winners |
-| Site rule and template | Length `L_s`, order, banned forms | Hard limit | eBay 80 characters, first about 60 visible, no symbols (eBay announcement 2025-11-12, *observed that eBay says it*); Poshmark, Mercari 80 (*asserted*); Depop has no title, the first line of the description serves; Facebook aim for 60 ([platform-fit.md](../../research/list/ben/platform-fit.md) line 138) |
+| Site rule and template | Length `L_s`, order, banned forms | Hard limit | The limit per site comes from Ben's profiles ([platform-fit.json](../../research/list/ben/platforms/platform-fit.json), `title.max`, and [listing-seo.md](../../research/list/ben/listing-seo.md)): eBay 80 characters (line 56, *observed* in [ebay.md](../../research/list/ben/platforms/ebay.md) line 89), first about 60 visible, no symbols (eBay announcement 2025-11-12, *observed that eBay says it*); Poshmark 80 (line 302) and Mercari 80 (line 387), both *asserted*; Depop has no title (`max` null, line 221), the first line of the description serves; Facebook 99 (line 139, *asserted*, unconfirmed). Ben's facebook profile lists 99, 100 or 150 from seller sources ([facebook-marketplace.md](../../research/list/ben/platforms/facebook-marketplace.md) line 89) and uses 99 as the hard cap (line 287). 60 is a target length, not a limit: Facebook aim for 60 so the tile does not cut it ([platform-fit.md](../../research/list/ben/platform-fit.md) line 138), eBay 65 to 80 |
 
 **Method**
 1. Candidate terms `t` = values of backed attributes, plus synonyms from the site's own vocabulary (aspect values) for the same attribute. Arithmetic over the attribute table.
@@ -223,7 +223,7 @@ Step 1, the determinations:
 
 **Method**
 1. For each site field, take the value from the highest-ranked source; on conflict between sources of rank 1 to 3, hold and ask (one tap).
-2. Map the value to the site's vocabulary: exact match, then the synonym table, then nearest by a text embedding only if its similarity beats the second candidate by 0.1 (tuneable); otherwise leave blank. The embedding is a model step; the rest is arithmetic.
+2. Map the value to the site's vocabulary (the kind's category on each site comes from `category_map`, [fields-by-kind.md](fields-by-kind.md); [D7](#d7-category-placement) is the fallback): exact match, then the synonym table, then nearest by a text embedding only if its similarity beats the second candidate by 0.1 (tuneable); otherwise leave blank. The embedding is a model step; the rest is arithmetic.
 3. Fill order: required, then filter fields, then the rest. Fill every field that has a backed value; never fill an unbacked one.
 
 **Why this method**: eBay says sellers with at least 7 attributes perform over twice as well as those with 1 (*observed that eBay says it*, *asserted* as evidence, with the selection problem noted in [observing-rank §4](../../research/list/nate/observing-rank-and-performance.md)); the stronger reason is mechanical: a missing filter value removes the listing from filtered searches (*observed*, site help). The alternative, fill everything a model sees, adds wrong values that cause returns (*inferred*).
@@ -250,7 +250,7 @@ Step 1, the determinations:
 | Site category suggestion (eBay Taxonomy category suggestions; other sites' form suggestions read through the harness) | The site's own mapping | Rank 2 | The site's model, but built for any query |
 | Model mapping of product type to the site tree | Fallback | Rank 3 | A model's reading |
 
-**Method**: weighted plurality over `C_s` leaves (winner weight 2, others 1). If the top leaf holds 60% or more of the weight, use it. Else use the site suggestion if it is one of the top two leaves. Else the model picks from the tree and the person confirms. Arithmetic except the fallback.
+**Method**: where a kind maps to each site's category is the `category_map` row per (kind, site) in [fields-by-kind.md](fields-by-kind.md); a site with no row falls back to this card. The fallback: weighted plurality over `C_s` leaves (winner weight 2, others 1). If the top leaf holds 60% or more of the weight, use it. Else use the site suggestion if it is one of the top two leaves. Else the model picks from the tree and the person confirms. Arithmetic except the fallback.
 
 **Why this method**: eBay's Best Match page names the correct category as a factor and the category sets the item specifics (*observed*, [ranking-algorithms.md](../../research/list/nate/ranking-algorithms.md), [listing-fields §9](../../research/list/nate/listing-fields-by-platform.md)). Copying where the comps sit is what an experienced seller does by hand (*inferred*); the site suggestion alone is the alternative, and it is used when comps disagree.
 
