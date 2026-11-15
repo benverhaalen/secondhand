@@ -1,0 +1,72 @@
+{
+ "fixture": "pages",
+ "version": 1,
+ "note": "Public signed-out search pages reduced to the result cards; seller handles hashed, images and scripts removed. Synthetic pages are hand-built to the same structure where the live site blocked the fetch.",
+ "files": [
+  {
+   "site": "ebay",
+   "mode": "synthetic",
+   "source_url": "https://www.ebay.com/sch/i.html?_nkw=levi+501+jeans",
+   "note": "live fetch returned an HTTP 403 error page",
+   "fetched_at": null,
+   "page": "ebay.html",
+   "expected": "ebay.expected.json",
+   "sha256": {
+    "ebay.html": "0f12749ae5e72aced1ecc85c7268aed5ac01cb92380a68e83ae5f6d9f2706cfd",
+    "ebay.expected.json": "29f6931dd9b465a61a7ab1691d54b8bde706e7c7eb465a539b48a03534d0b9c5"
+   }
+  },
+  {
+   "site": "facebook",
+   "mode": "synthetic",
+   "source_url": "https://www.facebook.com/marketplace/category/search?query=levi%20501",
+   "note": "live fetch returned HTTP 400 without a login",
+   "fetched_at": null,
+   "page": "facebook.html",
+   "expected": "facebook.expected.json",
+   "sha256": {
+    "facebook.html": "0245dcd7eb347c978547da37a9921aab4af4435fef2ccd40dfa061fffded7c7d",
+    "facebook.expected.json": "1f590e096130351d759762ddf540a7720e8263e2643cdee36901b653c1cb53f6"
+   }
+  },
+  {
+   "site": "depop",
+   "mode": "recorded",
+   "source_url": "https://www.depop.com/search/?q=levi+501",
+   "note": "HTTP 200, first 12 result cards",
+   "fetched_at": "2026-11-14",
+   "page": "depop.html",
+   "expected": "depop.expected.json",
+   "sha256": {
+    "depop.html": "739fd2c8d0e6478c67af21605213897bb60c5bb175c21af0f4429bd591a7c13e",
+    "depop.expected.json": "c9d259e4590f77ee012e8c65d065eec3b2aef39afd6d1cd2a16d625b79165733"
+   }
+  },
+  {
+   "site": "poshmark",
+   "mode": "recorded",
+   "source_url": "https://poshmark.com/search?query=levi%20501",
+   "note": "HTTP 200, first 12 result cards",
+   "fetched_at": "2026-11-14",
+   "page": "poshmark.html",
+   "expected": "poshmark.expected.json",
+   "sha256": {
+    "poshmark.html": "4921f3526321d8c8d38d07de3f2f28a81dc32920629b870ff06ad341d93b1965",
+    "poshmark.expected.json": "8fcd78acbfe5c429b6958c502875c3b740c5f30349b3cf6c4541a631d1c1b536"
+   }
+  },
+  {
+   "site": "mercari",
+   "mode": "synthetic",
+   "source_url": "https://www.mercari.com/search/?keyword=levi+501",
+   "note": "live fetch returned an HTTP 403 bot check",
+   "fetched_at": null,
+   "page": "mercari.html",
+   "expected": "mercari.expected.json",
+   "sha256": {
+    "mercari.html": "880a58d3db1f6f789143cd24ea07aabb7ee193dacd88f12d366e3312f8f4b353",
+    "mercari.expected.json": "a5a3dee463fac9fc3abac752f9abe4283909fecbc38183ef477bba544e80e732"
+   }
+  }
+ ]
+}

@@ -1,0 +1,806 @@
+{
+ "version": 1,
+ "note": "synthetic frames: a coloured block on grey; the answers are the confirmed family, the preselect rule (top >= 0.5, margin >= 0.2) and the swap on a wrong pick",
+ "families": [
+  "apparel",
+  "shoes",
+  "bags",
+  "jewellery_watches",
+  "furniture",
+  "lighting_home",
+  "electronics",
+  "appliances_tools",
+  "media",
+  "cards_collectibles",
+  "toys_lego",
+  "bikes_sports",
+  "baby_gear",
+  "other"
+ ],
+ "preselect": {
+  "floor": 0.5,
+  "margin": 0.2
+ },
+ "items": [
+  {
+   "id": "item-00",
+   "frame": "frame-00.png",
+   "confirmed_family": "apparel",
+   "class_scores": {
+    "apparel": 0.8,
+    "shoes": 0.0083,
+    "bags": 0.0083,
+    "jewellery_watches": 0.1,
+    "furniture": 0.0083,
+    "lighting_home": 0.0083,
+    "electronics": 0.0083,
+    "appliances_tools": 0.0083,
+    "media": 0.0083,
+    "cards_collectibles": 0.0083,
+    "toys_lego": 0.0083,
+    "bikes_sports": 0.0083,
+    "baby_gear": 0.0083,
+    "other": 0.0083
+   },
+   "expected": {
+    "preselect": "apparel",
+    "user_pick": "apparel",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-01",
+   "frame": "frame-01.png",
+   "confirmed_family": "shoes",
+   "class_scores": {
+    "apparel": 0.0083,
+    "shoes": 0.7,
+    "bags": 0.0083,
+    "jewellery_watches": 0.0083,
+    "furniture": 0.2,
+    "lighting_home": 0.0083,
+    "electronics": 0.0083,
+    "appliances_tools": 0.0083,
+    "media": 0.0083,
+    "cards_collectibles": 0.0083,
+    "toys_lego": 0.0083,
+    "bikes_sports": 0.0083,
+    "baby_gear": 0.0083,
+    "other": 0.0083
+   },
+   "expected": {
+    "preselect": "shoes",
+    "user_pick": "shoes",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-02",
+   "frame": "frame-02.png",
+   "confirmed_family": "bags",
+   "class_scores": {
+    "apparel": 0.0042,
+    "shoes": 0.0042,
+    "bags": 0.9,
+    "jewellery_watches": 0.0042,
+    "furniture": 0.0042,
+    "lighting_home": 0.05,
+    "electronics": 0.0042,
+    "appliances_tools": 0.0042,
+    "media": 0.0042,
+    "cards_collectibles": 0.0042,
+    "toys_lego": 0.0042,
+    "bikes_sports": 0.0042,
+    "baby_gear": 0.0042,
+    "other": 0.0042
+   },
+   "expected": {
+    "preselect": "bags",
+    "user_pick": "cards_collectibles",
+    "swap": true
+   }
+  },
+  {
+   "id": "item-03",
+   "frame": "frame-03.png",
+   "confirmed_family": "jewellery_watches",
+   "class_scores": {
+    "apparel": 0.0167,
+    "shoes": 0.0167,
+    "bags": 0.0167,
+    "jewellery_watches": 0.6,
+    "furniture": 0.0167,
+    "lighting_home": 0.0167,
+    "electronics": 0.2,
+    "appliances_tools": 0.0167,
+    "media": 0.0167,
+    "cards_collectibles": 0.0167,
+    "toys_lego": 0.0167,
+    "bikes_sports": 0.0167,
+    "baby_gear": 0.0167,
+    "other": 0.0167
+   },
+   "expected": {
+    "preselect": "jewellery_watches",
+    "user_pick": "jewellery_watches",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-04",
+   "frame": "frame-04.png",
+   "confirmed_family": "furniture",
+   "class_scores": {
+    "apparel": 0.0125,
+    "shoes": 0.0125,
+    "bags": 0.0125,
+    "jewellery_watches": 0.0125,
+    "furniture": 0.55,
+    "lighting_home": 0.0125,
+    "electronics": 0.0125,
+    "appliances_tools": 0.3,
+    "media": 0.0125,
+    "cards_collectibles": 0.0125,
+    "toys_lego": 0.0125,
+    "bikes_sports": 0.0125,
+    "baby_gear": 0.0125,
+    "other": 0.0125
+   },
+   "expected": {
+    "preselect": "furniture",
+    "user_pick": "furniture",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-05",
+   "frame": "frame-05.png",
+   "confirmed_family": "lighting_home",
+   "class_scores": {
+    "apparel": 0.0042,
+    "shoes": 0.0042,
+    "bags": 0.0042,
+    "jewellery_watches": 0.0042,
+    "furniture": 0.0042,
+    "lighting_home": 0.85,
+    "electronics": 0.0042,
+    "appliances_tools": 0.0042,
+    "media": 0.1,
+    "cards_collectibles": 0.0042,
+    "toys_lego": 0.0042,
+    "bikes_sports": 0.0042,
+    "baby_gear": 0.0042,
+    "other": 0.0042
+   },
+   "expected": {
+    "preselect": "lighting_home",
+    "user_pick": "baby_gear",
+    "swap": true
+   }
+  },
+  {
+   "id": "item-06",
+   "frame": "frame-06.png",
+   "confirmed_family": "electronics",
+   "class_scores": {
+    "apparel": 0.0083,
+    "shoes": 0.0083,
+    "bags": 0.0083,
+    "jewellery_watches": 0.0083,
+    "furniture": 0.0083,
+    "lighting_home": 0.0083,
+    "electronics": 0.75,
+    "appliances_tools": 0.0083,
+    "media": 0.0083,
+    "cards_collectibles": 0.15,
+    "toys_lego": 0.0083,
+    "bikes_sports": 0.0083,
+    "baby_gear": 0.0083,
+    "other": 0.0083
+   },
+   "expected": {
+    "preselect": "electronics",
+    "user_pick": "electronics",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-07",
+   "frame": "frame-07.png",
+   "confirmed_family": "appliances_tools",
+   "class_scores": {
+    "apparel": 0.0125,
+    "shoes": 0.0125,
+    "bags": 0.0125,
+    "jewellery_watches": 0.0125,
+    "furniture": 0.0125,
+    "lighting_home": 0.0125,
+    "electronics": 0.0125,
+    "appliances_tools": 0.65,
+    "media": 0.0125,
+    "cards_collectibles": 0.0125,
+    "toys_lego": 0.2,
+    "bikes_sports": 0.0125,
+    "baby_gear": 0.0125,
+    "other": 0.0125
+   },
+   "expected": {
+    "preselect": "appliances_tools",
+    "user_pick": "appliances_tools",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-08",
+   "frame": "frame-08.png",
+   "confirmed_family": "media",
+   "class_scores": {
+    "apparel": 0.0025,
+    "shoes": 0.0025,
+    "bags": 0.0025,
+    "jewellery_watches": 0.0025,
+    "furniture": 0.0025,
+    "lighting_home": 0.0025,
+    "electronics": 0.0025,
+    "appliances_tools": 0.0025,
+    "media": 0.95,
+    "cards_collectibles": 0.0025,
+    "toys_lego": 0.0025,
+    "bikes_sports": 0.02,
+    "baby_gear": 0.0025,
+    "other": 0.0025
+   },
+   "expected": {
+    "preselect": "media",
+    "user_pick": "shoes",
+    "swap": true
+   }
+  },
+  {
+   "id": "item-09",
+   "frame": "frame-09.png",
+   "confirmed_family": "cards_collectibles",
+   "class_scores": {
+    "apparel": 0.0208,
+    "shoes": 0.0208,
+    "bags": 0.0208,
+    "jewellery_watches": 0.0208,
+    "furniture": 0.0208,
+    "lighting_home": 0.0208,
+    "electronics": 0.0208,
+    "appliances_tools": 0.0208,
+    "media": 0.0208,
+    "cards_collectibles": 0.5,
+    "toys_lego": 0.0208,
+    "bikes_sports": 0.0208,
+    "baby_gear": 0.25,
+    "other": 0.0208
+   },
+   "expected": {
+    "preselect": "cards_collectibles",
+    "user_pick": "cards_collectibles",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-10",
+   "frame": "frame-10.png",
+   "confirmed_family": "toys_lego",
+   "class_scores": {
+    "apparel": 0.0208,
+    "shoes": 0.0208,
+    "bags": 0.0208,
+    "jewellery_watches": 0.0208,
+    "furniture": 0.0208,
+    "lighting_home": 0.0208,
+    "electronics": 0.0208,
+    "appliances_tools": 0.0208,
+    "media": 0.0208,
+    "cards_collectibles": 0.0208,
+    "toys_lego": 0.45,
+    "bikes_sports": 0.0208,
+    "baby_gear": 0.0208,
+    "other": 0.3
+   },
+   "expected": {
+    "preselect": null,
+    "user_pick": "toys_lego",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-11",
+   "frame": "frame-11.png",
+   "confirmed_family": "bikes_sports",
+   "class_scores": {
+    "apparel": 0.12,
+    "shoes": 0.0067,
+    "bags": 0.0067,
+    "jewellery_watches": 0.0067,
+    "furniture": 0.0067,
+    "lighting_home": 0.0067,
+    "electronics": 0.0067,
+    "appliances_tools": 0.0067,
+    "media": 0.0067,
+    "cards_collectibles": 0.0067,
+    "toys_lego": 0.0067,
+    "bikes_sports": 0.8,
+    "baby_gear": 0.0067,
+    "other": 0.0067
+   },
+   "expected": {
+    "preselect": "bikes_sports",
+    "user_pick": "furniture",
+    "swap": true
+   }
+  },
+  {
+   "id": "item-12",
+   "frame": "frame-12.png",
+   "confirmed_family": "baby_gear",
+   "class_scores": {
+    "apparel": 0.0167,
+    "shoes": 0.1,
+    "bags": 0.0167,
+    "jewellery_watches": 0.0167,
+    "furniture": 0.0167,
+    "lighting_home": 0.0167,
+    "electronics": 0.0167,
+    "appliances_tools": 0.0167,
+    "media": 0.0167,
+    "cards_collectibles": 0.0167,
+    "toys_lego": 0.0167,
+    "bikes_sports": 0.0167,
+    "baby_gear": 0.7,
+    "other": 0.0167
+   },
+   "expected": {
+    "preselect": "baby_gear",
+    "user_pick": "baby_gear",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-13",
+   "frame": "frame-13.png",
+   "confirmed_family": "other",
+   "class_scores": {
+    "apparel": 0.0042,
+    "shoes": 0.0042,
+    "bags": 0.35,
+    "jewellery_watches": 0.0042,
+    "furniture": 0.0042,
+    "lighting_home": 0.0042,
+    "electronics": 0.0042,
+    "appliances_tools": 0.0042,
+    "media": 0.0042,
+    "cards_collectibles": 0.0042,
+    "toys_lego": 0.0042,
+    "bikes_sports": 0.0042,
+    "baby_gear": 0.0042,
+    "other": 0.6
+   },
+   "expected": {
+    "preselect": "other",
+    "user_pick": "other",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-14",
+   "frame": "frame-14.png",
+   "confirmed_family": "apparel",
+   "class_scores": {
+    "apparel": 0.9,
+    "shoes": 0.0033,
+    "bags": 0.0033,
+    "jewellery_watches": 0.06,
+    "furniture": 0.0033,
+    "lighting_home": 0.0033,
+    "electronics": 0.0033,
+    "appliances_tools": 0.0033,
+    "media": 0.0033,
+    "cards_collectibles": 0.0033,
+    "toys_lego": 0.0033,
+    "bikes_sports": 0.0033,
+    "baby_gear": 0.0033,
+    "other": 0.0033
+   },
+   "expected": {
+    "preselect": "apparel",
+    "user_pick": "appliances_tools",
+    "swap": true
+   }
+  },
+  {
+   "id": "item-15",
+   "frame": "frame-15.png",
+   "confirmed_family": "shoes",
+   "class_scores": {
+    "apparel": 0.015,
+    "shoes": 0.52,
+    "bags": 0.015,
+    "jewellery_watches": 0.015,
+    "furniture": 0.3,
+    "lighting_home": 0.015,
+    "electronics": 0.015,
+    "appliances_tools": 0.015,
+    "media": 0.015,
+    "cards_collectibles": 0.015,
+    "toys_lego": 0.015,
+    "bikes_sports": 0.015,
+    "baby_gear": 0.015,
+    "other": 0.015
+   },
+   "expected": {
+    "preselect": "shoes",
+    "user_pick": "shoes",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-16",
+   "frame": "frame-16.png",
+   "confirmed_family": "bags",
+   "class_scores": {
+    "apparel": 0.01,
+    "shoes": 0.01,
+    "bags": 0.78,
+    "jewellery_watches": 0.01,
+    "furniture": 0.01,
+    "lighting_home": 0.1,
+    "electronics": 0.01,
+    "appliances_tools": 0.01,
+    "media": 0.01,
+    "cards_collectibles": 0.01,
+    "toys_lego": 0.01,
+    "bikes_sports": 0.01,
+    "baby_gear": 0.01,
+    "other": 0.01
+   },
+   "expected": {
+    "preselect": "bags",
+    "user_pick": "bags",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-17",
+   "frame": "frame-17.png",
+   "confirmed_family": "jewellery_watches",
+   "class_scores": {
+    "apparel": 0.0117,
+    "shoes": 0.0117,
+    "bags": 0.0117,
+    "jewellery_watches": 0.66,
+    "furniture": 0.0117,
+    "lighting_home": 0.0117,
+    "electronics": 0.2,
+    "appliances_tools": 0.0117,
+    "media": 0.0117,
+    "cards_collectibles": 0.0117,
+    "toys_lego": 0.0117,
+    "bikes_sports": 0.0117,
+    "baby_gear": 0.0117,
+    "other": 0.0117
+   },
+   "expected": {
+    "preselect": "jewellery_watches",
+    "user_pick": "toys_lego",
+    "swap": true
+   }
+  },
+  {
+   "id": "item-18",
+   "frame": "frame-18.png",
+   "confirmed_family": "furniture",
+   "class_scores": {
+    "apparel": 0.0042,
+    "shoes": 0.0042,
+    "bags": 0.0042,
+    "jewellery_watches": 0.0042,
+    "furniture": 0.88,
+    "lighting_home": 0.0042,
+    "electronics": 0.0042,
+    "appliances_tools": 0.07,
+    "media": 0.0042,
+    "cards_collectibles": 0.0042,
+    "toys_lego": 0.0042,
+    "bikes_sports": 0.0042,
+    "baby_gear": 0.0042,
+    "other": 0.0042
+   },
+   "expected": {
+    "preselect": "furniture",
+    "user_pick": "furniture",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-19",
+   "frame": "frame-19.png",
+   "confirmed_family": "lighting_home",
+   "class_scores": {
+    "apparel": 0.0183,
+    "shoes": 0.0183,
+    "bags": 0.0183,
+    "jewellery_watches": 0.0183,
+    "furniture": 0.0183,
+    "lighting_home": 0.58,
+    "electronics": 0.0183,
+    "appliances_tools": 0.0183,
+    "media": 0.2,
+    "cards_collectibles": 0.0183,
+    "toys_lego": 0.0183,
+    "bikes_sports": 0.0183,
+    "baby_gear": 0.0183,
+    "other": 0.0183
+   },
+   "expected": {
+    "preselect": "lighting_home",
+    "user_pick": "lighting_home",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-20",
+   "frame": "frame-20.png",
+   "confirmed_family": "electronics",
+   "class_scores": {
+    "apparel": 0.0083,
+    "shoes": 0.0083,
+    "bags": 0.0083,
+    "jewellery_watches": 0.0083,
+    "furniture": 0.0083,
+    "lighting_home": 0.0083,
+    "electronics": 0.72,
+    "appliances_tools": 0.0083,
+    "media": 0.0083,
+    "cards_collectibles": 0.18,
+    "toys_lego": 0.0083,
+    "bikes_sports": 0.0083,
+    "baby_gear": 0.0083,
+    "other": 0.0083
+   },
+   "expected": {
+    "preselect": "electronics",
+    "user_pick": "other",
+    "swap": true
+   }
+  },
+  {
+   "id": "item-21",
+   "frame": "frame-21.png",
+   "confirmed_family": "appliances_tools",
+   "class_scores": {
+    "apparel": 0.0058,
+    "shoes": 0.0058,
+    "bags": 0.0058,
+    "jewellery_watches": 0.0058,
+    "furniture": 0.0058,
+    "lighting_home": 0.0058,
+    "electronics": 0.0058,
+    "appliances_tools": 0.83,
+    "media": 0.0058,
+    "cards_collectibles": 0.0058,
+    "toys_lego": 0.1,
+    "bikes_sports": 0.0058,
+    "baby_gear": 0.0058,
+    "other": 0.0058
+   },
+   "expected": {
+    "preselect": "appliances_tools",
+    "user_pick": "appliances_tools",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-22",
+   "frame": "frame-22.png",
+   "confirmed_family": "media",
+   "class_scores": {
+    "apparel": 0.025,
+    "shoes": 0.025,
+    "bags": 0.025,
+    "jewellery_watches": 0.025,
+    "furniture": 0.025,
+    "lighting_home": 0.025,
+    "electronics": 0.025,
+    "appliances_tools": 0.025,
+    "media": 0.4,
+    "cards_collectibles": 0.025,
+    "toys_lego": 0.025,
+    "bikes_sports": 0.3,
+    "baby_gear": 0.025,
+    "other": 0.025
+   },
+   "expected": {
+    "preselect": null,
+    "user_pick": "media",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-23",
+   "frame": "frame-23.png",
+   "confirmed_family": "cards_collectibles",
+   "class_scores": {
+    "apparel": 0.0092,
+    "shoes": 0.0092,
+    "bags": 0.0092,
+    "jewellery_watches": 0.0092,
+    "furniture": 0.0092,
+    "lighting_home": 0.0092,
+    "electronics": 0.0092,
+    "appliances_tools": 0.0092,
+    "media": 0.0092,
+    "cards_collectibles": 0.69,
+    "toys_lego": 0.0092,
+    "bikes_sports": 0.0092,
+    "baby_gear": 0.2,
+    "other": 0.0092
+   },
+   "expected": {
+    "preselect": "cards_collectibles",
+    "user_pick": "bags",
+    "swap": true
+   }
+  },
+  {
+   "id": "item-24",
+   "frame": "frame-24.png",
+   "confirmed_family": "toys_lego",
+   "class_scores": {
+    "apparel": 0.0108,
+    "shoes": 0.0108,
+    "bags": 0.0108,
+    "jewellery_watches": 0.0108,
+    "furniture": 0.0108,
+    "lighting_home": 0.0108,
+    "electronics": 0.0108,
+    "appliances_tools": 0.0108,
+    "media": 0.0108,
+    "cards_collectibles": 0.0108,
+    "toys_lego": 0.77,
+    "bikes_sports": 0.0108,
+    "baby_gear": 0.0108,
+    "other": 0.1
+   },
+   "expected": {
+    "preselect": "toys_lego",
+    "user_pick": "toys_lego",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-25",
+   "frame": "frame-25.png",
+   "confirmed_family": "bikes_sports",
+   "class_scores": {
+    "apparel": 0.2,
+    "shoes": 0.015,
+    "bags": 0.015,
+    "jewellery_watches": 0.015,
+    "furniture": 0.015,
+    "lighting_home": 0.015,
+    "electronics": 0.015,
+    "appliances_tools": 0.015,
+    "media": 0.015,
+    "cards_collectibles": 0.015,
+    "toys_lego": 0.015,
+    "bikes_sports": 0.62,
+    "baby_gear": 0.015,
+    "other": 0.015
+   },
+   "expected": {
+    "preselect": "bikes_sports",
+    "user_pick": "bikes_sports",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-26",
+   "frame": "frame-26.png",
+   "confirmed_family": "baby_gear",
+   "class_scores": {
+    "apparel": 0.0033,
+    "shoes": 0.04,
+    "bags": 0.0033,
+    "jewellery_watches": 0.0033,
+    "furniture": 0.0033,
+    "lighting_home": 0.0033,
+    "electronics": 0.0033,
+    "appliances_tools": 0.0033,
+    "media": 0.0033,
+    "cards_collectibles": 0.0033,
+    "toys_lego": 0.0033,
+    "bikes_sports": 0.0033,
+    "baby_gear": 0.92,
+    "other": 0.0033
+   },
+   "expected": {
+    "preselect": "baby_gear",
+    "user_pick": "lighting_home",
+    "swap": true
+   }
+  },
+  {
+   "id": "item-27",
+   "frame": "frame-27.png",
+   "confirmed_family": "other",
+   "class_scores": {
+    "apparel": 0.0208,
+    "shoes": 0.0208,
+    "bags": 0.2,
+    "jewellery_watches": 0.0208,
+    "furniture": 0.0208,
+    "lighting_home": 0.0208,
+    "electronics": 0.0208,
+    "appliances_tools": 0.0208,
+    "media": 0.0208,
+    "cards_collectibles": 0.0208,
+    "toys_lego": 0.0208,
+    "bikes_sports": 0.0208,
+    "baby_gear": 0.0208,
+    "other": 0.55
+   },
+   "expected": {
+    "preselect": "other",
+    "user_pick": "other",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-28",
+   "frame": "frame-28.png",
+   "confirmed_family": "apparel",
+   "class_scores": {
+    "apparel": 0.3,
+    "shoes": 0.0292,
+    "bags": 0.0292,
+    "jewellery_watches": 0.0292,
+    "furniture": 0.0292,
+    "lighting_home": 0.35,
+    "electronics": 0.0292,
+    "appliances_tools": 0.0292,
+    "media": 0.0292,
+    "cards_collectibles": 0.0292,
+    "toys_lego": 0.0292,
+    "bikes_sports": 0.0292,
+    "baby_gear": 0.0292,
+    "other": 0.0292
+   },
+   "expected": {
+    "preselect": null,
+    "user_pick": "apparel",
+    "swap": false
+   }
+  },
+  {
+   "id": "item-29",
+   "frame": "frame-29.png",
+   "confirmed_family": "shoes",
+   "class_scores": {
+    "apparel": 0.015,
+    "shoes": 0.12,
+    "bags": 0.015,
+    "jewellery_watches": 0.015,
+    "furniture": 0.015,
+    "lighting_home": 0.015,
+    "electronics": 0.7,
+    "appliances_tools": 0.015,
+    "media": 0.015,
+    "cards_collectibles": 0.015,
+    "toys_lego": 0.015,
+    "bikes_sports": 0.015,
+    "baby_gear": 0.015,
+    "other": 0.015
+   },
+   "expected": {
+    "preselect": "electronics",
+    "user_pick": "media",
+    "swap": true
+   }
+  }
+ ]
+}
