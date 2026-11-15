@@ -1,6 +1,7 @@
 // The harness protocol: the one envelope every marketplace call returns (spec/product.md#the-harness-protocol,
 // spec/engines/protocol-and-adapters.md §1, §9). Server only. Site adapters implement `Adapter`; callers use `harness.call`.
 import type { Log } from '../../../../log/index.js';
+import type { Accounts } from '../browser/auth.ts';
 
 import { SITES, VERBS, type Site, type Verb } from './names.ts';
 import { hasVerb } from './platform.ts';
@@ -100,8 +101,8 @@ export function classifyRead<T extends Record<string, unknown>>(
 
 export type Harness = { call<T = unknown>(site: Site, verb: Verb, args?: CallArgs): Promise<Envelope<T>> };
 
-export function createHarness({ adapters, log, timeoutMs = 20_000, now = () => performance.now(), siteUrl = defaultSiteUrl }: {
-  adapters: Adapter[]; log?: Log; timeoutMs?: number; now?: () => number; siteUrl?: (site: Site, verb: Verb) => string;
+export function createHarness({ adapters, accounts, log, timeoutMs = 20_000, now = () => performance.now(), siteUrl = defaultSiteUrl }: {
+  adapters: Adapter[]; accounts?: Accounts; log?: Log; timeoutMs?: number; now?: () => number; siteUrl?: (site: Site, verb: Verb) => string;
 }): Harness {
   const routes = new Map<string, Adapter[]>();
   for (const a of adapters) {
@@ -118,6 +119,11 @@ export function createHarness({ adapters, log, timeoutMs = 20_000, now = () => p
     // A verb the site does not have is a fact of the platform, answered with its reason before any route is tried.
     const has = hasVerb(site, verb);
     if (has !== true) return { ...fail('no_route', has.absent, { do: 'handoff', url: siteUrl(site, verb) }), meta: meta(undefined, t0, false) };
+    // Linked accounts only: a call on an account the person did not link (or has no stored sign-in for) runs nothing.
+    if (accounts && typeof args.account_id === 'string') {
+      const a = await accounts.byId(args.account_id);
+      if (!a || a.site !== site) return { ...fail('policy_refused', `account ${args.account_id} is not linked on ${site}`, { do: 'raise_decision', kind: 'link_account' }), meta: meta(undefined, t0, false) };
+    }
     if (isWrite(verb) && !args.operation_id)
       return { ...fail('policy_refused', 'a write needs operation_id', { do: 'raise_decision', kind: 'missing_operation_id' }), meta: meta(undefined, t0, false) };
     const chain = routes.get(`${site}.${verb}`) ?? [];
