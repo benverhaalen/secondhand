@@ -43,14 +43,53 @@ export function accountsView(raw: Row[]): World['connections'] {
   });
 }
 
+function modeView(value: unknown) {
+  const row = object(value), s = site(row.site), ask = money(row.ask_cents), list = money(row.list_cents), keep = money(row.keep_cents);
+  if (!s || ask === null || list === null || keep === null || row.p_sale_30 !== null && typeof row.p_sale_30 !== 'number' || row.days_t50 !== null && typeof row.days_t50 !== 'number' || row.held_by !== null && !['floor', 'ceiling', 'top_listings'].includes(String(row.held_by))) return undefined;
+  return { site: s, ask_cents: ask, list_cents: list, keep_cents: keep, p_sale_30: row.p_sale_30 as number | null, days_t50: row.days_t50 as number | null, held_by: row.held_by as 'floor' | 'ceiling' | 'top_listings' | null };
+}
+
+function valuationView(value: unknown): Item['valuation'] {
+  const row = object(value), range = object(row.range), guard = typeof row.state === 'string' ? row : range;
+  const low = money(range.low), high = money(range.high), modes = object(row.modes);
+  const fast = modeView(modes.fast), sell = modeView(modes.sell), best = modeView(modes.best);
+  if (low === null || high === null || !['shown', 'hidden', 'not_found'].includes(String(guard.state)) || typeof guard.basis_count !== 'number' || typeof guard.as_of !== 'string' || ![1, 2, 3].includes(row.level as number)) return undefined;
+  return { state: guard.state as 'shown' | 'hidden' | 'not_found', basis_count: guard.basis_count, as_of: guard.as_of, citation_id: text(guard.citation_id) || null,
+    ...(row.modes === null ? { modes: null } : fast && sell && best ? { modes: { fast, sell, best } } : {}),
+    level: row.level as 1 | 2 | 3, range: { low, high }, per_site: rows(row.per_site).flatMap(r => {
+      const s = site(r.site);
+      return s && typeof r.basis_count === 'number' ? [{ site: s, low: money(r.low), high: money(r.high), basis_count: r.basis_count }] : [];
+    }) };
+}
+
+function standingView(value: unknown): Listing['market_standing'] {
+  const row = object(value), outlook = object(row.outlook), place = object(row.place), fix = object(row.fix);
+  if (!['hot', 'on_pace', 'slow', 'stuck', 'still_learning', 'waiting_for_price'].includes(String(row.word)) || !['shown', 'hidden'].includes(String(row.state))) return undefined;
+  return { word: row.word as NonNullable<Listing['market_standing']>['word'], state: row.state as 'shown' | 'hidden', line: text(row.line), citation_id: text(row.citation_id) || null,
+    ...(typeof outlook.days_lo === 'number' && typeof outlook.days_hi === 'number' ? { outlook: { days_lo: outlook.days_lo, days_hi: outlook.days_hi } } : {}),
+    ...(typeof place.rank === 'number' && typeof place.of === 'number' && place.basis === 'price' ? { place: { rank: place.rank, of: place.of, basis: 'price' as const } } : {}),
+    ...(typeof fix.change === 'string' && typeof fix.consequence === 'string' ? { fix: { change: fix.change, consequence: fix.consequence } } : {}),
+  };
+}
+
+function limitsView(value: unknown): Item['limits'] {
+  const row = object(value), floor = money(row.floor_cents), accept = money(row.always_accept_cents);
+  if (floor === null || row.always_accept_cents !== null && accept === null || !['sell', 'fast', 'best', 'reserve', 'check'].includes(String(row.plan_choice)) || !['ask', 'donate', 'keep', 'trade_in', 'relist'].includes(String(row.fallback)) || typeof row.markdown_on !== 'boolean' || row.gone_by !== null && typeof row.gone_by !== 'string') return undefined;
+  return { floor_cents: floor, always_accept_cents: accept, plan_choice: row.plan_choice as NonNullable<Item['limits']>['plan_choice'], gone_by: row.gone_by as string | null, fallback: row.fallback as NonNullable<Item['limits']>['fallback'], markdown_on: row.markdown_on,
+    ...(['same_keep', 'same_price', 'site_market', 'home_first'].includes(String(row.spread)) ? { spread: row.spread as NonNullable<Item['limits']>['spread'] } : {}),
+    ...(row.accept_mode === 'ask_all' || row.accept_mode === 'ask' ? { accept_mode: 'ask' as const } : row.accept_mode === 'rules' ? { accept_mode: 'rules' as const } : {}),
+  };
+}
+
 function listingView(row: Row, item: string): Listing | null {
   const s = site(row.site), price = money(row.price_cents);
   if (!s || price === null) return null;
-  return { id: text(row.id), item_id: item, site: s, state: pick(row.state, ['none', 'posting', 'live', 'postFailed', 'delisting', 'delisted', 'delistFailed'], 'none'), price_cents: price, url: url(row.url), interest: object(row.interest), posted_at: text(row.posted_at) || null };
+  const state = row.state === 'active' ? 'live' : ['sold', 'inactive', 'ended'].includes(String(row.state)) ? 'delisted' : row.state;
+  return { id: text(row.id), item_id: item, site: s, state: pick(state, ['none', 'posting', 'live', 'postFailed', 'delisting', 'delisted', 'delistFailed'], 'none'), price_cents: price, url: url(row.url), interest: object(row.interest), posted_at: text(row.posted_at ?? row.listed_at) || null, market_standing: standingView(row.market_standing) };
 }
 
 export function itemView(row: Row): Item {
-  const id = text(row.id);
+  const id = text(row.id), cost = object(row.cost), amount = money(cost);
   const photos: Photo[] = rows(row.photos).flatMap((p, index) => {
     const source = url(p.url ?? p.photo_url ?? p.uri);
     return source ? [{ id: text(p.id, `${id}:${index}`), role: pick(p.role, ['front', 'back', 'tag', 'detail', 'flaw', 'studio'], 'front'), use: p.use === 'improved' ? 'improved' : 'real', ai_marked: p.ai_marked === true, key: source as Photo['key'] }] : [];
@@ -58,6 +97,10 @@ export function itemView(row: Row): Item {
   return { id, title: text(row.title), state: pick(row.state, ['capturing', 'researching', 'review', 'live', 'stale', 'sold', 'handed_over', 'done', 'unsold', 'kept', 'returned', 'disputed', 'failed', 'owned'], 'review'), category: pick(row.category, ['apparel', 'shoes', 'bags', 'jewellery_watches', 'furniture', 'lighting_home', 'electronics', 'appliances_tools', 'media', 'cards_collectibles', 'toys_lego', 'bikes_sports', 'baby_gear', 'other'], 'other'), origin: pick(row.origin, ['capture', 'purchase', 'import', 'folder'], 'capture'), location: { label: text(object(row.location).label) }, quantity: number(row.quantity, 1), photos,
     attributes: rows(row.attributes).map(a => ({ id: text(a.id, text(a.name)), name: text(a.name ?? a.field), value: typeof a.value === 'number' || typeof a.value === 'string' ? a.value : null, source: pick(a.source, ['measured', 'label', 'inferred', 'spec', 'you_said', 'marketplace'], 'inferred'), confirmed: a.confirmed === true })),
     listings: rows(row.listings).flatMap(l => { const value = listingView(l, id); return value ? [value] : []; }),
+    ...(typeof row.description === 'string' ? { description: row.description } : {}),
+    ...(typeof row.product_id === 'string' ? { product_id: row.product_id } : {}),
+    ...(amount !== null && typeof cost.date === 'string' && ['purchase', 'bought_it', 'you_said'].includes(String(cost.source)) ? { cost: { amount_cents: amount, date: cost.date, source: cost.source as NonNullable<Item['cost']>['source'] } } : {}),
+    valuation: valuationView(row.valuation), limits: limitsView(row.limits),
     created_at: text(row.created_at), updated_at: text(row.updated_at ?? row.created_at),
   };
 }
@@ -89,7 +132,7 @@ export function orderView(row: Row): Order | null {
 
 export function conversationView(row: Row): Conversation | null {
   const s = site(row.site);
-  return s ? { id: text(row.id), site: s, item_id: text(row.item_id) || null, listing_id: text(row.listing_id) || null, role: row.role === 'buy' ? 'buy' : 'sell', buyer: text(row.buyer), intent_last: text(row.intent_last), state: pick(row.state, ['open', 'closed', 'blocked'], 'open'), last_read_at: text(row.last_read_at), unread: number(row.unread) } : null;
+  return s ? { id: text(row.id), site: s, item_id: text(row.item_id) || null, listing_id: text(row.listing_id) || null, role: row.role === 'buy' ? 'buy' : 'sell', buyer: text(row.counterpart, text(row.buyer)), intent_last: text(row.intent_last), state: pick(row.state, ['open', 'closed', 'blocked'], 'open'), last_read_at: text(row.last_read_at), unread: number(row.unread) } : null;
 }
 
 export function eventView(row: Row): LogEvent {

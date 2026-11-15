@@ -11,6 +11,7 @@ import {
   Stack, Txt, UndoToast, Approve, Guess, type PhotoSrc, type QueueEntry,
 } from '@/ui';
 import { TodayRail } from '@/ui/parts/today-rail';
+import { SiteLink } from '@/ui/parts/site-link';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { oneCardWorld, quietWorld, stopsWorld } from '@/today/stops';
 import { JOB_MS, backAt, cards as derive, entries as queueEntries, group, handledLine, notices as deriveNotices, inbox, fit, sales as twoSales, single, type Action, type Card } from '@/today/cards';
@@ -256,16 +257,17 @@ export default function Today() {
 }
 
 function LiveToday() {
-  const { w, loading, refreshing, refresh, answer, problems } = useLiveData();
-  const [acting, setActing] = useState<string | null>(null);
+  const { w, loading, refreshing, refresh, problems } = useLiveData();
   const [error, setError] = useState<string | null>(null);
   const [review, setReview] = useState<string | null>(null);
-  const submit = async (id: string, option: string) => {
-    if (acting) return;
-    setActing(id); setError(null);
-    try { await answer(id, option); setReview(null); }
-    catch (failure) { log.error('today.answer', failure, { decision: id }); setError(failure instanceof Error ? failure.message : 'The action did not go through.'); }
-    finally { setActing(null); }
+  const openListing = async (url: string) => {
+    setError(null);
+    try { await Linking.openURL(url); }
+    catch (failure) { log.error('today.open_listing', failure); setError('The listing did not open. Try again.'); }
+  };
+  const linksFor = (decision: typeof w.decisions[number]) => {
+    const item = w.items.find(item => item.id === decision.item_id);
+    return item?.listings.filter(listing => /^https:\/\//.test(listing.url) && (!decision.site || listing.site === decision.site)) ?? [];
   };
   const tiers = [{ id: 'now', label: 'Needs You' }, { id: 'when_you_can', label: 'Can Wait' }, { id: 'good_to_know', label: 'Good to Know' }];
   const reviewed = w.decisions.find(decision => decision.id === review);
@@ -277,21 +279,29 @@ function LiveToday() {
       return <Section key={tier.id} title={tier.label}><TodayRail id={tier.id}>
         {decisions.map(decision => {
           const item = w.items.find(item => item.id === decision.item_id);
-          const selected = decision.options.find(option => option.id === decision.suggested) ?? decision.options[0];
-          const other = decision.options.find(option => option !== selected);
-          const pending = acting === decision.id || decision.state === 'acting';
-          return <DecisionCard key={decision.id} id={decision.id} kind="need" word="Needs you" title={item?.title ?? decision.why} photo={item?.photos[0]?.key ?? null}
-            fact={{ label: item ? decision.why : '' }} status={pending ? 'working' : decision.state === 'failed' ? 'failed' : 'open'} step={pending ? 'Working' : undefined}
-            primary={{ id: `${decision.id}-answer`, label: selected?.label ?? 'Refresh', onPress: () => selected ? void submit(decision.id, selected.id) : void refresh() }}
-            second={other ? { id: `${decision.id}-other`, label: other.label, onPress: () => void submit(decision.id, other.id) } : undefined}
-            more={decision.options.length > 2 ? { id: `${decision.id}-details`, label: 'Review', onPress: () => setReview(decision.id) } : undefined} />;
+          const appearance = single(w, decision), links = linksFor(decision);
+          const primary = decision.kind === 'relink'
+            ? { label: 'Sign in again', onPress: () => go('/you/accounts') }
+            : links.length === 1
+              ? { label: 'Open on the site', onPress: () => void openListing(links[0].url) }
+              : { label: links.length ? 'Choose site' : 'Review', onPress: () => setReview(decision.id) };
+          return <DecisionCard key={decision.id} id={decision.id} kind={appearance.tag} word={appearance.word} title={item?.title ?? decision.why} photo={item?.photos[0]?.key ?? null}
+            site={decision.site ?? undefined} fact={{ label: item ? decision.why : '' }}
+            primary={{ id: `${decision.id}-open-site`, ...primary }}
+            more={{ id: `${decision.id}-details`, label: 'Review', onPress: () => setReview(decision.id) }}
+            onOpen={() => item ? go(`/item/${encodeURIComponent(item.id)}`) : setReview(decision.id)} />;
         })}
         {!decisions.length ? <Txt role="body" tone="ink-2">Nothing here</Txt> : null}
       </TodayRail></Section>;
     })}
     <Section title="Other"><TodayRail id="other"><Notice id="activity" icon="clock-01" text="Activity" onPress={() => go('/you/log')} /></TodayRail></Section>
     <Sheet open={!!reviewed} title={reviewed?.why} onClose={() => setReview(null)}>
-      {reviewed?.options.map(option => <FootButton key={option.id} id={`${reviewed.id}-${option.id}`} kind="second" label={option.label} state={acting ? 'disabled' : 'idle'} onPress={() => void submit(reviewed.id, option.id)} />)}
+      {reviewed ? <Stack>
+        {linksFor(reviewed).map(listing => <SiteLink key={listing.id} id={`open-${listing.id}`} site={listing.site} onPress={() => void openListing(listing.url)} />)}
+        {!linksFor(reviewed).length ? <Txt role="body">No listing link is available yet.</Txt> : <Txt role="body">Complete this on the marketplace. Refresh here afterward.</Txt>}
+        {reviewed.item_id ? <FootButton id="review-item" kind="second" label="View item" onPress={() => { setReview(null); go(`/item/${encodeURIComponent(reviewed.item_id!)}`); }} /> : null}
+        <FootButton id="review-refresh" kind="second" label="Refresh" onPress={() => { void refresh(); setReview(null); }} />
+      </Stack> : null}
     </Sheet>
   </Screen>;
 }

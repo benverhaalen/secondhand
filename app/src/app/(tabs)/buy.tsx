@@ -10,7 +10,7 @@ import { SegmentedControl } from '@/ui/parts/segmented-control';
 import { shortName } from '@/demo/short-name';
 import { CardGroup } from '@/ui/parts/card-group';
 import { ListRow } from '@/ui/parts/list-row';
-import { Card, EmptyState, List, MatchCard, Photo, Screen, SearchField, Stack, Txt } from '@/ui';
+import { Card, EmptyState, List, MatchCard, Photo, Pill, Screen, SearchField, Stack, Txt } from '@/ui';
 
 type Page = 'tracked' | 'appraised' | 'found';
 type TrackedWant = Want & { low_cents?: number | null; colours?: string[] };
@@ -50,6 +50,7 @@ export default function Buy() {
       <SegmentedControl id="buy-page" options={pages} value={page} onChange={value => setPage(value as Page)} />
       <SearchField id="buy-search" placeholder="Find an item or paste a link" onOpen={() => router.push(link('/shop'))}
         onCamera={() => router.push(link('/camera?mode=find'))} onSubmit={query => router.push(link(`/shop?q=${encodeURIComponent(query)}`))} />
+      <Pill id="buy-chat" kind="second" label="Shopping chat" onPress={() => router.push(link('/shop'))} />
       <DataStatus demo={demo} resources={page === 'appraised' ? ['account', 'appraisals'] : page === 'found' ? ['account', 'wants', 'matches'] : ['account', 'wants']} />
       {state === 'offline' ? <OfflineLine /> : null}
       {page === 'tracked' ? wants.length ? (
