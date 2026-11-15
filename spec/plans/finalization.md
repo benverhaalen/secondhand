@@ -99,6 +99,22 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 | DB10 | After judging, in the mapping's order: a nightly matcher job over stored observations in the fuzzy-item-matching pattern; Many Models Forecasting for the sale curve (feeds EN3); an Agent Bricks supervisor as a measured trial beside our own conversation loop; one table synced to Lakebase, only on Nate's yes with the hourly cost read first; a Delta share of a public-scope price index, only on his yes | Each with its measured result against what it replaces |
 | DB8 | The nightly fits are switched back on only after DB1 and DB2, and only on Nate's yes, because each run spends trial credits | His yes, then one run's cost recorded | Ask Nate after DB1 and DB2 reach the workspace |
 
+The [coverage map](../../databricks/COVERAGE.md) (2026-11-15, read from the files) found the gaps below that no row above covers. *Agent proposal*, in order of what the product needs first:
+
+| Id | Fix | Proof | State |
+|---|---|---|---|
+| DB9 | A `source_rights` row for each live source (eBay, Mercari, Poshmark, Depop pages; Apify shown-only, `may_model` false, `hackathon_demo`), and the loader refuses a line looser than its source's row | A loader test per source; `measures.model_clearance` lists every live site | Proposed |
+| DB10 | A daily sweep deletes observations past `keep_until` or the source's `ttl_hours` | A test with one expired and one live row | Proposed; a schedule spends credit, so Nate's yes first |
+| DB11 | Every nightly fold task runs or says why: the eight engines without a Spark `main()` stop reporting a green skip, the person fold is found, capture and photo get tasks (with the engines lead, who owns the engine twins) | `fold.run` returns `ran` or a stated reason for all eleven | Proposed |
+| DB12 | The brand measure and the attribute record have a job: read `market.listing_obs`, build the record, run `jobs/measures/brand_premium.py`, export the `brand_premium` row (DB4) | `jobs/measures/test_brand_premium.py` and a fold test on seeded rows | Proposed |
+| DB13 | Per-person rows (messages, offers, orders) stay in Lakebase only, or reach Delta with `user_id` so the purge finds them | Nate's scope call; then an export test and a purge test for one user | Nate's call |
+| DB14 | Guard rules for a null-owner row whose `rights_mode` is not `public`, any Dupe row, an Apify row with `may_model` true, message text in `log_event` | `databricks/test_guard.py`, one seeded bad row per rule | Proposed |
+| DB15 | The similar group as a SQL function over `market.listing_obs`, in place of the paid Vector Search index (MI4, Nate: no paid Vector Search) | A seeded case in `15_market_check.sql` | Proposed |
+| DB16 | Search stage counts and capture question counts (ids and counts only) as `measures.search_stage` and `measures.capture_question` | Counts by source add up to rows found (SR6) | Proposed |
+| DB17 | `measures.rights_audit` covers `core.observation` bases and flags a `dataset:` basis in a current-price metric | `databricks/test_governance.mjs`, one seeded violation of each | Proposed |
+| DB18 | `measures.term_list` from the Mercari competition set, with no price column (word lists and structure, never a current price) | A schema test that the output has no price field | Proposed |
+| DB19 | Mercari Kaggle reloaded from the corrected freeze (32 columns; the volume holds the 34-column file, so descriptions sit in the wrong column) | `comp` row count unchanged at 1,481,418 and `description` non-empty on Mercari rows | Built in the repo (manifest 4cb07c1b); the pipeline refresh spends credit, so Nate's yes first |
+
 ## 6. The app (lead: app wiring; the look is Ben's)
 
 | Id | Fix | Proof |
