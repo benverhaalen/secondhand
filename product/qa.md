@@ -30,6 +30,35 @@ Observed on main as of 2026-11-15: the first cloud-browser reads (Depop 24 and P
 | A seller trying it | Will it embarrass me or cost me | "Will it get my account banned, sell below my price, or send a stranger to my house?" | It never goes under your minimum, never gives out your address, and asks before the first post on each site |
 | A buyer on the other end | Is this person real and honest | "Is a bot talking to me? Are those photos real?" | A real person owns the listing and approves anything that commits them; the first photo is always the real one |
 
+## Where judges dock points
+
+Ben, 05:36: "there are also a lot of things that could 'dock us points' when being compared to other projects. the goal in our project and our pitch and our website and our demos is to mitigate each one and show that we have thoroughly thought about it." Each row is a deduction a judge is likely to make against us next to other projects, what takes it off the table, and where they see that. "Number" means a figure from the benchmark thread; quote only what it measured.
+
+| # | Deduction | Mitigation | Pitch | Website | Demo | Number |
+|---|---|---|---|---|---|---|
+| 1 | "It scrapes marketplaces against their terms" | Your own agent on your own signed-in account, acting after your approval, at a human pace; eBay through its official API; terms recorded per site as facts ([§10](#10-blockers-and-risks)) | one sentence in Trust: "it acts as you, on your account, only after you say yes" | FAQ: Could my account get banned? | the first post asks before it goes | posts paced per site |
+| 2 | "Users will get banned" | a site warning stops automation on that site at once; risk shown per site before linking; Poshmark delists paced | Q&A only | FAQ: Your accounts | the site's risk line on the link screen | |
+| 3 | "AI photos misrepresent the item" | Clean up and Enhance with AI are separate; AI is off by default and labeled; every render is checked against the original; the real photo is first ([§5](#5-the-ai-and-proving-it-isnt-lying)) | Proof beat: "the original behind every edited photo" | FAQ: Photos | side by side with the slider and flaw boxes | planted lies caught, honest photos wrongly blocked |
+| 4 | "The AI will tell buyers false things" | code decides, the model words it; every claim matched to an item fact before sending; unbacked claims are held | Trust beat | FAQ: What does it do without asking me? | a held reply showing "smoke-free home: you have not said this" | claims held per 100 replies, if measured |
+| 5 | "An agent sending strangers to my house" (the Muse failure) | address locked; meetups at public spots in daylight; who is coming shown before you approve ([§4](#4-pickups-and-safety)) | Trust beat names the failure without naming Meta | FAQ: Meeting up | the locked address row; the who-is-coming card | |
+| 6 | "Runaway autonomy" | tiers; promotion only after 3 unedited approvals; address, payment, off-site never automatic; nothing alone above a price you set | "you approve anything that touches your money, your address or a stranger" | FAQ: What always waits for me? | the third approval offering Always do this | |
+| 7 | Overclaiming: slides say more than the demo shows | the honesty gate above; designed features said as designed | every "it does" passes the gate | (launch) marks in the FAQ | nothing on screen that isn't running, or it's labeled design | |
+| 8 | Demo fragility: live posting fails, a captcha, bad wifi | a recorded real run as backup, cut and ready; the phone on a hotspot; an account signed in beforehand; a challenge pauses for a person by design | say "this is a recorded run from 2 a.m." if the backup plays | | the backup video queued | |
+| 9 | "Just a GPT wrapper" | the hard parts are not model calls: per-site harnesses with read-back, sale detection, fee math solved per site, the evidence and claim checks | the most impressive explanation, points 3 to 5 ([pitch](pitch.md#the-most-impressive-explanation)) | How it works page | the read-back ticks after a post | time from sale to every listing down |
+| 10 | "Just another crosslister" | we start at the camera and run the whole job after posting; first user is someone clearing out, not a reseller ([§1](#1-the-product)) | Product beat lists the after-posting jobs | Home: what it does after it posts | Today with buyer, sale and pickup cards | our sale-to-delist time against Vendoo's documented 10-minute poll |
+| 11 | Databricks used as decoration | name only what's deployed; lead with evidence per fact, numbers that refuse, earned autonomy ([§6](#6-data-and-databricks)) | Data beat, 30 s | the architecture section | tap a fact, see its photo region; a thin question refused | tables, rows and traces in the workspace at demo time |
+| 12 | Cost doesn't work | an agent's cost per item is flat; watching is the real cost and backs off ([§8](#8-cost)) | Q&A only | | | cost per listing, split into posting and watching |
+| 13 | Privacy: passwords, buyer messages, photos | eBay's own sign-in; the site's real login page for the others; we keep the session, not the password unless opted in; faces and mail blurred on the phone; message text never logged | Q&A only | FAQ: Do you see my passwords? | the blur on a shot with mail in it | |
+| 14 | Scope over polish: many features, none finished | one path finished end to end (photo to live to sold to down); the rest shown as design, honestly | the demo is one item, start to finish | | one item, start to finish | |
+| 15 | No proof anyone wants it | outside numbers (56% would pay someone to handle reselling; 8.6% of cheap eBay listings sell in 30 days) and Ben's own stopwatch run | Problem beat | Home: the $3 against $17 card | | Ben listing one item by hand against with secondhand |
+| 16 | No business model | free to list, a capped share of what sells; buyers free with referrals that never change ranking ([§9](#9-business-model)) | one line at the close if asked | FAQ: What does secondhand cost? says not set | | |
+| 17 | Platforms will shut it down | we bring supply, which ThredUp names as the market's constraint, and the sites keep their fees; official APIs and partner programs where they exist | Q&A only | | | |
+| 18 | Unmeasured speed claims | only the measured clock; "seconds" in the name, never a minute count we didn't time | the clock on screen | | the timer runs live | time from first photo to live |
+| 19 | The repo doesn't reproduce, or CI is red | the README's run steps work from a clean clone; CI green on main before judging (it was red on 2026-11-15 05:30 UTC: `data.test.ts`, `sql.test.ts`, app-check, e2e) | | link to the repo | | |
+| 20 | Disclosure and law: bots talking to buyers, taxes | a note on the first automatic message; Records with each site's 1099-K figure | Q&A only | FAQ: Do buyers know? (to add once Ben and Nate decide) | | |
+
+The three to fix first, because they cost the most points and are the cheapest to fix: a recorded backup run of the one-item path (8), CI green on main (19), and the planted-lie photo number (3).
+
 ## 1. The product
 
 **What is it, in one sentence?**
