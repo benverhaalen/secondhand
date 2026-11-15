@@ -66,7 +66,7 @@ Casual is the default framing: "fair price", target profit 0 ([decision](../../p
 | Claude Haiku 5.5 | Glance naming, routing |
 | Claude Opus 5.5 | Check reads listing text and flaws; Deep investigates |
 | Decisions API and Jev | typed "same model?", "flaw visible?" ([decision](../../product/decisions.md#2026-11-14-typed-judgements-run-on-both-the-decisions-api-and-jev-and-our-labels-pick)) |
-| Harness `search`, `read_sold` | read a pasted listing and find equivalents across the set ([decision](../../product/decisions.md#2026-11-14-the-platform-list-is-set)) |
+| Harness `search` (with a sold filter) | read a pasted listing and find equivalents across the set ([decision](../../product/decisions.md#2026-11-14-the-platform-list-is-set)) |
 | CPSC Recall REST API | recall lookup by product name, brand and model (US) |
 | Plain code | `max_pay`, offer, verdict, net, haggle pad, route comparison |
 | MLflow 3 | trace per appraisal, the "why?" timeline |
@@ -98,7 +98,7 @@ flowchart LR
   P["camera or pasted URL"] -->|"POST /v1/valuations: capture or url_ref"| J["valuate job, Lakeflow"]
   J -->|"image vectors and pgvector: product candidates"| I["identify"]
   I -->|"CPSC Recall API: attribute evidence lookup"| R["recall gate, plain code"]
-  R -->|"harness search, read_sold: comp with evidence"| C["Delta comp"]
+  R -->|"harness search, sold filter: comp with evidence"| C["Delta comp"]
   C -->|"plain code from fees: valuation max_pay, verdict"| L["Lakebase valuation"]
   L -->|"save_match or buy_offer: decision"| D["Lakebase decision"]
   L -->|"POST /v1/orders kind purchase: item owned"| O["Lakebase item, order"]

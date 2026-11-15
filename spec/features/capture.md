@@ -32,8 +32,8 @@ Capture lives under ＋ in the bottom bar ([decision](../../product/decisions.md
 | Stumble in Ben's design | Change |
 |---|---|
 | Category chips under 0.6 appear before anything is framed | the kind shows after the first still, as a swap if wrong |
-| The 6-shot cap drops a second flaw | flaws sit outside any cap; `requirement` rows decide |
-| The white sheet and the 10 s spin read as required | offered, never asked |
+| The 6-shot cap drops a second flaw | flaws sit outside any cap; `requirement` rows decide (Ben's option A, "Cap at 6 plus flaws", [build plan](../../research/capture/ben/build-plan.md)) |
+| The white sheet and the 10 s spin read as required | offered, never asked; the sheet is also the white-balance reference ([build plan](../../research/capture/ben/build-plan.md), white balance) |
 | The recap re-asks what was heard | shows only what changed a field |
 
 Unused by his design and used here: pose coverage from ARKit, depth confidence on the mask, the early product match from the first still, past labels setting gate thresholds, and the `requirement` priority learned by `requirement_reorder` in `score.md`.
@@ -43,11 +43,11 @@ Unused by his design and used here: pose coverage from ARKit, depth confidence o
 | Choice | Options considered | Picked | Why | What would change it |
 |---|---|---|---|---|
 | How capture knows what it still needs | fixed shot list ([guided-shot-list](../../research/capture/ben/guided-shot-list.md)); adaptive with a cap ([adaptive-capture](../../research/capture/nate/adaptive-capture.md)); `requirement` rows per kind ([identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md)) | `requirement` rows, no cap | the cap of 2 had no source (coverage); rows name the field, method and view | views per item on 30 real items show a cap would lose nothing |
-| Listing images | real frames ([scan-to-images](../../research/capture/nate/scan-to-images.md)); renders of the scan ([object-capture](../../research/measure/ben/object-capture.md)); image-to-3D | real frames, the sharpest per pose bin, masked; renders only as an extra angle on rigid items after the 8 checks | the iPhone model is `.reduced`, one 2048 px texture, so renders lose tags, logos and weave; Etsy needs an unedited real photo; image-to-3D is prohibited | a full-detail model on the phone |
+| Listing images | real frames ([scan-to-images](../../research/capture/nate/scan-to-images.md)); renders of the scan ([object-capture](../../research/measure/ben/object-capture.md)); image-to-3D | real frames, the sharpest per pose bin, masked; renders only as an extra angle on rigid items after the 8 checks; for clothes, Ben's pipeline also makes a 3D model from the front, back and spin photos, scaled to the measured lengths and shown labelled as a model beside the real photos ([pipeline](../../research/cross-cutting/ben/seeing-the-item-pipeline.md), 3D for clothes); studio's approved renders follow the evidence photo ([packet 30](../../.agents/team/packets/studio/30-studio-build-plan.md)) | the iPhone model is `.reduced`, one 2048 px texture, so renders lose tags, logos and weave; Etsy needs an unedited real photo; whether image-to-3D is allowed on a site is under Open | a full-detail model on the phone |
 | What the 3D model is for | listing photos; measuring, the spin view and frame choice | measuring, the spin view, choosing frames | its poses cluster viewpoints for free | none expected |
 | Talk mode | live model that watches ([live-video-capture](../../research/capture/ben/live-video-capture.md)); decision tree ([decision-tree-capture](../../research/capture/ben/decision-tree-capture.md)) | decision tree | Ben's newer words; set lines cannot invent; costs bounded | the tree misses its 85% per-question bar |
 | Gates | on the phone; cloud judge; a photo score ([capture build-plan](../../research/capture/ben/build-plan.md), [seeing-the-item-pipeline](../../research/cross-cutting/ben/seeing-the-item-pipeline.md)) | gates on the phone, `capture_judge` in the cloud | instant feedback offline; the cloud confirms | thresholds fail the false accept or reject bar |
-| Masks and text without GPU serving | SAM 3 on a GPU; on-device Vision; PP-OCRv5 on CPU ([identification-technologies](../../research/identify/nate/identification-technologies.md)) | Vision foreground mask plus the Object Capture `objectMask`; Vision OCR on the phone, PP-OCRv5 in the job | Free Edition has no GPU serving ([databricks-platform](../../research/data/nate/databricks-platform.md)); both run without one | mask IoU on dark fabric falls under the bar |
+| Masks and text without GPU serving | SAM 3 on a GPU; on-device Vision; PP-OCRv5 on CPU ([identification-technologies](../../research/identify/nate/identification-technologies.md)) | Vision foreground mask plus the Object Capture `objectMask`; Vision OCR on the phone, PP-OCRv5 in the job | Free Edition has no GPU serving ([databricks-platform](../../research/data/nate/databricks-platform.md)); both run without one. Where the phone mask fails, a hosted SAM 3 endpoint (fal or Roboflow) is the option ([pipeline](../../research/cross-cutting/ben/seeing-the-item-pipeline.md), masks), the same as studio | mask IoU on dark fabric falls under the bar |
 | When identify starts | after finish; at the first kept still ([identification-stack](../../research/identify/nate/identification-stack.md)) | at the first kept still, in parallel | Nate's process; questions arrive while shooting | none expected |
 
 ## What it reads and writes
@@ -83,7 +83,7 @@ Capture states, from [product.md](../product.md) §4: `framing`, `shooting`, `up
 | Embeddings | SigLIP 2 or Marqo-Ecommerce (Apache-2.0) on serverless CPU, or a hosted embedding through the gateway; vectors in Lakebase pgvector, since AI Search takes no image embeddings |
 | MLflow 3 | one trace per job carrying refs, never images (a trace over 25 MB is unreadable) |
 
-**Free Edition changes**: no GPU serving, so no SAM 3; masks come from the phone, OCR from the phone and PP-OCRv5 on CPU, embeddings from CPU or a hosted model; 5 concurrent tasks means `capture_judge` queues behind other jobs, so the phone's gates carry the live feedback.
+**Free Edition changes**: no GPU serving, so SAM 3 runs hosted (fal or Roboflow) where the phone mask fails; masks otherwise come from the phone, OCR from the phone and PP-OCRv5 on CPU, embeddings from CPU or a hosted model; 5 concurrent tasks means `capture_judge` queues behind other jobs, so the phone's gates carry the live feedback.
 
 **Privacy** ([privacy-and-data](../../research/cross-cutting/nate/privacy-and-data.md)): GPS stays on the phone; EXIF is stripped before upload; faces, mail, house numbers and screens are blurred on the phone; no room mesh is kept; outside providers get the masked item crop, not the room; raw room frames and scans are deleted after cutouts unless `kept_raw`. The talk recording is kept only until the after-pass ends.
 
@@ -149,6 +149,7 @@ Bars come from Ben's decision-tree targets ([decision-tree-capture](../../resear
 | Flaws are found | 18 of 20 seeded flaws | Ben §11 |
 | It is quick | a tee in under 70 s | Ben §11 |
 | Views earn their place | views per item on 30 real items, each asked view changed a field; decides the no-cap choice | coverage audit |
+| Measurements hold | each primary field (pit to pit, length, waist, inseam) within ±1.3 cm and each secondary field (shoulder, sleeve, rise, thigh, leg opening) within ±2 cm; at least 80% of primary fields in budget before edits; no `high` field outside budget; rigid items L, W, H within ±1 cm or 3% | Ben's error budget ([measure plan](../../research/measure/ben/build-plan.md), error budget and report) |
 | Masks hold | share of items needing a hand-fixed mask at most Hurst's 18% (*asserted*), counted on the 30 items | [scan-to-images](../../research/capture/nate/scan-to-images.md) |
 | Listing frames beat renders | buyers prefer real frames on garments; renders only where they pass the 8 checks (Hurst's hand-held 11.7-point lead is *asserted*) | scan-to-images |
 | The kind is right | provisional against confirmed kind on every test item | the test set |
@@ -162,7 +163,7 @@ Bars come from Ben's decision-tree targets ([decision-tree-capture](../../resear
 | Object Capture needs LiDAR and iOS 17+; iPhone gets `.reduced`, under 50k triangles, one 2048 texture | [scan-to-images](../../research/capture/nate/scan-to-images.md), *observed* | |
 | Each sample carries image, depth, confidence, gravity, `objectMask` and camera | scan-to-images, *observed* | |
 | Fabric photogrammetry gives a lumpy mesh | scan-to-images, *asserted* | |
-| eBay wants your own images, video up to 150 MB, no 3D type; Etsy needs at least one unedited real photo | scan-to-images, *observed* | the site terms are enforced per listing, so renders carry a provenance label |
+| eBay wants your own images, video up to 150 MB, no 3D type; Etsy needs at least one unedited real photo | scan-to-images, *observed* | a site's term on edited or generated photos is a recorded fact and does not shape the build ([decision](../../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build)); no label goes on exported photos ([words](../../product/words.md#2026-11-14-no-ai-tag-on-exported-photos-track-it-on-our-end)). Re-check each site's rule before a public launch |
 | SAM 3 needs a GPU; SigLIP 2, Marqo-Ecommerce and PP-OCRv5 are Apache-2.0; DINOv3 is gated | [identification-technologies](../../research/identify/nate/identification-technologies.md), *observed* | a gated model's terms apply to a commercial product |
 | Free Edition: no GPU serving, 5 concurrent tasks, 3 apps that stop after 24 h | [databricks-platform](../../research/data/nate/databricks-platform.md), *observed* | a paid workspace lifts the limits |
 | Selling a recalled product is illegal (CPSA §19); drop-side and pre-June-2011 cribs must be destroyed | [identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md), *observed* | holds now: a recall `lookup` row blocks `post` ([product.md](../product.md#licences-terms-and-the-rules-that-protect-people)) |
@@ -178,11 +179,12 @@ For Ben and Nate to mark.
 
 1. **Talk mode: the live model or the tree?** Ben's 21:33 decision says a live model watches; his 22:24 words describe a tree owned by code. This page follows the newer words. Does the decision entry change to match? Depends: talk mode's cost and the voice stack.
 2. **Does a rigid item open on the list or straight into the scan?** Joint: "Rigid things and furniture get a move-around scan". Ben: "the camera opens on the guided shot list". Recommendation: open on the list, whose first step for rigid items is the scan, so both hold.
-3. **Business.** Receipts, links and measured capture data could carry value as resale proof or paid data; no model is picked.
+3. **3D for clothes: in, labelled as a model, or out?** Ben's pipeline generates a 3D model of a garment and shows it labelled as a model ([pipeline](../../research/cross-cutting/ben/seeing-the-item-pipeline.md)). The scan research says image-to-3D is prohibited on listing sites ([scan-to-images](../../research/capture/nate/scan-to-images.md)). Which holds? Depends: each site's rule, recorded as a fact.
+4. **Business.** Receipts, links and measured capture data could carry value as resale proof or paid data; no model is picked.
 
 ## Needs from the shared model
 
-- `photo.role` values for identity-schema's views: `care_label`, `detail`, `side`, `inside`, `sole`.
+- `photo.role` values for identity-schema's views: `care_label`, `detail`, `side`, `inside`, `sole`. product.md lists only `front, back, tag, fabric, flaw, spin, studio` today; it must add these five.
 - `requirement` rows for the 13 kinds, and the 13 kinds as `item.category` values.
 - A legal flag on `requirement` (recall status as a `lookup` row that blocks `post`); product.md names it but the row shape has no field.
 - `evidence.region` shape: a box for `image_region` and `label_text`, two points for a measurement.

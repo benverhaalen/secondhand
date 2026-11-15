@@ -33,7 +33,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 4. Otherwise raise decision `category_unsure`, showing the top 2 or 3 kinds as chips plus "Something else".
 5. The phone value drives framing and shot prompts only. It is replaced when step 3 runs in the cloud.
 
-**Why this method**: a weighted vote with a margin rule is a calibrated way to combine sources of unequal reliability, and the margin stops near-ties from being decided silently (inferred). Mercari found category so error-prone that it left the category as a user choice, after a toy car was listed as a real car (observed (excerpt), [clarifying-inputs §1](../../research/identify/nate/clarifying-inputs.md)). The alternative is a single classifier call. It is cheaper, but it hides the cases a margin rule catches.
+**Why this method**: a weighted vote with a margin rule is a calibrated way to combine sources of unequal reliability, and the margin stops near-ties from being decided silently (inferred). Mercari's engineers left the category to the user after experiments showed it balanced simplicity and accuracy, and a toy car was listed as a real car (observed (excerpt), [clarifying-inputs §1](../../research/identify/nate/clarifying-inputs.md)). The alternative is a single classifier call. It is cheaper, but it hides the cases a margin rule catches.
 
 **When it is not shown**: no source has run, or the margin rule fails. The person then sees the kind question with chips. The capture keeps running with the generic shot list.
 
@@ -348,7 +348,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 1. Arithmetic: `e_path` = the 90th percentile of |error| over the calibration rows for that path and class.
 2. One path: tolerance = `e_path`.
-3. Two agreeing paths: tolerance = `sqrt(e_a^2 + e_b^2) / sqrt(2)` as a starting rule. Rounded up to the display step.
+3. Two agreeing paths: tolerance = `sqrt(e_a^2 + e_b^2) / sqrt(2)` as a starting rule (*agent proposal*: it is the root of the mean of the two squared errors, which assumes the paths err independently and equally; no source gives it, so the calibration rows replace it once a pair of paths has 30 rows). Rounded up to the display step.
 4. If the tolerance is above the budget, the value is shown as an estimate only, and the drag-to-fix screen is offered.
 
 **Why this method**: a quantile of measured error is distribution-free and states exactly what the bar tests: the tape lands inside 90% of the time (inferred). The alternative is to quote the paper figures. They come from other cameras, fabrics and people, so they would not cover our captures.
@@ -530,8 +530,8 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 3. Ask the argmax. Ties go to the lowest effort.
 4. Stop when any of these holds:
    - the set is a singleton and the variant is settled;
-   - the best normalised score is under 0.15 (start);
-   - 3 questions have been asked for this item (start; no source exists for a per-item cap);
+   - the best normalised score is under 0.15 (start; *agent proposal*: below it a question removes under 15% of the open choices, too little to earn a tap; tune on the 200-item check);
+   - 3 questions have been asked for this item (start; *agent proposal*: no source exists for a per-item cap, and the cited studies show that unneeded questions cut success, so the cap stays small until the 200-item check sets it);
    - the person refused, which ends that field without a re-ask.
 5. Model step: an LLM writes the question's words only, from the chosen field and options. It cannot add or drop options.
 
