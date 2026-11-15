@@ -1,0 +1,15 @@
+# Full captures stay local (each about 1 MB); the main screens are committed.
+/*.png
+!tabs-index.png
+!tabs-sell.png
+!tabs-buy.png
+!tabs-you.png
+!messages-index.png
+!stage.png
+!new.png
+!search.png
+!want.png
+!worth.png
+!gone-by.png
+!onboarding.png
+!camera.png

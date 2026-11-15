@@ -44,3 +44,7 @@ test('environment preserves query strings and rejects harness separators and uns
   }
   assert.throws(() => routesEnv([{ slug: '../x', route: '/' }]), /Invalid/);
 });
+
+test('reads a tree named the way xcresulttool 26 names it', () => {
+  assert.deepEqual(attachmentToSlug('buy-world-buyer_0_1464B124-C13B-421D-A2B6-64A205ADBD58.tree'), { slug: 'buy-world-buyer', kind: 'tree' });
+});

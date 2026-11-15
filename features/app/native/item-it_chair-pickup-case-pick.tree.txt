@@ -1,0 +1,101 @@
+Attributes: Application, 0x129ecde00, pid: 71101, label: 'secondhand'
+Element subtree:
+ →Application, 0x129ecde00, pid: 71101, label: 'secondhand'
+    Window (Main), 0x129ecdcc0, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x129ecdf40, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x129ecdb80, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x129ece300, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x129ece1c0, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x129ece080, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x129ecc500, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x129ecc8c0, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x129ece940, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x129ece580, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x129ecc280, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x129ece800, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x129ecea80, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x129ecebc0, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x129ecee40, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x129ece6c0, {{0.0, 0.0}, {402.0, 874.0}}
+                                    Other, 0x129ecf200, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x129eced00, {{0.0, 0.0}, {402.0, 874.0}}
+                                        Other, 0x129ecf480, {{0.0, 0.0}, {402.0, 874.0}}
+                                          Other, 0x129ecef80, {{0.0, 0.0}, {402.0, 874.0}}
+                                            Other, 0x1283aef80, {{0.0, 0.0}, {402.0, 874.0}}
+                                              Other, 0x1283ad2c0, {{0.0, 0.0}, {402.0, 874.0}}
+                                                Other, 0x1283aed00, {{0.0, 62.0}, {402.0, 736.0}}
+                                                  ScrollView, 0x1283afe80, {{0.0, 62.0}, {402.0, 736.0}}
+                                                    Other, 0x1283af200, {{0.0, 62.0}, {402.0, 837.0}}
+                                                      Other, 0x1283aca00, {{0.0, 62.0}, {402.0, 837.0}}
+                                                        Other, 0x1283af980, {{20.0, 62.0}, {362.0, 44.0}}
+                                                          Button, 0x1283afd40, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                                        StaticText, 0x1283af340, {{20.0, 118.0}, {362.0, 36.3}}, label: 'Pickup'
+                                                          StaticText, 0x1283aebc0, {{20.0, 118.0}, {362.0, 36.3}}, label: 'Pickup'
+                                                        Button, 0x1283ae940, {{20.0, 166.3}, {362.0, 104.0}}, identifier: 'pickup-item', label: 'IKEA Stefan chair, light wood'
+                                                        StaticText, 0x1283ae1c0, {{20.0, 302.3}, {362.0, 21.3}}, label: 'Who’s coming'
+                                                          StaticText, 0x1283ae800, {{20.0, 302.3}, {362.0, 21.3}}, label: 'Who’s coming'
+                                                        StaticText, 0x1283ae300, {{56.0, 351.7}, {326.0, 21.3}}, label: 'Jordan'
+                                                          StaticText, 0x1283ae440, {{56.0, 351.7}, {326.0, 21.3}}, label: 'Jordan'
+                                                        Other, 0x1283ad400, {{20.0, 360.3}, {24.0, 24.0}}
+                                                          Other, 0x1283af840, {{23.2, 362.6}, {17.5, 19.5}}
+                                                            Other, 0x1283ad680, {{27.2, 362.6}, {9.5, 9.5}}
+                                                            Other, 0x1283ad900, {{23.2, 373.6}, {17.5, 8.5}}
+                                                        StaticText, 0x1283adb80, {{56.0, 377.0}, {326.0, 16.0}}, label: '4.9 stars from 31 reviews, on the site since 2019'
+                                                          StaticText, 0x1283adf40, {{56.0, 377.0}, {326.0, 16.0}}, label: '4.9 stars from 31 reviews, on the site since 2019'
+                                                        Other, 0x129964f00, {{20.0, 421.0}, {178.3, 35.7}}
+                                                        StaticText, 0x129967700, {{37.0, 430.0}, {144.3, 17.7}}, label: 'Is the chair still available?'
+                                                          StaticText, 0x129965a40, {{37.0, 430.0}, {144.3, 17.7}}, label: 'Is the chair still available?'
+                                                        Other, 0x129965f40, {{20.0, 460.7}, {33.7, 16.0}}
+                                                          StaticText, 0x129964a00, {{20.0, 460.7}, {33.7, 16.0}}, label: 'Nov 13'
+                                                            StaticText, 0x129967e80, {{20.0, 460.7}, {33.7, 16.0}}, label: 'Nov 13'
+                                                        Other, 0x129965b80, {{20.0, 488.7}, {304.0, 53.3}}
+                                                        StaticText, 0x129965040, {{37.0, 497.7}, {270.3, 35.3}}, label: 'Tomorrow 3 pm works, see you at the library lot'
+                                                          StaticText, 0x129965680, {{37.0, 497.7}, {270.3, 35.3}}, label: 'Tomorrow 3 pm works, see you at the library lot'
+                                                        Other, 0x129964b40, {{20.0, 546.0}, {41.3, 16.0}}
+                                                          StaticText, 0x129965400, {{20.0, 546.0}, {41.3, 16.0}}, label: '12m ago'
+                                                            StaticText, 0x129965e00, {{20.0, 546.0}, {41.3, 16.0}}, label: '12m ago'
+                                                        StaticText, 0x129964dc0, {{20.0, 594.0}, {362.0, 21.3}}, label: 'When and where'
+                                                          StaticText, 0x129964140, {{20.0, 594.0}, {362.0, 21.3}}, label: 'When and where'
+                                                        Other, 0x1299661c0, {{20.0, 650.3}, {24.0, 24.0}}
+                                                          Other, 0x129964640, {{22.2, 651.6}, {19.5, 21.5}}
+                                                            Other, 0x129966080, {{22.2, 653.6}, {19.5, 19.5}}
+                                                            Other, 0x129966800, {{27.2, 651.6}, {9.5, 5.5}}
+                                                            Other, 0x129966580, {{22.2, 659.6}, {19.5, 1.5}}
+                                                            Other, 0x129966f80, {{26.5, 663.3}, {11.0, 6.0}}
+                                                        StaticText, 0x129966440, {{56.0, 643.3}, {326.0, 17.7}}, label: 'Tomorrow at 3 pm'
+                                                          StaticText, 0x129964280, {{56.0, 643.3}, {326.0, 17.7}}, label: 'Tomorrow at 3 pm'
+                                                        StaticText, 0x129964000, {{56.0, 665.0}, {326.0, 16.0}}, label: 'In daylight'
+                                                          StaticText, 0x129966940, {{56.0, 665.0}, {326.0, 16.0}}, label: 'In daylight'
+                                                        Other, 0x1299648c0, {{20.0, 693.0}, {362.0, 62.0}}
+                                                        Other, 0x1299666c0, {{20.0, 712.3}, {24.0, 24.0}}
+                                                          Other, 0x129964780, {{22.2, 713.6}, {19.6, 21.5}}
+                                                            Other, 0x129966a80, {{22.2, 713.6}, {19.6, 21.5}}
+                                                            Other, 0x129966300, {{27.8, 719.1}, {8.5, 8.5}}
+                                                        StaticText, 0x129966bc0, {{56.0, 705.3}, {326.0, 17.7}}, label: 'Library parking lot, Main St'
+                                                          StaticText, 0x129967340, {{56.0, 705.3}, {326.0, 17.7}}, label: 'Library parking lot, Main St'
+                                                        StaticText, 0x129967200, {{56.0, 727.0}, {326.0, 16.0}}, label: 'Your saved spot, out in public'
+                                                          StaticText, 0x1299643c0, {{56.0, 727.0}, {326.0, 16.0}}, label: 'Your saved spot, out in public'
+                                                        Button, 0x129965cc0, {{20.0, 771.0}, {136.3, 40.0}}, identifier: 'meet-another', label: 'Suggest another'
+                                                        Button, 0x1299675c0, {{164.3, 771.0}, {88.0, 40.0}}, identifier: 'meet-decline', label: 'Decline'
+                                                        Button, 0x129966d00, {{20.0, 827.0}, {154.7, 40.0}}, identifier: 'pickup-site', label: 'Open on Facebook Marketplace'
+                                                        Button, 0x129966e40, {{182.7, 827.0}, {172.3, 40.0}}, identifier: 'pickup-snapshot', label: 'See the site’s copy'
+                                                    Other, 0x129967840, {{369.0, 62.0}, {30.0, 736.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                                      Other, 0x1299670c0, {{396.0, 127.0}, {3.0, 696.0}}
+                                                    Other, 0x129967c00, {{0.0, 765.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                      Other, 0x129967d40, {{3.0, 792.0}, {393.0, 3.0}}
+                                                    Other, 0x1299657c0, {{369.0, 62.0}, {30.0, 736.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                                      Other, 0x129965540, {{396.0, 127.0}, {3.0, 696.0}}
+                                                    Other, 0x129965900, {{0.0, 765.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                      Other, 0x129967980, {{3.0, 792.0}, {393.0, 3.0}}
+                                                Button, 0x129965180, {{20.0, 810.0}, {362.0, 48.0}}, identifier: 'meet-approve', label: 'Meet Jordan tomorrow at 3 pm'
+                                    Toolbar, 0x12819d2c0, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                                      Other, 0x12819f980, {{0.0, 0.0}, {402.0, 874.0}}
+                      Toolbar, 0x12819fc00, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                        Other, 0x12819f840, {{0.0, 0.0}, {402.0, 874.0}}
+Path to element:
+ →Application, 0x129ecde00, pid: 71101, label: 'secondhand'
+Query chain:
+ →Find: Application 'dev.ben.secondhand'
+  Output: {
+    Application, 0x12819e800, pid: 71101, label: 'secondhand'
+  }
