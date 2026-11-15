@@ -17,6 +17,7 @@ Nate saw a plain wired scaffold and said what he wants instead. His words are ve
 | File | Change | Why |
 |---|---|---|
 | `app/src/app/(tabs)/buy.tsx` | `onOpen={() => router.push(href(w, '/shop'))}` on `buy-search` | pressing the field opens the takeover (Nate) |
+| `app/src/you/sign-in.tsx` | the email step's `send` and `verify` call the server through `app/src/you/sign-in-wire.ts` (bc23fd2d); Apple and Google unchanged; no words changed | signing in is real now that the server has one auth store (finalization AP1); `app/e2e/onboarding.test.mjs` answers the two auth routes, 35 of 35 on the Mac |
 | `app/src/ui/parts/search-field.tsx` | `focused` (opens typing; a submit clears and stays ready) and `onOpen` (a press opens elsewhere) | the takeover's bar, and Buy's field as its door |
 | `app/src/ui/icon.tsx` | `accessible` is passed only when there is a label | `accessible={false}` reached the SVG on web and raised a React warning toast on every page |
 | `app/src/ui/motion.ts` | `sourceIn`, `listingIn`, `barDrop`, each with its reason | M4: every motion is named |
