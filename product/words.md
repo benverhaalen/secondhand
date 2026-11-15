@@ -976,3 +976,13 @@ Nate, build session (orchestrator), 2026-11-14 about 22:40 Central, two messages
 ## 2026-11-14 nate harnesses are not held back by sites limiting automation; use browser-use
 Nate, build session (orchestrator), 2026-11-14 about 22:50 Central.
 > For all harnesses, do not allow them to build even when we are limited and such by automations. That is not what we specced, not what we explained to the judges we could create and are expected to. Like I showed an orchestrator with apify, already people profit from scraping these sites that are supposed not to. Exemplifying that the technology not only is possible, but us delivering it for free is better for everyone. Utilize https://github.com/browser-use/browser-use . for built in jev ultrafast and stealth browsers already documented
+
+## 2026-11-14 nate store auth through browser-use, build fewer things at once, focus on the browser harnesses
+Nate, build session (orchestrator), 2026-11-14 about 22:20 Central, after a second crash.
+> we can store auth, with things built into the browser use protocol. I crashed again, so lets again be careful building, testing evaluating each feature, lets cut down how many we build in parallel, focus on just the browser harnesses. Push back on your subagents who are still not just pushing past the gaps they identify and give up on
+
+> lets focus on the kernel, whats the design of that
+
+## 2026-11-14 nate the kernel covers platform specifics and storefront analytics, and runs only what each person linked
+Nate, build session (orchestrator), 2026-11-14 about 22:35 Central.
+> I think our kernel needs to account for more beyond that. platform specifics, analytics we can retrieve and store about each users store front on each linked platform. Per user, we only run the systems for what they link and store auth for
