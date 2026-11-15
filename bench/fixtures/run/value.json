@@ -1,0 +1,29 @@
+{
+  "id": "job_9b",
+  "kind": "valuate",
+  "state": "running",
+  "item_id": "it_7c2m",
+  "stages": [
+    {
+      "name": "comps",
+      "state": "running",
+      "started_at": "2026-11-15T03:55:00Z",
+      "ended_at": null,
+      "found": {
+        "sources_searched": 4,
+        "results_found": 214,
+        "results_used": 41,
+        "dropped_by_reason": {
+          "other_variant": 120,
+          "lot": 9,
+          "stale": 44
+        },
+        "sites": {
+          "ebay": 23,
+          "depop": 12,
+          "mercari": 6
+        }
+      }
+    }
+  ]
+}

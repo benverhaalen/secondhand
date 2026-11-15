@@ -1,0 +1,157 @@
+{
+ "url": "https://www.mercari.com/search/?keyword=carhartt%20hoodie",
+ "recorded_at": "2026-11-15",
+ "status": 200,
+ "html": "",
+ "api": [
+  {
+   "op": "searchFacetQuery",
+   "body": {
+    "data": {
+     "search": {
+      "count": 17393,
+      "nextKey": "rw1:eyJiYWNrZW5kX3N0YXJ0X2tleSI6IiIsIm9mZnNldF9pbl93aW5kb3ciOjEwMCwic2VhcmNoX3BhZ2VfbnVtIjoyfQ==",
+      "page": {
+       "offset": 47,
+       "soldItemsOffset": 6,
+       "promotedItemsOffset": 47,
+       "__typename": "SearchPage"
+      },
+      "itemsList": [
+       {
+        "id": "m78454576562",
+        "name": "Carhartt Black Hoodie Sweatshirt",
+        "status": "on_sale",
+        "price": 2200,
+        "originalPrice": 2200,
+        "seller": {
+         "id": 900000001,
+         "sellerId": 900000001
+        },
+        "brand": {
+         "id": 1128,
+         "name": "Carhartt"
+        },
+        "itemSize": {
+         "name": "M (38-40)"
+        },
+        "itemCondition": {
+         "id": 3,
+         "name": "Good"
+        },
+        "categoryId": 306,
+        "created": 1790812207,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       },
+       {
+        "id": "m70626327324",
+        "name": "Carhartt hoodie size X-Large",
+        "status": "on_sale",
+        "price": 2000,
+        "originalPrice": 2000,
+        "seller": {
+         "id": 900000002,
+         "sellerId": 900000002
+        },
+        "brand": {
+         "id": 1128,
+         "name": "Carhartt"
+        },
+        "itemSize": {
+         "name": "XL (46-48)"
+        },
+        "itemCondition": {
+         "id": 2,
+         "name": "Like new"
+        },
+        "categoryId": 306,
+        "created": 1794594658,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       },
+       {
+        "id": "m23446474100",
+        "name": "Women’s Carhartt Hoodie, dark grey, 1XL",
+        "status": "on_sale",
+        "price": 2700,
+        "originalPrice": 2700,
+        "seller": {
+         "id": 900000003,
+         "sellerId": 900000003
+        },
+        "brand": {
+         "id": 1128,
+         "name": "Carhartt"
+        },
+        "itemSize": {
+         "name": "1X (16-18)"
+        },
+        "itemCondition": {
+         "id": 3,
+         "name": "Good"
+        },
+        "categoryId": 1980,
+        "created": 1794672862,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       },
+       {
+        "id": "m23938035619",
+        "name": "Carhartt Clarksburg army green sherpa-lined zip hoodie • Women’s M (8–10)",
+        "status": "on_sale",
+        "price": 2850,
+        "originalPrice": 3000,
+        "seller": {
+         "id": 900000004,
+         "sellerId": 900000004
+        },
+        "brand": {
+         "id": 1128,
+         "name": "Carhartt"
+        },
+        "itemSize": {
+         "name": "M (8-10)"
+        },
+        "itemCondition": {
+         "id": 3,
+         "name": "Good"
+        },
+        "categoryId": 1980,
+        "created": 1794596871,
+        "promoteType": 1,
+        "promoteExpireTime": 1794964514
+       },
+       {
+        "id": "m23851589493",
+        "name": "Carhartt Sweatshirt",
+        "status": "trading",
+        "price": 1200,
+        "originalPrice": 1200,
+        "seller": {
+         "id": 900000005,
+         "sellerId": 900000005
+        },
+        "brand": {
+         "id": 1128,
+         "name": "Carhartt"
+        },
+        "itemSize": {
+         "name": "S (34-36)"
+        },
+        "itemCondition": {
+         "id": 3,
+         "name": "Good"
+        },
+        "categoryId": 306,
+        "created": 1794698842,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

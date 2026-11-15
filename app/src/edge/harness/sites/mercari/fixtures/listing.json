@@ -1,0 +1,7 @@
+{
+ "url": "https://www.mercari.com/us/item/m23851589493/",
+ "recorded_at": "2026-11-15",
+ "status": 200,
+ "html": "<script id=\"__NEXT_DATA__\" type=\"application/json\">{\"props\":{\"pageProps\":{\"statusCode\":200,\"gqlErrorCode\":null,\"serverState\":{\"ItemDetail:m23851589493\":{\"id\":\"m23851589493\",\"status\":\"trading\",\"isWebVisible\":true,\"name\":\"Carhartt Sweatshirt\",\"price\":1200,\"originalPrice\":1200,\"numLikes\":3,\"created\":1794698842,\"updated\":1794725824,\"lastSoldAt\":null,\"description\":\"Carhartt Loose Fit Sweatshirt \\nSize Small\\nIn great condition\",\"isOfferable\":false,\"discountRatio\":0,\"seller\":{\"__ref\":\"PublicUser:900000005\"}},\"PublicUser:900000005\":{\"id\":900000005,\"created\":1572982814,\"numSellItems\":326,\"numSales\":297,\"name\":\"Seller A\",\"username\":\"user900000005\",\"ratings\":{\"__typename\":\"Ratings\",\"count\":466,\"average\":5}}}}}}</script>",
+ "api": []
+}

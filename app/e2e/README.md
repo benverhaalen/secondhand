@@ -46,3 +46,7 @@ A flow is data: [demos/](demos/)`<flow>.json`, a list of steps, each one key. A 
 | `today` | Accepting an offer on the jacket, Undo, then countering instead |
 | `new` | ＋ opens the camera; a still reads Carhartt and asks Same thing?; the lamp that could be two things, and the maker's mark that stops the quick sale |
 | `sell` | Sell filtered to Needs you and Live, then ＋, What's it worth, three stills, and the jacket's value |
+
+## Why Playwright, not Stagehand
+
+Ben asked at 04:11 whether Stagehand beats Playwright. For these tests it does not: they check our own screens, so every step must be exact, repeatable and free, and a model choosing what to click would make a pass mean less and cost a call per step. Stagehand runs on Playwright and fits sites we do not control, where the page changes under us; that is the harness, which uses browser-use with cached replays the same way ([ai-harness-from-repos](../../research/cross-cutting/ben/ai-harness-from-repos.md)). *Agent decision.*

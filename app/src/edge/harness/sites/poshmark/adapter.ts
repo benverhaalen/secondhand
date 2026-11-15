@@ -319,10 +319,14 @@ const WRITES: Record<'post' | 'revise' | 'end' | 'relist' | 'send_message' | 'an
     return { dry: true, url: URLS.listing(lid), request: { listing_external_id: lid, to: 'followers' }, steps: ['open the listing', 'tap Share', 'stop before To My Followers'] };
   },
 };
+const PERSON_DONE: ReadonlySet<keyof typeof WRITES> = new Set(['share', 'save', 'relist']);
 const write = (verb: keyof typeof WRITES) => async (c: Client, a: CallArgs): Promise<AdapterResult> => {
   const plan = WRITES[verb](a);
   if ('ok' in plan) return plan;
   if (a.dry !== false) return { ok: true, data: plan };
+  // Poshmark's guidelines name automated sharing, liking and reposting, so the system never submits these three: the app
+  // suggests them and opens the page in its own browser for the person to tap (Nate, product/words.md 2026-11-15).
+  if (PERSON_DONE.has(verb)) return fail('no_route', `${verb} is done by the person on Poshmark`, { do: 'handoff', url: plan.url });
   if (!c.signed_in) return relink();
   // No submit has been observed with a linked account yet, so a real write hands the person the page.
   return fail('no_route', `${verb} has no proved submit yet`, { do: 'handoff', url: plan.url });

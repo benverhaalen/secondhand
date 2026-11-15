@@ -1559,3 +1559,10 @@ Ben, project chat, 08:31 to 08:34 UTC (excerpts that concern product scope; the 
 > ensure to instruct research flows to not use opus subagents
 
 Used in: [decisions.md](decisions.md), [roi.md](roi.md), [feature-breakdown.md](feature-breakdown.md#10-hot-and-seasons-dropped), [jobs/studio/slides_run.py](../jobs/studio/slides_run.py). Note: the event-effect estimator listed under the 08:09 entry is parked since 08:31, run by nothing.
+## 2026-11-15 nate poshmark share, like and repost are suggested and the person taps
+Nate, build session (orchestrator), 2026-11-15 about 04:40 Central, after the Poshmark harness build reported that Poshmark's terms name automated liking, sharing and reposting. Two messages.
+> well lets have suggestions for liking sharing, reposting and such, or the things we can't automate we link directly, or even pull up an in app browser ideally for them to do it
+
+> just the poshmark one
+
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/waiting.md).
