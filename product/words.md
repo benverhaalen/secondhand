@@ -966,3 +966,13 @@ Ben, on the round 11 picks page, saved 2026-11-15 03:37 UTC; he wrote "done with
 
 **Overall.**
 > align on ui. focus on creating the basics and examples of great and bad ui practices and all those ways of really greatly creating ui or design under one brand and defining the brand in a human and agent readable way and interpretable way. also for the ui loop, the image ideation portion should be about screen organization under the design family rules and then the agent uses the brand system to recreate it and it notices if it should or shouldn't create new ones. it thinks very intentionally across what is needed in each thing
+
+## 2026-11-14 nate each harness is built from what it understands of the site, as documented endpoints such as /write-listing
+Nate, build session (orchestrator), 2026-11-14 about 22:40 Central, two messages as the five platform teams started.
+> watch out claude, its starting to slow down and get dangerous with how much memory is being used
+
+> Theres not so much one template to follow, but each harness is intelligentlly built from what it understands about web structure, , deterministic accuracy to always assure the best page navigation and understanding, to create well documented endpoints that can even just be slash commands or endpoints whatever's best, like /write-listing with the listing then provided from the app
+
+## 2026-11-14 nate harnesses are not held back by sites limiting automation; use browser-use
+Nate, build session (orchestrator), 2026-11-14 about 22:50 Central.
+> For all harnesses, do not allow them to build even when we are limited and such by automations. That is not what we specced, not what we explained to the judges we could create and are expected to. Like I showed an orchestrator with apify, already people profit from scraping these sites that are supposed not to. Exemplifying that the technology not only is possible, but us delivering it for free is better for everyone. Utilize https://github.com/browser-use/browser-use . for built in jev ultrafast and stealth browsers already documented
