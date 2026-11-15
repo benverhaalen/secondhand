@@ -1,0 +1,7 @@
+[
+ {"kill":true}, {"launch":true}, {"wait":{"id":"tab-buy"},"timeout":30000},
+ {"tap":"tab-buy"}, {"wait":{"id":"buy-search"}}, {"tap":"buy-search"}, {"wait":{"id":"shop-bar"}},
+ {"sleep":800}, {"tap":"shop-bar"}, {"wait":{"id":"shop-bar-input"}}, {"type":"${Q}"}, {"mark":"tap_search"}, {"key":"return"},
+ {"wait":{"prefix":"float-"},"timeout":20000}, {"mark":"first_frame"},
+ {"wait":"for sale now","timeout":30000}, {"mark":"settled"}
+]

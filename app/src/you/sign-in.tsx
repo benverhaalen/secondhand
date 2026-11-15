@@ -3,15 +3,18 @@ import { ApiFailure } from '@/api/client';
 import { AccountField } from '@/account/field';
 import { accountError } from '@/account/session';
 import { FootButton, Nav, Pill, Screen, Stack, Txt, log } from '@/ui';
-import { emailSignIn } from './sign-in-wire';
+import { emailSignIn, googleSignIn, GoogleSignInUnavailable, type GoogleTokenProvider } from './sign-in-wire';
+import { GoogleSignInButton } from '../ui/parts/google-sign-in';
 import type { ScreenState } from '@/demo/screen';
 
 type Phase = 'email' | 'code';
-export function SignIn({ asked, onDone }: { asked: ScreenState | null; onDone: () => void | Promise<void> }) {
+export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenState | null; onDone: () => void | Promise<void>; requestGoogleToken?: GoogleTokenProvider }) {
   const [phase, setPhase] = useState<Phase>('email');
   const [address, setAddress] = useState(''), [code, setCode] = useState('');
-  const [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
-  const [resendAt, setResendAt] = useState(0), [now, setNow] = useState(Date.now());
+  const [emailBusy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
+  const [resendAt, setResendAt] = useState(0), [now, setNow] = useState(() => Date.now());
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const busy = emailBusy || googleBusy;
   const offline = asked === 'offline';
   const email = address.trim(), valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const wait = Math.max(0, Math.ceil((resendAt - now) / 1000));
@@ -20,6 +23,15 @@ export function SignIn({ asked, onDone }: { asked: ScreenState | null; onDone: (
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [resendAt]);
+  const signInWithGoogle = async () => {
+    if (busy || offline) return;
+    setGoogleBusy(true); setError(null);
+    try { if (await googleSignIn(requestGoogleToken)) await onDone(); }
+    catch (failure) {
+      log.error('sign-in.google', failure instanceof ApiFailure ? new Error(`Google sign-in failed (${failure.status})`) : new Error('Google provider unavailable'));
+      setError(failure instanceof GoogleSignInUnavailable ? 'Google sign-in is not available yet. Continue with email.' : accountError(failure));
+    } finally { setGoogleBusy(false); }
+  };
   const send = async () => {
     if (busy || !valid || offline) return;
     setBusy(true); setError(null);
@@ -45,12 +57,16 @@ export function SignIn({ asked, onDone }: { asked: ScreenState | null; onDone: (
     nav={<Nav back={phase === 'code' ? () => { setPhase('email'); setCode(''); setError(null); } : undefined} />}
     foot={<FootButton id={phase === 'email' ? 'signin-email-send' : 'signin-email-verify'}
       label={phase === 'email' ? 'Continue with email' : 'Continue'} step={phase === 'email' ? 'Sending code' : 'Signing in'}
-      state={busy ? 'working' : offline || (phase === 'email' ? !valid : code.length !== 6) ? 'disabled' : 'idle'}
+      state={googleBusy ? 'disabled' : busy ? 'working' : offline || (phase === 'email' ? !valid : code.length !== 6) ? 'disabled' : 'idle'}
       onPress={phase === 'email' ? send : verify} />}>
     <Stack gap="tight">
-      <Txt role="heading">{phase === 'email' ? 'Welcome to secondhand' : 'Check your email'}</Txt>
-      <Txt role="body" tone="ink-2">{phase === 'email' ? 'Create an account or sign in with a code. No password needed.' : `Enter the code sent to ${email}.`}</Txt>
+      <Txt role="heading">{phase === 'email' ? 'Welcome' : 'Check your email'}</Txt>
+      <Txt role="body" tone="ink-2">{phase === 'email' ? 'Sign in with Google or get a code by email.' : `Enter the code sent to ${email}.`}</Txt>
     </Stack>
+    {phase === 'email' ? <>
+      <GoogleSignInButton busy={googleBusy} disabled={emailBusy || offline} onPress={signInWithGoogle} />
+      <Txt center tone="ink-2">or use your email</Txt>
+    </> : null}
     <AccountField kind={phase} value={phase === 'email' ? address : code} disabled={busy}
       onChange={value => { setError(null); if (phase === 'email') setAddress(value); else setCode(value.replace(/\D/g, '').slice(0, 6)); }}
       onSubmit={phase === 'email' ? send : verify} />

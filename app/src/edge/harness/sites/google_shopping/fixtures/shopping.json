@@ -1,0 +1,10 @@
+{
+  "searchParameters": { "q": "invented jacket", "gl": "us" },
+  "shopping": [
+    { "title": "Invented used jacket", "source": "eBay - example_seller", "link": "https://www.google.com/shopping/product/EXAMPLE_USED", "price": "$59.47", "imageUrl": "https://example.invalid/used.jpg", "productId": "EXAMPLE_USED", "position": 1 },
+    { "title": "Invented retail jacket", "source": "Walmart", "link": "https://www.google.com/shopping/product/EXAMPLE_RETAIL", "price": "$1,299.00", "position": 2 },
+    { "title": "Invented foreign price", "link": "https://example.invalid/foreign", "price": "€20.00" },
+    { "title": "Invented missing price", "link": "https://example.invalid/missing", "price": "Call for price" }
+  ],
+  "credits": 1
+}

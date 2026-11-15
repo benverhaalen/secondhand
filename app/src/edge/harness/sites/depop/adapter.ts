@@ -171,9 +171,9 @@ async function readListings(c: Client, a: CallArgs, s: AbortSignal): Promise<Ada
         rows.set(row.external_id, row);
       }
       const page = at(r.body, 'page_info');
-      if (at(page, 'has_more') === false) break;
+      if (at(page, 'has_more') !== true) break; // no page_info, or has_more false: this was the last page
       const cursor = str(at(page, 'last'));
-      if (at(page, 'has_more') !== true || !cursor || cursors.has(cursor)) return changed(`${w} pagination cursor`);
+      if (!cursor || cursors.has(cursor)) return changed(`${w} pagination cursor`);
       cursors.add(cursor);
       path = `${base}&offset=${encodeURIComponent(cursor)}`;
     }

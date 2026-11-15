@@ -1,14 +1,11 @@
 #!/usr/bin/env node
 // Writes the three variants of board 2 (a.html, b.html, c.html) from one template, so they differ only in what moves.
 //   node brand/explore/web-home/boards/02-ambient/make.mjs
-// Shared by all three: dark by default in the look of the dark Today (Ben, 05:49), the line alone (his pick on board 1), the two hands
-// beside the wordmark (L52; Phosphor's open hand as a stand-in until R35 is drawn), and "second hand" set in Clofie.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const here = import.meta.dirname, root = join(here, '../../../../..');
-const hand = readFileSync(join(here, '../../photos/hand.svg'), 'utf8')
-  .replace('<svg ', '<svg class="hand" aria-hidden="true" width="24" height="24" ');
+const tag = '<img class="brand-mark" data-part="brand-mark" src="../../../../mark.svg" width="24" height="28" alt="">';
 const items = ['hoodie', 'jacket', 'tee', 'jeans', 'pants', 'fleece', 'dunks', 'tee-close'];
 const alt = { hoodie: 'A red Chico hoodie', jacket: 'A brown Carhartt jacket', tee: 'A yellow Marquette tee', jeans: 'Folded Levi’s 501 jeans', pants: 'Black Carhartt pants', fleece: 'A cream Patagonia fleece', dunks: 'Grey Nike Dunks', 'tee-close': 'The Marquette tee’s print, close' };
 const tile = n => `<img src="../../photos/items/${n}.webp" alt="${alt[n]}" width="208" height="208" loading="eager" decoding="async">`;
@@ -73,8 +70,6 @@ for (const [id, v] of Object.entries(variants)) {
 <!-- Written by make.mjs. ${v.note} -->
 <style>
   .lockup { display: inline-flex; align-items: center; text-decoration: none; }
-  .lockup .hand { margin-inline: 12px; }
-  .lockup .hand:first-child { margin-left: 0; } .lockup .hand:last-child { margin-right: 0; transform: scaleX(-1); }
   .hl { font-family: var(--font-display); font-weight: var(--w-display); white-space: nowrap; letter-spacing: -0.01em; }
   header { color: var(--ink); }
   .hero { position: relative; isolation: isolate; min-height: 100svh; display: grid; grid-template-rows: 1fr auto; gap: var(--s-8); padding: 72px var(--mx) var(--mx); background: var(--page); }
@@ -94,7 +89,7 @@ ${v.css}
   <section class="hero">
     <header>
       <div class="wrap">
-        <a class="lockup" href="#" aria-label="secondhand">${hand}<span class="wordmark">secondhand</span>${hand}</a>
+        <a class="lockup" href="#" aria-label="secondhand">${tag}<span class="wordmark">secondhand</span></a>
         <nav aria-label="Pages"><a href="#">How it works</a><a href="#">Sites and fees</a><a href="#">The data</a><a href="#">FAQ</a></nav>
         <a class="signin" href="#">Sign in</a>
       </div>

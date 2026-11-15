@@ -262,3 +262,27 @@ test('wants: file store reopening preserves seed versions and edits', async () =
     assert.equal(reopened.get('want', 'usr_8f2k', row.id)?.version, 2);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
+
+test('want from the camera: product_id and capture_id are kept, and only the caller\'s own capture is accepted', async () => {
+  const { resetCaptures } = await import('./captures.ts');
+  resetCaptures(); // seeds cap_3n9q for usr_8f2k
+  const create = examples.find(e => e.name === 'wants.create')!;
+  const base = create.request!.body as Record<string, unknown>;
+  let n = 0;
+  const post = (body: unknown, token?: string) => call(create, { body, token, headers: { 'Idempotency-Key': 'camera_' + n++ } });
+  const r = await post({ ...base, product_id: 'pr_4hd1', capture_id: 'cap_3n9q' });
+  assert.equal(r.status, 201);
+  const made = await r.json();
+  assert.equal(made.product_id, 'pr_4hd1'); assert.equal(made.capture_id, 'cap_3n9q');
+  const read = await call(examples.find(e => e.name === 'wants.get')!, { path: '/v1/wants/' + made.id });
+  const stored = await read.json();
+  assert.equal(stored.product_id, 'pr_4hd1'); assert.equal(stored.capture_id, 'cap_3n9q');
+  const foreign = await post({ ...base, capture_id: 'cap_3n9q' }, 'other');
+  assert.equal(foreign.status, 404); assert.equal((await foreign.json()).code, 'not_found');
+  assert.equal(store.rows('want', { user_id: 'usr_other' }).length, 0);
+  assert.equal((await post({ ...base, capture_id: 'cap_missing' })).status, 404);
+  for (const bad of [{ product_id: 7 }, { product_id: '' }, { capture_id: 'cap 3n9q' }, { product_id: 'pr_4hd1; drop' }, { capture_id: null }]) {
+    const refused = await post({ ...base, ...bad });
+    assert.equal(refused.status, 400, JSON.stringify(bad)); assert.equal((await refused.json()).code, 'invalid');
+  }
+});

@@ -150,6 +150,44 @@ RETURNS TABLE (site STRING, kind STRING, rows BIGINT, oldest_read TIMESTAMP, new
 COMMENT 'Current coverage by site and page category, with rows as count and newest_read as freshness. Only may_model true evidence, never Dupe, live: reads within retention.'
 RETURN SELECT site, kind, rows, oldest_read, newest_read FROM secondhand.market_check.coverage;
 
+CREATE OR REPLACE FUNCTION secondhand.market_check.similar_min_shared_terms()
+RETURNS INT
+COMMENT 'Minimum count from the global champion scalar, or prior 2. Only may_model true evidence, never Dupe, live: reads within retention.'
+RETURN coalesce((SELECT cast(get_json_object(value_or_hyperparams, '$') AS INT)
+  FROM secondhand.market_check.param
+  WHERE name = 'similar_min_shared_terms' AND scope = '{}' AND status = 'champion'
+  ORDER BY version DESC
+  LIMIT 1), 2);
+
+CREATE OR REPLACE FUNCTION secondhand.market_check.title_terms(title STRING)
+RETURNS ARRAY<STRING>
+COMMENT 'Shared Unicode title tokenizer for listing reads and DB20 competition word lists. Only may_model true evidence, never Dupe, live: reads within retention.'
+RETURN filter(split(lower(coalesce(title_terms.title, '')), r'[^\p{L}\p{N}]+'), word -> word <> '');
+
+CREATE OR REPLACE FUNCTION secondhand.market_check.similar_group(kind STRING, brand STRING, title_terms ARRAY<STRING>)
+RETURNS TABLE (observation_id STRING, site STRING, kind STRING, brand_norm STRING, title_terms ARRAY<STRING>, shared_terms INT, n BIGINT, as_of TIMESTAMP)
+COMMENT 'Same kind and a different known brand, ranked by distinct shared title words, not attribute equivalence. Requires similar_min_shared_terms and market_min_n group rows. Missing brands and empty titles never match. Only may_model true evidence, never Dupe, live: reads within retention.'
+RETURN
+WITH candidates AS (
+  SELECT o.observation_id, o.site, o.kind, o.brand_norm, o.title_terms,
+    size(array_intersect(o.title_terms, similar_group.title_terms)) AS shared_terms, o.read_at
+  FROM secondhand.market_check.listing_obs o
+  WHERE o.kind = similar_group.kind
+    AND nullif(trim(o.brand_norm), '') IS NOT NULL
+    AND nullif(trim(similar_group.brand), '') IS NOT NULL
+    AND lower(trim(o.brand_norm)) <> lower(trim(similar_group.brand))
+    AND size(o.title_terms) > 0 AND size(similar_group.title_terms) > 0
+), matched AS (
+  SELECT observation_id, site, kind, brand_norm, title_terms, shared_terms,
+    count(*) OVER () AS n, max(read_at) OVER () AS as_of
+  FROM candidates
+  WHERE shared_terms >= secondhand.market_check.similar_min_shared_terms()
+    AND shared_terms > 0
+)
+SELECT observation_id, site, kind, brand_norm, title_terms, shared_terms, n, as_of
+FROM matched WHERE n >= secondhand.market_check.market_min_n()
+ORDER BY shared_terms DESC, observation_id;
+
 SELECT CASE WHEN count(*) = 1 AND count_if(site = 'A' AND n = 10 AND p50_cents = 550 AND p10_cents = 190 AND p90_cents = 910 AND likes_per_listing = 5.5 AND sold_share = 0.4 AND as_of IS NOT NULL) = 1
   THEN true ELSE raise_error('DBX-A1 asks A count and figures') END AS passed
 FROM secondhand.market_check.asks('vintage denim', 'A', 30);
@@ -221,5 +259,35 @@ DELETE FROM secondhand.market_check.param;
 SELECT CASE WHEN count(*) = 1 AND count_if(n = 10 AND p50_cents = 550) = 1
   THEN true ELSE raise_error('DBX-A1 missing param uses prior') END AS passed
 FROM secondhand.market_check.asks('vintage denim', 'A', 30);
+
+INSERT INTO secondhand.market_check.param VALUES
+  ('similar_min_shared_terms', '{}', 'champion', '2', 1),
+  ('similar_min_shared_terms', '{}', 'challenger', '99', 2),
+  ('similar_min_shared_terms', '{"kind":"clothes"}', 'champion', '99', 3);
+INSERT INTO secondhand.market_check.listing_obs (site, kind, brand_norm, title_terms, read_at, observation_id)
+SELECT 'C', 'clothes', 'another', array('vintage', 'denim', 'denim'), current_timestamp(), concat('off_brand_', id)
+FROM range(1, 9);
+INSERT INTO secondhand.market_check.listing_obs (site, kind, brand_norm, title_terms, read_at, observation_id) VALUES
+  ('C', 'clothes', ' TEST ', array('vintage', 'denim'), current_timestamp(), 'same_brand'),
+  ('C', 'shoes', 'another', array('vintage', 'denim'), current_timestamp(), 'other_kind'),
+  ('C', 'clothes', 'another', array('denim', 'denim'), current_timestamp(), 'too_few_terms'),
+  ('C', 'clothes', NULL, array('vintage', 'denim'), current_timestamp(), 'unknown_brand');
+
+SELECT CASE WHEN count(*) = 8 AND count_if(observation_id LIKE 'off_brand_%' AND kind = 'clothes' AND brand_norm = 'another' AND shared_terms = 2 AND n = 8 AND as_of IS NOT NULL) = 8
+  THEN true ELSE raise_error('DBX-A1 similar group only off-brand same-kind rows') END AS passed
+FROM secondhand.market_check.similar_group('clothes', 'test', array('vintage', 'denim', 'denim'));
+
+UPDATE secondhand.market_check.param SET value_or_hyperparams = '3' WHERE name = 'similar_min_shared_terms' AND scope = '{}' AND status = 'champion';
+SELECT CASE WHEN count(*) = 0 THEN true ELSE raise_error('DBX-A1 similar group shared-term champion') END AS passed
+FROM secondhand.market_check.similar_group('clothes', 'test', array('vintage', 'denim'));
+
+UPDATE secondhand.market_check.param SET value_or_hyperparams = '1' WHERE name = 'similar_min_shared_terms' AND scope = '{}' AND status = 'champion';
+SELECT CASE WHEN count(*) = 9 AND count_if(n = 9 AND shared_terms >= 1 AND as_of IS NOT NULL) = 9
+  THEN true ELSE raise_error('DBX-A1 similar group shared-term champion expands membership') END AS passed
+FROM secondhand.market_check.similar_group('clothes', 'test', array('vintage', 'denim'));
+
+INSERT INTO secondhand.market_check.param VALUES ('market_min_n', '{}', 'champion', '10', 1);
+SELECT CASE WHEN count(*) = 0 THEN true ELSE raise_error('DBX-A1 similar group minimum count') END AS passed
+FROM secondhand.market_check.similar_group('clothes', 'test', array('vintage', 'denim'));
 
 DROP SCHEMA secondhand.market_check CASCADE;

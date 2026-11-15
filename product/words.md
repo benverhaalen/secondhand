@@ -2387,3 +2387,70 @@ Nate, the engines lead's session, 2026-11-15, about 13:39 UTC, answering what co
 > 3 total for hackathon, with plans to parenter with a link referrel service or however best to say that
 
 Used in: [packet 70](../.agents/team/packets/team/70-engines-handoff.md).
+
+## 2026-11-15 nate ben handles the sign-in proof, we validate the full backend
+Nate, the search lead's session, 2026-11-15, about 13:40 UTC, after the harness coverage table showed every monitor, manage and analytics verb waiting on a linked account.
+> ben will handle sign in proof, we are focusing on validating the full backend, chekcing and ensuring everything works,
+
+Used in: [harness coverage](../research/cross-cutting/nate/runs/harness-coverage-2026-11-15.md), [packet 88](../.agents/team/packets/team/88-search-handoff.md).
+
+## 2026-11-15 nate apify for facebook marketplace only; ebay through treg and our own pages
+Nate, the Databricks lead's session, 2026-11-15, about 13:40 UTC, while the lead was writing the rights rows for every live source (row DB11), which had allowed rows from any site read through an Apify actor.
+> apify for fb marketpalce only
+
+> we have treg for ebay and our own slow pages
+
+Read by the Databricks lead: an Apify row is a Facebook Marketplace row; a line from any other site through Apify has no rights row and is refused. eBay rows come through treg and our own page reads; eBay content still never fits a model, by any route ([data use](../spec/data-use.md)).
+
+Used in: [finalization.md DB11](../spec/plans/finalization.md), the rights brief `brief-dbx-rights-1`.
+
+## 2026-11-15 nate the clarifying question widgets belong in the intelligent ui too
+Nate, the orchestrator's session, 2026-11-15, about 13:50 UTC.
+> I think we can add those clarifying question widgest to the intelligent ui too
+
+Read by the orchestrator as: the generative clarifying-question widgets built for capture (prepopulated selects when the system is fairly sure) also appear in the buying chat's answers; one block shape and one drawn part for both. Sent to the capture lead and the engines lead.
+
+## 2026-11-15 nate fix the server to be up so photos work
+Nate, the server-core lead's session, 2026-11-15, about 13:45 UTC.
+> Fix the server to be up, so photos work, be efficient, fast, get things working and stop models if it means you can fix this so we can have capture, searching all features working and pushed to main
+
+Then, on sign-in: "are we using vercel auth? i can add sign in with google", and "whatever is the way to set up auth do it, i made a new cloud project".
+
+Read by the server-core lead as: redeploy main to the Fly app now, compose the photo store and the capture upload targets, and set up Google sign-in in the new Cloud project. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md).
+
+## 2026-11-15 nate organize, shut down what is finished, get it working yourself, check with Ben, keep testing with Codex
+Nate, the orchestrator's session, 2026-11-15, about 14:00 UTC.
+> Lets have you fully start to organize and shut down running subagents when completed. assess what works, you yourself get it working, check with ben, we continously test with codex andd such
+
+Used in: [the finalization spec, section 13](../spec/plans/finalization.md).
+## 2026-11-15 paired tags replace hand branding
+
+Ben, Codex chat:
+> use the tags and then create an icon for it and make it an svg and make it have a transparent background and then remove all the hand icon ideas and parts of the logos from the website in the repo and get the app icon to actually be the one with tags and align the tags once separated and isolated to be in expert ui ux practices in alignment vertically and horizontally to the left of the wordmark where an expert would put it also on the app too
+
+Used in: brand/mark.svg, brand/constitution.md C1, app/src/ui/brand-mark.tsx, app/app.json, web/components/chrome.tsx, brand/explore/web-home.
+
+## 2026-11-15 Google sign-in UI for Nate to connect
+
+Ben, same Codex chat:
+> add a sign in with google to the app ui that nate can wire on the backend
+
+Used in: app/src/you/sign-in.tsx and sign-in-wire.ts. The UI does not claim a session until the existing server exchange succeeds.
+
+## 2026-11-15 nate when the price cannot be set, the number of listings is the signal
+Nate, the search lead's session, 2026-11-15, about 14:03 UTC, answering whether Google Shopping rows (shown, never judged for the same product) should be filtered for display.
+> well, no, if we can't determine price, we maybe grab details on how many lsitings are there, and that indicates something, perhaps that none are being sold, that it was popular, theres alot there
+
+Used in: [packet 88](../.agents/team/packets/team/88-search-handoff.md).
+
+## 2026-11-15 nate systems working before the look
+Nate, the app's native-walks lead session, 2026-11-15, about 14:05 UTC, while the walks were reading screenshots against the brand card.
+> dont focus on ui as much as you should getting every system to work. then we can return
+
+Used in: section 6 of [finalization.md](../spec/plans/finalization.md) (the native walk table lists each failing system with its owner; the look findings are parked for Ben).
+
+## 2026-11-15 nate the browser sign-in window works end to end
+Nate, the app's native-walks lead session, 2026-11-15, about 13:40 UTC.
+> ensure the browser actions work, like the sesion window pops up for the user to authenticate, answer 2fa if needed, etc
+
+Used in: the connect walk in section 6 of [finalization.md](../spec/plans/finalization.md); `app/src/account/services.tsx`, `app/src/edge/connect/hosted.ts`.

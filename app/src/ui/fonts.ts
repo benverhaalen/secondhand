@@ -6,6 +6,7 @@ import { Asset } from 'expo-asset';
 import { useFonts } from 'expo-font';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
+import { log } from './log';
 import { font, weight } from './tokens.generated';
 
 const files = require.context('../../assets/fonts', false, /\.(otf|ttf)$/);
@@ -45,7 +46,7 @@ export const FACE = {
 } as { text: string; display: string };
 // True when a phone build has no brand faces: the screen draws in the open pair, and the dev build says so once.
 export const MISSING_FACES = !web && !FACES.every(on);
-if (MISSING_FACES && typeof __DEV__ !== 'undefined' && __DEV__) console.warn('secondhand: brand fonts missing from app/assets/fonts, drawing in the open pair; run `npm run fonts` in app/');
+if (MISSING_FACES && typeof __DEV__ !== 'undefined' && __DEV__) log.note('brand fonts missing from app/assets/fonts, drawing in the open pair; run npm run fonts in app/');
 
 // Both open faces always load on a phone (56 and 68 KB), so a brand file that appears later needs no code change.
 const nativeMap: Record<string, number> = web ? {} : Object.fromEntries([...FACES.filter(on).map(f => [f.key, f.file as number]), ...OPENS.map(f => [f.key, f.file])]);
