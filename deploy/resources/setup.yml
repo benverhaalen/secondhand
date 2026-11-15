@@ -1,0 +1,19 @@
+resources:
+  jobs:
+    setup:
+      name: secondhand-setup
+      tasks:
+        - task_key: layout
+          sql_task:
+            file: { path: ../../databricks/sql/00_layout.sql, source: WORKSPACE }
+            warehouse_id: ${var.warehouse_id}
+        - task_key: tables
+          depends_on: [{ task_key: layout }]
+          sql_task:
+            file: { path: ../../databricks/sql/01_tables.sql, source: WORKSPACE }
+            warehouse_id: ${var.warehouse_id}
+        - task_key: governance
+          depends_on: [{ task_key: tables }]
+          sql_task:
+            file: { path: ../../databricks/sql/02_governance.sql, source: WORKSPACE }
+            warehouse_id: ${var.warehouse_id}
