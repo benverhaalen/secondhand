@@ -13,6 +13,7 @@ import { page as galleryPage, screens, slug } from './app-gallery.mjs';
 import { judge } from '../.agents/checks/render.mjs';
 import { scales } from '../.agents/checks/brand.mjs';
 import { find, routes, serve } from '../app/e2e/web.mjs';
+import { compose, INSETS, insetScript, snapshot } from './composition.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 export const RENDERS = join(root, 'features/app/renders');
@@ -81,10 +82,22 @@ export async function checkPage(url, { browser, dark = false } = {}) {
   return { findings, screens };
 }
 
-// A picture of the whole screen at 2x: as tall as its content, so nothing below the fold is missed.
+// How the first screen is composed, judged with the phone's insets (scripts/composition.mjs, Art. 7.11 to 7.16).
+export async function checkComposition(url, { browser, route, typical = true }) {
+  const page = await browser.newPage({ viewport: { width: W, height: H } });
+  try {
+    await page.addInitScript(insetScript(INSETS));
+    await page.goto(url, { waitUntil: 'load' }); await settle(page);
+    return compose(await page.evaluate(snapshot, { insetTop: INSETS.top }), { route, typical });
+  } finally { await page.close(); }
+}
+
+// A picture of the whole screen at 2x: as tall as its content, so nothing below the fold is missed. It has the phone's
+// insets, so the top of a screen shows what sits under the clock on an iPhone.
 export async function shoot(url, file, { browser, dark = false } = {}) {
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 2, colorScheme: dark ? 'dark' : 'light' });
   try {
+    await page.addInitScript(insetScript(INSETS));
     await page.goto(url, { waitUntil: 'load' }); await settle(page);
     const { height, view } = await scroller(page);
     if (height > view) { await page.setViewportSize({ width: W, height: Math.min(H * MAX_SCREENS, H + height - view) }); await settle(page); }
@@ -150,6 +163,7 @@ export async function checkRoute({ route, path }, { browser, base, out = RENDERS
   // B35 for the screen: every required state is drawn on one of its pages, url?state=<s> (app/src/demo/screen.ts), or skipped with why.
   // The state page drops ?world= and replaces any ?state=, so a route checked with its own query asks the same question.
   const washed = own.catalog ? null : washRule(route, own.wash); if (washed) list.push(washed);
+  if (!catalog) list.push(...await checkComposition(url, { browser, route, typical: !new URL(url).searchParams.has('state') }));
   const have = new Set(own.states), skip = new Map();
   const skips = n => { for (const x of n.skip.split(';')) { const [id, why] = x.split(':').map(y => y.trim()); if (id) skip.set(id, why ?? ''); } };
   skips(own);

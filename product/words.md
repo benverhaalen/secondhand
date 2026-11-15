@@ -1813,3 +1813,23 @@ Nate, build session (orchestrator), 2026-11-15 between about 15:45 and 16:00 Cen
 > ensure the sessions end, as each team lead is reaching their context load, and ideally stop at 50% to 60% filled
 
 Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "A session ends before it fills"; `spec/plans/optimization-gaps.md`.
+
+## 2026-11-15 the app looks nothing like the mocks: hierarchy, spacing, what stacks and what has color
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 09:30 UTC (relayed from another thread).
+
+> so it doesnt look like the mocks you gave me why. figure it out from logging. use some sort of way to run automations on my actual phone with the app. and fix why like fonts arent loading and why the top is cut off. spacing is weird. it feels sloppy. incohesive. look at all the mocks you gave and audit and figure out why the implementation missed the mark and how to write tests to fix it. im confused how you got really good ui to look using code in one way but then on the actual app it looks so so ai slop and bad. also audit from like an expert in context too.
+
+Ben, same thread, 09:38 UTC.
+
+> all messages in here just feed to codex. identify where the example ones differ from the example ones i approved. find the ones i really liked and why. a problem i have is there is not really a super clear hierarchy for a lot of it. finding why it just looks nothing like code stuff that i actually approved. continuously auditing for the expert principles and the design constitution and the rules for how to write great code in the language for ui design like an expert. how to actually expertly do it
+
+Ben, same thread, 09:44 UTC.
+
+> my main critique is it lacks hierarchy across generalized pages. the spacing feels off and very ai sloppy. i feel like there is no consistency. why do some things stack. why do some have color. it all feels very random and unintentional and rules need to be written to make it intentional to how an expert would fix it
+
+Ben, same thread, 09:47 UTC.
+
+> wait stop on this just focus on deslopping and improving the ai. through this note down where things break and where things need to change and use effective logging
+
+Used in: [brand/constitution.md Art. 7.11 to 7.16](../brand/constitution.md#article-7-space-and-layout), `scripts/composition.mjs` (U9 to U14), [the audit](../research/cross-cutting/ben/why-the-app-missed-the-mocks.md), [the breaks log](../features/app/breaks.md).
