@@ -7,6 +7,7 @@ import { fileSink } from '../log/node.js';
 import { SOURCES } from '../app/src/edge/intel/public/sources.ts';
 import { readPage, searchUrl } from '../app/src/edge/intel/public/readers.ts';
 import { answerCost } from './costs.mjs';
+import { DEFAULT_PARAMS } from '../app/src/edge/intel/fetch.ts';
 
 const kinds = ['sold_prices','live_listings','official_price','discounts','product_reviews','seller_reviews','demand_trend','time_to_sell','fees_per_site','you_keep','same_item_elsewhere','price_history'];
 const amount = x => Number.isInteger(x?.amount_cents) ? x.amount_cents : Number.isInteger(x) ? x : null;
@@ -59,7 +60,7 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
   if (!['secondhand','baseline'].includes(tool)) throw new Error('invalid tool: '+tool);
   const bytes=await readFile(manifestPath); const manifest=JSON.parse(bytes); const hash=createHash('sha256').update(bytes).digest('hex');
   const started=new Date(); const runId=started.toISOString().replace(/[:.]/g,'-')+'-'+(tool==='baseline'?'baseline':'ours'); const dir=join(outRoot,runId); await mkdir(join(dir,'raw'),{recursive:true}); const records=[]; let missing=0; const log=createLog({src:'bench.run',build:'dev',sink:fileSink(join(dir,'run.jsonl'))});
-  const seenSites=new Set();
+  const seenSites=new Set(), capturedSites=new Set(), servedPaths=[];
   if(tool!=='baseline') ask ??= await inProcess();
   log.note('benchmark input',{manifest:manifestPath,set,tool,manifest_sha256:hash});
   function readsOf(searched) {
@@ -143,9 +144,23 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
     const rawRef=`raw/${item.id}-${question}.json`; await writeFile(join(dir,rawRef),JSON.stringify(raw,null,2)+'\n');
     const mappedAnswer=tool==='baseline'?mapped({live_listings:responseBody?.baseline_count ?? 0},responseBody?.baseline_count?['poshmark']:[]):mapper(error ? {} : responseBody ?? {});
     const reads=readsOf([...searched.values()]);
+    const servedRefs=[];
+    if(question==='search' && tool!=='baseline') for(const read of searched.values()) {
+      if(!read.url || capturedSites.has(read.site) || !(read.outcome==='page_changed' || (read.outcome==='unknown' && read.reason==='no listing card'))) continue;
+      capturedSites.add(read.site);
+      try {
+        const source=sources.find(s=>s.site===read.site);
+        await sleep(source?.min_gap_ms ?? DEFAULT_PARAMS.base_delay_ms[0]);
+        const res=await log.call('http',read.url,{method:'GET'},()=>fetchPlain(read.url,{method:'GET',redirect:'manual'}),r=>({result:{status:r.status}}));
+        const headers=Object.fromEntries([...res.headers].filter(([name])=>!/cookie|authorization/i.test(name)));
+        const served={status:res.status,final_url:res.url || read.url,headers,body:await res.text(),fetched_at:new Date().toISOString()};
+        const ref=`raw/${item.id}-${read.site}-served.json`;
+        await writeFile(join(dir,ref),JSON.stringify(served,null,2)+'\n'); servedRefs.push(ref); servedPaths.push(join(dir,ref));
+      } catch(e) {log.error('bench.served',e);}
+    }
     const cost=tool==='baseline'?answerCost(reads,{browser_s:0,proxy_bytes:0,model_calls:0}):answerCost(reads,usage);
     const cited_facts=mappedAnswer.numbers.filter(n=>n.citation_id || n.evidence.length).length;
-    const record={run_id:runId,tool,item_id:item.id,manifest_sha256:hash,question,asked_at:asked.toISOString(),first_at:first,full_at:full,time_source:timeSource,ok:!error,error, ...mappedAnswer,reads,cost,cited_facts,...(tool==='baseline'?{lane:'plain'}:{}),delist:null,raw_ref:rawRef};
+    const record={run_id:runId,tool,item_id:item.id,manifest_sha256:hash,question,asked_at:asked.toISOString(),first_at:first,full_at:full,time_source:timeSource,ok:!error,error, ...mappedAnswer,reads,cost,cited_facts,...(tool==='baseline'?{lane:'plain'}:{}),delist:null,raw_ref:rawRef,...(servedRefs.length?{served_ref:servedRefs}:{})};
     log.change('benchmark_answer',`${item.id}:${question}`,error ?? 'done'); records.push(record); await appendFile(join(dir,'records.jsonl'),JSON.stringify(record)+'\n'); return {record,body:responseBody};
   }
   for(const item of manifest[set === 'market' ? 'market_items' : 'items']) {
@@ -156,7 +171,7 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
     if(id) await question(item,'product',`/v1/products/${encodeURIComponent(id)}`,{},mapProduct);
     await question(item,'value','/v1/valuations',{method:'POST',body:JSON.stringify({item_id:item.id})},mapValue);
   }
-  log.end(); process.stdout.write(`${missing} items had no query\n`); return records;
+  log.end(); process.stdout.write(`${missing} items had no query\n`); for(const path of servedPaths) process.stdout.write(`${path}\n`); return records;
 }
 if(process.argv[1] && import.meta.url===pathToFileURL(resolve(process.argv[1])).href) {
   const args=process.argv.slice(2); let base,timeoutS=20,set='market',tool='secondhand';
