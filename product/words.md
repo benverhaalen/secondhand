@@ -2625,3 +2625,11 @@ Source: Ben's direct message in the selling UI chat; recorded November 15, 2026.
 > dont completely overhaul ui and remove things just send packets to nate about it all
 
 This narrows the preceding data-wiring request: retain existing screens and controls. Send the integration gaps to Nate as packets; do not replace screens or remove functionality to work around missing backend support.
+
+## 2026-11-15 nate merge everything to complete and working, then a packet for Ben on how it looks
+Nate, the orchestrator's session, 2026-11-15, about 15:31 and 15:34 UTC by the machine clock, two messages.
+> Prioritize merging everyhting to complete and working , push and send packet to ben with insight into what it currently looks like, and /fast to get it done, dont utilize subagents all the time even when you can just focus on it
+
+> You can easily identify on each error and why, utilize documentation and focused subagent sent to assist you
+
+Used in: the full check's failures, each diagnosed by one focused seat while the orchestrator merges; the packet to Ben after main is green.
