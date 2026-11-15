@@ -1555,7 +1555,7 @@
     "expectExit": 0
    },
    "accepts": [
-    "envelope 8 of 8 (§9): ok, blocked, not_found with searched[], needs_session, rate_limited, changed, unknown_outcome, error",
+    "the 8 error codes of product.md#the-harness-protocol: auth_expired, not_found (hint carries searched[]), rate_limited, page_changed, blocked, policy_refused, outcome_unknown, no_route; needs_session lives on the manifest per verb and field",
     "manifest per site and verb carries needs_session per verb and field",
     "not: an empty result (ok []) is typed as an error"
    ],
@@ -2539,6 +2539,8 @@
    "model": "sonnet",
    "effort": "medium",
    "owns": [
+    "app/src/edge/intel/answer.ts",
+    "app/src/edge/intel/answer.test.ts",
     "app/src/edge/intel/protocols.ts",
     "app/src/edge/intel/classify.ts",
     "app/src/edge/intel/classify.test.ts"

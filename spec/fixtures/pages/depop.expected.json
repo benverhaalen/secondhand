@@ -1,0 +1,77 @@
+{
+ "site": "depop",
+ "items": [
+  {
+   "id": "h02d9d650-levis-501-blue-jeans-90s-0345",
+   "title": "Levi's women's blue jeans",
+   "price_cents": 1000,
+   "url": "/products/h02d9d650-levis-501-blue-jeans-90s-0345/"
+  },
+  {
+   "id": "h745cdd29-levis-501-blue-jeans-2930-f2a0",
+   "title": "Levi's men's blue jeans",
+   "price_cents": 1000,
+   "url": "/products/h745cdd29-levis-501-blue-jeans-2930-f2a0/"
+  },
+  {
+   "id": "h191ed1fa-size-26-levis-ribcage-straight-2091",
+   "title": "Levi's women's blue jeans",
+   "price_cents": 1000,
+   "url": "/products/h191ed1fa-size-26-levis-ribcage-straight-2091/"
+  },
+  {
+   "id": "h551fffa4-levis-501-blue-denim-jeans-c97f",
+   "title": "Levi's men's blue and navy jeans",
+   "price_cents": 1421,
+   "url": "/products/h551fffa4-levis-501-blue-denim-jeans-c97f/"
+  },
+  {
+   "id": "he04479f1-levis-501-dark-wash-jeans-06c5",
+   "title": "Levi's men's navy and blue jeans",
+   "price_cents": 800,
+   "url": "/products/he04479f1-levis-501-dark-wash-jeans-06c5/"
+  },
+  {
+   "id": "h0753871c-levis-501-blue-jeans-size-759c",
+   "title": "Levi's men's blue jeans",
+   "price_cents": 1000,
+   "url": "/products/h0753871c-levis-501-blue-jeans-size-759c/"
+  },
+  {
+   "id": "he41791c5-levis-501-jeans-shrink-to-cafe",
+   "title": "Levi's men's navy and blue jeans",
+   "price_cents": 2500,
+   "url": "/products/he41791c5-levis-501-jeans-shrink-to-cafe/"
+  },
+  {
+   "id": "h3b4ddb54-levi-501-black-denim-jeans-5a3e",
+   "title": "Levi's men's black jeans",
+   "price_cents": 2000,
+   "url": "/products/h3b4ddb54-levi-501-black-denim-jeans-5a3e/"
+  },
+  {
+   "id": "h642bc5f2-levis-501-original-jeans-light-30e6",
+   "title": "Levi's women's blue jeans",
+   "price_cents": 800,
+   "url": "/products/h642bc5f2-levis-501-original-jeans-light-30e6/"
+  },
+  {
+   "id": "hb6e89407-levis-501-blue-denim-jeans-fcc9",
+   "title": "Levi's men's blue jeans",
+   "price_cents": 1300,
+   "url": "/products/hb6e89407-levis-501-blue-denim-jeans-fcc9/"
+  },
+  {
+   "id": "had753446-levi-501-authentic-jeans-high-waisted-8f8a",
+   "title": "Levi's women's blue jeans",
+   "price_cents": 1200,
+   "url": "/products/had753446-levi-501-authentic-jeans-high-waisted-8f8a/"
+  },
+  {
+   "id": "h3e6077b9-levis-black-vintage-501-denim-c01d",
+   "title": "Levi's men's navy and black jeans",
+   "price_cents": 1500,
+   "url": "/products/h3e6077b9-levis-black-vintage-501-denim-c01d/"
+  }
+ ]
+}
