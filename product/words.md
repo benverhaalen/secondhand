@@ -1351,3 +1351,19 @@ Ben, project chat, 07:18 UTC.
 > whenever i have a decision to make bring it here essentially. also considering a backtest, how would you set this up in a flattering but truthful way. like average price changes over season. we could potentially look up general trends and possible spikes in either buying or sales on the resale market. i feel like it goes in waves. and we can explain super well and intuitively to the user when these things happen. some could be dates too. see if theres any rdd for this. for our market we are trying to predict. things that are predictable as humans are relatively predictable. merge all prs get them onto main why havent you been doing this
 
 Used in (07:18 entry): [seasons-events-and-a-fair-backtest.md](../research/price/ben/seasons-events-and-a-fair-backtest.md), [money D6](../spec/determinations/money.md#d6-range-calibration-and-display-state) steps 6, 8 and 9, [market-insight M12](../spec/determinations/market-insight.md#m12-seasonality).
+
+## 2026-11-15 the backtest proves it works now and is where we tune, and trends reach past resale
+
+Ben, project chat (relayed), about 07:20 UTC.
+> also design the test to be fairly easy to conduct. choose the conditions, the sites, time period, products, but also dont limit yourself. i dont want to backtest yet i want to research any research that suggests trends we can use to improve our prediction models. think of any data we collect and how that correlates with the outcome we want
+
+Ben, project chat (relayed), about 07:21 UTC.
+> but also think and debate and possibly use research or applicable skills or rea at all knowing the data and the things that matter about accurate predictions and what metric we can use to prove our thing works. also tuning our algorithm. but backtesting yes. help design it well. consider its purpose and we need to defend and explain it well.
+
+Ben, project chat, 07:27 UTC.
+> the backtest should both test if our system works now as well as serve as a way to tune our model without overfitting. we can also use research and rdd and iae and theories if we get an interesting model output. but using backtest(s). tell me all the decisions youd make and why. what numbers look best for a backtest and designing a test to get statistics that are best. tell me what you think are the best statistics to prove what people have no clue about with our project. proof that our process works and that you should download and that our experiment was actually good. there could be experiment design or backtest etc skills. how would an expert designer and expert in this field understand the actual problem. what i want not what i say. and really well design this problem to create a credible but also great backtest. also a few different tests or a test that tests a lot of dimensions. and in a way where we can tune and test across categories etc.
+
+Ben, pitch thread, 07:28 UTC.
+> but also not just secondhand but general buying trends in the places where the products that relate to us are. supply and demand. donating times. when people donate vs buy new etc.
+
+Used in: [spec/plans/backtest/plan.md](../spec/plans/backtest/plan.md), [what-predicts-price-and-speed.md](../research/price/ben/what-predicts-price-and-speed.md).
