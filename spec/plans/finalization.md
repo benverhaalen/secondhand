@@ -102,9 +102,9 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 | Id | Fix | Proof |
 |---|---|---|
 | AP1 | One client: the server's address per build, a token kept in the device's secure store, refresh serialized, a job's stream read with the fetch that works on a device | Tests; the health screen answers on a simulator |
-| AP2 | Every search shows its reach while it loads, from the job's real frames | On the dev server the screen shows each source landing with its counts |
+| AP2 | Every search shows its reach while it loads, from the job's real frames | On the dev server the screen shows each source landing with its counts. **Done** (a98c8861, 822ca173): `/shop`, seen live on the dev server; `app/e2e/shop.test.mjs` 3 of 3 on the Mac |
 | AP3 | The wiring map: Ben's 23 items answered one by one, the N contracts marked ours or his with the shape proposed, then each screen wired in the map's order with the demo world kept as the fallback | `spec/plans/app-wiring.md`, and a reply packet to Ben |
-| AP4 | The client faults the review found: three links to pages that do not exist, fold state that resets on a device, crash uploads sent to a path the server does not serve, development screens in a release build, an undeclared dependency, no not-found page | Tests and the type check |
+| AP4 | The client faults the review found: three links to pages that do not exist, fold state that resets on a device, crash uploads sent to a path the server does not serve, development screens in a release build, an undeclared dependency, no not-found page | Tests and the type check. **Partly done**: the three links and the fold state are gone from main (Ben's rework); `+not-found.tsx` added; `/dev` redirects home outside `__DEV__`; `expo-file-system` declared. Open: crash uploads still post to `/api/log`, which only `log/receive.mjs` serves (a server route under `/v1`, the server lead's) |
 | AP5 | What a first internal build needs, listed and prepared: the development client, the address per profile, the privacy manifest. No build or submit runs without Nate's word | The list, checked on a simulator |
 
 ## 7. Capture, and the website
