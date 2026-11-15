@@ -146,5 +146,10 @@ export function readPage(site: Site, html: string, kind: Kind = 'search'): Read 
   const shaped = rows.map(r => ({ ...r, ...(kind === 'sold' ? { sold: true as const } : {}) })) as (Row & Record<string, unknown>)[];
   // Links present but no card read means the cards changed shape: every required field is missing.
   if (anchors > 0 && shaped.length === 0) return fail('page_changed', `missing ${REQUIRED.join(', ')}`, { do: 'author', missing: [...REQUIRED] });
-  return classifyRead({ challenge: false, rows: shaped }, { site, fields: FIELDS });
+  // The system always answers: a card missing a required field is dropped and counted, and the rest are returned. Only a page
+  // where no card carries every required field has changed shape (Nate, product/words.md 2026-11-15; before, one such card failed the page).
+  const whole = shaped.filter(r => REQUIRED.every(k => r[k] !== undefined && r[k] !== ''));
+  const read = classifyRead({ challenge: false, rows: whole.length > 0 ? whole : shaped }, { site, fields: FIELDS });
+  const dropped = whole.length > 0 ? shaped.length - whole.length : 0;
+  return read.ok && dropped > 0 ? { ...read, dropped } : read;
 }
