@@ -1,0 +1,85 @@
+{
+  "source": "nber_ebay_bo",
+  "licence": "cleared for public release by eBay.com, research purposes (NBER); cite Backus et al. 2020 QJE",
+  "may_model": true,
+  "code_commit": "8bc9f64dbbaff578c43b3d9f01f1974cf19c8b9a",
+  "inputs": [
+    {
+      "file": "anon_bo_lists.csv.gz",
+      "bytes": 4451661738,
+      "sha256": "ceda12755878304daa4ca43b45c72ec98a7382a1ee646e66c33f6841e5d1a646"
+    }
+  ],
+  "output": {
+    "file": "rows.csv.gz",
+    "sha256": "ba8f8353fa31c5b943431166b54f17913943b32e1d12c1353cc719b61db23679",
+    "columns": [
+      "row_id",
+      "source",
+      "licence",
+      "site",
+      "url",
+      "kind",
+      "product_id",
+      "family_id",
+      "cluster_id",
+      "brand",
+      "category",
+      "condition",
+      "size",
+      "era",
+      "title",
+      "photo_count",
+      "seller_feedback",
+      "price_type",
+      "price_cents",
+      "buyer_shipping_cents",
+      "listed_at",
+      "at",
+      "best_offer",
+      "views",
+      "watchers",
+      "may_model",
+      "at_ask",
+      "priced_from_our_number"
+    ]
+  },
+  "rows": 87546,
+  "by_price_type": {
+    "ended_unsold": 60772,
+    "sold": 26774
+  },
+  "by_kind": {
+    "apparel": 1,
+    "appliances_tools": 11,
+    "bikes_sports": 10171,
+    "cards_collectibles": 52211,
+    "electronics": 10804,
+    "lighting_home": 3183,
+    "media": 5946,
+    "other": 4454,
+    "toys_lego": 765
+  },
+  "at_range": [
+    "2012-06-01",
+    "2016-09-22"
+  ],
+  "dropped": {
+    "product_cap": 683716,
+    "too_few_sales": 5421778,
+    "unmapped_kind": 92114241
+  },
+  "subset_rule": "Count rows with item_price set per non-empty anon_product_id. Keep products with at least 30 sold rows whose meta_categ_id is in rows.py _EBAY_KIND. Per kind keep at most 80 products, ordered by smallest sha256 of the UTF-8 product id (product id breaks ties). Retain all sold and ended-unsold listings of kept products, in input order; drop invalid dates and rows without a price. Products spanning kinds must rank in the smallest 80 in every kind; products with any unmapped meta category are excluded.",
+  "input_rows": 98307281,
+  "products_per_kind": {
+    "apparel": 1,
+    "appliances_tools": 2,
+    "bikes_sports": 80,
+    "cards_collectibles": 80,
+    "electronics": 80,
+    "lighting_home": 36,
+    "media": 79,
+    "other": 53,
+    "toys_lego": 8
+  }
+}

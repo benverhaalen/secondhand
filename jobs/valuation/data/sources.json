@@ -54,8 +54,19 @@
     "what": "eBay Best Offer listings, May 2012 to June 2013 (Backus, Blake, Larsen, Tadelis, QJE 2020)",
     "official": "https://www.nber.org/research/data/best-offer-sequential-bargaining",
     "mirror": null,
-    "download": "http://data.nber.org/data/bargaining/anon_bo_lists.csv.gz",
-    "files": []
+    "download": "https://data.nber.org/bargaining/anon_bo_lists.csv.gz",
+    "files": [
+      {
+        "file": "anon_bo_lists.csv.gz",
+        "sha256": "ceda12755878304daa4ca43b45c72ec98a7382a1ee646e66c33f6841e5d1a646",
+        "bytes": 4451661738
+      }
+    ],
+    "codebook": {
+      "file": "Codebook.xlsx",
+      "sha256": "3fa5e83046ac29e610cf2bcf02fd85682f93f3608c689c5a434d794c65bb6516"
+    },
+    "subset_rule": "Count rows with item_price set per non-empty anon_product_id. Keep products with at least 30 sold rows whose meta_categ_id is in rows.py _EBAY_KIND. Per kind keep at most 80 products, ordered by smallest sha256 of the UTF-8 product id (product id breaks ties). Retain all sold and ended-unsold listings of kept products, in input order; drop invalid dates and rows without a price. Products spanning kinds must rank in the smallest 80 in every kind; products with any unmapped meta category are excluded."
   },
   "ebay_comps_cc0": {
     "what": "570 eBay sold rows, September 2026, 15 keyword files",

@@ -37,7 +37,7 @@ def _commit() -> str:
     return out.stdout.strip() or "unknown"
 
 
-def freeze(source: str, inputs: list[Path], out_dir: Path, expect: dict | None = None, log=None) -> dict:
+def freeze(source: str, inputs: list[Path], out_dir: Path, expect: dict | None = None, log=None, *, reader=None, metadata=None, columns=COLUMNS) -> dict:
     inputs = sorted(Path(p) for p in inputs)
     seen = []
     for p in inputs:
@@ -47,31 +47,32 @@ def freeze(source: str, inputs: list[Path], out_dir: Path, expect: dict | None =
         seen.append({"file": p.name, "bytes": p.stat().st_size, "sha256": digest})
 
     dropped: dict = {}
-    reader = READERS[source]
+    reader = reader or READERS[source]
     rows = reader(inputs, dropped) if source in MULTI_FILE else (r for p in inputs for r in reader(p, dropped))
-    text = io.StringIO()
-    w = csv.DictWriter(text, fieldnames=COLUMNS, lineterminator="\n")
-    w.writeheader()
-    n, by_type, by_kind, dates = 0, {}, {}, []
-    for r in rows:
-        w.writerow(r)
-        n += 1
-        by_type[r["price_type"]] = by_type.get(r["price_type"], 0) + 1
-        by_kind[r["kind"]] = by_kind.get(r["kind"], 0) + 1
-        if r["at"]:
-            dates.append(r["at"])
-    body = text.getvalue().encode()
-
+    n, by_type, by_kind = 0, {}, {}
+    first = last = None
     out_dir.mkdir(parents=True, exist_ok=True)
-    with open(out_dir / "rows.csv.gz", "wb") as f:   # mtime 0 and no filename: the same rows give the same bytes
+    with open(out_dir / "rows.csv.gz", "wb") as f:
         with gzip.GzipFile(filename="", fileobj=f, mode="wb", mtime=0) as g:
-            g.write(body)
+            with io.TextIOWrapper(g, encoding="utf-8", newline="") as text:
+                w = csv.DictWriter(text, fieldnames=columns, extrasaction="ignore", lineterminator="\n")
+                w.writeheader()
+                for r in rows:
+                    w.writerow(r)
+                    n += 1
+                    by_type[r["price_type"]] = by_type.get(r["price_type"], 0) + 1
+                    by_kind[r["kind"]] = by_kind.get(r["kind"], 0) + 1
+                    if r["at"]:
+                        first = min(first, r["at"]) if first else r["at"]
+                        last = max(last, r["at"]) if last else r["at"]
     manifest = {
         "source": source, "licence": LICENCE[source], "may_model": MAY_MODEL[source], "code_commit": _commit(),
-        "inputs": seen, "output": {"file": "rows.csv.gz", "sha256": hashlib.sha256(body).hexdigest(), "columns": list(COLUMNS)},
+        "inputs": seen, "output": {"file": "rows.csv.gz", "sha256": sha256(out_dir / "rows.csv.gz"), "columns": list(columns)},
         "rows": n, "by_price_type": dict(sorted(by_type.items())), "by_kind": dict(sorted(by_kind.items())),
-        "at_range": [min(dates), max(dates)] if dates else None, "dropped": dict(sorted(dropped.items())),
+        "at_range": [first, last] if first else None, "dropped": dict(sorted(dropped.items())),
     }
+    if metadata:
+        manifest.update(metadata)
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     if log:
         log.job(f"freeze-{source}", "freeze", "done", n=n, source=source, sha256=manifest["output"]["sha256"])

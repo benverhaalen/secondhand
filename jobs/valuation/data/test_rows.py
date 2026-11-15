@@ -66,8 +66,8 @@ def test_nber_unsold_listing_is_censored_not_dropped(tmp_path):
     raw = io.StringIO()
     w = csv.writer(raw)
     w.writerow(cols)
-    w.writerow([7, 99, 5, "2012-06-01", "2012-06-09", "120.0", "95.5", 6, 40, 3000, 293, 30, 2, 1])
-    w.writerow([8, 99, 5, "2012-06-02", "2012-06-30", "130.0", "", 4, 40, 1000, 293, 12, 0, ""])
+    w.writerow([7, 99, 5, "01jun2012", "09jun2012", "120.0", "95.5", 6, 40, 3000, 293, 30, 2, 1])
+    w.writerow([8, 99, 5, "02jun2012", "30jun2012", "130.0", "", 4, 40, 1000, 293, 12, 0, ""])
     p = tmp_path / "anon_bo_lists.csv.gz"
     p.write_bytes(gzip.compress(raw.getvalue().encode()))
     sold, unsold = rows.nber_ebay_bo(p, {})
@@ -92,3 +92,49 @@ def test_freeze_refuses_an_input_whose_hash_changed(tmp_path):
     p = _write(tmp_path, "train.tsv", "train_id\tname\titem_condition_id\tcategory_name\tbrand_name\tprice\tshipping\titem_description\n")
     with pytest.raises(ValueError, match="sha256"):
         freeze("mercari_kaggle", [p], tmp_path / "o", expect={"train.tsv": "0" * 64})
+
+
+NBER_HEADER = ('anon_item_id,anon_title_code,anon_product_id,anon_leaf_categ_id,anon_slr_id,anon_buyer_id,'
+               'auct_start_dt,fdbk_score_start,fdbk_pstv_start,auct_end_dt,start_price_usd,photo_count,to_lst_cnt,'
+               'bo_lst_cnt,count1,ref_price1,count2,ref_price2,count3,ref_price3,item_cndtn_id,view_item_count,'
+               'wtchr_count,meta_categ_id,item_price,bo_ck_yn,ship_time_slowest,ship_time_fastest,ship_time_chosen,'
+               'decline_price,accept_price,bin_rev,lstg_gen_type_id,store,ref_price4,count4,slr_us,buyer_us')
+NBER_REAL = ('14203427,3600167,547957,7728,4526559,6939083,22oct2012,750,100,23oct2012,24.99,2,73,22,0,24.99,0,24.99,,,3000,1,1,281,24.99,0,4,4,4,,,0,,0,,,1,1\n'
+             '59381948,19380965,547957,7728,4714470,6939083,23oct2012,666,99.7,23oct2012,14.99,2,174,92,0,14.99,0,14.99,,,3000,4,0,281,14.99,0,6,6,6,,,0,,0,,,1,1\n')
+
+
+def test_nber_real_dates_and_codebook_fields(tmp_path):
+    p = _write(tmp_path, 'nber.csv', NBER_HEADER + '\n' + NBER_REAL)
+    a, b = rows.nber_ebay_bo(p, {})
+    assert (a['listed_at'], a['at'], b['listed_at']) == ('2012-10-22', '2012-10-23', '2012-10-23')
+    assert (a['price_cents'], b['price_cents'], a['best_offer']) == (2499, 1499, 'none')
+    assert (a['seller_feedback'], a['category'], a['condition']) == (750, '281', 'used')
+
+
+@pytest.mark.parametrize('field', ['auct_start_dt', 'auct_end_dt'])
+def test_nber_bad_dates_are_dropped_and_counted(tmp_path, field):
+    raw = list(csv.DictReader(io.StringIO(NBER_HEADER + '\n' + NBER_REAL)))
+    raw[0][field] = '31feb2012'
+    p = tmp_path / 'nber.csv'
+    with p.open('w') as f:
+        w = csv.DictWriter(f, fieldnames=NBER_HEADER.split(','))
+        w.writeheader()
+        w.writerows(raw)
+    dropped = {}
+    assert len(list(rows.nber_ebay_bo(p, dropped))) == 1
+    assert dropped == {'invalid_date': 1}
+
+
+def test_nber_output_never_contains_person_ids(tmp_path):
+    p = _write(tmp_path, 'nber.csv', NBER_HEADER + '\n' + NBER_REAL)
+    freeze('nber_ebay_bo', [p], tmp_path / 'out')
+    with gzip.open(tmp_path / 'out/rows.csv.gz', 'rt') as f:
+        header = next(csv.reader(f))
+    assert 'anon_slr_id' not in header and 'anon_buyer_id' not in header
+
+
+def test_freeze_hash_is_the_output_file_hash(tmp_path):
+    from valuation.data.freeze import sha256
+    p = _write(tmp_path, 'nber.csv', NBER_HEADER + '\n' + NBER_REAL)
+    manifest = freeze('nber_ebay_bo', [p], tmp_path / 'out')
+    assert manifest['output']['sha256'] == sha256(tmp_path / 'out/rows.csv.gz')
