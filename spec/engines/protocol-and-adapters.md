@@ -1,6 +1,6 @@
 # Protocol and adapters engine
 
-*agent proposal* (the whole file). Canon names in [product.md](../product.md) win. This file builds the engine behind [the harness protocol](../product.md#the-harness-protocol): the contract every caller uses, the sessions it runs in, and the agent that writes, tests, watches and repairs one adapter per site and verb. Direction: our own protocol for every site and every action ([words](../../product/words.md), Nate, 2026-11-14).
+*agent proposal* (the whole file). Canon names in [product.md](../product.md) win. This file builds the engine behind [the harness protocol](../product.md#the-harness-protocol): the contract every caller uses, the sessions it runs in, and the agent that writes, tests, watches and repairs one adapter per site and verb. Direction: [a custom harness per site](../../product/words.md#2026-11-14-nate-each-harness-is-built-from-what-it-understands-of-the-site-as-documented-endpoints-such-as-write-listing), with [official APIs where offered](../../product/words.md#2026-11-15-nate-official-apis-where-they-exist-the-browser-design-as-specced-ranking-systems-accounted-for-databricks-perfected).
 
 ## 1. What it decides
 
@@ -12,7 +12,7 @@
 | Route health | Beta success and completeness per route, held as `param` rows ([real-time weights](../product.md#real-time-weights-agent-proposal)) | router order, connect's health state (ok, expiring, broken, paused), the repair trigger |
 | A repair | an `adapter_author` job (canon) with `{trigger, rounds, patch, result}` | the router, the ops view |
 
-The 14 verbs are the canon set: `post, revise, end, relist, read_listings, read_inbox, send_message, read_offers, answer_offer, make_offer, read_orders, read_stats, search, save`.
+The 15 verbs in [names.ts](../../app/src/edge/harness/names.ts) are: `post, revise, end, relist, read_listings, read_inbox, send_message, read_offers, answer_offer, make_offer, read_orders, read_stats, read_storefront, search, save`.
 
 ### The error codes and the hint an agent acts on
 
@@ -48,11 +48,13 @@ The canon manifest `{site, verb, version, input_schema, output_schema, fields[],
 
 ### 3.1 Sessions
 
-- **Where a session runs.** A Browser Use cloud profile per (person, site), which keeps the login while the phone is locked ([decisions](../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)). The person's own device is the second route, chosen per site where it lowers account risk (canon). The device route runs the same recipes in the app's own browser view, only while the app is open.
-- **Login.** The person signs in inside the cloud browser; we never see the password; tokens and cookies never enter a prompt, a log or a fixture.
+- **Transport.** [Nate chose Browser Use Cloud](../../product/words.md#2026-11-14-nate-we-run-on-browser-use-cloud-with-its-docs-saved-as-reference-and-the-seats-on-it-versed-for-speed-and-cost). The build and demo reach its browsers over CDP behind the one `Launcher` port ([cdp.ts](../../app/src/edge/browser/cdp.ts), [pool.ts](../../app/src/edge/browser/pool.ts)). Own hosting or the phone's web view can implement that port later; neither is required for this build.
+- **Link once.** The person signs in themselves through the cloud browser's live view, including any second factor. [Stored auth](../../product/words.md#2026-11-14-nate-store-auth-through-browser-use-build-fewer-things-at-once-focus-on-the-browser-harnesses) is per account behind `account.token_ref`: cookies and localStorage in `AuthVault`, loaded at lease start and exported after a successful lease ([auth.ts](../../app/src/edge/browser/auth.ts)). Credentials and viewer URLs never enter prompts, logs or fixtures. A login wall pauses for the person.
+- **Background work.** The account works for days and weeks while the phone is locked; the person stays in our app after linking, except when sign-in or a challenge needs them. Each action is an intent they opted into ([Nate](../../product/words.md#2026-11-15-nate-official-apis-where-they-exist-the-browser-design-as-specced-ranking-systems-accounted-for-databricks-perfected)); this does not promise a session will never expire.
+- **Linked only.** No account browser, sweep or job launches for a site the person did not link and store auth for ([Nate](../../product/words.md#2026-11-14-nate-the-kernel-covers-platform-specifics-and-storefront-analytics-and-runs-only-what-each-person-linked)). Anonymous market research is separate from working their accounts.
 - **Keep-alive.** A probe read (the first page of `read_listings`) every 30 min, as in [card 17](../determinations/managing-and-buyers.md#17-whether-an-account-is-healthy-or-at-risk). Two failed probe reads mark the session `broken`. A login wall on a probe is `auth_expired`.
 - **Lease.** One job drives an account's session at a time: a `session_lease` row taken with `FOR UPDATE SKIP LOCKED` and a TTL. A busy lease answers 409 (replay's rule). A write holds the lease through its read-back.
-- **Pace.** A token bucket per (account, site), filled at the manifest's `pace`. Browser steps run one per 2 to 5 s with jitter, quiet hours at night, one profile per stable US IP ([connect](../features/connect.md)). The learned pace moves down at once on `rate_limited`, `blocked` or a site warning. It moves up 10% only after 14 clean days and never past the manifest cap.
+- **Pace.** A token bucket per (account, site), filled at the manifest's `pace`. Browser steps run one per 2 to 5 s with jitter, quiet hours at night, one saved profile and stable country, with no proxy rotation (§3.8) ([connect](../features/connect.md)). The learned pace moves down at once on `rate_limited`, `blocked` or a site warning. It moves up 10% only after 14 clean days and never past the manifest cap.
 
 ### 3.2 The primitives
 
@@ -81,7 +83,7 @@ An `adapter_author` job is one durable agent step whose tools are the six primit
 
    A write also needs the endpoint to return the new object's id for read-back. Otherwise the recipe drives the page. The endpoint is preferred because it is faster and survives markup redesigns.
 3. **Field decoding.** Each output field maps to a JSON path or a ref. An opaque field (an enum code, cents, an epoch, a size id) is decoded by changing one input and diffing the responses, for example two drafts that differ only in price. Units go into `output_schema` as cents, ISO time and the site's size system.
-4. **Generating the adapter.** The model writes the recipe in one fixed template: `{manifest, steps[]}`, using only the primitives and in-page fetch, with no imports. Code lints it: every manifest field is produced, every control used is in `controls[]`, and no literal cookie or token appears.
+4. **Generating the adapter.** Each adapter follows that site's observed structure, with a typed manifest and deterministic commands ([Nate](../../product/words.md#2026-11-14-nate-each-harness-is-built-from-what-it-understands-of-the-site-as-documented-endpoints-such-as-write-listing)). Page recipes use the primitives and in-page fetch. Code lints it: every manifest field is produced, every control used is in `controls[]`, and no literal cookie or token appears.
 5. **A fixture from a real page.** The recon capture, masked with the log masks (buyer names and handles become `buyer_ref_hash`, addresses removed), plus the expected JSON, saved as `fixture_ref`.
 6. **The test and the release gate.** All four checks must pass:
    - the fixture test offline: every field present and typed, values equal;
@@ -116,42 +118,29 @@ The fixture is never loosened to pass. When the site itself changed shape, a fre
 
 ### 3.5 Starting routes, site by verb
 
-**Signed-in or public, by what the read needs** ([Nate](../../product/words.md#2026-11-14-nate-the-signed-in-harness-where-the-account-adds-capability-faster-public-paths-elsewhere): "For the things we can leverage with user auth ... its better to adhere to that harness. Of course faster and cheaper for when better, but not when we are limitting capability."). A linked account's session is stored and leased to background jobs, overnight included, so a job acting for the person never waits for them.
+[Nate combines public reads with signed-in actions](../../product/words.md#2026-11-14-nate-combine-signed-in-actions-with-public-no-login-fetches-for-the-fastest-searches), retaining [what the account adds](../../product/words.md#2026-11-14-nate-the-signed-in-harness-where-the-account-adds-capability-faster-public-paths-elsewhere). *Agent proposal*: measure the following lanes per site and verb; choose order from time to first row, completeness, bytes and browser-seconds, rather than launching three browsers for every read.
 
-| The read or action | Route | Why |
-|---|---|---|
-| Anything the site ties to the person's account: their listings, orders, offers, messages, their own stats and watcher counts, what the site shows or ranks for them, every write | the signed-in harness, always | the public page does not carry it, or carries less |
-| Broad market reads: sold prices, top listings, a product's page, a seller's public shop, reviews | the fastest public path (a server fetch, embedded page data, our fetch engine) | no account is needed, and it works for a person with nothing linked |
-| A read that both can serve, such as "did my listing sell" | the public path as the cheap, frequent check; the signed-in read to confirm and for the detail only it has (the paid order, the buyer, the amount) | faster and cheaper where it loses nothing; never chosen where it would limit what we can do |
+| Lane | Use |
+|---|---|
+| Plain request, no browser | Public pages or data calls that accept it; official APIs where offered |
+| Anonymous cloud browser | Public pages that refuse a plain request or omit needed fields |
+| The person's cloud browser and profile | What their account adds: inbox, offers, orders, private stats and every browser write |
 
-The route table holds this as `needs_session` per verb and field. A public route is never promoted over a signed-in one for a field it cannot return, whatever its speed.
+Inside an open page, try the site's own data calls before driving controls. A manifest's `session` and per-field `needs_session` prevent a cheaper route from dropping account-only fields. Writes never switch routes after acting.
 
-Each cell is the first route recon targets (*inferred* from the canon site table at [product.md](../product.md#the-harness-protocol), which puts our own adapter first everywhere). An API named in a cell is the last fallback and a fact on record. "page" means a page-driving recipe; "endpoint" means recon expects an internal endpoint.
+[Official APIs are used where offered](../../product/words.md#2026-11-15-nate-official-apis-where-they-exist-the-browser-design-as-specced-ranking-systems-accounted-for-databricks-perfected): eBay uses its developer APIs with OAuth, including Browse for public search. Elsewhere the person's own session serves account actions. The build covers [five sites](../../product/words.md#2026-11-14-nate-five-sites-offerup-and-grailed-are-a-future-idea-and-ebays-push-only-if-it-beats-our-harness); OfferUp and Grailed remain a future idea.
 
-The build covers five sites: eBay, Facebook Marketplace, Depop, Poshmark and Mercari. The OfferUp and Grailed columns are kept for the [future idea](../../ideas/post-to-grailed-and-offerup.md) and are not built now ([Nate](../../product/words.md#2026-11-14-nate-five-sites-offerup-and-grailed-are-a-future-idea-and-ebays-push-only-if-it-beats-our-harness)).
+*Agent proposal, observed in [M1](../../research/cross-cutting/nate/runs/m1.md)*: create-to-CDP connection took 0.48 to 0.54 s in the first four runs, about half a second. Public search read 24 Depop and 48 Poshmark listings without login; the Mercari rerun read 30. eBay refused the signed-out browser with 403; its public route is Browse, whose live proof is still due. Depop and Mercari refused headless local Chrome but returned real pages in the cloud. These are individual runs, not latency guarantees.
 
-| Verb | eBay | Facebook | Depop | Poshmark | Mercari | OfferUp | Grailed |
-|---|---|---|---|---|---|---|---|
-| `post` | adapter, endpoint; Inventory and Offer APIs | adapter, page | adapter, endpoint; products API if granted | adapter, page | adapter, page | adapter, planned ([words](../../product/words.md#2026-11-14-grailed-and-offerup-posting-planned-not-built)) | adapter, planned (same) |
-| `revise` | adapter, endpoint; Inventory API | adapter, page | adapter, endpoint; products API | adapter, page | adapter, page | adapter, planned | adapter, planned |
-| `end` | adapter, endpoint; withdrawOffer or EndItem | adapter, page | adapter, endpoint; mark as sold | adapter, page | adapter, page | adapter, planned | adapter, planned |
-| `relist` | adapter, endpoint (a new item id) | adapter, page | adapter, endpoint | adapter, page; always asks ([money D15](../determinations/money.md#d15-markdown-path-stale-and-relist)) | adapter, page | adapter, planned | adapter, planned |
-| `read_listings` | adapter, endpoint; GetMyeBaySelling | adapter, page | adapter, endpoint; products list | adapter, page | adapter, page | adapter, page | adapter, page |
-| `read_inbox` | adapter, endpoint; Message API | adapter, page | adapter, page (no inbox in the API) | adapter, page | adapter, page | link-out | link-out |
-| `send_message` | adapter, endpoint; Message API | adapter, page | adapter, page | adapter, page | adapter, page | link-out | link-out |
-| `read_offers` | adapter, endpoint; GetBestOffers | offers arrive as messages, read by `read_inbox` | adapter, page (no list-offers endpoint) | adapter, page | adapter, page | link-out | link-out |
-| `answer_offer` | adapter, endpoint; RespondToBestOffer | a reply by `send_message` | adapter, page | adapter, page | adapter, page | link-out | link-out |
-| `make_offer` | adapter, page (a Best Offer binds the buyer) | a message to the seller | adapter, page | adapter, page | adapter, page | link-out | link-out |
-| `read_orders` | adapter, endpoint; Fulfillment plus Notification | adapter, page | adapter, endpoint | adapter, page; public-page check first | adapter, page; public-page check first | n/a | n/a |
-| `read_stats` | adapter, endpoint (views, watchers) | adapter, page | adapter, endpoint (likes, bag counts) | adapter, page | adapter, page | adapter, page | adapter, page |
-| `search` | adapter, endpoint; Browse | adapter, endpoint; ScrapeCreators, measured | adapter, endpoint | adapter, endpoint | adapter, endpoint | adapter, endpoint; Firecrawl | adapter, endpoint; Firecrawl |
-| `save` | adapter, endpoint (watch) | adapter, page | adapter, endpoint (like) | adapter, page; runs on the person's tap (likes are named in the guidelines) | adapter, page | adapter, page | adapter, page |
+*Agent proposal, observed in the build*: [platform profiles](../../app/src/edge/harness/platform.ts) hold site capabilities, listing limits, clocks, storefront fields and headed-browser needs as data. [Manifests](../../app/src/edge/harness/protocol.ts) hold each verb's schemas, session, pace, controls and read-back. [Endpoint docs](../../app/src/edge/harness/ENDPOINTS.md) are generated from those profiles and manifests; availability there does not prove a live adapter.
 
-The site terms behind each column are facts on record in the canon table and become `rights` tags. They are not limits on this design ([licences](../product.md#licences-terms-and-the-rules-that-protect-people)).
+[Storefront analytics are part of the kernel](../../product/words.md#2026-11-14-nate-the-kernel-covers-platform-specifics-and-storefront-analytics-and-runs-only-what-each-person-linked). `read_storefront` reads shop figures into `storefront_snapshot`, with `fields_missing[]` distinguishing unavailable fields from real zeros ([storefront.ts](../../app/src/edge/harness/storefront.ts)); public shop fields need no login, private totals use the linked account.
+
+[Site terms are recorded as facts](../../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build). *Agent proposal*: show those facts and the account risk at linking and opt-in: automated access can lead to restrictions or suspension on sites whose terms restrict it. The person's approval does not change a site's terms.
 
 ### 3.6 How every event reaches the system (agent proposal)
 
-Asked by [Nate](../../product/words.md#2026-11-14-nate-hooks-for-every-app-event-what-we-poll-what-the-platform-triggers-sign-in-by-oauth-where-possible). Every source below writes one row to `event` (id, source, site, account, kind, payload ref, dedupe key), and each row starts exactly one job ([product.md](../product.md#6-systems)). A source never acts; it only reports. The harness confirms a site event by a signed-in read before anything is done about it.
+Asked by [Nate](../../product/words.md#2026-11-14-nate-hooks-for-every-app-event-what-we-poll-what-the-platform-triggers-sign-in-by-oauth-where-possible). Every source below writes one row to `event` (id, source, site, account, kind, payload ref, dedupe key), and each row starts exactly one job ([product.md](../product.md#6-systems)). Account sources run only for linked accounts (§3.1). A source never acts; it only reports. The harness confirms a site event by a signed-in read before anything is done about it.
 
 | Source | How it is caught | Delay |
 |---|---|---|
@@ -169,72 +158,37 @@ Asked by [Nate](../../product/words.md#2026-11-14-nate-hooks-for-every-app-event
 
 | Site | How the person links it | Platform push |
 |---|---|---|
-| eBay | OAuth in a sheet (refresh token 18 months), which also subscribes us to its notifications; a harness session for what the token cannot do | yes, signed |
+| eBay | OAuth in a sheet (refresh token 18 months), with notifications used only as triggers; a harness session for capabilities the API lacks | yes, signed |
 | Depop | a harness session: the person signs in once on Depop's real login. No partner access ([Nate](../../product/words.md#2026-11-14-nate-no-depop-partner-access-so-build-an-ai-driven-workaround)), so no OAuth and no webhooks; see [3.7](#37-depop-without-partner-access-agent-proposal) | none; watchers and the live channel |
-| Facebook, Poshmark, Mercari, OfferUp, Grailed | no OAuth is offered to sellers ([platform access](../../research/connect/nate/platform-access.md)). The person signs in once on the site's real login, inside a page we host; we never see the password, they complete any second factor, and the session is stored and kept alive | none; watchers and the live channel |
+| Facebook, Poshmark, Mercari | no OAuth is offered to sellers ([platform access](../../research/connect/nate/platform-access.md)). The person signs in once on the site's real login, through the cloud browser live view; they complete any second factor, and the session is stored behind `account.token_ref` | none; watchers and the live channel |
 
-Either way the person does one sign-in per site and nothing after it. A session that expires raises one `account_stale` decision with a one-tap re-link; jobs for that account pause and resume, none are dropped.
+After linking, jobs run in the background; a login wall or challenge pauses for the person. A session that expires raises one `account_stale` decision with a one-tap re-link; jobs for that account pause and resume, none are dropped.
 
 ### 3.7 Depop without partner access (agent proposal)
 
-Nate: "We are not getting depop partner access, so I want you to create a workaround, utilizing ai driven technology, take into account the frameworks and harnesses i showed you." The same design is the template for every site with no API: Poshmark, Mercari, Facebook, OfferUp, Grailed.
+[Nate ruled out partner access](../../product/words.md#2026-11-14-nate-no-depop-partner-access-so-build-an-ai-driven-workaround). The [Depop operating design](../../app/src/edge/harness/sites/depop/README.md) records its own structure, rather than prescribing one DOM recipe for every site.
 
-**The idea, from opencli:** the person's own signed-in browser session is the API. Depop's site is a client over its own JSON endpoints, and whatever the person can do on the site, a command running inside their session can do the same way. Agents write and repair the commands; running them is deterministic code with no model in the loop.
+*Agent proposal, observed in [ad-depop](../../research/cross-cutting/nate/runs/ad-depop.md)*: plain Node fetch returned 403 on both www and webapi. Public search uses the cloud page's Next flight data; listing, shop products, reviews and status reads use presentation calls from inside the open page. The old search endpoint returned 410. There is no public sold search; sold status is available per listing and shop.
 
-| Layer | What it does | Built from |
-|---|---|---|
-| 1. Link | the person signs in on Depop's real login, in a page we host and, on the phone, in an in-app web view. We never see the password. Two routes result: a cloud session for background and overnight work, and the person's own device while the app is open | the session lease (3.1) |
-| 2. Recon agent | drives the signed-in site once per verb with browser-use style control while recording network traffic, embedded page state and the DOM. It finds how the site itself does each thing: the endpoint its web client calls to create a listing, edit a price, read offers, send an offer to likers, read and send messages, read orders and stats, mark sold, delete | browser-use for control, the authoring pipeline (3.3) |
-| 3. Adapter author | turns each finding into a command in the opencli shape: typed args in, the one JSON envelope out, strategy `COOKIE` (a fetch made inside the session, so the site's own cookies and tokens ride along) with a page-driving recipe as the second strategy. It writes the fixture and field gate with it | the manifest and release gate |
-| 4. Run | deterministic: `harness.call('depop', verb, args)` runs the command in the leased session at a person's pace. No model call on the normal path, so a verb costs one or two requests and runs in under a second | the primitives (3.2) |
-| 5. Fallback agent | when a command fails its field gate, a fast decision model (Jev) matches the changed element or field; if that is not enough, an agent drives the page as a person would to finish the action, and the repair loop (3.4) rewrites the command from what it saw | Jev, browser-use, the repair loop |
-| 6. Events | no webhooks, so the watchers (3.6): the notification feed and inbox in the session for offers, messages and sales; the public product page for the cheap sold check; the live channel during a negotiation | 3.6 |
-| 7. Reading | a language model reads only what is text: a buyer's message, a policy notice, a changed error | the trust and negotiation engines |
+Two anonymous live runs returned 24 search rows each, plus listing, storefront, shop listings, reviews and legitimate empty results. `read_storefront` returned followers, following, rating, review_count, sold_count and active_count. Connect took 463 ms in both runs; whole runs through stop took 6.198 and 7.034 s. These are two runs, not a p95.
 
-**The verbs covered:** `link`, `list`, `edit`, `reprice`, `read_listings`, `read_offers`, `respond_offer`, `send_offer` (to likers), `read_messages`, `send_message`, `read_orders`, `read_stats`, `mark_sold`, `delist`, `relist`. Partner access would have added only webhooks; the watchers replace them at a delay of 1 to 2 minutes while a listing is hot.
+Signed-in reads and all eight writes have only synthetic fixture proof because no Depop account was linked in those runs. The signed-in endpoint paths are guesses awaiting recon. Writes return a dry plan by default; live submission remains unavailable until observed on a linked account. No fixture result is a live success.
 
-**Whose action it is.** Nate: "its not automated access, since the user is technically signing off on it, its like if they called Claude in chrome themselves" ([words](../../product/words.md#2026-11-14-nate-the-person-signs-off-so-it-is-their-own-agent-acting)). The system is the person's own agent: it acts only in their account, only on what they turned on, at a pace a person could keep, and every action is in their activity log. Each site's own terms stay on record as a fact with the account risk shown per site ([connect](../features/connect.md)), and Nate's go is needed before a live run on a site and before it is shown on stage.
+### 3.8 Cloud transport and cost (agent proposal)
 
-**Saved passwords, by choice.** Nate: "we need to keep passwords, we indicate to the user they are set as encrypted environment variables we do not save or can see for ourselves, just used by the system, making it opt in" ([words](../../product/words.md#2026-11-14-nate-passwords-are-kept-opt-in-as-encrypted-secrets-we-cannot-see)). Off by default. When the person turns it on for a site:
+The [cloud decision](../../product/words.md#2026-11-14-nate-browser-use-on-cloud-tested-the-way-production-runs-with-milestones-that-are-finalised-as-they-are-hit) replaces the earlier self-hosting plan for the build and demo. `browserUseCloud` creates a browser, connects over CDP and stops through the vendor API; disconnecting CDP alone does not stop billing. The `Launcher` port keeps transport separate from site recipes.
 
-| Part | How |
-|---|---|
-| Where it goes | typed into a field that posts straight to the secret store (a Databricks secret scope, one key per account, `token_ref` on `account`); never to a table, a log, a trace, a model prompt or the app's own storage |
-| Who can read it | only the sign-in job's service identity, at the moment a session has expired. No person's role and no other job has read access, and every read is in the audit log. This is what makes "we cannot see it" true, so the build proves it with a test that every other identity is refused |
-| What it is used for | signing back in when a session expires, so overnight work does not stop. Nothing else |
-| Second factor | a code sent to the person still goes to the person: one prompt, and the job waits. A site's own "trust this device" keeps that rare |
-| Removing it | one tap deletes the secret; unlinking the account deletes it too |
-| Without it | the stored session is used until it expires, then one re-link prompt |
+*Agent proposal, observed in the [cloud reference](../../research/cross-cutting/nate/browser-use-cloud.md)*: browser time is $0.06/hour, billed by the started minute with a one-minute minimum. The full timeout is charged up front and unused time refunded on stop. Managed proxy traffic is $5/GB, separate from browser time; M1's $0.001 browser cost excludes it.
 
-**What it will not do.** It does not solve or route around a bot check: if a site shows a challenge, the job pauses and the person clears it in their session. It reads no other seller's private data.
+- Pass a job-sized `timeout` on every create, including sign-in.
+- Stop on every path, including errors and cancellation; close in `finally`. Sweep browsers left without a lease, including failed stops.
+- Use one browser per account lease, shared by its verbs; hold the lease through write read-back. Save auth between runs rather than paying for an idle browser for weeks.
+- Block images, media and fonts on reads where not needed; record browser-seconds and bytes, with missing content-length treated as a lower bound.
+- Use the saved profile and stable country. [Nate dropped proxy rotation](../../product/words.md#2026-11-14-nate-we-do-not-need-our-own-proxy-rotation); there is no custom rotation. Vendor default routing is separate.
+- Send `solveCaptchas:false`. A challenge or login wall pauses for the person in the live view; no solver, alternate identity or route around it.
+- Keep every write dry until Nate's go per site ([packet 49 protections](../../.agents/team/packets/team/49-handoff-to-the-mac-session.md#protections-that-still-hold)). Act once with `operation_id`, read back, and never replay an uncertain write. A person's approval and the site's go are separate gates.
 
-**Proof.** Each verb passes on a recorded fixture, then on a test account's live session with the result read back; the mutation drill breaks ten page details and the repair loop restores at least nine; the pace bench records the challenge rate per hundred actions, and the pace is lowered until it is zero.
-
-### 3.8 Our own API, run in the cloud: what we take from Apify (agent proposal)
-
-Asked by [Nate](../../product/words.md#2026-11-14-nate-look-into-apify-and-build-our-own-api-on-cloud-browser-use). Evidence: [apify-and-our-own-cloud-api](../../research/connect/nate/apify-and-our-own-cloud-api.md).
-
-| Apify does | We build |
-|---|---|
-| Packages each fetcher as an Actor with a typed input and output schema | each adapter and fetcher keeps its manifest and the one envelope; same idea, already ours |
-| Server Actors: an Actor that stays up as an HTTP server, scaled by concurrent requests, stopped after an idle timeout | each site's adapter set runs as a small always-ready service behind `harness.call`, scaled the same way, so a verb answers in the time of its requests, with no start-up |
-| Its marketplace Actors mostly use no browser: they call the site's own public JSON and search services (Depop 48 listings per request; Grailed's public search; Poshmark and Mercari sold search) at $1.50 to $3.50 per 1,000 results | our public market reads do the same from our own servers, as plain HTTP, in parallel. A browser is used only where a signed-in session is needed |
-| Sessions: one session id keeps one IP address and its cookies | one account, one session, one steady address in the person's region, one saved browser profile. A steady, ordinary session is what a real person's use looks like, and it is what keeps a site from challenging it |
-| Sells these reads per result | we do not buy them and do not measure ourselves against them. They show only that it can be done, so we develop our own ([Nate](../../product/words.md#2026-11-14-nate-not-a-comparison-we-develop-our-own-on-firecrawl-crawl4ai-browser-use-and-jev-ultrafast): "we can and definitely should develop our own. utilizing the firecrawl web4crawl browser use and jev ultrafast technologies to optimize and perfect the way we gather and delvier information"). How each of the four is used is in the [intelligence engine](intelligence-api.md): Firecrawl's and crawl4ai's fetch, render and extraction patterns for reading pages, browser-use for driving a signed-in page, Jev for the fast typed decisions |
-| Exposes Actors as MCP tools | our public search API is already planned as MCP tools |
-
-**Where a session runs: ours and the person's, no browser vendor** ([Nate](../../product/words.md#2026-11-14-nate-host-all-engines-ourselves-and-can-the-persons-own-device-do-the-work): "I feel its best to host all engines ourselves"). Every engine and every browser is hosted by us or runs on the person's own device.
-
-| Route | What it is | Good for | Limit |
-|---|---|---|---|
-| The phone, while the app is open | the app's own web view is a real browser on the person's device, signed in to the site, on their own network. A command runs inside it the same way as anywhere else | linking (the sign-in happens on their own device), and everything done while they are in the app: posting after a capture, answering an offer, a fresh read. It costs us nothing and is the session a site trusts most | iOS suspends an app shortly after it leaves the screen and grants background time only in short windows it chooses, so nothing overnight |
-| Our hosted session | a headless browser in a container on our own compute, holding the person's session and saved profile, one steady address per account | watchers, overnight work, anything while the app is closed | compute we pay for; a session moved from the phone to our address may be asked to verify once |
-| Plain requests from our servers | once recon has found the site's own endpoints, most verbs are one or two HTTP requests carrying the session's cookies: no browser at all | most reads and many writes, at the lowest cost and highest speed | sites that bind a session to a browser need one of the two routes above |
-| The person's computer, optional | a browser extension that runs commands in their own signed-in browser, the opencli way | heavy sellers who leave a computer on | only while that computer is on |
-
-The route table ranks these per site and verb by measured success, speed and challenge rate, like every other route. A phone cannot host the background sessions; it is the best route while the app is open, and our own hosting covers the rest. Whether our hosted browsers run on Databricks compute or on a small container host of ours beside it is a first-hour workspace check; the design is the same either way.
-
-We do not write code that forges a device fingerprint or solves a challenge; when one appears the person clears it.
+*Agent proposal, observed implementation limits*: [sign-in](../../app/src/edge/connect/OPERATING.md) and [posting](../../app/src/edge/post/OPERATING.md) have offline port proof; production viewer routes, vault/store wiring and site probes still need live proof. The pool can keep idle contexts warm; the cost rules above require bounded lifetime and cleanup, not an unmeasured ten-minute warm period. The [watcher](../../app/src/edge/events/schedule.ts) can sweep storefronts when that dependency is supplied; deployment wiring still needs proof.
 
 ## 4. Learning
 
@@ -248,9 +202,11 @@ We do not write code that forges a device fingerprint or solves a challenge; whe
 
 ## 5. Speed
 
+*Agent proposal*: these are targets, not measured results; live measurements are in §§3.5 and 3.7.
+
 | Moment | Budget | Kept warm | Runs on the event |
 |---|---|---|---|
-| A read through an endpoint recipe | p95 1.5 s | the leased cloud browser per active account, kept open 10 min after its last job; the manifest and `route_table` in a 60 s cache | the in-page fetch |
+| A read through an endpoint recipe | p95 1.5 s | the leased cloud browser per active account, bounded by its job timeout (§3.8); the manifest and `route_table` in a 60 s cache | the in-page fetch |
 | A read that drives a page | p95 8 s at the site's pace | same | the recipe's steps |
 | A write | p95 20 s including the read-back | same | write, read-back, `route_call` |
 | Delist after a sale | p95 under 2 min, red at 5 min (canon) | a hold on every other site the moment a sale is seen | `end` on each site, highest-risk site first |
@@ -268,7 +224,7 @@ In [connect](../features/connect.md), each site shows:
 A verb with no route shows a one-tap button that opens the site at the right page. A verb under repair shows the work waiting on it ("2 drafts wait for eBay posting"). Repairs that finish inside the failover leave no trace in the app. The person can:
 - pause a site;
 - relink it;
-- choose their own device as the session for a site.
+- finish sign-in or a challenge in the live view.
 
 ## 7. How it beats what exists
 
@@ -276,11 +232,11 @@ A verb with no route shows a one-tap button that opens the site at the right pag
 |---|---|---|
 | opencli ([repo](https://github.com/jackwener/opencli), [author skill](https://github.com/jackwener/opencli/blob/main/skills/opencli-adapter-author/SKILL.md), [autofix skill](https://github.com/jackwener/opencli/blob/main/skills/opencli-autofix/SKILL.md), [exit codes](https://github.com/jackwener/opencli/blob/main/docs/guide/exit-codes.md); *observed*) | a JSON envelope, sysexits codes, strategies `PUBLIC`, `COOKIE`, `INTERCEPT`, `UI`, `LOCAL`; `adapter check` and `test` with optional fixtures; autofix with hard stops, empty-is-not-broken, 3 rounds and "never relax" fixtures; Facebook adapters only among our sites | **adopted:** the envelope, the hard stops, the empty-is-not-broken check, 3 rounds, never loosening a fixture, preferring the endpoint, never replaying an unknown write. **Better:** opencli states "no row-shape or site-memory gate is imposed" and "There is no draft directory, promotion step or required memory file"; we add a required fixture with a field-presence gate, a candidate release with a canary, semver with keep-old-until-pass and rollback, Beta health with a breaker, a repair started by success dropping as well as by an error, `operation_id` with read-back, pace and lease in the manifest, `policy_refused`, and the forbidden-control filter; its sessions are the person's Chrome, ours a cloud profile that works while the phone is locked |
 | Vendoo, List Perfectly ([crosslister teardown](../../research/cross-cutting/nate/crosslister-teardown.md#4-documented-failures-by-class), *observed* and *asserted*) | a 10-minute sale poll; delist on higher tiers; documented delist failures | sale seen within 2 min, delist p95 under 2 min for everyone, every write read back |
-| RapidAPI, treg, Apify, API2Cart and Rutter ([parity](../parity.md)) | provider health by latency and uptime; pay per result; a unified commerce schema | health by success, completeness and `right_90d` from our own sales; the 14 verbs as the unified schema |
+| RapidAPI, treg, Apify, API2Cart and Rutter ([parity](../parity.md)) | provider health by latency and uptime; pay per result; a unified commerce schema | health by success, completeness and `right_90d` from our own sales; the 15 verbs as the unified schema |
 
 ## 8. Protections
 
-- Tokens and cookies stay in the cloud profile. `network` strips them, the fixture masks run before storage, and the `.agents/checks/` secrets check runs on fixtures.
+- Tokens and cookies stay in the cloud profile and the vault behind `account.token_ref`. `network` strips them, the fixture masks run before storage, and the `.agents/checks/` secrets check runs on fixtures.
 - The §5 policy check runs in code before every outward verb. Locked kinds stay locked. `post` refuses a recalled product ([trust](trust.md)).
 - Authoring and repair write only on the test account. The forbidden-control filter holds on every account.
 - An `outcome_unknown` write is never replayed. Reconcile settles it by `operation_id`.
@@ -303,11 +259,11 @@ A verb with no route shows a one-tap button that opens the site at the right pag
 | Forbidden controls | a recipe that tries to click a buy button | refused in code, logged |
 
 The result that counts:
-- the share of the 98 site-verb cells that are live with a passing gate (OfferUp and Grailed posting counted as planned);
+- the share of supported verbs on the five build sites that are live with a passing gate;
 - delist p95;
 - the median time from a repair trigger to a live fix.
 
-The fixed set: the recon captures of all 7 sites, plus every real breakage from the first month, replayed as repair drills.
+The fixed set: the recon captures of the five build sites, plus every real breakage from the first month, replayed as repair drills.
 
 ## 10. Build tasks
 
@@ -326,10 +282,10 @@ The paths are proposed. Tasks 1, 2 and 3 run in parallel, 4 needs 1 and 2, 5 nee
 
 All numbers here are examples.
 
-1. eBay changes its seller page and the `end` endpoint now nests the listing under `data.item`. The live `end` adapter, v2.3.1, had a success posterior of Beta(188, 4) after its last fold.
+1. A browser-only site's seller page changes and the `end` endpoint now nests the listing under `data.item`. The live `end` adapter, v2.3.1, had a success posterior of Beta(188, 4) after its last fold.
 2. Over 12 calls, 9 return `page_changed` because `listing_id` is missing. The posterior becomes Beta(191, 13), mean 0.936. P(success < 0.9) is still low, but the third `page_changed` in a row opens the breaker.
-3. The router falls `end` to the eBay API route (`fell_back: true`), and delist p95 holds at 70 s.
+3. The write does not fall to another route. Reconciliation reads its outcome before any further action.
 4. `adapter_author` starts. The empty-is-not-broken check confirms the listing exists through the fetch engine. Round 1 maps `listing_id` to `data.item.id`, a patch, so the release is v2.3.2.
 5. The fixture still holds the old shape, so the gate fails on the live read. Recon shows the site changed, so the fixture is re-recorded from the new page, with output unchanged and the version kept as a patch.
 6. Round 2 passes all four checks. The canary serves 20 calls, all of which succeed, and v2.3.2 goes live.
-7. Connect showed no break the whole time, because the fallback held.
+7. Connect showed the pending reconciliation until the read-back settled the outcome; the repair did not repeat the write.
