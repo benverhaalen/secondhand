@@ -3,13 +3,13 @@ import { test } from 'node:test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { scan } from '../../../../scripts/copy-lint.mjs';
 import data from '../../../../jobs/capture/process.json' with {type:'json'};
-import { validateTable, table, type Table, type Site } from './table.ts';
+import { validateTable, table, type Table } from './table.ts';
 test('v2 table validates every question and family', () => { assert.equal(table.version, 2); validateTable(data); });
-for (const [cause, change] of [
-  ['unknown site', (t) => { t.fields.root[0].required = ['unknown' as Site]; }],
-  ['missing view', (t) => { t.fields.apparel[0].ways[0].view = 'absent'; }],
-  ['family fields', (t) => { delete t.fields.shoes; }],
-] satisfies [string,(t: Table)=>void][]) test(`validation rejects ${cause}`, () => { const t = structuredClone(data) as unknown as Table; change(t); assert.throws(() => validateTable(t), undefined, cause); });
+for (const [cause, change, expected] of [
+  ['unknown site', (t) => { Reflect.set(t.fields.root[0], 'required', ['unknown']); }, /unknown site unknown/],
+  ['missing view', (t) => { t.fields.apparel[0].ways[0].view = 'absent'; }, /missing view absent/],
+  ['family fields', (t) => { delete t.fields.shoes; }, /missing fields for shoes/],
+] satisfies [string,(t: Table)=>void,RegExp][]) test(`validation rejects ${cause}`, () => { const t = structuredClone(table); change(t); assert.throws(() => validateTable(t), expected, cause); });
 test('root ways validate against every family process',()=>{const t=structuredClone(table);t.fields.root[3].ways[0].view='absent';assert.throws(()=>validateTable(t),/missing view absent/);});
 test('site_names cannot hide an unknown site',()=>{const t=structuredClone(table);t.fields.root[2].site_names={etsy:{max_length:10}} as Table['fields'][string][number]['site_names'];assert.throws(()=>validateTable(t),/unknown site etsy/);});
 test('class measurement views validate too',()=>{const t=structuredClone(table);t.classes.bag.dimensions!.ways[0].view='absent';assert.throws(()=>validateTable(t),/missing view absent/);});

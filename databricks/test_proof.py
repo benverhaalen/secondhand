@@ -29,6 +29,12 @@ def rows(n=8, at='2026-11-10'):
     return [{'id': f'obs_{i}', 'source': 'ebay', 'at': at, 'price_cents': 100 + i} for i in range(n)]
 
 
+def test_public_citation_id_matches_answer():
+    from proof import citationId
+    result = answer(1, rows(), CITE, NOW)
+    assert citationId(CITE, basisHash(rows())) == result['citation']['id']
+
+
 def test_hash_covers_canonical_rows_in_utf16_order():
     r = [{'id': '～', 'source': 'ebay', 'at': '2026-11-10'},
          {'id': '😀', 'source': 'ebay', 'at': '2026-11-10'}]
