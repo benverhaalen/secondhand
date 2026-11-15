@@ -59,7 +59,7 @@ export default function ItemPlan() {
     // Didn't load: the one fix is to load it again (frontend-standard §4, Error). Gone: nothing to try.
     return (
       <RouteSheet name="item-plan" state="failed" skip={skip('failed')} title="Plan" onClosed={onClosed}>
-        <EmptyState title="Can’t open this item" line="It was deleted, or it didn’t load."
+        <EmptyState title="Can’t open this item" line={state === 'failed' ? 'This item didn’t load' : 'This item is no longer available'}
           action={state === 'failed' ? { id: 'plan-retry', label: 'Retry', onPress: () => router.replace(`/item/${id}/plan${world ? `?world=${world}` : ''}` as Href) } : undefined} />
       </RouteSheet>
     );
@@ -126,7 +126,7 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
   const at = price !== null ? (one ? usd(price) : `from ${usd(price)}`) : '';
 
   const consequence = choice === 'check' ? 'Lists only where an offer doesn’t bind you. Every offer asks you.'
-    : choice === 'reserve' ? 'Waits for your price. No drops, never marked slow.'
+    : choice === 'reserve' ? 'Waits for your price without price drops'
     : choice === start && outlook && price !== null ? `At ${usd(price)}, about ${outlook.days_lo} to ${outlook.days_hi} days` : '';
   const modes = M.priceModes(w, item, flipped);
 
@@ -153,7 +153,6 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
           <Txt role="caption">{waiting ? 'Waiting for signal. Your plan saves when you’re back.' : 'Offline. Changes send when you’re back.'}</Txt></Line>
       ) : null}
       <Stack>
-        <Txt role="caption">What do you want?</Txt>
         <Chips id="choice" name="What do you want" value={choice} options={M.CHOICES} onChange={c => { setChoice(c as M.Choice); setTyped(null); edit(); }} />
         {modes.length ? (
           <List>
@@ -182,7 +181,7 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
           {v ? <Txt role="caption">{`Similar ones sold for ${range(v)}`}</Txt> : null}
           {far && v ? (
             <Stack gap="tight">
-              <Line><Icon name="alert-02" size={12} tone="brick" /><Txt role="caption">{`Similar ones sold for ${range(v)}. List at ${usd(price!)}?`}</Txt></Line>
+              <Line><Icon name="alert-02" size={12} tone="brick" /><Txt role="caption">{`List at ${usd(price!)}?`}</Txt></Line>
               <Line><Pill id="far-yes" label={`Yes, ${usd(price!)}`} kind="second" onPress={() => setFarOk(price)} /></Line>
             </Stack>
           ) : under ? (
@@ -238,9 +237,7 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
       {choice !== 'reserve' && choice !== 'check' ? (
         <Row trail={<Switch id="drops" label="Price drops" on={dropsOn} onChange={o => { setDropsOn(o); edit(); }} />}>
           <Txt role="body">Price drops</Txt>
-          {steps.length
-            ? steps.map(s => <Txt key={s.at + s.label} role="caption">{`${s.at}: ${s.label.toLowerCase()}`}</Txt>)
-            : <Txt role="caption">Stays at its price until you change it</Txt>}
+          {steps.map(s => <Txt key={s.at + s.label} role="caption">{`${s.at}: ${s.label.toLowerCase()}`}</Txt>)}
         </Row>
       ) : null}
 
