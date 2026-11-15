@@ -26,10 +26,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from studio import check as C  # noqa: E402
 from studio import measure as M  # noqa: E402
 
-BAND = 0.05      # agent proposal: a published top reads within 5% of the tape (about one inch on a 21 in chest)
-TAPE_READ = 0.25  # inches: how well a person reads a cloth tape laid on a garment
+BAND = 0.05      # half a size step: Gildan 5000 chests step about 2 in a size, so 1 in (5% of 21 in) cannot move a size
+# (every number here and in measure.py has its reason in research/studio/ben/measure-proof.md, "Why each number")
+TAPE_READ = 0.25  # inches: the tape's finest marks are 1/8 in, and a soft edge on cloth is read to about two marks
 TOPS = ("tee", "long_sleeve", "sweatshirt", "hoodie", "jacket")
-STRETCH = (0.88, 0.92, 0.95, 0.97, 1.03, 1.05, 1.08, 1.12)
+STRETCH = (0.88, 0.92, 0.95, 0.97, 1.03, 1.05, 1.08, 1.12)  # inside and outside the 5% band on both sides; 12% is past the
+# worst honest draw seen (the model drew up to 21% narrow, but the repair brings it back before this test)
 
 
 def rgb(path: str) -> np.ndarray:

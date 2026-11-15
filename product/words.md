@@ -1417,7 +1417,10 @@ Ben, studio thread, 08:14 UTC.
 Ben, studio thread, 09:00 UTC.
 > how about just allow this feature for lidar phones. assume all phones have lidar. dont overengineer
 
-Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md), jobs/studio/plan.py (`relay_measured`).
+Ben, project chat (relayed), 09:09 UTC, the parts about the studio.
+> make whatever numbers you come up with have a reason. a specific reason why you chose those bounds. dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup. wait to test the ai image enhancement once we actually get the lidar stuff working. only allow this from lidar flow too.
+
+Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md) ("Why each number"), jobs/studio/plan.py (`relay_measured`).
 
 ## 2026-11-15 demo the buy side live, Nate posts and my phone pings
 
@@ -1610,6 +1613,17 @@ Ben, project chat, 08:43 UTC.
 
 Used in: [intent ledger](../spec/intent-ledger.md#how-the-work-runs).
 
+## 2026-11-15 the hero from the reference, four-finger hands, stop-motion sprites and a lean site workflow
+Ben, project chat, 08:31 UTC, relayed to the website thread.
+> ensure to update the workflow too for the website making too but apply it to that scenario then. for the hugeicons the hands i want you to use are hugeicons but for the default static hand i want the four finger03. for creating animations, they dont have to be crazy smooth. like stop motion like. let codex through cli handle all the generation. it should be making sprites essentially or like short animations. pick only a couple that should be done. the dap is one. the wave. pulling on something maybe. ensure the icons are aligned. the website should look super close to that one website reference i was talking about as far as the hero goes in the pills and the layout. think of a way to make the wordmark text use color or some way to improve it. ensure all written text aheres to the anti slop claudish skill or rules i have. i dont like how the top bar is black. it should really really try to use the brand guidelines and constitution well. add more of the gradient type look. the 'secondhand' text in the hero area should have the hands on either side too. and the hands should be on each side of it. another note, it looks like there is a shadow behind just the text. i want like a semi transparent overlay with a moving gradient that slowly changes color. also, the 5.5 model i wanted is right. i dont care about hot items and seasons anymore. stop that.
+
+Used in: [the website's workflow](../brand/explore/web-home/README.md), [the hero](../brand/explore/web-home/hero/index.html), [the sprites](../brand/explore/web-home/sprites/).
+
+## 2026-11-15 the depop partner api is a proposal, never a claim
+Ben, project chat, 08:32 UTC.
+> propose in roi propostion being in the depop api thing but right now dont claim that we are
+
+Used in: [intent ledger](../spec/intent-ledger.md).
 ## 2026-11-15 nate take ben's asks as ideas, keep what we do better, and read ebay pages anyway
 Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages. The first came after the orchestrator listed what Ben's rulings change, one of them a reply being sent without asking after three unedited sends. The second answered the orchestrator's question after the eBay page lane's builder stopped on eBay's robots.txt and User Agreement.
 > not just three, dont just do stuff that might be thinking in a way we can understand is less than the potential and value already brought, identify which ideas are needed, what we do better, change what we can do better
@@ -1688,3 +1702,9 @@ Nate, build session (orchestrator), 2026-11-15 about 09:20 Central, with a link 
 > https://browser-use.com/showcase
 
 Used in: [the open benchmark, speed that means something](../spec/benchmark.md#speed-that-means-something-and-what-the-lakehouse-adds).
+
+## 2026-11-15 nate ebay's regional sites reach us listings
+Nate, build session (orchestrator), 2026-11-15 about 09:35 Central, correcting the orchestrator's reading of Browser Use's eBay benchmark page.
+> No it shows that ebay.com doesnt work but ebay.co.uk , ebay.de, ebay.ie , and ebay.be work, which we can still probably use to access us listings and such, even sign in
+
+Used in: [when eBay serves its public pages, regional sites](../research/cross-cutting/nate/runs/ebay-when-it-serves.md#ebays-regional-sites-added-2026-11-15-about-0945-central).

@@ -245,6 +245,8 @@ Every capture route returns `plan` beside the capture, and `GET /v1/captures/:id
 | cap-8 The question planner and the walk | `app/src/engines/capture/plan.ts`, `plan.test.ts`, `walk.test.ts` | `node --test app/src/engines/capture/walk.test.ts`: six types (a T-shirt, sneakers, a handbag, a phone, a chair, a bundle of three) from the first photo to `done`, asserting the class, the process, each question in order and the stop, run twice with identical output |
 | cap-9 The routes | `app/src/edge/api/captures.ts` and its test, `spec/examples/captures.json` | `node --test app/src/edge/api/captures.test.ts` |
 
+`jobs/capture/follow_ups.py` and `next_view.py` (cap-4, cap-5) are superseded by `plan.ts` and say so in their headers; no Python twin of the plan is built, since the routes run the TypeScript engine and no job plans a capture. A `lookup` value does not depend on which lane fetched the page: our reader or, once the app has its web view, the person's own browser ([where a read runs](protocol-and-adapters.md)).
+
 ## Worked example
 
 All numbers are examples.
