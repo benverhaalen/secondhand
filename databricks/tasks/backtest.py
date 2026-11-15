@@ -56,7 +56,7 @@ def to_runner_rows(spark_rows):
             row[key] = int(float(row[key])) if row[key] is not None else None
         for key, default in experiment.FLAGS.items():
             row[key] = experiment._flag(raw.get(key), default)
-        for key in ('at', 'listed_at'):
+        for key in ('at', 'listed_at', 'released_at'):
             row[key] = _timestamp_string(row[key], row['source'])
         rows.append(row)
     return rows
@@ -221,16 +221,19 @@ def require_snapshot_version(before, after):
 
 
 def log_training_input(mlflow, log, version):
-    dataset = log.call('mlflow', 'load_delta', {'table': 'secondhand.market.comp_for_model', 'version': int(version)},
-                       lambda: mlflow.data.load_delta(table_name='secondhand.market.comp_for_model', version=int(version)))
+    dataset = log.call('mlflow', 'load_delta', {'table': 'secondhand.market.comp', 'version': int(version)},
+                       lambda: mlflow.data.load_delta(table_name='secondhand.market.comp', version=int(version), name='comp_for_model'))
     log.call('mlflow', 'log_input', {'context': 'training', 'version': int(version)},
              lambda: mlflow.log_input(dataset, context='training'))
+    tags = {'input_filter': 'may_model = true', 'input_view': 'secondhand.market.comp_for_model'}
+    log.call('mlflow', 'input_tags', tags, lambda: mlflow.set_tags(tags))
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', type=Path, default=ROOT)
     ap.add_argument('--source', default='stockx_2019')
+    ap.add_argument('--experiment', default='/Shared/secondhand/valuation-backtest')
     ap.add_argument('--test-from', default='2018-11-01')
     ap.add_argument('--test-to')
     args = ap.parse_args(argv)
@@ -256,7 +259,7 @@ def main(argv=None):
                 'table_versions': [{'table': 'secondhand.market.comp', 'version': int(version)}]}
         contestants = [experiment.ProductMedian(), experiment.LastSale(), experiment.Model()]
         log.call('mlflow', 'tracking', {}, lambda: mlflow.set_tracking_uri('databricks'))
-        log.call('mlflow', 'experiment', {}, lambda: mlflow.set_experiment('/Shared/secondhand/valuation-backtest'))
+        log.call('mlflow', 'experiment', {}, lambda: mlflow.set_experiment(args.experiment))
         with mlflow.start_run(run_name=run_id) as run:
             log_training_input(mlflow, log, version)
             log.call('mlflow', 'params', {}, lambda: mlflow.log_params({

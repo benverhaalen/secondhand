@@ -18,7 +18,7 @@ export type TopListing = { site: FeeSite; price_cents: number; url: string; age_
 export type RetailOffer = { source: string; price_cents: number; list_price_cents?: number; in_stock: boolean; url: string };
 export type Discount = { source: string; credible: boolean; price_cents: number; ends_at?: string };
 
-export type SiteInput = { site: FeeSite; sold: Sold[]; top: TopListing[]; curve: Curve; offer_discount: number; sale?: Sale; ending?: EndingRule };
+export type SiteInput = { site: FeeSite; sold: Sold[]; top: TopListing[]; curve?: Curve; offer_discount: number; sale?: Sale; ending?: EndingRule };
 export type PostureInput = { sites: SiteInput[]; floor_cents: number; retail: RetailOffer[]; discounts: Discount[]; as_of: string };
 
 export type Ceiling = { cents: number; source: string } | null;
@@ -35,7 +35,7 @@ export function ceiling(retail: RetailOffer[], discounts: Discount[], as_of: str
 }
 
 export type Point = {
-  site: FeeSite; ask_cents: number; list_cents: number; keep_cents: number; p_sale_30: number; days_t50: number | null;
+  site: FeeSite; ask_cents: number; list_cents: number; keep_cents: number; p_sale_30: number | null; days_t50: number | null;
   held_by: 'floor' | 'ceiling' | 'top_listings' | null;
 };
 
@@ -65,7 +65,7 @@ export function pointOnSite(s: SiteInput, t: number, floor_cents: number, cap: C
   if (list < floor_cents) list = floor_cents;
   return {
     site: s.site, ask_cents: ask, list_cents: list, keep_cents: keep(s.site, list, s.sale).keep_cents,
-    p_sale_30: s.curve.p(list, HORIZON), days_t50: s.curve.t(list, 0.5), held_by: held,
+    p_sale_30: s.curve?.p(list, HORIZON) ?? null, days_t50: s.curve?.t(list, 0.5) ?? null, held_by: held,
   };
 }
 

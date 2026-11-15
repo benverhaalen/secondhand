@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS secondhand.measures.bench_number (
   item_id STRING COMMENT 'Item asked about.',
   question STRING COMMENT 'Question asked.',
   data STRING COMMENT 'Dataset identifier derived from the manifest hash.',
+  position INT COMMENT 'Zero-based position in the numbers array.',
   name STRING COMMENT 'Name of the displayed number.',
   value_cents BIGINT COMMENT 'Number in integer cents.',
   citation_id STRING COMMENT 'Citation identifier, or null.',
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS secondhand.measures.bench_fact (
   item_id STRING COMMENT 'Item asked about.',
   question STRING COMMENT 'Question asked.',
   data STRING COMMENT 'Dataset identifier derived from the manifest hash.',
+  position INT COMMENT 'Zero-based position in the facts array.',
   kind STRING COMMENT 'Kind of fact returned.',
   count BIGINT COMMENT 'Number of facts of this kind.'
 ) COMMENT 'Fact counts in benchmark answers.';
@@ -46,6 +48,7 @@ CREATE TABLE IF NOT EXISTS secondhand.measures.bench_site (
   item_id STRING COMMENT 'Item asked about.',
   question STRING COMMENT 'Question asked.',
   data STRING COMMENT 'Dataset identifier derived from the manifest hash.',
+  position INT COMMENT 'Zero-based position in the sites array.',
   site STRING COMMENT 'Site used by the answer.'
 ) COMMENT 'Sites used by benchmark answers.';
 
@@ -60,46 +63,55 @@ CREATE TABLE IF NOT EXISTS secondhand.measures.bench_load_report (
 ) COMMENT 'Latest load report for each benchmark run.';
 
 CREATE OR REPLACE VIEW secondhand.measures.bench_coverage
-COMMENT 'Answers and answer share per question.' AS
-SELECT data, run_id, tool, question, count(*) AS asked, count_if(ok) AS ok,
+COMMENT 'Answers and answer share per run and tool.' AS
+SELECT run_id, tool, min(asked_at) AS asked_at, count(*) AS asked, count_if(ok) AS ok,
        count_if(ok) / nullif(count(*), 0) AS ok_share
 FROM secondhand.measures.bench_record
-GROUP BY data, run_id, tool, question;
+GROUP BY run_id, tool;
 
 CREATE OR REPLACE VIEW secondhand.measures.bench_speed
 COMMENT 'First and full answer times in milliseconds, with the number asked.' AS
-SELECT data, run_id, tool, question, count(*) AS n,
+SELECT run_id, tool, min(asked_at) AS asked_at, count(*) AS n,
        percentile_cont(0.5) WITHIN GROUP (ORDER BY first_ms) AS first_p50_ms,
        percentile_cont(0.95) WITHIN GROUP (ORDER BY first_ms) AS first_p95_ms,
        percentile_cont(0.5) WITHIN GROUP (ORDER BY full_ms) AS full_p50_ms,
        percentile_cont(0.95) WITHIN GROUP (ORDER BY full_ms) AS full_p95_ms
 FROM secondhand.measures.bench_record
-GROUP BY data, run_id, tool, question;
+GROUP BY run_id, tool;
 
 CREATE OR REPLACE VIEW secondhand.measures.bench_breadth
 COMMENT 'Median sites and fact kinds per answered question, including zero.' AS
 WITH site_counts AS (
-  SELECT run_id, tool, item_id, question, count(*) AS sites
+  SELECT run_id, tool, item_id, question, count(DISTINCT site) AS sites
   FROM secondhand.measures.bench_site GROUP BY run_id, tool, item_id, question
 ), fact_counts AS (
-  SELECT run_id, tool, item_id, question, count_if(count > 0) AS facts
+  SELECT run_id, tool, item_id, question, count(DISTINCT CASE WHEN count > 0 THEN kind END) AS facts
   FROM secondhand.measures.bench_fact GROUP BY run_id, tool, item_id, question
 ), answers AS (
-  SELECT r.data, r.run_id, r.tool, coalesce(s.sites, 0) AS sites, coalesce(f.facts, 0) AS facts
+  SELECT r.run_id, r.tool, r.asked_at, r.ok, CASE WHEN r.ok THEN coalesce(s.sites, 0) END AS sites, CASE WHEN r.ok THEN coalesce(f.facts, 0) END AS facts
   FROM secondhand.measures.bench_record r
   LEFT JOIN site_counts s ON r.run_id = s.run_id AND r.tool = s.tool AND r.item_id = s.item_id AND r.question = s.question
   LEFT JOIN fact_counts f ON r.run_id = f.run_id AND r.tool = f.tool AND r.item_id = f.item_id AND r.question = f.question
-  WHERE r.ok
 )
-SELECT data, run_id, tool, count(*) AS n,
+SELECT run_id, tool, min(asked_at) AS asked_at, count_if(ok) AS n,
        percentile_cont(0.5) WITHIN GROUP (ORDER BY sites) AS median_sites,
        percentile_cont(0.5) WITHIN GROUP (ORDER BY facts) AS median_facts
-FROM answers GROUP BY data, run_id, tool;
+FROM answers GROUP BY run_id, tool;
 
 CREATE OR REPLACE VIEW secondhand.measures.bench_cited
 COMMENT 'Numbers shown and the share with a citation identifier.' AS
-SELECT data, run_id, tool, count(*) AS numbers_shown,
-       count_if(citation_id IS NOT NULL AND length(trim(citation_id)) > 0) AS with_citation,
-       count_if(citation_id IS NOT NULL AND length(trim(citation_id)) > 0) / nullif(count(*), 0) AS share
-FROM secondhand.measures.bench_number
-GROUP BY data, run_id, tool;
+SELECT r.run_id, r.tool, min(r.asked_at) AS asked_at, count(n.name) AS numbers_shown,
+       count_if(n.citation_id IS NOT NULL AND length(trim(n.citation_id)) > 0) AS with_citation,
+       count_if(n.citation_id IS NOT NULL AND length(trim(n.citation_id)) > 0) / nullif(count(n.name), 0) AS share
+FROM secondhand.measures.bench_record r
+LEFT JOIN secondhand.measures.bench_number n ON r.run_id = n.run_id AND r.tool = n.tool AND r.item_id = n.item_id AND r.question = n.question
+GROUP BY r.run_id, r.tool;
+
+CREATE OR REPLACE VIEW secondhand.measures.bench_runs
+COMMENT 'Each run and tool with its answer share and median times.' AS
+SELECT run_id, tool, count(*) AS records, min(asked_at) AS asked_at,
+       count_if(ok) / nullif(count(*), 0) AS ok_share,
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY first_ms) AS first_p50_ms,
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY full_ms) AS full_p50_ms
+FROM secondhand.measures.bench_record
+GROUP BY run_id, tool;

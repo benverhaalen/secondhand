@@ -255,3 +255,25 @@ test('lease: 20 jobs over 5 accounts run in parallel across accounts, never two 
   assert.equal(maxAll, 5);
   assert.ok(total < D * 20 * 0.5, `drain took ${total}ms, serial would be ${D * 20}ms`);
 });
+
+
+for (const broken of ['missing', 'purchase', 'person', 'item', 'listing', 'cancelled'] as const) {
+  test(`delist_after_sale refuses ${broken} confirmed order evidence`, async () => {
+    const r = rig();
+    if (broken !== 'missing') r.store.put('order', { id: 'ord_confirmed', user_id: broken === 'person' ? 'u2' : 'u1',
+      kind: broken === 'purchase' ? 'purchase' : 'sale', item_id: broken === 'item' ? 'i2' : 'i1',
+      listing_id: broken === 'listing' ? 'other' : 'sold', state: broken === 'cancelled' ? 'cancelled' : 'paid' });
+    r.job('delist', 'app.delist', 'auto', { decision_kind: 'delist_after_sale', order_id: 'ord_confirmed', sold_listing_id: 'sold' }, { listing_id: 'target' });
+    await r.pipe.runOnce(1);
+    assert.equal(r.fh.calls.length, 0, 'a marker alone must never authorize an end');
+  });
+}
+
+test('a confirmed sale authorizes an end independently of a negotiation price', async () => {
+  const r = rig();
+  r.store.put('order', { id: 'ord_confirmed', user_id: 'u1', kind: 'sale', item_id: 'i1', listing_id: 'sold', state: 'paid' });
+  r.job('delist', 'app.delist', 'auto', { decision_kind: 'delist_after_sale', order_id: 'ord_confirmed', sold_listing_id: 'sold',
+    price_cents: 1000, floor_cents: 4500 }, { listing_id: 'target' });
+  await r.pipe.runOnce(1);
+  assert.deepEqual(r.fh.calls.map(c => c.verb), ['end']);
+});

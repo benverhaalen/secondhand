@@ -4,12 +4,14 @@
 // 20 at the top, Art. 5 Overlays) with what a tall sheet needs: its body scrolls, its one act is pinned at its foot, and
 // it follows the finger down from its handle and title, closing on distance or a flick and springing back otherwise
 // (Emil, gestures: track 1:1, release with the velocity). A tap on the scrim closes it. Under Reduce Motion it fades.
+import { usePathname } from 'expo-router';
 import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import { GestureDetector, GestureHandlerRootView, usePanGesture } from 'react-native-gesture-handler';
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
+import { tap } from '../log';
 import { MOTIONS } from '../motion';
 import { Surface } from '../surface';
 import { Txt } from '../text';
@@ -35,7 +37,7 @@ export function RouteSheet({ name, state, skip, title, foot, onClosed, children 
   onClosed: () => void;
   children: ReactNode;
 }) {
-  const c = useColors(), insets = useSafeAreaInsets(), { height } = useWindowDimensions();
+  const c = useColors(), insets = useSafeAreaInsets(), { height } = useWindowDimensions(), screen = usePathname();
   const y = useSharedValue(height);
   const enter = typeof MOTIONS.sheet.ms === 'number' ? MOTIONS.sheet.ms : motion.panel;
   const leave = typeof MOTIONS.select.ms === 'number' ? MOTIONS.select.ms : motion.select;
@@ -63,9 +65,13 @@ export function RouteSheet({ name, state, skip, title, foot, onClosed, children 
       <GestureHandlerRootView {...({ dataSet: { screen: name, state, skip } } as object)} style={{ flex: 1, justifyContent: 'flex-end' }}>
         <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: c.scrim }, scrim]}>
           {/* The scrim is not a button that gives way: a tap anywhere on it closes the sheet, as on iOS. */}
-          <View testID="sheet-scrim" accessibilityRole="button" accessibilityLabel="Close" style={{ flex: 1 }} onStartShouldSetResponder={() => true} onResponderRelease={close} />
+          {/* It logs its tap like any control (log/README.md: every input), since closing the sheet is the person's act. */}
+          <View testID="sheet-scrim" accessibilityRole="button" accessibilityLabel="Close" style={{ flex: 1 }} onStartShouldSetResponder={() => true}
+            onResponderRelease={() => { tap('sheet-scrim', screen); close(); }} />
         </Animated.View>
-        <Animated.View style={[{ maxHeight: height - insets.top - space.s6 }, panel]}>
+        {/* The item peeks 48 above the tallest sheet, as an iOS sheet leaves the page it came from in view, so there is
+            always scrim to tap. */}
+        <Animated.View style={[{ maxHeight: height - insets.top - space.s8 }, panel]}>
           <Surface kind="sheet" part="sheet" box={{ flexShrink: 1 }}>
             <GestureDetector gesture={pan}>
               <View style={{ paddingTop: space.s2, paddingHorizontal: space.gutter, paddingBottom: space.s4, gap: space.s4 }}>

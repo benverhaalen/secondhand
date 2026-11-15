@@ -230,6 +230,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', type=Path, default=ROOT)
     ap.add_argument('--source', default='stockx_2019', choices=['stockx_2019'])
+    ap.add_argument('--experiment', default='/Shared/secondhand/param-walk')
     ap.add_argument('--seed', type=int, default=7)
     args = ap.parse_args(argv)
     from pyspark.sql import SparkSession, functions as F
@@ -250,7 +251,7 @@ def main(argv=None):
         rows = to_runner_rows(raw)
         result = log.timed('param.walk', lambda: walk(rows, seed=args.seed))
         log.call('mlflow', 'tracking', {}, lambda: mlflow.set_tracking_uri('databricks'))
-        log.call('mlflow', 'experiment', {}, lambda: mlflow.set_experiment('/Shared/secondhand/param-walk'))
+        log.call('mlflow', 'experiment', {}, lambda: mlflow.set_experiment(args.experiment))
         with mlflow.start_run(run_name=run_id) as parent:
             log_training_input(mlflow, log, version)
             log.call('mlflow', 'params', {}, lambda: mlflow.log_params({'source': args.source, 'seed': args.seed, 'grid': json.dumps(GRID), 'prior': PRIOR, 'noise_method': result['noise_method'], 'market_comp_version': int(version)}))

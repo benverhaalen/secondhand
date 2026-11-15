@@ -1,6 +1,6 @@
 // Human in the loop, the product's signature (Ben, 04:04: "design around human in the loop to show it off as central to our product").
 // Every page shows what the agent guessed and lets the person change it, calmly, not as a warning:
-//   Guess    text the agent guessed. A lilac tint behind it and a dotted underline until the person changes it, then
+//   Guess    text the agent guessed. A lilac tint behind it and a dotted underline until the person changes or confirms it, then
 //            plain and solid: theirs now (Ben, 08:12: "when its an ai suggested input for like the color of the garment
 //            ... it should be a different color than the user set ones"). Color is a ground, never ink (Art. 9.1), and
 //            never the only sign: the dotted line says it too.
@@ -39,7 +39,8 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
   const ink = ground === 'field' ? c.onField : c.ink;
   const underline = { borderBottomWidth: line === 'dotted' ? 1.5 : 1, borderStyle: line, borderColor: agent ? c.onColor : line === 'dotted' ? (ground === 'field' ? c.onField2 : c.ink2) : ink } as const;
   const tint = agent ? { backgroundColor: c.lilacTint, paddingHorizontal: space.s1, borderTopLeftRadius: space.s1, borderTopRightRadius: space.s1 } : null;
-  const commit = () => { setEditing(false); if (draft !== value) onChange?.(draft); };
+  // A dotted guess the person opens and leaves as it is was still looked at: that confirms it, so it commits too.
+  const commit = () => { setEditing(false); if (draft !== value || line === 'dotted') onChange?.(draft); };
   if (editing) {
     return (
       <View style={[{ alignSelf: 'flex-start', minWidth: 88 }, { borderBottomWidth: 1.5, borderColor: ink }]}>
@@ -68,7 +69,8 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
   );
 }
 
-// What the agent guessed. It stays dotted until the person changes it, then it is solid. Tapping it edits it in place.
+// What the agent guessed. It stays dotted until the person changes it or opens it and leaves it (that confirms it), then it
+// is solid. Tapping it edits it in place.
 export function Guess({ id, name, value, onChange, look, numeric, changed }: Field & {
   // True once the person has changed it: the screen keeps this, since it is the person's answer.
   changed?: boolean;

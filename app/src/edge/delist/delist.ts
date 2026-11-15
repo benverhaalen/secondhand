@@ -11,6 +11,7 @@
 // at the pace its harness manifest sets.
 // Likely breaks, each tested: delist on an unconfirmed sale; the sold listing delisted; a double fan-out;
 // a failed site never surfaced; a stale account's job dropped or marked failed.
+import { ORDER_STATES, type OrderState } from '../orders/orders.ts';
 import { write, logReceived, type LogLike } from '../events/intake.ts';
 import type { Site } from '../events/event.ts';
 import type { JobRow, Params, Store } from '../events/ports.ts';
@@ -57,4 +58,13 @@ export function settle(store: Store, log: LogLike, params: Params, job: JobRow, 
   });
   if (!d.duplicate) log.event('decision.open', { decision: d.row.id, kind: 'failed_delist', tier: 'ask' });
   return 'failed';
+}
+
+export function confirmedOrder(store: Store, job: JobRow): boolean {
+  const { order_id, sold_listing_id } = job.args;
+  if (job.kind !== 'delist' || typeof order_id !== 'string' || typeof sold_listing_id !== 'string'
+    || !job.item_id || !job.listing_id || job.listing_id === sold_listing_id) return false;
+  const order = store.get('order', job.user_id, order_id);
+  return !!order && order.kind === 'sale' && order.item_id === job.item_id && order.listing_id === sold_listing_id
+    && ORDER_STATES.includes(order.state as OrderState) && order.state !== 'cancelled' && order.state !== 'refunded';
 }
