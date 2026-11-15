@@ -2,7 +2,7 @@
   {
     "case": "ordinary",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
       "answer": {
         "ok": true,
         "value": {
@@ -50,7 +50,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -61,7 +61,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -72,7 +72,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-11-10T00:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
         "state": "shown"
       }
     }
@@ -80,7 +80,7 @@
   {
     "case": "unsorted_ids",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
       "answer": {
         "ok": true,
         "value": {
@@ -128,18 +128,18 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
           "basis_ids": [
-            "obs_7",
-            "obs_6",
-            "obs_5",
-            "obs_4",
-            "obs_3",
-            "obs_2",
+            "obs_0",
             "obs_1",
-            "obs_0"
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -150,7 +150,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-11-10T00:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
         "state": "shown"
       }
     }
@@ -158,7 +158,7 @@
   {
     "case": "missing_price",
     "value": {
-      "hash": "a8dadcba7608f4a4118437905c65272442292889790550b4f5340957676630a5",
+      "hash": "a4845b6d5f32d7f5307985ce6175464d8f34188295b9cb1fc7bc66190961dcb9",
       "answer": {
         "ok": true,
         "value": {
@@ -206,7 +206,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_a8dadcba7608f4a4",
+          "id": "cit_26c205df2d7869e656834bc02af0283269f8522b6541fc5248898deffb56445a",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -217,7 +217,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "a8dadcba7608f4a4118437905c65272442292889790550b4f5340957676630a5",
+          "basis_hash": "a4845b6d5f32d7f5307985ce6175464d8f34188295b9cb1fc7bc66190961dcb9",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -228,7 +228,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-11-10T00:00:00.000Z",
-        "citation_id": "cit_a8dadcba7608f4a4",
+        "citation_id": "cit_26c205df2d7869e656834bc02af0283269f8522b6541fc5248898deffb56445a",
         "state": "shown"
       }
     }
@@ -236,7 +236,7 @@
   {
     "case": "weights",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "2a5bcb2c879ac45217f88fd71249e1d0991863d4eec6f7ee86b260ae134ee9e5",
       "answer": {
         "ok": true,
         "value": {
@@ -284,7 +284,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_87181a1b9dfdd22d93f9e23b9a8c4ff4eb91c0f869a66752e21d968bd8b1e6be",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -295,7 +295,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "2a5bcb2c879ac45217f88fd71249e1d0991863d4eec6f7ee86b260ae134ee9e5",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -306,7 +306,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-11-10T00:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_87181a1b9dfdd22d93f9e23b9a8c4ff4eb91c0f869a66752e21d968bd8b1e6be",
         "state": "hidden",
         "hide_reason": "too_few"
       }
@@ -315,7 +315,7 @@
   {
     "case": "astral_utf16",
     "value": {
-      "hash": "37419bdf1caf9be7684561e1ec528ea28bee9525c7896e688ec4ddad614d9759",
+      "hash": "c214cfbf25653c91b04ffd9f83af410fe093e4cd488fbe15dd273d632ee391d1",
       "answer": {
         "ok": true,
         "value": {
@@ -365,18 +365,18 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_37419bdf1caf9be7",
+          "id": "cit_e71fa842f29e0b41ff7719eec2fdc10f3a2279ba6a2b69edbd346a0d726af8c2",
           "basis_ids": [
-            "obs_～",
-            "obs_😀",
             "obs_2",
             "obs_3",
             "obs_4",
             "obs_5",
             "obs_6",
-            "obs_7"
+            "obs_7",
+            "obs_😀",
+            "obs_～"
           ],
-          "basis_hash": "37419bdf1caf9be7684561e1ec528ea28bee9525c7896e688ec4ddad614d9759",
+          "basis_hash": "c214cfbf25653c91b04ffd9f83af410fe093e4cd488fbe15dd273d632ee391d1",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -387,7 +387,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-11-10T00:00:00.000Z",
-        "citation_id": "cit_37419bdf1caf9be7",
+        "citation_id": "cit_e71fa842f29e0b41ff7719eec2fdc10f3a2279ba6a2b69edbd346a0d726af8c2",
         "state": "shown"
       }
     }
@@ -395,7 +395,7 @@
   {
     "case": "bad_date",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "740084442d917fd6b805eb72be7321c6de913226161012886ed40a9722e26259",
       "answer": {
         "ok": false,
         "refused": "no_basis"
@@ -410,7 +410,7 @@
   {
     "case": "empty",
     "value": {
-      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "answer": {
         "ok": false,
         "refused": "no_basis"
@@ -425,7 +425,7 @@
   {
     "case": "too_few",
     "value": {
-      "hash": "f72bbf9f3af170d9c167bf58f67f23902250b5faea03175b961315689ba06fe3",
+      "hash": "0c6cfe0edbd1e9ef741b7ab0da01ff823a4c9402c39bcb681896e28dd4e69f01",
       "answer": {
         "ok": true,
         "value": 42,
@@ -464,12 +464,12 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_f72bbf9f3af170d9",
+          "id": "cit_300e922425c6c1f94d62f8e10541c5aae9eb5d913c881e316be93cbcc3ce4eaa",
           "basis_ids": [
             "obs_0",
             "obs_1"
           ],
-          "basis_hash": "f72bbf9f3af170d9c167bf58f67f23902250b5faea03175b961315689ba06fe3",
+          "basis_hash": "0c6cfe0edbd1e9ef741b7ab0da01ff823a4c9402c39bcb681896e28dd4e69f01",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -477,7 +477,7 @@
         "value": 42,
         "basis_count": 2,
         "as_of": "2026-11-10T00:00:00.000Z",
-        "citation_id": "cit_f72bbf9f3af170d9",
+        "citation_id": "cit_300e922425c6c1f94d62f8e10541c5aae9eb5d913c881e316be93cbcc3ce4eaa",
         "state": "hidden",
         "hide_reason": "too_few"
       }
@@ -486,7 +486,7 @@
   {
     "case": "stale",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "758bc4a21e5176b846b082afddba69e432e1e110112b07a66970d186797ef8ea",
       "answer": {
         "ok": true,
         "value": {
@@ -534,7 +534,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_f203798a2416669b44b4aa682316b986b430d14b61e1a7efee0123704f8efb25",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -545,7 +545,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "758bc4a21e5176b846b082afddba69e432e1e110112b07a66970d186797ef8ea",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -556,7 +556,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-10-01T00:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_f203798a2416669b44b4aa682316b986b430d14b61e1a7efee0123704f8efb25",
         "state": "hidden",
         "hide_reason": "stale"
       }
@@ -565,7 +565,7 @@
   {
     "case": "too_wide",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
       "answer": {
         "ok": true,
         "value": {
@@ -613,7 +613,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -624,7 +624,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -635,7 +635,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-11-10T00:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
         "state": "hidden",
         "hide_reason": "too_wide"
       }
@@ -644,7 +644,7 @@
   {
     "case": "shown",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
       "answer": {
         "ok": true,
         "value": 42,
@@ -689,7 +689,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -700,7 +700,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -708,7 +708,7 @@
         "value": 42,
         "basis_count": 8,
         "as_of": "2026-11-10T00:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
         "state": "shown"
       }
     }
@@ -716,7 +716,7 @@
   {
     "case": "guard_precedence",
     "value": {
-      "hash": "f72bbf9f3af170d9c167bf58f67f23902250b5faea03175b961315689ba06fe3",
+      "hash": "926d1d069a686102f4b87379d822d484566111ea4ce4acb2341eaff1415a17c5",
       "answer": {
         "ok": true,
         "value": {
@@ -758,12 +758,12 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_f72bbf9f3af170d9",
+          "id": "cit_26a1edbabfe897fc258567445c5d5ee1521d5a7f47b6bdb67743bcf124b23271",
           "basis_ids": [
             "obs_0",
             "obs_1"
           ],
-          "basis_hash": "f72bbf9f3af170d9c167bf58f67f23902250b5faea03175b961315689ba06fe3",
+          "basis_hash": "926d1d069a686102f4b87379d822d484566111ea4ce4acb2341eaff1415a17c5",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -774,7 +774,7 @@
         },
         "basis_count": 2,
         "as_of": "2026-10-01T00:00:00.000Z",
-        "citation_id": "cit_f72bbf9f3af170d9",
+        "citation_id": "cit_26a1edbabfe897fc258567445c5d5ee1521d5a7f47b6bdb67743bcf124b23271",
         "state": "hidden",
         "hide_reason": "too_few"
       }
@@ -783,7 +783,7 @@
   {
     "case": "zero_weights",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "c3aeefd33317cc954f2e946fad41bfc8126e2cf109c36be9c9a3c641dc2023f7",
       "answer": {
         "ok": true,
         "value": {
@@ -831,7 +831,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_997c803c8729d49ff2d67d5045be8ab5b6734e1d2559129899ba413786198b24",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -842,7 +842,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "c3aeefd33317cc954f2e946fad41bfc8126e2cf109c36be9c9a3c641dc2023f7",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -853,7 +853,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-11-10T00:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_997c803c8729d49ff2d67d5045be8ab5b6734e1d2559129899ba413786198b24",
         "state": "hidden",
         "hide_reason": "too_few"
       }
@@ -862,7 +862,7 @@
   {
     "case": "iso_offsets",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "205ab6737799373f591992e1884ce4e9c90b3d12aa41ccee1a28533201b9c890",
       "answer": {
         "ok": true,
         "value": {
@@ -910,7 +910,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_ffeb2b5a53d83dc9e16caab71663c938a29b27d2d87dddb8b139afa701c4f82d",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -921,7 +921,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "205ab6737799373f591992e1884ce4e9c90b3d12aa41ccee1a28533201b9c890",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -932,7 +932,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-11-11T04:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_ffeb2b5a53d83dc9e16caab71663c938a29b27d2d87dddb8b139afa701c4f82d",
         "state": "shown"
       }
     }
@@ -940,7 +940,7 @@
   {
     "case": "missing_source",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "8de60a4bdcb2ca2b150b49902ed9d70a25e3e9b11ffeed443d86ae279c0c1206",
       "answer": {
         "ok": false,
         "refused": "no_basis"
@@ -955,7 +955,7 @@
   {
     "case": "empty_id",
     "value": {
-      "hash": "0e996a55155129c850970b639be1386dba9bd41ecd6c071915c2fa1c1f529cb1",
+      "hash": "f60ace6396ecce8b5661b3e655d9a49f127694a55fbb2c73e0bb618b5b8f2ded",
       "answer": {
         "ok": false,
         "refused": "no_basis"
@@ -970,7 +970,7 @@
   {
     "case": "guard_boundary",
     "value": {
-      "hash": "f5e3380948977affdd3223f84dc1b7ae3ee5d0dea903de4cfda80839027ad8a7",
+      "hash": "71a520f0ddec5225f17a3e73ace180bdac98ae05d15f4da51b01e8de6321aa07",
       "answer": {
         "ok": true,
         "value": {
@@ -1016,7 +1016,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_f5e3380948977aff",
+          "id": "cit_0bc89693bfc3aad768b204fb1d259df3792fa7e0878688de29cc88c480c1106c",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -1025,7 +1025,7 @@
             "obs_4",
             "obs_5"
           ],
-          "basis_hash": "f5e3380948977affdd3223f84dc1b7ae3ee5d0dea903de4cfda80839027ad8a7",
+          "basis_hash": "71a520f0ddec5225f17a3e73ace180bdac98ae05d15f4da51b01e8de6321aa07",
           "computed_at": "2026-11-24T00:00:00.000Z"
         }
       },
@@ -1036,7 +1036,7 @@
         },
         "basis_count": 6,
         "as_of": "2026-11-10T00:00:00.000Z",
-        "citation_id": "cit_f5e3380948977aff",
+        "citation_id": "cit_0bc89693bfc3aad768b204fb1d259df3792fa7e0878688de29cc88c480c1106c",
         "state": "shown"
       }
     }
@@ -1044,7 +1044,7 @@
   {
     "case": "submillisecond_truncation",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "12ef785f0eda67bbfafb60810557ca614163de439208d94823fae4f9f9f557f2",
       "answer": {
         "ok": true,
         "value": {
@@ -1092,7 +1092,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_c002954a1766c4913a91f6553caaa95bca2f4421c3c28d2c363f697452d1ee99",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -1103,7 +1103,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "12ef785f0eda67bbfafb60810557ca614163de439208d94823fae4f9f9f557f2",
           "computed_at": "2026-11-15T04:00:00.0001Z"
         }
       },
@@ -1114,7 +1114,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-11-15T04:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_c002954a1766c4913a91f6553caaa95bca2f4421c3c28d2c363f697452d1ee99",
         "state": "shown"
       }
     }
@@ -1122,7 +1122,7 @@
   {
     "case": "end_of_day_iso",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "c993d377b349d395c891d332750a21215cb7efe4cee91e66285d6996aa1840eb",
       "answer": {
         "ok": true,
         "value": {
@@ -1170,7 +1170,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_f131e58ffca4e569f8c853b13e270c6379036162a21bd6ae5dd7c36ed67b603b",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -1181,7 +1181,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "c993d377b349d395c891d332750a21215cb7efe4cee91e66285d6996aa1840eb",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -1192,7 +1192,7 @@
         },
         "basis_count": 8,
         "as_of": "2026-11-11T00:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_f131e58ffca4e569f8c853b13e270c6379036162a21bd6ae5dd7c36ed67b603b",
         "state": "shown"
       }
     }
@@ -1200,7 +1200,7 @@
   {
     "case": "short_month_normalization",
     "value": {
-      "hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+      "hash": "59e7621a2f30a6a52b3241b7a91571f5f59ed12985c4a70e9879cbbcb90621aa",
       "answer": {
         "ok": true,
         "value": {
@@ -1248,7 +1248,7 @@
             "proof_min_n_eff": 0
           },
           "model_version": null,
-          "id": "cit_2a9583193cb5e647",
+          "id": "cit_0d9901d65acc0b340b34cfa3f5699449883eb403c262052ef17d8d03cf031951",
           "basis_ids": [
             "obs_0",
             "obs_1",
@@ -1259,7 +1259,7 @@
             "obs_6",
             "obs_7"
           ],
-          "basis_hash": "2a9583193cb5e64763d851233fd3fb151f48e4671d0df73b16a981a1b5b92880",
+          "basis_hash": "59e7621a2f30a6a52b3241b7a91571f5f59ed12985c4a70e9879cbbcb90621aa",
           "computed_at": "2026-11-15T04:00:00.000Z"
         }
       },
@@ -1270,9 +1270,3149 @@
         },
         "basis_count": 8,
         "as_of": "2026-03-02T00:00:00.000Z",
-        "citation_id": "cit_2a9583193cb5e647",
+        "citation_id": "cit_0d9901d65acc0b340b34cfa3f5699449883eb403c262052ef17d8d03cf031951",
         "state": "hidden",
         "hide_reason": "stale"
+      }
+    }
+  },
+  {
+    "case": "citation_metric",
+    "value": {
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "other_metric",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_a626d65ae6833ea0caf22ca09864589989f35e60915a20618797046c606eee42",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_a626d65ae6833ea0caf22ca09864589989f35e60915a20618797046c606eee42",
+        "state": "shown"
+      }
+    }
+  },
+  {
+    "case": "citation_filters",
+    "value": {
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "other"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_77f3dd343833280b8bd7eef9128e4f2ba10bb8c196eeb788e9d170ad6df8ef24",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_77f3dd343833280b8bd7eef9128e4f2ba10bb8c196eeb788e9d170ad6df8ef24",
+        "state": "shown"
+      }
+    }
+  },
+  {
+    "case": "citation_param_version",
+    "value": {
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 1
+          },
+          "model_version": null,
+          "id": "cit_c0b073117a80c97a080bce11854d26f96674aecf5cff6eeb5409a382c9e1c044",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_c0b073117a80c97a080bce11854d26f96674aecf5cff6eeb5409a382c9e1c044",
+        "state": "shown"
+      }
+    }
+  },
+  {
+    "case": "citation_table_version",
+    "value": {
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 38
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_ba80a6a1ca70e342affbb2a58ce7a54aa289d5bf19790d302ed1bdd6de17e481",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_ba80a6a1ca70e342affbb2a58ce7a54aa289d5bf19790d302ed1bdd6de17e481",
+        "state": "shown"
+      }
+    }
+  },
+  {
+    "case": "citation_definition_version",
+    "value": {
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d2",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_77dd92ff5869691a96090157532312ce1451dc2e0acbacb26ba6052ff962ff7a",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_77dd92ff5869691a96090157532312ce1451dc2e0acbacb26ba6052ff962ff7a",
+        "state": "shown"
+      }
+    }
+  },
+  {
+    "case": "citation_code_version",
+    "value": {
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c2",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_d87dedf513690d40060e206e4ca8ab28f6d1defc9470134d3a36034033234101",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_d87dedf513690d40060e206e4ca8ab28f6d1defc9470134d3a36034033234101",
+        "state": "shown"
+      }
+    }
+  },
+  {
+    "case": "citation_model_version",
+    "value": {
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": "m1",
+          "id": "cit_6db9cdedef858e10658710990dad852f585a71f2ea3bab4a59b10877561dd8da",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_6db9cdedef858e10658710990dad852f585a71f2ea3bab4a59b10877561dd8da",
+        "state": "shown"
+      }
+    }
+  },
+  {
+    "case": "duplicate_ids_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "duplicate basis id obs_0"
+      }
+    }
+  },
+  {
+    "case": "duplicate_ids_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "duplicate basis id obs_0"
+      }
+    }
+  },
+  {
+    "case": "duplicate_ids_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "duplicate basis id obs_0"
+      }
+    }
+  },
+  {
+    "case": "negative_weight_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "negative_weight_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "negative_weight_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "weight_NaN_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "weight_NaN_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "weight_NaN_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "weight_Infinity_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "weight_Infinity_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "weight_Infinity_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "weight_-Infinity_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "weight_-Infinity_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "weight_-Infinity_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "weight must be finite and nonnegative"
+      }
+    }
+  },
+  {
+    "case": "cents_negative_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_negative_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_negative_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_fractional_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_fractional_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_fractional_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_unsafe_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_unsafe_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_unsafe_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_null_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_null_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_null_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_NaN_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_NaN_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_NaN_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_Infinity_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_Infinity_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_Infinity_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_boolean_basisHash",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_boolean_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "cents_boolean_answer",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "price_cents must be nonnegative safe integer cents"
+      }
+    }
+  },
+  {
+    "case": "bad_now_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "now must be a valid date"
+      }
+    }
+  },
+  {
+    "case": "bad_now_answer",
+    "value": {
+      "ok": false,
+      "refused": "no_basis"
+    }
+  },
+  {
+    "case": "future_date_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "basis date must be valid and not after now"
+      }
+    }
+  },
+  {
+    "case": "future_date_answer",
+    "value": {
+      "ok": false,
+      "refused": "no_basis"
+    }
+  },
+  {
+    "case": "invalid_date_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "basis date must be valid and not after now"
+      }
+    }
+  },
+  {
+    "case": "invalid_date_answer",
+    "value": {
+      "ok": false,
+      "refused": "no_basis"
+    }
+  },
+  {
+    "case": "empty_basis_basisOf",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "basis must contain rows"
+      }
+    }
+  },
+  {
+    "case": "empty_basis_answer",
+    "value": {
+      "ok": false,
+      "refused": "no_basis"
+    }
+  },
+  {
+    "case": "min_n_eff_zero",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "min_n_eff must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "min_n_eff_negative",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "min_n_eff must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "min_n_eff_NaN",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "min_n_eff must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "min_n_eff_Infinity",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "min_n_eff must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "min_n_eff_negative_infinity",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "min_n_eff must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "min_n_eff_null",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "min_n_eff must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "min_n_eff_boolean",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "min_n_eff must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "max_age_days_zero",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "max_age_days must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "max_age_days_negative",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "max_age_days must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "max_age_days_NaN",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "max_age_days must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "max_age_days_Infinity",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "max_age_days must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "max_age_days_negative_infinity",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "max_age_days must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "max_age_days_null",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "max_age_days must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "max_age_days_boolean",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "max_age_days must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "rules_before_refusal",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "min_n_eff must be finite and positive"
+      }
+    }
+  },
+  {
+    "case": "value_NaN",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "value must be finite"
+      }
+    }
+  },
+  {
+    "case": "value_Infinity",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "value must be finite"
+      }
+    }
+  },
+  {
+    "case": "value_negative_infinity",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "value must be finite"
+      }
+    }
+  },
+  {
+    "case": "range_reversed",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "range must have finite ordered bounds"
+      }
+    }
+  },
+  {
+    "case": "range_nonfinite_lo",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "range must have finite ordered bounds"
+      }
+    }
+  },
+  {
+    "case": "range_nonfinite_hi",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "range must have finite ordered bounds"
+      }
+    }
+  },
+  {
+    "case": "normalize_overflow",
+    "value": {
+      "hash": "a1e2e6f2e364a499060b86c76f571f1b2122d0dcfe638c7cc92696d409314e33",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 4.836087994514491,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_bdd2cc544c561a953c9c99d06889a2d02b9ca80a233f8b5804e43cbf31901b34",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "a1e2e6f2e364a499060b86c76f571f1b2122d0dcfe638c7cc92696d409314e33",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_bdd2cc544c561a953c9c99d06889a2d02b9ca80a233f8b5804e43cbf31901b34",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "normalize_underflow",
+    "value": {
+      "hash": "0b808b998c4034c4864745953cffba30c348b4f185e605f4c5f3e5a7c565f68c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 4.836087994514491,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_5bed367c956d206856aa2f1d746a9c646a45230f1f5cc4e51b414eadcf504aaa",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "0b808b998c4034c4864745953cffba30c348b4f185e605f4c5f3e5a7c565f68c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_5bed367c956d206856aa2f1d746a9c646a45230f1f5cc4e51b414eadcf504aaa",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "normalize_max",
+    "value": {
+      "hash": "4861c6f1269008a1c10405872b4f60d4e57564b123dedf5f777bece3613d40dd",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_d93d0642fd643fa13d6669a52142838e98418fd3e798b73644ac32c1092693f4",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "4861c6f1269008a1c10405872b4f60d4e57564b123dedf5f777bece3613d40dd",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_d93d0642fd643fa13d6669a52142838e98418fd3e798b73644ac32c1092693f4",
+        "state": "shown"
+      }
+    }
+  },
+  {
+    "case": "normalize_min",
+    "value": {
+      "hash": "eed3885695a5296674b4127e696e0564057e94703167cf851ab175e702439ebf",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_9b9bc3001e1aa63e4361050af4ae848b77806fcbc4a7891c6ba2c4a75af0e015",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "eed3885695a5296674b4127e696e0564057e94703167cf851ab175e702439ebf",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_9b9bc3001e1aa63e4361050af4ae848b77806fcbc4a7891c6ba2c4a75af0e015",
+        "state": "shown"
+      }
+    }
+  },
+  {
+    "case": "number_one",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "number": 1
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_0d5004e4533e8b9759bccd44f1274cab5fdec5cce8924f4e57e31f9d6bfac49b",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_0d5004e4533e8b9759bccd44f1274cab5fdec5cce8924f4e57e31f9d6bfac49b",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "number_sum",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "number": 0.30000000000000004
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_0821667bd613f327e44254b66fc36fdd1d13a8581080214a01f4838b416b747d",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_0821667bd613f327e44254b66fc36fdd1d13a8581080214a01f4838b416b747d",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "number_large",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "number": 1e+21
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_05d3bc0f2482c862891eabf328b3d4b708dc7b89139b6b237164b6872f63441f",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_05d3bc0f2482c862891eabf328b3d4b708dc7b89139b6b237164b6872f63441f",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "number_small",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "number": 5e-7
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_f62c50c65e18e63508f9de4e08a5682c3b7b7fede3db61dc63cf4f904799313c",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_f62c50c65e18e63508f9de4e08a5682c3b7b7fede3db61dc63cf4f904799313c",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "number_negative_zero",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "number": 0
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_b666f3773e24bedee5f982a61e6fe4395019e957ab7ad0bff4432ca3b03a1f41",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_b666f3773e24bedee5f982a61e6fe4395019e957ab7ad0bff4432ca3b03a1f41",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "number_half",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "number": 0.5
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_6bb65316cfd10ff802a9102f68c73fb16729c199ed48f519af69a53dcd410087",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_6bb65316cfd10ff802a9102f68c73fb16729c199ed48f519af69a53dcd410087",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "number_fixed_large",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "number": 100000000000000000000
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_f678e67129f74bd12541e5f74fae3e70ce66323b8cbfa05d58185e48250985c3",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_f678e67129f74bd12541e5f74fae3e70ce66323b8cbfa05d58185e48250985c3",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "number_fixed_small",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "number": 0.000001
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_c5b33f4d613dcc411eb65d7fe600286783d6617b114966137acbc41e461eef5d",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_c5b33f4d613dcc411eb65d7fe600286783d6617b114966137acbc41e461eef5d",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "number_large_rounding",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "number": 1000000000000000100
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_270306a6b402677f40103af875449854bc0ce456d22daa3b6ae2a0b1d14a2cac",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_270306a6b402677f40103af875449854bc0ce456d22daa3b6ae2a0b1d14a2cac",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "string_quote",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "string": "\""
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_cd332383e63e191a23d3693830c9a5a6a4a477cba249207dc996b2fa267e7218",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_cd332383e63e191a23d3693830c9a5a6a4a477cba249207dc996b2fa267e7218",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "string_backslash",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "string": "\\"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_1404e1b9928f686e30b30cce44c281440a449bab34ef9267c2abf56225eb9fec",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_1404e1b9928f686e30b30cce44c281440a449bab34ef9267c2abf56225eb9fec",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "string_newline",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "string": "\n"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_581c3355ea15e7ea95d2542a40c02c0b10c74d83cadf300e8468f339ade0c921",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_581c3355ea15e7ea95d2542a40c02c0b10c74d83cadf300e8468f339ade0c921",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "string_control",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "string": "\u0001"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_ebf7455ed2e0af6716294e8ce9c22cd24325ac7f1feabc54416cfc905e8f1f2b",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_ebf7455ed2e0af6716294e8ce9c22cd24325ac7f1feabc54416cfc905e8f1f2b",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "string_nonascii",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "string": "é"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_18a6cdb3fcfd966e0c789bd25f727f869eb42a4b98012daf1ad1234a5b172211",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_18a6cdb3fcfd966e0c789bd25f727f869eb42a4b98012daf1ad1234a5b172211",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "string_astral",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "string": "😀"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_70785a9dc1b23987e87b2ee3bd8cd009145503e13a5cfbc2682b9c55bff14acf",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_70785a9dc1b23987e87b2ee3bd8cd009145503e13a5cfbc2682b9c55bff14acf",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "string_all_escapes",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "string": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/  "
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_20d0d7e1cbc9da22c9f4804f483c82ad53d795e232edbf9a7b627e1c27d10eaf",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_20d0d7e1cbc9da22c9f4804f483c82ad53d795e232edbf9a7b627e1c27d10eaf",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "string_lone_surrogates",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "string": "\ud800x\udc00"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_4132fb63759c7cceb2d417b9bdc634ce0ab6a0c52bdd61d2b6292b73592414a5",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_4132fb63759c7cceb2d417b9bdc634ce0ab6a0c52bdd61d2b6292b73592414a5",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "nested_utf16_keys",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "～": null,
+            "😀": [
+              true,
+              false,
+              {
+                "b": 2,
+                "a": 1
+              }
+            ]
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_7da223ccc2d9ed8c253123a5c3f07eb2e4127d473b3eac8352bb8680c4080f07",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_7da223ccc2d9ed8c253123a5c3f07eb2e4127d473b3eac8352bb8680c4080f07",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "undefined_dropped",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "kept": null
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_11f4042a6b2cfb24a2ae7f4f4d70db7f91fd575210beae713ffab4e08bfb0268",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_11f4042a6b2cfb24a2ae7f4f4d70db7f91fd575210beae713ffab4e08bfb0268",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "undefined_absent",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "kept": null
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_11f4042a6b2cfb24a2ae7f4f4d70db7f91fd575210beae713ffab4e08bfb0268",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_11f4042a6b2cfb24a2ae7f4f4d70db7f91fd575210beae713ffab4e08bfb0268",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "identity_NaN",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "citation identity must be finite JSON"
+      }
+    }
+  },
+  {
+    "case": "identity_Infinity",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "citation identity must be finite JSON"
+      }
+    }
+  },
+  {
+    "case": "identity_-Infinity",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "citation identity must be finite JSON"
+      }
+    }
+  },
+  {
+    "case": "null_weight",
+    "value": {
+      "hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0"
+          ],
+          "sources": [
+            "mercari"
+          ],
+          "count": 1,
+          "n_eff": 1,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_a2e11be09b70ce5cfc8bdaaafa95f969401a129fbd20b77befc772e3ec1185de",
+          "basis_ids": [
+            "obs_0"
+          ],
+          "basis_hash": "031a6f87f207715220237c3500113b933b82b451101b813a3524d079218ede19",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 1,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_a2e11be09b70ce5cfc8bdaaafa95f969401a129fbd20b77befc772e3ec1185de",
+        "state": "hidden",
+        "hide_reason": "too_few"
+      }
+    }
+  },
+  {
+    "case": "fractional_age",
+    "value": {
+      "hash": "f38c7b80e9a5d776ec31e5431ddc3995c95c948287ed16b2e7c27982b382388d",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-01T03:59:59.999Z",
+          "newest": "2026-11-01T03:59:59.999Z",
+          "age_days": 14,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_a1a7cf21f3c882ea2d3ab959b7e1eedbc641bb300937737cfdf96664cb6cec86",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "f38c7b80e9a5d776ec31e5431ddc3995c95c948287ed16b2e7c27982b382388d",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 40,
+          "hi": 50
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-01T03:59:59.999Z",
+        "citation_id": "cit_a1a7cf21f3c882ea2d3ab959b7e1eedbc641bb300937737cfdf96664cb6cec86",
+        "state": "hidden",
+        "hide_reason": "stale"
+      }
+    }
+  },
+  {
+    "case": "overflow_wide",
+    "value": {
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 1e+307,
+          "hi": 1.7e+308
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 1e+307,
+          "hi": 1.7e+308
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
+        "state": "hidden",
+        "hide_reason": "too_wide"
+      }
+    }
+  },
+  {
+    "case": "overflow_narrow",
+    "value": {
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 6e+307,
+          "hi": 1.7e+308
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 6e+307,
+          "hi": 1.7e+308
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
+        "state": "shown"
+      }
+    }
+  },
+  {
+    "case": "underflow_wide",
+    "value": {
+      "hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+      "answer": {
+        "ok": true,
+        "value": {
+          "lo": 0,
+          "hi": 5e-324
+        },
+        "basis": {
+          "ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "sources": [
+            "ebay",
+            "mercari"
+          ],
+          "count": 8,
+          "n_eff": 8,
+          "oldest": "2026-11-10T00:00:00.000Z",
+          "newest": "2026-11-10T00:00:00.000Z",
+          "age_days": 5,
+          "passed": [
+            "claim_check"
+          ]
+        },
+        "citation": {
+          "metric": "sold_range",
+          "filters": {
+            "product_id": "prd_fixture"
+          },
+          "table_versions": [
+            {
+              "table": "observation",
+              "version": 37
+            }
+          ],
+          "definition_version": "d1",
+          "code_version": "c1",
+          "param_versions": {
+            "proof_min_n_eff": 0
+          },
+          "model_version": null,
+          "id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
+          "basis_ids": [
+            "obs_0",
+            "obs_1",
+            "obs_2",
+            "obs_3",
+            "obs_4",
+            "obs_5",
+            "obs_6",
+            "obs_7"
+          ],
+          "basis_hash": "ea088563b1222b9bf6333dae97d18f2b91243528487946b9aaa7c4c232906e9c",
+          "computed_at": "2026-11-15T04:00:00.000Z"
+        }
+      },
+      "guard": {
+        "value": {
+          "lo": 0,
+          "hi": 5e-324
+        },
+        "basis_count": 8,
+        "as_of": "2026-11-10T00:00:00.000Z",
+        "citation_id": "cit_d408de83e7f28941ae57ca70e98a11de6c7cb489f86ca77479926b107f546e58",
+        "state": "hidden",
+        "hide_reason": "too_wide"
+      }
+    }
+  },
+  {
+    "case": "undefined_in_list",
+    "value": {
+      "error": {
+        "name": "RangeError",
+        "message": "citation identity must be finite JSON"
       }
     }
   }

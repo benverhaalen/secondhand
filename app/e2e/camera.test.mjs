@@ -170,10 +170,20 @@ test('camera: a fact the person types is theirs, not the agent’s', async () =>
   await s.page.close();
 });
 
-test('camera: Enhance with AI waits for a measurement', async () => {
+test('camera: Enhance with AI waits for the LiDAR scan', async () => {
   const s = await app.open('/camera?world=new&mode=worth&state=done');
-  await s.shows('Measure it to use AI');
+  await s.shows('Scan it to use AI');
   assert.equal(await s.page.locator('[data-testid="cam-ai"] [data-part="fix"]').getAttribute('data-disabled'), 'true');
+  await s.page.close();
+});
+
+test('camera: without LiDAR no size is found and Enhance with AI stays off', async () => {
+  const s = await app.open('/camera?world=new&state=done&lidar=0');
+  await s.shows('AI needs a phone with LiDAR');
+  assert.equal(await s.page.locator('[data-testid="cam-ai"] [data-part="fix"]').getAttribute('data-disabled'), 'true');
+  assert.equal(await s.page.getByTestId('fact-chest').count(), 1, 'pit to pit is a blank to type');
+  const found = await s.page.locator('[data-part="fact"]').allInnerTexts();
+  assert.ok(!found.some(t => /24/.test(t)), 'no size is claimed without the scan');
   await s.page.close();
 });
 

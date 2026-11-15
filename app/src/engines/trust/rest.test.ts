@@ -8,6 +8,7 @@ import { nsDecide, resolveSlot, type NsIn } from './noshow.ts';
 import { flagAfterWarning, health, paceAllowed } from './health.ts';
 import { buyGate, gtin14, postGate, recallDelta, RecallDeltaRejected, takedowns, type RecallRow } from './recall.ts';
 import { counterfeit } from './counterfeit.ts';
+import { sameProduct, type Result } from '../../edge/intel/reconcile.ts';
 
 const store = memoryStore();
 declareTrust(store);
@@ -48,6 +49,61 @@ const recall = (o: Partial<RecallRow> = {}): RecallRow => ({
   Description: 'Model 10AW1G-AQU2U sold January 5, 2024 through June 30, 2024. Date codes are printed on the label.',
   Products: [{ Name: 'Acme Space Heater', Model: '' }], ProductUPCs: [{ UPC: '0012345678905' }], ...o,
 });
+
+for (const upc of ['036000291452', '0036000291452', '00036000291452', '036-000 291-452']) {
+  test(`GTIN: valid equivalent code ${upc} normalises to GTIN-14`, () => {
+    assert.equal(gtin14(upc), '00036000291452');
+  });
+}
+
+for (const [cause, upc] of [
+  ['bad check digit', '036000291453'],
+  ['fewer than eight digits', '0000000'],
+  ['more than fourteen digits', '000036000291452'],
+  ['letter inside a valid code', '036000x291452'],
+  ['punctuation inside a valid code', '036000.291452'],
+  ['empty code', ''],
+  ['missing code', undefined],
+] as const) {
+  test(`GTIN: ${cause} is rejected`, () => assert.equal(gtin14(upc), null));
+}
+
+test('recall: two identical bad codes cannot make an exact code match', () => {
+  const r = recall({ ProductUPCs: [{ UPC: '036000291453' }] });
+  assert.equal(postGate({ id: 'bad', title: 'Plain lamp', upc: '036000291453' }, [r]).match, 'none');
+});
+
+for (const [listingCode, recallCode] of [
+  ['036000291453', '036000291452'],
+  ['036000291452', '036000291453'],
+  ['036000291453', '036000291453'],
+]) {
+  test(`recall: ${listingCode} against ${recallCode} uses the missing-code fallback rules`, () => {
+    const r = recall({ ProductUPCs: [{ UPC: recallCode }] });
+    for (const title of ['Plain lamp', 'Acme Space Heater', 'Heater 10AW1G-AQU2U']) {
+      const listing = { id: 'fallback', title, upc: listingCode };
+      assert.deepEqual(postGate(listing, [r]), postGate({ ...listing, upc: undefined }, [r]), title);
+    }
+  });
+}
+
+for (const [left, right] of [
+  ['036000291453', '036000291453'],
+  ['036000291453', '036000291452'],
+  ['036000291452', '036000291453'],
+]) {
+  test(`reconcile: ${left} against ${right} creates neither a code match nor a clash`, async () => {
+    const rows: Result[] = [0.9, 0.2].map((pair_score, i) => ({
+      id: `row${i}`, site: 'ebay', listing_id: `listing${i}`, title: 'Plain lamp', price_cents: 4000,
+      route_id: 'fixture', url: 'https://example.test/lamp', ids: { gtin: right }, pair_score,
+    }));
+    const judged = await sameProduct({ title: 'Plain lamp', ids: { gtin: left } }, rows,
+      async () => { throw new Error('score ends must settle without Jev'); });
+    assert.deepEqual(judged.map(({ match, keep, by }) => [match, keep, by]), [
+      ['likely_same_model', 'keep', 'score'], ['unresolved', 'wrong_item', 'score'],
+    ]);
+  });
+}
 
 test('recall: model only in Description blocks the listing; UPC leading zero blocks; GTIN-14 normalises', () => {
   assert.equal(gtin14('12345678905'), '00012345678905');

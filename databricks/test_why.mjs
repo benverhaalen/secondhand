@@ -92,21 +92,52 @@ test('why refuses unsupported weights, absent timestamps and values needing JSON
   assert.match(sql, /WHEN h\.reason IS NOT NULL THEN false/)
 })
 
-test('all data columns have provenance checks and only non-null ids get primary keys', () => {
+test('row-filtered tables have no CHECK additions; primary keys require non-null ids', () => {
   const parsed = statements(read('sql/08_constraints.sql'))
+  assert.doesNotMatch(parsed.join('\n'), /ADD CONSTRAINT\b[\s\S]*?\bCHECK\s*\(/i)
   for (const [, table, body] of tables) {
-    if (/\bdata STRING/.test(body)) assert.ok(parsed.some(s => s.startsWith(`ALTER TABLE secondhand.core.${table} ADD CONSTRAINT `)
-      && s.includes("CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$')")), `${table}: missing data provenance check`)
+    if (/\bdata STRING/.test(body)) assert.ok(parsed.includes(`ALTER TABLE secondhand.core.${table} DROP CONSTRAINT IF EXISTS ${table}_data`))
     const primary = parsed.filter(s => s.startsWith(`ALTER TABLE secondhand.core.${table} ADD CONSTRAINT `) && s.includes('PRIMARY KEY'))
     assert.equal(primary.length, /\bid STRING NOT NULL/.test(body) ? 1 : 0, `${table}: primary key needs a NOT NULL id`)
   }
 })
 
-test('guard constraints enforce states and shown/hidden reasons; observation can be purged', () => {
+test('guard view reports each broken rule and ends with a failing assertion', () => {
+  const parsed = statements(read('sql/09_guard.sql'))
+  assert.equal(parsed.length, 2)
+  assert.match(parsed[0], /^CREATE OR REPLACE VIEW secondhand\.measures\.guard_violations/)
+  assert.match(parsed[0], /COMMENT '[^']*CHECK[^']*row-filtered[^']*every run[^']*'/)
+  const branches = parsed[0].split(/\bUNION ALL\b/i)
+  for (const [table, rule, expression] of [
+    ['guarded_number', 'guarded_number_state', "state NOT IN ('shown','hidden','not_found')"],
+    ['guarded_number', 'guarded_number_shown_citation', "state = 'shown' AND citation_id IS NULL"],
+    ['guarded_number', 'guarded_number_hidden_reason', "state = 'hidden' AND hide_reason IS NULL"],
+    ['guarded_number', 'guarded_number_citation_fk', "g.state = 'shown' AND g.citation_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM secondhand.core.citation c WHERE c.id = g.citation_id)"],
+    ['claim_check', 'claim_check_verdict', "verdict NOT IN ('pass','hold','abstain','contradicted')"],
+    ['decision', 'decision_policy_mode', "policy_mode NOT IN ('auto','ask','locked','never')"],
+  ]) {
+    const branch = branches.find(s => s.includes(`'${rule}' AS rule`))
+    assert.ok(branch, `missing rule: ${rule}`)
+    assert.ok(branch.includes(`FROM secondhand.core.${table}`))
+    assert.ok(branch.includes(`WHERE ${expression}`), `wrong predicate: ${rule}`)
+  }
+  for (const [, table, body] of tables) {
+    if (!/\bdata STRING/.test(body)) continue
+    const branch = branches.find(s => s.includes(`'${table}_data' AS rule`))
+    assert.ok(branch, `${table}: missing provenance guard`)
+    assert.ok(branch.includes(`FROM secondhand.core.${table}`))
+    assert.ok(branch.includes("WHERE data NOT RLIKE '^(synthetic|example|dataset:.+|live:.+)$'"))
+    assert.ok(branch.includes(`'${table}' AS table_name`))
+    assert.ok(branch.includes(table === 'log_event' ? "concat(session, ':', cast(seq AS STRING)) AS row_id" : 'id AS row_id'))
+  }
+  assert.equal(branches.length, 6 + tables.filter(([, , body]) => /\bdata STRING/.test(body)).length)
+  assert.equal(parsed.at(-1), "SELECT assert_true((SELECT count(*) FROM secondhand.measures.guard_violations) = 0, 'guard violations: see secondhand.measures.guard_violations') AS guard_ok")
+})
+
+test('informational foreign keys and purge properties remain; obsolete guards are dropped', () => {
   const sql = read('sql/08_constraints.sql')
-  for (const expression of ["state IN ('shown','hidden','not_found')", "state <> 'shown' OR citation_id IS NOT NULL",
-    "state <> 'hidden' OR hide_reason IS NOT NULL", "verdict IN ('pass','hold','abstain')", "policy_mode IN ('auto','ask','locked','never')"]) {
-    assert.ok(sql.includes(`CHECK (${expression})`), `missing enforced guard: ${expression}`)
+  for (const rule of ['guarded_number_state', 'guarded_number_shown_citation', 'guarded_number_hidden_reason', 'claim_check_verdict', 'decision_policy_mode']) {
+    assert.ok(sql.includes(`DROP CONSTRAINT IF EXISTS ${rule};`))
   }
   assert.match(sql, /FOREIGN KEY \(citation_id\) REFERENCES secondhand\.core\.citation \(id\)/)
   assert.match(sql, /FOREIGN KEY \(evidence_id\) REFERENCES secondhand\.core\.evidence \(id\)/)
@@ -132,22 +163,23 @@ test('constraint reruns drop existing foreign keys before primary keys, then re-
     if (reference) assert.ok([...constraints.values()].some(c => c.table === reference && c.primary), `${key}: referenced primary key is absent`)
     constraints.set(key, { table: add[1], primary: add[3].includes('PRIMARY KEY'), references: reference })
   }
-  assert.ok(constraints.size >= 26, 'constraint file is incomplete')
+  assert.equal(constraints.size, 12, 'expected ten primary keys and two foreign keys')
 })
 
-test('the setup resource runs why then constraints on the warehouse; purge receives catalog and root', () => {
+test('the setup resource runs why, constraints and guard on the warehouse; purge receives catalog and root', () => {
   const resource = read('../deploy/resources/governance.yml')
   assert.match(resource, /governance_setup:\s+name: secondhand-governance-setup/)
   const tasks = [...resource.matchAll(/- task_key: (\w+)([\s\S]*?)(?=\n        - task_key:|$)/g)]
-  assert.equal(tasks.length, 2)
+  assert.equal(tasks.length, 3)
   tasks.forEach((t, i) => {
     assert.match(t[2], /sql_task:/)
     assert.ok(t[2].includes('warehouse_id: ${var.warehouse_id}'))
     const path = t[2].match(/path: (\S+)/)?.[1]
-    assert.equal(path, `../../databricks/sql/${['07_why.sql', '08_constraints.sql'][i]}`)
+    assert.equal(path, `../../databricks/sql/${['07_why.sql', '08_constraints.sql', '09_guard.sql'][i]}`)
     readFileSync(new URL(path, new URL('../deploy/resources/governance.yml', import.meta.url)), 'utf8')
   })
   assert.ok(tasks[1][2].includes(`task_key: ${tasks[0][1]}`), 'constraints must depend on why')
+  assert.ok(tasks[2][2].includes(`task_key: ${tasks[1][1]}`), 'guard must depend on constraints')
   const purge = read('../deploy/databricks.yml').split('    purge_user:')[1].split('\ntargets:')[0]
   assert.ok(purge.includes('parameters: ["{{job.parameters.user_id}}", "${var.catalog}", "--root", "${workspace.file_path}"]'))
 })

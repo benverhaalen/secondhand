@@ -253,9 +253,9 @@ Nate ([words](../../product/words.md#2026-11-15-nate-build-on-firecrawl-or-a-sub
 
 | Lane | Runs | Good for | Limit |
 |---|---|---|---|
-| A plain request | our server | a site that serves one: Depop search in 1.8 s | most sites refuse it (eBay, Mercari) |
+| A plain request | our server | a site that serves one; the cheapest read where it works | Depop, eBay and Mercari refuse it with a 403, so in practice few marketplace pages are read this way |
 | An official or licensed interface | our server | eBay's API once approved; Dupe's published search, which returns Poshmark, Depop and eBay listings | needs the provider's approval or its conditions kept |
-| A cloud browser | Browser Use Cloud, anonymous or on the person's linked profile | background reads on the person's own account over days and weeks; a site that needs a real browser | seconds per read and browser and proxy cost; a site may refuse it; nothing is intercepted on eBay |
+| A cloud browser | Browser Use Cloud, anonymous or on the person's linked profile | background reads on the person's own account over days and weeks; a site that needs a real browser (Depop search in 1.8 s once the browser is open) | seconds per read and browser and proxy cost; a site may refuse it; nothing is intercepted on eBay |
 | The person's own browser (new) | the app's web view on their phone, on their connection and sign-in; on a computer, a browser extension | everything they do while the app is open: a search, a listing, eBay's sold listings under their own sign-in | only while the app is open |
 | The marketplace's own message to the person (new) | their inbox | events when the app is closed: a sale, an offer, a buyer's message, a saved-search match | needs the person to forward those emails; coverage differs by site |
 
