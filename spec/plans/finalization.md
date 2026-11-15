@@ -145,7 +145,7 @@ How: an iPhone 17 Pro simulator (iOS 26.4) on glados, the app built in Release a
 | B3 Settled results | passed with Dupe and Poshmark only. eBay and Depop answer `no_route` with no browser composed; with the Mac's Chrome both answered `blocked`, so reads stopped. Mercari needs a linked account | search lead (eBay and Depop through hosted Browser Use) |
 | B4 The chat: "What's selling and why", a typed follow-up | **failing**: `POST /v1/assist` 404 for every real person (`edge/api/assist.ts:14` is still an example handler) | engines lead (packet 70, first item) |
 | B5 Open a listing | passed (opens in Safari); a Dupe row goes through dupe.com's redirect page, and a knock-off ranks among the first rows | search lead |
-| C Signed-in tabs: Today, Sell, Buy, You (Dashboard, Settings), New | passed; 237 requests in the session, all 2xx except assist | ac133f38 |
+| C Signed-in tabs: Today, Sell, Buy, You (Dashboard, Settings), New | passed; every request in the session (about 118) answered 2xx except assist. A cold launch makes 10 requests, each once (`/v1/me` twice), so the doubled set seen on web (packet 94, item 7) is the development double-run, not a Release build | ac133f38 |
 | D Killed and reopened: still signed in | passed | ac133f38 |
 | E Sign out (`/v1/auth/signout` 204), still out after a relaunch, sign in again | passed | ac133f38 |
 | F Sell: camera permission, Choose photos, the picker, a photo sent (`/v1/captures` 201, `/photos` 201) | **failing** after the photo: "Photo uploads are not connected yet" | capture lead and server lead (the Blobs upload target) |
