@@ -35,11 +35,11 @@ Ben, 07:53: "can you list out each feature we have for me that is ai or is a fea
 
 **3. Photos that can't lie (the studio and the photo check).**
 - *What:* it cleans up your photos, or relights them into studio shots if you ask, and checks that the result is still your item.
-- *How:* the plain fixer only changes light, never color, and is refused if the color moves past what an eye can see. An AI relight has to pass a check that isn't AI: it lines the new photo up with yours and compares color, structure and every protected box (logo, tag, each flaw) with plain image math. If anything moved, your real photo is used.
+- *How:* the plain fixer only changes light, never color, and is refused if the color moves past what an eye can see. An AI relight has to pass a check that isn't AI: it lines the new photo up with yours and compares color, structure and every protected box (logo, tag, each flaw) with plain image math. If anything moved, your real photo is used. The AI on its own doesn't keep the size: a raw redraw of the Marquette tee came out about 2 inches too narrow. So every redraw is measured against your tape: its width over length is set back to the tape's, and it's rejected if it was drawn more than 20% off (`jobs/studio/check.py`).
 - *Under the hood:* `scripts/bench/gate.py`, `jobs/photo/gates.py`, `jobs/studio/check.py`. The limit is 2.0 CIEDE2000. 62 tests in `jobs/photo`.
 - *Proof now:* **measured.** 173 of 174 planted lies caught; 76 of 76 cleanups within the color limit; the stretch hole found and fixed (16 of 38 caught, then 38 of 38) ([numbers](numbers.md#the-headline-numbers)). It errs toward holding: 17 of 38 honest relights were held too.
 - *Still to run:* the same check on real Seedream relights rather than our planted edits.
-- *Say:* "An AI made the photo prettier. Plain math checked it's still your jacket, and the stain is still there."
+- *Say:* "An AI made the photo prettier. Plain math checked it's still your jacket, the stain is still there, and it's the size your tape says." Never "the AI is accurate": it isn't on its own; the check is what makes the photo true.
 
 **4. The photo set, laid out for each site.**
 - *What:* from a handful of casual shots, it picks the order (front, back, tag, flaw) and trims the set to each site's photo limit.
