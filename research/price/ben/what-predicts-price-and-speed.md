@@ -1,6 +1,8 @@
 # What predicts a used item's sale price and time to sell, and how do we prove our predictions work?
 Researched 2026-11-15 by Ben (agent: Claude, claude-opus-5-5). Feature: price.
 
+**Status, 08:31.** Ben stopped work on seasons and hot items ([words](../../../product/words.md#2026-11-15-stop-hot-items-and-seasons-stay-on-nano-banana-depops-api-is-a-proposal-not-a-claim)). The season findings below stay as research; nothing more is built on them.
+
 **Question.** Which trends (seasons, dates, spikes) and which signals we collect (photos, brand, condition, timing, views, likes, price history) are known to move sale price and time to sell, and how should the backtest be built so its result can be defended to judges and used to tune the model?
 
 **Decision it feeds.** Which signals get weight in [money D5, D10, D11](../../../spec/determinations/money.md) and [M12](../../../spec/determinations/market-insight.md#m12-seasonality); the headline metric for the pitch; and the rows Ben or Nate collect so the existing harness ([jobs/valuation/backtest.py](../../../jobs/valuation/backtest.py)) can run.

@@ -14,7 +14,7 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 
 | # | Ask | Why it's a gap | Proposed |
 |---|---|---|---|
-| G4 | Sign in with Apple, Google or email as the first onboarding step ([02:46](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)) | Specced in [pages §6.1](pages.md#61-first-launch-onboarding); `onboarding.tsx` starts at connecting sites | Assigned: UI thread, the sign-in step is being built in onboarding.tsx (unpolished) |
+| G4 | Sign in with Apple, Google or email as the first onboarding step ([02:46](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)) | Specced in [pages §6.1](pages.md#61-first-launch-onboarding); `onboarding.tsx` starts at connecting sites | Built (demo data): sign-in is step 1 in onboarding.tsx (app/src/you/sign-in.tsx); Apple and Google are demo stubs, not yet wired to /v1/auth |
 | G5 | shadcn and the Vercel AI SDK "in here somehow" ([22:23](../product/words.md#2026-11-14-the-ui-loop)) | Named in docs only; the Expo app uses neither and no one decided where they fit | Website thread, for the web build |
 | G6 | "is there any downside to doing it on the dev acct?" (07:51) | No recorded answer | Pitch thread |
 | G7 | "i think stagehand is better than playwright right?" (04:11) | No recorded answer | Done (agent decision): Playwright for our own app's tests, because they must be exact, repeatable and free to run; Stagehand's model-driven steps fit sites we do not control, which is the harness (browser-use with cached replays, [ai-harness-from-repos](../research/cross-cutting/ben/ai-harness-from-repos.md)). Written in [app/e2e/README.md](../app/e2e/README.md) |
@@ -193,3 +193,4 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 | 07:14, 07:47 | Everything in the repo; packets for Nate | Done (standing) | [AGENTS.md](../AGENTS.md#how-to-work-here) |
 | 07:18 | Every decision to the project chat; merge to main | Done (standing) | project instructions |
 | 08:18 | Save Opus: fewer steps and tokens in the build | Ben | the coordinator's four cuts are waiting on his yes |
+| 08:43 | Research runs on Codex from now on, with nothing lost or redone | Assigned | Each thread hands off its remaining research at its next breakpoint ([words](../product/words.md#2026-11-15-research-moves-to-codex)) |

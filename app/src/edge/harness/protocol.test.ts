@@ -93,6 +93,20 @@ test('a read whose page changed falls to the next route with fell_back', async (
   assert.ok(e2.ok && e2.meta.fell_back && e2.meta.route_id === 'public');
 });
 
+test('a read a route has no way to answer (no_route) moves on to the next route; alone, its handoff comes back unchanged', async () => {
+  const served = { ...fakeAdapter('depop', 'search'), route_id: 'page', run: async () => ({ ok: true as const, data: [] }) };
+  const e = await createHarness({ adapters: [fakeAdapter('depop', 'search'), served] }).call('depop', 'search', { fake: 'no_route' });
+  assert.ok(e.ok && e.meta.fell_back && e.meta.route_id === 'page');
+  const alone = fakeAdapter('depop', 'search');
+  const direct = await alone.run({ fake: 'no_route' }, AbortSignal.timeout(1000));
+  const e2 = await createHarness({ adapters: [alone] }).call('depop', 'search', { fake: 'no_route' });
+  assert.ok(!e2.ok && !direct.ok && e2.error.code === 'no_route');
+  assert.deepEqual(e2.error, direct.error);
+  const changed = { ...fakeAdapter('depop', 'search'), route_id: 'page', run: async () => fail('page_changed', 'x', { do: 'author', missing: [] }) };
+  const e3 = await createHarness({ adapters: [alone, changed] }).call('depop', 'search', { fake: 'no_route' });
+  assert.ok(!e3.ok && e3.error.code === 'no_route' && e3.meta.route_id === alone.route_id); // the handoff, not the later page_changed
+});
+
 test('a blocked read does not fall back to another route', async () => {
   const h = createHarness({ adapters: [fakeAdapter('depop', 'search'), { ...fakeAdapter('depop', 'search'), route_id: 'public', run: async () => ({ ok: true as const, data: [] }) }] });
   const e = await h.call('depop', 'search', { fake: 'blocked' });

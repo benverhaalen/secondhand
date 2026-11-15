@@ -1,0 +1,23 @@
+resources:
+  jobs:
+    load_bench:
+      name: secondhand-load-bench
+      environments:
+        - environment_key: bench
+          spec:
+            environment_version: "3"
+      tasks:
+        - task_key: load_bench
+          environment_key: bench
+          spark_python_task:
+            python_file: ../../databricks/tasks/load_bench.py
+            parameters: ["--root", "${workspace.file_path}"]
+    bench_setup:
+      name: secondhand-bench-setup
+      tasks:
+        - task_key: bench_setup
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../../databricks/sql/06_bench.sql
+              source: WORKSPACE
