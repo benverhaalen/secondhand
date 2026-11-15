@@ -62,7 +62,7 @@ A public place you save once. If your police department has a Safe Exchange Zone
 Never on our own. Your address goes out only when you tap Share address, each time.
 
 **How are meetups scheduled?** **(launch)**
-We offer the buyer two times from your free time that day. You approve the message, they pick one, and it goes on your calendar. We check with them before you leave.
+Tap the days and times that work for you this week, and where. We tell the buyer in a normal message. When they pick, you see who's coming and approve it. Then add it to Google or Apple Calendar. We never read your calendar.
 
 **What should I watch for?**
 Someone who changes the place at the last minute, asks to pay outside the site, sends an "overpayment", or asks for a code. We flag these and send nothing until you decide.

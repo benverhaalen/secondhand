@@ -23,7 +23,7 @@ About 250 words of voice-over at a calm pace is 1:45. Read it once out loud with
 | 6 | 0:52 | "One tap and it's live." | post preview, the tap, each site ticking to live; a small on-screen timer | screen recording of a real post |
 | 7 | 1:00 | "It answers buyers with facts from your item, handles offers inside the minimum you set, and asks you about everything else. You can approve every reply word for word." | the chat icon with a count; a reply card with fact chips; a held reply showing its unbacked claim | screen recording |
 | 8 | 1:15 | "When it sells on one site, it comes down everywhere else, checked one by one." | Today: "Sold on Depop. Taking it down elsewhere." Tiles go to gone | screen recording or recorded run |
-| 9 | 1:23 | "Meetups go to a public spot, in daylight, on your calendar. Your address never goes out unless you tap." | pickup card, calendar event, locked address row | screen recording |
+| 9 | 1:23 | "For a meetup, tap when you're free and where. You see who's coming before you say yes, and your address never goes out unless you tap." | the day and time picker, the who-is-coming card, Add to Calendar, the locked address row | screen recording |
 | 10 | 1:31 | "And you can see why it did anything: where every fact came from, and the original behind every edited photo." | Why? on a price with its sales; the photo side by side with the slider | screen recording, benchmark side by side |
 | 11 | 1:39 | "Built on Databricks, so every sale makes the next price better." | one beat: the architecture line or the table growing | the Databricks diagram from the website |
 | 12 | 1:43 | "secondhand. Your second hand." | wordmark, URL | brand card |

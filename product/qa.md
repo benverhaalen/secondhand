@@ -98,7 +98,7 @@ You > Messages has three settings: Answer for me, Draft for me, Off; also per si
 - **A reply queue.** Each card shows the buyer's message, the exact reply that would go out, and chips for the facts it uses ("size M · measured"). Send, Edit, Not now, or Take over. One thumb, one card at a time, like clearing notifications.
 - **Take over** hands that conversation to you: nothing more goes out for it until you hand it back.
 - **Escalation is automatic** for anything outside your limits, a possible scam, or a reply that states something the item doesn't back. Those come to Today with a red mark and are never sent without you.
-- **Audit.** Every automatic message shows "Sent for you" in the thread with its Why?; You > Activity lists every action on every site, filterable by site, item and kind, and each row has Open on Depop (or eBay, and so on) so you can check it on the site itself.
+- **Audit.** Every automatic message shows "Sent for you" in the thread with its Why?. After the agent sends or reads a message, the thread as the site shows it is saved as a screenshot, so See it on Depop shows what the buyer actually saw ([edge cases §16](../spec/edge-cases.md#16-meeting-up-safely)). You > Activity lists every action on every site, filterable by site, item and kind, and each row has Open on Depop (or eBay, and so on) so you can check it on the site itself.
 
 **On Depop, how does my tap become an accepted offer?**
 1. The offer is read from your Depop account by the signed-in watcher and becomes a card: "Jamie offered $31 on Depop. You keep $30. Expires in 23 h" (Depop offers expire after 24 hours).
@@ -135,19 +135,19 @@ Yes. Every listing shows its state per site, read back from the site, not assume
 
 ## 4. Pickups and safety
 
-**Ben reopened the pickup schedule.** The decision was: you set pickup hours once, and the agent books any time inside them by itself ([decision](decisions.md#2026-11-14-the-agent-books-pickups-inside-your-hours)). Ben: "i dont like the schedule setting decision because i feel like it ends up probably creating a lot of problems." The problems are real: hours set once go stale, the agent confirms a time you can no longer make, two buyers land in one slot, and a no-show costs you a trip.
+**How is a pickup time set?** Ben decided it on 2026-11-15 ([decision](decisions.md#2026-11-15-no-fixed-pickup-windows-tap-the-days-and-times-that-work-and-approve-the-buyers-pick), [edge cases §16](../spec/edge-cases.md#16-meeting-up-safely)), replacing fixed pickup hours. Nothing is set up ahead, and the app never reads your calendar.
+1. A buyer wants to meet. You tap the days that work this week, drag a time span on each, and pick the place: your saved spot or a safe spot from the map. A time after dark asks first.
+2. The agent writes to the buyer the way a person would: "I'm free Mon 6 to 8 or Fri 3 to 4. Library parking lot on Main works for me. Does either suit you?" Never a form or a list of slots. In Draft for me it waits for your tap.
+3. The buyer's answer comes back as a card showing who is coming: their name on the site, photo, rating, number of reviews, how long they've been on the site, and their messages. Approve, Suggest another, or Decline.
+4. Once approved, Add to Google Calendar or Add to Apple Calendar writes the event with the time, place, buyer and a link back to the thread. Writing an event doesn't need to read your calendar.
+5. On the day: the buyer taps On my way, either side can send Running late, and a no-show is rebooked or the next buyer in line is asked.
 
-*Agent proposal* to replace it, for Ben and Nate:
-1. No standing hours. When a buyer is ready to meet, the agent drafts one message offering two times, read from your calendar's free time that day, in daylight, at your saved spot. eBay's own advice is to offer two slots ([shipping and pickup](../research/sold/nate/shipping-and-pickup.md)).
-2. You approve that exact message with one tap (it's a card in the reply queue).
-3. The buyer picks one; the agent confirms it and adds it to your calendar with the place, the item and the buyer's handle.
-4. Two hours before, it asks the buyer "still on?". No answer by the time you'd leave: a card tells you before you go.
-5. Your home address still goes out only on your tap, each time.
+Why not fixed hours: hours set once go stale, and an agent booking inside them can confirm a time you can no longer make.
 
 **What do you tell people about where and when to meet?**
 - Where: the default spot is a police Safe Exchange Zone if one is near you (many departments mark parking spaces under 24-hour video, some with lobby access), else a busy store entrance. Never the home address unless you tap, and for furniture, move it to the porch or garage and have someone with you.
 - When: daylight hours by default. If the buyer changes the place at the last minute, the app flags it; police advice says to be cautious of exactly that.
-- How: bring someone or tell someone (Share my meetup sends the place and time to a contact), inspect before paying, pay on the platform where it can (eBay local pickup uses a QR or 6-digit code that releases the money). Never accept an "overpayment" refund, a code read-back, gift cards or Zelle from a stranger: those are locked and trigger a scam warning.
+- How: bring someone or tell someone (Share my plan sends the place, time and the buyer's profile to a contact), inspect before paying, pay on the platform where it can (eBay local pickup uses a QR or 6-digit code that releases the money). Never accept an "overpayment" refund, a code read-back, gift cards or Zelle from a stranger: those are locked and trigger a scam warning.
 Sources: DC, Fairfax County and Gaithersburg police pages, eBay and Depop help ([shipping and pickup §8](../research/sold/nate/shipping-and-pickup.md)). Depop does not protect meet-in-person sales, and Facebook local pickup has no buyer protection; the app says so on the item.
 
 **What stops the agent from sending a stranger to my house?**
@@ -268,7 +268,7 @@ The data from outcomes: for every item we know what it listed at, where, with wh
 | Platforms see us as a threat | strategic | we bring supply, which ThredUp names as the market's constraint; listings land on their sites and they keep their fees |
 | eBay data licence | at launch | eBay rows are tagged and kept out of models and shares |
 | Bot disclosure laws | at launch | disclose on the first automatic message |
-| Meetup harm | low odds, high cost | address locked, public spots, daylight, share-my-meetup |
+| Meetup harm | low odds, high cost | address locked, public spots, daylight, who is coming shown before you approve, Share my plan |
 | Watching costs | at scale | back-off when quiet; public pages; replay |
 | Passwords | trust | eBay through its own sign-in; the others through the site's real login page in your cloud browser; we keep the session, not the password, unless you opt in to saved passwords ([connect](../spec/features/connect.md)) |
 
