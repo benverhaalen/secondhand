@@ -1349,3 +1349,27 @@ Note, 07:18 UTC: the market research named in the 07:14 "Used in" line moved to 
 
 Ben, project chat, 07:18 UTC.
 > whenever i have a decision to make bring it here essentially. also considering a backtest, how would you set this up in a flattering but truthful way. like average price changes over season. we could potentially look up general trends and possible spikes in either buying or sales on the resale market. i feel like it goes in waves. and we can explain super well and intuitively to the user when these things happen. some could be dates too. see if theres any rdd for this. for our market we are trying to predict. things that are predictable as humans are relatively predictable. merge all prs get them onto main why havent you been doing this
+
+## 2026-11-15 the hand glyphs: A, C and F up close, two colors, every position
+
+Ben, website thread, 07:28 UTC:
+> show me the different hand glyphs for A C and F
+
+Ben, website thread, 07:29 UTC:
+> also the two glyphs should have either different gradient colors or two colors of the same gradient without the gradient. i want to see the icon pack with all the different positions of the hand. like recall huge icons how you showed me an array of positions the hand could be in. show me that for each.
+
+Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs).
+
+Ben, website thread, 07:32 and 07:33 UTC:
+> use the actual font for secondhand for me
+
+> theres brand font on my computer though
+
+> also show me the full array of poses for tabler now
+
+Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs), drawn in CI where the brand faces load from the BRAND_FONTS secret.
+
+Ben, website thread, 07:34 UTC:
+> i also want the hands to be tighter to the wordmark. the same height and alignment vertically as the wordmark
+
+Used in: [hands-fit.js](../brand/explore/web-home/hands-fit.js), the hero's header and opening, and the hand pose sheets.
