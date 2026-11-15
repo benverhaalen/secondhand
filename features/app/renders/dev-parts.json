@@ -26,99 +26,21 @@
     },
     {
       "level": "error",
-      "id": "B5",
-      "where": "screen 1 [wash]",
-      "msg": "is a gradient built by hand: a gradient is a token used as it stands (var(--field), var(--wash)), never rebuilt (C2)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "screen 1 [card-decision]",
-      "msg": "has a fill of rgb(248, 221, 177), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B5",
-      "where": "screen 1 [card-decision]",
-      "msg": "is a gradient built by hand: a gradient is a token used as it stands (var(--field), var(--wash)), never rebuilt (C2)"
-    },
-    {
-      "level": "error",
       "id": "B9",
       "where": "screen 1 <img>",
       "msg": "is an image with no alt text: say what the photo shows, or name the logo (C3, C5)"
     },
     {
       "level": "error",
-      "id": "B7",
-      "where": "screen 1 [card-decision]",
-      "msg": "has a fill of rgb(210, 245, 230), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "screen 1 [card-decision]",
-      "msg": "has a fill of rgb(247, 249, 208), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
       "id": "B4",
       "where": "screen 1",
-      "msg": "has 5 gradients: one field per view (C2)"
+      "msg": "has 4 gradients: one field per view (C2)"
     },
     {
       "level": "error",
       "id": "B8",
       "where": "screen 1",
-      "msg": "is 62% color: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 \"2\"",
-      "msg": "is a [count] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 \"Offer\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 \"3h 40m\"",
-      "msg": "is a [countdown] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 \"Ship\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 \"Mon 10 AM\"",
-      "msg": "is a [countdown] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 \"Price\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 \"Paid\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 \"Tue 3 AM\"",
-      "msg": "is a [countdown] that looks pressable: a tag, a count or a countdown is not a button"
+      "msg": "is 62% color, with a wash that covers 28%: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)"
     },
     {
       "level": "error",
@@ -139,94 +61,16 @@
       "msg": "is not drawn in the states new, empty, one, typical, dense, loading, failed, offline: draw each, or say why it can't happen with data-skip=\"new: why\""
     },
     {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 2 \"20h 0m\"",
-      "msg": "is a [countdown] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 2 \"21h 0m\"",
-      "msg": "is a [countdown] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 2 \"Failed\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 2 \"Ship 3\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 2 \"22h 0m\"",
-      "msg": "is a [countdown] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
       "level": "warn",
       "id": "B3",
       "where": "app",
       "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
     },
     {
-      "level": "error",
-      "id": "B5",
-      "where": "screen 3 [tag]",
-      "msg": "is a gradient built by hand: a gradient is a token used as it stands (var(--field), var(--wash)), never rebuilt (C2)"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 3 \"6h 0m\"",
-      "msg": "is a [countdown] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 3 \"Live\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 3 \"Hot\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 3 \"Ship by Tue\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 3 \"Mon 8 PM\"",
-      "msg": "is a [countdown] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
       "level": "warn",
       "id": "U4",
       "where": "screen 4",
       "msg": "--mint and --marigold-tint are 0.041 apart to an eye with no red cones: two colors that mark different things in one view stay .05 apart in Oklab"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 4 \"Ended\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 4 \"Draft\"",
-      "msg": "is a [tag] that looks pressable: a tag, a count or a countdown is not a button"
     },
     {
       "level": "error",
@@ -243,14 +87,8 @@
     {
       "level": "error",
       "id": "B34",
-      "where": "screen 7 \"Connect a site\"",
-      "msg": "spills out of [top-setup]: a thing holds what is in it (ledger L37)"
-    },
-    {
-      "level": "error",
-      "id": "A7",
-      "where": "screen 7",
-      "msg": "has 2 display headings (\"Nothing needs you\", \"Connect a site\"): one per view besides the wordmark (Art. 6)"
+      "where": "screen 7 \"$60 to $80\"",
+      "msg": "spills out of [range]: a thing holds what is in it (ledger L37)"
     },
     {
       "level": "warn",
@@ -260,207 +98,27 @@
     },
     {
       "level": "error",
-      "id": "B7",
-      "where": "dark screen 1 \"3h 40m\"",
-      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+      "id": "B34",
+      "where": "screen 8 \"Connect a site\"",
+      "msg": "spills out of [top-setup]: a thing holds what is in it (ledger L37)"
     },
     {
       "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"3h 40m\"",
-      "msg": "is --a raw color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"Carhartt Detroit jacket\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 1 \"You keep\"",
-      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"You keep\"",
-      "msg": "is --a raw color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"$33.44\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"Counter\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 1 \"Mon 10 AM\"",
-      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"Mon 10 AM\"",
-      "msg": "is --a raw color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"Nike Dunk Low, 10.5\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"$31.40\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"Drop-off spots\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"Patagonia Synchilla, L\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 1 \"Lower to\"",
-      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"Lower to\"",
-      "msg": "is --a raw color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"$52\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"Keep $58\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 1 \"Tue 3 AM\"",
-      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"Tue 3 AM\"",
-      "msg": "is --a raw color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"Levi’s 501, 32 × 32\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 1 \"$44.10\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 1 [photo-card]",
-      "msg": "has a fill of rgb(239, 241, 242), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 1 <div>",
-      "msg": "has a line of rgba(10, 10, 10, 0.08), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 1 [pill-card]",
-      "msg": "has a fill of rgba(255, 255, 255, 0.72), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 1 [icon-button]",
-      "msg": "has a fill of rgba(255, 255, 255, 0.72), which is not a color in tokens.css: use var(--token)"
+      "id": "A7",
+      "where": "screen 8",
+      "msg": "has 2 display headings (\"Nothing needs you\", \"Connect a site\"): one per view besides the wordmark (Art. 6)"
     },
     {
       "level": "error",
       "id": "B8",
       "where": "dark screen 1",
-      "msg": "is 64% color: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 2 \"Later\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 2 [card-decision]",
-      "msg": "has a --card-edge line: color is a ground, never a line. Lines are the hairline, ink or brick (Art. 5.1)"
+      "msg": "is 64% color, with a wash that covers 28%: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)"
     },
     {
       "level": "error",
       "id": "B7",
       "where": "dark screen 2 [site-badge]",
       "msg": "has a --surface line: color is a ground, never a line. Lines are the hairline, ink or brick (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B6",
-      "where": "dark screen 3 \"Hot\"",
-      "msg": "is --on-color on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 3 <div>",
-      "msg": "has a --card-edge line: color is a ground, never a line. Lines are the hairline, ink or brick (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 3 [card-item]",
-      "msg": "has a --card-edge line: color is a ground, never a line. Lines are the hairline, ink or brick (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 4 [notice]",
-      "msg": "has a --card-edge line: color is a ground, never a line. Lines are the hairline, ink or brick (Art. 5.1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 4 [tag]",
-      "msg": "has a fill of rgb(239, 241, 242), which is not a color in tokens.css: use var(--token)"
     },
     {
       "level": "warn",
