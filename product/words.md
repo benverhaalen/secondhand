@@ -2192,3 +2192,9 @@ Nate, the app-wiring lead's session, 2026-11-15, about 06:15 Central (machine cl
 > not saved in our servers, on web we can save messages i guess to persist with browser cookies
 
 Used in: the app-wiring lead's search takeover (packet 81).
+
+## 2026-11-15 nate the + keeps Ben's choices
+Nate, the app-wiring lead's session, 2026-11-15, about 06:20 Central (machine clock), on "you click it and then select shop or sell" two entries above.
+> Dont go by my choice then, he has some select
+
+Used in: the app-wiring lead's search takeover (packet 81): the ＋ keeps New's own choices (app/src/ui/parts/takeover.tsx).
