@@ -13,7 +13,7 @@ from pathlib import Path
 from uuid import uuid4
 
 
-def run(spark, files, *, catalog, contestant, now, run_id, code_version, log):
+def run(spark, files, *, catalog, contestant, split_at, now, run_id, code_version, log):
     from valuation.export import build_rows
 
     log.job(run_id, 'export_params', 'running')
@@ -51,7 +51,7 @@ def run(spark, files, *, catalog, contestant, now, run_id, code_version, log):
                 log.note('no backtest estimates for contestant; no calibration rows',
                          level='info', contestant=contestant)
         out = log.timed('export_params.build', lambda: build_rows(comps, estimates, contestant, now,
-                                                                  run_id, code_version, counts=counts))
+                                                                  run_id, code_version, split_at=split_at, counts=counts))
         log.note('param export counts', level='info', **counts)
         payload = (json.dumps(out, allow_nan=False) + '\n').encode('utf-8')
         base = f'/Volumes/{catalog}/raw/export/params'
@@ -76,6 +76,7 @@ def main(argv=None):
     parser.add_argument('--root', required=True)
     parser.add_argument('--catalog', default='secondhand')
     parser.add_argument('--contestant', default='engine_all_on')
+    parser.add_argument('--split-at', required=True)
     parser.add_argument('--run-id')
     args = parser.parse_args(argv)
     root = Path(args.root)
@@ -89,12 +90,13 @@ def main(argv=None):
     now = datetime.now(timezone.utc)
     run_id = args.run_id or f'export-{now:%Y%m%dT%H%M%S}-{uuid4().hex[:12]}'
     log = create_log(src='job.export_params', build=version, sink=stdout_sink,
-                     config={'catalog': args.catalog, 'contestant': args.contestant, 'run_id': run_id})
+                     config={'catalog': args.catalog, 'contestant': args.contestant, 'run_id': run_id,
+                             'split_at': args.split_at})
     spark = log.call('db', 'spark_session', {},
                      lambda: SparkSession.getActiveSession() or SparkSession.builder.getOrCreate(),
                      describe=lambda _: {'ready': True})
     return run(spark, WorkspaceClient().files, catalog=args.catalog, contestant=args.contestant,
-               now=now, run_id=run_id, code_version=version, log=log)
+               split_at=args.split_at, now=now, run_id=run_id, code_version=version, log=log)
 
 
 if __name__ == '__main__':

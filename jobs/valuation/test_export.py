@@ -3,6 +3,7 @@ import gzip
 import hashlib
 import json
 import math
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,7 @@ from param.registry import FIELDS
 from valuation.export import build_rows, read_comps, main
 
 NOW = '2026-11-15T12:00:00+00:00'
+SPLIT_AT = '2019-01-01'
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -23,11 +25,11 @@ def comps(n=60):
 def estimates(n=30, contestant='engine_all_on'):
     return [{'item_id': f'e{i}', 'contestant': contestant, 'kind': 'electronics', 'site': None,
              'q10_cents': 100, 'q90_cents': 200, 'truth_cents': 150 if i < 23 else 400,
-             'data': 'dataset:nber_ebay_bo'} for i in range(n)]
+             'data': 'dataset:nber_ebay_bo', 'as_of': '2018-12-31'} for i in range(n)]
 
 
 def build(cs=(), es=(), contestant='engine_all_on'):
-    return build_rows(cs, es, contestant, NOW, 'run-test', 'abc123')
+    return build_rows(cs, es, contestant, NOW, 'run-test', 'abc123', split_at=SPLIT_AT)
 
 
 def test_envelope_and_every_param_match_the_shared_contract():
@@ -60,6 +62,8 @@ def test_conformal_uses_finite_sample_order_statistic_and_counts_hits():
     assert row['n_eff'] == 30
     assert row['fitted_on_ids_hash'] == hashlib.sha256('\n'.join(sorted(r['item_id'] for r in estimates())).encode()).hexdigest()
     assert row['value_or_hyperparams'] == {'Q_g': pytest.approx(math.log(2)), 'n': 30, 'hits': 23, 'nominal': .8,
+                                          'split_at': SPLIT_AT, 'holdout_n': 0,
+                                          'holdout_raw_coverage': None, 'holdout_coverage': None,
                                           'fitted_on': 'dataset:nber_ebay_bo', 'use_scope': 'hackathon_demo'}
 
 
@@ -80,7 +84,7 @@ def test_invalid_ranges_are_skipped_counted_and_cannot_pass_the_group_floor():
     for field, value in [('q10_cents', None), ('q90_cents', 0), ('truth_cents', -1), ('truth_cents', float('nan'))]:
         es.append({**estimates(1)[0], field: value})
     counts = {}
-    assert build_rows([], es, 'engine_all_on', NOW, 'r', 'dev', counts=counts)['params'] == []
+    assert build_rows([], es, 'engine_all_on', NOW, 'r', 'dev', split_at=SPLIT_AT, counts=counts)['params'] == []
     assert counts['invalid_estimates'] == 4
 
 
@@ -106,7 +110,7 @@ def test_csv_gzip_and_cli_use_frozen_booleans_and_jsonl(tmp_path):
     es.write_text('\n'.join(json.dumps(r) for r in estimates()))
     out = tmp_path / 'params.json'
     log = tmp_path / 'export.jsonl'
-    result = main(['--comps', str(path), '--estimates', str(es), '--run-id', 'test-cli',
+    result = main(['--comps', str(path), '--estimates', str(es), '--split-at', SPLIT_AT, '--run-id', 'test-cli',
                    '--out', str(out)], log_path=log)
     assert json.loads(out.read_text()) == result
     assert len(result['params']) == 2
@@ -136,3 +140,79 @@ def test_calibration_hits_include_both_issued_endpoints():
         row['truth_cents'] = 100 if i % 2 else 200
     value = build(es=es)['params'][0]['value_or_hyperparams']
     assert value['hits'] == 30 and value['Q_g'] == 0
+
+
+def test_estimates_without_split_at_exits_nonzero_naming_the_flag(tmp_path):
+    result = subprocess.run([
+        str(ROOT / '.venv/bin/python'), str(ROOT / 'jobs/valuation/export.py'),
+        '--comps', str(tmp_path / 'rows.csv.gz'), '--estimates', str(tmp_path / 'estimates.jsonl'),
+        '--run-id', 'missing-split', '--out', str(tmp_path / 'params.json'),
+    ], capture_output=True, text=True)
+    assert result.returncode != 0
+    assert '--split-at' in result.stderr, 'missing split must be rejected before reading input files'
+
+
+def test_wild_holdout_never_changes_the_fit_quantile():
+    fit = [{**r, 'truth_cents': 200 * math.exp(i / 10)} for i, r in enumerate(estimates())]
+    before = build(es=fit)['params'][0]['value_or_hyperparams']
+    wild = {**fit[0], 'item_id': 'wild-holdout', 'as_of': '2019-02-01', 'truth_cents': 1e12}
+    after = build(es=fit + [wild])['params'][0]['value_or_hyperparams']
+    assert after['Q_g'] == before['Q_g'], 'holdout score leaked into the fit order statistic'
+    assert after['n'] == before['n'] == 30
+    assert after['hits'] == before['hits']
+
+
+@pytest.mark.parametrize('widened_only', [75, 250])
+def test_holdout_raw_and_widened_coverage_use_different_ranges(widened_only):
+    holdout = [{**estimates(1)[0], 'item_id': f'h{i}', 'as_of': '2019-02-01', 'truth_cents': truth}
+               for i, truth in enumerate([150, widened_only, 500])]
+    value = build(es=estimates() + holdout)['params'][0]['value_or_hyperparams']
+    assert value.get('holdout_n') == 3, 'holdout rows need their own denominator'
+    assert value['holdout_raw_coverage'] == .3333, 'raw coverage must use the issued interval'
+    assert value['holdout_coverage'] == .6667, 'widened coverage must apply exp(Q_g) on both ends'
+    assert isinstance(value['holdout_raw_coverage'], float) and isinstance(value['holdout_coverage'], float)
+
+
+def test_empty_holdout_reports_zero_rows_and_null_shares():
+    value = build(es=estimates())['params'][0]['value_or_hyperparams']
+    assert value.get('holdout_n') == 0, 'empty holdout must have an explicit zero count'
+    assert value['holdout_raw_coverage'] is None
+    assert value['holdout_coverage'] is None
+    assert value['split_at'] == SPLIT_AT
+
+
+def test_row_exactly_on_split_at_is_holdout_and_never_a_fit_hit():
+    boundary = {**estimates(1)[0], 'item_id': 'boundary', 'as_of': SPLIT_AT}
+    row = build(es=estimates() + [boundary])['params'][0]
+    value = row['value_or_hyperparams']
+    assert value['n'] == row['n_eff'] == 30, 'split-at belongs to holdout, not fit'
+    assert value['hits'] == 23
+    assert value['holdout_n'] == 1
+    assert value['holdout_raw_coverage'] == value['holdout_coverage'] == 1.0
+
+
+def test_ids_hash_changes_only_when_fit_ids_change():
+    fit = estimates()
+    holdout = {**fit[0], 'item_id': 'holdout', 'as_of': '2019-02-01'}
+    before = build(es=fit + [holdout])['params'][0]['fitted_on_ids_hash']
+    changed_holdout = build(es=fit + [{**holdout, 'item_id': 'other-holdout'}])['params'][0]
+    assert changed_holdout['fitted_on_ids_hash'] == before, 'holdout ids leaked into fit lineage'
+    changed_fit = [{**r, 'item_id': 'other-fit' if i == 0 else r['item_id']} for i, r in enumerate(fit)]
+    after = build(es=changed_fit + [holdout])['params'][0]['fitted_on_ids_hash']
+    assert after != before, 'fit id changes must change lineage'
+    assert after == hashlib.sha256('\n'.join(sorted(r['item_id'] for r in changed_fit)).encode()).hexdigest()
+
+
+def test_holdout_rows_cannot_satisfy_the_thirty_fit_row_floor():
+    holdout = {**estimates(1)[0], 'item_id': 'holdout', 'as_of': SPLIT_AT}
+    counts = {}
+    out = build_rows([], estimates(29) + [holdout], 'engine_all_on', NOW, 'r', 'dev',
+                     split_at=SPLIT_AT, counts=counts)
+    assert out['params'] == [], 'group floor counts fit rows only'
+    assert counts['omitted_calibration_groups'] == 1
+
+
+@pytest.mark.parametrize('split_at', [None, '20190101', '2019-02-30', 'tomorrow'])
+def test_build_rejects_missing_or_invalid_split_at(split_at):
+    with pytest.raises(ValueError, match='--split-at'):
+        build_rows([], estimates(), 'engine_all_on', NOW, 'r', 'dev', split_at=split_at)

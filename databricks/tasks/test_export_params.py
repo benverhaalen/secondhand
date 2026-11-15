@@ -45,7 +45,8 @@ def execute(comps=(), estimates=(), contestant='engine_all_on', files=None):
     spark, files, lines = Spark(comps, estimates), files or Files(), []
     log = create_log(src='job.export_params', build='test', sink=lines.append)
     out = run(spark, files, catalog='secondhand', contestant=contestant,
-              now='2026-11-15T12:00:00+00:00', run_id='export-test', code_version='abc', log=log)
+              now='2026-11-15T12:00:00+00:00', run_id='export-test', code_version='abc', log=log,
+              split_at='2019-01-01')
     return out, spark, files, lines
 
 
@@ -92,7 +93,8 @@ def test_empty_source_does_not_require_a_backtest_table():
     lines, files = [], Files()
     log = create_log(src='job.export_params', build='test', sink=lines.append)
     out = run(EmptySource(), files, catalog='secondhand', contestant='engine_all_on',
-              now='2026-11-15T12:00:00Z', run_id='empty-source', code_version='dev', log=log)
+              now='2026-11-15T12:00:00Z', run_id='empty-source', code_version='dev', log=log,
+              split_at='2019-01-01')
     assert out['params'] == [] and len(files.writes) == 2
 
 
@@ -104,7 +106,8 @@ def test_upload_failure_propagates_and_marks_job_failed():
     log = create_log(src='job.export_params', build='test', sink=lines.append)
     with pytest.raises(OSError, match='volume unavailable'):
         run(Spark(), BrokenFiles(), catalog='secondhand', contestant='engine_all_on',
-            now='2026-11-15T12:00:00Z', run_id='broken-volume', code_version='dev', log=log)
+            now='2026-11-15T12:00:00Z', run_id='broken-volume', code_version='dev', log=log,
+            split_at='2019-01-01')
     events = [json.loads(line) for line in lines]
     assert any(e['event'] == 'job.state' and e['state'] == 'failed' for e in events)
     assert events[-1]['event'] == 'session.end' and events[-1]['ok'] is False
@@ -113,7 +116,8 @@ def test_upload_failure_propagates_and_marks_job_failed():
 def test_invalid_catalog_and_run_id_are_rejected_before_external_calls():
     for field, value in [('catalog', 'secondhand; DROP TABLE x'), ('run_id', '../other')]:
         kwargs = dict(catalog='secondhand', contestant='engine_all_on', now='2026-11-15T00:00:00Z',
-                      run_id='test', code_version='dev', log=create_log(src='test', build='test', sink=lambda _: None))
+                      run_id='test', code_version='dev', split_at='2019-01-01',
+                      log=create_log(src='test', build='test', sink=lambda _: None))
         kwargs[field] = value
         spark, files = Spark(), Files()
         with pytest.raises(ValueError, match=field):
@@ -124,7 +128,11 @@ def test_invalid_catalog_and_run_id_are_rejected_before_external_calls():
 def test_main_bootstraps_from_root_without_file_or_pyspark_at_import(monkeypatch):
     from types import ModuleType
     import tasks.export_params as task
-    spark, files = Spark(), Files()
+    estimates = [{'item_id': f'e{i}', 'contestant': 'engine_all_on', 'kind': 'shoes', 'site': None,
+                  'q10_cents': 100, 'q90_cents': 200, 'truth_cents': 150,
+                  'data': 'dataset:stockx_2019', 'as_of': date(2018, 11, 30)} for i in range(30)]
+    estimates.append({**estimates[0], 'item_id': 'holdout', 'as_of': date(2018, 12, 1)})
+    spark, files = Spark([{'may_model': False}], estimates), Files()
     pyspark = ModuleType('pyspark')
     sql = ModuleType('pyspark.sql')
     sql.SparkSession = SimpleNamespace(getActiveSession=lambda: spark)
@@ -134,5 +142,16 @@ def test_main_bootstraps_from_root_without_file_or_pyspark_at_import(monkeypatch
     monkeypatch.setitem(sys.modules, 'pyspark.sql', sql)
     monkeypatch.setitem(sys.modules, 'databricks.sdk', sdk)
     monkeypatch.delattr(task, '__file__')
-    out = main(['--root', str(ROOT), '--catalog', 'secondhand', '--run-id', 'main-test'])
-    assert out['params'] == [] and len(files.writes) == 2
+    out = main(['--root', str(ROOT), '--catalog', 'secondhand', '--run-id', 'main-test',
+                '--split-at', '2018-12-01'])
+    assert len(out['params']) == 1 and len(files.writes) == 2
+    value = out['params'][0]['value_or_hyperparams']
+    assert value['split_at'] == '2018-12-01', 'task must pass the caller date through to calibration'
+    assert value['n'] == 30 and value['holdout_n'] == 1
+
+
+def test_main_requires_split_at_before_loading_workspace_dependencies(capsys):
+    with pytest.raises(SystemExit) as error:
+        main(['--root', str(ROOT)])
+    assert error.value.code != 0
+    assert '--split-at' in capsys.readouterr().err

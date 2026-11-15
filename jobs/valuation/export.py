@@ -10,7 +10,7 @@ import math
 import subprocess
 import sys
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 if __package__ in (None, ''):
@@ -43,20 +43,40 @@ def _positive(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) and value > 0
 
 
-def _calibration(rows):
-    datasets = {row['data'] for row in rows}
+def split_date(value):
+    try:
+        parsed = date.fromisoformat(value)
+    except (TypeError, ValueError):
+        raise ValueError('--split-at must be YYYY-MM-DD') from None
+    if parsed.isoformat() != value:
+        raise ValueError('--split-at must be YYYY-MM-DD')
+    return value
+
+
+def _calibration(rows, holdout, split_at):
+    datasets = {row['data'] for row in rows + holdout}
     if len(datasets) != 1 or not next(iter(datasets)).startswith('dataset:'):
         raise ValueError('calibration scope must contain one dataset provenance')
     scores = sorted(max(math.log(r['q10_cents']) - math.log(r['truth_cents']),
                         math.log(r['truth_cents']) - math.log(r['q90_cents']), 0) for r in rows)
     n = len(scores)
     rank = min(n, math.ceil((n + 1) * .8))
-    return {'Q_g': scores[rank - 1], 'n': n,
+    q_g = scores[rank - 1]
+    holdout_n = len(holdout)
+    raw_hits = sum(r['q10_cents'] <= r['truth_cents'] <= r['q90_cents'] for r in holdout)
+    widened_hits = sum(r['q10_cents'] * math.exp(-q_g) <= r['truth_cents'] <= r['q90_cents'] * math.exp(q_g)
+                       for r in holdout)
+    return {'Q_g': q_g, 'n': n,
             'hits': sum(r['q10_cents'] <= r['truth_cents'] <= r['q90_cents'] for r in rows),
+            'split_at': split_at, 'holdout_n': holdout_n,
+            'holdout_raw_coverage': round(raw_hits / holdout_n, 4) if holdout_n else None,
+            'holdout_coverage': round(widened_hits / holdout_n, 4) if holdout_n else None,
             'nominal': .8, 'fitted_on': next(iter(datasets)), 'use_scope': 'hackathon_demo'}
 
 
-def build_rows(comps, estimates, contestant, now, run_id, code_version, *, counts=None):
+def build_rows(comps, estimates, contestant, now, run_id, code_version, *, split_at=None, counts=None):
+    if estimates or split_at is not None:
+        split_at = split_date(split_at)
     counts = counts if counts is not None else Counter()
     now = now.isoformat() if isinstance(now, datetime) else now
     allowed = []
@@ -83,9 +103,11 @@ def build_rows(comps, estimates, contestant, now, run_id, code_version, *, count
             continue
         valid.append(row)
     for scope, members in _groups(valid):
-        if len(members) >= 30:
-            params.append(_param('valuation_calibration', scope, _calibration(members),
-                                 [r['item_id'] for r in members], now))
+        fit = [r for r in members if str(r['as_of']) < split_at]
+        holdout = [r for r in members if str(r['as_of']) >= split_at]
+        if len(fit) >= 30:
+            params.append(_param('valuation_calibration', scope, _calibration(fit, holdout, split_at),
+                                 [r['item_id'] for r in fit], now))
         else:
             counts['omitted_calibration_groups'] = counts.get('omitted_calibration_groups', 0) + 1
     return {'version': 1, 'exported_at': now, 'run_id': run_id, 'code_version': code_version, 'params': params}
@@ -110,17 +132,20 @@ def main(argv=None, *, log_path=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--comps', required=True)
     parser.add_argument('--estimates')
+    parser.add_argument('--split-at', type=split_date)
     parser.add_argument('--contestant', default='engine_all_on')
     parser.add_argument('--run-id', required=True)
     parser.add_argument('--out', required=True)
     args = parser.parse_args(argv)
+    if args.estimates and not args.split_at:
+        parser.error('--split-at is required with --estimates')
     root = Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(root / 'log'))
     from secondhand_log import create_log, file_sink
     now = datetime.now(timezone.utc).isoformat()
     path = Path(log_path) if log_path else Path('/tmp') / f'valuation-export-{datetime.now(timezone.utc):%Y%m%dT%H%M%S%f}.jsonl'
     log = create_log(src='job.valuation.export', build='dev', sink=file_sink(str(path)),
-                     config={'contestant': args.contestant, 'run_id': args.run_id})
+                     config={'contestant': args.contestant, 'run_id': args.run_id, 'split_at': args.split_at})
     log.job(args.run_id, 'export_params', 'running')
     try:
         version = log.call('tool', 'code_version', {}, lambda: code_version(root))
@@ -130,7 +155,7 @@ def main(argv=None, *, log_path=None):
                              describe=lambda rs: {'rows': len(rs)}) if args.estimates else []
         counts = Counter()
         out = log.timed('valuation.export', lambda: build_rows(comps, estimates, args.contestant, now,
-                                                               args.run_id, version, counts=counts))
+                                                               args.run_id, version, split_at=args.split_at, counts=counts))
         log.note('param export counts', **counts)
         log.call('tool', 'write_params', {'file': args.out, 'rows': len(out['params'])},
                  lambda: Path(args.out).write_text(json.dumps(out, allow_nan=False) + '\n', encoding='utf-8'))

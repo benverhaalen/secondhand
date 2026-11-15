@@ -11,4 +11,4 @@ resources:
           environment_key: export
           spark_python_task:
             python_file: ../../databricks/tasks/export_params.py
-            parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}"]
+            parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}", "--split-at", "2019-01-01"]
