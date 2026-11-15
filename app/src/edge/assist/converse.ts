@@ -29,7 +29,8 @@ export interface ConverseOptions {
   text: string;
   image?: { media_type: 'image/jpeg' | 'image/png' | 'image/webp'; data_base64: string };
   history?: MessageParam[];
-  effort: 'low' | 'medium' | 'high';
+  effort: 'low' | 'medium';
+  max_cost_usd: number;
   model: string;
   client: StreamClient;
   tools: ToolPort;
@@ -69,44 +70,82 @@ function usageOf(message: Message): Usage {
 }
 
 const TAGS = /\[(?:price_range|price_trend|sites|listings|alternatives|table|sources):[^\]\r\n]*\]/g;
-const NUMBERS = /(?<![\w])(?:\$\s*)?-?(?:\d+(?:,\d{3})*(?:\.\d+)?|\.\d+)(?:\s*(?:%|dollars\b))?/gi;
+const ISO_DATE = /\d{4}-\d{2}-\d{2}(?:[Tt ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:[Zz]|[+-]\d{2}:?\d{2})?)?/;
+const NUMBERS = new RegExp(`(?<![\\w])(?:${ISO_DATE.source}|(?:\\$\\s*)?-?(?:\\d+(?:,\\d{3})*(?:\\.\\d+)?|\\.\\d+)(?:\\s*(?:%|percent\\b|per\\s+cent\\b|dollars\\b|USD\\b))?)`, 'gi');
+const DATE_CONTEXT = /\b(?:in|since|by|from|until|of|January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\s*$/i;
+const UNIT_WORD = /^\s*(?:cm|mm|km|m|inches?|feet|ft|yards?|miles?|grams?|kg|kilograms?|pounds?|lbs?|oz|ounces?|dollars?|USD|percent|per\s+cent|items?|listings?|rows?|comps?|sales?|units?|pieces?|people|buyers?|sellers?|days?|weeks?|months?|years?|hours?|minutes?|seconds?)\b/i;
+const SENTENCES = new Intl.Segmenter('en', { granularity: 'sentence' });
+export const MAX_TOOL_USES_PER_ROUND = 4;
 
-function numberToken(raw: string, standalone = true): string | null {
-  const value = Number(raw.replace(/[$,%\s]|dollars/gi, ''));
+function dateToken(raw: string): string | null {
+  const day = new Date(raw.slice(0, 10)), parsed = new Date(raw);
+  if (!Number.isFinite(day.getTime()) || !Number.isFinite(parsed.getTime())
+    || day.toISOString().slice(0, 10) !== raw.slice(0, 10)) return null;
+  const value = raw.length === 10 ? raw : parsed.toISOString();
+  return `date${value.replace(/[^a-z0-9]/gi, '').toLowerCase()}`;
+}
+
+function numberToken(raw: string): string | null {
+  const value = Number(raw.replace(/dollars|USD|percent|per\s+cent|[$,%\s]/gi, ''));
   if (!Number.isFinite(value)) return null;
-  const unit = /\$|dollars/i.test(raw) ? 'usd' : raw.includes('%') ? 'pct' : 'n';
-  if (standalone && unit === 'n' && Number.isInteger(value) && value >= 1900 && value <= 2100) return null;
+  const unit = /\$|dollars|USD/i.test(raw) ? 'usd' : /%|percent|per\s+cent/i.test(raw) ? 'pct' : 'n';
   return `${unit}${String(value).replace('-', 'm').replace('.', 'p')}`;
 }
 
 function numbers(text: string): string[] {
   const prose = text.replace(TAGS, '');
   return [...prose.matchAll(NUMBERS)].flatMap(match => {
-    const standalone = !/\w/.test(prose[match.index + match[0].length] ?? '');
-    const token = numberToken(match[0], standalone);
+    const raw = match[0];
+    if (ISO_DATE.test(raw)) return [dateToken(raw) ?? 'dateinvalid'];
+    const after = prose.slice(match.index + raw.length);
+    if (/^\d{4}$/.test(raw) && DATE_CONTEXT.test(prose.slice(0, match.index))
+      && !/\w/.test(after[0] ?? '') && !UNIT_WORD.test(after)) return [];
+    const token = numberToken(raw);
     return token ? [token] : [];
   });
 }
 
-function toolFacts(value: unknown, key = ''): string[] {
-  if (typeof value === 'number') {
-    const token = numberToken(String(value), false);
-    const tokens = token ? [token] : [];
-    if (key.endsWith('_cents') && Number.isInteger(value)) tokens.push(...numbers(`${value / 100} dollars`));
+function figureFacts(value: unknown, key: string): string[] {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    if (key.endsWith('_cents') && Number.isInteger(value)) return numbers(`${value / 100} dollars`);
+    const tokens = numbers(String(value));
     if (/(?:share|probability|p_sale|rate|change)/.test(key) && value >= 0 && value <= 1) {
       tokens.push(...numbers(`${Number((value * 100).toFixed(10))}%`));
     }
     return tokens;
   }
-  if (typeof value === 'string') return /\$|%|\bdollars\b/.test(value) ? numbers(value) : [];
-  if (Array.isArray(value)) return value.flatMap(entry => toolFacts(entry, key));
-  if (value && typeof value === 'object') return Object.entries(value).flatMap(([name, entry]) => toolFacts(entry, name));
+  if (typeof value === 'string' && /\$|%|\b(?:dollars|USD|percent|per\s+cent)\b/i.test(value)) return numbers(value);
   return [];
+}
+
+const RESULT_METADATA = new Set(['tool', 'ok', 'reason', 'rows', 'counts', 'as_of', 'citation_ids', 'basis', 'not_built', 'widgets', 'ms']);
+const DATE_FIELDS = new Set(['as_of', 'sold_at', 'listed_at', 'read_at']);
+
+function toolFacts(results: Answer['results']): string[] {
+  return Object.values(results).flatMap(result => {
+    if (!result.ok) return [];
+    const cited = result.citation_ids.length > 0;
+    const tokens = Object.values(result.counts).flatMap(value => numbers(String(value)));
+    const fields = [...result.rows.flatMap(row => Object.entries(row)),
+      ...Object.entries(result).filter(([key]) => !RESULT_METADATA.has(key) || key === 'as_of')];
+    for (const [key, value] of fields) {
+      if (key === 'input' || key === 'inputs') continue;
+      if (DATE_FIELDS.has(key) && typeof value === 'string' && ISO_DATE.test(value)) {
+        const date = value.match(ISO_DATE)![0];
+        const token = dateToken(date);
+        if (token) tokens.push(token, dateToken(date.slice(0, 10))!);
+      } else {
+        tokens.push(...figureFacts(value, key).filter(token => !token.startsWith('date')
+          && (cited || token.startsWith('n'))));
+      }
+    }
+    return tokens;
+  });
 }
 
 type CitedSpan = { start: number; end: number; sources: number[] };
 
-async function checkedDraft(message: Message | undefined, answer: Answer, text: string, log: Log) {
+async function checkedDraft(message: Message | undefined, answer: Answer, text: string, log: Log, now: number) {
   let draft = '';
   const spans: CitedSpan[] = [];
   const citedFacts: string[] = [];
@@ -121,12 +160,13 @@ async function checkedDraft(message: Message | undefined, answer: Answer, text: 
       }) });
     draft += block.text;
   }
-  const tokens = [...new Set([...toolFacts(answer.results), ...numbers(text), ...citedFacts])];
+  const tokens = [...new Set([...toolFacts(answer.results),
+    ...[...numbers(text), ...citedFacts].filter(token => !token.startsWith('date')),
+    dateToken(new Date(now).toISOString().slice(0, 10))!])];
   const facts = tokens.map((value, index) => ({ attribute_id: `number${index}`, name: 'number', value }));
   let kept = '';
   const keptSpans: CitedSpan[] = [];
-  const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' });
-  for (const { segment: sentence, index } of segmenter.segment(draft)) {
+  for (const { segment: sentence, index } of SENTENCES.segment(draft)) {
     const claims = numbers(sentence).map(text => ({ text, kind: 'number' }));
     if (claims.length) {
       answer.gate.checked++;
@@ -157,10 +197,11 @@ async function checkedDraft(message: Message | undefined, answer: Answer, text: 
     cursor = end;
   }
   answer.blocks = resolved.blocks;
+  return kept;
 }
 
-function failedResult(name: ToolName, ms: number): ToolResult {
-  return { tool: name, ok: false, reason: 'failed', rows: [], counts: {}, as_of: '', citation_ids: [], basis: '', not_built: [], widgets: [], ms };
+function failedResult(name: ToolName, ms: number, reason = 'failed'): ToolResult {
+  return { tool: name, ok: false, reason, rows: [], counts: {}, as_of: '', citation_ids: [], basis: '', not_built: [], widgets: [], ms };
 }
 
 function logValue(value: unknown, o: ConverseOptions): unknown {
@@ -183,9 +224,15 @@ function safeError(error: unknown, o: ConverseOptions): Error {
   return new Error(String(logValue(error instanceof Error ? error.message : String(error), o)));
 }
 
+function publicCall({ input: _input, ...call }: ToolCallInfo): Omit<ToolCallInfo, 'input'> {
+  return call;
+}
+
 type PendingWeb = Map<string, { call: ToolCallInfo; started: number }>;
 
 export async function converse(o: ConverseOptions): Promise<Answer> {
+  if (o.effort !== 'low' && o.effort !== 'medium') throw new Error('effort must be low or medium');
+  if (!Number.isFinite(o.max_cost_usd) || o.max_cost_usd <= 0) throw new Error('max_cost_usd must be finite and positive');
   const started = o.now();
   const answer: Answer = {
     state: 'answered', blocks: [], results: {}, sources: [], calls: [],
@@ -193,7 +240,7 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
     usage: { input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0, web_searches: 0, cost_usd: 0, cost_source: 'price_table' },
     ms: { first_text: null, done: 0 },
   };
-  const toolEvent = (call: ToolCallInfo, phase: 'start' | 'end') => o.onEvent?.({ event: 'assist.tool', data: { ...call, phase } });
+  const toolEvent = (call: ToolCallInfo, phase: 'start' | 'end') => o.onEvent?.({ event: 'assist.tool', data: { ...publicCall(call), phase } });
   let resultId = 0, early = false;
   let final: Message | undefined;
   const pendingWeb: PendingWeb = new Map();
@@ -208,6 +255,11 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
     if (!Number.isInteger(maxRounds) || maxRounds < 1) throw new Error('max_rounds must be a positive integer');
     for (let round = 0; round < maxRounds; round++) {
       o.signal.throwIfAborted();
+      if (answer.usage.cost_usd >= o.max_cost_usd) {
+        early = true;
+        answer.reason = 'cost_cap';
+        break;
+      }
       const roundStart = o.now();
       final = await o.log.call('model', o.model, { round: round + 1, effort: o.effort, message_count: messages.length }, async () => {
         try {
@@ -217,17 +269,19 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
             tools: [...o.tools.defs, { type: 'web_search_20260209', name: 'web_search', max_uses: 3 }],
             output_config: { effort: o.effort }, thinking: { type: 'adaptive' },
           }, { signal: o.signal });
-          let accumulated = '', sent = 0;
-          stream.on('text', delta => {
-            if (!delta) return;
+          // Hold the round until its text and web citations are complete, then gate whole sentences.
+          let accumulated = '';
+          stream.on('text', delta => { accumulated += delta; });
+          const message = await stream.finalMessage();
+          const streamed: Message = { ...message, content: [{ type: 'text', text: accumulated || message.content.flatMap(block => block.type === 'text' ? [block.text] : []).join(''), citations:
+            message.content.flatMap(block => block.type === 'text' ? block.citations ?? [] : []) }] };
+          const preview: Answer = { ...answer, blocks: [], gate: { checked: 0, cut: 0, cut_sentences: [], tags_removed: 0 } };
+          const visible = stripTags(await checkedDraft(streamed, preview, o.text, o.log, o.now()));
+          for (const { segment } of SENTENCES.segment(visible)) {
             if (answer.ms.first_text === null) answer.ms.first_text = o.now() - started;
-            accumulated += delta;
-            const visible = stripTags(accumulated);
-            const next = visible.slice(sent);
-            if (next) o.onEvent?.({ event: 'assist.text', data: { delta: next } });
-            sent = visible.length;
-          });
-          return await stream.finalMessage();
+            o.onEvent?.({ event: 'assist.text', data: { delta: stripTags(segment) } });
+          }
+          return message;
         } catch (error) {
           throw safeError(error, o);
         }
@@ -258,7 +312,7 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
       if (final.stop_reason === 'tool_use') {
         const uses = final.content.filter(block => block.type === 'tool_use');
         if (!uses.length) throw new Error('tool_use stop without tool calls');
-        const returned = await Promise.all(uses.map(async (use) => {
+        const returned = await Promise.all(uses.map(async (use, index) => {
           const id = `r${++resultId}`, tool = use.name as ToolName;
           const call: ToolCallInfo = { id, tool, input: use.input, ok: false, counts: {}, ms: 0 };
           answer.calls.push(call);
@@ -266,7 +320,10 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
           const toolStart = o.now();
           let result: ToolResult;
           try {
-            result = await o.log.call('tool', use.name, logValue(use.input, o), async () => {
+            if (index >= MAX_TOOL_USES_PER_ROUND) {
+              result = failedResult(tool, 0, 'too_many_calls');
+              o.log.note('assist.tool limit', { tool, result_id: id, reason: result.reason });
+            } else result = await o.log.call('tool', use.name, logValue(use.input, o), async () => {
               try { return await o.tools.run(use.name, use.input, o.signal); }
               catch (error) { throw safeError(error, o); }
             },
@@ -286,18 +343,18 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
       }
     }
     await closeWeb(pendingWeb, answer.reason ?? 'missing_result', o, toolEvent);
-    await checkedDraft(final, answer, o.text, o.log);
+    await checkedDraft(final, answer, o.text, o.log, o.now());
     if (early) answer.blocks.push({ type: 'text', text: 'The answer stopped early.' });
     o.log.note('assist.gate', { ...answer.gate, cut_sentences: undefined, early_count: early ? 1 : 0 });
   } catch (error) {
     answer.state = 'failed';
-    answer.reason = safeError(error, o).message;
+    answer.reason = 'failed';
     o.log.error('assist.converse', safeError(error, o));
     await closeWeb(pendingWeb, 'failed', o, toolEvent);
   }
   answer.ms.done = o.now() - started;
   o.log.event('state.change', { entity: 'assist', id: 'assist', to: answer.state, reason: answer.reason, ms: answer.ms.done });
-  o.onEvent?.({ event: 'assist.settled', data: answer });
+  o.onEvent?.({ event: 'assist.settled', data: { ...answer, calls: answer.calls.map(publicCall) } });
   return answer;
 }
 

@@ -44,7 +44,7 @@ function setup(name = 'answer', overrides: Partial<ConverseOptions> = {}) {
   const events: AssistEvent[] = [];
   let clock = 100;
   const options: ConverseOptions = {
-    text: 'Find a wool jacket', effort: 'low', model: 'claude-sonnet-5-5', client: recording.client,
+    text: 'Find a wool jacket', effort: 'low', model: 'claude-sonnet-5-5', client: recording.client, max_cost_usd: 1,
     tools: { defs: [{ name: 'value_item', description: 'Value an item', input_schema: { type: 'object' }, strict: true }],
       run: async () => structuredClone(result) },
     log: createLog({ src: 'test.assist', build: 'test', sink }), signal: new AbortController().signal,
@@ -304,7 +304,7 @@ test('a thrown model error and an aborted signal settle failed and emit a logged
   t.options.client = { messages: { stream() { throw new Error('provider offline'); } } };
   const answer = await t.run();
   assert.equal(answer.state, 'failed');
-  assert.equal(answer.reason, 'provider offline');
+  assert.equal(answer.reason, 'failed');
   assert.match(t.sink.text(), /provider offline/);
   assert.equal(t.events.at(-1)?.event, 'assist.settled');
   const controller = new AbortController();
@@ -354,4 +354,160 @@ test('clientFromEnv chooses Anthropic by presence, then OpenRouter, or null', ()
   const router = clientFromEnv({ OPENROUTER_API_KEY: 'synthetic' });
   assert.equal(router?.model, 'anthropic/claude-sonnet-5.5');
   assert.equal(router?.client.baseURL, 'https://openrouter.ai/api');
+});
+
+function textMessage(text: string): Message {
+  const message = fixture('answer')[0];
+  message.content = [{ type: 'text', text, citations: null }];
+  return message;
+}
+
+const streamed = (events: AssistEvent[]) => events.flatMap(e => e.event === 'assist.text' ? [e.data.delta] : []).join('');
+
+async function backedText(text: string, returned: ToolResult = result) {
+  const t = setup();
+  const recording = replay([fixture('one-tool')[0], textMessage(text)]);
+  t.options.client = recording.client;
+  t.options.tools.run = async () => returned;
+  return { answer: await t.run(), events: t.events };
+}
+
+test('cost cap stops before the third model round and keeps gated text', async () => {
+  const rounds = Array.from({ length: 6 }, () => {
+    const message = fixture('one-tool')[0];
+    message.content.unshift({ type: 'text', text: 'Still looking.', citations: null });
+    Object.assign(message.usage, { cost: 0.2 });
+    return message;
+  });
+  const recording = replay(rounds);
+  const t = setup('answer', { client: recording.client, max_cost_usd: 0.25 });
+  const answer = await t.run();
+  assert.equal(recording.requests.length, 2);
+  assert.equal(answer.reason, 'cost_cap');
+  assert.equal(answer.usage.cost_usd, 0.4);
+  assert.match(prose(answer), /Still looking/);
+  assert.match(prose(answer), /stopped early/);
+});
+
+test('six tool uses run only four ports and return two too_many_calls errors', async () => {
+  const message = fixture('one-tool')[0];
+  const use = message.content.find(b => b.type === 'tool_use');
+  assert.ok(use);
+  message.content = Array.from({ length: 6 }, (_, i) => ({ ...use, id: `call-${i}` }));
+  const recording = replay([message, textMessage('Done.')]);
+  let calls = 0;
+  const t = setup('answer', { client: recording.client });
+  t.options.tools.run = async () => { calls++; return result; };
+  const answer = await t.run();
+  assert.equal(calls, 4);
+  assert.deepEqual(answer.calls.slice(4).map(c => c.reason), ['too_many_calls', 'too_many_calls']);
+  const content = recording.requests[1].messages.at(-1)?.content;
+  assert.ok(Array.isArray(content));
+  for (const block of content.slice(4)) {
+    assert.ok(block.type === 'tool_result' && block.is_error);
+    assert.equal(JSON.parse(String(block.content)).reason, 'too_many_calls');
+  }
+});
+
+test('high effort and invalid cost caps throw before a model call', async () => {
+  for (const patch of [{ effort: 'high' }, ...[0, -1, NaN, Infinity, undefined].map(max_cost_usd => ({ max_cost_usd }))]) {
+    const t = setup();
+    Object.assign(t.options, patch);
+    await assert.rejects(t.run, /effort|max_cost_usd/);
+    assert.equal(t.requests.length, 0);
+  }
+  assert.equal((await setup('answer', { effort: 'medium' }).run()).state, 'answered');
+});
+
+test('unbacked streamed money never reaches assist.text but a clean sentence does', async () => {
+  const recording = replay([textMessage('It costs $412. Let me check the listings.')]);
+  const t = setup('answer', { client: recording.client });
+  const answer = await t.run();
+  assert.ok(!streamed(t.events).includes('$412'));
+  assert.match(streamed(t.events), /Let me check the listings/);
+  assert.equal(prose(answer), 'Let me check the listings.');
+  assert.ok(answer.ms.first_text !== null && answer.ms.first_text < answer.ms.done);
+});
+
+test('years need facts outside date context, and date context cannot exempt unit quantities', async () => {
+  const { answer } = await backedText('There are 2026 listings. In 2026. Since 2026. By 2026. From 2026. Until 2026. Of 2026. November 2026. In 2026 listings. November 2026 dollars.');
+  assert.deepEqual(answer.gate.cut_sentences, ['There are 2026 listings.', 'In 2026 listings.', 'November 2026 dollars.']);
+  const clean = await backedText('There are 2026 listings.', { ...result, counts: { listings: 2026 } });
+  assert.equal(clean.answer.gate.cut, 0);
+});
+
+test('percent, per cent and USD normalize without borrowing counts', async () => {
+  for (const spelling of ['percent', 'per cent', '%']) {
+    const { answer } = await backedText(`The share is 12 ${spelling}. The share is 13 ${spelling}.`, { ...result, rows: [{ sold_share: 0.12 }], counts: { listed: 13 } });
+    assert.equal(answer.gate.cut, 1, spelling);
+    assert.match(prose(answer), /12/);
+    assert.ok(!prose(answer).includes('13'));
+  }
+  const { answer } = await backedText('It costs 45 USD. It costs 46 USD.');
+  assert.equal(answer.gate.cut, 1);
+  assert.equal(prose(answer), 'It costs 45 USD.');
+});
+
+test('ISO dates and timestamps are whole tokens backed only by result dates or today', async () => {
+  for (const key of ['as_of', 'sold_at', 'listed_at', 'read_at']) {
+    const returned = key === 'as_of' ? { ...result, as_of: '2026-11-14' }
+      : { ...result, rows: [{ [key]: '2026-11-14T12:30:00Z' }] };
+    const { answer } = await backedText('Read on 2026-11-14. Read on 2026-11-13.', returned);
+    assert.equal(answer.gate.cut, 1, key);
+    assert.equal(prose(answer), 'Read on 2026-11-14.');
+  }
+  const recording = replay([textMessage('Today is 2026-11-15. Next is 2026-11-16.')]);
+  const t = setup('answer', { client: recording.client, now: () => Date.parse('2026-11-15T20:00:00Z'), text: 'My note says 2026-11-16' });
+  assert.equal(prose(await t.run()), 'Today is 2026-11-15.');
+  const timestamp = await backedText('Read at 2026-11-14T12:30:00Z. Read at 2026-11-14T13:30:00Z.', { ...result, rows: [{ read_at: '2026-11-14T12:30:00Z' }] });
+  assert.equal(timestamp.answer.gate.cut, 1);
+  assert.equal(prose(timestamp.answer), 'Read at 2026-11-14T12:30:00Z.');
+});
+
+test('only successful cited rows and top-level figures back money and percentages, never inputs or counts', async () => {
+  for (const patch of [{ citation_ids: [] }, { ok: false }]) {
+    const { answer } = await backedText('It costs $45.', { ...result, ...patch });
+    assert.equal(answer.gate.cut, 1);
+  }
+  assert.equal((await backedText('It costs $45.')).answer.gate.cut, 0);
+  const echoed = Object.assign({ ...result, rows: [], counts: { price_cents: 4500, sold_share: 0.12 } }, { input: { price_cents: 4500, sold_share: 0.12 } });
+  assert.equal((await backedText('It costs $45. The share is 12%.', echoed)).answer.gate.cut, 2);
+  const topLevel = Object.assign({ ...result, rows: [] }, { price_cents: 4500, sold_share: 0.12 });
+  assert.equal((await backedText('It costs $45. The share is 12%.', topLevel)).answer.gate.cut, 0);
+});
+
+test('vendor error details stay in logs and settled calls omit input', async () => {
+  const t = setup();
+  t.options.client = { messages: { stream() { throw new Error('401 invalid x-api-key sk-test'); } } };
+  const answer = await t.run();
+  assert.equal(answer.reason, 'failed');
+  assert.doesNotMatch(JSON.stringify({ answer, events: t.events }), /401|sk-test/);
+  assert.match(t.sink.text(), /401/);
+  const withTool = setup('one-tool');
+  await withTool.run();
+  const settled = withTool.events.find(e => e.event === 'assist.settled');
+  assert.ok(settled?.event === 'assist.settled');
+  assert.ok(settled.data.calls.length);
+  assert.ok(settled.data.calls.every(call => !Object.hasOwn(call, 'input')));
+});
+
+test('echoed input strings are not top-level figures or row evidence', async () => {
+  for (const returned of [
+    Object.assign({ ...result, rows: [] }, { input: '45 dollars' }),
+    { ...result, rows: [{ inputs: '45 dollars' }] },
+  ]) {
+    assert.equal((await backedText('It costs $45.', returned)).answer.gate.cut, 1);
+  }
+});
+
+test('malformed model or person dates are held without losing clean text', async () => {
+  for (const date of ['2026-11-15T25:00:00Z', '2026-02-30', '2026-13-15T12:00:00Z']) {
+    const recording = replay([textMessage(`Read at ${date}. Let me check the listings.`)]);
+    const t = setup('answer', { client: recording.client, text: `My note says ${date}` });
+    const answer = await t.run();
+    assert.equal(answer.state, 'answered', date);
+    assert.equal(prose(answer), 'Let me check the listings.', date);
+    assert.equal(streamed(t.events).trim(), 'Let me check the listings.', date);
+    assert.equal(answer.gate.cut, 1, date);
+  }
 });
