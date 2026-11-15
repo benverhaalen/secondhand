@@ -4,13 +4,14 @@
 // one at a time: bulk-approve (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Approve, EmptyState, FootButton, Grid, List, log, Nav, Pill, Row, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';
+import { Approve, EmptyState, FootButton, Grid, List, log, Pill, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
 import { Shelf, Tile, TileSkeleton, type TileFact } from '@/ui/parts/tile';
 import { day, feed, pill, sellItem, shelves, unread, usd, type Item, type World } from '@/demo';
 import { useScreen } from '@/demo/screen';
 import { photo } from '@/demo/photos';
+import { shortName } from '@/demo/short-name';
 import { filtersFor, viewItems, type Site, type Sort } from '@/sell/grid';
 
 // Two rows of a shelf before See all: enough to recognise it, few enough that 64 things stay one screen per shelf.
@@ -138,17 +139,24 @@ export default function Sell() {
     if (shelfId === 'needs_you' && sort === 'latest') ids.sort((a, b) => (urgency.get(a) ?? Infinity) - (urgency.get(b) ?? Infinity));
     return ids.map(id => items.find(i => i.id === id)!);
   };
-  const tile = (it: Item) => {
+  // A shelf whose every tile would wear the same tag (the flipper's Sold, all Paid) shows none: its header already names
+  // them, and a tag earns its color by telling tiles apart (Art. 7.14, U13).
+  const same = (items: Item[]) => items.length > 1 && items.every(i => { const a = tileOf(w, i), b = tileOf(w, items[0]); return a.state === b.state && a.word === b.word; });
+  const tile = (it: Item, bare = false) => {
     const t = tileOf(w, it), s = sellItem(w, it);
     const pickedNow = picked.includes(it.id);
     return (
-      <Tile key={it.id} id={`tile-${it.id}`} title={it.title} photo={photo(it.photos[0].key) as PhotoSrc} state={t.state} word={t.word} fact={t.fact} faded={t.faded}
+      <Tile key={it.id} id={`tile-${it.id}`} title={shortName(it)} photo={photo(it.photos[0].key) as PhotoSrc} state={bare ? undefined : t.state} word={t.word} fact={t.fact} faded={t.faded}
         sites={s.sites} price={s.price_cents} select={picking ? (pickedNow ? 'picked' : 'on') : 'off'}
         onPress={() => picking ? setPicked(p => pickedNow ? p.filter(x => x !== it.id) : [...p, it.id]) : router.push(`/item/${it.id}` as Href)} />
     );
   };
 
-  const nav = <TabNav title="Sell" inbox={{ count: unread(w) }} />;
+  // Select sits in the title row, where Photos puts it: the one act on the whole grid. Done takes its place while picking.
+  const select = picking
+    ? <Pill id="select-done" kind="second" label="Done" onPress={() => { setPicking(false); setPicked([]); }} />
+    : <Pill id="sell-select" kind="second" label="Select" onPress={() => setPicking(true)} />;
+  const nav = <TabNav title="Sell" inbox={{ count: unread(w) }} action={selling.length > 0 && shown !== 'loading' && shown !== 'failed' ? select : undefined} />;
   if (!selling.length) {
     // A new person and someone whose things have all gone see the same page: the camera is the one thing to point to.
     return (
@@ -205,11 +213,6 @@ export default function Sell() {
   return (
     <Screen name="sell" state={state} wash nav={nav} foot={foot}>
       <Stack>
-        <Row trail={loading ? undefined : picking
-          ? <Pill id="select-done" kind="second" label="Done" onPress={() => { setPicking(false); setPicked([]); }} />
-          : <Pill id="sell-select" kind="second" label="Select" onPress={() => setPicking(true)} />}>
-          {null}
-        </Row>
         {loading ? null : <FilterRow>
           <Chip id="filter-sort" icon="sorting-01" label={sortChip} onPress={() => setSorting(true)} />
           <Chip id="filter-all" label="All" picked={shelf === 'all'} onPress={() => setShelf('all')} />
@@ -231,11 +234,11 @@ export default function Sell() {
         return (
           <Shelf key={s.id} id={s.id} title={s.title} count={items.length} folded={isFolded(s.id)} onFold={() => fold(s.id)}
             onAll={items.length > PER_SHELF ? () => setShelf(s.id) : undefined}>
-            <Grid columns={COLUMNS}>{items.slice(0, PER_SHELF).map(tile)}</Grid>
+            <Grid columns={COLUMNS}>{items.slice(0, PER_SHELF).map(i => tile(i, same(items)))}</Grid>
           </Shelf>
         );
       }) : (
-        <Grid columns={COLUMNS}>{order(all.find(s => s.id === shelf)?.items ?? [], shelf).map(tile)}</Grid>
+        <Grid columns={COLUMNS}>{order(all.find(s => s.id === shelf)?.items ?? [], shelf).map(i => tile(i))}</Grid>
       )}
 
       {picking ? null : (

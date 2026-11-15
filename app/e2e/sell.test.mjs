@@ -35,6 +35,23 @@ for (const s of table.states) test(`sell: ${s.state} shows ${s.shows}`, async ()
   assert.equal(state, s.state);
 });
 
+// iOS Photos puts Select in its title row; a row of its own under the title was one more line before the first tile (U11).
+test('sell: Select sits in the title row, and Done takes its place while picking', async () => {
+  const screen = await app.open('/sell?world=clearing');
+  await screen.page.locator('[data-part="page-head"] [data-testid="sell-select"]').waitFor({ state: 'visible', timeout: WAIT });
+  await screen.tap('sell-select');
+  await screen.page.locator('[data-part="page-head"] [data-testid="select-done"]').waitFor({ state: 'visible', timeout: WAIT });
+});
+
+// Art. 7.14: a shelf whose every tile would wear one tag shows none; the header already names them (the flipper's Sold, all Paid).
+test('sell: a shelf of one state wears no tags; a shelf of kinds keeps them', async () => {
+  const screen = await app.open('/sell?world=flipper');
+  await screen.shows('Needs you');
+  const tags = id => screen.page.locator(`[data-shelf="${id}"] [data-part="tag"]`).count();
+  assert.equal(await tags('sold'), 0, 'Sold, all Paid, shows no tags');
+  assert.ok(await tags('needs_you') > 0, 'Needs you tells its tiles apart by tag');
+});
+
 test('sell: the filters sit on one row', async () => {
   const screen = await app.open('/sell?world=flipper');
   await screen.shows('Needs you');
