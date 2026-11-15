@@ -133,15 +133,18 @@ export async function checkRoute({ route, path }, { browser, base, out = RENDERS
     findings.push(...got.findings.map(f => dark ? { ...f, where: `dark ${f.where}` } : f));
     await shoot(url, join(out, `${name}${dark ? '-dark' : ''}.png`), { browser, dark });
   }
-  // A finding the light and the dark run share is one finding.
-  const seen = new Set(), list = findings.filter(f => { const k = `${f.id}|${f.where.replace(/^dark /, '')}|${f.msg}`; if (seen.has(k)) return false; seen.add(k); return true; });
+  // A finding the light and the dark run share is one finding. A kit sheet under dev/ is a catalog of every part, not one
+  // view, so the rules about what one view holds (one field, how much color, one heading, a wordmark, its states) only warn there.
+  const catalog = route.startsWith('dev/'), composition = new Set(['B3', 'B4', 'B8', 'B12', 'A7', 'B35']);
+  const seen = new Set(), list = findings.filter(f => { const k = `${f.id}|${f.where.replace(/^dark /, '')}|${f.msg}`; if (seen.has(k)) return false; seen.add(k); return true; })
+    .map(f => catalog && composition.has(f.id) ? { ...f, level: 'warn' } : f);
   // B35 for the screen: every required state is drawn on one of its pages, url?state=<s> (app/src/demo/screen.ts), or skipped with why.
   const own = await readNames(url, { browser }), have = new Set(own.states), skip = new Map();
   const skips = n => { for (const x of n.skip.split(';')) { const [id, why] = x.split(':').map(y => y.trim()); if (id) skip.set(id, why ?? ''); } };
   skips(own);
   const required = context().states.states.screen?.required ?? [];
   for (const st of required) { if (have.has(st) || skip.get(st)) continue; const n = await readNames(`${url}${url.includes('?') ? '&' : '?'}state=${st}`, { browser }); n.states.forEach(x => have.add(x)); skips(n); }
-  const missing = own.screen ? required.filter(st => !have.has(st) && !skip.get(st)) : [];
+  const missing = own.screen && !catalog ? required.filter(st => !have.has(st) && !skip.get(st)) : [];
   if (missing.length) list.push({ level: 'error', id: 'B35', where: `screen "${own.screen}"`, msg: `is not drawn ${missing.length === 1 ? 'in the state' : 'in the states'} ${missing.join(', ')}, at ${path}?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip="${missing[0]}: why">` });
   const errors = list.filter(f => f.level === 'error').length;
   const result = { route, ...own, states: [...have], status: errors ? 'fail' : kept(json) ?? 'clean', findings: list };
