@@ -34,7 +34,7 @@ export const isIdentifyDone = job => job?.kind === 'identify' && job.state === '
   Array.isArray(job.stages) && JSON.stringify(job.stages.map(s => s?.name)) === JSON.stringify(['code', 'tag', 'visual', 'model']);
 export function hasFinishedJobs(body, context) {
   return isCapture(body?.capture) && body.capture.id === context.capture.id && body.capture.state === 'judged' &&
-    body.item?.id === context.capture.item_id && body.item?.state === 'researching' &&
+    body.item?.id === context.capture.item_id && body.item?.state === 'review' &&
     Array.isArray(body.jobs) && body.jobs.some(j => j?.id === context.jobId && j.kind === 'identify');
 }
 export const hasNoForeignCaptures = (body, captureId) => Array.isArray(body?.data) &&
@@ -77,7 +77,7 @@ export const STEPS = [
   step('brand', 200, 'brand proposes Carhartt from RN 14806', (b, c) => sameCapture(b, c) && hasProposedBrand(b)),
   step('answer', 200, 'brand answer removes the question and advances version', (b, c) => sameCapture(b, c) &&
     b.version > c.capture.version && !b.plan.questions.some(q => q?.field === 'brand')),
-  step('finish', 202, 'judged capture and researching item name the identify job', hasFinishedJobs),
+  step('finish', 202, 'judged capture and an item in review name the identify job', hasFinishedJobs),
   step('b.capture', 404, 'B cannot read A capture', notFound),
   step('b.job', 404, 'B cannot read A identify job', notFound),
   step('b.upload', 404, 'B cannot reuse consumed upload capability', notFound),
