@@ -1,0 +1,21 @@
+name: SecondhandScreens
+options:
+  deploymentTarget:
+    iOS: "17.0"
+targets:
+  SecondhandScreens:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [Tests]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.ben.secondhand.screens
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+schemes:
+  SecondhandScreens:
+    build:
+      targets:
+        SecondhandScreens: all
+    test:
+      targets: [SecondhandScreens]
