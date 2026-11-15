@@ -27,7 +27,9 @@ export type Attribute = { id: string; name: string; value: string | number | nul
 export type StandingWord = 'hot' | 'on_pace' | 'slow' | 'stuck' | 'still_learning' | 'waiting_for_price';
 export type MarketStanding = { word: StandingWord; place?: { rank: number; of: number; basis: 'price' }; outlook?: { days_lo: number; days_hi: number }; fix?: { change: string; consequence: string }; line: string; citation_id: string | null; state: 'shown' | 'hidden' };
 
-export type Listing = { id: string; item_id: string; site: Site; state: ListingState; price_cents: Cents; url: string; interest: { views?: number; watchers?: number; likes?: number }; posted_at: Iso | null; market_standing?: MarketStanding; error?: string };
+export type Listing = { id: string; item_id: string; site: Site; state: ListingState; price_cents: Cents; url: string; interest: { views?: number; watchers?: number; likes?: number };
+  // What came in since the person last opened the app (read_stats rollups, spec/data-use.md): Today's interest rung.
+  interest_new?: { views?: number; watchers?: number; likes?: number }; posted_at: Iso | null; market_standing?: MarketStanding; error?: string };
 
 export type PlanChoice = 'sell' | 'fast' | 'best' | 'reserve' | 'check';
 export type ItemLimits = { floor_cents: Cents; always_accept_cents: Cents | null; plan_choice: PlanChoice; gone_by: Iso | null; fallback: 'ask' | 'donate' | 'keep' | 'trade_in' | 'relist'; markdown_on: boolean };

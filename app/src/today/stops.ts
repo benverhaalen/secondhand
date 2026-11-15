@@ -58,5 +58,23 @@ export const stopsWorld: World = {
 
 // Today with one card (the state "one", .agents/ui-states.json): the clearing person on a day only the pickup waits. The
 // demo's own "one" world has a single item and nothing to decide, which on Today is the empty state, so one card is drawn
-// from clearing instead. Open it with /?state=one.
-export const oneCardWorld: World = { ...base, name: 'one-card', decisions: base.decisions.filter(d => d.id === 'dec_addr'), notices: [], events: [] };
+// from clearing instead. Open it with /?state=one. The person looked an hour ago, after this week's sales, so nothing is new
+// since then: the top falls to this week's money (the ladder's rung b, cards.ts top).
+export const oneCardWorld: World = {
+  ...base, name: 'one-card', user: { ...base.user, last_open_at: inHours(-1) },
+  decisions: base.decisions.filter(d => d.id === 'dec_addr'), notices: [], events: [],
+};
+
+// Today with nothing on it (the state "empty"): the clearing person a quiet month on. Their one sale was in October, three
+// things are live, and since they looked yesterday people have viewed, liked and watched them, so the top says that (the
+// ladder's rung d). Open it with /?state=empty. The counts are read_stats rollups since the last open (spec/data-use.md).
+const NEW_INTEREST: Record<string, Partial<Record<string, { views?: number; likes?: number; watchers?: number }>>> = {
+  it_jacket: { ebay: { views: 21, watchers: 2 }, depop: { likes: 3 } },
+  it_lamp: { facebook: { views: 17 } },
+  it_fleece: { depop: { likes: 2 }, poshmark: { likes: 1 } },
+};
+export const quietWorld: World = {
+  ...base, name: 'quiet',
+  items: base.items.filter(i => i.id in NEW_INTEREST || i.id === 'it_levis').map(i => ({ ...i, listings: i.listings.map(l => ({ ...l, interest_new: NEW_INTEREST[i.id]?.[l.site] })) })),
+  orders: base.orders.filter(o => o.id === 'ord_lv'), offers: [], appointments: [], decisions: [], notices: [], events: [],
+};

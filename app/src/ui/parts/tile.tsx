@@ -10,7 +10,8 @@
 //
 // Shelf: why it exists. Sell's shelves (pages §6.10) each need a header with their count and a way to see them all;
 // Section's title is a plain headline with no count and nothing to press. States: open with See all, open without
-// (everything shows), and folded (Unsold and Kept fold at the bottom: the header alone, with a chevron that opens it).
+// (everything shows), folded (Unsold and Kept fold at the bottom: the header alone, with a chevron that opens it), and
+// open with Show less (Today's fanned pile folds back from its header: Pile, Ben 07:12).
 // A shelf holds a different number of tiles each time, so only its header is a part of one size (shelf-head, 24 tall);
 // the shelf itself is marked data-shelf, for tests.
 import type { ReactNode } from 'react';
@@ -92,13 +93,15 @@ export function TileSkeleton() {
   );
 }
 
-export function Shelf({ id, title, count, onAll, folded, onOpen, children }: {
+export function Shelf({ id, title, count, onAll, onFold, folded, onOpen, children }: {
   // The shelf's name in the data: needs_you, live, kept. It names the controls and data-shelf.
   id: string;
   title: string;
   count: number;
   // Present when the shelf shows only some of its things: "See all" opens the rest.
   onAll?: () => void;
+  // Present when what it holds was fanned out and can fold back: "Show less", the chevron pointing up.
+  onFold?: () => void;
   // Folded: the header alone, and a tap opens it.
   folded?: boolean;
   onOpen?: () => void;
@@ -128,6 +131,13 @@ export function Shelf({ id, title, count, onAll, folded, onOpen, children }: {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1, height: size.siteBadge }}>
                 <Txt role="body" tone="ink-2">See all</Txt>
                 <Icon name="arrow-right-01" size={20} tone="ink-2" />
+              </View>
+            </Press>
+          ) : onFold ? (
+            <Press id={`shelf-${id}-less`} label="Show less" onPress={onFold} hit={slop(88, size.siteBadge)}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1, height: size.siteBadge }}>
+                <Txt role="body" tone="ink-2">Show less</Txt>
+                <View style={{ transform: [{ rotate: '180deg' }] }}><Icon name="arrow-down-01" size={20} tone="ink-2" /></View>
               </View>
             </Press>
           ) : null}

@@ -17,7 +17,6 @@
     "The batch of labels says what the tap spends (Labels cost $6.40), not what the sales keep, because the top slot already says that money (one fact, one place).",
     "The handled line names the most frequent thing the agent did and how many others ('Took 2 listings down, and 1 more'), never a bare count, because Ben called '3 need you, 11 handled' meaningless (ledger L13); it opens its log in a sheet, with Undo where the site still allows it.",
     "The notices and the handled line are the last rows of Good to know, since they ask nothing.",
-    "A new person sees the next setup step in the top slot and one row, What's something worth?, instead of 'Nothing needs you': one display heading per view (A7), and 'needs you' means nothing before anything is listed.",
     "Two pills and More hold about 26 characters of label; past that the second pill drops its amount, then moves to More (the edge world's $10,999.99 offer ran past the corner).",
     "A queue opens full screen one item at a time (QueueView part); each Post leaves the stack, Not now keeps it as a draft, and the last one closes it and takes the card away.",
     "The relink card has no item, so it shows the item stuck on that site with the site's badge: the photo still leads (C3).",
@@ -31,20 +30,33 @@
     "The lead card keeps its state gradient and says why over it, with a clock: Due first, today at 3 pm (Ben 06:19: \"I don't really know why the first entry is like colored\"). The color is the one card due soonest; nothing else is colored.",
     "Money that reaches the person reads one way on every card, You get $81.55, after fees and shipping, beside the buyer's price on the pill (Ben 06:19: \"you keep this much money. There's probably a better way to word that\").",
     "A buyer asking to pay off the site is tagged Possible scam, with Block and Say no (Ben 06:19: \"rather than careful, it could be like possibly a scam\").",
-    "The money at the top is the peak amount beside the photos of what sold, each with its site's badge, overlapped as a hand of cards (MoneyNews part), so the good news is the things, not a figure alone (Ben 06:19: \"the money sold thing ... is kind of like less\"; research/today/ben/top-of-today-and-stacking.md §1).",
+    "The top is always the most flattering true number, by a ladder in cards.ts (top), each rung unit-tested (Ben 07:12: \"the top thing should be the most flattering metric ... what do you say when nothings gone on yet\"): a. money since the last open with the photos of what sold; b. else this week's money, else this month's; c. never sold and something live: what it could bring, the low end of its worth with the high end named, before fees; d. else views, likes and watchers since the last open; c again when nothing came in; e. nothing listed: no number, See what your things are worth, opening the camera. Never $0, never rounded up, always its window. It is drawn by the MoneyNews part: the caption names the window, the figure at the peak size, the photos with their site badges.",
     "A sale on Today reads as its push does (spec/notifications.md, It sold): the Sold tag on the site's badge, the item, You get, and the ship-by clock.",
-    "Every card's More has Open on the site with a link icon, the card's site badge saying which site (Ben 06:19: \"you should always have a way to go back to the site\"). The wash is on Today whatever the top holds (Ben 06:21)."
+    "Every card's More has Open on the site with a link icon, the card's site badge saying which site (Ben 06:19: \"you should always have a way to go back to the site\"). The wash is on Today whatever the top holds (Ben 06:21).",
+    "When you can and Good to know draw as a pile when they hold more than one card: the top card in full and the edges of the next two (Pile part), so the shape says there is more. A tap on the edges, or Show all in the shelf's header, fans them out in place with a spring of --t-panel (Reduce Motion: at once); Show less folds them back (Ben 07:12: \"use the collapsable pile where they are layered and an animation expands them\"). Needs you now stays spread, since hiding a deadline there breaks Today's promise (research/today/ben/top-of-today-and-stacking.md §2). The piled height is fixed; only the person's tap moves it (U7).",
+    "The top card of a pile is the tier's first in the feed's order, the soonest deadline and then the most money; a queue, being its own stack, is never on top.",
+    "The states new, one and empty each land on a different rung of the ladder: new is e (nothing listed), one is b (the clearing person looked after this week's sales), empty is d (a quiet month: sold in October, three things live, interest since yesterday; app/src/today/stops.ts quietWorld). /?world=one shows c."
   ],
   "states": [
     {
       "state": "typical",
       "route": "/?world=clearing",
-      "shows": "the wash; Since yesterday $97.33 beside the chair and the jacket that sold, each on its site; Needs you now 4: Due first, today at 3 pm over the pickup on its state gradient (Meet in public, Send address), the jacket's 2 offers (You get $81.55), Possible scam, the signed-out site; When you can: 2 to ship, the Switch ready to post, the lamp's price, a question; Good to know: a review, two notices and the handled line"
+      "shows": "the wash; Since yesterday $97.33 beside the chair and the jacket that sold, each on its site; Needs you now 4: Due first, today at 3 pm over the pickup on its state gradient (Meet in public, Send address), the jacket's 2 offers (You get $81.55), Possible scam, the signed-out site; When you can 4 as a pile: 2 to ship on top, the edges of two cards under it, Show all in its header; Good to know: a review, two notices and the handled line"
+    },
+    {
+      "state": "fanned",
+      "route": "/?world=clearing",
+      "shows": "after Show all or a tap on the pile's edges, When you can's four cards spread 16 apart with a spring, and Show less in its header folds them back to one"
+    },
+    {
+      "state": "could bring",
+      "route": "/?world=one",
+      "shows": "Your listing could bring $85, up to $115, before fees, beside the jacket on eBay"
     },
     {
       "state": "new",
       "route": "/?state=new",
-      "shows": "Next step, Link a site, and the What's something worth? row; no money, no cards, never $0.00"
+      "shows": "Start here, See what your things are worth, which opens the camera; no number, no cards, never $0.00"
     },
     {
       "state": "dense",
@@ -54,12 +66,12 @@
     {
       "state": "empty",
       "route": "/?state=empty",
-      "shows": "Nothing needs you, with no money at the top, no notices and no handled line"
+      "shows": "Since yesterday 38 views, 6 likes, 2 watching, beside the jacket, the lamp and the fleece; then Nothing needs you, with no cards, no notices and no handled line"
     },
     {
       "state": "one",
       "route": "/?state=one",
-      "shows": "Since yesterday $97.33 and one card, the pickup on its state gradient with the one black pill, Meet in public; nothing else"
+      "shows": "This week $163.63, 3 sold, after fees, beside what sold, and one card, the pickup on its state gradient with the one black pill, Meet in public; nothing else"
     },
     {
       "state": "loading",
@@ -121,21 +133,14 @@
     },
     {
       "id": "top-news",
-      "control": "The money kept since the last look",
+      "control": "The number at the top, with what sold",
       "on_tap": "opens You",
       "goes": "/you"
     },
     {
       "id": "top-setup",
       "world": "new",
-      "control": "Next step, Link a site",
-      "on_tap": "opens setup",
-      "goes": "/onboarding"
-    },
-    {
-      "id": "empty-worth",
-      "world": "new",
-      "control": "What's something worth?",
+      "control": "Start here, See what your things are worth",
       "on_tap": "opens the camera",
       "goes": "/camera"
     },
@@ -337,6 +342,21 @@
       "id": "dec_jacket-site",
       "control": "Open on the site, in More",
       "on_tap": "opens the jacket's listing on its site"
+    },
+    {
+      "id": "shelf-when_you_can-all",
+      "control": "Show all, in the When you can header",
+      "on_tap": "fans the pile out: every card, 16 apart"
+    },
+    {
+      "id": "when_you_can-pile",
+      "control": "The edges under the top card of the pile",
+      "on_tap": "fans the pile out"
+    },
+    {
+      "id": "shelf-when_you_can-less",
+      "control": "Show less, in the When you can header",
+      "on_tap": "folds the cards back into the pile"
     }
   ],
   "back": "Today is a tab: it has no Back. The queue's Back closes the queue; a sheet closes on its scrim."

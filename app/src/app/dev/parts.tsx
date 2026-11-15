@@ -7,7 +7,7 @@ import {
   Amount, Approve, Blank, Composer, Count, DecisionCard, Draft, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Message, Meta, Nav, Notice, Pill,
   Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, ThreadRow, TimeSpan, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
   BarPill, CamButton, CamNote, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
-  Feed, QueueView, MoneyNews, type SoldThing,
+  Feed, QueueView, MoneyNews, Pile, type SoldThing,
 } from '@/ui';
 import { ChoiceChips, ColourSwatches, Gallery, MatchCard, OfferSheet, PriceChart, PriceRange, RangeSlider, SearchField, SiteStrip, SizePicker } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
@@ -29,6 +29,11 @@ const QUEUE: Record<string, { title: string; photo: 'brass-lamp' | 'kindle' | 'i
   q1: { title: 'Brass desk lamp', photo: 'brass-lamp' }, q2: { title: 'Kindle Paperwhite', photo: 'kindle' }, q3: { title: 'IKEA Stefan chair', photo: 'ikea-chair' },
 };
 const QUEUE_SITES: ('ebay' | 'depop')[] = ['ebay', 'depop'];
+const PILE: { id: string; kind: 'ship' | 'live' | 'need'; word: string; title: string; photo: 'kindle' | 'switch-oled' | 'brass-lamp'; fact: string; act: string }[] = [
+  { id: 'p1', kind: 'ship', word: 'Ship 2', title: '2 to ship', photo: 'kindle', fact: 'Labels cost $6.40', act: 'Buy 2 labels' },
+  { id: 'p2', kind: 'live', word: 'Ready', title: 'Nintendo Switch OLED', photo: 'switch-oled', fact: 'Lists at $235', act: 'Post to 2 sites' },
+  { id: 'p3', kind: 'need', word: 'Price', title: 'Brass desk lamp', photo: 'brass-lamp', fact: 'Sells about $38', act: 'Lower to $38' },
+];
 const MONEY_SOLD: SoldThing[] = [
   { id: 'm1', title: 'IKEA Stefan chair', photo: 'ikea-chair', site: 'facebook' }, { id: 'm2', title: 'Nike Dunk Low', photo: 'nike-dunks', site: 'depop' },
   { id: 'm3', title: 'Kindle Paperwhite', photo: 'kindle', site: 'ebay' }, { id: 'm4', title: 'Brass desk lamp', photo: 'brass-lamp', site: 'ebay' },
@@ -53,6 +58,7 @@ function Sheetful() {
   const [on, setOn] = useState(true);
   const [fed, setFed] = useState(['f-a', 'f-b']);
   const [queued, setQueued] = useState<string[] | null>(null);
+  const [piled, setPiled] = useState(false);
   const [msg, setMsg] = useState('');
   const [span, setSpan] = useState({ start: 28, end: 32 });
   return (
@@ -100,9 +106,20 @@ function Sheetful() {
         <Line><Pill id="f-reset" kind="second" label="Bring them back" onPress={() => setFed(['f-a', 'f-b'])} /></Line>
       </Section>
 
+      <Section title="Pile: the lower tiers, layered, fanned out on a tap">
+        <Shelf id="p" title="When you can" count={3} onAll={piled ? undefined : () => setPiled(true)} onFold={piled ? () => setPiled(false) : undefined}>
+          <Pile id="p" open={piled} onOpen={() => setPiled(true)}>
+            {PILE.map(k => (
+              <DecisionCard key={k.id} id={k.id} kind={k.kind} word={k.word} title={k.title} photo={k.photo} site="ebay"
+                fact={{ label: k.fact }} primary={{ id: `${k.id}-act`, label: k.act }} />
+            ))}
+          </Pile>
+        </Shelf>
+      </Section>
+
       <Section title="Money news: what was kept, and what sold">
         {/* One per view: an amount is the one peak number (C6). Five sold shows two photos and +3; Today shows the two-sold case. */}
-        <MoneyNews id="mn-five" since="Since Monday" kept={1204.5} line="5 sold, after fees" sold={MONEY_SOLD} />
+        <MoneyNews id="mn-five" caption="Since Monday" figure="$1,204.50" line="5 sold, after fees" things={MONEY_SOLD} />
       </Section>
 
       <Section title="Queue view: one of many, full screen">
