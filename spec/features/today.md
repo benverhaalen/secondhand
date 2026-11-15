@@ -14,7 +14,7 @@ The hassle: a seller on five sites gets offers, questions, pickups and sale emai
 | 5. Handled line | "Handled 14 things today" opens the auto log: every auto action with why, time and Undo while allowed. |
 | 6. Held replies | A card per `unbacked_claim`: the draft with the unbacked claim marked, the reason, and Send without it, Edit, It's true, Don't send. |
 | 7. Rule expiring | A rule unused for 14 days gets one card: "Still accept $40 or more on the jacket?" with Keep it and Let it lapse. |
-| 8. Alerts | A push only for a card whose deadline is within an hour; everything else waits for the batch. The full proposal, which also pushes a sale and an offer you'd take, is [notifications.md](../notifications.md) (*agent proposal*, open). |
+| 8. Alerts | A push only for a card whose deadline is within an hour; everything else waits for the batch. A sale and a watched item under the person's price push at once ([decision](../../product/decisions.md#2026-11-15-a-sale-and-a-watched-item-under-your-price-notify-at-once)); the rest of the levels are in [notifications.md](../notifications.md). |
 | 9. Notices | Cards that ask nothing, among them `value_moved` and `demand_rose` on an item the person owns ([market](market.md#one-catalog)); one tap opens the item, one dismisses (*agent proposal*). |
 
 Goal progress is a You number ([insights.md](insights.md)), never a card. Dibs, lost dibs and watch duplicates are not cards.
@@ -78,7 +78,7 @@ Every number on a card is a guarded number with a `citation_id`; a hidden one sh
 | buy | `complete_purchase` | listing, total | Open on site |
 | data | `rule_expiring` | rule, last used | Keep it, Let it lapse |
 
-Auto kinds (`answer_fact`, `counter_offer`, `decline_offer`, `offer_to_watchers`, `book_pickup`, `delist_after_sale`, `push_my_edit`) appear as cards only when their rule is in `ask`, else as log rows. Locked kinds take the person's tap every time. Exact action labels go through copy-lint and Ben's writing rules; owners may rename them.
+Auto kinds (`answer_fact` once promoted, `counter_offer`, `decline_offer`, `offer_to_watchers`, `book_pickup`, `delist_after_sale`, `push_my_edit`) appear as cards only when their rule is in `ask`, else as log rows. Locked kinds take the person's tap every time. Exact action labels go through copy-lint and Ben's writing rules; owners may rename them.
 
 With two or more orders to pack, Today shows one pick list card above the `ship_by` cards: each order's item photo, `location.label`, box and label state, in shelf order, with Print labels and Print pick list ([managing-and-buyers card 23](../determinations/managing-and-buyers.md#23-where-an-item-is-and-the-pick-list), [sold.md](sold.md)). It is a view, not a decision kind. *agent proposal*
 

@@ -1123,3 +1123,7 @@ Ben, thread "Roll the UI system out everywhere", 06:19 UTC, on the first gallery
 
 Ben, same thread, 06:21 UTC.
 > also sometimes the gradient at the top of the screen is there or isnt there yk
+
+## 2026-11-15 a sale and a match ping at once, replies start as drafts, and agents build the better way
+Ben, thread "Map every feature and page so the build can start", 06:40 UTC, answering "Should a sale, and a watched item under your price, notify you right away?" and "Replies starting as drafts changes Nate's rule".
+> 1. yes. 2. yes do that. ensure the ui building completely understands all this and the ui system. and overall across all agents when they think theres a better way to do things for our purposes and constitution then do it. anything i have edit wise gets applied too.
