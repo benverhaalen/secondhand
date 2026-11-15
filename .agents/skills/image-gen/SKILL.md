@@ -19,8 +19,7 @@ Ben's words this comes from: [Codex with Astra, the loop and how to judge](../..
    |---|---|---|
    | Base | The job in one line. The decision and this option, a line each. The exact words and numbers. The fail lines for this board | A rule doc, the ledger, the brief, another option |
    | Option | The base image and the one thing that changes | |
-   | Persona design (round one) | What any design call gets, plus one person's line from [personas.md](../../../product/personas.md) | A second person, a lever, a layout |
-   | Steered design | What an open design gets, plus one lever line from [frontend-standard §2](../../../product/frontend-standard.md#levers-for-the-later-rounds) | A second lever, a layout |
+   | Photo under an interface (an item, the camera's view) | The moment in one line, the item as an attached image, and the fail lines, which include any interface or text in the picture and which areas must stay plain for controls. Screens are not drawn by the image model ([Ben](../../../product/words.md#2026-11-15-the-image-model-makes-photos-the-ui-is-pieced-together-from-the-brand-system)) | A layout, the screen's copy |
    | Fix | The failed image and the failures for that image | The whole critique, earlier rounds |
    | Critic | The option images, the color sheet, the fail list | The brief, the prompts, who made what |
 
