@@ -1546,3 +1546,11 @@ Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages
 > or let everything go its cool if they can benchmark at the same time
 
 Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/waiting.md).
+
+## 2026-11-15 nate poshmark share, like and repost are suggested and the person taps
+Nate, build session (orchestrator), 2026-11-15 about 04:40 Central, after the Poshmark harness build reported that Poshmark's terms name automated liking, sharing and reposting. Two messages.
+> well lets have suggestions for liking sharing, reposting and such, or the things we can't automate we link directly, or even pull up an in app browser ideally for them to do it
+
+> just the poshmark one
+
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/waiting.md).
