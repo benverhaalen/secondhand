@@ -17,6 +17,17 @@ def test_pinball_is_zero_on_a_perfect_median_and_grows_with_error():
     assert pinball(f, 10) < pinball(f, 14) < pinball(f, 20)
 
 
+def test_fc_fixture_pinball_and_coverage(load_fixture):
+    rows, exp = load_fixture("fc/forecasts.json"), load_fixture("fc/expected.json")
+    fs = [Forecast(id=r["id"], product=r["id"], horizon_end=r["as_of"], p10=r["p10"], p50=r["p50"], p90=r["p90"])
+          for r in rows]
+    res = resolve(fs, {r["id"]: r["resolved_value"] for r in rows if r.get("resolved_value") is not None},
+                  today=exp["now"][:10])
+    assert sorted(f.id for f in res) == sorted(exp["resolved_ids"])
+    assert {f.id: round(pinball(f, f.resolved_value), 2) for f in res} == exp["pinball_loss"]
+    assert round(coverage(res, 1.0) * exp["coverage"]["of"]) == exp["coverage"]["inside"]
+
+
 def test_late_resolve_is_scored_and_refit():
     rows = [fc(1, 8, 10, 12, horizon_end="2026-10-01")]
     resolved = resolve(rows, actuals={"p1": 11}, today="2026-11-14")
