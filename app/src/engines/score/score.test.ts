@@ -40,3 +40,31 @@ test('reserve and checking intent never gets attention or risk bands', () => {
 test('invalid net or reversed band thresholds name the cause', () => {
   assert.throws(() => successScore({ ...fixture(), now: { expected_keep_cents: NaN, expected_days: 1, holding_cost_cents: 1 } }), /finite/);
 });
+
+test('F7: an invalid floor cannot authorize a markdown to zero', () => {
+  for (const floor_cents of [-1, NaN, Infinity, .5, Number.MAX_SAFE_INTEGER + 1, undefined]) {
+    const x = { ...fixture(), floor_cents } as ScoreInput;
+    x.changes = [{ kind: 'markdown', price_cents: 0, projected: x.best }];
+    assert.throws(() => successScore(x), /floor_cents must be a whole number/);
+  }
+  assert.equal(successScore({ ...fixture(), floor_cents: 0 }).state, 'shown');
+});
+
+test('F8: fractional holding costs publish whole cent utility parts', () => {
+  const x = fixture();
+  x.now = { expected_keep_cents: 4000.3, expected_days: 3.3, holding_cost_cents: 10.6 };
+  const out = successScore(x);
+  for (const parts of [out.parts.now, out.parts.best]) {
+    for (const [name, value] of Object.entries(parts))
+      if (name.endsWith('_cents')) assert.ok(Number.isInteger(value), name);
+  }
+});
+
+test('F8: a winning change publishes whole cent projections', () => {
+  const x = fixture();
+  x.changes = [{ kind: 'agent_revision', projected: { expected_keep_cents: 4900.4, expected_days: 1, holding_cost_cents: 10.6 } }];
+  const change = successScore(x).change;
+  assert.ok(change);
+  assert.ok(Number.isInteger(change.projected.expected_keep_cents));
+  assert.ok(Number.isInteger(change.projected.holding_cost_cents));
+});

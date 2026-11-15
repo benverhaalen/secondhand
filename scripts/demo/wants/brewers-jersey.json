@@ -1,11 +1,13 @@
 {
   "name": "Brewers jersey, men's L or XL, $60 or less",
-  "why": "Ben's test case: a Brewers fan after a World Series win wants a jersey that fits him, and wants to hear the moment one is listed under his price. Size L or XL and $60 are the trial's stand-ins for his own size and price.",
+  "why": "Ben's test case: a Brewers fan after a World Series win wants a jersey that fits him, and wants to hear the moment one is listed under his price. Size L or XL and $60 are the trial's stand-ins for his own size and price. Basketball and soccer-style 'Brewers' giveaway jerseys don't count (agent default; Ben can say otherwise).",
   "search": "brewers",
   "url": "https://poshmark.com/search?query=brewers%20jersey&sort_by=added_desc&type=listings",
   "team": ["\\bbrewers\\b", "milwaukee"],
   "item": ["\\bjersey\\b"],
-  "not": ["\\byouth\\b", "\\bkids?\\b", "\\btoddler\\b", "\\bboys?\\b", "\\bgirls?\\b", "\\binfant\\b", "\\bwomen'?s\\b", "\\bladies\\b", "\\bdog\\b", "\\bpet\\b", "\\bt-?shirt\\b", "\\btee\\b", "\\bbobble", "\\bbucks\\b"],
+  "not": ["\\byouth\\b", "\\bkids?\\b", "\\btoddler\\b", "\\bboys?\\b", "\\bgirls?\\b", "\\binfant\\b", "\\bwomen'?s\\b", "\\bladies\\b", "\\bdog\\b", "\\bpet\\b", "\\bt-?shirt\\b", "\\btee\\b", "\\bbobble", "\\bbucks\\b", "\\bgiannis\\b", "antetokounmpo", "\\bbasketball\\b", "\\bsoccer\\b"],
+  "departments": ["Men"],
+  "category": "Jerseys",
   "sizes": ["L", "XL", "Large", "X-Large"],
   "cap": 60
 }

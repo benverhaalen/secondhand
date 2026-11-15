@@ -60,6 +60,10 @@ def errors(model, rows):
 
 
 def nightly(training, held_out, prior, store, scope, at, min_band=20, seed=0, log=None):
+    if scope.get('person') is not None and any(r.get('person') != scope['person'] for r in [*training, *held_out]):
+        raise ValueError('outcome outside person scope')
+    current = store.champion('score_bands', scope)
+    champion = current['value_or_hyperparams'] if current else prior
     validate(training)
     validate(held_out)
     if not held_out:
@@ -69,15 +73,15 @@ def nightly(training, held_out, prior, store, scope, at, min_band=20, seed=0, lo
     if log:
         log.note('score.fit input', training_n=len(training), held_out_n=len(held_out), seed=seed)
     if len(training) < 4 * min_band:
-        return {'state': 'prior', 'model': prior}
+        return {'state': 'prior', 'model': champion}
     candidate = fit_bands(training, min_band)
     if candidate is None:
-        return {'state': 'kept', 'model': prior, 'reason': 'no separated bands'}
-    gains = errors(prior, held_out) - errors(candidate, held_out)
+        return {'state': 'kept', 'model': champion, 'reason': 'no separated bands'}
+    gains = errors(champion, held_out) - errors(candidate, held_out)
     rng = np.random.default_rng(seed)
     lower_bound = float(np.quantile(np.mean(rng.choice(gains, (2000, len(gains))), axis=1), .025))
     if lower_bound <= 0:
-        return {'state': 'kept', 'model': prior, 'reason': 'lost held-out'}
+        return {'state': 'kept', 'model': champion, 'reason': 'lost held-out'}
     score = -float(np.mean(errors(candidate, held_out)))
     fitted_hash = hashlib.sha256('\n'.join(sorted(r['outcome_id'] for r in training)).encode()).hexdigest()
     def publish(name, family, value, initial):
@@ -87,7 +91,16 @@ def nightly(training, held_out, prior, store, scope, at, min_band=20, seed=0, lo
                              'held_out_score': score, 'fitted_on_ids_hash': fitted_hash},
                             max((r['version'] for r in history), default=0))
         return store.promote(name, scope, row['version'], 0, at)
-    promoted, reason = publish('score_bands', 'model_ref', candidate, prior)
+    # Registry scores must compare the same held-out cohort, rather than last night's easier or harder cohort.
+    saved_score = current['held_out_score'] if current else None
+    promoted = False
+    try:
+        if current:
+            current['held_out_score'] = -float(np.mean(errors(champion, held_out)))
+        promoted, reason = publish('score_bands', 'model_ref', candidate, prior)
+    finally:
+        if current and not promoted:
+            current['held_out_score'] = saved_score
     if log:
         log.change('param', 'score_bands', 'champion' if promoted else 'challenger', reason=reason)
-    return {'state': 'promoted' if promoted else 'kept', 'model': candidate if promoted else prior, 'gain_lb': lower_bound}
+    return {'state': 'promoted' if promoted else 'kept', 'model': candidate if promoted else champion, 'gain_lb': lower_bound}

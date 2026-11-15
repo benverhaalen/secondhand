@@ -118,3 +118,8 @@ test('PLANTED: under a fee step a lower price keeps as much, and priceForKeep fi
   assert.ok(p <= 934, `${p}`);
   assert.ok(keep('ebay', p).keep_cents >= keep('ebay', 934).keep_cents);
 });
+
+test('F8: fractional shipping or promotion cents are refused before calculating keep', () => {
+  for (const name of ['buyer_shipping_cents', 'seller_shipping_cents', 'boost_cents'] as const)
+    assert.throws(() => keep('ebay', 5000, { [name]: .5 }), /whole cents/, name);
+});

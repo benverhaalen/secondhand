@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from negotiation.fit import Logistic, fit, online_update, nightly, calibration_error
+from negotiation.fit import Logistic, fit, online_update, nightly, calibration_error, log_loss
 from param.registry import MemoryStore
 
 
@@ -16,20 +16,24 @@ def test_hierarchy_fits_fixture_and_calibration():
     assert {'global', 'site:ebay', 'category:jacket', 'cell:ebay:jacket'} <= model.terms.keys()
 
 
-def test_poisoned_offers_are_capped_and_zero_prior_does_not_move():
+def test_poisoned_offers_are_capped_and_zero_prior_can_learn():
     model = Logistic({'global': 1., 'site:ebay': 0.}, [1.])
     for _ in range(100):
         model = online_update(model, {**rows(1)[0], 'features': [1e12], 'accepted': 0}, days=0)
     assert .5 <= model.weights[0] <= 1.5
     assert .5 <= model.terms['global'] <= 1.5
-    assert model.terms['site:ebay'] == 0
+    assert -np.log(49) <= model.terms['site:ebay'] < 0
     assert .02 <= model.predict(rows(1)[0]) <= .98
 
 
 def test_worse_challenger_is_kept_out_of_registry():
     store = MemoryStore()
     champion = Logistic({'global': 0}, [0])
-    out = nightly(rows(), rows(prefix="held"), champion, store, {}, '2026-11-15')
+    training = [{**r, 'accepted': int(i % 10 != 0)} for i, r in enumerate(rows())]
+    held = rows(prefix="held")
+    candidate = fit(training, champion)
+    assert log_loss(candidate, held) > log_loss(champion, held)
+    out = nightly(training, held, champion, store, {}, '2026-11-15')
     assert out['state'] == 'kept'
     assert store.history('P_accept', {}) == []
 
@@ -61,3 +65,22 @@ def test_nightly_fit_respects_the_same_guards_as_event_updates():
     model = fit([{**r, 'accepted': 0} for r in rows()], prior)
     assert .5 <= model.terms['global'] <= 1.5
     assert .5 <= model.weights[0] <= 1.5
+
+
+def test_zero_prior_and_new_hierarchy_terms_have_bounded_learning_range():
+    prior = Logistic({'global': 0.}, [0.])
+    model = fit([{**r, 'accepted': 1} for r in rows()], prior)
+    assert all(0 < v <= np.log(49) for v in model.terms.values())
+    assert 0 < model.weights[0] <= np.log(49)
+
+
+@pytest.mark.parametrize('split', ['training', 'held_out'])
+@pytest.mark.parametrize('owner', ['other', None])
+def test_person_scope_refuses_foreign_or_unowned_rows(split, owner):
+    training = [{**r, 'person': 'owner'} for r in rows()]
+    held = [{**r, 'person': 'owner'} for r in rows(prefix='held')]
+    (training if split == 'training' else held)[0]['person'] = owner
+    store = MemoryStore()
+    with pytest.raises(ValueError, match='person scope'):
+        nightly(training, held, Logistic({'global': -1.}, [1.]), store, {'person': 'owner'}, '2026-11-15')
+    assert not store.rows
