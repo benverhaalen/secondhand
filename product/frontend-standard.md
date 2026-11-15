@@ -28,16 +28,16 @@ This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored
 | Size | Examples | Image rounds | Who judges | States it runs |
 |---|---|---|---|---|
 | Small | A 404, an empty state, a settings row, a state of a screen that exists | None | Scripts | 1, then 7 to 12 |
-| Medium | A new screen made mostly of parts that exist | One round of 3: two open, one steered | The model | All but 6 |
-| Large | Today, the Sell grid, Capture, the Offer sheet, a section of the web front page | Up to 3 rounds of 4: two open, two steered | The model, then Ben | All |
+| Medium | A new screen made mostly of parts that exist | One round of 2 or 3, each leaning toward one person | The model | All but 6 |
+| Large | Today, the Sell grid, Capture, the Offer sheet, a section of the web front page | Up to 3 rounds. The first: 3 or 4, each leaning toward one person. Later ones: the merge, plus one or two pushed on a lever | The model, then Ben | All |
 
 | State | What happens | Next |
 |---|---|---|
 | 1. Triage | Size the work from the table above. | Small goes to 7. Otherwise 2. |
 | 2. Frame | Write who it is for, how often they come, what they came to do and where a mistake costs most. Say what they want, as opposed to what they would say ([Article 2.1](ui-constitution.md#article-2-start-from-the-person-not-the-screen)). | 3 |
 | 3. In the family? | List the parts in [app/src/ui](../app/src/ui/README.md), the patterns and the decisions that already cover this screen, and what is fixed around it: the tab bar, the header, the screens it sits between. A control that the Vercel UI SDK or shadcn already has is decided. | If the parts that exist can build it, 7, with no image. Otherwise 4. |
-| 4. Explore, 2 to 4 ways | Each design comes from its own fresh call through the [`image-gen` skill](../.agents/skills/image-gen/SKILL.md), in parallel. Every call gets the intention, the fixed surroundings as images, feel references, how it will be judged and what not to do. Two calls get nothing more. Each of the others also gets one lever to push as far as it goes, from the table below. No call gets a layout, copy, numbers or another design. | 5 |
-| 5. Judge and split | A fresh judge gets the images, the intention and the fail list from `node scripts/ui-rules.mjs judge`, written before it looks. Sort every finding: an exact fix (a size, a gap, a color) is saved for the build and never sent back to the image model. A feel note goes into the next round. | New feel notes: 4, with 2 or 3 designs, 3 rounds at most. Otherwise the best so far, not the latest, moves on. |
+| 4. Explore, 2 to 4 ways | Each design comes from its own fresh call through the [`image-gen` skill](../.agents/skills/image-gen/SKILL.md), in parallel. Every call gets the intention, the fixed surroundings as images, feel references, how it will be judged and what not to do. In the first round each call also gets one person to design for, from the table below. In a later round the calls start from the merge, and one or two also get one lever to push. No call gets a layout, copy, numbers, another design, or two steers. | 5 |
+| 5. Judge, merge and split | A fresh judge gets the images, the intention, each design's person and the fail list from `node scripts/ui-rules.mjs judge`, written before it looks. For each design it says how and why the design serves its person: which element answers which want, and what that costs the other people. Then it writes the merge: what to keep from each, taking what serves one person without costing another. Sort every other finding: an exact fix (a size, a gap, a color) is saved for the build and never sent back to the image model. A feel note goes into the next round. | New feel notes or an untested merge: 4, 3 rounds at most. Otherwise the best so far, not the latest, moves on. |
 | 6. Ben reacts | Large only. Ben sees the best one or two. A model is a weak judge of taste, so his reaction replaces a third round. | Pick: 7. Redirect: 2. |
 | 7. Static build | Recreate the image as a still screen with sample content, in the smallest change that fits, from the parts and the brand values. Read the [coder card](../brand/coder-card.md). Apply the saved exact fixes. A part that is missing is added to app/src/ui with its reason. | 8 |
 | 8. Behavior table | A fresh agent that has not seen the code looks at the still screen and writes `app/behavior/<screen>.json`: what each state shows, what each control does on tap and where Back goes. A control that leads to a screen that doesn't exist queues that screen at 1. | 9 |
@@ -48,9 +48,17 @@ This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored
 
 A beautiful screen with a dead control fails. So does a working screen that drifts from the chosen look.
 
-### Levers for the steered designs
+### Personas for the first round
 
-Ben: two designs "not specifically prompted to look a certain way", and the others told "to maximize different levers" ([words](words.md#2026-11-15-a-brand-system-for-anything-alive-and-bold-with-purpose-code-that-knows-each-app-and-knowing-when-things-sell)). The list is an *agent proposal* from [bold-and-alive.md](../research/cross-cutting/ben/bold-and-alive.md). One lever per design, never two. Each names a change in structure, because a model answers an adjective with decoration.
+Ben: "each of the different options in the first run should be favored or tilted or leaned in favor of the wants of a persona", then the judging "should also try and determine if how and why it achieves that. then it should merge them together" ([words](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)).
+
+The people, and the one line a call gets for each, are in [personas.md](personas.md). Take the two to four who use the screen. The line says who is looking and what they want, never what the screen contains, so the model is still the one that works out the design. A reseller is a stress case for the judge, never a lean.
+
+The merge is not an average. Keep what serves one person and costs nobody. Where two people's wants conflict, the person clearing out wins, or the conflict becomes something the person sets once, such as their minimum.
+
+### Levers for the later rounds
+
+Ben first asked for two designs "not specifically prompted to look a certain way" and the others told "to maximize different levers". His later note gave the first round to personas, so the levers now steer rounds two and three ([words](words.md#2026-11-15-a-brand-system-for-anything-alive-and-bold-with-purpose-code-that-knows-each-app-and-knowing-when-things-sell)). The list is an *agent proposal* from [bold-and-alive.md](../research/cross-cutting/ben/bold-and-alive.md). One lever per design, never two. Each names a change in structure, because a model answers an adjective with decoration.
 
 | Lever | The line the call gets | It must keep | Use on |
 |---|---|---|---|
