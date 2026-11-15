@@ -53,9 +53,12 @@ function ToastBody({ id, text, onUndo }: { id: string; text: string; onUndo: () 
     <View {...mark('toast')} accessibilityLiveRegion="polite" style={{ height: size.buttonH, borderRadius: radius.pill, backgroundColor: c.ink, paddingLeft: space.s5, paddingRight: space.s1, flexDirection: 'row', alignItems: 'center', gap: space.s3 }}>
       <View style={{ flex: 1 }}><Txt role="body" tone="on-ink" lines={1}>{text}</Txt></View>
       <Press id={id} label="Undo" onPress={onUndo}>
-        <View style={{ height: size.pillCardH, paddingHorizontal: space.s4, justifyContent: 'center' }}>
-          <Txt role="body" tone="on-ink">Undo</Txt>
-        </View>
+        {({ pressed }) => (
+          // A filled pill, one step lighter than the toast, because whatever acts looks pressable (U1).
+          <View style={{ height: size.pillCardH, paddingHorizontal: space.s4, borderRadius: radius.pill, backgroundColor: c.inkPress, opacity: pressed ? 0.8 : 1, justifyContent: 'center' }}>
+            <Txt role="body" tone="on-ink">Undo</Txt>
+          </View>
+        )}
       </Press>
     </View>
   );

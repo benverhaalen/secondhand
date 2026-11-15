@@ -17,19 +17,19 @@ const text = s => s.page.locator('body').innerText();
 
 // Each state: how to reach it, and what must then be on screen.
 const STATES = {
-  typical: async () => { const s = await open(); for (const t of ['Since yesterday', '$97.33', '2 sold, after fees', 'When you can', 'Good to know', 'Keep the lot', 'Accept $85', 'Counter $92', 'Buy 2 labels', 'Took 2 listings down, and 1 more']) await s.shows(t); },
+  typical: async () => { const s = await open(); for (const t of ['Since yesterday', '$97.33', '2 sold, after fees', 'Needs you now', 'Due first, today at 3 pm', 'When you can', 'Good to know', 'Meet in public', 'Send address', 'Possible scam', /You get \$81\.55/, 'Accept $85', 'Counter $92', 'Buy 2 labels', 'Took 2 listings down, and 1 more']) await s.shows(t); },
   new: async () => { const s = await open(ROUTE.new); await s.shows('Link a site'); await s.shows('What’s something worth?'); assert.equal(await count(s, '[data-part="card-decision"]'), 0); },
   dense: async () => { const s = await open(ROUTE.flipper); await s.shows('Since this morning'); await s.shows('5 to ship'); await s.shows('40 to post'); await s.shows('Review 40'); assert.equal(await count(s, '[data-part="card-stack"]'), 1); },
   empty: async () => {
     const s = await open('/?state=empty'); await s.shows('Nothing needs you');
-    for (const sel of ['[data-part="top-slot"]', '[data-part="card-decision"]', '[data-part="notice"]']) assert.equal(await count(s, sel), 0, sel);
+    for (const sel of ['[data-part="money-news"]', '[data-part="card-decision"]', '[data-part="notice"]']) assert.equal(await count(s, sel), 0, sel);
   },
-  one: async () => { const s = await open('/?state=one'); await s.shows('$97.33'); await s.shows('Keep the lot'); assert.equal(await count(s, '[data-part="card-decision"]'), 1); },
+  one: async () => { const s = await open('/?state=one'); await s.shows('$97.33'); await s.shows('Meet in public'); assert.equal(await count(s, '[data-part="card-decision"]'), 1); },
   'did not load': async () => {
     const s = await open('/?state=failed'); await s.shows('Today didn’t load'); assert.equal(await count(s, '[data-part="card-decision"]'), 0);
-    await s.tap('retry'); await s.shows('Keep the lot');
+    await s.tap('retry'); await s.shows('Meet in public');
   },
-  loading: async () => { const s = await open('/?state=loading'); await s.page.locator('[data-skeleton="true"]').first().waitFor({ timeout: 3000 }); assert.equal(await count(s, '[data-skeleton="true"]'), 3); assert.equal(await count(s, '[data-part="top-slot"]'), 0); },
+  loading: async () => { const s = await open('/?state=loading'); await s.page.locator('[data-skeleton="true"]').first().waitFor({ timeout: 3000 }); assert.equal(await count(s, '[data-skeleton="true"]'), 3); assert.equal(await count(s, '[data-part="money-news"]'), 0); },
   working: async () => { const s = await open(); await s.tap('dec_jacket-acc'); await s.shows('Accepting'); },
   done: async () => {
     const s = await open(); await s.tap('dec_jacket-acc'); await s.shows('Accepted $85', { timeout: 4000 });
@@ -70,7 +70,7 @@ for (const w of ['new', 'clearing', 'flipper', 'one', 'edge']) test(`today: ${w}
 // The steps that put a control on screen: a sheet or the queue opens first.
 const BEFORE = {
   'dec_jacket-amount': ['dec_jacket-more'], 'dec_jacket-later': ['dec_jacket-more'], 'dec_jacket-go-chat': ['dec_jacket-more'],
-  'log-all': ['handled'], 'dec_double-keep-first': ['dec_double-compare'], 'dec_jacket-elsewhere': ['dec_jacket-more'], 'queue-approve': ['queue-first_post-review'], 'queue-skip': ['queue-first_post-review'], 'nav-back': ['queue-first_post-review'],
+  'log-all': ['handled'], 'dec_double-keep-first': ['dec_double-compare'], 'dec_jacket-elsewhere': ['dec_jacket-more'], 'dec_jacket-site': ['dec_jacket-more'], 'queue-approve': ['queue-first_post-review'], 'queue-skip': ['queue-first_post-review'], 'nav-back': ['queue-first_post-review'],
 };
 for (const c of table.controls) test(`today: ${c.id} ${c.on_tap}`, async () => {
   const s = await open(c.route ?? ROUTE[c.world ?? 'clearing']);
@@ -94,4 +94,15 @@ for (const [route, lead] of [['/?world=clearing', 'dec_addr'], ['/?state=dense',
   const black = s.page.locator('[data-part="pill-card"][data-kind="primary"]');
   assert.equal(await black.count(), 1);
   if (lead) assert.equal(await s.page.getByTestId(`${lead}-open`).locator('[data-part="pill-card"][data-kind="primary"]').count(), 1);
+});
+
+// Ben 06:19 on the first gallery: the good news shows what sold, every tier has its header, the lead says why it is colored.
+test('today: the money at the top shows the things that sold, each on its site', async () => {
+  const s = await open(); await s.shows('$97.33');
+  assert.equal(await s.page.locator('[data-part="money-news"] [data-part="photo-card"]').count(), 2);
+  assert.equal(await s.page.locator('[data-part="money-news"] [data-part="site-badge"]').count(), 2);
+});
+test('today: every tier shows its header, with how many are in it', async () => {
+  const s = await open(); await s.page.locator('[data-shelf="now"]').waitFor();
+  for (const t of ['now', 'when_you_can', 'good_to_know']) assert.equal(await count(s, `[data-shelf="${t}"] [data-part="shelf-head"]`), 1, t);
 });

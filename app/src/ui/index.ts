@@ -38,3 +38,4 @@ export { FixChip } from './parts/camera-fix';
 export { ASPECT, CaptureFrame, frameRect } from './parts/camera-frame';
 export { Feed } from './parts/feed';
 export { QueueView, type QueueEntry } from './parts/queue';
+export { MoneyNews, type SoldThing } from './parts/money-news';

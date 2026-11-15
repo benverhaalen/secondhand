@@ -1127,3 +1127,61 @@ Ben, same thread, 06:21 UTC.
 ## 2026-11-15 a sale and a match ping at once, replies start as drafts, and agents build the better way
 Ben, thread "Map every feature and page so the build can start", 06:40 UTC, answering "Should a sale, and a watched item under your price, notify you right away?" and "Replies starting as drafts changes Nate's rule".
 > 1. yes. 2. yes do that. ensure the ui building completely understands all this and the ui system. and overall across all agents when they think theres a better way to do things for our purposes and constitution then do it. anything i have edit wise gets applied too.
+
+## 2026-11-15 cross-listing prices are a choice, the reason in words first
+
+Ben, thread "Cross-list Depop listings and price with quant", 06:51 UTC.
+> think about what a user would want. like different sites have different prices where it sells at. how does a user decide what they want with crosslisting. like do they want to sell it at a certain price no matter what. some price will be the highest some price will be the lowest and how do you navigate that. do you let the user sell to get the same profit everywhere. think of all the presets. think of all the reasons someone might sell and conflicting reasons. like should you truthfully price or should you keep the same price across platforms for what you get in return etc. i think the user should be able to choose just need to understand what they would want to do you know. maybe use a bit of research to help solve this. this is an ambiguous problem and use rdd and possible similar ways where a generalized problem was solved to try and solve it. i think there probably isnt one concrete answer to all this and it should be some sort of feature in it
+
+Ben, project chat, 06:53 UTC.
+> i think also you dont want to make it a quantitative thing. but also you can see the reasoning as to why we think this. maybe take rdd and iae from adjacent oss projects with agents doing things. strategically understanding the different levers a user might want.
+
+Ben, project chat, 06:53 UTC.
+> like the user should in plain language be able to understand the reasoning and can then see numbers if need be
+
+Used in: [research/list/ben/crosslist-pricing.md](../research/list/ben/crosslist-pricing.md), `SPREADS` in app/src/engines/listing/crosslist.ts.
+
+## 2026-11-15 a new seller starts on same take-home
+
+Ben, thread "Cross-list Depop listings and price with quant", 07:00 UTC, tapped on a decision card. The question: "Which cross-listing price rule should a new seller start on?" The option he chose:
+> Same take-home: Default is same money everywhere; seller can switch rule once for the account and override per item.
+
+Used in: [decisions.md](decisions.md#2026-11-15-cross-listing-starts-on-same-take-home), `SPREADS` in app/src/engines/listing/crosslist.ts.
+
+## 2026-11-15 nate benchmark our intelligence engines against the others in the open
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15, early morning Central.
+> what is thriftx, a repo? I want to find things to benchmark our intelligence engines against, things to really show on our website how we are more reliable, accurate, and credible than these other systems. don't do just because of the eval for fact based pricing and such, but the swath of data that even paid enterprise sources don't. If there aren't things you can find, then list everything every competitor does, and we'll find aspects to what we can beat them on
+
+## 2026-11-15 nate show the benchmark as amounts, not tables of checks and crosses
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15.
+> exemplify and take reference from other public benchmarks and products that are of similar nature and compete, what do they show, tables with x's and check marks? we dont want that when it doesnt show enough, we want amount of items compared graphically shown, amount of time, price, accuracy or capability could be the x's and checkmarks
+
+## 2026-11-15 nate write the benchmark up in full and push it
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15.
+> write up a full md detailing it and push it in the repo
+
+## 2026-11-15 nate the Mac as extra compute, Claude driving here and Codex there, and no more crashes
+Nate, build session (orchestrator), 2026-11-15 between about 00:10 and 01:30 Central, as the Mac Studio came online over Tailscale. Separate messages.
+> Lets have you though finish what was paused. And fully prepare all streams at a good point to then get it up. You can even copy everything currently local if you want and get everything up, using it as an extra machine for compute and testing and such. Of course update things as you see fit
+
+> ensure codex is up to date, and our config is pristine, no biggie if not just port what works and ensure it is even base codex with the necessary skills and optimized token spend per task
+
+> I would say one problem is none of your streams on this device finished, or at least none I can see. I would check on these, you can still leverage this for main development and pass bulk huge tests and running sessions onto that
+
+> this node issue is something wrong with what or how we run what we do. Its crashing on my computer and takes up so much memory on my mac
+
+> review through everything, now you can also clear up the stale streams like stream 1, 12, 13, 10 that all stopped
+
+> Lets check through real quick, Ill sign into claude on mac, ideally claude here, codex there
+
+> Utilize the mac to also run tests, utilize runs of the browser and building harnesses, you can use claude, port over the full config for this project and such, its however you feel best to perform and execute it very well
+
+> ensure we continue focused development, planning, and orchestration driven by you claude on this computer
+
+> you can update and utilize docker, take advantage of the ram, see all aspects such compute can aid us in performance and efficiency when building, but dont let the fact that the other device isn't fully configured out to affect how we develop, how much we spend, it should optimally follow how you prompt and instruct it
+
+> Now that we fixed the crash, ensure it doesnt happen again and perhaps push further now to handle more, not of course so much that it crashes either this computer or the mac but you understand how to effectively dispatch.
+
+## 2026-11-15 the lower tiers pile and fan out, and the top of Today always shows a flattering number
+
+Ben, 07:12, on the redone Today: "also, i think this is when you should use the collapsable pile where they are layered and an animation expands them. also ensure the actual app knows the top thing should be the most flattering metric. or a flattering metric. say theres zero sales. say potential money you could earn. say people who saw your listing. likes. updates from last time are definitely best but you dont always have updates. what do you say when nothings gone on yet."

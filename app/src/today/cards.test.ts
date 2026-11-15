@@ -18,8 +18,11 @@ test('today: no card shows an amount of $0 or less', () => {
   for (const [n, w] of ALL) for (const c of cards(w)) if (c.fact.cents != null) assert.ok(c.fact.cents > 0, `${n} ${c.key} ${c.fact.label}`);
 });
 
-test('today: a tier label shows only where two tiers meet', () => {
-  for (const [, w] of ALL) tiers(cards(w)).forEach((t, i) => assert.equal(t.label === null, i === 0));
+// Ben 06:19: "the sell one seems very organized and it's very easy to see like needs you in progress": every tier has its
+// header, as Sell's shelves do, and the first reads Needs you now.
+test('today: every tier has its header, and the first one that needs you says so', () => {
+  for (const [n, w] of ALL) tiers(cards(w)).forEach(t => assert.ok(t.label, `${n} ${t.tier}`));
+  assert.equal(tiers(cards(world('clearing')))[0].label, 'Needs you now');
 });
 
 test('today: nothing due within a day stacks, and a queue never mixes kinds', () => {
@@ -41,8 +44,8 @@ test('today: every card leads somewhere, and its two pills fit the row', () => {
 
 test('today: price, address and pickup are never acted on without a pill the person presses', () => {
   const addr = cards(world('clearing')).find(c => c.key === 'dec_addr')!;
-  assert.equal(addr.primary.label, 'Keep the lot');
-  assert.equal(addr.second?.label, 'Share address');
+  assert.equal(addr.primary.label, 'Meet in public');
+  assert.equal(addr.second?.label, 'Send address');
 });
 
 test('today: the handled line names what was done, never a bare count (ledger L13)', () => {
@@ -63,7 +66,7 @@ test('today: a fact is a label, not a sentence', () => {
 
 test('today: a double sale names both sales, first paid first, with what each keeps and what cancelling costs (edge-cases §1)', () => {
   const c = cards(stopsWorld).find(x => x.key === 'dec_double')!;
-  assert.equal(c.primary.label, 'Keep the first');
+  assert.equal(c.primary.label, 'Keep first buyer');
   assert.equal(c.second?.do, 'compare');
   const two = sales(stopsWorld, stopsWorld.decisions.find(d => d.id === 'dec_double')!);
   assert.deepEqual(two.map(o => o.site), ['ebay', 'depop']);
@@ -74,4 +77,28 @@ test('today: every stop on the auto-list tree is one card with one question (edg
   const stops = cards(stopsWorld).filter(c => ['dec_retake', 'dec_fact', 'dec_claim', 'dec_changed'].includes(c.key));
   assert.equal(stops.length, 4);
   for (const c of stops) { assert.equal(c.form, 'single'); assert.ok(c.fact.label.length > 0); assert.ok(c.primary.label && c.second); }
+});
+
+// Ben 06:19 on the first gallery: no "You keep", no "Careful", no "Keep the lot"; one money form on every card.
+test('today: the words Ben found unclear are gone, and money reads one way', () => {
+  for (const [n, w] of ALL) for (const c of cards(w)) {
+    const words = [c.word, c.fact.label, c.primary.label, c.second?.label ?? '', ...c.more.map(a => a.label)].join(' | ');
+    assert.doesNotMatch(words, /You keep|Careful|Keep the lot|Reply safely/, `${n} ${c.key}: ${words}`);
+  }
+  assert.equal(cards(world('clearing')).find(c => c.key === 'dec_scam')?.word, 'Possible scam');
+});
+
+// Always a way back to the site (Ben 06:19): a card for a listed item has Open on the site in its More.
+test('today: a card on a listed item has the way back to its site', () => {
+  for (const c of cards(world('clearing')).filter(c => c.form === 'single' && c.site)) {
+    const it = world('clearing').items.find(i => i.photos[0]?.key === c.photo);
+    if (it?.listings.some(l => l.site === c.site) && c.title === it.title) assert.ok(c.more.some(a => a.do === 'site'), c.key);
+  }
+});
+
+// The top slot shows what sold, with its photo and site, so the good news is the things, not only a number.
+test('today: the top slot names what sold since the last look', () => {
+  const t = top(world('clearing'));
+  assert.equal(t?.kind, 'news');
+  if (t?.kind === 'news') { assert.equal(t.sold.length, 2); for (const s of t.sold) { assert.ok(s.photo); assert.ok(s.site); } }
 });

@@ -7,7 +7,7 @@ import {
   Amount, Approve, Blank, Composer, Count, DecisionCard, Draft, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Message, Meta, Nav, Notice, Pill,
   Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, ThreadRow, TimeSpan, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
   CamButton, CamNote, CaptureFrame, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
-  Feed, QueueView,
+  Feed, QueueView, MoneyNews, type SoldThing,
 } from '@/ui';
 import { ChoiceChips, ColourSwatches, Gallery, MatchCard, OfferSheet, PriceChart, PriceRange, RangeSlider, SearchField, SiteStrip, SizePicker } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
@@ -29,6 +29,11 @@ const QUEUE: Record<string, { title: string; photo: 'brass-lamp' | 'kindle' | 'i
   q1: { title: 'Brass desk lamp', photo: 'brass-lamp' }, q2: { title: 'Kindle Paperwhite', photo: 'kindle' }, q3: { title: 'IKEA Stefan chair', photo: 'ikea-chair' },
 };
 const QUEUE_SITES: ('ebay' | 'depop')[] = ['ebay', 'depop'];
+const MONEY_SOLD: SoldThing[] = [
+  { id: 'm1', title: 'IKEA Stefan chair', photo: 'ikea-chair', site: 'facebook' }, { id: 'm2', title: 'Nike Dunk Low', photo: 'nike-dunks', site: 'depop' },
+  { id: 'm3', title: 'Kindle Paperwhite', photo: 'kindle', site: 'ebay' }, { id: 'm4', title: 'Brass desk lamp', photo: 'brass-lamp', site: 'ebay' },
+  { id: 'm5', title: 'Levi’s 501', photo: 'levis-501', site: 'poshmark' },
+];
 const STATES: TagState[] = ['need', 'live', 'hot', 'stuck', 'sold', 'ship', 'paid', 'failed', 'draft', 'ended', 'working'];
 
 export default function Parts() {
@@ -93,6 +98,11 @@ function Sheetful() {
           ))}
         </Feed>
         <Line><Pill id="f-reset" kind="second" label="Bring them back" onPress={() => setFed(['f-a', 'f-b'])} /></Line>
+      </Section>
+
+      <Section title="Money news: what was kept, and what sold">
+        {/* One per view: an amount is the one peak number (C6). Five sold shows two photos and +3; Today shows the two-sold case. */}
+        <MoneyNews id="mn-five" since="Since Monday" kept={1204.5} line="5 sold, after fees" sold={MONEY_SOLD} />
       </Section>
 
       <Section title="Queue view: one of many, full screen">
