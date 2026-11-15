@@ -127,6 +127,7 @@ The gate and the type check on every merge; the Python suites (after DB5); the p
 5. Whether the served-engine figure stays on the judges' dashboard before Ben has seen it.
 6. Whether a row marked `may_model: false` (Apify rows today, eBay interface rows later) may enter the comps a shown price range is computed from. [The valuation spec](../engines/valuation.md) says such a row can be shown and cited as a comp and never fit a weight; the ruling on Apify says shown and never modelled on. Until he rules, the engines lead keeps those rows out of every price basis and out of the observation store; they are still shown as listings.
 7. Real items photographed and measured, eight to ten for the stopwatch and twenty for the benchmark.
+8. The paid visual lookup in capture ([design](../engines/capture.md)): whether a person's photo may go to Google Lens through treg and its provider at all (as designed: only when the tag, label and barcode reads abstain, one crop of the item, pixels only, through a single-use address that expires in 120 s, nothing of the answer kept but our own candidate line); the two spend caps ($0.003 a capture, $0.10 a day); and a top-up before a 20-item run (about $0.06).
 
 ## 10. Done, as one condition
 
