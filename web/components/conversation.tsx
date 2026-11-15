@@ -51,7 +51,7 @@ export function Conversation({ home = false, review = false, initialTurns = [], 
     const controller = new AbortController();
     controls.current.set(turn.id, () => controller.abort());
     try {
-      const jobId = await ask(turn.text, turn.image, visitor(), turn.idempotencyKey, transportFetch, controller.signal);
+      const jobId = await ask(turn.text, turn.image, visitor(), turn.idempotencyKey, transportFetch, controller.signal, id => { visitor(id); });
       if (controller.signal.aborted) return;
       replace(turn.id, t => ({ ...t, jobId }));
       follow(turn.id, jobId);
