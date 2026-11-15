@@ -12,7 +12,7 @@ import { counterfeit } from './counterfeit.ts';
 
 const at = '2026-11-14T10:00:00Z';
 const setup = () => { const store = memoryStore(); declareTrust(store); return store; };
-const context = (store: ReturnType<typeof setup>): Ctx => ({ buyer: { age_days: 90, ratings: 2, good_purchases: 0 }, banner: false, urgent: false, price_usd: 48, printHits: { sellers: 0, buyers: 0 }, sameTextListings10m: 0, p: n => store.read(n, {}).value as number });
+const context = (store: ReturnType<typeof setup>): Ctx => ({ buyer: { age_days: 90, ratings: 2, good_purchases: 0 }, banner: false, urgent: false, price_cents: 4800, printHits: { sellers: 0, buyers: 0 }, sameTextListings10m: 0, p: n => store.read(n, {}).value as number });
 const input = (store: ReturnType<typeof setup>) => ({ msg: { id: 'm', thread_id: 't', site: 'ebay' as const, n: 3, text: 'hello', at }, ctx: context(store), group: 'ebay' as const, checkout: true, orderPaid: false, local: false, refund_asked_cents: 0 });
 const promote = (store: ReturnType<typeof setup>, name: string, value: unknown, scope: Record<string, string> = { site: 'ebay' }) => {
   const v = store.rows(name, scope).length;
@@ -22,7 +22,7 @@ const promote = (store: ReturnType<typeof setup>, name: string, value: unknown, 
 
 test('valuation keep_q50 4800 cents and boundary price 48 dollars produce identical whole-cent loss', async () => {
   const store = setup(), d = { store, model: async () => [] };
-  const a = await decideThread(d, { ...input(store), keep_q50: 4800 });
+  const a = await decideThread(d, { ...input(store), keep_q50_cents: 4800 });
   const b = await decideThread(d, input(store));
   assert.equal(a.loss_cents, 4800); assert.equal(a.loss_cents, b.loss_cents);
   assert.ok(Number.isSafeInteger(a.friction_cents));
@@ -128,7 +128,7 @@ test('price and q50 displays publish citations with the exact parameter versions
 
 test('dollar boundary rounds decimal half-cent ties upward exactly once', async () => {
   for (const [usd, expected] of [[20.005, 2001], [48.005, 4801], [1.005, 101], [10.075, 1008]]) {
-    const out = counterfeit({ proofPhoto: true, site: 'other', shoes: false, stockPhoto: false, priceUsd: usd, q50: 100 });
+    const out = counterfeit({ proofPhoto: true, site: 'other', shoes: false, stockPhoto: false, price_cents: expected, q50_cents: 10000 });
     const { dollarsToCents } = await import('./money.ts');
     assert.equal(dollarsToCents(usd, 'price_usd'), expected);
     assert.equal(out.action, 'none');
