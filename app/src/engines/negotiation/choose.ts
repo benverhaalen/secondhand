@@ -13,6 +13,8 @@ export type OfferState = {
   trust_block: boolean;
   ending?: EndingRule;
   features?: Record<string, number | boolean>;
+  ask_all?: boolean; // plan_choice check: every answer is a proposal the person decides
+  counter_under_floor?: boolean; // posture stance: false at the hard end, the ask proposes no counter
 };
 export type PAccept = (counter_cents: number, s: OfferState) => number;
 export type Candidate = { amount_cents: number; keep: number; p_accept: number; expected_keep: number };
@@ -36,59 +38,79 @@ export function guard(amount: number | null, s: OfferState): number | null {
   return Math.min(s.ask_cents, Math.max(s.floor_cents, amount));
 }
 
-// D16 rule 2, the champion.
+// Counters lie strictly between max(floor, offer) and the ask: eBay takes a counter only above the offer and
+// under Buy It Now, and a counter at the ask is no counter.
+const counterRange = (s: OfferState) => ({ lo: Math.max(s.floor_cents, s.offer_cents + 1), hi: s.ask_cents - 1 });
+
+// D16 rule 2, the champion: the split, on an ending inside the counter range.
 export function midpoint(s: OfferState): number | null {
-  const mid = Math.max(s.floor_cents, (s.offer_cents + s.ask_cents) / 2);
-  return guard(roundToEnding(mid, s.ending, s.floor_cents, s.ask_cents), s);
+  const { lo, hi } = counterRange(s);
+  if (lo > hi) return null;
+  return roundToEnding(Math.max(lo, (s.offer_cents + s.ask_cents) / 2), s.ending, lo, hi);
 }
 
 const clampP = (p: number) => Math.min(0.98, Math.max(0.02, p));
 
+export class LimitBreach extends Error {}
+
+// The protection, checked on the decision itself before it leaves: nothing accepted under the floor, no counter
+// or proposal outside the counter range. A breach is a bug upstream, so it throws rather than sending.
+export function assertLimits(d: Decision, s: OfferState): Decision {
+  const { lo, hi } = counterRange(s);
+  if (d.kind === 'accept_offer' && (s.offer_cents < s.floor_cents || d.amount_cents !== s.offer_cents)) throw new LimitBreach(`accept of ${s.offer_cents} under floor ${s.floor_cents}`);
+  if ((d.kind === 'counter_offer' || d.kind === 'price_below_floor') && d.amount_cents !== null && (d.amount_cents < lo || d.amount_cents > hi)) throw new LimitBreach(`counter ${d.amount_cents} outside [${lo}, ${hi}]`);
+  if (d.kind === 'price_below_floor' && !d.ask) throw new LimitBreach('price_below_floor must ask');
+  return d;
+}
+
 export function decide(s: OfferState, pAccept: PAccept, policy: 'champion' | 'challenger' = 'champion', param_version = 0): Decision {
-  const v_after = s.v_wait_cents;
-  const out = (kind: Decision['kind'], amount: number | null, p: number | null, e: number | null, candidates: Candidate[] = [], fallback?: Decision['fallback']): Decision => {
-    const amt = guard(amount, s);
-    const d: Decision = { kind, amount_cents: amt, keep_at_amount: amt === null ? null : s.keep(amt), p_accept: amt === null ? null : p, expected_keep: amt === null ? null : e, v_after, candidates, policy, param_version, ask: kind === 'price_below_floor' };
-    if (fallback) d.fallback = fallback;
-    return d;
-  };
-  if (s.trust_block) return { ...out('trust_block', null, null, null), amount_cents: null };
+  const v = s.v_wait_cents;
+  const base = { policy, param_version, v_after: v };
+  if (s.trust_block) return { ...base, kind: 'trust_block', amount_cents: null, keep_at_amount: null, p_accept: null, expected_keep: null, candidates: [], ask: false };
 
+  // The floor and always_accept are prices the person set; compare prices, since keep can fall at a fee step.
+  const below = s.offer_cents < s.floor_cents;
+  const always = Math.max(s.always_accept_cents, s.floor_cents);
   const keepOffer = s.keep(s.offer_cents);
-  const accept = () => out('accept_offer', s.offer_cents, 1, keepOffer);
-  if (keepOffer >= s.keep(s.always_accept_cents)) return accept();
-  const below = keepOffer < s.keep(s.floor_cents);
+  const acceptRow: Candidate = { amount_cents: s.offer_cents, keep: keepOffer, p_accept: 1, expected_keep: keepOffer };
+  const accept = (candidates: Candidate[], ask = false, fallback?: Decision['fallback']): Decision =>
+    assertLimits({ ...base, kind: 'accept_offer', amount_cents: s.offer_cents, keep_at_amount: keepOffer, p_accept: 1, expected_keep: keepOffer, candidates, ask: ask || !!s.ask_all, ...(fallback && { fallback }) }, s);
+  if (!below && s.offer_cents >= always) return accept([acceptRow]);
 
-  // Candidates: every ending in [floor, ask] above the offer (a counter at or under the offer is no counter).
-  const lo = Math.max(s.floor_cents, s.offer_cents + 1);
-  const counters = endings(lo, s.ask_cents, s.ending);
-  const vAfter = v_after ?? 0;
+  const { lo, hi } = counterRange(s);
+  const vAfter = v ?? 0;
   let invalid = false;
-  const cands: Candidate[] = counters.map((c) => {
+  const cands: Candidate[] = (lo <= hi ? endings(lo, hi, s.ending) : []).map((c) => {
     let p = NaN;
-    try { p = pAccept(c, s); } catch { /* scored below as invalid */ }
+    try { p = pAccept(c, s); } catch { invalid = true; }
     if (!Number.isFinite(p)) invalid = true;
     p = clampP(p);
     return { amount_cents: c, keep: s.keep(c), p_accept: p, expected_keep: p * s.keep(c) + (1 - p) * vAfter };
   });
   const fallback = invalid ? 'p_accept_invalid' as const : undefined;
   const listed = invalid ? [] : cands;
+  const full = below ? listed : [acceptRow, ...listed];
 
-  let pick: Candidate | undefined; // undefined = accept
-  if (policy === 'challenger' && !invalid && v_after !== null) {
-    let best = below ? -Infinity : keepOffer; // accept scores keep(offer) at P = 1; below the floor it is not offered
+  let pick: Candidate | undefined; // undefined = accept, or no counter at all
+  if (policy === 'challenger' && !invalid && v !== null) {
+    let best = below ? -Infinity : keepOffer;
     for (const c of cands) if (c.expected_keep > best) { best = c.expected_keep; pick = c; }
   } else {
     const m = midpoint(s);
     pick = m === null ? undefined : (cands.find((c) => c.amount_cents === m) ?? { amount_cents: m, keep: s.keep(m), p_accept: NaN, expected_keep: NaN });
   }
-  const full = below ? listed : [{ amount_cents: s.offer_cents, keep: keepOffer, p_accept: 1, expected_keep: keepOffer }, ...listed];
+  const counter = (kind: 'counter_offer' | 'price_below_floor', c: Candidate | undefined, ask: boolean): Decision => assertLimits({
+    ...base, kind, amount_cents: c?.amount_cents ?? null, keep_at_amount: c ? c.keep : null,
+    p_accept: c && !Number.isNaN(c.p_accept) ? c.p_accept : null, expected_keep: c && !Number.isNaN(c.expected_keep) ? c.expected_keep : null,
+    candidates: full, ask, ...(fallback && { fallback }),
+  }, s);
+
+  // D16 rule 3: under the floor it always asks, proposing the counter rule 2 would send.
+  if (below) return counter('price_below_floor', s.counter_under_floor === false ? undefined : pick, true);
   // D16 rule 2: in the band, accept when the offer already keeps at least what waiting does.
-  if (policy === 'champion' && !below && v_after !== null && keepOffer >= v_after) return { ...accept(), candidates: full, ...(fallback && { fallback }) };
-  if (!pick) return below ? out('price_below_floor', null, null, null, full, fallback) : { ...accept(), candidates: full, ...(fallback && { fallback }) };
-  const p = Number.isNaN(pick.p_accept) ? null : pick.p_accept;
-  const e = Number.isNaN(pick.expected_keep) ? null : pick.expected_keep;
-  const d = out(below ? 'price_below_floor' : 'counter_offer', pick.amount_cents, p, e, full, fallback);
-  if (v_after === null && !below) d.ask = true; // V hidden: only rules 1 and 3 run, so the midpoint is a proposal
-  return d;
+  if (policy === 'champion' && v !== null && keepOffer >= v) return accept(full, false, fallback);
+  // No ending between the offer and the ask: the gap is under one ending, so taking the offer is the counter.
+  if (!pick) return accept(full, v === null, fallback);
+  // V hidden: only rules 1 and 3 run, so a counter in the band is a proposal.
+  return counter('counter_offer', pick, v === null || !!s.ask_all);
 }

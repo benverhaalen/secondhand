@@ -55,3 +55,10 @@ test('a reply or reconcile for an offer never read throws; an overruled flag is 
   s.fromReply({ conversation_id: 'c1', round: 1, response: 'countered', counter_cents: 7000, at: 1_000_050, overruled: true });
   assert.equal(s.rows()[0].overruled, true);
 });
+
+test('a buyer taking our counter: the final price is the counter, not the offer', () => {
+  const s = outcomeStore();
+  s.fromOffer(read);
+  s.fromReply({ conversation_id: 'c1', round: 1, response: 'accepted', counter_cents: 6800, at: 1_001_000 });
+  assert.equal(s.rows()[0].final_price, 6800);
+});

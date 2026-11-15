@@ -160,7 +160,8 @@ export function trim<T extends AdjustedComp>(comps: readonly T[], params = DEFAU
   if (!adjusted.length) return { kept: [], dropped };
   const logs = adjusted.map(c => Math.log(c.adjusted_cents));
   const center = median([...logs]);
-  const cap = params.outlier_k * median(logs.map(p => Math.abs(p - center)));
+  // With MAD 0 (most comps at one price) the cut would drop every other price; the adjustment cut is the least width.
+  const cap = Math.max(params.outlier_k * median(logs.map(p => Math.abs(p - center))), params.adjustment_cut);
   const kept = adjusted.filter((c, i) => {
     if (Math.abs(logs[i] - center) <= cap) return true;
     dropped.push({ comp_id: c.comp_id, reason: 'outlier' });
