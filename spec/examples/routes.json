@@ -255,6 +255,13 @@
             "needs_session": false
           },
           {
+            "endpoint": "GET /v1/photos/:id",
+            "auth": "user",
+            "source": "engine",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
             "endpoint": "GET /v1/products/:id",
             "source": "example",
             "auth": "visitor",
