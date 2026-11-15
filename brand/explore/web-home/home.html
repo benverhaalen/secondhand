@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>secondhand</title>
+<!-- The signed-out Home, round 2 of the website proposal: seven sections, Cleo's spatial layout, our field for its sky.
+     A mock built from brand tokens to judge the structure, not the build (the build is the Expo web app).
+     The scene panel holds the demo item photos (assets/demo-items, generated, Art. 8.4) until the scene photos exist.
+     Every amount is from spec/examples or research/cross-cutting/ben/pitch-evidence.md; the proof numbers are empty
+     slots until the benchmark thread measures them (Art. 12.6).
+     Check: node scripts/brand-check.mjs brand/explore/web-home/home.html --medium web -->
+<link rel="stylesheet" href="../../tokens.css">
+<style>
+  :root { --drift: 26s; /* R17, open */ --mx: 64px; --content: 1200px; }
+  @media (max-width: 760px) { :root { --mx: 24px; } }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--page); color: var(--ink); font: var(--w-text) var(--t-15)/var(--lh-15) var(--font-text); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  img { display: block; max-width: 100%; }
+  .wrap { width: min(var(--content), 100% - 2 * var(--mx)); margin-inline: auto; }
+  section { padding-block: var(--s-9); }
+  .center { text-align: center; }
+  .wordmark { font: var(--w-display) var(--t-21)/var(--lh-21) var(--font-display); letter-spacing: var(--tr-21); text-decoration: none; }
+  .hero-t, .section-t { font-weight: var(--w-text); letter-spacing: -0.02em; line-height: 1.1; }
+  .hero-t { font-size: var(--t-hero); max-width: 14ch; margin-inline: auto; }
+  .section-t { font-size: var(--t-section); max-width: 18ch; margin-inline: auto; }
+  .feature-t { font-size: var(--t-feature); line-height: 1.2; letter-spacing: -0.01em; font-weight: var(--w-text); }
+  .lead { font-size: var(--t-18); line-height: var(--lh-18); color: var(--ink-2); max-width: 34ch; margin-inline: auto; }
+  .second { color: var(--ink-2); }
+
+  /* header */
+  header { position: absolute; inset: 0 0 auto; z-index: 5; color: var(--on-field); }
+  header .wrap { display: flex; align-items: center; gap: var(--s-7); height: 72px; }
+  header nav { display: flex; gap: var(--s-6); margin-left: auto; }
+  header nav a, .signin { text-decoration: none; font-size: var(--t-15); }
+  header nav a:hover, .signin:hover { color: var(--ink-2); }
+  @media (max-width: 760px) { header nav { display: none; } .signin { margin-left: auto; } }
+
+  /* buttons */
+  .pill { display: inline-flex; align-items: center; justify-content: center; height: var(--button-h); padding: 0 var(--s-6); border-radius: var(--r-pill); background: var(--ink); color: var(--page); font: var(--w-medium) var(--t-15)/1 var(--font-text); text-decoration: none; border: 0; cursor: pointer; transition: transform var(--t-feedback) var(--ease-out), background var(--t-feedback); }
+  .pill:hover { background: var(--ink-press); } .pill:active { transform: scale(.97); }
+  .pill.glow { box-shadow: var(--pill-glow); }
+  .pill.small { height: 40px; padding: 0 var(--s-5); }
+  .pill:focus-visible, .switch button:focus-visible, input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+  /* 1 hero: the field where Cleo has its sky */
+  .hero { position: relative; padding: 0; }
+  .field { position: relative; overflow: hidden; padding: var(--s-9) var(--mx); min-height: 100svh; background: var(--field); background-size: 160% 160%; animation: drift var(--drift) ease-in-out infinite alternate; display: grid; place-content: center; justify-items: center; color: var(--on-field); isolation: isolate; }
+  @keyframes drift { from { background-position: 0% 100%; } to { background-position: 100% 0%; } }
+  .switch { display: inline-flex; gap: var(--s-1); margin-bottom: var(--s-7); }
+  .switch button { height: 36px; padding: 0 var(--s-5); border: 0; border-radius: var(--r-pill); background: var(--sec-on-field); font: var(--w-medium) var(--t-15)/1 var(--font-text); color: var(--on-field); cursor: pointer; transition: background var(--t-select) var(--ease-out); }
+  .switch button[aria-pressed="true"] { background: var(--surface); }
+  .hero .lead { color: var(--on-field-2); margin-top: var(--s-6); min-height: 48px; transition: opacity var(--t-select); }
+  .hero .act { margin-top: var(--s-7); display: flex; gap: var(--s-6); justify-content: center; align-items: center; flex-wrap: wrap; }
+  .logos { display: flex; gap: var(--s-2); }
+  .logos img { width: 20px; height: 20px; }
+
+  /* 2 the scene: the product talks inside a real place */
+  .scene { padding-top: var(--s-8); }
+  .panel { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--s-1); border-radius: var(--r-card); overflow: hidden; background: var(--gray); }
+  .spot { position: relative; aspect-ratio: 4 / 5; }
+  .spot > img { width: 100%; height: 100%; object-fit: cover; }
+  .float { position: absolute; left: var(--s-5); right: var(--s-5); bottom: var(--s-5); }
+  .card { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-soft); padding: var(--card-pad); display: grid; gap: var(--s-3); }
+  .card .row { display: flex; align-items: center; gap: var(--s-3); }
+  .card .thumb { width: 48px; height: 48px; border-radius: var(--r-photo); object-fit: cover; flex: none; }
+  .card .name { font-size: var(--t-15); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tag { display: inline-flex; align-items: center; height: 24px; padding: 0 var(--s-3); border-radius: var(--r-pill); font-size: var(--t-15); line-height: 1; color: var(--on-color); white-space: nowrap; }
+  .tag.live { background: var(--sky); } .tag.need { background: var(--marigold); } .tag.sold { background: var(--mint); } .tag.paid { background: var(--lime); } .tag.fair { background: var(--mint-tint); }
+  .card.need { background: var(--marigold-tint); }
+  .float.card { height: var(--card-decision-h); align-content: start; padding: var(--card-corner); }
+  .need .keep { color: var(--on-color); }
+  .card .why { font-size: var(--t-15); }
+  .card .acts { display: flex; gap: var(--s-2); }
+  .ghost { height: 40px; padding: 0 var(--s-5); border-radius: var(--r-pill); background: var(--gray); border: 0; font: var(--w-medium) var(--t-15)/1 var(--font-text); color: var(--ink); }
+  .keep { color: var(--ink-2); }
+  @media (max-width: 760px) { .panel { grid-template-columns: 1fr; } .spot { aspect-ratio: 1; } .field { padding: var(--s-8) var(--s-6); } }
+
+  /* 3 why */
+  .versus { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); margin-top: var(--s-8); }
+  .side { border-radius: var(--r-card); background: var(--gray); padding: var(--s-8) var(--s-7); display: grid; gap: var(--s-3); align-content: start; }
+  .side .amount { font-size: var(--t-section); letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .src { font-size: var(--t-15); color: var(--ink-2); }
+  .src a { text-underline-offset: 3px; }
+  .after { margin-top: var(--s-7); font-size: var(--t-18); line-height: var(--lh-18); }
+  @media (max-width: 760px) { .versus { grid-template-columns: 1fr; } }
+
+  /* 4 how */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-5); margin-top: var(--s-8); }
+  .step { display: grid; gap: var(--s-4); align-content: start; }
+  .step .shot { position: relative; aspect-ratio: 1; border-radius: var(--r-card); overflow: hidden; background: var(--gray); }
+  .step .shot > img { width: 100%; height: 100%; object-fit: cover; }
+  .step .n { color: var(--ink-2); }
+  .chips { position: absolute; left: var(--s-5); right: var(--s-5); bottom: var(--s-5); display: grid; gap: var(--s-2); }
+  .chip { display: flex; align-items: center; gap: var(--s-3); background: var(--surface); border-radius: var(--r-pill); height: 40px; padding: 0 var(--s-4) 0 8px; box-shadow: var(--shadow-soft); font-size: var(--t-15); }
+  .chip img { width: 20px; height: 20px; }
+  .chip .tag { margin-left: auto; }
+  .more { font-size: var(--t-15); text-underline-offset: 3px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+
+  /* 5 proof */
+  .proof { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-5); margin-top: var(--s-8); }
+  .num { border-top: 1px solid var(--rule); padding-top: var(--s-5); height: 128px; display: grid; gap: var(--s-2); align-content: start; }
+  .num .v { font-size: var(--t-section); letter-spacing: -0.02em; line-height: 1.1; color: var(--ink-disabled); }
+  @media (max-width: 760px) { .proof { grid-template-columns: 1fr 1fr; } }
+
+  /* 6 buying */
+  .worth { margin: var(--s-8) auto 0; max-width: 640px; border-radius: var(--r-card); background: var(--gray); padding: var(--s-6); display: grid; gap: var(--s-5); }
+  .ask { display: flex; gap: var(--s-2); background: var(--surface); border-radius: var(--r-pill); padding: 4px 4px 4px var(--s-5); }
+  .ask input { flex: 1; min-width: 0; border: 0; background: transparent; font: var(--w-text) var(--t-15)/1 var(--font-text); color: var(--ink); padding: 0; }
+  .ask input:focus-visible { box-shadow: none; outline: none; }
+  .ask:focus-within { box-shadow: var(--focus-ring); }
+
+  /* 7 close */
+  .faq { max-width: 720px; margin: var(--s-8) auto 0; }
+  .faq details { border-top: 1px solid var(--rule); padding-block: var(--s-5); }
+  .faq details:last-child { border-bottom: 1px solid var(--rule); }
+  .faq summary { cursor: pointer; font-size: var(--t-18); line-height: var(--lh-18); list-style: none; display: flex; justify-content: space-between; gap: var(--s-4); }
+  .faq summary::after { content: "+"; color: var(--ink-2); }
+  .faq details[open] summary::after { content: "−"; }
+  .faq p { margin-top: var(--s-3); color: var(--ink-2); max-width: 56ch; }
+  footer { padding-block: var(--s-9) var(--s-8); }
+  .pages { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3) var(--s-5); padding-bottom: var(--s-9); border-bottom: 1px solid var(--rule); }
+  .pages a { text-decoration: none; } .pages a:hover { color: var(--ink-2); }
+  .big { font: var(--w-display) 86.5px/1 var(--font-display); letter-spacing: -0.01em; margin-top: var(--s-8); }
+  @media (max-width: 760px) { .pages { grid-template-columns: 1fr 1fr; } .big { font-size: 50px; } }
+
+  /* sections arrive once as they scroll in (Art. 11, Website) */
+  @supports (animation-timeline: view()) {
+    .reveal { animation: arrive linear both; animation-timeline: view(); animation-range: entry 10% entry 60%; }
+    @keyframes arrive { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+  }
+  @media (prefers-reduced-motion: reduce) { .field, .reveal { animation: none; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<main>
+  <!-- 1. Hero: what it is in three seconds. The switch changes the promise and the button, nothing else. -->
+  <section class="hero">
+    <header>
+      <div class="wrap">
+        <a class="wordmark" href="#">secondhand</a>
+        <nav aria-label="Pages">
+          <a href="#how">How it works</a><a href="#fees">Sites and fees</a><a href="#data">The data</a><a href="#faq">FAQ</a>
+        </nav>
+        <a class="signin" href="#">Sign in</a>
+      </div>
+    </header>
+    <div>
+      <div class="field center" data-field>
+        <div class="switch" role="group" aria-label="I am">
+          <button type="button" aria-pressed="true" data-mode="sell">Selling</button>
+          <button type="button" aria-pressed="false" data-mode="buy">Buying</button>
+        </div>
+        <h1 class="hero-t">Your second hand, for everything secondhand.</h1>
+        <p class="lead" id="promise">Take one photo. It's priced, posted on five sites and sold for you.</p>
+        <div class="act">
+          <a class="pill glow" id="try" href="#">Try it</a>
+          <div class="logos" aria-label="Posts to">
+            <img src="../../../assets/platforms/square/ebay.png" alt="eBay">
+            <img src="../../../assets/platforms/square/depop.png" alt="Depop">
+            <img src="../../../assets/platforms/square/poshmark.png" alt="Poshmark">
+            <img src="../../../assets/platforms/square/mercari.png" alt="Mercari">
+            <img src="../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. The scene: one wide photo of a move, the product's cards inside it, one per state color. -->
+  <section class="scene" aria-label="What it looks like">
+    <div class="wrap">
+      <div class="panel reveal">
+        <div class="spot" data-item>
+          <img src="../../../assets/demo-items/brass-lamp.jpg" alt="Brass desk lamp with a cream shade on a wooden desk">
+          <div class="float card" data-part="scene-card">
+            <div class="row"><span class="tag live">Live</span><span class="logos"><img src="../../../assets/platforms/square/ebay.png" alt="eBay"><img src="../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace"><img src="../../../assets/platforms/square/mercari.png" alt="Mercari"></span></div>
+            <p class="why" data-fill="text">Brass desk lamp, posted on 3 sites</p>
+          </div>
+        </div>
+        <div class="spot" data-item>
+          <img src="../../../assets/demo-items/carhartt-jacket.jpg" alt="Worn brown Carhartt Detroit jacket laid flat on a wood floor">
+          <div class="float card need" data-part="scene-card">
+            <div class="row"><span class="tag need">Offer</span><img src="../../../assets/platforms/square/depop.png" alt="Depop" width="20" height="20"><span class="keep" data-fill="amount">You keep $77.35</span></div>
+            <p class="why" data-fill="text">A buyer offered $85. Your lowest is $70.</p>
+            <div class="acts"><button class="pill small" type="button">Accept $85</button><button class="ghost" type="button">Counter $92</button></div>
+          </div>
+        </div>
+        <div class="spot" data-item>
+          <img src="../../../assets/demo-items/ikea-chair.jpg" alt="Light wood chair in the corner of a dorm room">
+          <div class="float card" data-part="scene-card">
+            <div class="row"><span class="tag sold">Sold</span><img class="logo-s" src="../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace" width="20" height="20"></div>
+            <p class="why" data-fill="text">Wood chair. Pickup today at 6.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Why: the problem in one case. Source: research/cross-cutting/ben/pitch-evidence.md -->
+  <section class="center" aria-labelledby="why-t">
+    <div class="wrap reveal">
+      <h2 class="section-t" id="why-t">A $20 shirt pays you $3.</h2>
+      <div class="versus">
+        <div class="side">
+          <p>Send it to a consignment bag</p>
+          <p class="amount">$3</p>
+          <p class="src">ThredUp pays 15% of a $20 sale. <a href="https://www.thredup.com/cleanout/guide#earnings">Their table</a></p>
+        </div>
+        <div class="side">
+          <p>Sell it yourself on eBay</p>
+          <p class="amount">$16.88</p>
+          <p class="src">After fees, if you shoot, write, price, post, answer and ship it. <a href="https://www.ebay.com/help/selling/fees-credits-invoices/selling-fees?id=4822">Their fees</a></p>
+        </div>
+      </div>
+      <p class="after">secondhand does the second column's work for you.</p>
+    </div>
+  </section>
+
+  <!-- 4. How: the simplest version of the product. Each step opens How it works. -->
+  <section class="center" id="how" aria-labelledby="how-t">
+    <div class="wrap">
+      <h2 class="section-t reveal" id="how-t">One photo in. Money out.</h2>
+      <div class="steps" style="text-align:left">
+        <div class="step reveal">
+          <div class="shot" data-item><img src="../../../assets/demo-items/real/marquette-tee/01_cover.jpg" alt="Gold Marquette 74 tee flat on concrete"></div>
+          <p class="n">1</p><p class="feature-t">Take a photo. It reads the tag and the flaws.</p>
+        </div>
+        <div class="step reveal">
+          <div class="shot" data-item><img src="../../../assets/demo-items/real/chico-hoodie/01_cover.jpg" alt="Faded crimson Chico State hoodie flat on concrete">
+            <div class="chips">
+              <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../assets/platforms/square/ebay.png" alt="eBay"><span>eBay</span><span class="tag live">Live</span></div>
+              <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../assets/platforms/square/depop.png" alt="Depop"><span>Depop</span><span class="tag live">Live</span></div>
+              <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../assets/platforms/square/poshmark.png" alt="Poshmark"><span>Poshmark</span><span class="tag live">Live</span></div>
+            </div>
+          </div>
+          <p class="n">2</p><p class="feature-t">It's priced from what sold and posted everywhere.</p>
+        </div>
+        <div class="step reveal">
+          <div class="shot" data-item><img src="../../../assets/demo-items/real/carhartt-pants/01_cover.jpg" alt="Faded black Carhartt work pants flat on concrete">
+            <div class="chips"><div class="chip" data-part="site-chip" data-fit="content"><span class="tag need">Needs you</span><span>Ship by Monday</span></div></div>
+          </div>
+          <p class="n">3</p><p class="feature-t">Buyers are handled. You decide the few things that matter.</p>
+        </div>
+      </div>
+      <p style="margin-top:var(--s-7)"><a class="more" href="#">How it decides on its own, and when it asks you</a></p>
+    </div>
+  </section>
+
+  <!-- 5. Proof: measured on our own runs. Empty until the benchmark lands; never a made-up number (Art. 12.6). -->
+  <section class="center" id="data" aria-labelledby="proof-t">
+    <div class="wrap reveal">
+      <h2 class="section-t" id="proof-t">Measured, not promised.</h2>
+      <div class="proof" style="text-align:left">
+        <div class="num" data-part="proof"><p class="v" data-fill="amount">–</p><p>From photo to live</p></div>
+        <div class="num" data-part="proof"><p class="v" data-fill="amount">–</p><p>Taken down everywhere after a sale</p></div>
+        <div class="num" data-part="proof"><p class="v" data-fill="amount">–</p><p>Sold prices checked for each price</p></div>
+        <div class="num" data-part="proof"><p class="v" data-fill="amount">–</p><p>Buyer messages answered for you</p></div>
+      </div>
+      <p style="margin-top:var(--s-7)"><a class="more" href="#">How we measure, and the data behind it</a></p>
+    </div>
+  </section>
+
+  <!-- 6. Buying: use it now. The example is spec/examples/buy.json (want_3ss, match mt_77). -->
+  <section class="center" aria-labelledby="buy-t">
+    <div class="wrap reveal">
+      <h2 class="section-t" id="buy-t">Know what it's worth before you pay.</h2>
+      <div class="worth" style="text-align:left">
+        <form class="ask" onsubmit="return false"><input aria-label="A link or what it is" placeholder="Paste a link or say what it is"><button class="pill small" type="submit">Check</button></form>
+        <div class="card" data-item data-part="match" data-fit="content" style="height:80px">
+          <div class="row"><img class="thumb" src="../../../assets/demo-items/carhartt-jacket.jpg" alt="Brown Carhartt Detroit jacket"><div style="min-width:0;flex:1"><p class="name" data-fill="title">Carhartt Detroit Jacket J97, XL</p><p class="keep" data-fill="amount">$72 on Mercari, $81.50 delivered</p></div><span class="tag fair">Fair</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Close: the doubt that's left. Answers follow spec/features/sold.md and the photo levels. -->
+  <section class="center" id="faq" aria-labelledby="faq-t">
+    <div class="wrap reveal">
+      <h2 class="section-t" id="faq-t">Questions</h2>
+      <div class="faq" style="text-align:left">
+        <details><summary>What if it sells on two sites at once?</summary><p>It comes down everywhere else as soon as one sells. If two buyers pay in the same minute, you pick which sale to keep, and we show what cancelling the other costs on that site.</p></details>
+        <details><summary>Will my photos be changed?</summary><p>Only if you choose it. True color uses no AI at all. Touch-ups are labeled, tags and flaws are never touched, and your original is always kept.</p></details>
+        <details><summary>Do I need an account on every site?</summary><p>No. Connect the ones you have. It posts where you're connected and tells you what you'd keep on each.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <nav class="pages" aria-label="More">
+      <a href="#how">How it works</a><a href="#fees">Sites and fees</a><a href="#data">The data</a><a href="#faq">FAQ</a>
+      <a href="#">Accounts and privacy</a><a href="#">Pricing</a><a href="#">Status</a><a href="#">About and what's next</a>
+    </nav>
+    <p class="big">secondhand</p>
+  </div>
+</footer>
+
+<script>
+  // The hero switch: one promise and one button per mode. Nothing else on the page changes.
+  const copy = {
+    sell: ['Take one photo. It’s priced, posted on five sites and sold for you.', 'Try it'],
+    buy: ['Paste any listing. See what it’s worth and what to pay.', 'Check a price'],
+  };
+  const promise = document.getElementById('promise'), tryIt = document.getElementById('try');
+  document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.switch button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    promise.style.opacity = 0;
+    setTimeout(() => { [promise.textContent, tryIt.textContent] = copy[b.dataset.mode]; promise.style.opacity = 1; }, 120);
+  }));
+</script>
+</body>
+</html>
