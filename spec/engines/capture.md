@@ -208,6 +208,14 @@ A question is data the UI renders with no logic of its own:
 
 **Where a fact came from.** Every `evidence` row the plan's facts rest on carries `data` ([product §3](../product.md#3-the-data-model)): `captured` for the person's own camera, the phone's reads of those frames and what they said in this capture; `live:<site>` only for a value read from a marketplace; `dataset:<name>` for a catalogue or released set behind a `lookup`; `example` for the seeded walks. A `captured` fact is real and is never counted as a site observation.
 
+### Studio asks
+
+The studio's plan ([jobs/studio/plan.py](../../jobs/studio/plan.py) `plan()`, run by `slides_run.py:run_item`) says what it still needs to make an item's slides: asks of type `cover`, `back`, `tag`, `graphic` (with a zone), `flaw` (with its kind and zone) and `measure` (with the measurement's name). They are one more source of questions, with the same contract and the same order, not a list beside it (read from `manifest.json` `plan.asks`, which keeps each ask's type and fields; Ben, [studio/55](../../.agents/team/packets/studio/55-slides-backend-for-nate.md)):
+- They count only after the person taps Generate (`state.studio.requested`); retouch is off unless they ask ([Nate](../../product/words.md#2026-11-14-nate-the-best-way-to-take-every-photo-tags-delayed-retouch-chosen-by-the-person)).
+- Then `studio` is one more target beside the linked sites, in `completeness` and in `unlocks`. It requires `dimensions` from a tape reading, meaning `measured` or `you_said`, never a lookup: "can only ai beautify if you have dimensions" (Ben, studio/55). A render's shape is checked against the tape within 8% (`BAND` in [jobs/studio/check.py](../../jobs/studio/check.py)); product/features-proof.md #3 says 20%, and Ben has been asked which holds. The code's 8% stands until he answers.
+- A `measure` ask is the `dimensions` question. Every other ask is a `shot` question with `reason: add`, `for: studio`, its `words` the ask's own text, and the zone or flaw kind carried in `shot`. Because the person asked for Generate, these count as required for the studio target and are never capped.
+- `ai_marked` from the manifest goes onto the item's photo rows, not into the plan (integration's join).
+
 ### Ready per site
 
 `completeness(rows, facts, sites, confirm_mode)` returns, for each linked site, `{ready, missing: [{field, state}]}` over the fields that site requires, using `known` and `formValue`. The planner computes `unlocks` with it, and the listing step must use the same function in place of its own check in `buildListing`, so capture and listing cannot disagree. A recalled item is never ready, whatever its fields.
