@@ -154,7 +154,7 @@ Every state a screen can show, decided once so no worker invents one. Fills take
 
 | Interaction | Black pill | Outline button | Gray button | Other |
 |---|---|---|---|---|
-| Pressed | `--ink-press` | `--gray` fill | `--gray-press` | Scale 0.98, `--t-feedback` |
+| Pressed | `--ink-press` | `--gray` fill | `--gray-press` | Scale 0.97, `--t-feedback`, as in [frontend-standard.md §3](../product/frontend-standard.md) |
 | Hover (web) | `--ink-press` | `--gray` fill | `--gray-press` | |
 | Focus | 2 px ink ring, 2 px white gap | same | same | Every control; never removed |
 | Selected | | | | Chips and segments: ink fill, white text (19.8:1). Tabs: the filled icon, ink, weight 500 (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)). Grid photos: 2 px ink ring and a check |
@@ -174,6 +174,27 @@ Every state carries its icon as well as its color (Ben, [round 6](../product/wor
 **Dark mode** comes later (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "plan dark mode for later", and "light vs dark should be exclusively color changes"). Light is standard. When it is built, nothing but color changes: only the page, the surfaces and the ink flip. The field, the fills and black text on color are the same in both modes, so the brand reads the same. Values are in `tokens.css`.
 
 The unread dot is the one colored mark allowed on white besides logos and brick, because the blue unread dot is what people already know from Mail and Messages ([words.md: familiar](../product/words.md)).
+
+#### Where color goes, and what separates (agent proposal, round 10; open in the [ledger](ledger.md) as R22 and R23)
+
+Ben, [round 9](../product/words.md#2026-11-15-round-9-picks): "the psychology analysis of it all and decision making should be engrained somewhere in the constitution and it should be backed by research", and "the design system needs to identify when things feel like they blend together". The sources and the measurements are in [brand-round-10.md](../research/cross-cutting/ben/brand-round-10.md).
+
+**Which color.** For anything new on a screen, ask in this order. The first yes decides.
+1. A photo or an amount: no color. The photo is the color and the amount is ink (E1).
+2. The one thing in this view that needs the person: the field (C2), one per view. Of several like things, the one that differs is the one remembered, and only while it is the only one (the isolation effect).
+3. A state of an item: its state fill, with its icon and its word. Mint, marigold, sky and brick follow signs people already know: go, look, information, stop. Lime for money is ours, so it never appears without its word.
+4. A kind of thing: pink or lilac, flat.
+5. Something the person can do: never a color. Black, then an outline, then gray (C4). Color says what a thing is, and black says what can be done.
+6. A failure: brick, always with its word and icon, because red does not mean stop in every culture.
+7. Anything else: white or gray.
+
+**What separates.**
+1. A surface is at least .04 from what it sits on, measured as the distance between the two colors in Oklab. Gray on white is .043.
+2. Tints sit on white only. On gray they are .023 to .047 away and differ in hue alone, which is the blending Ben saw. Fills may sit on gray (.10 and up).
+3. Separate with space first (Article 7.3), then one fill, then a hairline between rows of one list. Never a fill and a line on one edge.
+4. A photo carries a 1 px inner edge of `--rule`, because a pale photo on a white page has no edge of its own.
+5. Neighbors on the ring never carry two meanings in one view. Aqua sits .042 to .049 from mint and sky, and peach .036 from marigold, so aqua and peach are field colors only. If Ben says yes, the Category row in the table above becomes pink and lilac.
+6. A background that only groups needs no edge. Whatever a person must find in order to act follows the States rule: a word or an icon, never color alone.
 
 ### Article 6. Type
 
@@ -202,8 +223,9 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 4. **Tracking follows QOVES.** 0 up to 18 px; −0.015em at 36; −0.02em at 50 and up. The wordmark is −0.01em. None in Chinese, Japanese or Korean.
 5. **Sentence case everywhere.** No title case, no all caps except the platform's own logos.
 6. **Second phrase, not bold.** A heading may have a second phrase at black 65%, on white or gray. 21 px and up only.
-7. **Numbers that line up or change keep their width.** Set `tabular-nums` on an amount that changes in place or sits in a column, and nowhere else. The Neue Montreal file we have has no tabular figures: its digits are 346 to 620 units wide (read from the file on Ben's Mac, 2026-11-15). So [scripts/font-tnum.py](../scripts/font-tnum.py) adds them when the font is put in place: each digit gets a copy centered in a cell as wide as the zero, behind the `tnum` feature. Digits without the setting stay as drawn.
+7. **Numbers that line up or change keep their width.** Set `tabular-nums` on an amount that changes in place or sits in a column, and nowhere else. The Neue Montreal file we have has no tabular figures: its digits are 346 to 620 units wide (read from the file on Ben's Mac, 2026-11-15). So [scripts/font-tnum.py](../scripts/font-tnum.py) adds them when the font is put in place: each digit gets a copy centered in a cell as wide as the zero, behind the `tnum` feature. Digits without the setting stay as drawn. PP Neue Montreal 2.6, which is also on Ben's Mac, has tabular figures drawn by its designer ([the file note](../research/cross-cutting/ben/neue-montreal-file.md)); which file the app loads is open in the [ledger](ledger.md) as R24.
 8. **Sizes follow the person's text setting.** The sizes are the default-size values; on iOS they map to Dynamic Type (13 footnote, 15 subheadline, 18 body, 21 title2, 36 largeTitle) and grow with it. Line heights are ratios, so they grow too.
+9. **A size belongs to one face, and to one weight** (agent proposal, round 10; Ben, [round 9](../product/words.md#2026-11-15-round-9-picks): "text of the same size should end up being the same font and weight"). 21 and 36 are Clofie. 13, 15, 18 and 50 are the text face. The one exception is 15, where a button label is medium and a row is regular, as Apple sets Headline and Body at one size in two weights ([the sources](../research/cross-cutting/ben/brand-round-10.md)). Weight does not change with state. That argues against the medium label on the selected tab (L29), which is Ben's lock, so it is open in the [ledger](ledger.md) as R21.
 
 **Roles** (agent proposal; tokens in [tokens.css](tokens.css)):
 

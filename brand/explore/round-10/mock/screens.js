@@ -86,7 +86,7 @@
 
   window.SH = {
     screens: { today, sell, item: itemPage, sold },
-    parts: { tabs: cur => phone('strip', tabs(cur)) },
+    parts: { tabs: cur => phone('strip', tabs(cur)), tag },
     titles: { today: 'Today', sell: 'Sell', item: 'An item', sold: 'A sale' },
     // key, name, what it is, and the screens it shows on
     touches: [
