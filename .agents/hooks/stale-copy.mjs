@@ -19,8 +19,18 @@ function older(cwd, file, blob, before, otherSides) {
   return versions.slice(1).find(c => git(cwd, 'rev-parse', `${c}:${file}`) === blob) ?? '';
 }
 
+// The commits being merged in. When git merges without stopping, MERGE_HEAD does not exist yet as pre-merge-commit
+// runs; git names what it is merging in GIT_REFLOG_ACTION ("merge origin/main", "pull --no-rebase origin main").
+function mergedIn(cwd) {
+  const head = git(cwd, 'rev-parse', '-q', '--verify', 'MERGE_HEAD').split('\n').filter(Boolean);
+  if (head.length) return head;
+  const action = process.env.GIT_REFLOG_ACTION ?? '';
+  const refs = /^pull\b/.test(action) ? ['FETCH_HEAD'] : /^merge\b/.test(action) ? action.split(/\s+/).slice(1) : [];
+  return refs.map(r => git(cwd, 'rev-parse', '-q', '--verify', `${r}^{commit}`)).filter(Boolean);
+}
+
 export function staged(cwd) {
-  const merging = git(cwd, 'rev-parse', '-q', '--verify', 'MERGE_HEAD').split('\n').filter(Boolean);
+  const merging = mergedIn(cwd);
   return changed(cwd, '--cached')
     .map(file => ({ file, from: older(cwd, file, git(cwd, 'rev-parse', `:${file}`), 'HEAD', merging) })).filter(h => h.from);
 }
