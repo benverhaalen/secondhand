@@ -4,19 +4,21 @@
 
 /* Not locked. Ben: "Use them in mocks, lock later" (product/words.md, 2026-11-15). One line each, so a change is one edit. */
 .sh {
-  --r-box: var(--r-sheet);        /* R19: a box is 20, so a photo's 8 and the 12 around it share a center */
   --sky-strong: #57CDFE;          /* R18: the stronger step of sky (L .80, C .13), the anchor of the Home field */
   --field-depth: 50%;             /* R17: how much of the stronger step the anchor takes. Ben left the lab at 50 */
   --soft-1: 55%; --soft-2: 60%; --soft-3: 65%; --drift: 26s;   /* R17: softness and drift as Ben left the lab */
   --photo-edge: var(--rule);      /* agent proposal: a 1 px inner edge, so a pale photo cannot merge with the page */
-  --pill-h: var(--control-min);   /* buttons inside a box are 44. The bar at the foot of a moment is --button-h, 48 */
   --chip-h: 36px;                 /* a filter chip is 36 tall with a 44 touch area. Not in the tokens yet */
   --press: .97;
-  --tag-h: 24px; --tag-ic: 16px;  /* R27: a tag is 24 with a 16 icon, so the icon sits 4 from the top, the bottom and the near end */
-  --ship: var(--lilac); --ship-tint: var(--lilac-tint); --ship-deep: var(--lilac-deep);   /* R28: the color of "shipping" */
-  --paper-shadow: drop-shadow(0 1px 1px rgb(10 10 10 / .08)) drop-shadow(0 8px 20px rgb(10 10 10 / .07));   /* R31: the receipt is the one thing that lies on the page */
+  --ctl: var(--gray); --ctl-edge: 0 0 0 0 transparent;        /* a control that sits on the page: gray on a white page */
+  --ended-fill: var(--ink-2);     /* R30: an ended tag has to hold on a pale photo, so it is dark with white text */
+  --paper-shadow: drop-shadow(0 1px 1px var(--card-shade)) drop-shadow(0 6px 20px var(--card-shade));   /* the receipt is a card of paper: the card's shadow, drawn so it follows the torn foot */
 }
-.sh.ship-peach { --ship: var(--peach); --ship-tint: var(--peach-tint); --ship-deep: var(--peach-deep); }
+/* R29, what separates a card from the page. With no class: a white card on a white page, held by its shadow alone. */
+.sh.sep-tint { --page: #F1F3F5; --ctl: var(--surface); --ctl-edge: 0 0 0 1px var(--card-edge); }   /* white cards on a tinted page: dark mode's step, mirrored (1.11:1) */
+.sh.sep-gray .card:not(.field), .sh.sep-gray .notice { background: var(--gray); box-shadow: none; }                              /* round 10: a gray box, no shadow */
+.sh.sep-gray .card:not(.field) .pill.l2 { background: var(--surface); }
+.sh.sep-rows .card:not(.field), .sh.sep-rows .notice { background: none; box-shadow: none; border-radius: 0; padding-left: 0; padding-right: 0; border-top: var(--card-border); }   /* rows on white with a hairline (L16) */
 
 .sh { width: 390px; min-height: 844px; position: relative; overflow: hidden; flex: none; display: flex; flex-direction: column;
   background: var(--page); color: var(--ink); font: var(--w-regular) var(--t-15)/var(--lh-15) var(--font-text);
@@ -55,24 +57,41 @@
 .sh .h36 { font: var(--w-display) var(--t-36)/var(--lh-36) var(--font-display); letter-spacing: var(--tr-36); margin: 0; text-box: trim-both cap alphabetic; }
 .sh .a50 { font-size: var(--t-50); line-height: var(--lh-50); letter-spacing: var(--tr-50); }
 
-/* nav bar: the wordmark is centered whatever sits beside it (C1) */
-.sh .nav { height: var(--nav-h); flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 8px; position: relative; z-index: 4; }
-.sh .nav > :first-child { justify-self: start; }
-.sh .nav > :last-child { justify-self: end; }
+/* nav bar: the wordmark left, one 44 target right, in one 44 row (Art. 7.8). The icon's ink lines up with the gutter */
+.sh .nav { height: var(--nav-h); flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--s-2) 0 var(--gutter); position: relative; z-index: 4; }
+.sh .nav .ib { position: relative; }
+.sh .count { position: absolute; top: 2px; right: 0; min-width: var(--badge-h); height: var(--badge-h); padding: 0 var(--s-1); border-radius: var(--r-pill); background: var(--ink); color: var(--surface);
+  font-size: var(--t-13); line-height: var(--badge-h); font-weight: var(--w-medium); text-align: center; box-shadow: 0 0 0 2px var(--page); }
+.sh .wash { position: absolute; left: 0; right: 0; top: 0; height: var(--wash-h); background: var(--wash); z-index: 0; pointer-events: none; }
+.sh .a36 { font-size: var(--t-36); line-height: var(--lh-36); letter-spacing: var(--tr-36); }
+.sh .ink { color: var(--ink); }
 .sh .ic { width: 24px; height: 24px; display: block; flex: none; }
 .sh .ib { width: var(--control-min); height: var(--control-min); border: 0; border-radius: var(--r-pill); background: none; display: grid; place-items: center; cursor: pointer; flex: none;
   transition: transform var(--t-feedback) var(--ease-out), background-color var(--t-feedback); }
-.sh .ib.gray { background: var(--gray); }
-.sh .ib.white { background: var(--page); }
+.sh .ib.gray { background: var(--ctl); box-shadow: var(--ctl-edge); }
+.sh .ib.white { background: var(--surface); }
 .sh .ib:active { transform: scale(var(--press)); }
 .sh .ib.gray:active { background: var(--gray-press); }
 
-/* boxes: one fill is the edge, no line. Corners nest: 8 + 12 = 20. With rows on (R29) a box means "this needs you" and nothing else */
-.sh .bx { border-radius: var(--r-box); display: flex; flex-direction: column; }
-.sh .bx.gray { background: var(--gray); }
-.sh .bx.need { background: var(--marigold-tint); }
-.sh .row { display: flex; flex-direction: column; }
-.sh .row + .row { border-top: var(--card-border); }
+/* cards (Art. 7.8): one corner, one padding, two heights. A card lies on the page, so it has the card's shadow. The one on the field has none */
+.sh .card { border-radius: var(--r-card); padding: var(--card-pad); background: var(--surface); box-shadow: var(--shadow-card); display: flex; flex-direction: column; flex: none; position: relative; }
+.sh .card.dec { height: var(--card-decision-h); }
+.sh .card.item { height: var(--card-item-h); }
+.sh .card.field { box-shadow: none; color: var(--on-field); }
+.sh .card.field .i2 { color: var(--on-field-2); }
+.sh .between { justify-content: space-between; }
+.sh .thumb { position: relative; width: var(--photo-card); height: var(--photo-card); flex: none; display: block; }
+.sh .site { position: absolute; right: -4px; bottom: -4px; width: var(--site-badge); height: var(--site-badge); border-radius: var(--r-pill); border: 2px solid var(--surface); background: var(--surface); display: block; }
+.sh.sep-gray .card:not(.field) .site { border-color: var(--gray); }
+.sh.sep-rows .card:not(.field) .site { border-color: var(--page); }
+.sh .clock { display: inline-flex; align-items: center; gap: var(--s-1); color: var(--ink-2); }
+.sh .card.field .clock { color: var(--on-field-2); }
+.sh .clock .ic { width: var(--tag-icon); height: var(--tag-icon); }
+.sh .clock .ic path, .sh .clock .ic circle { stroke-width: 1.9; }
+/* a notice: one row that leads somewhere, and the chevron says so */
+.sh .notice { height: var(--notice-h); flex: none; border-radius: var(--r-pill); padding: 0 var(--s-3) 0 var(--s-4); display: flex; align-items: center; gap: var(--s-3); background: var(--surface); box-shadow: var(--shadow-card);
+  border: 0; width: 100%; text-align: start; cursor: pointer; }
+.sh .notice .chev { width: 20px; height: 20px; color: var(--ink-2); }
 .sh .field { color: var(--on-color); position: relative;
   background: radial-gradient(at 0% 0%, color-mix(in oklab, var(--sky), var(--sky-strong) var(--field-depth)), transparent var(--soft-1)),
               radial-gradient(at 30% 100%, var(--mint), transparent var(--soft-2)),
@@ -83,53 +102,55 @@
 /* photos lead (C3). The inner edge is a proposal */
 .sh .ph { display: block; object-fit: cover; flex: none; border-radius: var(--r-photo); outline: 1px solid var(--photo-edge); outline-offset: -1px; background: var(--gray); }
 .sh .p72 { width: var(--photo-card); height: var(--photo-card); }
+.sh .h72 { min-height: var(--photo-card); }
 .sh .logo { width: 20px; height: 20px; display: block; flex: none; }   /* square, as the site's own file is (C5: unaltered) */
-.sh .slot { width: var(--photo-card); height: var(--photo-card); border-radius: var(--r-photo); background: var(--page); display: grid; place-items: center; flex: none; }   /* where a photo would be, for a thing with no photo */
+.sh .slot { width: var(--photo-card); height: var(--photo-card); border-radius: var(--r-photo); background: var(--surface); display: grid; place-items: center; flex: none; }   /* where a photo would be, for a thing with no photo */
 .sh .slot .logo { width: 40px; height: 40px; }
 .sh .logos { display: flex; gap: var(--s-1); }
 
-/* buttons. Three levels: 1 the black pill with the glow (C4), 2 a light fill, 3 plain. .out is round 10's outline, kept for the side by side */
-.sh .pill { height: var(--pill-h); padding: 0 var(--s-4); border: 0; border-radius: var(--r-pill); background: var(--ink); color: var(--page);
+/* buttons. The act is the black pill with the glow (C4). Every other button is a light fill: gray in a white card, white at 72% on the field.
+   .out is round 10's black outline, kept for the side by side (R33). In a card a button is 40 tall in a 44 touch area */
+.sh .pill { height: var(--pill-card-h); padding: 0 var(--pill-card-pad); border: 0; border-radius: var(--r-pill); background: var(--ink); color: var(--surface); position: relative;
   font: var(--w-medium) var(--t-15)/var(--lh-15) var(--font-text); white-space: nowrap; cursor: pointer; box-shadow: var(--pill-glow);
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
   transition: transform var(--t-feedback) var(--ease-out), box-shadow var(--t-feedback), background-color var(--t-feedback); }
+.sh .pill::after { content: ""; position: absolute; inset: -2px 0; }
 .sh .pill:active { transform: scale(var(--press)); background: var(--ink-press); box-shadow: none; }
-.sh .pill:has(> .ic:first-child):not(.dot) { padding-left: var(--s-3); }   /* an icon end is one step less than a text end */
+.sh .pill:has(> .ic:first-child):not(.dot) { padding-left: var(--s-4); }   /* an icon end is one step less than a text end */
 .sh .pill.out { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--outline); }
+.sh .card.field .pill.out, .sh.sold .pill.out { color: var(--on-field); }
 .sh .pill.out:active { background: var(--gray); }
-.sh .pill.l2 { background: var(--gray); color: var(--ink); box-shadow: none; }          /* on white, a light fill is gray */
+.sh .pill.l2 { background: var(--gray); color: var(--ink); box-shadow: none; }
 .sh .pill.l2:active { background: var(--gray-press); }
-.sh .bx .pill.l2, .sh.sold .pill.l2 { background: var(--page); }                         /* on a tint or the field, it is white */
-.sh .bx .pill.l2:active, .sh.sold .pill.l2:active { background: var(--gray); }
-.sh .pill.l3 { background: transparent; color: var(--ink); box-shadow: none; }
-.sh .pill.l3:active { background: rgb(10 10 10 / .06); }
+.sh .card.field .pill.l2, .sh.sold .pill.l2 { background: var(--sec-on-field); color: var(--on-field); }
+.sh .card.field .pill.l2:active, .sh.sold .pill.l2:active { background: var(--surface); }
 .sh .pill.tall { height: var(--button-h); }
-.sh .pill.dot { width: var(--pill-h); padding: 0; }
+.sh .pill.tall::after { inset: 0; }
+.sh .pill.dot { width: var(--pill-card-h); padding: 0; }
 .sh .pill.dot.tall { width: var(--button-h); }
 .sh button:focus-visible { outline: 0; box-shadow: var(--focus-ring); }
 
 /* states (Art. 5): a fill, an icon and a word. The icon takes the hue's deep step (R18, B: not locked).
-   Colors follow Ben's round 10 note: live is sky, sold is mint, needs you is marigold, paid is lime. Shipping is R28. */
+   Colors follow Ben: live is sky, sold is mint, needs you is marigold, paid is lime (L39), and shipping is mint (L45). */
 .sh .tag { display: inline-flex; align-items: center; gap: var(--s-1); height: var(--tag-h); padding: 0 var(--s-2) 0 var(--s-1); border-radius: var(--r-pill); flex: none;
   font-size: var(--t-13); line-height: var(--lh-13); white-space: nowrap; background: var(--c, var(--gray)); color: var(--ink); }
-.sh .tag .ic { width: var(--tag-ic); height: var(--tag-ic); color: var(--d, currentColor); }
-.sh .tag .ic path, .sh .tag .ic circle { stroke-width: 1.9; }      /* 1.5 at 24 is 1.0 at 16; 1.9 keeps the stroke near 1.25 px */
+.sh .tag .ic { width: var(--tag-icon); height: var(--tag-icon); color: var(--d, currentColor); }
+.sh .tag .ic path, .sh .tag .ic circle { stroke-width: 1.9; }      /* 1.5 at 24 is .75 px at 12; 1.9 keeps the stroke near 1 px (Art. 10.1) */
 .sh .s-live { --c: var(--sky); --t: var(--sky-tint); --d: var(--sky-deep); }
 .sh .s-need { --c: var(--marigold); --t: var(--marigold-tint); --d: var(--marigold-deep); }
-.sh .s-sold { --c: var(--mint); --t: var(--mint-tint); --d: var(--mint-deep); }
+.sh .s-sold, .sh .s-ship, .sh .s-shipby { --c: var(--mint); --t: var(--mint-tint); --d: var(--mint-deep); }      /* anything about shipping a sold item is green (L45) */
 .sh .s-paid { --c: var(--lime); --t: var(--lime-tint); --d: var(--lime-deep); }
-.sh .s-ship { --c: var(--ship); --t: var(--ship-tint); --d: var(--ship-deep); }
-.sh .s-fail { --c: var(--brick); --t: var(--brick); --d: var(--page); color: var(--page); }      /* R30: failed is the one loud tag */
-.sh .s-ended { --c: var(--gray-press); --t: var(--gray-press); }                                   /* R30: ended is a darker gray, and its photo is washed */
-.sh .s-draft { --c: var(--page); --t: var(--page); box-shadow: inset 0 0 0 1px var(--rule); }
+.sh .s-fail { --c: var(--brick); --t: var(--brick); --d: var(--surface); color: var(--surface); }      /* R30: failed is the one loud tag */
+.sh .s-ended { --c: var(--ended-fill); --t: var(--ended-fill); --d: var(--surface); color: var(--surface); }   /* R30: ended is dark gray with white text, and its photo loses its color */
+.sh .s-draft { --c: var(--surface); --t: var(--surface); box-shadow: inset 0 0 0 1px var(--rule); }
 .sh.old-states .s-fail { --c: var(--brick-tint); --t: var(--brick-tint); --d: var(--brick); color: var(--ink); }
 .sh.old-states .s-ended { --c: var(--gray); --t: var(--gray); color: var(--ink-2); }
 .sh.old-states .s-draft { color: var(--ink-2); }
-.sh .tag.white { background: var(--page); }                      /* on the field a state is white, so it does not vanish (C2) */
+.sh .tag.white { background: var(--surface); }                      /* on the field a state is white, so it does not vanish (C2) */
 .sh .shot { position: relative; display: block; }
-.sh .shot .tag { position: absolute; left: var(--s-2); top: var(--s-2); background: linear-gradient(120deg, var(--t), var(--c)); }
+.sh .shot .tag { position: absolute; left: var(--s-3); top: var(--s-3); background: linear-gradient(120deg, var(--t), var(--c)); }
 .sh .shot .tag.s-draft, .sh .shot .tag.s-ended, .sh .shot .tag.s-fail { background: var(--c); }   /* no gradient where there is no tint */
-.sh:not(.old-states) .shot.over .ph { opacity: .55; }                                               /* an ended item's photo is washed toward the page */
+.sh:not(.old-states) .shot.over .ph { filter: grayscale(1); }                                       /* an ended item's photo loses its color: color is for what is alive */
 
 /* tab bar: places only. The selected tab is the filled icon in ink, and nothing under it. The label's weight never changes (L29, Ben round 10) */
 .sh .tabs { position: absolute; left: 0; right: 0; bottom: 0; height: var(--tab-h); background: var(--page); border-top: var(--card-border);
@@ -140,23 +161,24 @@
 .sh .tab[aria-current] .ic > :first-child { fill: currentColor; }
 .sh .tab[aria-current] .ic > :not(:first-child) { stroke: var(--page); }
 .sh .tab.add { color: var(--ink); }
-.sh .tab.add i { width: var(--control-min); height: var(--control-min); border-radius: var(--r-pill); background: var(--gray); display: grid; place-items: center; }
+.sh .tab.add i { width: var(--control-min); height: var(--control-min); border-radius: var(--r-pill); background: var(--ctl); box-shadow: var(--ctl-edge); display: grid; place-items: center; }
 .sh .badge { position: absolute; width: 8px; height: 8px; border-radius: var(--r-pill); background: var(--marigold); margin: -22px 0 0 22px; }
 
 /* chips. A state chip is the state's tag at chip size: gray at rest, the state's fill when chosen (R32). "All" has no state, so it is ink.
    A facet chip (store, type) opens a list, so it ends in a chevron */
-.sh .chips { display: flex; gap: var(--s-2); overflow: hidden; }
-.sh .chip { height: var(--chip-h); padding: 0 var(--s-4); border: 0; border-radius: var(--r-pill); background: var(--gray); color: var(--ink); flex: none; position: relative;
+.sh .chips { display: flex; gap: var(--s-2); overflow: hidden; margin-right: calc(var(--gutter) * -1);     /* the row runs off the screen's edge and fades, so it reads as more, not as a clipped shape */
+  -webkit-mask: linear-gradient(to right, #000 calc(100% - 48px), transparent); mask: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
+.sh .chip { height: var(--chip-h); padding: 0 var(--s-4); border: 0; border-radius: var(--r-pill); background: var(--ctl); box-shadow: var(--ctl-edge); color: var(--ink); flex: none; position: relative;
   font: var(--w-regular) var(--t-15)/var(--lh-15) var(--font-text); cursor: pointer; display: inline-flex; align-items: center; gap: var(--s-1); }
 .sh .chip::after { content: ""; position: absolute; inset: -4px 0; }
 .sh .chip .ic { width: 20px; height: 20px; }
 .sh .chip:has(> .ic:first-child) { padding-left: var(--s-2); }
 .sh .chip:has(> .ic:last-child) { padding-right: var(--s-2); }
-.sh .chip[aria-pressed="true"] { background: var(--c, var(--ink)); color: var(--page); }
+.sh .chip[aria-pressed="true"] { background: var(--c, var(--ink)); color: var(--surface); box-shadow: none; }
 .sh .chip[aria-pressed="true"][class*="s-"] { color: var(--ink); }
 .sh .chip[aria-pressed="true"] .ic { color: var(--d, currentColor); }
-.sh .chip.s-fail[aria-pressed="true"] { color: var(--page); }
-.sh .chip.s-draft[aria-pressed="true"] { background: var(--ink); color: var(--page); box-shadow: none; }
+.sh .chip.s-fail[aria-pressed="true"] { color: var(--surface); }
+.sh .chip.s-draft[aria-pressed="true"] { background: var(--ink); color: var(--surface); box-shadow: none; }
 
 /* Sell: the photo grid (L12, L23), two columns at the airy size */
 .sh .grid { display: flex; gap: var(--s-4); align-items: flex-start; }
@@ -169,12 +191,12 @@
 .sh .rows > .ln:last-child { border-bottom: var(--card-border); }
 
 /* the sum is a receipt (Ben, round 10: "i like the B. the receipt thing"): white paper with dotted leaders and a torn foot.
-   It is the one thing that lies on the page, so it is the one thing with a shadow (R31) */
+   It is a card of paper, so it takes the card's shadow (Art. 9.2) */
 .sh .sum .ln { align-items: baseline; }
 .sh .sum .lead { flex: 1; border-bottom: 1.5px dotted var(--ink-disabled); margin: 0 var(--s-2); transform: translateY(-4px); }
 .sh .sum hr { border: 0; border-top: 1.5px dashed var(--ink-disabled); margin: 0; }
 .sh .slip { filter: var(--paper-shadow); }
-.sh .paper { display: flex; flex-direction: column; background: var(--page); padding: var(--s-4) var(--s-4) var(--s-6);
+.sh .paper { display: flex; flex-direction: column; background: var(--surface); padding: var(--s-4) var(--s-4) var(--s-6);
   -webkit-mask: conic-gradient(from -45deg at bottom, transparent, #000 1deg 89deg, transparent 90deg) 50% / 12px 100%; mask: conic-gradient(from -45deg at bottom, transparent, #000 1deg 89deg, transparent 90deg) 50% / 12px 100%; }
 .sh.sold .slip { filter: none; }
 /* a line that opens: the common person sees one number, and the rest is one tap away */

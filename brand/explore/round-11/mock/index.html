@@ -26,22 +26,24 @@
 <script src="icons.js"></script>
 <script src="screens.js"></script>
 <script>
-  // For a screenshot: ?only=today shows one screen with nothing around it. ?o=now is round 10 as Ben saw it; ?o=rows,fill,one,more turns
-  // choices on by name (the default is rows, fill and one). ?touches=hand,tags turns touches on. ?ship=peach, ?sel=live and ?from=4 are for Sell.
+  // For a screenshot: ?only=today shows one screen with nothing around it. ?o=now is round 10 as Ben saw it. ?sep=tint|white|gray|rows picks
+  // what separates a card, and ?o=fill,one,more turns choices on by name (the default is tint, fill and one). ?touches=hand,tags turns touches on.
+  // ?sel=live and ?from=4 are for Sell. ?states=old draws failed and ended as round 10 did.
   const q = new URLSearchParams(location.search), only = q.get('only'), list = k => new Set((q.get(k) || '').split(',').filter(Boolean));
-  const on = list('touches'), o = q.has('o') ? Object.fromEntries(SH.choices.map(([k]) => [k, list('o').has(k)])) : { ...SH.NEXT };
-  let ship = q.get('ship') || 'lilac';
+  const on = list('touches'), o = q.get('o') === 'now' ? { ...SH.NOW } : q.has('o') ? { ...Object.fromEntries(SH.choices.map(([k]) => [k, list('o').has(k)])), sep: SH.NEXT.sep } : { ...SH.NEXT };
+  if (q.get('sep')) o.sep = q.get('sep');
   const wall = document.getElementById('wall'), bar = document.getElementById('bar');
   if (only) document.body.classList.add('bare');
   const draw = () => {
     wall.innerHTML = Object.entries(SH.screens).filter(([k]) => !only || only === k).map(([k, make]) =>
       `<figure>${k === 'sell' ? make(o, q.get('sel') || 'all', Number(q.get('from') || 0)) : make(o)}<figcaption>${SH.titles[k]}</figcaption></figure>`).join('');
-    document.querySelectorAll('.sh').forEach(s => { SH.touches.forEach(([k]) => s.classList.toggle('t-' + k, on.has(k))); s.classList.toggle('ship-peach', ship === 'peach'); });
+    document.querySelectorAll('.sh').forEach(s => { SH.touches.forEach(([k]) => s.classList.toggle('t-' + k, on.has(k))); s.classList.toggle('old-states', q.get('states') === 'old'); });
   };
-  const button = (label, pressed, tap) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.setAttribute('aria-pressed', pressed); b.onclick = () => tap(b); bar.append(b); };
+  const button = (label, pressed, tap) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.setAttribute('aria-pressed', pressed); b.onclick = () => tap(b); bar.append(b); return b; };
+  const seps = SH.seps.map(([k, name]) => button(name, o.sep === k, () => { o.sep = k; seps.forEach((b, i) => b.setAttribute('aria-pressed', SH.seps[i][0] === k)); draw(); }));
+  bar.append(document.createElement('i'));
   SH.choices.forEach(([k, name]) => button(name, o[k], b => { o[k] = !o[k]; b.setAttribute('aria-pressed', o[k]); draw(); }));
   bar.append(document.createElement('i'));
-  button('Shipping in peach', ship === 'peach', b => { ship = ship === 'peach' ? 'lilac' : 'peach'; b.setAttribute('aria-pressed', ship === 'peach'); draw(); });
   SH.touches.forEach(([k, name]) => button(name, on.has(k), b => { on.has(k) ? on.delete(k) : on.add(k); b.setAttribute('aria-pressed', on.has(k)); draw(); }));
   button('Show measurements', false, b => b.setAttribute('aria-pressed', document.body.classList.toggle('measure')));
   draw();
