@@ -82,7 +82,7 @@ export default function Ship() {
   if (!mine || asked === 'empty') {
     return (
       <Screen name="ship" state="empty" skip={SKIP} nav={nav}>
-        <EmptyState title="Nothing to ship" line="This item has no sale waiting for a label." action={{ id: 'ship-gone', label: 'Open the item', onPress: () => router.replace(`/item/${p.id}` as Href) }} />
+        <EmptyState title="Nothing to ship" action={{ id: 'ship-gone', label: 'Open the item', onPress: () => router.replace(`/item/${p.id}` as Href) }} />
       </Screen>
     );
   }
