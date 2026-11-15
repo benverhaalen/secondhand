@@ -19,7 +19,7 @@ The code is a set of pure functions in `jobs/photo/`. Nothing under `app/` calls
 | Marks at export | `export.py` `export()`, `ai_marked()` | Built. `test_gates.py` covers it. |
 | Learning | `learn.py` `observe()`, `fold_gain()`, `fold_beta()`, guards | Built for pass and accept rates, gain and beta. Not built: the part-weight fit and the style counts (P10). Uses the fold in `jobs/capture/learn.py`. `test_learn.py` passes. |
 | The mask | none | No code produces an item mask. `score()` and `crop_for()` take one as an argument (P2). |
-| The caller | none | No route or job runner under `app/` calls any of it. A `photo_score` job result is read by `applyJobResult` in `app/src/edge/api/captures.ts` ([capture §5](capture.md#5-results-from-the-jobs-capturests-applyjobresult)), and no runner sends one (P1). |
+| The caller | none | No route or job runner under `app/` calls any of it. A `photo_score` job result is read by `applyJobResult` in `app/src/edge/api/captures.ts` ([capture §5](capture.md#5-results-from-the-jobs)), and no runner sends one (P1). |
 | The per-site plan | none | `order.plan()` returns slots, drops and `flaw_in_text`. Nothing joins the crop, the export size or the route offers into the plan shape in section 2 (P9). |
 
 ## 2. What it decides
@@ -36,7 +36,7 @@ The code is a set of pure functions in `jobs/photo/`. Nothing under `app/` calls
 
 The target plan, one per site, is `{site, slots: [{photo_id, version_id, slot, crop, export_px, reason}], dropped: [{photo_id, reason}], flaw_in_text, route_offers: [...]}`. Reasons are codes (`cover_true_color`, `hero_chosen`, `improved_chosen`, `coverage`, `flaw_kept`, `extra`, `over_cap`, `near_duplicate`, `lower_pick`, `blurred`, `replaced_by_improved`, `light_already_even`, `protected_role`, `best_value`) that any screen turns into words. The codes are the ones in the code; the earlier page's `cover_true_color` and `flaw_kept` stand.
 
-Inputs come from capture ([capture §5](capture.md#5-results-from-the-jobs-capturests-applyjobresult)), item research (confirmed flaws with boxes and severity, tag text), `platform-fit.json` (per-site cap, cover ratio, cover pixels: eBay 24, Facebook 10, Depop 8, Poshmark 16, Mercari 12, OfferUp 10, Grailed 25), and the person's Generate tap and level.
+Inputs come from capture ([capture §5](capture.md#5-results-from-the-jobs)), item research (confirmed flaws with boxes and severity, tag text), `platform-fit.json` (per-site cap, cover ratio, cover pixels: eBay 24, Facebook 10, Depop 8, Poshmark 16, Mercari 12, OfferUp 10, Grailed 25), and the person's Generate tap and level.
 
 ## 3. The calculation
 
@@ -45,7 +45,7 @@ For each step: does the code do it, and where.
 1. **The pool.** Built in `pool.keep()`.
    - Bin is `role`. A `flaw` frame bins by `flaw_id`, so two flaws never merge (`test_two_flaw_ids_both_kept_even_if_look_alike`).
    - A frame is dropped as `blurred`, and its id goes to `retake`, when its Laplacian variance is under `photo_blur_ratio` times the best in its bin, or under `photo_blur_floor`. A lone blurred frame is still dropped (`test_below_floor_blurred_even_when_alone`). The page did not have this rule; the code is right, and it sends the person back to retake ([photo-expert-session §3](../../research/cross-cutting/nate/photo-expert-session.md)).
-   - The pick is `0.5 sharpness + 0.2 exposure + 0.2 coverage + 0.1 score/100`. It matches card 21. One winner per bin; the rest are `near_duplicate` or `lower_pick`.
+   - The pick is `0.5 sharpness + 0.2 exposure + 0.2 coverage + 0.1 score/100`. The code sums the raw weighted values, not ranks; card 21 says "weighted sum of ranks", so card or code changes. One winner per bin; the rest are `near_duplicate` or `lower_pick`.
    - A near-duplicate is a dHash Hamming distance of at most `photo_dup_bits`, or an embedding cosine above `photo_dup_cos`. The hash is not in the page; it is the cheap first test ([photo-expert-session §3.1](../../research/cross-cutting/nate/photo-expert-session.md)).
    - Duplicates are tested inside a bin only (`test_dedupe_never_crosses_bins`). The old page said "two kept frames" anywhere; the code is right, because a front and a back that look alike are two coverage photos.
    - Not in the code: the embedding model, the dHash and `lap_var` inputs are supplied by the caller. `dhash()` exists. Nothing computes the embedding.
@@ -75,7 +75,7 @@ For each step: does the code do it, and where.
    - Levels 1 to `min(ceiling, 2)`. Level 0 for tag, care label, flaw, screenshot, serial and `use == raw`, with reason `protected_role`.
    - `n` is the smallest count with `1 - (1 - p)^n >= photo_route_target`, at most `photo_route_n_max`.
    - `value = gain x weight x beta x price_estimate - price_per_call x n`, weight 1.0 for the cover and 0.3 for the rest. Matches the page and the worked example below. The highest positive value wins; none positive gives level 0, `light_already_even`.
-   - `p` is the Beta mean from `rates`, prior Beta(2, 2). Not in the page: a route with fewer than `photo_explore_trials` trials is tried at mean plus one standard deviation, so a demoted route does not starve (`test_route_that_fails_is_demoted_for_the_untried_one`, `test_new_route_is_explored_with_mean_plus_sd`). The code is right; it is the usual exploration bonus.
+   - `p` is the Beta mean from `rates`, prior Beta(2, 2). Not in the page: a route with 1 to 4 trials (fewer than `photo_explore_trials`) is tried at mean plus one standard deviation, and a route with none gets the plain mean (so the bare prior keeps `n = 3`), so a demoted route does not starve (`test_route_that_fails_is_demoted_for_the_untried_one`, `test_new_route_is_explored_with_mean_plus_sd`). The code is right; it is the usual exploration bonus.
    - Not built: re-lay (levels 3 and up are not offered); the ceiling across sites (the caller passes one number); the per-site pick of the highest passing version at or under its ceiling; the provider price (a caller argument). P9.
 6. **The gates.** Built in `gates.check()` and `run()`, cheapest first.
    - Blocks, in order: `size_changed`, `flaw_vanished` (a flaw box keeps under `photo_flaw_keep` of its dark pixels), `protected_box_changed` (any pixel differs), `tag_text_changed` (an injected reader).
@@ -173,7 +173,7 @@ Any screen reads the per-site plan. Outputs, not a layout:
 | Planted changes (test 3) | `test_gates.py` on `spec/fixtures/planted/cases.json`: 100 planted changes, 10 clean, 15 level 0 cases on synthetic images | Passes. The flaws are dark discs, so this does not show real flaws block |
 | Export mark (test 4) | `test_gates.py`, `test_export_mark_changes_only_bytes_not_order_or_marks` | Passes |
 | Route cost (test 5) | `test_route.py`, protected roles and negative value | Passes |
-| One real run | `node scripts/capture-real.mjs` (`spec/items/capture-real/2026-11-15.json`), Ben's three garments, no masks | Item photos scored 69 to 77, tag photos 90 and 94. One run on three items, not accuracy |
+| One real run | `node scripts/capture-real.mjs` (`spec/items/capture-real/2026-11-15.json`), Ben's three garments, no masks | Item photos scored 69 to 77, tag photos 90, 70 and 94. One run on three items, not accuracy |
 | The live result and speed (tests 6 and 7) | none | Not run |
 
 ## 10. Protections
@@ -193,6 +193,6 @@ Any screen reads the per-site plan. Outputs, not a layout:
 
 All numbers are examples.
 
-A wool coat with two marks, priced at a p50 of $120, going to Depop and Poshmark. Capture keeps 11 frames: front (two, flat and hanger), back, label, care label, measurement view, two flaw close-ups, three details. On Depop (cap 8) the order is the flat front, back, label, both flaws, then the highest-scoring details at 71 and 66; the third detail at 58 and the hanger front drop with `over_cap` and `near_duplicate`. (Today the measurement view is an extra, P7.) Poshmark (cap 16) takes all that were not near-duplicates.
+A wool coat with two marks, priced at a p50 of $120, going to Depop and Poshmark. Capture keeps 11 frames: front (two, flat and hanger), back, label, care label, measurement view, two flaw close-ups, three details. The pool drops the hanger front first, as `near_duplicate` of the flat front (same bin), so 10 frames reach `order.plan()`. On Depop (cap 8) the order is the flat front, back, label, care label (coverage, right after back and label), both flaws, then the two highest-scoring extras. The extras are the three details at 71, 66 and 58 and the measurement view at 50 (today it is an extra, P7); the 58 detail and the measurement view drop with `over_cap`. That is 8 slots. Poshmark (cap 16) takes all 10.
 
 The person turns on light (level 1) and taps Generate. For the cover, `p = 0.5`, so `n = 3` (`1 - 0.5^3 = 0.875`), at $0.04 a call, `cost = $0.12`; `value = 0.05 x 1.0 x 1.0 x 120 - 0.12 = $5.88`, so it runs. For the back, `value = 0.02 x 0.3 x 1.0 x 120 - 0.12 = $0.60`, so it runs too. The label and both flaws get no route. One back candidate blocks because a patch over a mark vanished; the other two rank, and the best passes at ΔE00 1.1.

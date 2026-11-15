@@ -8,25 +8,29 @@ The orchestrator holds the whole backend for Nate: it starts and briefs the team
 
 | Lead | Handoff | State at this writing |
 |---|---|---|
-| Integration (API, events, search, bench) | [69](69-integration-handoff.md) | old session finishing its packet; six placeholders in it were still unfilled |
-| Engines | [70](70-engines-handoff.md) | packet complete; two workers still running (`eng-valuation-1` round three, `eng-valuation-2`) |
-| Databricks | 71, not yet written | finishing four safety pieces (`dbx-gov-2`, `dbx-erase-1`, `dbx-bench-1`, `dbx-learn-1`), then its packet |
-| Capture | [72](72-capture-handoff.md) | old session ended; a fresh one is proposed, not started |
-| Real-time adaptation and metrics | 74, when it hands off | started today; its page will be `spec/engines/adaptation.md` |
+| Integration (API, events, search, bench) | [69](69-integration-handoff.md) | fresh session "Lead 2: integration, every feature joined" started about 10:40 UTC; first job is main green in its area, then the valuation route on the person's own item |
+| Engines | [70](70-engines-handoff.md) | fresh session "Lead 2: engines, valuation first" started; first job is judging `eng-valuation-2` by its ablation, then the `valuate` seam |
+| Databricks | [71](71-databricks-handoff.md) | fresh session "Lead 2: Databricks, the dashboard rebuilt" started; Nate rejected the dashboard, and the deploy is blocked until it is rebuilt or he says yes to force |
+| Capture | [72](72-capture-handoff.md) | fresh session "Lead 2: capture, spec pass then fixes" started by Nate |
+| Real-time adaptation and metrics | 74, when it hands off | started today, light context, kept; its pages are `spec/engines/adaptation.md` and `spec/engines/credibility.md` |
 
-Each fresh lead starts from packet 55 and its own handoff, does the spec pass first (every queue item a named fix on its spec page with its measure), then builds. A fresh session is started only on Nate's word in the orchestrator's own conversation.
+Packet 71 records that judging is at 1 PM Central on 2026-11-15, so what a judge can see working ranks first. Each fresh lead starts from packet 55 and its own handoff, keeps the spec pass short (every queue item a named fix on its spec page with its measure), then builds. The four old lead sessions are idle and can be archived on Nate's word.
+
+Main's check is red at this writing (`node .agents/check.mjs`): the real-time proof (the orchestrator's, in repair), `pool.test.ts` F2 and the planted-site test (fixed on `w/orc-session-1`, not merged), `scripts/walk.test.mjs`, `routes.test.ts` (no manifest in `valuation-sold.ts`), `intel/learn.test.ts`, the param parity test B1, two capture-real tests and the image-gen scheduler tests on Windows. Each fresh lead was given its own.
 
 ## 2. The orchestrator's own work
 
 | Piece | Where | State | Next |
 |---|---|---|---|
-| The signed-in client and profile registry | Mac worktree `orc-session-1`, branch `w/orc-session-1`, commit 4c7e00a3, merged with main at 86766d20 | Tests pass after merging main: `session-client.test.ts` 25, `pool.test.ts` 29, `cleanup.test.ts` 1, the four site adapter files unchanged, `runtime.test.ts` 30; `tsc` clean for `edge/harness` and `edge/browser`. A fresh Opus review of the diff was running | Apply the review's findings, merge to main, then send the integration lead the composition (the worker's report in the worktree has the exact calls; the Store table is `account`) |
-| Known gaps in that piece | same | eBay has no link route (`startLink('ebay')` answers `no_route`: its page client has no account check and `PROFILES.ebay.login` is null); account rows with no `profile_id` are refused, not migrated | an eBay sign-in check on the page lane; a migration decision for old rows (integration's) |
-| The real-time proof on today's main | Mac worktree `orc-realtime-1`, uncommitted | The sold source was fitted to `soldSources`' new contract (10 of 13 pass). The last three are tripwires: `valuation.ports.read` changed, and the direct gather probe now returns nothing. A worker (`gpt-6.1-sol`, high) was reading the cause | Read its `WORKER_REPORT.md`, rerun `node --test --test-concurrency=1 scripts/realtime-proof.test.mjs`, commit, merge, and update the ten-link table in completion if a link changed. Main's proof is red until this lands |
+| The signed-in client and profile registry | on main at 2535ab10 (`app/src/edge/harness/session-client.ts`, `browser/auth.ts`, `cdp.ts`, `pool.ts`) | A fresh Opus review found no isolation breach and no sign-in data reaching the Store, and nine fixes, all applied with tests: `session-client.test.ts` 66, `pool.test.ts` 30, the site adapter files unchanged, `runtime.test.ts` 30, `tsc` clean for its files | The integration lead composes it (the calls were sent to that session) |
+| A link cannot complete yet | `session-client.ts` `finishLink` | No adapter's signed-in read returns evidence of whose account it is, so `finishLink` answers `no_route` with `handoff` on Poshmark, Mercari and Depop instead of guessing; eBay has no link route at all (`PROFILES.ebay.login` is null) | Add one positive account signal per site adapter. The signed-in fixtures are synthetic, so the signal is confirmed on the first real link with Nate present in the live view. This is what stands between Nate signing in and any signed-in read |
+| The real-time proof on today's main | on main at 52c813f2 | 13 of 13; 1 of 10 links working. Causes pinned for the leads: `gather.ts:51` gathers only for a hidden fact, `gather.ts:47` uses a different effective-sample formula, `check.ts:92` drops the level and the `too_few` note | When a lead wires a link the test fails on purpose and they update the link in the same commit |
+| The Apify lane | `app/src/edge/harness/sites/apify/` and `research/data/nate/apify-ebay-and-facebook.md`, in build by a subagent on Windows | Nate set up two actors (`automation-lab/ebay-scraper`, `apify/facebook-marketplace-scraper`) and said to integrate sources selectively. The token is the user-level `APIFY_TOKEN` on the Windows machine only; he rotates it after the hackathon | Review the adapter, commit, send the integration lead the source rows and the sold-comp source, add its measured seconds and cost to `bench/` and to the gaps page. Rows are shown for the demo and never modelled on |
 | The anonymous public client | not started | The product composes no browser client for Poshmark, Mercari or eBay public reads | One warm cloud browser per site on the same pool, nothing intercepted on eBay |
 | Mercari's fixed 4 s wait | `app/src/edge/harness/sites/mercari/live.ts:48` | not started | wait for the page's own query response; 20 reads, p50 and p95 |
 | `harness.call` using route health, the lease and the pace bucket; a timeout counted as a timeout | `app/src/edge/harness/` | not started | [ai-engineering sweep](../../../../spec/plans/sweep/ai-engineering.md) item 4 |
 | `byId(id, person_id)` in the harness and browser callers | `protocol.ts`, `pool.ts`, `browser/auth.ts`, `signin.ts`, `post.ts` | the integration lead sends its half as a diff | a test that one person's account id under another person is refused in every caller |
+| The bundle check's one real finding | `app/src/edge/browser/cdp.ts:87` reads Chrome's DevToolsActivePort temp file | open | a `bundle-safe:` comment saying why (a local Chrome launch only, never in a route's bundle), added on `w/orc-session-1` so it lands with that branch |
 | Small ones | | Poshmark `offer.seller.expires_h` (24) into `spec/sites.mjs`; remove the Poshmark live script's old cdp workaround; classify the Poshmark no-card page once search saves the bytes it read at miss time; Facebook's reader last | |
 
 ## 3. Cross-area items a lead will not pick up alone
@@ -43,7 +47,8 @@ Each fresh lead starts from packet 55 and its own handoff, does the spec pass fi
 - Whether the Depop adapter's page-context calls to `webapi.depop.com` count as a private endpoint.
 - The host for the server (the audit recommends one Node container with a disk) and the sender for sign-in emails.
 - Whether the posture line's counter-instead-of-accept behaviour stays.
-- Which workspace the judges see; whether the `sh-probe` Lakebase and App are deleted; whether the Mercari competition data stays for the demo.
+- His yes to the rebuilt dashboard's screenshot. He decided "Rebuild first": no `databricks bundle deploy --force` over the dashboard he rejected ([packet 71](71-databricks-handoff.md)). Until the rebuilt one deploys, the erasure, guard and governance fixes on main are not on the workspace.
+- Whether the `sh-probe` Lakebase and App are deleted; whether the Mercari competition data stays for the demo. Answered, as the Databricks lead relayed it: the judges see the trial workspace (a Databricks free trial, not Free Edition; every run spends its credits).
 - Real items photographed and measured (eight to ten for the stopwatch, twenty for the benchmark).
 - The issuer id and team id for his build command; rotating the two keys pasted into chat earlier.
 

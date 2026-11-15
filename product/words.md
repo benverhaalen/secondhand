@@ -1834,6 +1834,12 @@ Ben, same thread, 09:47 UTC.
 
 Used in: [brand/constitution.md Art. 7.11 to 7.16](../brand/constitution.md#article-7-space-and-layout), `scripts/composition.mjs` (U9 to U14), [the audit](../research/cross-cutting/ben/why-the-app-missed-the-mocks.md), [the breaks log](../features/app/breaks.md).
 
+## 2026-11-15 show how deep the project goes, and the novel ways we used the technology
+
+Ben, project chat, 09:57 UTC.
+> add more into it for dig deep how we created a project with absurd depth. also absurd depth in how we used the technologies and used them in a novel way.
+
+Used in: [devpost.md](devpost.md#how-deep-we-dug), [pitch.md](pitch.md#how-deep-we-dug).
 ## 2026-11-15 every page earns its spot, a title on every tab, Today sorted differently, the bar and the plus
 
 Ben, thread "Roll the UI system out everywhere", 2026-11-15 09:56 UTC.
@@ -1856,3 +1862,39 @@ Nate, adaptation lead's session, 2026-11-15, evening Central.
 > So with this prompt, I was focused on you establishing how our engines are credible and accurate. Theres value to realtime vs 2012 to 2013. We research current market data, so I wanted you to assess how credible and research proven our scorers and such deterministic system we had in place were. What are the ways we can. /research  to understand what would make it such. What would help us easily prove or exhibit outperfroming competitors and other tools in our depth of research, and how we aid people.
 
 Used in: `spec/engines/credibility.md`.
+
+## 2026-11-15 nate fresh leads replace the ones with heavy context
+Nate, orchestrator's session, 2026-11-15, about 04:30 Central.
+> get all new leads in replacing old ones with very heavy context windows
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills).
+
+## 2026-11-15 nate the trial workspace is the one the judges see
+Nate, the Databricks lead's session, 2026-11-15, about 04:00 Central, as that lead relayed it to the orchestrator (not heard first hand).
+> thats what we have, yeah lets do the trial
+
+Used in: [packet 71](../.agents/team/packets/team/71-databricks-handoff.md), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate the dashboard is rebuilt before any deploy
+Nate, orchestrator's session, 2026-11-15, about 05:00 Central, asked whether to force the Databricks deploy before the dashboard is rebuilt.
+> Rebuild first
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 71](../.agents/team/packets/team/71-databricks-handoff.md).
+
+## 2026-11-15 nate apify is set up for the hackathon
+Nate, orchestrator's session, 2026-11-15, about 05:10 Central, with a screenshot of his Apify console (the Facebook Marketplace scraper and an eBay listings and prices scraper). Asked whether the token he typed should be set and whether this is his go on third-party feeds.
+> You set it, ill rotate after hackathon
+
+Read by the orchestrator (agent proposal, until he says otherwise): a go to use those two Apify actors as sources for the hackathon demo, labelled as such and never modelled on. Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate ebay and facebook through apify, integrated selectively, not only apis
+Nate, orchestrator's session, 2026-11-15, about 05:15 Central, after the Apify token was set.
+> Now you have access to both ebay pricing, listings, etc, and facebook marketplace, alot of possible sources we should selectively integrate, improve benchmarks, of course not just utilizing apis
+
+Used in: `app/src/edge/harness/sites/apify/` (in build), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate not focused on old data unless it holds relevance
+Nate, adaptation lead's session, 2026-11-15, evening Central, on the NBER eBay 2012 to 2013 backtests.
+> i dont like that you're still focused on such old data, unless it can hold some relevance
+
+Used in: [spec/engines/adaptation.md §4](../spec/engines/adaptation.md#4-how-each-is-proved-before-it-is-trusted), [spec/engines/credibility.md](../spec/engines/credibility.md#what-data-can-prove-what).

@@ -254,6 +254,8 @@ Gathering stops at the first of these:
 - every source in the plan has been tried;
 - the deadline passes, a param starting at 120 s.
 
+In the product (integration lead, 2026-11-15; fix J1 in [joins.md](../plans/joins.md#named-fixes-in-build-order)): gathering is started by the valuation route when `valuate(item, ctx)` returns a `gather` request, and by nothing else yet. The route runs the request as one `runPlan` over the same source rows a search uses. Every row a search, a gather step or a valuation reads goes through one observation writer (`app/src/edge/events/observations.ts`) into the Store's `observation` table, under the asking person's `user_id`, with the comp `evidence` shape inside it. Dupe rows are not written. The next valuation reads those rows back through `ctx.observations`, so a repeated question is answered from what was gathered. Today `gather.ts:51` gathers only for a hidden fact, and `gather.ts:47` computes the effective sample by a different formula than valuation (both are the engines lead's, in eng-intel-1).
+
 The number is never held back while gathering: it is given from the next step of its fallback order ([valuation §3](valuation.md#3-the-calculation)) with its `searched[]`, and replaced in place when the gather settles. It hides only when no level can state it. "Not found" is then the evidence that the item is rare, and it is shown as such.
 
 ## 4. Learning

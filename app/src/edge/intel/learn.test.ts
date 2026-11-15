@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { memoryStore, type Param } from '../../engines/param/param.ts';
+import { memoryStore, forget, type Param } from '../../engines/param/param.ts';
 import {
   declareLearning, updateContribution, contributionMean, cutOrder, fitDeadline,
   exploreCutTargets, extractorChallenger, type RouteTruth,
@@ -14,7 +14,7 @@ function row(family: Param['family'], value: unknown): Param {
     name: family === 'scalar' ? 'deadline_ms' : 'extractor_id', scope, family,
     value_or_hyperparams: value, prior: value, version: 1, fitted_on_ids_hash: null,
     n_eff: 0, metric: null, held_out_score: null, guard_lo: null, guard_hi: null,
-    status: 'champion', frozen: false, promoted_at: at,
+    status: 'champion', frozen: false, promoted_at: at, origin: 'fit', previous_version: null, keep: null, days_since_last: null,
   };
 }
 function pages(count: number, championRight: number, challengerRight: number): RouteTruth[] {
@@ -59,8 +59,10 @@ test('contribution observations apply the registry 30-day forgetting from inject
   updateContribution(store, answer, '2026-11-15T04:00:00Z');
   updateContribution(store, { ...answer, used: [] }, '2026-12-15T04:00:00Z');
   const fitted = store.read('intel_contribution', scope);
-  assert.ok(Math.abs(fitted.n_eff - (Math.exp(-1) + 1)) < 1e-12);
-  const alpha = 2 * Math.exp(-1), beta = Math.exp(-1) + 1;
+  // The registry's explicit clock decays the whole posterior by its half-life before the new observation.
+  const keep = forget(30);
+  assert.ok(Math.abs(fitted.n_eff - (keep + 1)) < 1e-12);
+  const alpha = 2 * keep, beta = keep + 1;
   assert.ok(Math.abs(contributionMean(store, 'price_now', 'retail') - alpha / (alpha + beta)) < 1e-12);
 });
 
