@@ -344,6 +344,52 @@ function job(result: unknown, user = 'usr_8f2k', id = 'cap_3n9q'): CaptureBody {
 }
 const fieldOf = (capture:CaptureBody, field:string) => capture.plan.fields.find(f=>f.field===field)!;
 
+function throughCopy(copy:typeof capturesApi,endpoint:string,id='',body?:unknown,token='other') {
+  return route(endpoint,copy.handlers[endpoint])(new Request('http://edge.test'+endpoint.split(' ')[1].replace(':id',id),{
+    method:endpoint.split(' ')[0],headers:{Authorization:`Bearer ${token}`},
+    ...(body===undefined?{}:{body:JSON.stringify(body)}),
+  }));
+}
+
+test('separate capture modules preserve an open capture through read, PATCH, finish and reset',async()=>{
+  const a:typeof capturesApi=await import(new URL('./captures.ts?copy=a',import.meta.url).href);
+  a.resetCaptures();
+  const opened=await bodyOf(await throughCopy(a,'POST /v1/captures','',openInput));
+  const b:typeof capturesApi=await import(new URL('./captures.ts?copy=b',import.meta.url).href);
+  let c=await bodyOf(await throughCopy(b,'GET /v1/captures/:id',opened.id));
+  assert.equal(c.id,opened.id,'importing another route module must preserve the open capture');
+  c=await bodyOf(await throughCopy(b,patchEndpoint,c.id,{version:c.version,type:'apparel'}));
+  assert.equal(c.version,opened.version+1,'another route module must update the same capture');
+  const finished=await throughCopy(b,finishEndpoint,c.id,{version:c.version});
+  assert.equal(finished.status,202,'another route module must finish the open capture');
+  await a.pendingIdentify('usr_other',c.id);
+  assert.equal((await bodyOf(await throughCopy(a,'GET /v1/captures/:id',c.id))).state,'judged');
+  const next=await bodyOf(await throughCopy(b,'POST /v1/captures','',openInput));
+  assert.notEqual(next.id,opened.id,'route modules must share the capture counter');
+  assert.notEqual(next.item_id,opened.item_id,'route modules must share the item counter');
+  assert.equal(a.captureRows,b.captureRows,'the exported capture map must be shared');
+  b.resetCaptures();
+  assert.equal((await throughCopy(a,'GET /v1/captures/:id',next.id)).status,404,'reset must clear every route module');
+  assert.equal((await bodyOf(await throughCopy(a,'POST /v1/captures','',openInput))).id,opened.id,'reset must clear the shared counter');
+});
+
+test('two people opening through separate capture modules have distinct ids and private captures',async()=>{
+  const a:typeof capturesApi=await import(new URL('./captures.ts?copy=a',import.meta.url).href);
+  const b:typeof capturesApi=await import(new URL('./captures.ts?copy=b',import.meta.url).href);
+  a.resetCaptures();
+  deps.verify=async token=>token==='other'?'usr_other':token==='third'?'usr_third':null;
+  const first=await bodyOf(await throughCopy(a,'POST /v1/captures','',openInput,'other'));
+  const second=await bodyOf(await throughCopy(b,'POST /v1/captures','',openInput,'third'));
+  assert.notEqual(first.id,second.id,'two people must never receive the same capture id');
+  assert.notEqual(first.item_id,second.item_id,'two people must never receive the same item id');
+  for(const copy of [a,b]) {
+    for(const [own,foreign,token] of [[first,second,'other'],[second,first,'third']] as const) {
+      assert.equal((await bodyOf(await throughCopy(copy,'GET /v1/captures/:id',own.id,undefined,token))).id,own.id);
+      assert.equal((await throughCopy(copy,'GET /v1/captures/:id',foreign.id,undefined,token)).status,404,'a route module must reject another person\'s capture');
+    }
+  }
+});
+
 async function lookupCapture(token='good') {
   let c=await bodyOf(await requestCapture('POST /v1/captures',{mode:'shots',purpose:'sell',rigid:true,extent_cm:30},token));
   assert.equal(capturesApi.captureRows.get(c.id)!.state.lookups,'none');
