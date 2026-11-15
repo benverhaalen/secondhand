@@ -198,11 +198,18 @@ test('depop: a marked-down card reads the discounted price, not the full one (se
   assert.equal(read.ok && read.data[0].price_cents, 1900);
 });
 
-test('offerup reader never passes on a price too long to be whole cents: the field gate reports the page', () => {
+test('a card missing a required field is dropped and counted, the rest are returned, and a price too long to be whole cents is never passed on', () => {
   const page = `<script id="__NEXT_DATA__" type="application/json">${JSON.stringify({ props: { pageProps: { searchFeedResponse: { looseTiles: [
     { listing: { listingId: 'big', title: 'x', price: '9'.repeat(400), conditionText: null, image: null } },
     { listing: { listingId: 'ok', title: 'y', price: '12.50', conditionText: null, image: null } },
   ] } } } })}</script>`;
   const r = readPage('offerup', page);
-  assert.ok(!r.ok && r.error.code === 'page_changed', JSON.stringify(r).slice(0, 200)); // before: ok, with price_cents Infinity
+  assert.ok(r.ok, JSON.stringify(r).slice(0, 200));
+  assert.deepEqual(r.data.map(x => [x.id, x.price_cents]), [['ok', 1250]]);   // before: the whole page failed, or passed Infinity on
+  assert.equal(r.dropped, 1);
+  // one priced card among unpriced ones on a real recorded page: the priced one comes back, the page is not failed
+  let n = 0;
+  const partly = fx('depop.html').replace(/<p aria-description="Price">[^<]*<\/p>/g, m => (n++ === 0 ? m : ''));
+  const d = readPage('depop', partly);
+  assert.ok(d.ok && d.data.length === 1 && d.dropped === n - 1, JSON.stringify(d).slice(0, 200));
 });

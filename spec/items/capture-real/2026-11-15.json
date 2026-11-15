@@ -1,0 +1,992 @@
+{
+  "header": {
+    "data": "captured",
+    "items": 3,
+    "what_is_real": "Ben's photos of three real garments and a recorded vision-model read of them",
+    "what_is_not": "no identify run, no phone reads or depth, confidences absent from the read",
+    "date": "2026-11-15",
+    "read_model": "google/gemini-4-carbon"
+  },
+  "items": [
+    {
+      "item": "carhartt-pants",
+      "manifest": "research/studio/ben/slides/runs/20261115-0800-43692434630/carhartt-pants/manifest.json",
+      "read_model": "google/gemini-4-carbon",
+      "photos": [
+        {
+          "file": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+          "role": "front",
+          "score": 76,
+          "parts": {
+            "exposure": 0.9629884600984426,
+            "contrast": 0.8958440067760862,
+            "sharpness": 0.9144366359444114,
+            "clipping": 0.9947830932784636,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/carhartt-pants/02.jpg",
+          "role": "detail",
+          "score": 76,
+          "parts": {
+            "exposure": 0.8938829652223028,
+            "contrast": 0.8917515404307093,
+            "sharpness": 0.9763950489315287,
+            "clipping": 0.9994641632373114,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/carhartt-pants/03.jpg",
+          "role": "tag",
+          "score": 90,
+          "parts": {
+            "exposure": 0.7718856909075016,
+            "contrast": 0.9220214671258861,
+            "sharpness": 0.9997967453350654,
+            "clipping": 0.9920610425240055,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/carhartt-pants/04.jpg",
+          "role": "back",
+          "score": 77,
+          "parts": {
+            "exposure": 0.9992110106847951,
+            "contrast": 0.9122031026129825,
+            "sharpness": 0.8765175346622593,
+            "clipping": 0.9953832304526748,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/carhartt-pants/05.jpg",
+          "role": "graphic",
+          "score": 76,
+          "parts": {
+            "exposure": 0.9182449795650772,
+            "contrast": 0.8780622739653524,
+            "sharpness": 0.9792359851382514,
+            "clipping": 0.9969564471879286,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        }
+      ],
+      "scoring": "jobs/photo/score.py score(): original RGB pixels, recorded role, no mask; fill, centring and background are neutral 0.5",
+      "state": {
+        "capture_id": "cap_real_carhartt-pants",
+        "item_id": "it_real_carhartt-pants",
+        "purpose": "sell",
+        "confirm_mode": "tap",
+        "has_lidar": false,
+        "object_capture": false,
+        "sites": [
+          "ebay",
+          "depop",
+          "poshmark"
+        ],
+        "type": "apparel",
+        "kept": [
+          "front",
+          "back",
+          "tag"
+        ],
+        "retakes": {},
+        "facts": {
+          "size_label": {
+            "value": "38x36",
+            "source": "label",
+            "confidence": 0
+          },
+          "fabric": {
+            "value": "100% Cotton",
+            "source": "label",
+            "confidence": 0
+          }
+        },
+        "lookups": "none",
+        "refused": []
+      },
+      "facts": [
+        {
+          "field": "size_label",
+          "value": "38x36",
+          "source": "label",
+          "confidence": 0,
+          "rule": "one size token in tag_text (XS/S/M/L/XL/XXL/XXXL or WxL)"
+        },
+        {
+          "field": "fabric",
+          "value": "100% Cotton",
+          "source": "label",
+          "confidence": 0,
+          "rule": "<n>% <WORD> phrase in tag_text"
+        }
+      ],
+      "flaws": [],
+      "status": "asking",
+      "fields": [
+        {
+          "field": "brand",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [
+            "depop"
+          ],
+          "recommended_by": [
+            "ebay",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "colour",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [],
+          "recommended_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "condition",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ],
+          "recommended_by": []
+        },
+        {
+          "field": "department",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [
+            "depop"
+          ],
+          "recommended_by": [
+            "ebay",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "dimensions",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [],
+          "recommended_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "fabric",
+          "state": "proposed",
+          "value": "100% Cotton",
+          "source": "label",
+          "required_by": [],
+          "recommended_by": [
+            "ebay"
+          ]
+        },
+        {
+          "field": "size_label",
+          "state": "proposed",
+          "value": "38x36",
+          "source": "label",
+          "required_by": [
+            "depop",
+            "poshmark"
+          ],
+          "recommended_by": [
+            "ebay"
+          ]
+        },
+        {
+          "field": "type",
+          "state": "known",
+          "value": "apparel",
+          "source": "you_said",
+          "required_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ],
+          "recommended_by": []
+        }
+      ],
+      "questions": [
+        [
+          "condition",
+          "pick_one",
+          null
+        ],
+        [
+          "size_label",
+          "pick_one",
+          "38x36"
+        ],
+        [
+          "department",
+          "pick_one",
+          null
+        ],
+        [
+          "brand",
+          "text",
+          null
+        ],
+        [
+          "colour",
+          "pick_many",
+          null
+        ],
+        [
+          "dimensions",
+          "number_with_unit",
+          null
+        ],
+        [
+          "fabric",
+          "text",
+          "100% Cotton"
+        ]
+      ],
+      "complete": {
+        "ebay": {
+          "ready": false,
+          "missing": [
+            {
+              "field": "condition",
+              "state": "missing"
+            }
+          ]
+        },
+        "depop": {
+          "ready": false,
+          "missing": [
+            {
+              "field": "brand",
+              "state": "missing"
+            },
+            {
+              "field": "condition",
+              "state": "missing"
+            },
+            {
+              "field": "department",
+              "state": "missing"
+            },
+            {
+              "field": "size_label",
+              "state": "proposed"
+            }
+          ]
+        },
+        "poshmark": {
+          "ready": false,
+          "missing": [
+            {
+              "field": "condition",
+              "state": "missing"
+            },
+            {
+              "field": "size_label",
+              "state": "proposed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "item": "chico-hoodie",
+      "manifest": "research/studio/ben/slides/runs/20261115-0836-43695226533/chico-hoodie/manifest.json",
+      "read_model": "google/gemini-4-carbon",
+      "photos": [
+        {
+          "file": "assets/demo-items/real/chico-hoodie/01_cover.jpg",
+          "role": "front",
+          "score": 71,
+          "parts": {
+            "exposure": 0.8830561340608946,
+            "contrast": 0.6560319751533619,
+            "sharpness": 0.8932895857933837,
+            "clipping": 0.994928840877915,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/chico-hoodie/02.jpg",
+          "role": "detail",
+          "score": 70,
+          "parts": {
+            "exposure": 0.816967909451572,
+            "contrast": 0.6387049955903658,
+            "sharpness": 0.929106850733599,
+            "clipping": 0.9856352880658437,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/chico-hoodie/03.jpg",
+          "role": "detail",
+          "score": 72,
+          "parts": {
+            "exposure": 0.82021965469082,
+            "contrast": 0.7681542800695144,
+            "sharpness": 0.9740297032563034,
+            "clipping": 0.9803626543209877,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/chico-hoodie/04.jpg",
+          "role": "graphic",
+          "score": 71,
+          "parts": {
+            "exposure": 0.7359153780965061,
+            "contrast": 0.7596538931141206,
+            "sharpness": 0.9758801979512809,
+            "clipping": 0.9849065500685871,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/chico-hoodie/05.jpg",
+          "role": "detail",
+          "score": 69,
+          "parts": {
+            "exposure": 0.737164747888593,
+            "contrast": 0.5987999728293607,
+            "sharpness": 0.9963149029390577,
+            "clipping": 0.9982338820301784,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/chico-hoodie/06.jpg",
+          "role": "tag",
+          "score": 70,
+          "parts": {
+            "exposure": 0.59406828010436,
+            "contrast": 0.7934255980552036,
+            "sharpness": 0.6412964402585781,
+            "clipping": 0.9998199588477367,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        }
+      ],
+      "scoring": "jobs/photo/score.py score(): original RGB pixels, recorded role, no mask; fill, centring and background are neutral 0.5",
+      "state": {
+        "capture_id": "cap_real_chico-hoodie",
+        "item_id": "it_real_chico-hoodie",
+        "purpose": "sell",
+        "confirm_mode": "tap",
+        "has_lidar": false,
+        "object_capture": false,
+        "sites": [
+          "ebay",
+          "depop",
+          "poshmark"
+        ],
+        "type": "apparel",
+        "kept": [
+          "front",
+          "tag"
+        ],
+        "retakes": {},
+        "facts": {
+          "size_label": {
+            "value": "XXL",
+            "source": "label",
+            "confidence": 0
+          },
+          "brand": {
+            "value": "RUSSELL ATHLETIC",
+            "source": "label",
+            "confidence": 0
+          }
+        },
+        "lookups": "none",
+        "refused": []
+      },
+      "facts": [
+        {
+          "field": "size_label",
+          "value": "XXL",
+          "source": "label",
+          "confidence": 0,
+          "rule": "one size token in tag_text (XS/S/M/L/XL/XXL/XXXL or WxL)"
+        },
+        {
+          "field": "brand",
+          "value": "RUSSELL ATHLETIC",
+          "source": "label",
+          "confidence": 0,
+          "rule": "longest contiguous word run shared by tag_text and read.name, case-insensitive, at least two words"
+        }
+      ],
+      "flaws": [],
+      "status": "shooting",
+      "fields": [
+        {
+          "field": "brand",
+          "state": "proposed",
+          "value": "RUSSELL ATHLETIC",
+          "source": "label",
+          "required_by": [
+            "depop"
+          ],
+          "recommended_by": [
+            "ebay",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "colour",
+          "state": "waiting",
+          "value": null,
+          "source": null,
+          "required_by": [],
+          "recommended_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "condition",
+          "state": "waiting",
+          "value": null,
+          "source": null,
+          "required_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ],
+          "recommended_by": []
+        },
+        {
+          "field": "department",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [
+            "depop"
+          ],
+          "recommended_by": [
+            "ebay",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "dimensions",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [],
+          "recommended_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "fabric",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [],
+          "recommended_by": [
+            "ebay"
+          ]
+        },
+        {
+          "field": "size_label",
+          "state": "proposed",
+          "value": "XXL",
+          "source": "label",
+          "required_by": [
+            "depop",
+            "poshmark"
+          ],
+          "recommended_by": [
+            "ebay"
+          ]
+        },
+        {
+          "field": "type",
+          "state": "known",
+          "value": "apparel",
+          "source": "you_said",
+          "required_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ],
+          "recommended_by": []
+        }
+      ],
+      "questions": [],
+      "complete": {
+        "ebay": {
+          "ready": false,
+          "missing": [
+            {
+              "field": "condition",
+              "state": "waiting"
+            }
+          ]
+        },
+        "depop": {
+          "ready": false,
+          "missing": [
+            {
+              "field": "brand",
+              "state": "proposed"
+            },
+            {
+              "field": "condition",
+              "state": "waiting"
+            },
+            {
+              "field": "department",
+              "state": "missing"
+            },
+            {
+              "field": "size_label",
+              "state": "proposed"
+            }
+          ]
+        },
+        "poshmark": {
+          "ready": false,
+          "missing": [
+            {
+              "field": "condition",
+              "state": "waiting"
+            },
+            {
+              "field": "size_label",
+              "state": "proposed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "item": "marquette-tee",
+      "manifest": "research/studio/ben/slides/runs/20261115-0836-43695226533/marquette-tee/manifest.json",
+      "read_model": "google/gemini-4-carbon",
+      "photos": [
+        {
+          "file": "assets/demo-items/real/marquette-tee/01_cover.jpg",
+          "role": "front",
+          "score": 72,
+          "parts": {
+            "exposure": 0.9633414687189004,
+            "contrast": 0.5633226160756792,
+            "sharpness": 0.971268080579959,
+            "clipping": 0.9999099794238683,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/marquette-tee/02.jpg",
+          "role": "front",
+          "score": 72,
+          "parts": {
+            "exposure": 0.959702080704161,
+            "contrast": 0.549745407528493,
+            "sharpness": 0.969490204455028,
+            "clipping": 0.9998371056241426,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/marquette-tee/03.jpg",
+          "role": "graphic",
+          "score": 72,
+          "parts": {
+            "exposure": 0.9939496401664918,
+            "contrast": 0.5003549242042359,
+            "sharpness": 0.9923921880118322,
+            "clipping": 0.9957561728395061,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/marquette-tee/04.jpg",
+          "role": "graphic",
+          "score": 73,
+          "parts": {
+            "exposure": 0.9739737423209338,
+            "contrast": 0.5425153063591303,
+            "sharpness": 0.9926830845372988,
+            "clipping": 0.9999528463648834,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/marquette-tee/05.jpg",
+          "role": "tag",
+          "score": 94,
+          "parts": {
+            "exposure": 0.9563902321202828,
+            "contrast": 0.5875919461147248,
+            "sharpness": 0.8659680725647458,
+            "clipping": 0.9999485596707819,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/marquette-tee/06.jpg",
+          "role": "measure",
+          "score": 72,
+          "parts": {
+            "exposure": 0.9741736413634041,
+            "contrast": 0.7265668456243883,
+            "sharpness": 0.7968275320367787,
+            "clipping": 0.999537037037037,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/marquette-tee/07.jpg",
+          "role": "measure",
+          "score": 71,
+          "parts": {
+            "exposure": 0.9674259949501062,
+            "contrast": 0.6332548586607417,
+            "sharpness": 0.7971237700579779,
+            "clipping": 0.9982338820301784,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        },
+        {
+          "file": "assets/demo-items/real/marquette-tee/08.jpg",
+          "role": "back",
+          "score": 73,
+          "parts": {
+            "exposure": 0.9589533260308238,
+            "contrast": 0.5861877668611621,
+            "sharpness": 0.988053949708597,
+            "clipping": 0.9999228395061729,
+            "fill": 0.5,
+            "centring": 0.5,
+            "background": 0.5
+          }
+        }
+      ],
+      "scoring": "jobs/photo/score.py score(): original RGB pixels, recorded role, no mask; fill, centring and background are neutral 0.5",
+      "state": {
+        "capture_id": "cap_real_marquette-tee",
+        "item_id": "it_real_marquette-tee",
+        "purpose": "sell",
+        "confirm_mode": "tap",
+        "has_lidar": false,
+        "object_capture": false,
+        "sites": [
+          "ebay",
+          "depop",
+          "poshmark"
+        ],
+        "type": "apparel",
+        "kept": [
+          "front",
+          "back",
+          "tag"
+        ],
+        "retakes": {},
+        "facts": {
+          "size_label": {
+            "value": "XL",
+            "source": "label",
+            "confidence": 0
+          },
+          "fabric": {
+            "value": "100% COTTON",
+            "source": "label",
+            "confidence": 0
+          },
+          "brand": {
+            "value": "FRUIT OF THE LOOM",
+            "source": "label",
+            "confidence": 0
+          },
+          "dimensions": {
+            "value": {
+              "pit_to_pit": 54,
+              "length": 68.6
+            },
+            "source": "you_said",
+            "confidence": 1
+          }
+        },
+        "lookups": "none",
+        "refused": []
+      },
+      "facts": [
+        {
+          "field": "size_label",
+          "value": "XL",
+          "source": "label",
+          "confidence": 0,
+          "rule": "one size token in tag_text (XS/S/M/L/XL/XXL/XXXL or WxL)"
+        },
+        {
+          "field": "fabric",
+          "value": "100% COTTON",
+          "source": "label",
+          "confidence": 0,
+          "rule": "<n>% <WORD> phrase in tag_text"
+        },
+        {
+          "field": "brand",
+          "value": "FRUIT OF THE LOOM",
+          "source": "label",
+          "confidence": 0,
+          "rule": "longest contiguous word run shared by tag_text and read.name, case-insensitive, at least two words"
+        },
+        {
+          "field": "dimensions",
+          "value": {
+            "pit_to_pit": 54,
+            "length": 68.6
+          },
+          "source": "you_said",
+          "confidence": 1,
+          "rule": "marquette-tee/tape.json: Ben’s inches × 2.54, rounded to 0.1 cm; read by eye, about a quarter inch"
+        }
+      ],
+      "flaws": [],
+      "status": "asking",
+      "fields": [
+        {
+          "field": "brand",
+          "state": "proposed",
+          "value": "FRUIT OF THE LOOM",
+          "source": "label",
+          "required_by": [
+            "depop"
+          ],
+          "recommended_by": [
+            "ebay",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "colour",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [],
+          "recommended_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "condition",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ],
+          "recommended_by": []
+        },
+        {
+          "field": "department",
+          "state": "missing",
+          "value": null,
+          "source": null,
+          "required_by": [
+            "depop"
+          ],
+          "recommended_by": [
+            "ebay",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "dimensions",
+          "state": "known",
+          "value": {
+            "pit_to_pit": 54,
+            "length": 68.6
+          },
+          "source": "you_said",
+          "required_by": [],
+          "recommended_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ]
+        },
+        {
+          "field": "fabric",
+          "state": "proposed",
+          "value": "100% COTTON",
+          "source": "label",
+          "required_by": [],
+          "recommended_by": [
+            "ebay"
+          ]
+        },
+        {
+          "field": "size_label",
+          "state": "proposed",
+          "value": "XL",
+          "source": "label",
+          "required_by": [
+            "depop",
+            "poshmark"
+          ],
+          "recommended_by": [
+            "ebay"
+          ]
+        },
+        {
+          "field": "type",
+          "state": "known",
+          "value": "apparel",
+          "source": "you_said",
+          "required_by": [
+            "ebay",
+            "depop",
+            "poshmark"
+          ],
+          "recommended_by": []
+        }
+      ],
+      "questions": [
+        [
+          "condition",
+          "pick_one",
+          null
+        ],
+        [
+          "size_label",
+          "pick_one",
+          "XL"
+        ],
+        [
+          "department",
+          "pick_one",
+          null
+        ],
+        [
+          "brand",
+          "text",
+          "FRUIT OF THE LOOM"
+        ],
+        [
+          "colour",
+          "pick_many",
+          null
+        ],
+        [
+          "fabric",
+          "text",
+          "100% COTTON"
+        ]
+      ],
+      "complete": {
+        "ebay": {
+          "ready": false,
+          "missing": [
+            {
+              "field": "condition",
+              "state": "missing"
+            }
+          ]
+        },
+        "depop": {
+          "ready": false,
+          "missing": [
+            {
+              "field": "brand",
+              "state": "proposed"
+            },
+            {
+              "field": "condition",
+              "state": "missing"
+            },
+            {
+              "field": "department",
+              "state": "missing"
+            },
+            {
+              "field": "size_label",
+              "state": "proposed"
+            }
+          ]
+        },
+        "poshmark": {
+          "ready": false,
+          "missing": [
+            {
+              "field": "condition",
+              "state": "missing"
+            },
+            {
+              "field": "size_label",
+              "state": "proposed"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
