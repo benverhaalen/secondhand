@@ -15,6 +15,8 @@ Ben, 07:53: "can you list out each feature we have for me that is ai or is a fea
 
 "Tests" counts the test cases in that folder on 2026-11-15.
 
+The quantified internal version, with the why behind each rule, the math, the human step and the stories, is [feature-breakdown.md](feature-breakdown.md); costs and revenue at scale are in [roi.md](roi.md).
+
 ## Selling
 
 **1. Three photos to a listing (identify the item).**
@@ -35,7 +37,7 @@ Ben, 07:53: "can you list out each feature we have for me that is ai or is a fea
 
 **3. Photos that can't lie (the studio and the photo check).**
 - *What:* it cleans up your photos, or relights them into studio shots if you ask, and checks that the result is still your item.
-- *How:* the plain fixer only changes light, never color, and is refused if the color moves past what an eye can see. An AI relight has to pass a check that isn't AI: it lines the new photo up with yours and compares color, structure and every protected box (logo, tag, each flaw) with plain image math. If anything moved, your real photo is used. The AI on its own doesn't keep the size: a raw redraw of the Marquette tee came out about 2 inches too narrow. So every redraw is measured against your tape: its width over length is set back to the tape's, and it's rejected if it was drawn more than 20% off (`jobs/studio/check.py`).
+- *How:* the plain fixer only changes light, never color, and is refused if the color moves past what an eye can see. An AI relight has to pass a check that isn't AI: it lines the new photo up with yours and compares color, structure and every protected box (logo, tag, each flaw) with plain image math. If anything moved, your real photo is used. The AI on its own doesn't keep the size: a raw redraw of the Marquette tee came out about 2 inches too narrow. So every redraw is measured against your tape: its width over length is set back to the tape's, and it's rejected if it was drawn more than 20% off. With no tape reading, a redraw is never shown at all (Ben, 08:09: "it can only ai beautify if you have dimensions") (`jobs/studio/check.py`).
 - *Under the hood:* `scripts/bench/gate.py`, `jobs/photo/gates.py`, `jobs/studio/check.py`. The limit is 2.0 CIEDE2000. 62 tests in `jobs/photo`.
 - *Proof now:* **measured.** 173 of 174 planted lies caught; 76 of 76 cleanups within the color limit; the stretch hole found and fixed (16 of 38 caught, then 38 of 38) ([numbers](numbers.md#the-headline-numbers)). It errs toward holding: 17 of 38 honest relights were held too.
 - *Still to run:* the same check on real Seedream relights rather than our planted edits.
@@ -160,11 +162,11 @@ Ben, 07:53: "can you list out each feature we have for me that is ai or is a fea
 - *Proof now:* built.
 - *Say:* "Every store at once, with the total you'd actually pay. We may earn a referral, and it can't change the order."
 
-**21. Watch for it, and ping me when it's listed.**
-- *What:* you set what you want and your price; it pings you when one appears.
-- *How:* it reads each site's newest listings, only tells you about one that fits and is under your price, re-checks it before pinging, and sends at most three at a time.
-- *Under the hood:* `app/src/edge/watch/watch.ts` (the rule, 7 tests); the stage watcher `scripts/demo/stage-watch.mjs` (10 tests).
-- *Proof now:* built. The live beat is planned in [live buy demo](live-buy-demo.md): Nate posts, Ben's phone pings, and it shows how many seconds after listing it was found, by Poshmark's own clock.
+**21. Watch for it, and show me when it's listed.**
+- *What:* you set what you want and your price; it shows you when one appears.
+- *How:* it reads each site's newest listings, only tells you about one that fits and is under your price, re-checks it before telling you, and sends at most three at a time.
+- *Under the hood:* `app/src/edge/watch/watch.ts` (the rule, 7 tests); the stage watcher `scripts/demo/stage-watch.mjs` (13 tests) and the want screen's live finds (`app/src/buy/stage.ts`, 4 tests).
+- *Proof now:* built. The live beat is planned in [live buy demo](live-buy-demo.md): Nate posts, the find shows in our app on Ben's phone, with how many seconds after listing it was found, by Poshmark's own clock.
 - *Still to run:* tonight's three timed posts.
 - *Say:* "Nate just listed it. My phone knew in 40 seconds."
 
@@ -216,7 +218,7 @@ Ben, 07:53: "can you list out each feature we have for me that is ai or is a fea
 
 **29. What it costs.**
 - *What:* about 2 to 8 cents to list an item, 27 to 33 cents with studio photos; watching for sales costs about $0 a day except on Depop. Keeping a browser open would cost about $170 a month.
-- *Proof now:* estimated from observed prices; nothing billed yet ([numbers](numbers.md#what-it-costs-us)).
+- *Proof now:* estimated from observed prices; nothing billed yet ([numbers](numbers.md#what-it-costs-us)). Studio as built costs $0.54 an item (10 candidates for 2 slides); revenue streams, break-even and scale are in [roi.md](roi.md).
 - *Say:* "Cents an item, because we read public pages instead of keeping a browser open."
 
 ## What to show, ranked

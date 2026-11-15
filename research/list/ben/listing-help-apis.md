@@ -71,7 +71,7 @@ What this means (*inferred*):
    - A recommended aspect missing: it goes to the capture questions, to be read from the photo, the tag or a measurement.
    - A value outside eBay's fixed list: it is mapped to the nearest allowed value with the person's confirmation, or asked for.
    - Auto-filling every recommended aspect from the photo is right only for what the photo actually shows. Material and model numbers stay asked ([ebay.md](platforms/ebay.md), specifics rule).
-3. **Ask in the order buyers search.** This uses searchCount once eBay approves Buyer Demand Data. Until then: required first, then recommended.
+3. **Ask required first, then recommended.** Ordering by what buyers search would need eBay to approve Buyer Demand Data. Ben said no applications yet ([words](../../../product/words.md#2026-11-15-no-applications-to-marketplaces-yet)), so `searchCount` is used only if a reply ever carries it.
 4. **Ad rate as information.** eBay's trending rate is the number shown when the person decides whether to promote. It is never applied automatically.
 
 ## Not found

@@ -41,3 +41,13 @@ test('a planted missing comp citation refuses the object instead of returning un
   const x = input(); x.warm_comps = comps.map(c => ({ ...c, citation: '' }));
   await assert.rejects(check(x), /basis/);
 });
+
+test('unsupported fee sites are refused at the Check boundary', async () => {
+  const x = input(); x.sites = [{ site: 'facebook_local', curve: x.sites[0].curve }];
+  await assert.rejects(check(x), /unsupported valuation site/);
+});
+
+test('F8: fractional conformal widening produces whole cent range endpoints', async () => {
+  const out = await check({ ...input(), calibration: { Q_g: 12.4, group: 'jacket', coverage: .8, passes: true } });
+  assert.ok(Number.isInteger(out.range.q10)); assert.ok(Number.isInteger(out.range.q90));
+});

@@ -32,7 +32,15 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
   assert.ok(r.headers.get('X-Request-Id'));
   for (const [key, value] of Object.entries(e.headers ?? {})) assert.equal(r.headers.get(key), value);
   if (e.response === null) assert.equal(await r.text(), '');
-  else assert.deepEqual(await r.json(), e.response);
+  else if (e.name === 'scores.list') {
+    const body = await r.json();
+    const { data } = e.response as { data: object[] };
+    assert.deepEqual(body.data.slice(0, data.length), data);
+    assert.equal(body.data.length, data.length + 1);
+    assert.equal(body.data.at(-1).axis, 'success');
+    assert.equal(body.data.at(-1).state, 'hidden');
+    assert.equal(body.data.at(-1).hide_reason, 'axis_hidden');
+  } else assert.deepEqual(await r.json(), e.response);
 });
 for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
@@ -120,5 +128,25 @@ test('scores: explicit pagination works when the default example omits next_curs
   const first = await (await call(e, { path: e.path + '&limit=1' })).json();
   assert.equal(first.data.length, 1); assert.equal(typeof first.next_cursor, 'string');
   const second = await (await call(e, { path: e.path + '&limit=1&cursor=' + first.next_cursor })).json();
-  assert.equal(second.data.length, 1); assert.notEqual(second.data[0].id, first.data[0].id); assert.equal(second.next_cursor, null);
+  assert.equal(second.data.length, 1); assert.notEqual(second.data[0].id, first.data[0].id); assert.equal(typeof second.next_cursor, 'string');
+  const third = await (await call(e, { path: e.path + '&limit=1&cursor=' + second.next_cursor })).json();
+  assert.equal(third.data.length, 1); assert.equal(third.data[0].axis, 'success'); assert.equal(third.next_cursor, null);
+});
+
+test('scores run successScore from the typed utility input', async () => {
+  const { ports } = await import('./scores.ts');
+  const read = ports.read;
+  try {
+    ports.read = async () => {
+      const x = await read('usr_8f2k', 'ls_e81');
+      return { ...x, axes: ['financial', 'quality', 'visibility', 'trend'].map(axis => ({ axis, state: 'shown', value: .8, citation_id: 'ci_axis' })),
+        now: { expected_keep_cents: 8000, expected_days: 0, holding_cost_cents: 0 }, best: { expected_keep_cents: 10000, expected_days: 0, holding_cost_cents: 0 }, basis: [{ id: 'sale1', source: 'test', at: x.as_of }] };
+    };
+    const response = await call(examples.find(e => e.name === 'scores.list')!);
+    const body = await response.json();
+    const success = body.data.find((row: { axis: string }) => row.axis === 'success');
+    assert.equal(success.value, 80); assert.equal(success.state, 'shown');
+    const visibility = body.data.find((row: { axis: string }) => row.axis === 'visibility');
+    assert.equal(visibility.value, .8); assert.equal(visibility.state, 'shown'); assert.equal(visibility.hide_reason, undefined);
+  } finally { ports.read = read; }
 });

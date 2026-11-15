@@ -92,7 +92,7 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
 
   async function runOn<T>(ctx: Promise<PoolContext<P>>, task: Task<P, T>): Promise<T> {
     const page = await (await ctx).newPage();
-    try { return await task.run(page); } finally { await page.close(); }
+    try { return await task.run(page); } finally { await page.close().catch(e => { log?.error('pool.page_close', e); }); }
   }
 
   async function dispatch<T>(task: Task<P, T>): Promise<Dispatched<T>> {

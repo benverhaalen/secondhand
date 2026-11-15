@@ -24,6 +24,7 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 All research for this feature: [research/price/](../../research/price/)
 - Ben: [research/price/ben/](../../research/price/ben/)
 - Nate: [research/price/nate/](../../research/price/nate/)
+- Ben: [sold-datasets.md](../../research/price/ben/sold-datasets.md). Real sold rows the backtest can run on tonight: StockX 2019 (dated), Kaggle Mercari, and NBER's eBay listings that eBay cleared for research, with the terms that close the public sold pages.
 - Nate: [fees-and-taxes.md](../../research/price/nate/fees-and-taxes.md). What a US casual seller keeps and owes on the five marketplaces: fee tables per site plus tax and 1099-K points.
 - Nate: [quality-and-value-classifiers.md](../../research/price/nate/quality-and-value-classifiers.md). Published ranking models: price against similar sold items predicts sale best; photo quality helps only slightly; no evidence TikTok scores attractiveness.
 - Nate: [range-calibration.md](../../research/price/nate/range-calibration.md). How to calibrate and backtest a price range and days-to-sell from sold comps; conformal methods give marginal coverage, per-category needs group methods.

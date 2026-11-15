@@ -82,9 +82,17 @@ test('GET /v1/routes returns the live manifest through the real contract layer',
   assert.ok(response.headers.get('X-Request-Id'));
 });
 
-test('the routes example matches the live manifest', () => {
+test('the routes example preserves every contract field with the explicit engine joins', () => {
   assert.ok(existsSync(new URL('spec/examples/routes.json', root)), 'missing routes example');
   const examples = JSON.parse(read('spec/examples/routes.json')).examples;
   assert.equal(examples[0].endpoint, 'GET /v1/routes');
-  assert.deepEqual(examples[0].response, { data: manifest, next_cursor: null });
+  const joined = new Set(["POST /v1/valuations", "GET /v1/items", "GET /v1/items/:id", "PATCH /v1/items/:id/attributes/:name", "GET /v1/items/:id/plan-choices", "GET /v1/scores", "GET /v1/insights", "GET /v1/sources/health", "GET /v1/conversations", "GET /v1/conversations/:id/messages", "POST /v1/search", "POST /v1/compare", "GET /v1/out", "POST /v1/follows", "GET /v1/follows", "PATCH /v1/follows/:id", "DELETE /v1/follows/:id", "POST /v1/assist", "POST /v1/genie", "GET /v1/orders"]);
+  const expected = { ...examples[0].response, data: examples[0].response.data.map((row: { endpoint: string; source: string }) => joined.has(row.endpoint) ? { ...row, source: 'engine' } : row) };
+  assert.deepEqual(expected, { data: manifest, next_cursor: null });
+});
+
+test('each endpoint still using an example has a concrete missing-engine or missing-input reason', async () => {
+  const { exampleReasons } = await import('./routes.ts');
+  assert.deepEqual(Object.keys(exampleReasons).sort(), manifest.filter(row => row.source === 'example').map(row => row.endpoint).sort());
+  for (const reason of Object.values(exampleReasons)) assert.ok(typeof reason === 'string' && reason.length > 30);
 });

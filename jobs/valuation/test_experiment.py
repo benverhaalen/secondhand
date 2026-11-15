@@ -50,8 +50,9 @@ def test_a_contestant_only_ever_learns_from_rows_before_its_freeze_date_and_allo
             seen.append(("fit", max(experiment.ts(r["at"]) for r in train), all(r["may_model"] for r in train)))
 
         def predict(self, item, as_of, history):
-            seen.append(("predict", max((experiment.ts(r["at"]) for r in history), default=0) < experiment.ts(as_of),
-                         all(r["may_model"] for r in history)))
+            rs = history.product(item["product_id"])
+            seen.append(("predict", max((experiment.ts(r["at"]) for r in rs), default=0) < experiment.ts(as_of)
+                         and history.latest_at() < experiment.ts(as_of), all(r["may_model"] for r in rs)))
             fits = [s for s in seen if s[0] == "fit"]
             assert fits[-1][1] < experiment.ts(as_of)
             return super().predict(item, as_of, history)

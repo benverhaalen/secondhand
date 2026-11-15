@@ -48,7 +48,7 @@ const cards: Decision[] = [
   decision({
     id: 'dec_soon', kind: 'accept_offer', item_id: longItem.id, site: 'ebay', feed: 'now', group_form: 'single', deadline: deadSoon.expires_at, offer_ids: [deadSoon.id],
     why: `${NAMES.longBuyer} offered ${usd(9000)}. Your lowest is ${usd(7000)}.`, money: { offer_cents: 9000, you_keep_cents: deadSoon.you_keep_cents },
-    options: [{ id: 'acc', label: `Accept ${usd(9000)}`, does: `You keep ${usd(deadSoon.you_keep_cents)}.` }, { id: 'dec', label: 'Decline', does: 'The listing stays up.' }], suggested: 'acc',
+    options: [{ id: 'acc', label: `Accept ${usd(9000)}`, does: `You get ${usd(deadSoon.you_keep_cents)}.` }, { id: 'dec', label: 'Decline', does: 'The listing stays up.' }], suggested: 'acc',
   }),
   decision({
     id: 'dec_exp', kind: 'accept_offer', item_id: clearing.items[0].id, site: 'depop', feed: 'now', group_form: 'single', state: 'expired', deadline: expired.expires_at, offer_ids: [expired.id],

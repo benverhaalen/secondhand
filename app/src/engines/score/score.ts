@@ -15,11 +15,12 @@ export type ScoreInput = {
 function parts(u: Utility) {
   if (!Object.values(u).every(Number.isFinite) || u.expected_days < 0 || u.holding_cost_cents < 0) throw new RangeError('utility must be finite with nonnegative time and cost');
   const holding_cents = u.expected_days * u.holding_cost_cents;
-  return { keep_cents: u.expected_keep_cents, days: u.expected_days, holding_cost_cents: u.holding_cost_cents, holding_cents, utility_cents: u.expected_keep_cents - holding_cents };
+  return { keep_cents: Math.round(u.expected_keep_cents), days: u.expected_days, holding_cost_cents: Math.round(u.holding_cost_cents), holding_cents: Math.round(holding_cents), utility_cents: Math.round(u.expected_keep_cents - holding_cents) };
 }
 
 export function successScore(x: ScoreInput) {
   return x.log.timed('score.success', () => {
+    if (!Number.isSafeInteger(x.floor_cents) || x.floor_cents < 0) throw new RangeError('floor_cents must be a whole number of cents, zero or more');
     const receipt = x.receipt;
     if (receipt && (!Object.values(receipt).every(Number.isFinite) || receipt.refund_cents < 0 || receipt.days < 0)) throw new RangeError('invalid sale receipt');
     const now = parts(receipt ? { expected_keep_cents: receipt.keep_cents - receipt.refund_cents, expected_days: receipt.days, holding_cost_cents: x.now.holding_cost_cents } : x.now);
@@ -43,7 +44,10 @@ export function successScore(x: ScoreInput) {
       if ((x.plan_choice === 'reserve' || x.plan_choice === 'check') && (band === 'needs_attention' || band === 'at_risk')) band = 'on_track';
     }
     const changes = state === 'hidden' ? [] : (x.changes ?? []).filter(c => c.price_cents === undefined || (Number.isSafeInteger(c.price_cents) && c.price_cents >= x.floor_cents))
-      .map(c => ({ ...c, points: ratio(parts(c.projected).utility_cents) - raw! })).filter(c => c.points > 0).sort((a, b) => b.points - a.points);
+      .map(c => {
+        const projected = parts(c.projected);
+        return { ...c, projected: { expected_keep_cents: projected.keep_cents, expected_days: projected.days, holding_cost_cents: projected.holding_cost_cents }, points: ratio(projected.utility_cents) - raw! };
+      }).filter(c => c.points > 0).sort((a, b) => b.points - a.points);
     return { subject_type: 'listing', subject_id: x.listing_id, site: x.site, axis: 'success', state, value: state === 'shown' ? raw : null,
       band, hide_reason: state === 'hidden' ? hidden ? 'axis_hidden' : 'too_few' : null,
       provisional: !receipt, parts: { now, best, axes: x.axes }, change: changes[0] ?? null,

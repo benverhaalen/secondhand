@@ -35,6 +35,7 @@ test('money scoring rejects impossible overlapping sale probabilities', () => {
 test('new comp fingerprint causes a reproducible replan with a new citation', () => {
   const x = fixture('ebay'); const before = calculate(x);
   const after = calculate({ ...x, adjusted_cents: x.adjusted_cents.map(p => p - 400), comp_rows: [...x.comp_rows, { id: 'new_sale', source: 'fixture:sold', at: x.as_of, price_cents: 4600 }] });
+  assert.ok('citation_id' in before); assert.ok('citation_id' in after);
   assert.notEqual(after.citation_id, before.citation_id);
   assert.notDeepEqual(after.price, before.price);
 });
@@ -44,5 +45,5 @@ test('offer Beta updates match the closed form with forgetting', () => {
   store.observe('offer_accept', {}, { success: 1, weight: 1 }, at);
   store.observe('offer_accept', {}, { success: 0, weight: 1, days_since_last: 30 }, at);
   const got = store.read('offer_accept', {}).value as { alpha: number; beta: number };
-  assert.deepEqual(got, { alpha: 1.5, beta: 2 }, 'marketing §3.5 requires a 30-day half-life on old counts; shared registry uses exp(-days/30)');
+  assert.deepEqual(got, { alpha: 1.5, beta: 2 }, 'marketing §3.5 requires a 30-day half-life on old counts; shared registry uses 0.5^(days/30)');
 });

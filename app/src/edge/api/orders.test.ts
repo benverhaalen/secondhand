@@ -96,3 +96,13 @@ test('orders: owned Expo files bind auth and export the contract method', async 
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
 });
+
+test('order reads use orderBook records rather than fixed money values', async () => {
+  const { ports } = await import('./orders.ts');
+  const all = ports.all;
+  try {
+    ports.all = () => all().map(row => ({ ...row, price_cents: 1000 }));
+    const response = await call(examples.find(e => e.name === 'orders.list')!);
+    assert.equal((await response.json()).data[0].price_cents.amount_cents, 1000);
+  } finally { ports.all = all; }
+});
