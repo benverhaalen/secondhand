@@ -24,7 +24,7 @@ The seller's own answers teach the item: a fact typed in a reply ("no pets") is 
 |---|---|---|---|---|
 | Who decides an offer | a model negotiates ([handled-by-default.md](../../research/messages/nate/handled-by-default.md)); seller-set numbers in code ([platform-levers.md](../../research/list/nate/platform-levers.md)) | plain code against `limits` and the price path; the model only words the reply | every shipped price automation is a seller-set number and none learns; agents in Magentic Marketplace accepted the first offer 80 to 100% of the time | a holdout where a learned policy keeps more `you_keep_cents` with zero outside-limits actions |
 | How a new message is noticed | poll only, as crosslisters do every 5 to 30 min; site events plus email plus a sweep ([email-and-notification-detection.md](../../research/sold/nate/email-and-notification-detection.md), [platform-access.md](../../research/connect/nate/platform-access.md)) | event first: any site event or notification email sets `next_check_at` to now; the sweep catches misses | crosslisters wait minutes; an offer on Poshmark lasts 24 h and buyers move on | the gap-4 sample shows a site sends no message email; that site keeps the sweep at the offer cadence |
-| The email route | Gmail push (restricted scope, annual CASA); a forwarding filter to an inbound hook (Mailgun, SendGrid, Cloudflare Email Workers) | Gmail push where connect already holds the `email` account for sold; the forwarding filter otherwise | no second Google review; one route serves sold and messages | a public launch without CASA uses the filter only |
+| The email route | Gmail push (restricted scope, annual CASA); a forwarding filter to an inbound hook (Mailgun, SendGrid, Cloudflare Email Workers); no email | no email: site email is not read, and signed-in inbox watchers catch messages ([handoff](../../.agents/team/packets/team/45-handoff-to-the-build-session.md), [protocol §3.6](../engines/protocol-and-adapters.md#36-how-every-event-reaches-the-system-agent-proposal)) | no Google review, no mail to spoof | a site whose inbox the watchers cannot read |
 | Trust in an email | read its text as the message; use it only as a trigger | trigger only; `read_inbox` reads the real thread from the site | senders can be spoofed; email text never becomes a `message` | none |
 | The evidence gate | an LLM checker alone ([MiniCheck](https://arxiv.org/abs/2404.10774), asserted); deterministic matching first, entailment for free text, abstain otherwise ([messages-and-offers.md](../../research/messages/ben/messages-and-offers.md)) | deterministic first | the best small checkers score about 75% balanced accuracy, so alone they miss about one claim in four | a checker reaching the 0.98 precision bar on our labelled claims |
 
@@ -68,7 +68,7 @@ Every check is logged as an event with counts and ids, never the text. You shows
 
 | Piece | Job here |
 |---|---|
-| Triggers | eBay Notification topics, Depop webhooks where granted, Gmail push or the forwarding hook. Each sets `next_check_at` to now on the matching conversation or account. |
+| Triggers | eBay Notification topics (signature checked; whether they are used is open, [J45](../open-questions.md#for-both)) and signed-in inbox and offer watchers on every site (1 to 2 min hot, 15 min live, 60 min quiet). Depop gives no partner access, so it has no webhooks. Each sets `next_check_at` to now on the matching conversation or account. |
 | Sweep | A scheduled Lakeflow job runs `poll_inbox` for every row whose `next_check_at` is due, at the tiers in [managing and buyers card 15](../determinations/managing-and-buyers.md#15-when-to-check-again) (an open offer or a waiting buyer is the fastest tier). |
 | Harness ([product.md](../product.md#harnesses)) | `read_inbox`, `send_message`, `read_offers`, `answer_offer`; reads the site back after each act. One lease per account session, paced per site. |
 | Typed judgements | Intent and safety predicates; buyer text is data, wrapped and never followed. `claims_paid` checks the site's order state, never a screenshot ([messages-and-offers.md](../../research/messages/ben/messages-and-offers.md)). |
@@ -141,7 +141,7 @@ Modes from [product.md §5](../product.md#decision-kinds-the-complete-list); the
 
 ```mermaid
 flowchart LR
-  E["eBay Notification, Depop webhook, site email by Gmail push or forwarding hook"] -->|"API route: conversation.next_check_at now"| C["Lakebase conversation"]
+  E["eBay Notification, signed-in inbox watcher"] -->|"API route: conversation.next_check_at now"| C["Lakebase conversation"]
   S["Lakeflow sweep"] -->|"next_check_at due: poll_inbox job"| C
   C -->|"poll_inbox job, harness read_inbox under the lease: message, offer"| L["Lakebase message, offer"]
   L -->|"Decisions API beside Jev: message.intent, facets"| P["policy check, plain code"]
@@ -158,7 +158,7 @@ flowchart LR
 | eBay: messages 2000 characters, offers 24 h, counters 96 h | [messages-and-offers.md](../../research/messages/ben/messages-and-offers.md), observed | |
 | eBay Offers in Messaging since 2025-08-12 | [platform-levers.md](../../research/list/nate/platform-levers.md), asserted | |
 | eBay User Agreement bans agents acting without human review | [platform-levers.md](../../research/list/nate/platform-levers.md), observed | auto sends on eBay would need the person's review or eBay's consent |
-| Depop: no message API; accepted offer is dibs; offers last 14 days | [messages-and-offers.md](../../research/messages/ben/messages-and-offers.md), [platform-levers.md](../../research/list/nate/platform-levers.md), observed | partner terms ban unauthorised scraping; the harness needs Depop's consent |
+| Depop: no message API; accepted offer is dibs; buyer and seller offers last 24 h (*observed*, [levers-and-signals](../../research/list/ben/levers-and-signals.md), correcting platform-levers.md's 14 days) | [messages-and-offers.md](../../research/messages/ben/messages-and-offers.md), [platform-levers.md](../../research/list/nate/platform-levers.md), observed | partner terms ban unauthorised scraping; the harness needs Depop's consent |
 | Poshmark: no direct messages, only public comments; offers expire in 24 h | [email-and-notification-detection.md](../../research/sold/nate/email-and-notification-detection.md), asserted | |
 | Poshmark mass suspensions in Nov 2025 | [platform-access.md](../../research/connect/nate/platform-access.md), asserted | shown now as the risk to the account, per site |
 | Gmail push: watch renewed within 7 days, at most 1 event per second per user; read scopes are restricted (CASA Tier 2 from about $540) | [email-and-notification-detection.md](../../research/sold/nate/email-and-notification-detection.md), asserted | an annual assessment, or the forwarding filter |

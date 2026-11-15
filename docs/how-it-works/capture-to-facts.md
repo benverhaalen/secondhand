@@ -8,7 +8,7 @@ Nothing here is built yet. "The current design" means what the specs propose tod
 
 ## The idea in one paragraph
 
-You point your phone at a thing. The app works out what kind of thing it is, asks for the few views that kind needs, reads and measures what it can, and marks the rest unknown. Every fact shows where it came from. A fact it cannot find stays empty. It is never guessed.
+You point your phone at a thing and tap what kind of thing it is. The app suggests the kind from the first frame, so one tap usually confirms it. It then asks for the few views that kind needs, reads and measures what it can, and marks the rest unknown. Every fact shows where it came from. A fact it cannot find stays empty. It is never guessed.
 
 We follow three items: a jacket, a chair and a trading card.
 
@@ -28,9 +28,13 @@ Your location stays on the phone. Faces and screens are blurred, and the photo's
 
 ## Working out what kind of thing it is
 
+Capture opens on the type pick: the kinds sit over the live camera, and the phone's suggestion comes first. When the suggestion is clearly ahead of the next one it is already selected, so one tap confirms it, and a confident enough suggestion may skip the tap entirely; both ways will be tried. When it is not clearly ahead, nothing is selected and you choose ([Nate](../../product/words.md#2026-11-14-nate-capture-opens-on-the-type-pick-a-confident-suggestion-may-skip-the-tap-and-the-tutorial-is-animated-steps)). The first time you open the camera, a short animated tutorial shows how to pick a type and that each type has its own short process. You can skip it and replay it later.
+
+The pick chooses the process before the first shot. Each kind has its own steps, and an input for every detail that kind needs, such as size and fabric for a jacket or set and number for a card ([Nate](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). These work without a signal, from a copy kept on the phone. *Agent proposal* on this wording; Ben's agreement not recorded, and how capture opens is still for Ben and Nate together ([capture spec](../../spec/features/capture.md)).
+
 The first few frames give the phone a quick guess, such as "clothing" or "furniture", from its built-in image recognition and the shape it sees: flat or tall, soft or hard edges, how big.
 
-The first good photo then goes to the cloud for a second opinion, which confirms or swaps the guess. It picks from 13 kinds: clothing, shoes, bags, watches, cameras, phones and electronics, vinyl, books, trading cards, LEGO and games, furniture, tools and bikes, and baby gear. If the guess changes, every photo already taken is kept. If the check is unsure, the app says so.
+The first good photo then goes to the cloud for a second opinion, which confirms your pick or swaps it. It picks from 13 kinds: clothing, shoes, bags, watches, cameras, phones and electronics, vinyl, books, trading cards, LEGO and games, furniture, tools and bikes, and baby gear. If the guess changes, every photo already taken is kept. If the check is unsure, the app says so.
 
 The kind sets the mode.
 
@@ -49,6 +53,8 @@ Each kind comes with a short list of things to find out, and how each one is fou
 - asking you.
 
 The first three need a view of the item. The session gives one instruction at a time, such as "Closer on the tag" or "Turn it over". Lookups run in the background. Questions are covered in [clarifying-questions.md](clarifying-questions.md).
+
+Before the listing is written, the app offers one free note, typed or spoken: where you got it, how long you had it, why you are selling, anything else, even things the app already found ([Nate](../../product/words.md#2026-11-14-nate-pricing-weighs-every-platforms-top-listings-official-listings-and-credible-discounts-with-a-slider-and-a-free-note)). The note is read into facts. Something that matches a fact confirms it, something that contradicts one is marked for you to settle, and something new fills its place or goes into the description. Nothing in the note is asked again, and a home address, phone number or payment detail in it never reaches a listing. *Agent proposal.*
 
 There is no fixed number of photos. The session ends when every need a view can settle is met, or when you tap Done. Anything left is marked "not visible" on the item card. A shutter button is always there, and each kept shot can be undone for 3 seconds.
 
