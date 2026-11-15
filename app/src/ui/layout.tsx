@@ -1,13 +1,13 @@
 // The only parts a screen is laid out with. Which one to reach for, and which separator means what, is in README.md beside this file.
 import { Children, createContext, isValidElement, useContext, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { ReduceMotion, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Nav, Wash } from './parts/chrome';
 import { TabNav, TabTitle, type TabNavProps } from './parts/tab-nav';
 import { Txt } from './text';
 import { OnGround, useColors } from './theme';
-import { motion, radius, size, space } from './tokens.generated';
+import { radius, size, space } from './tokens.generated';
 
 // Space carries meaning: the closer two things sit, the more they belong together (Art. 7.2, 7.8).
 // tight 8: parts of one thing. group 12: things in one group. cards 16: cards one under another. section 32: topics.
@@ -38,21 +38,10 @@ export function Screen({ children, nav, wash = nav != null, center = false, name
 }) {
   const c = useColors(), inset = useSafeAreaInsets(), inTabs = useContext(InTabs), below = inTabs ? 0 : inset.bottom;
   const marks = name || state || sheet ? ({ dataSet: { screen: name, state, skip, sheet } } as object) : {};
-  // A main tab's top (TabNav): the Nav row is pinned over the page and the name row scrolls (see TopBar below).
   const tab = isValidElement<TabNavProps>(nav) && nav.type === TabNav ? nav.props : null;
-  const y = useSharedValue(0), hide = useSharedValue(0), goal = useSharedValue(0);
+  const y = useSharedValue(0);
   const top = wash ? inset.top : 0;
-  const onScroll = useAnimatedScrollHandler({
-    onScroll: e => {
-      const now = e.contentOffset.y, dy = now - y.get();
-      y.set(now);
-      if (!tab) return;
-      const back = () => { if (goal.get() !== 0) { goal.set(0); hide.set(withTiming(0, { duration: motion.select, reduceMotion: ReduceMotion.System })); } };
-      // At the top, or on any scroll up, the bar comes back; scrolling down slides it away with the finger.
-      if (now <= 0 || dy < 0) back();
-      else if (dy > 0) { goal.set(1); hide.set(Math.min(1, hide.get() + dy / BAR)); }
-    },
-  });
+  const onScroll = useAnimatedScrollHandler({ onScroll: e => { y.set(e.contentOffset.y); } });
   // A washed screen takes the top inset itself: the wash runs under the status bar and the content starts below it.
   // Without a wash the safe area keeps the top, so nothing is ever drawn under the clock (U9).
   return (
@@ -66,27 +55,19 @@ export function Screen({ children, nav, wash = nav != null, center = false, name
             : nav ? <View style={styles.nav}>{nav}</View> : null}
           <View style={[styles.content, center && styles.center]}>{children}</View>
         </Animated.ScrollView>
-        {tab ? <TopBar inbox={tab.inbox} y={y} hide={hide} top={top} /> : null}
+        {tab ? <TopBar inbox={tab.inbox} y={y} top={top} /> : null}
         {foot ? <View style={[styles.foot, { paddingBottom: space.s4 + below }]}>{foot}</View> : null}
       </SafeAreaView>
     </OnGround>
   );
 }
 
-// How far the bar travels to be gone: its own height and the 8 under it.
-const BAR = size.navH + space.s2;
-
-// A main tab's Nav row, pinned (Ben, 11:27: "Scrolling down hides the bar and any scroll up brings it back"). At the top it
-// is clear over the wash, so the page looks as it did unpinned; once the page moves under it, it takes the page color, and
-// so does the strip under the clock, so no text runs under the status bar (U9). It slides up under that strip with the
-// finger as the page scrolls down, and returns in 200 ms (--t-select) on any scroll up, instantly with Reduce Motion.
-function TopBar({ inbox, y, hide, top }: { inbox?: TabNavProps['inbox']; y: { get(): number }; hide: { get(): number }; top: number }) {
+function TopBar({ inbox, y, top }: { inbox?: TabNavProps['inbox']; y: { get(): number }; top: number }) {
   const c = useColors();
   const ground = useAnimatedStyle(() => ({ opacity: interpolate(y.get(), [0, space.s3], [0, 1], 'clamp') }));
-  const slide = useAnimatedStyle(() => ({ transform: [{ translateY: -hide.get() * (BAR + top) }] }));
   return (
     <>
-      <Animated.View {...({ dataSet: { part: 'top-bar' } } as object)} pointerEvents="box-none" style={[styles.topBar, { paddingTop: top }, slide]}>
+      <Animated.View {...({ dataSet: { part: 'top-bar' } } as object)} pointerEvents="box-none" style={[styles.topBar, { paddingTop: top }]}>
         <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: c.page }, ground]} />
         <Nav inbox={inbox} />
       </Animated.View>
