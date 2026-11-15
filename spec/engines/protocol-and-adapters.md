@@ -191,9 +191,48 @@ Nate: "We are not getting depop partner access, so I want you to create a workar
 
 **The verbs covered:** `link`, `list`, `edit`, `reprice`, `read_listings`, `read_offers`, `respond_offer`, `send_offer` (to likers), `read_messages`, `send_message`, `read_orders`, `read_stats`, `mark_sold`, `delist`, `relist`. Partner access would have added only webhooks; the watchers replace them at a delay of 1 to 2 minutes while a listing is hot.
 
-**What it will not do.** It acts only as the person, in their own session, at a pace a person could keep. It does not solve or route around a bot check: if Depop shows a challenge, the job pauses and the person is asked to clear it in their session, once. It keeps no password. It reads no other seller's private data. Depop's terms forbid automated access ([connect](../features/connect.md)); by the joint decision that is a fact on record and a risk shown to the person per site, with Nate's go needed before any live run and before it is shown on stage.
+**Whose action it is.** Nate: "its not automated access, since the user is technically signing off on it, its like if they called Claude in chrome themselves" ([words](../../product/words.md#2026-11-14-nate-the-person-signs-off-so-it-is-their-own-agent-acting)). The system is the person's own agent: it acts only in their account, only on what they turned on, at a pace a person could keep, and every action is in their activity log. Each site's own terms stay on record as a fact with the account risk shown per site ([connect](../features/connect.md)), and Nate's go is needed before a live run on a site and before it is shown on stage.
+
+**Saved passwords, by choice.** Nate: "we need to keep passwords, we indicate to the user they are set as encrypted environment variables we do not save or can see for ourselves, just used by the system, making it opt in" ([words](../../product/words.md#2026-11-14-nate-passwords-are-kept-opt-in-as-encrypted-secrets-we-cannot-see)). Off by default. When the person turns it on for a site:
+
+| Part | How |
+|---|---|
+| Where it goes | typed into a field that posts straight to the secret store (a Databricks secret scope, one key per account, `token_ref` on `account`); never to a table, a log, a trace, a model prompt or the app's own storage |
+| Who can read it | only the sign-in job's service identity, at the moment a session has expired. No person's role and no other job has read access, and every read is in the audit log. This is what makes "we cannot see it" true, so the build proves it with a test that every other identity is refused |
+| What it is used for | signing back in when a session expires, so overnight work does not stop. Nothing else |
+| Second factor | a code sent to the person still goes to the person: one prompt, and the job waits. A site's own "trust this device" keeps that rare |
+| Removing it | one tap deletes the secret; unlinking the account deletes it too |
+| Without it | the stored session is used until it expires, then one re-link prompt |
+
+**What it will not do.** It does not solve or route around a bot check: if a site shows a challenge, the job pauses and the person clears it in their session. It reads no other seller's private data.
 
 **Proof.** Each verb passes on a recorded fixture, then on a test account's live session with the result read back; the mutation drill breaks ten page details and the repair loop restores at least nine; the pace bench records the challenge rate per hundred actions, and the pace is lowered until it is zero.
+
+### 3.8 Our own API, run in the cloud: what we take from Apify (agent proposal)
+
+Asked by [Nate](../../product/words.md#2026-11-14-nate-look-into-apify-and-build-our-own-api-on-cloud-browser-use). Evidence: [apify-and-our-own-cloud-api](../../research/connect/nate/apify-and-our-own-cloud-api.md).
+
+| Apify does | We build |
+|---|---|
+| Packages each fetcher as an Actor with a typed input and output schema | each adapter and fetcher keeps its manifest and the one envelope; same idea, already ours |
+| Server Actors: an Actor that stays up as an HTTP server, scaled by concurrent requests, stopped after an idle timeout | each site's adapter set runs as a small always-ready service behind `harness.call`, scaled the same way, so a verb answers in the time of its requests, with no start-up |
+| Its marketplace Actors mostly use no browser: they call the site's own public JSON and search services (Depop 48 listings per request; Grailed's public search; Poshmark and Mercari sold search) at $1.50 to $3.50 per 1,000 results | our public market reads do the same from our own servers, as plain HTTP, in parallel. A browser is used only where a signed-in session is needed |
+| Sessions: one session id keeps one IP address and its cookies | one account, one session, one steady address in the person's region, one saved browser profile. A steady, ordinary session is what a real person's use looks like, and it is what keeps a site from challenging it |
+| Sells these reads per result | we do not buy them and do not measure ourselves against them. They show only that it can be done, so we develop our own ([Nate](../../product/words.md#2026-11-14-nate-not-a-comparison-we-develop-our-own-on-firecrawl-crawl4ai-browser-use-and-jev-ultrafast): "we can and definitely should develop our own. utilizing the firecrawl web4crawl browser use and jev ultrafast technologies to optimize and perfect the way we gather and delvier information"). How each of the four is used is in the [intelligence engine](intelligence-api.md): Firecrawl's and crawl4ai's fetch, render and extraction patterns for reading pages, browser-use for driving a signed-in page, Jev for the fast typed decisions |
+| Exposes Actors as MCP tools | our public search API is already planned as MCP tools |
+
+**Where a session runs: ours and the person's, no browser vendor** ([Nate](../../product/words.md#2026-11-14-nate-host-all-engines-ourselves-and-can-the-persons-own-device-do-the-work): "I feel its best to host all engines ourselves"). Every engine and every browser is hosted by us or runs on the person's own device.
+
+| Route | What it is | Good for | Limit |
+|---|---|---|---|
+| The phone, while the app is open | the app's own web view is a real browser on the person's device, signed in to the site, on their own network. A command runs inside it the same way as anywhere else | linking (the sign-in happens on their own device), and everything done while they are in the app: posting after a capture, answering an offer, a fresh read. It costs us nothing and is the session a site trusts most | iOS suspends an app shortly after it leaves the screen and grants background time only in short windows it chooses, so nothing overnight |
+| Our hosted session | a headless browser in a container on our own compute, holding the person's session and saved profile, one steady address per account | watchers, overnight work, anything while the app is closed | compute we pay for; a session moved from the phone to our address may be asked to verify once |
+| Plain requests from our servers | once recon has found the site's own endpoints, most verbs are one or two HTTP requests carrying the session's cookies: no browser at all | most reads and many writes, at the lowest cost and highest speed | sites that bind a session to a browser need one of the two routes above |
+| The person's computer, optional | a browser extension that runs commands in their own signed-in browser, the opencli way | heavy sellers who leave a computer on | only while that computer is on |
+
+The route table ranks these per site and verb by measured success, speed and challenge rate, like every other route. A phone cannot host the background sessions; it is the best route while the app is open, and our own hosting covers the rest. Whether our hosted browsers run on Databricks compute or on a small container host of ours beside it is a first-hour workspace check; the design is the same either way.
+
+We do not write code that forges a device fingerprint or solves a challenge; when one appears the person clears it.
 
 ## 4. Learning
 

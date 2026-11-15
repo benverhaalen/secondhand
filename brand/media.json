@@ -49,7 +49,7 @@
     "roles": ["body", "heading"],
     "peak": 200,
     "words": 15,
-    "wordmark": { "sizes": [64], "at": "any", "views": "first-last" },
+    "wordmark": { "sizes": [64, 32], "at": "bottom-left", "views": "every", "alone": 64 },
     "fields": 2,
     "act": false
   }

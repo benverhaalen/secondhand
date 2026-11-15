@@ -16,7 +16,7 @@
   --u: 2;
   --canvas-w: 1920px; --canvas-h: 1080px;
   --margin-x: 96px; --margin-top: 96px; --margin-bottom: 96px;
-  --mt-body: 32px; --mt-heading: 64px; --mt-peak: 200px; --mt-wordmark: 64px;
+  --mt-body: 32px; --mt-heading: 64px; --mt-peak: 200px; --mt-wordmark: 32px; --mt-wordmark-alone: 64px;
 }
 /* The space and radius scales, times the medium's unit: --ms-3 on a deck is --s-3 times 2. */
 [data-medium] {
