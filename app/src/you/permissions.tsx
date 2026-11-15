@@ -2,7 +2,7 @@
 // with Undo, asks first, or never does it. The kinds and their modes are spec/product.md §5, Who may act; the line between them is
 // the hand-off rule (.agents/ui-build/README.md, When the agent acts and when it hands off). A person can always make a kind more
 // careful here. Making one run on its own is earned, 3 approvals without a change, under Rules and limits, so this page never
-// offers On its own to a kind that starts by asking. Locked kinds show as Always asks with no control, and one kind is Never.
+// offers On its own to a kind that starts by asking. Locked kinds sit under Always asks you with no control, and one kind is Never.
 import { useState } from 'react';
 import { List, Line, Nav, Pill, Screen, Section, Sheet, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
@@ -56,11 +56,11 @@ export function Permissions() {
             {KINDS.map(k => <ListRow key={k.kind} id={`perm-${k.kind}`} label={k.label} value={WORD[mode[k.kind]]} onPress={() => setOpen(k)} />)}
             {FIXED.map(k => <ListRow key={k.kind} id={`perm-${k.kind}`} label={k.label} detail={k.why} value={k.value} />)}
           </List>
-          <Txt role="caption">On its own: it does it and shows it in Activity, with Undo where the site allows.</Txt>
+          <Txt role="caption">Shown in Activity, with Undo where the site allows.</Txt>
         </Section>
 
         <Section title="Always asks you">
-          <List>{LOCKED.map(k => <ListRow key={k.kind} id={`perm-${k.kind}`} label={k.label} value="Always asks" />)}</List>
+          <List>{LOCKED.map(k => <ListRow key={k.kind} id={`perm-${k.kind}`} label={k.label} />)}</List>
         </Section>
 
         <Section title="Never">

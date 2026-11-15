@@ -181,7 +181,7 @@ test('sell: offline, a change waits for the signal', async () => {
   assert.equal(await screen.page.locator('[data-shelf="needs_you"] [data-testid="tile-it_lamp"]').count(), 1, 'the lamp stays until the change is sent');
 });
 
-test('sell: failed says so, and Try again loads the things', async () => {
+test('sell: failed says so, and Retry loads the things', async () => {
   const screen = await app.open('/sell?state=failed');
   await screen.tap('sell-retry');
   await screen.shows('Needs you');

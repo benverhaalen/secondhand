@@ -7,7 +7,7 @@
 // card stack); its title; the agent's price as a Guess (dotted until the person changes it) and the sites as logos; the
 // two ways out (Not now, Edit); and at the foot one Approve that says exactly what it will do. The price always waits
 // for this tap (.agents/ui-build/README.md, the hand-off rule).
-// States: ready, working (the foot says the step), failed (the foot says Try again and what failed; the item stays),
+// States: ready, working (the foot says the step), failed (the foot says Retry and what failed; the item stays),
 // and the toast after each one goes, with Undo. When the last one goes the screen closes it.
 import type { ReactNode } from 'react';
 import { Modal, View } from 'react-native';

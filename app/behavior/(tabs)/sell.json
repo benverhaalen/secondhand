@@ -150,7 +150,7 @@
       "at": "/sell?world=new"
     },
     {
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "loads the things again",
       "id": "sell-retry",
       "does": "loads the things again",
@@ -287,7 +287,7 @@
       "why": "Art. 5, Loading: the skeleton mirrors the grid so nothing moves; a count shown before the things arrive would be a guess."
     },
     {
-      "decision": "Failed says the things didn’t load, with Try again; offline keeps the last copy and a change waits, its button saying Waiting for signal",
+      "decision": "Failed says the things didn’t load, with Retry; offline keeps the last copy and a change waits, its button saying Waiting for signal",
       "why": "ways-out, Everywhere: nothing is guessed, and a tap without signal is held, not lost (as Today holds it)."
     },
     {

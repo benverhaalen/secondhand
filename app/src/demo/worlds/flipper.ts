@@ -83,10 +83,10 @@ export const flipper: World = {
   decisions: [...offerCards, ...labels, ...posts,
     decision({ id: 'dec_fapp', kind: 'approve_groups', item_id: null, site: null, feed: 'when_you_can', group_form: 'queue', group_key: 'approve_groups', group_rank: 1, deadline: null, why: '212 photos made 41 items. One group looks like two things.', options: [{ id: 'ok', label: 'Approve 40', does: 'Makes 40 drafts.' }, { id: 'fix', label: 'Fix the odd one', does: 'Opens the group to split it.' }], suggested: 'fix' }),
   ],
-  notices: [{ id: 'nt_f', kind: 'ranker_changed', item_id: live[1].id, text: 'Search order on one site changed this week. Visibility numbers are hidden there until it settles.', citation_id: 'ci_rk', at: inHours(-20) }],
-  events: live.slice(0, 8).map((it, n) => ({ event_id: `ev_f${n}`, item_id: it.id, action: n % 2 ? 'offer_to_watchers' : 'counter_offer', actor: 'auto' as const, site: it.listings[0].site, at: inHours(-(n + 1)), why: n % 2 ? 'Sent 10% off to people watching it' : 'Countered on the price path, above your lowest', undo: { allowed: false, until: null } })),
+  notices: [{ id: 'nt_f', kind: 'ranker_changed', item_id: live[1].id, text: 'View counts are unavailable while this site’s search order changes.', citation_id: 'ci_rk', at: inHours(-20) }],
+  events: live.slice(0, 8).map((it, n) => ({ event_id: `ev_f${n}`, item_id: it.id, action: n % 2 ? 'offer_to_watchers' : 'counter_offer', actor: 'auto' as const, site: it.listings[0].site, at: inHours(-(n + 1)), why: n % 2 ? 'Sent 10% off to people watching it' : 'Sent a counteroffer above your lowest price', undo: { allowed: false, until: null } })),
   rules: [
-    { id: 'ru_fco', kind: 'counter_offer', scope: 'all', state: 'auto', unedited_approvals: 31, last_used_at: inHours(-1), when: 'an offer comes in', if: 'it is at or above your lowest', then: 'counter on the price path' },
+    { id: 'ru_fco', kind: 'counter_offer', scope: 'all', state: 'auto', unedited_approvals: 31, last_used_at: inHours(-1), when: 'an offer comes in', if: 'it is at or above your lowest', then: 'counter with the planned price' },
     { id: 'ru_fwt', kind: 'offer_to_watchers', scope: 'all', state: 'auto', unedited_approvals: 12, last_used_at: inHours(-2), when: 'a listing has watchers', if: 'it is 5 days old', then: 'send them 10% off' },
     { id: 'ru_flb', kind: 'buy_label', scope: 'all', state: 'eligible', unedited_approvals: 3, last_used_at: inDays(-1), when: 'a sale needs a label', if: 'the box is measured', then: 'buy the cheapest tracked label' },
   ],

@@ -170,7 +170,7 @@ export default function Sell() {
     // The list did not come back. Nothing is guessed: what failed, and one tap to try again (ways-out, Everywhere).
     return (
       <Screen name="sell" state="failed" wash nav={nav}>
-        <EmptyState title="Your things didn’t load" action={{ id: 'sell-retry', label: 'Try again', onPress: () => setRetried(true) }} />
+        <EmptyState title="Your things didn’t load" action={{ id: 'sell-retry', label: 'Retry', onPress: () => setRetried(true) }} />
       </Screen>
     );
   }

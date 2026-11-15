@@ -25,8 +25,6 @@
       "shows": "Post from $225 on 2 sites",
       "also": [
         "Nintendo Switch OLED, white, with dock, HEG-001, 64 GB",
-        "Searched by model: specs in the title",
-        "Nearby, picks up today: pickup price",
         "~$200.40",
         "Joy-Con drift"
       ],
@@ -36,9 +34,6 @@
       "state": "one",
       "route": "/item/it_switch/post?flip=ebay",
       "shows": "Post at $225 on 1 site",
-      "also": [
-        "Not posting here"
-      ],
       "why": "eBay left out in the plan; one site"
     },
     {
@@ -46,8 +41,7 @@
       "route": "/item/it_jacket/post?flip=facebook",
       "shows": "Post from $95 on 3 sites",
       "also": [
-        "Carhartt Detroit Jacket J97, brown duck, size L",
-        "Young, shops a look: size up front"
+        "Carhartt Detroit Jacket J97, brown duck, size L"
       ],
       "why": "three sites"
     },
@@ -132,9 +126,9 @@
       "state": "didnt-load",
       "route": "/item/it_switch/post?state=failed",
       "shows": "Can’t open this item",
-      "why": "what failed, and Try again",
+      "why": "what failed, and Retry",
       "also": [
-        "Try again"
+        "Retry"
       ]
     },
     {
@@ -164,10 +158,7 @@
     {
       "state": "sold",
       "route": "/item/it_kindle/post",
-      "shows": "It sold, so there is nothing to post.",
-      "also": [
-        "Sold. Nothing to post"
-      ],
+      "shows": "Sold. Nothing to post",
       "absent": [
         "Post"
       ],
@@ -378,7 +369,7 @@
     },
     {
       "id": "post-retry",
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "loads the preview again (frontend-standard §4 Error)",
       "route": "/item/it_switch/post?state=failed",
       "goes": "/item/it_switch/post"

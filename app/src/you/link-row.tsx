@@ -23,6 +23,6 @@ export function LinkRow({ site, link, detail, onLink, onOpen }: {
   const second = s === 'error' && link.note ? (detail ? `${link.note}. ${detail}` : link.note) : detail;
   const trail = s === 'connected'
     ? (onOpen ? undefined : <Icon name="checkmark-circle-02" label="Linked" />)
-    : <Pill id={`link-${site}`} kind="second" label={s === 'error' ? 'Try again' : 'Link'} icon={s === 'error' ? 'refresh' : undefined} state={s === 'loading' ? 'working' : 'idle'} onPress={onLink} />;
+    : <Pill id={`link-${site}`} kind="second" label={s === 'error' ? 'Retry' : 'Link'} icon={s === 'error' ? 'refresh' : undefined} state={s === 'loading' ? 'working' : 'idle'} onPress={onLink} />;
   return <ListRow id={`site-row-${site}`} site={site} label={label} detail={second} trail={trail} tone={s === 'error' ? 'brick' : 'ink'} onPress={s === 'connected' ? onOpen : undefined} />;
 }

@@ -110,7 +110,7 @@ export function TileSkeleton() {
     <View style={{ height: 20, justifyContent: 'center' }}><View style={{ width: w, height: h, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} /></View>
   );
   return (
-    <View {...mark('tile', { skeleton: 'true' })} accessibilityLabel="Loading" style={{ gap: space.s1 }}>
+    <View {...mark('tile', { skeleton: 'true' })} accessibilityLabel="Loading item" style={{ gap: space.s1 }}>
       <View style={{ aspectRatio: 1, borderRadius: radius.photo, borderCurve: 'continuous', backgroundColor: c.gray, marginBottom: space.s1 }} />
       {line('80%', 14)}
       {line('50%', 12)}
