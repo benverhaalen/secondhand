@@ -3,6 +3,7 @@
 import auth from '../../../../spec/examples/auth.json' with { type: 'json' };
 import buy from '../../../../spec/examples/buy.json' with { type: 'json' };
 import captures from '../../../../spec/examples/captures.json' with { type: 'json' };
+import routes from '../../../../spec/examples/routes.json' with { type: 'json' };
 import errors from '../../../../spec/examples/errors.json' with { type: 'json' };
 import items from '../../../../spec/examples/items.json' with { type: 'json' };
 import jobs from '../../../../spec/examples/jobs.json' with { type: 'json' };
@@ -17,7 +18,7 @@ export type Example = {
 };
 export type Frame = { id?: string; event?: string; data?: Record<string, unknown>; comment?: string };
 
-export const EXAMPLES: Example[] = [auth, buy, captures, errors, items, jobs, me, sell, today, you].flatMap((f) => (f as { examples: Example[] }).examples);
+export const EXAMPLES: Example[] = [auth, buy, captures, errors, items, jobs, me, sell, today, you, routes].flatMap((f) => (f as { examples: Example[] }).examples);
 export const STREAMS: Record<string, Frame[]> = Object.fromEntries((jobs as { streams: { name: string; frames: Frame[] }[] }).streams.map((s) => [s.name, s.frames]));
 
 const byName = new Map(EXAMPLES.map((e) => [e.name, e]));

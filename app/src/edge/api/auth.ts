@@ -27,3 +27,24 @@ export function makeAuthHandlers(auth: Auth, store: AuthStore) {
 }
 
 export const handlers = makeAuthHandlers(defaultAuth, defaultStore);
+
+export const routeHandlers = {
+  'POST /v1/auth/apple': handlers.apple,
+  'POST /v1/auth/google': handlers.google,
+  'POST /v1/auth/email/start': handlers.emailStart,
+  'POST /v1/auth/email/verify': handlers.emailVerify,
+  'POST /v1/auth/refresh': handlers.refresh,
+  'POST /v1/auth/signout': handlers.signout,
+  'POST /v1/auth/link/apple': handlers.linkApple,
+  'POST /v1/auth/link/google': handlers.linkGoogle,
+  'POST /v1/auth/link/email': handlers.linkEmail,
+};
+const routeAuth: Record<string, 'user' | 'visitor' | 'none'> = {
+  'POST /v1/auth/apple': 'none',
+  'POST /v1/auth/google': 'none',
+  'POST /v1/auth/email/start': 'none',
+  'POST /v1/auth/email/verify': 'none',
+  'POST /v1/auth/refresh': 'none',
+  'POST /v1/auth/signout': 'none',
+};
+export const manifest = Object.keys(routeHandlers).map(endpoint => ({ endpoint, source: 'engine' as const, auth: routeAuth[endpoint] ?? 'user' as const }));

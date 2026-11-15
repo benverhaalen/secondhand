@@ -121,3 +121,9 @@ export function act(ctx: Ctx) {
   const after = store.decisions({ user_id: d.user_id }).find((x) => x.id === d.id)!;
   return { status: 200, body: { decision: { id: d.id, state: after.state, answered, version: versionOf(d.id) }, event_id, job } };
 }
+
+export const routeHandlers = {
+  'GET /v1/decisions': list,
+  'POST /v1/decisions/:id/act': act,
+};
+export const manifest = Object.keys(routeHandlers).map(endpoint => ({ endpoint, source: 'engine' as const, auth: 'user' as const }));

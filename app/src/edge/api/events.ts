@@ -41,3 +41,9 @@ export function undo(ctx: Ctx) {
   ctx.log.event('item.action', { item: e.item_id, action: 'undo', actor: 'user', undo_of: e.id });
   return { status: 200, body: { event: row(r.event), undo_of: e.id } };
 }
+
+export const routeHandlers = {
+  'GET /v1/events': list,
+  'POST /v1/events/:id/undo': undo,
+};
+export const manifest = Object.keys(routeHandlers).map(endpoint => ({ endpoint, source: 'engine' as const, auth: 'user' as const }));

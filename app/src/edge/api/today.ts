@@ -34,3 +34,8 @@ export async function today(ctx: Ctx) {
   ctx.log.event('state.change', { entity: 'user', id: user_id, to: 'opened_today', open: decisions.length });
   return { status: 200, body };
 }
+
+export const routeHandlers = {
+  'GET /v1/today': today,
+};
+export const manifest = Object.keys(routeHandlers).map(endpoint => ({ endpoint, source: 'engine' as const, auth: 'user' as const }));
