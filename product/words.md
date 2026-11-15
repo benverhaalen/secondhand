@@ -889,3 +889,7 @@ Nate, build session (orchestrator), 2026-11-14 about 21:45 Central, after the ei
 ## 2026-11-14 nate do not cut steps that add to the result, be efficient, focus on the app, the hackathon and the experience
 Nate, build session (orchestrator), 2026-11-14 about 21:50 Central.
 > well dont cut things that add processes, just be the best at understanding and being efficient at building. sometimes you redudndently check things you are already skilled enough to know. Focus on the app, the hackathon, the user experience
+
+## 2026-11-15 the text weight is 500
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:23 UTC, after a side by side of Book, Medium on titles and a weight near 450. Recorded by the brand thread, which owns Article 6.
+> i think with font weights i like 500 unless you have a researched back reason to choose 450. what do you think
