@@ -18,6 +18,7 @@ export type Comp = {
   completeness?: string[]; works?: string; extraction_source?: string;
   site: 'ebay' | 'facebook' | 'depop' | 'poshmark' | 'mercari';
   sold_at: string;
+  dated_by?: 'sold' | 'listed';
   price_cents: number;
   kind: 'sold' | 'best_offer' | 'own_order';
   level: 'variant' | 'product' | 'family' | 'category';

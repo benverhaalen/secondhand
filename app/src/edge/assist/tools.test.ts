@@ -54,6 +54,8 @@ function contract(r: ToolResult) {
 
 test('definitions name exactly five strict tools and reject extra object properties', () => {
   assert.deepEqual(TOOL_DEFS.map(d => d.name), ['search_market', 'value_item', 'price_trend', 'where_to_list', 'market_store']);
+  // Measured 2026-11-15 on the dev server: a top-level anyOf made every turn fail with a 400 before any text.
+  for (const d of TOOL_DEFS) for (const k of ['oneOf', 'allOf', 'anyOf']) assert.ok(!(k in d.input_schema), `${d.name} input_schema has ${k} at the top`);
   for (const d of TOOL_DEFS) {
     assert.equal(d.strict, true);
     assert.equal(d.input_schema.additionalProperties, false);

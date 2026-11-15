@@ -84,8 +84,8 @@ export const TOOL_DEFS = [
   { name: 'where_to_list', description: 'Returns what each site keeps after fees at the sold price range. It cannot predict sale odds, time to sell or an expected keep ranking without a sale curve.',
     input_schema: objectSchema({ query: querySchema, condition: conditionSchema }), strict: true },
   { name: 'market_store', description: 'Returns rows from a governed market function, or cited SQL and tables from Genie for a signed-in person. It cannot answer from a disconnected store or a missing function.',
-    input_schema: { ...objectSchema({ function: { type: 'string', maxLength: 200, enum: Object.keys(FUNCTIONS) }, args: { anyOf: Object.keys(FUNCTIONS).map(n => functionSchema(n as FunctionName)) } }),
-      anyOf: Object.keys(FUNCTIONS).map(n => objectSchema({ function: { const: n, type: 'string', maxLength: 200 }, args: functionSchema(n as FunctionName) })) }, strict: true },
+    // The model API refuses oneOf, allOf and anyOf at the top of an input_schema; runTool checks each function's own args.
+    input_schema: objectSchema({ function: { type: 'string', maxLength: 200, enum: Object.keys(FUNCTIONS) }, args: { anyOf: Object.keys(FUNCTIONS).map(n => functionSchema(n as FunctionName)) } }), strict: true },
 ] satisfies { name: ToolName; description: string; input_schema: Record<string, unknown>; strict: true }[];
 
 export function defaultDeps(env: Record<string, string | undefined>, fetch: typeof globalThis.fetch, log: Log): ToolDeps {

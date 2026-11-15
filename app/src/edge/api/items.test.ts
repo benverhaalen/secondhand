@@ -268,3 +268,14 @@ test('the published example item cursor resumes to an empty final page', async (
   assert.equal(response.status, 200, 'the advertised example cursor must be usable');
   assert.deepEqual(await response.json(), { data: [], next_cursor: null });
 });
+
+test('an edited example collection ends without advertising a removed example row', async () => {
+  const { runtime } = await import('./runtime.ts');
+  const e = examples.find(e => e.name === 'items.list')!;
+  const sample = e.response as { data: { id: string }[] };
+  const last = runtime.store.get('item', 'usr_8f2k', sample.data.at(-1)!.id)!;
+  runtime.store.put('item', { ...last, deleted: true });
+  const response = await call(e);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).next_cursor, null);
+});

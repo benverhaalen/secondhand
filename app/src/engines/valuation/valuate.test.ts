@@ -1,10 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { valuate, basisOf, type ValuateCtx, type ValuationItem, type ObservationPort } from './valuate.ts';
+import { valuate, basisOf, saleCurve, type ValuateCtx, type ValuationItem, type ObservationPort } from './valuate.ts';
 import { check } from './check.ts';
 import { fromResolved, nEff, type Comp } from './comps.ts';
 import { DECLARED, resolve } from './params.ts';
 import { memoryStore, type ParamStore, type Scope } from '../param/param.ts';
+import fs from 'node:fs/promises';
+import { fittedReader } from '../param/export.ts';
+import { onOurSale } from './aci.ts';
 
 const as_of = '2026-11-15T00:00:00Z';
 const ago = (days: number) => new Date(Date.parse(as_of) - days * 86400000).toISOString();
@@ -210,4 +213,238 @@ test('an empty basis with a promoted zero sample threshold still requests fresh 
   const { ctx } = setup(); promote(ctx.params, 'min_n_eff', 0);
   const out = await valuate(item, ctx);
   assert.equal(out.gather?.reason, 'stale');
+});
+
+async function fitted(ctx: ValuateCtx, scopes: string[] = ['hackathon_demo']) {
+  let pending: Promise<unknown> = Promise.resolve(); const notes: unknown[] = [];
+  ctx.fitted = fittedReader({ path: new URL('../param/fixtures/export-latest.json', import.meta.url).pathname, scopes,
+    log: { ...ctx.log, timed: (_name, fn) => { const result = fn(); pending = Promise.resolve(result); return result; },
+      note: (...args) => { notes.push(args); } } });
+  ctx.fitted.loaded(); await pending; return notes;
+}
+const sneakers: ValuationItem = { ...item, kind: 'sneakers', sites: [{ site: 'mercari' }] };
+const mercariSales = () => sales(8).map(c => ({ ...c, site: 'mercari' as const }));
+
+test('exported site-free calibration checks a cited sneakers range and names its run in the citation', async () => {
+  const { ctx } = setup(mercariSales()); await fitted(ctx);
+  const { valuation } = await valuate(sneakers, ctx);
+  assert.equal(valuation.range.group, 'export:fixture:DB4:2026-11-15:sneakers');
+  assert.equal(valuation.range.state, 'checked');
+  assert.equal(valuation.per_site[0].curve_checked, true);
+  // Site and item medians agree: ratio 1 is halfway between .5 and 1.5.
+  assert.deepEqual(valuation.per_site[0].p_sale, { d7: .1875, d30: .375, d90: .625 });
+  assert.ok(JSON.stringify(valuation.citation).includes('fixture:DB4:2026-11-15 measures:fixture.calibration'));
+});
+
+test('exported calibration never bypasses thin basis, checked minimum, coverage, or Wilson thresholds', async () => {
+  const thin = setup(mercariSales().slice(0, 2)); await fitted(thin.ctx);
+  assert.equal((await valuate(sneakers, thin.ctx)).valuation.range.state, 'not_checked_yet');
+  for (const [path, value] of [['checked_min_n', 201], ['coverage_min', .81], ['coverage_max', .79], ['checked_wilson_min', .9]] as const) {
+    const { ctx } = setup(mercariSales()); await fitted(ctx);
+    promote(ctx.params, path, value, { kind: 'sneakers' });
+    const { valuation } = await valuate(sneakers, ctx);
+    assert.match(valuation.range.group!, /^export:/);
+    assert.equal(valuation.range.state, 'not_checked_yet', path);
+  }
+});
+
+test('scope exclusion logs once and leaves valuation identical to no fitted reader', async () => {
+  const baseline = await valuate(sneakers, setup(mercariSales()).ctx);
+  const { ctx } = setup(mercariSales()); const notes = await fitted(ctx, []);
+  assert.deepEqual(await valuate(sneakers, ctx), baseline);
+  assert.deepEqual(await valuate(sneakers, ctx), baseline);
+  assert.equal(notes.length, 2);
+});
+
+test('jeans never uses sneakers calibration or curve and depop never uses mercari curve', async () => {
+  const { ctx } = setup(mercariSales()); await fitted(ctx);
+  const jeans = (await valuate({ ...sneakers, kind: 'jeans' }, ctx)).valuation;
+  assert.equal(jeans.range.group, null);
+  assert.equal(jeans.per_site[0].p_sale, null);
+  const { valuation } = await valuate({ ...sneakers, sites: [{ site: 'depop' }] }, ctx);
+  assert.equal(valuation.per_site[0].p_sale, null);
+});
+
+test('a site price outside the fitted ratios clamps odds to the end bin using the item median', async () => {
+  const rows = [...sales(24).map(c => ({ ...c, price_cents: 1000 })),
+    ...mercariSales().map(c => ({ ...c, comp_id: `mercari:${c.comp_id}` }))];
+  const { ctx } = setup(rows); await fitted(ctx);
+  const { valuation } = await valuate(sneakers, ctx);
+  const site = valuation.per_site[0];
+  assert.equal(valuation.range.q50, 1000);
+  assert.ok(site.q50! / valuation.range.q50! > 1.5);
+  assert.equal(site.curve_checked, true);
+  assert.deepEqual(site.p_sale, { d7: .125, d30: .25, d90: .5 });
+});
+
+test('a null item median still answers without a fitted curve', async () => {
+  const { ctx } = setup(); await fitted(ctx);
+  const { valuation, gather } = await valuate(sneakers, ctx);
+  assert.equal(valuation.range.q50, null);
+  assert.equal(valuation.per_site[0].curve_checked, false);
+  assert.equal(valuation.per_site[0].p_sale, null);
+  assert.equal(valuation.per_site[0].days, null);
+  assert.ok(gather);
+});
+
+async function curveFit(site = 'mercari') {
+  const { ctx } = setup(); await fitted(ctx);
+  return ctx.fitted!.curve({ kind: 'sneakers', site })!.value_or_hyperparams;
+}
+
+test('fitted probabilities interpolate between ratio bins and clamp both ends', async () => {
+  const curve = saleCurve(await curveFit(), 4000);
+  // At ratio 1, each probability is the mean of the .5 and 1.5 bins.
+  assert.deepEqual([7, 30, 90].map(day => curve.p(4000, day)), [.1875, .375, .625]);
+  // Ratio 1.25 is three quarters of the way from .5 to 1.5.
+  assert.deepEqual([7, 30, 90].map(day => curve.p(5000, day)), [.15625, .3125, .5625]);
+  assert.deepEqual([7, 30, 90].map(day => curve.p(8000, day)), [.125, .25, .5]);
+  assert.deepEqual([7, 30, 90].map(day => curve.p(1000, day)), [.25, .5, .75]);
+});
+
+test('fitted probabilities start at zero, interpolate every day segment and stop growing after day 90', async () => {
+  const curve = saleCurve(await curveFit(), 4000);
+  assert.equal(curve.p(4000, 0), 0);
+  assert.equal(curve.p(4000, 3.5), .09375);
+  assert.equal(curve.p(4000, 18.5), .28125);
+  assert.equal(curve.p(4000, 60), .5);
+  assert.equal(curve.p(4000, 120), .625);
+});
+
+test('fitted days solve the first crossing exactly and return null for an unreachable probability', async () => {
+  const curve = saleCurve(await curveFit(), 4000);
+  assert.equal(curve.t(4000, 0), 0);
+  assert.equal(curve.t(4000, .09375), 3.5);
+  assert.equal(curve.t(4000, .28125), 18.5);
+  assert.equal(curve.t(4000, .5), 60);
+  assert.equal(curve.t(4000, .625), 90);
+  assert.equal(curve.t(4000, .75), null);
+  assert.equal(curve.t(8000, .5), 90);
+  assert.equal(curve.t(1000, .5), 30);
+});
+
+test('a price-blind curve ignores price and returns exported t25, t50 and t75 before solving other quantiles', async () => {
+  const fit = await curveFit('stockx'), curve = saleCurve(fit, 4000);
+  for (const price of [100, 4000, 100000]) {
+    assert.deepEqual([7, 30, 90].map(day => curve.p(price, day)), [.2, .5, .8]);
+    assert.equal(curve.t(price, .25), fit.t![0]);
+    assert.equal(curve.t(price, .5), fit.t![1]);
+    assert.equal(curve.t(price, .75), fit.t![2]);
+    assert.equal(curve.t(price, .1), 3.5);
+    assert.equal(curve.t(price, .9), null);
+  }
+});
+
+test('valuate preserves measured days past 90 and a not-reached share from a DB4 price-blind row', async () => {
+  const { ctx, errors } = setup(sales(8));
+  let pending: Promise<unknown> = Promise.resolve();
+  ctx.fitted = fittedReader({ path: new URL('../param/fixtures/export-db4-shape.json', import.meta.url).pathname,
+    scopes: ['hackathon_demo'], log: { ...ctx.log, note: () => {},
+      timed: (_name, fn) => { const result = fn(); pending = Promise.resolve(result); return result; } } });
+  ctx.fitted.loaded(); await pending;
+  const { valuation } = await valuate({ ...item, kind: 'cards_collectibles' }, ctx);
+  assert.deepEqual(valuation.per_site[0].days, { t25: 30, t50: 107, t75: null });
+  assert.deepEqual(errors, []);
+});
+
+test('a price-blind not-reached share stays null even when horizon probabilities could imply a day', async () => {
+  const fit = await curveFit('stockx');
+  fit.t = [null, 107, null];
+  const curve = saleCurve(fit, 4000);
+  for (const price of [100, 4000, 100000]) {
+    assert.equal(curve.t(price, .25), null);
+    assert.equal(curve.t(price, .5), 107);
+    assert.equal(curve.t(price, .75), null);
+  }
+});
+
+test('flat probability segments return their first crossing without division by zero', async () => {
+  const fit = await curveFit(); fit.bins = [{ ratio: 1, p: [0, .5, .5] }]; fit.t = null;
+  const curve = saleCurve(fit, 4000);
+  assert.equal(curve.t(4000, 0), 0);
+  assert.equal(curve.t(4000, .5), 30);
+  assert.equal(curve.t(4000, .75), null);
+});
+
+test('multi-bin curves solve days from the interpolated probabilities even if exported t is present', async () => {
+  const fit = await curveFit(); fit.t = [1, 2, 3];
+  assert.equal(saleCurve(fit, 4000).t(4000, .5), 60);
+});
+
+test('fitted curves preserve the one completed source read, deadline and persistence snapshot', async () => {
+  const { ctx, writes } = setup(); await fitted(ctx); ctx.budget_ms = 5;
+  let calls = 0, finish!: (rows: Comp[]) => void;
+  ctx.sources = [async () => { calls++; return mercariSales(); },
+    () => new Promise(resolve => { finish = resolve; })];
+  const { valuation } = await valuate(sneakers, ctx);
+  assert.equal(calls, 1);
+  assert.equal(valuation.partial, true);
+  assert.deepEqual(valuation.per_site[0].p_sale, { d7: .1875, d30: .375, d90: .625 });
+  assert.equal(writes.length, 1);
+  assert.deepEqual(writes[0].rows, mercariSales());
+  finish(sales(30)); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(writes.length, 1);
+  assert.equal(valuation.observation_snapshot.length, 8);
+});
+
+test('fitted curve replay logs uncitable rows once with their original batch and keeps that site hidden', async () => {
+  const { ctx, errors } = setup(mercariSales()); await fitted(ctx); errors.length = 0;
+  ctx.sources = [async () => [{ ...sales(1)[0], comp_id: 'uncited', site: 'depop', citation: '' }]];
+  const { valuation } = await valuate({ ...sneakers, sites: [{ site: 'mercari' }, { site: 'depop' }] }, ctx);
+  assert.deepEqual(valuation.per_site.find(s => s.site === 'mercari')?.p_sale, { d7: .1875, d30: .375, d90: .625 });
+  assert.equal(valuation.per_site.find(s => s.site === 'depop')?.state, 'hidden');
+  assert.deepEqual(errors, [{ where: 'valuation.check.uncitable', error: { batch: 1, count: 1 } }]);
+});
+
+test('fitted curve replay logs a bad site calibration once and keeps the site hidden', async () => {
+  const { ctx, errors } = setup(mercariSales()); await fitted(ctx); errors.length = 0;
+  const { valuation } = await valuate({ ...sneakers, sites: [{ site: 'mercari',
+    calibration: { Q_g: -1, group: 'fixture:bad', n: 200, hits: 160, coverage: .8, passes: true } }] }, ctx);
+  assert.equal(valuation.per_site[0].state, 'hidden');
+  assert.equal(errors.length, 1);
+  assert.equal(errors[0].where, 'valuation.check.site_citation');
+  assert.match((errors[0].error as Error).message, /Q_g/);
+});
+
+test('fitted curve replay preserves a logger with inherited methods and its receiver', async () => {
+  const { ctx, errors } = setup(mercariSales()); await fitted(ctx);
+  class Logger {
+    names: string[] = [];
+    timed<T>(name: string, fn: () => T): T { this.names.push(name); return fn(); }
+    error(where: string, error: unknown) { errors.push({ where, error }); }
+  }
+  const log = new Logger(); ctx.log = log;
+  const { valuation } = await valuate(sneakers, ctx);
+  assert.deepEqual(valuation.per_site[0].p_sale, { d7: .1875, d30: .375, d90: .625 });
+  assert.equal(log.names.filter(name => name === 'valuation.check').length, 2);
+});
+
+test('our exact group takes over only at conformal_parent_min; parent and other person scores never take over', async () => {
+  const { ctx } = setup(mercariSales()); ctx.person = 'person:test'; await fitted(ctx);
+  const group = { kind: 'sneakers', person: ctx.person };
+  for (let i = 0; i < 40; i++) onOurSale(ctx.params, { kind: 'sneakers' }, { q10: 4000, q90: 5000 }, 4500, as_of);
+  for (let i = 0; i < 29; i++) onOurSale(ctx.params, group, { q10: 4000, q90: 5000 }, 4500, as_of);
+  assert.match((await valuate(sneakers, ctx)).valuation.range.group!, /^export:/);
+  onOurSale(ctx.params, group, { q10: 4000, q90: 5000 }, 4500, as_of);
+  assert.equal((await valuate(sneakers, ctx)).valuation.range.group, JSON.stringify(group));
+  const other = await valuate(sneakers, { ...ctx, person: 'person:other' });
+  assert.match(other.valuation.range.group!, /^export:/);
+});
+
+test('a refresh in flight does not delay valuate or discard the previous calibration', async t => {
+  const { ctx } = setup(mercariSales()); let now = 0, pending: Promise<unknown> = Promise.resolve();
+  ctx.fitted = fittedReader({ path: new URL('../param/fixtures/export-latest.json', import.meta.url).pathname,
+    scopes: ['hackathon_demo'], now: () => now, every_ms: 10,
+    log: { ...ctx.log, note: () => {}, timed: (_name, fn) => { const result = fn(); pending = Promise.resolve(result); return result; } } });
+  ctx.fitted.loaded(); await pending; const baseline = await valuate(sneakers, ctx);
+  const read = fs.readFile; let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  t.mock.method(fs, 'readFile', async (...args: Parameters<typeof read>) => { await gate; return read(...args); });
+  now = 11;
+  try {
+    const result = await Promise.race([valuate(sneakers, ctx), new Promise<never>((_resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('valuate waited for fitted refresh')), 1000); timer.unref();
+    })]);
+    assert.deepEqual(result, baseline);
+  } finally { release(); await pending; }
 });
