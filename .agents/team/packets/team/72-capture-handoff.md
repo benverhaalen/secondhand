@@ -19,7 +19,7 @@ Nate ([words](../../../../product/words.md#2026-11-15-nate-wrap-up-the-sessions-
 **Does not work, or is not joined**
 - The capture screen calls no route: `app/src/app/camera.tsx` plays scripted steps. This is Ben's screen.
 - The app has no LiDAR, ARKit or Object Capture code, so `device`, `reads[]` and scan extents never come from a phone.
-- Parts (F17) are not on main. The engine half is in worker `cap-parts-1` (section 2); the routes half is unbuilt (`brief-cap-parts-2.txt`). The four canon rows the orchestrator approved wait on that branch: they land in the commit that merges it (`canon-rows.md` in the notes folder, with item 3 reworded so that `custom_build` is an attribute with source, confidence and evidence).
+- Parts (F17) are not on main. The engine half is parked on `w/cap-parts-1` at 09f42821, with 3 parser tests red (section 2); the routes half is unbuilt (`brief-cap-parts-2.txt`). The four canon rows the orchestrator approved wait on that branch: they land in the commit that merges it (`canon-rows.md` in the notes folder, with item 3 reworded so that `custom_build` is an attribute with source, confidence and evidence).
 - Captures live in memory only (F5, waits on integration's tables), and no job runner calls `applyJobResult` (F6).
 - `suggest.py`, `judge_type.py`, `learn.py` and `note.py` have no product caller (F7), so nothing learns.
 - The item card shows every captured confidence as 0 (F16, integration's `items.ts`).
@@ -77,7 +77,12 @@ Completion: capture's row in [completion](../../../../spec/plans/completion.md) 
 
 ## 2. Open branches and worktrees on the Mac
 
-**Open now:** `cap-parts-1`, started 2026-11-15 night, `gpt-6.1-sol` at high, brief `/tmp/brief-cap-parts-1.txt` (copy `brief-cap-parts-1.txt` in the session notes folder (`side-session-notes/local_4b3a0b4d-...`)). It holds row 7's engine half: table, select, fields, plan, `parts.ts`, walks, the rename. Not yet read or merged. To finish it: read `WORKER_REPORT.md`, `git status` against the owned list, the diff against the brief and the spec, rerun each test file and `tsc` yourself, and check that the nine existing walk counts did not move. Then send `brief-cap-parts-2.txt` (the routes half, which also fixes the `captures.ts:29` swallowed error that `.agents/check.mjs` flags) into the same worktree with `AGAIN=1`, after merging `origin/main` into it. A fresh reviewer reads the whole diff before the merge to Windows.
+**Parked:** `cap-parts-1` at 09f42821 (branch `w/cap-parts-1`, committed in its Mac worktree, nothing uncommitted). Row 7's engine half is built. Passing, per the worker: table 23, select 21, fields 40, plan 51, walk 15, complete 10, process 4, `test_process.py` 11, `tsc` clean. The nine existing walk counts are unchanged; the new walks count prebuilt desktop 2, custom desktop without a screen 6, with a screen 4, laptop 3. `parts.test.ts`: 16 pass and 3 fail, because the spec's old size rule read Windows' 476.9 as 500. The spec now has the binary-or-decimal rule (section 2, the parser). Walk D's plan differs from before only in `kind: phones` (its questions are byte-identical; the test pins a hash of the rest). To land it, in this order:
+1. A follow-up brief, `AGAIN=1` into the same worktree, to implement the new size rule until the 3 tests pass.
+2. Rerun every file yourself, then a fresh reviewer on the diff.
+3. Merge `origin/main` there, then brief 2 (`brief-cap-parts-2.txt`).
+4. Grep the repo for `phones_laptops`, then land with the four canon rows in one commit.
+None of this has been read by a lead yet: the numbers above are the worker's claim.
 
 
 | Worktree (`~/dev/projects/secondhand-wt/`) | Holds | State |
