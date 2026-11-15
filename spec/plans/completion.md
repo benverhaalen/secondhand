@@ -17,13 +17,15 @@ An area's percent is its share of yes cells.
 
 | Area | Pieces | Built | Joined | Real | Reviewed | Yes cells | Percent |
 |---|---|---|---|---|---|---|---|
-| Capture | 10 | 9 | 1 | 0 | 6 | 16 of 40 | 40% |
+| Capture | 10 | 9 | 5 | 5 | 6 | 25 of 40 | 62% |
 | Engines | 11 | 9 | 7 | 2 | 0 | 18 of 44 | 41% |
 | API, events, search, bench | 16 | 11 | 6 | 6 | 0 | 23 of 64 | 36% |
 | Databricks | 9 | 6 | 3 | 1 | 0 | 10 of 36 | 28% |
-| **All four** | 46 | 35 | 17 | 9 | 6 | **67 of 184** | **36%** |
+| **All four** | 46 | 35 | 21 | 14 | 6 | **76 of 184** | **41%** |
 
 Read across: three quarters of the pieces are built and pass their tests, about a third are joined into the running product, a fifth have touched real data, and an eighth have been freshly reviewed. The site harnesses are the orchestrator's and are not in the table: public reads are proved live on Depop, Poshmark, Mercari and eBay, Dupe's licensed search is built, and no signed-in read or write has run on a real account.
+
+Capture, recounted by the capture lead at the stop (2026-11-15, main at bc62e789): Built 9 (every piece but measure from depth, which needs the Swift module on a device). Joined 5: selection, field ladders and the question plan reach the person through the capture routes (fc43c5a0, bc62e789); the routes themselves; completeness through `listing/build.ts:86`. Not joined: close variants and studio asks (their inputs arrive only through `applyJobResult`, which no job runner calls yet), photo and identify (Python jobs with no runner). Real 5: selection, ladders, the plan and completeness on Ben's three real garments with a recorded vision read, and the photo score on their real pixels (`node scripts/capture-real.mjs`, `spec/items/capture-real/2026-11-15.json`, data captured, one run on three items, not accuracy). Reviewed 6: the six engine pieces; the routes' fresh review of bc62e789 is running.
 
 ## Does the real-time loop run end to end?
 

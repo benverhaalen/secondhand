@@ -52,6 +52,25 @@ def test_spark_adapter_matches_csv_loader_timestamps_flags_and_fields(tmp_path):
     assert set(b.to_runner_rows([spark_row])[0]) == set(e.FIELDS)
 
 
+@pytest.mark.parametrize('source, timestamps', [
+    ('stockx_2019', ('2019-01-01', '2019-01-02', '2018-12-01')),
+    ('synthetic', ('2019-01-01T00:00:00Z', '2019-01-02T00:00:00Z', '2018-12-01T00:00:00Z')),
+])
+def test_spark_timestamps_match_csv_and_hash(tmp_path, source, timestamps):
+    keys = ('listed_at', 'at', 'released_at')
+    raw = {'row_id': 'one', 'source': source, **dict(zip(keys, timestamps))}
+    path = tmp_path / 'rows.csv'
+    with path.open('w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=list(raw))
+        writer.writeheader()
+        writer.writerow(raw)
+    loaded = e.load(str(path))
+    spark_row = {**raw, **dict(zip(keys, (datetime(2019, 1, 1), datetime(2019, 1, 2), datetime(2018, 12, 1))))}
+    converted = b.to_runner_rows([spark_row])
+    assert converted == loaded
+    assert b.rows_hash(converted) == b.rows_hash(loaded)
+
+
 def test_float_money_never_leaves_backtest_tables():
     rows, est = sample()
     records = b.estimates_table([est], rows, 'run')
@@ -252,6 +271,34 @@ def test_serverless_bundle_passes_workspace_root_to_both_jobs():
         assert 'environment_key: learning' in job
         assert 'new_cluster' not in job and 'existing_cluster_id' not in job
         assert '--contestants' not in job
+
+
+@pytest.mark.parametrize('option, expected', [([], '/Shared/secondhand/valuation-backtest'),
+                                              (['--experiment', '/Shared/custom backtest'], '/Shared/custom backtest')])
+def test_experiment_argument_reaches_mlflow(monkeypatch, option, expected):
+    from unittest.mock import MagicMock
+    class Stop(Exception):
+        pass
+    spark = MagicMock()
+    spark.sql.return_value.first.return_value = {'version': 1}
+    spark.table.return_value.where.return_value.collect.return_value = []
+    sql = MagicMock()
+    sql.SparkSession.getActiveSession.return_value = spark
+    mlflow = MagicMock()
+    mlflow.set_experiment.side_effect = Stop
+    monkeypatch.setitem(sys.modules, 'pyspark.sql', sql)
+    monkeypatch.setitem(sys.modules, 'mlflow', mlflow)
+    with pytest.raises(Stop):
+        b.main(option)
+    mlflow.set_experiment.assert_called_once_with(expected)
+
+
+def test_bundle_passes_experiment_resources():
+    import re
+    bundle = (ROOT / 'deploy/resources/learning.yml').read_text()
+    for job, resource in [('valuation_backtest', 'valuation_backtest_experiment'), ('param_walk', 'param_walk_experiment')]:
+        section = re.search(rf'^    {job}:\n(.*?)(?=^    \w+:|\Z)', bundle, re.M | re.S)[1]
+        assert f'--experiment, "${{resources.experiments.{resource}.name}}"' in section
 
 
 def test_current_market_model_cited_hides_distinguish_count_from_width():

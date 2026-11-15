@@ -12,12 +12,12 @@ from pathlib import Path
 from typing import NamedTuple
 
 KEY = ('run_id', 'tool', 'item_id', 'question')
-MERGE_KEYS = {'record': KEY, 'number': (*KEY, 'name'), 'fact': (*KEY, 'kind'), 'site': (*KEY, 'site')}
+MERGE_KEYS = {'record': KEY, 'number': (*KEY, 'position'), 'fact': (*KEY, 'position'), 'site': (*KEY, 'position')}
 SCHEMAS = {
     'record': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, manifest_sha256 STRING, asked_at TIMESTAMP, first_at TIMESTAMP, full_at TIMESTAMP, first_ms DOUBLE, full_ms DOUBLE, ok BOOLEAN, error STRING, range_json STRING, delist_json STRING, raw_ref STRING',
-    'number': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, name STRING, value_cents BIGINT, citation_id STRING, evidence ARRAY<STRING>',
-    'fact': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, kind STRING, count BIGINT',
-    'site': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, site STRING',
+    'number': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, position INT, name STRING, value_cents BIGINT, citation_id STRING, evidence ARRAY<STRING>',
+    'fact': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, position INT, kind STRING, count BIGINT',
+    'site': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, position INT, site STRING',
     'load_report': 'run_id STRING, data STRING, file STRING, lines BIGINT, loaded BIGINT, rejected BIGINT, reasons STRING',
 }
 
@@ -113,9 +113,6 @@ def _validate(row):
             _string(entry['site'], 'delist.site')
             _time(entry['sold_at'], 'sold_at', True)
             _time(entry['ended_at'], 'ended_at', True)
-    for name, values in [('site', row['sites']), ('kind', [f['kind'] for f in row['facts']]), ('name', [n['name'] for n in row['numbers']])]:
-        if len(values) != len(set(values)):
-            raise ValueError(f'duplicate {name} in record')
     return asked, times
 
 
@@ -143,9 +140,9 @@ def parse(lines) -> Parsed:
                         'range_json': json.dumps(row['range']) if row['range'] is not None else None,
                         'delist_json': json.dumps(row['delist']) if row['delist'] is not None else None,
                         'raw_ref': row['raw_ref']})
-        numbers.extend({**base, **n} for n in row['numbers'])
-        facts.extend({**base, **f} for f in row['facts'])
-        sites.extend({**base, 'site': s} for s in row['sites'])
+        numbers.extend({**base, **n, 'position': i} for i, n in enumerate(row['numbers']))
+        facts.extend({**base, **f, 'position': i} for i, f in enumerate(row['facts']))
+        sites.extend({**base, 'site': s, 'position': i} for i, s in enumerate(row['sites']))
     return Parsed(records, numbers, facts, sites, rejects)
 
 
@@ -167,6 +164,12 @@ def main():
     log.job('load_bench', 'load_bench', 'running')
     try:
         spark = SparkSession.getActiveSession() or SparkSession.builder.getOrCreate()
+        for name in ('number', 'fact', 'site'):
+            table = 'secondhand.measures.bench_' + name
+            def migrate():
+                if 'position' not in spark.table(table).columns:
+                    spark.sql(f'ALTER TABLE {table} ADD COLUMNS (position INT)')
+            log.call('db', 'migrate_bench_' + name, {'table': table}, migrate)
         directory = Path('/Volumes/secondhand/raw/landing/bench')
         files = log.call('tool', 'list_bench_files', {'path': str(directory)},
                          lambda: sorted(directory.glob('*/records.jsonl')), describe=lambda paths: {'files': len(paths)})

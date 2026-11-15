@@ -10,6 +10,67 @@ import { createLog, memorySink } from '../../../../log/index.js';
 import { fileStore } from '../events/file-store.ts';
 import { depopAdapters, PATHS } from '../harness/sites/depop/adapter.ts';
 import { fakeAdapter, fail, type Adapter } from '../harness/protocol.ts';
+import { URLS, type PageClient } from '../harness/sites/ebay/adapter.ts';
+
+test('offline eBay search tries endpoint then page, both no_route, without network', async t => {
+  const before = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
+  process.env.SECONDHAND_LIVE_SITES = 'depop';
+  const network = t.mock.method(globalThis, 'fetch', async () => { throw new Error('offline eBay must not fetch'); });
+  const sink = memorySink();
+  const r = createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink }));
+  const result = await r.harness.call('ebay', 'search', { q: 'levis 501 jeans' });
+  assert.ok(!result.ok && result.error.code === 'no_route');
+  assert.equal(result.meta.route_id, 'ebay.search.page', 'offline page route must remain registered');
+  assert.equal(result.meta.fell_back, true);
+  assert.match(sink.text(), /ebay.search.endpoint/);
+  assert.match(sink.text(), /ebay.search.page/);
+  assert.equal((sink.text().match(/"code":"no_route"/g) ?? []).length, 2, 'each route must log no_route');
+  assert.equal(network.mock.callCount(), 0);
+});
+
+test('offline eBay does not use a planted page client', async t => {
+  const before = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
+  process.env.SECONDHAND_LIVE_SITES = '';
+  let loads = 0;
+  const ebayPageClient: PageClient = { signed_in: false, async page() { loads++; throw new Error('offline eBay must not load pages'); } };
+  const r = createRuntime(memoryStore(), log(), { ebayPageClient });
+  const result = await r.harness.call('ebay', 'search', { q: 'levis 501 jeans' });
+  assert.ok(!result.ok && result.error.code === 'no_route');
+  assert.equal(loads, 0);
+});
+
+test('enabled eBay falls from the keyless endpoint to the planted page client through its site service', async t => {
+  const before = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
+  process.env.SECONDHAND_LIVE_SITES = 'depop,ebay';
+  const network = t.mock.method(globalThis, 'fetch', async () => { throw new Error('planted eBay client must own page reads'); });
+  const seen: string[] = [];
+  const ebayPageClient: PageClient = { signed_in: false, async page(url, signal) {
+    assert.equal(signal.aborted, false);
+    seen.push(url);
+    const fixture = url === URLS.search('levis 501 jeans', false) ? 'page-search.html' : url === URLS.store('seller_a') ? 'page-store.html' : undefined;
+    assert.ok(fixture, 'unexpected page URL');
+    return { status: 200, html: readFileSync(new URL(`../harness/sites/ebay/fixtures/${fixture}`, import.meta.url), 'utf8') };
+  } };
+  const r = createRuntime(memoryStore(), log(), { ebayPageClient });
+  const search = await r.harness.call<Record<string, unknown>[]>('ebay', 'search', { q: 'levis 501 jeans' });
+  assert.ok(search.ok, JSON.stringify(search));
+  assert.equal(search.data.length, 3);
+  assert.equal(search.data[0].price_cents, 3900);
+  assert.equal(search.meta.route_id, 'ebay.search.page');
+  assert.equal(search.meta.fell_back, true, 'keyless endpoint must run before the page route');
+  const storefront = await r.harness.call('ebay', 'read_storefront', { username: 'seller_a' });
+  assert.ok(storefront.ok, JSON.stringify(storefront));
+  assert.equal(storefront.meta.route_id, 'ebay.read_storefront.page');
+  assert.equal(storefront.meta.fell_back, true);
+  const sold = await r.harness.call('ebay', 'search', { q: 'levis 501 jeans', status: 'sold' });
+  assert.ok(!sold.ok && sold.error.code === 'auth_expired' && sold.error.hint.do === 'relink');
+  assert.equal(sold.meta.route_id, 'ebay.search.page');
+  assert.deepEqual(seen, [URLS.search('levis 501 jeans', false), URLS.store('seller_a')]);
+  assert.equal(network.mock.callCount(), 0);
+});
 
 test('watcher sweeps only the linked Depop account through site adapters and saves its baseline', async t => {
   const dir = mkdtempSync(join(tmpdir(), 'secondhand-watch-runtime-'));
@@ -341,4 +402,19 @@ test('all seeded product rows keep example provenance through reseeding', () => 
   assert.ok(st.decisions().every(row => row.data === 'example'), 'seeded decisions carry example provenance');
   createRuntime(r.store, log());
   assert.equal(st.get('account', 'usr_8f2k', 'acc_dp1')?.data, 'example');
+});
+
+test('Mercari sold reads are registered but make no network call with live sites off', async () => {
+  const r = createRuntime(memoryStore(), log());
+  r.store.put('account', { id: 'acc_mc', user_id: 'owner', site: 'mercari', token_ref: 'mercari-test' });
+  await r.vault.put('mercari-test', { cookies: [], origins: [] });
+  const fetchBefore = globalThis.fetch;
+  let fetches = 0;
+  globalThis.fetch = async () => { fetches++; throw new Error('unexpected network'); };
+  try {
+    const result = await r.harness.call('mercari', 'search', { q: 'carhartt hoodie', status: 'sold', account_id: 'acc_mc', person_id: 'owner' });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.error.message, /live reads are (disabled|unavailable)/);
+    assert.equal(fetches, 0);
+  } finally { globalThis.fetch = fetchBefore; }
 });

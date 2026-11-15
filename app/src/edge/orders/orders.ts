@@ -36,7 +36,7 @@ function reachable(from: OrderState, to: OrderState): boolean {
 
 export interface OrderRead {
   kind: 'sale' | 'purchase'; site: Site; external_order_id: string; user_id: string; item_id: string; listing_id?: string;
-  state: OrderState; price_cents: number; fees_cents: number; shipping_cents: number; payout_cents?: number;
+  state: OrderState; price_cents: number; fees_cents: number | null; shipping_cents: number; payout_cents?: number;
 }
 export interface OrderRow extends OrderRead { id: string; payout_recorded_at?: string; history: { state: OrderState; at: string }[] }
 
@@ -64,7 +64,7 @@ export function orderBook(now: () => string = () => new Date().toISOString()) {
   };
 }
 
-export interface LedgerRow { order_id: string; site: Site; item_id: string; state: OrderState; earned_cents: number; fees_cents: number; kept_cents: number; reversed: boolean; settled: boolean }
+export interface LedgerRow { order_id: string; site: Site; item_id: string; state: OrderState; earned_cents: number; fees_cents: number | null; kept_cents: number | null; reversed: boolean; settled: boolean }
 
 // One row per sale order. A refunded or cancelled sale is reversed: it counts zero.
 export function ledger(orders: OrderRow[]): LedgerRow[] {
@@ -72,7 +72,7 @@ export function ledger(orders: OrderRow[]): LedgerRow[] {
     const reversed = o.state === 'refunded' || o.state === 'cancelled';
     const earned = reversed ? 0 : o.price_cents;
     const fees = reversed ? 0 : o.fees_cents;
-    const kept = reversed ? 0 : (o.payout_cents ?? o.price_cents - o.fees_cents);
+    const kept = reversed ? 0 : (o.fees_cents === null ? null : o.payout_cents ?? o.price_cents - o.fees_cents);
     return { order_id: o.id, site: o.site, item_id: o.item_id, state: o.state, earned_cents: earned, fees_cents: fees, kept_cents: kept, reversed, settled: !!o.payout_recorded_at };
   });
 }
