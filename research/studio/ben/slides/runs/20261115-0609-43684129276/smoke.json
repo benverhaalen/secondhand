@@ -1,0 +1,156 @@
+[
+ {
+  "model": "google/gemini-4-carbon",
+  "answer": {
+   "garment": "yellow t-shirt",
+   "text_seen": [
+    "MARQUETTE",
+    "74",
+    "NCAA FINAL FOUR TEAM"
+   ]
+  },
+  "seconds": 5.8,
+  "usage": {
+   "prompt_tokens": 1209,
+   "completion_tokens": 101,
+   "total_tokens": 1310,
+   "cost": 0.003428,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.003428,
+    "upstream_inference_prompt_cost": 0.002418,
+    "upstream_inference_completions_cost": 0.00101
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 50,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   }
+  }
+ },
+ {
+  "model": "google/gemini-4-hydrogen",
+  "answer": {
+   "garment": "t-shirt",
+   "text_seen": [
+    "MARQUETTE",
+    "74",
+    "NCAA FINAL FOUR TEAM"
+   ]
+  },
+  "seconds": 2.2,
+  "usage": {
+   "prompt_tokens": 1209,
+   "completion_tokens": 304,
+   "total_tokens": 1513,
+   "cost": 0.0040935,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0040935,
+    "upstream_inference_prompt_cost": 0.0018135,
+    "upstream_inference_completions_cost": 0.00228
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 271,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   }
+  }
+ },
+ {
+  "model": "google/gemini-nano-banana-2.1",
+  "image": true,
+  "seconds": 6.8,
+  "usage": {
+   "prompt_tokens": 1135,
+   "completion_tokens": 1360,
+   "total_tokens": 2495,
+   "cost": 0.0371025,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0371025,
+    "upstream_inference_prompt_cost": 0.0017025,
+    "upstream_inference_completions_cost": 0.0354
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 1120,
+    "audio_tokens": 0
+   }
+  }
+ },
+ {
+  "model": "google/gemini-3-pro-image",
+  "image": true,
+  "seconds": 14.6,
+  "usage": {
+   "prompt_tokens": 574,
+   "completion_tokens": 1294,
+   "total_tokens": 1868,
+   "cost": 0.137636,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.137636,
+    "upstream_inference_prompt_cost": 0.001148,
+    "upstream_inference_completions_cost": 0.136488
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 174,
+    "image_tokens": 1120,
+    "audio_tokens": 0
+   }
+  }
+ },
+ {
+  "model": "openai/gpt-5.4-image-2",
+  "image": true,
+  "seconds": 95.0,
+  "usage": {
+   "prompt_tokens": 3063,
+   "completion_tokens": 7101,
+   "total_tokens": 10164,
+   "cost": 0.236379,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.236379,
+    "upstream_inference_prompt_cost": 0.024504,
+    "upstream_inference_completions_cost": 0.211875
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 7024,
+    "audio_tokens": 0
+   }
+  }
+ }
+]
