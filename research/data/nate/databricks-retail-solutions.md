@@ -28,6 +28,38 @@ Databricks' [retail page](https://www.databricks.com/solutions/industries/retail
 
 **A caution on their code.** Every accelerator except the Open Retail Data Model carries Databricks' own licence, not an open one. We follow their patterns and name them; we do not copy their notebooks into this public repo.
 
+## How Databricks shapes dynamic pricing, and our pricing beside it
+
+Added 2026-11-15 on Nate's word ([words](../../../product/words.md#2026-11-15-nate-understand-how-databricks-shapes-dynamic-pricing)). Sources read today: Databricks' [dynamic pricing in airlines, part one](https://www.databricks.com/blog/dynamic-pricing-airlines-how-ai-can-reshape-revenue-strategy) (2025-10-10; *sourced*, the page's text) and its [easyJet story](https://www.databricks.com/customers/easyjet/lakebase) (*sourced*). Part one is the economics and the inputs; it promises a second article on the technical architecture, which a search of databricks.com did not find (*not-found*). The mapping to our engines is an *agent proposal*.
+
+**Their shape, in their terms.**
+- **What is priced:** perishable inventory. A seat has a shelf life; once the doors close it is worth nothing.
+- **The baseline:** a target sales curve, "a rough plan for how many seats should sell at different points before departure".
+- **The adjustment:** AI moves the price off that baseline in real time from seven signals: demand (searches and bookings), competition (what rivals charge for similar flights), customer sensitivity (do bookings hold when the price rises), timing, seasonality and outside events, digital behavior (abandoned carts, clicks that show intent) and history (past bookings and revenue).
+- **What it is steered by:** a few measures a revenue leader watches together (seats filled, revenue and cost per seat mile, a customer satisfaction score), so a price is judged by its effect on the whole plan, not by whether one seat sells.
+- **Who decides:** a person. "AI doesn't replace those choices. Instead, it strengthens them": discount to fill, or hold to protect yield; how fast to answer a rival.
+- **The hard part they name:** bringing the signals into one place, and the latency that pipelines with many hops add before a price can change.
+- **The platform shape** (the easyJet story): Delta Lake as the analytical backbone for demand forecasting, revenue reporting and competitor benchmarking, and Lakebase for the live transactional side, so prices and inventory changes flow between the two.
+- **The criticism they open with:** "surveillance pricing", a price that changes with who is looking.
+
+**Ours, part by part.**
+
+| Their part | Ours | State today |
+|---|---|---|
+| Perishable inventory | One used item: its value falls with weeks listed and with the season | the path engine exists (D12 to D15) |
+| The target sales curve | The sale curve: the chance of sale by day at a price, and the planned drops along it | built; the served valuation passes no curve, so the chance of sale and days come back empty (EN3) |
+| Demand | Watchers, likes, saves, messages and offers on the listing; sell-through by product family | the signals are parsed on eBay and Depop rows; monitoring a person's own listings is not built (SV9) |
+| Competition | Live asking prices for the same product on every marketplace we read | read in the benchmark of 2026-11-15 across five lanes; not yet joined to a valuation |
+| Customer sensitivity | Offer acceptance learned per site and family; where the ask sits in the range | the learner exists and nothing calls it (EN2) |
+| Timing and season | The season and day measures | offline, in Python |
+| History | Sold comps, weighted by age and likeness | served, on comps the system reads |
+| The measures it is steered by | The seller's own aim: sell fast, balanced, or keep the most after fees, with the days and the chance of sale beside each | the three modes are served; the person approves every price |
+| Lakehouse and Lakebase | Observations landed and fitted values exported (DB3, DB4); the server's store | in build; Lakebase is Nate's call (DB10) |
+
+**Where ours goes further, and what to say to a judge.** Their problem is thousands of identical seats with dense booking data; ours is one item nobody has sold before, across marketplaces with different fees and buyers. So we add what their shape does not need: a range with a stated confidence built from few, weighted comps; a choice of marketplace; rights on every row; and every figure rebuilt from the rows it cites. And we price the item, never the person looking at it, which is the answer to the criticism their own article opens with.
+
+**What their article shows we still lack.** The live loop. Their price moves when a signal moves; ours is computed once, on request. Closing it is rows EN2 and EN3 and the watcher, already in the spec; their vocabulary (a target curve, adjusted by named signals, steered by the owner's measures) is the way to present it.
+
 ## The evidence
 
 ## 1. What the retail start page names (https://www.databricks.com/solutions/industries/retail-industry-solutions, sourced, local start.html.txt)
