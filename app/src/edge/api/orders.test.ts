@@ -4,11 +4,14 @@ import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
 import { handlers, manifest } from './orders.ts';
+import { runtime, createRuntime } from './runtime.ts';
+import { memoryStore } from '../events/ports.ts';
 import { ledger } from '../orders/orders.ts';
 
 const prefixes = ["orders","appointments"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
 beforeEach(() => {
+  Object.assign(runtime, createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink: memorySink() })));
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
@@ -37,6 +40,11 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
 });
 for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
+  if (['items.list', 'conversations.list', 'orders.list'].includes(e.name)) { // a list: a person who owns nothing gets an empty list, never the example rows
+    assert.equal(r.status, 200);
+    for (const value of Object.values(await r.json() as Record<string, unknown>)) if (Array.isArray(value)) assert.deepEqual(value, [], `${e.name} shows another person's rows`);
+    return;
+  }
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
 });
 for (const e of examples.filter(e => e.status < 400 && e.endpoint.includes(':id'))) test(e.name + ': unknown resource is 404', async () => {
@@ -98,37 +106,43 @@ test('orders: owned Expo files bind auth and export the contract method', async 
   }
 });
 
-test('order reads use orderBook records rather than fixed money values', async () => {
-  const { ports } = await import('./orders.ts');
-  const all = ports.all;
-  try {
-    ports.all = () => all().map(row => ({ ...row, price_cents: 1000 }));
-    const response = await call(examples.find(e => e.name === 'orders.list')!);
-    assert.equal((await response.json()).data[0].price_cents.amount_cents, 1000);
-  } finally { ports.all = all; }
+test('order reads use stored orderBook records rather than fixed money values', async () => {
+  const row = runtime.store.get('order', 'usr_8f2k', 'ord_2w8')!;
+  assert.ok(row, 'the example order must be seeded in the Store');
+  runtime.store.put('order', { ...row, price_cents: 1000 });
+  const response = await call(examples.find(e => e.name === 'orders.list')!);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).data[0].price_cents.amount_cents, 1000);
 });
 
 test('orders: unknown fees stay null in the response and kept stays unknown in the ledger', async () => {
   const { ports } = await import('./orders.ts');
-  const all = ports.all;
-  try {
-    ports.all = () => all().map(row => ({ ...row, fees_cents: null }));
-    const response = await call(examples.find(e => e.name === 'orders.list')!);
-    assert.equal(response.status, 200, 'an unknown fee must not crash the route');
-    const body = await response.json();
-    assert.equal(body.data[0].fees_cents, null, 'unknown fees must not become a money object or zero');
-    assert.equal(ledger(ports.all())[0].kept_cents, null, 'kept cannot be known before fees');
-  } finally { ports.all = all; }
+  const row = runtime.store.get('order', 'usr_8f2k', 'ord_2w8')!;
+  assert.ok(row, 'the fee check must exercise a stored order');
+  runtime.store.put('order', { ...row, fees_cents: null });
+  const response = await call(examples.find(e => e.name === 'orders.list')!);
+  assert.equal(response.status, 200, 'an unknown fee must not crash the route');
+  assert.equal((await response.json()).data[0].fees_cents, null, 'unknown fees must not become money or zero');
+  assert.equal(ledger(ports.all('usr_8f2k'))[0].kept_cents, null, 'kept cannot be known before fees');
 });
 
 test('orders: a reported zero fee remains known money rather than null', async () => {
   const { ports } = await import('./orders.ts');
-  const all = ports.all;
-  try {
-    ports.all = () => all().map(row => ({ ...row, fees_cents: 0 }));
-    const response = await call(examples.find(e => e.name === 'orders.list')!);
-    assert.equal(response.status, 200);
-    assert.deepEqual((await response.json()).data[0].fees_cents, { amount_cents: 0, currency: 'USD' });
-    assert.equal(ledger(ports.all())[0].kept_cents, ports.all()[0].price_cents);
-  } finally { ports.all = all; }
+  const row = runtime.store.get('order', 'usr_8f2k', 'ord_2w8')!;
+  assert.ok(row, 'the fee check must exercise a stored order');
+  runtime.store.put('order', { ...row, fees_cents: 0 });
+  const response = await call(examples.find(e => e.name === 'orders.list')!);
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).data[0].fees_cents, { amount_cents: 0, currency: 'USD' });
+  const rows = ports.all('usr_8f2k');
+  assert.equal(ledger(rows)[0].kept_cents, rows[0].price_cents);
+});
+
+test('orders list reads only the requesting person and preserves every integer cent', async () => {
+  runtime.store.put('order', { id: 'ord_own', user_id: 'usr_other', kind: 'sale', site: 'depop', item_id: 'it_own', state: 'paid', price_cents: 12345, fees_cents: 345, shipping_cents: 678, payout_cents: 12000 });
+  const response = await call(examples.find(e => e.name === 'orders.list')!, { token: 'other' });
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.deepEqual(body.data.map((row: { id: string }) => row.id), ['ord_own']);
+  for (const [key, amount_cents] of Object.entries({ price_cents: 12345, fees_cents: 345, shipping_cents: 678, payout_cents: 12000 })) assert.deepEqual(body.data[0][key], { amount_cents, currency: 'USD' });
 });

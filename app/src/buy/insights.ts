@@ -16,11 +16,13 @@ const cents = (r: Row) => (r.delivered_cents ?? r.price_cents);
 const at = (sorted: number[], q: number) => sorted[Math.min(sorted.length - 1, Math.max(0, Math.ceil(q * sorted.length) - 1))];
 const STOP = new Set(['the', 'and', 'with', 'for', 'size', 'mens', 'men', 'womens', 'women', 'new', 'nwt', 'euc', 'sz', 'in', 'of', 'a', 'w', 'l', 'x', 'by', 'to', 'on']);
 
-export function insights(reach: Reach, query: string): Insights {
+export function insights(reach: Reach, query: string, home = 'USD'): Insights {
   const priced = reach.results.filter(r => cents(r));
   const counts = new Map<string, number>();
   for (const r of priced) counts.set(cents(r)!.currency, (counts.get(cents(r)!.currency) ?? 0) + 1);
-  const currency = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  // The person's own currency whenever three asks are in it: a read that came back in pounds (eBay shows its prices in
+  // the reader's country) must not turn the whole answer into pounds over the dollar asks beside it.
+  const currency = (counts.get(home) ?? 0) >= 3 ? home : [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
   const same = priced.filter(r => cents(r)!.currency === currency);
   const sorted = same.map(r => cents(r)!.amount_cents).sort((a, b) => a - b);
   const spread = sorted.length >= 3 && currency ? { n: sorted.length, low: sorted[0], q1: at(sorted, 0.25), median: at(sorted, 0.5), q3: at(sorted, 0.75), high: sorted.at(-1)!, currency } : null;

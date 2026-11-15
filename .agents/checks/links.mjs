@@ -19,7 +19,8 @@ export function links(root, { files, awaited = [], now = Date.now() }) {
   const out = [], cache = new Map(), waiting = new Map();
   const open = new Map(awaited.filter(a => Date.parse(a.until) > now).map(a => [normalize(a.path), a]));
   const anchorsOf = p => { if (!cache.has(p)) cache.set(p, anchors(read(root, p) ?? '')); return cache.get(p); };
-  for (const f of files.filter(f => f.endsWith('.md'))) {
+  // A vendored skill is copied unchanged (AGENTS.md), so a link to a file its author did not ship stays as written.
+  for (const f of files.filter(f => f.endsWith('.md') && !f.startsWith('.agents/vendor/'))) {
     const text = stripCode(read(root, f) ?? '');
     for (const m of text.matchAll(/\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
       const t = m[1];

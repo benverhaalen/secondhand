@@ -9,6 +9,7 @@ import { ebayListingSpec, ebayPageAdapters, PAGE_HOSTS, searchRows, type PageCli
 // As in session-client.test.ts, execute the serialized function in a fresh realm.
 // xmldom is already installed; this read-only facade supplies the selector subset used by the specs.
 function isolatedDocument(html: string): Document {
+  if (/<html[\s>]/i.test(html) && !/<\/html>/i.test(html)) html += '</body></html>';
   const dom = new DOMParser().parseFromString(/<html[\s>]/i.test(html) ? html : `<html><body>${html}</body></html>`, 'text/html');
   type Node = Element;
   const matches = (node: Node, selectors: string): boolean => selectors.split(',').some(selector => {
@@ -43,6 +44,21 @@ const cards = '<article data-id="1"><h2>LEVI’S 501 Jeans</h2><span class="pric
   '<article data-id="2"><h2>Levi jacket</h2><span class="price">$0.00</span></article>' +
   '<article data-id="3"><h2>Other coat</h2><span class="price">$8</span></article>' +
   '<article><h2>No id</h2><span class="price">$1</span></article><article data-id="5"><h2>No price</h2></article>';
+
+test('eBay has no closed-list dependency: three streamed cards and 240 complete cards match HTML parsing', () => {
+  const original = fixture('page-search.html');
+  const partial = original.slice(0, original.lastIndexOf('</ul>'));
+  const card = original.split(/(?=<li\b[^>]*class="s-card\s)/)[2]!;
+  const large = '<html><body><h1 id="srp-results-heading">240 results</h1><ul>' +
+    Array.from({ length: 240 }, (_, i) => card.replaceAll('387080178732', String(900000000000 + i))).join('') + '</ul></body></html>';
+  for (const [html, count] of [[partial, 3], [large, 240]] as const) {
+    const result = inPage(html, ebayListingSpec());
+    assert.equal(result.rows.length, count);
+    assert.deepEqual(result, searchRows(html, 'live', PAGE_HOSTS[0]));
+  }
+  const placeholder = original.slice(0, original.indexOf('<li class="s-card', original.indexOf('<li class="s-card') + 1));
+  assert.equal(inPage(placeholder, ebayListingSpec()).total, 0, 'the first s-card is the skipped Shop on eBay placeholder');
+});
 
 test('serialized parser reads a second site from data only, labels tokens, counts missing fields and retains zero cents', () => {
   const result = inPage(cards, spec, { tokens: ['LEVI’S', '501'], narrow: false });

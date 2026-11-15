@@ -10,7 +10,7 @@ const script = [
   'from capture.process import FAMILIES, process_for',
   "print(json.dumps({f'{f}|{l}|{r}': process_for(f, l, r) for f in FAMILIES for l in (True, False) for r in (True, False)}))",
 ].join('\n');
-const py = JSON.parse(execFileSync('python', ['-c', script], { encoding: 'utf8', cwd: new URL('../../../../', import.meta.url) }));
+const py = JSON.parse(execFileSync(process.platform === 'win32' ? 'python' : 'python3', ['-c', script], { encoding: 'utf8', cwd: new URL('../../../../', import.meta.url) }));
 
 test('14 families, never 15', () => {
   assert.equal(FAMILIES.length, 14);

@@ -125,19 +125,20 @@ async function runOnce() {
       objective: 'balanced', param_version: 1, warm_comps: sold.slice(0, 1), sources: [], sites: [], log };
     const classified = await classify({ text: 'What is a Levi 501 worth?' });
     const thin = comparables({ condition: input.condition }, input.warm_comps, AS_OF);
-    const offline = await valuation.ports.read(ctx({ item_id: 'it_7c2m' }));
+    const item = { id: 'it_realtime', user_id: 'usr_proof', product_id: input.product_id, title: 'Levi 501', condition: 'good' };
+    store.put('item', item);
     const disabledSearch = soldSearch({ live_sites: [] });
-    // The explicit input port substitutes a recorded starting basis only. The actual POST handler calls check and stores its answer.
-    const inputPort = { source_sha256: sha(valuation.ports.read.toString()),
-      source: valuation.ports.read.toString(),
-      offline: { product_id: offline.product_id, condition: offline.condition, param_version: offline.param_version,
-        warm_comps: offline.warm_comps, sites: offline.sites,
-        source_rows: await Promise.all(offline.sources.map(source => source(new AbortController().signal))),
-        sold_search: await Promise.all(['mercari', 'poshmark'].map(site => disabledSearch(site, 'Carhartt Detroit Jacket J97', new AbortController().signal))) },
-      limitation: 'Recorded input replaces this port. Its source hash is pinned in the test so a newly wired store or param read cannot pass unnoticed.' };
-    valuation.ports.read = async () => input;
+    // Only the sold source supplies recorded rows; ownership, item mapping, clock, params and valuate run on the real route.
+    const inputPort = { item, route: 'POST /v1/valuations', source_fixture: 'poshmark-sold',
+      observations: 'default uncomposed port',
+      sold_search: await Promise.all(['mercari', 'poshmark'].map(site => disabledSearch(site, item.title, new AbortController().signal))),
+      limitation: 'The source fixture is injected through ports.sources. The default observation port logs not_composed and does not persist.' };
+    valuation.ports.sources = (_search, _sites, q) => {
+      assert.equal(q.query, item.title);
+      return [async () => sold.slice(0, 1)];
+    };
     const valuate = async () => {
-      const reply = await valuation.handlers['POST /v1/valuations'](ctx({ item_id: 'it_7c2m' }), new Request('http://proof.invalid/v1/valuations'));
+      const reply = await valuation.handlers['POST /v1/valuations']({ ...ctx({ item_id: item.id }), user_id: item.user_id }, new Request('http://proof.invalid/v1/valuations'));
       const result = jobs.st.getJob(reply.body.id)?.result;
       assert.ok(result, 'valuation POST did not store an answer');
       return json(result);
@@ -245,7 +246,7 @@ async function runOnce() {
       direct_basis: { thin, wider, match_weights: matchWeights, gather_measure: measure([{ target_id: 'sold', route_id: 'poshmark.search.page', rows: sold, ms: 0 }], Date.parse(AS_OF)) },
       direct_wider: directWider, citation_resolution: { resolved, missing },
       learning: { product_observe_calls: null,
-        product_observe_limitation: 'No param registry port is exposed by the exercised routes. This registry is diagnostic only; missing production callers are established by the import inventory and pinned input port.',
+        product_observe_limitation: 'No param registry port is exposed by the exercised routes. This registry is diagnostic only; missing production callers are established by the import inventory and recorded source port.',
         prior, first, second, mean_before: meanBefore, mean_after: meanAfter,
         observe_calls: observeCalls, cut, empty_search: emptySearch },
       importers: { gather: importers('app/src/edge/intel/gather.ts'), learn: importers('app/src/edge/intel/learn.ts') },
@@ -270,9 +271,9 @@ function linksFor(o, identical) {
   const link = (n, state, fn, file, anchor, reason, evidence, extra = {}) => ({ link: n, function: fn,
     ...location(file, anchor), state, reason, evidence, ...extra });
   return [
-    link(1, 'works', 'POST /v1/valuations → check → comparables', 'app/src/engines/valuation/check.ts', 'return { product_id:',
+    link(1, o.before.basis_level && o.before.notes.includes('too_few') && o.before.product_id === o.input_port.item.product_id ? 'works' : 'wrong', 'POST /v1/valuations → valuate → check → comparables', 'app/src/engines/valuation/check.ts', 'return { product_id:',
       null,
-      `n_eff=${o.before.n_eff}; q10/q50/q90=${o.before.range.q10}/${o.before.range.q50}/${o.before.range.q90}; answer basis_level=${o.before.basis_level}, notes=${o.before.notes.join(',')}; comparables state=${o.thin.state}, level=${o.thin.level}. Real input still uses the example item; live sites unset yield blocked searches and no comps.`,
+      `n_eff=${o.before.n_eff}; q10/q50/q90=${o.before.range.q10}/${o.before.range.q50}/${o.before.range.q90}; answer basis_level=${o.before.basis_level}, notes=${o.before.notes.join(',')}; comparables state=${o.thin.state}, level=${o.thin.level}. Stored item ${o.input_port.item.id} prices as ${o.before.product_id} at ${o.before.as_of} through valuate; range_state=${o.before.range_state}. Only the sold source is replaced with a recorded fixture.`,
       { spec: 'spec/product.md §6 Guard rules; spec/engines/valuation.md §3',
         spec_quote: 'the answer names its `basis_level`', code_quote: 'basis_level: range.basis_level, notes: range.notes, last_sale,' }),
     link(2, 'built, not called', 'gather', 'app/src/edge/intel/gather.ts', 'export async function gather',
@@ -289,11 +290,11 @@ function linksFor(o, identical) {
       `${o.search.results.length} unresolved rows kept; identity.by=${o.search.identity.by}, model_ok=${o.search.identity.model_ok}; product=null; no product identity invented.`,
       { spec: 'spec/engines/intelligence-api.md §3.3–3.4', missing_input: 'Recorded Jev/Decisions answers or identifier/pair-score evidence for these pages.' }),
     link(5, 'built, not called', 'valuate → observations.write', 'app/src/engines/valuation/valuate.ts', "await ctx.log.timed('valuation.observations.write'",
-      'valuate writes new source rows through ObservationPort; the route does not call it and the shared Store has no observation table.',
+      'The route calls valuate and its ObservationPort.write, but the default port logs not_composed; the Store has an observation table and writer (SV7, events/observations.ts) that the port does not call yet.',
       `${o.observations.length} observation rows; ${o.observation_writes} writes; no stored source/time/data/evidence chain.`,
       { spec: 'spec/product.md §3 observation and data provenance; §6 Information engines, Gatherer' }),
     link(6, 'built, not called', 'comparables / nEff / measure', 'app/src/engines/valuation/comps.ts', 'export function comparables',
-      'valuate reads ObservationPort and shares Kish with gather.measure; the route does not call valuate. The wider sold set is a separate direct diagnostic.',
+      'The route calls valuate and reads ObservationPort, but the default port returns no stored rows. The wider sold set is a separate direct diagnostic.',
       `Direct sold control n_eff ${o.direct_basis.thin.n_eff} → ${o.direct_basis.wider.n_eff}; gather.measure=${o.direct_basis.gather_measure.n_eff}; actual route repeat stays ${o.after.n_eff}.`,
       { spec: 'spec/determinations/money.md D1; spec/engines/valuation.md §3' }),
     link(7, 'built, not called', 'check → answer', 'app/src/engines/valuation/check.ts', 'const proof = answer',
@@ -308,7 +309,7 @@ function linksFor(o, identical) {
         limitation: 'Diagnostics use settled search target usage, not persisted observations. The proof never calls observe itself.' }),
     link(9, 'built, not called', 'contributionMean / cutOrder', 'app/src/edge/intel/learn.ts', 'export function contributionMean',
       'contributionMean and cutOrder read learned weights only in the direct diagnostic; runPlan and valuation do not read them.',
-      `Direct mean ${o.learning.mean_before} → ${o.learning.mean_after}, read v${o.learning.second.version}; route valuation unchanged. Its citation records resolved valuation priors at version 0, not supplied param_version=${o.after_learning.param_version}; valuate reads its injected registry.`,
+      `Direct mean ${o.learning.mean_before} → ${o.learning.mean_after}, read v${o.learning.second.version}; route valuation unchanged. Its citation records resolved valuation priors at version 0, legacy param_version=${o.after_learning.param_version}; valuate reads its module registry.`,
       { spec: 'spec/engines/intelligence-api.md §4; spec/product.md §6 Real-time weights, Read and Explain' }),
     link(10, identical ? 'works' : 'wrong', 'runProof (two fresh in-process product replays)', 'scripts/realtime-proof.mjs', 'export async function runProof',
       identical ? null : 'Two fresh stores and the same recorded inputs produced different observed outputs.',

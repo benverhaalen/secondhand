@@ -61,7 +61,7 @@ export type Params = {
   min_site_products: number;
 };
 
-function assertParams(x: Record<string, unknown>): asserts x is Params {
+export function assertParams(x: Record<string, unknown>): asserts x is Params {
   const finite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
   const numbers = (value: unknown): value is Record<string, number> => typeof value === 'object' && value !== null &&
     !Array.isArray(value) && Object.values(value).every(finite);
@@ -111,6 +111,12 @@ export function money(value: number, field: string): number {
 }
 const DAY = 86_400_000; // Fixed milliseconds per day.
 const DOLLAR = 100; // Fixed cents per dollar.
+function rangeCents(cents: number): number {
+  const dollars = cents / DOLLAR;
+  // A log/exp round trip can put an exact half dollar a few ulps below the tie.
+  const halfUp = Math.round(dollars + 4 * Number.EPSILON * Math.max(1, dollars));
+  return money(Math.max(DOLLAR, halfUp * DOLLAR), 'range_cents');
+}
 export type BasisLevel = 'variant' | 'product' | 'family' | 'kind' | 'prior';
 
 export type WeightedComp = Comp & { w: number; w_type: number; w_age: number; age_days: number };
@@ -305,10 +311,10 @@ function legacyComparables(target: Target, candidates: readonly Comp[], as_of: s
   }
   const quantile = (q: number, factor: number) => {
     const value = weightedQuantile(selected.comps.map(c => c.adjusted_cents), selected.comps.map(c => c.w), q);
-    return value === null ? null : Math.round(translate(value, factor) / 100) * 100;
+    return value === null ? null : rangeCents(translate(value, factor));
   };
   return {
-    comps: selected.comps, n_eff: selected.n_eff, level: selected.level,
+    retail_weight: 0, comps: selected.comps, n_eff: selected.n_eff, level: selected.level,
     basis_level: (selected.comps[0]?.level === 'category' ? 'kind' : selected.comps[0]?.level ?? 'prior') as BasisLevel,
     range: { q10: quantile(0.1, ratio?.q25 ?? 1), q50: quantile(0.5, ratio?.ratio ?? 1), q90: quantile(0.9, ratio?.q75 ?? 1) },
     dropped: selected.dropped,
@@ -412,9 +418,11 @@ export function comparables(target: Target, candidates: readonly Comp[], as_of: 
   }
   let kept: typeof weighted = [], dropped: Dropped[] = [];
   let logRange: number[] | null = null, basis_level: BasisLevel = 'prior';
+  let retail_weight = 0;
   if (p.blend_enabled && target.kind && target.retail_cents && target.depreciation) {
     const center = Math.log(target.retail_cents * target.depreciation);
     logRange = [center - p.prior_log_spread, center, center + p.prior_log_spread];
+    retail_weight = 1;
   }
   if (p.blend_enabled && target.kind_band) {
     const band = target.kind_band;
@@ -422,6 +430,7 @@ export function comparables(target: Target, candidates: readonly Comp[], as_of: 
     if (!(band.q10 > 0 && band.q10 <= band.q50 && band.q50 <= band.q90 && Number.isFinite(band.n_eff) && band.n_eff > 0)) throw new RangeError('kind_band');
     const logs = [band.q10, band.q50, band.q90].map(Math.log);
     logRange = logRange ? logs.map((v, i) => (band.n_eff * v + p.blend_k * logRange![i]) / (band.n_eff + p.blend_k)) : logs;
+    retail_weight *= p.blend_k / (band.n_eff + p.blend_k);
     basis_level = 'kind';
   }
   if (p.blend_enabled) {
@@ -432,6 +441,7 @@ export function comparables(target: Target, candidates: readonly Comp[], as_of: 
       const n = nEff(local.kept.map(c => c.w));
       const logs = [.1, .5, .9].map(q => Math.log(weightedQuantile(local.kept.map(c => c.adjusted_cents), local.kept.map(c => c.w), q)!));
       logRange = logRange ? logs.map((v, i) => (n * v + p.blend_k * logRange![i]) / (n + p.blend_k)) : logs;
+      retail_weight *= p.blend_k / (n + p.blend_k);
       basis_level = level === 'category' ? 'kind' : level;
       kept.push(...local.kept);
     }
@@ -447,11 +457,12 @@ export function comparables(target: Target, candidates: readonly Comp[], as_of: 
       const middle = median(anchor.map(c => Math.log(c.adjusted_cents)));
       const delta = anchor.length / (anchor.length + p.anchor_blend_k) * (middle - logRange[1]);
       logRange = logRange.map(v => v + delta); basis_level = 'variant';
+      retail_weight *= p.anchor_blend_k / (anchor.length + p.anchor_blend_k);
     }
   }
-  const quantile = (i: number, factor: number) => logRange ? money(Math.round(Math.exp(logRange[i]) * factor / DOLLAR) * DOLLAR, 'range_cents') : null;
+  const quantile = (i: number, factor: number) => logRange ? rangeCents(Math.exp(logRange[i]) * factor) : null;
   kept.sort((a, b) => Date.parse(a.sold_at) - Date.parse(b.sold_at) || compare(a.comp_id, b.comp_id));
-  return { comps: kept, n_eff: kept.length ? nEff(kept.map(c => c.w)) : target.kind_band?.n_eff ?? 0, level: basis_level === 'kind' || basis_level === 'prior' ? 'category' as const : basis_level,
+  return { retail_weight, comps: kept, n_eff: kept.length ? nEff(kept.map(c => c.w)) : target.kind_band?.n_eff ?? 0, level: basis_level === 'kind' || basis_level === 'prior' ? 'category' as const : basis_level,
     basis_level, range: { q10: quantile(0, ratio?.q25 ?? 1), q50: quantile(1, ratio?.ratio ?? 1), q90: quantile(2, ratio?.q75 ?? 1) },
     dropped, extrapolated: extrapolated(kept), state: sufficient(kept, p) ? 'ok' as const : 'too_few' as const, param_versions: p.param_versions };
 }

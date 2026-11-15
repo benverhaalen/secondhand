@@ -1,4 +1,4 @@
-import { comparables, canonical, fromResolved, money, nEff, type Comp, type Params, type Target } from './comps.ts';
+import { comparables, canonical, fromResolved, money, type Comp, type Params, type Target } from './comps.ts';
 import { resolve, type Resolved } from './params.ts';
 import type { ParamStore, Scope } from '../param/param.ts';
 import { pricePath, ladder, planOf, type Curve, type Objective } from './path.ts';
@@ -14,6 +14,7 @@ class CitationError extends Error {}
 type Calibration = { Q_g: number; parent_Q_g?: number; group: string; coverage: number; passes: boolean; n?: number; hits?: number };
 export type CheckInput = {
   product_id: string; variant?: string; condition: string; as_of: string;
+  kind_band?: Target['kind_band'];
   size?: string; family_id?: string; kind?: string; retail_cents?: number; depreciation?: number;
   completeness?: string[]; works?: string; retail_citation?: string;
   retail_cap_cents?: number; live_ask_cap_cents?: number;
@@ -24,7 +25,7 @@ export type CheckInput = {
     curve_evidence?: { n: number; calibration_error: number; citation: string }; calibration?: Calibration }[];
   calibration?: Calibration;
   recalled?: boolean; budget_ms?: number;
-  log: { timed: <T>(name: string, fn: () => T) => T; error: (where: string, error: unknown) => void };
+  log: { note?: (name: string, fields: Record<string, unknown>) => void; timed: <T>(name: string, fn: () => T) => T; error: (where: string, error: unknown) => void };
 };
 
 function wilsonLower(hits: number, n: number): number {
@@ -46,7 +47,7 @@ export async function check(x: CheckInput) {
       if (site !== 'ebay' && site !== 'facebook' && site !== 'depop' && site !== 'poshmark' && site !== 'mercari') throw new RangeError(`unsupported valuation site: ${site}`);
       if (s.cancel_cost_cents !== undefined) money(s.cancel_cost_cents, 'cancel_cost_cents');
       if (s.delist_minutes !== undefined && (!Number.isFinite(s.delist_minutes) || s.delist_minutes < 0)) throw new RangeError('delist_minutes');
-      return { ...s, site };
+      return { ...s, site, sale: { ...s.sale, tax_rate: s.sale?.tax_rate ?? values.valuation_sales_tax_rate, as_of: s.sale?.as_of ?? x.as_of } };
     }).sort((a, b) => a.site.localeCompare(b.site));
     const controller = new AbortController();
     const completed: Comp[][] = [[...x.warm_comps]];
@@ -78,25 +79,15 @@ export async function check(x: CheckInput) {
       if (uncitable) x.log.error('valuation.check.uncitable', { batch: index, count: uncitable });
       return rows;
     }), x.as_of, params);
+    if (!x.retail_citation && params.blend_enabled && x.kind && x.retail_cents && x.depreciation) {
+      const name = 'valuation.check.retail_uncited', fields = { product_id: x.product_id };
+      if (x.log.note) x.log.note(name, fields); else x.log.error(name, fields);
+    }
     const target: Target = { condition: x.condition, size: x.size, family_id: x.family_id, product_id: x.product_id,
-      kind: x.kind, retail_cents: x.retail_cents, depreciation: x.depreciation, completeness: x.completeness, works: x.works };
+      kind: x.kind, kind_band: x.kind_band, retail_cents: x.retail_citation ? x.retail_cents : undefined, depreciation: x.retail_citation ? x.depreciation : undefined, completeness: x.completeness, works: x.works };
     const found = comparables(target, snapshot, x.as_of, params);
     const warm = x.fast;
     const cap = x.condition === 'new_with_tags' ? Math.min(x.retail_cap_cents ?? Infinity, x.live_ask_cap_cents ?? Infinity) : Infinity;
-    const retailWeight = (local: typeof found) => {
-      if (!(params.blend_enabled && x.kind && x.retail_cents && x.depreciation)) return 0;
-      let weight = 1;
-      for (const level of ['category', 'family', 'product', 'variant'] as const) {
-        const rows = local.comps.filter(c => c.level === level);
-        if (rows.length) weight *= params.blend_k / (nEff(rows.map(c => c.w)) + params.blend_k);
-      }
-      if (params.anchor_enabled) {
-        const n = Math.min(Math.floor(params.anchor_k), local.comps.filter(c =>
-          c.level === 'variant' && c.age_days <= params.recent_days && c.age_days > 0).length);
-        if (n) weight *= params.anchor_blend_k / (n + params.anchor_blend_k);
-      }
-      return weight;
-    };
     const finalRange = (local: typeof found, calibration?: Calibration) => {
       const q = calibration?.Q_g ?? 0, parent = calibration?.parent_Q_g ?? 0;
       if (![q, parent].every(v => Number.isFinite(v) && v >= 0)) throw new CitationError('Q_g must be nonnegative finite log units');
@@ -126,16 +117,14 @@ export async function check(x: CheckInput) {
       const notes: ('too_few' | 'stale' | 'warm_unavailable')[] = [];
       if (local.state === 'too_few') notes.push('too_few');
       if (local.comps.length && !local.comps.some(c => c.age_days <= params.recent_days)) notes.push('stale');
-      const noCitation = retailWeight(local) > 0 && !x.retail_citation;
-      if (noCitation) range = { q10: null, q50: null, q90: null };
       return { ...range, basis_level, notes, state: range.q10 === null || range.q90 === null ? 'hidden' : checked ? 'checked' : 'not_checked_yet',
-        hide_reason: noCitation ? 'no_citation' : undefined,
-        group: calibration?.group ?? null, share_shown: !noCitation && checked ? Math.floor(coverage! * 10) / 10 : null };
+        hide_reason: undefined,
+        group: calibration?.group ?? null, share_shown: checked ? Math.floor(coverage! * 10) / 10 : null };
     };
     const range = finalRange(found, x.calibration);
     const cite = (local: typeof found, value: ReturnType<typeof finalRange>, site?: string) => {
       const rows = value.state === 'hidden' ? [] : local.comps.map(c => ({ id: c.comp_id, source: c.citation, at: c.sold_at, price_cents: c.adjusted_cents, weight: c.w }));
-      const weight = retailWeight(local);
+      const weight = local.retail_weight;
       if (value.state !== 'hidden' && weight > 0 && x.retail_cents && x.retail_citation) {
         let id = `retail:${x.product_id}`;
         while (rows.some(row => row.id === id)) id += ':retail';
@@ -193,6 +182,7 @@ export async function check(x: CheckInput) {
     const modes: Modes | null = !x.recalled && found.state === 'ok' && fast && sell && best ? { fast, sell, best } : null;
     const per_site = modeSites.map(({ local, band, citation, ...s }) => {
       const p = band.q50;
+      const kept = keep(s.site, p ?? band.q10 ?? 0, s.sale);
       const evidence = s.curve_evidence;
       const curve = s.curve;
       const curveOK = !!curve && !!evidence && Number.isSafeInteger(evidence.n) && evidence.n >= values.valuation_curve_min_events &&
@@ -203,8 +193,9 @@ export async function check(x: CheckInput) {
       } : null;
       return { site: s.site, ...band, translated: local.comps.some(c => c.site !== s.site),
         citation, curve_checked: curveOK,
+        fees_may_have_changed: kept.fees_may_have_changed,
         keep_q10: band.q10 === null ? null : keep(s.site, band.q10, s.sale).keep_cents,
-        keep_q50: p === null ? null : keep(s.site, p, s.sale).keep_cents,
+        keep_q50: p === null ? null : kept.keep_cents,
         keep_q90: band.q90 === null ? null : keep(s.site, band.q90, s.sale).keep_cents,
         p_sale: p === null || !checkedCurve ? null : { d7: checkedCurve.p(p, 7), d30: checkedCurve.p(p, 30), d90: checkedCurve.p(p, 90) },
         days: p === null || !checkedCurve ? null : { t25: checkedCurve.t(p, .25), t50: checkedCurve.t(p, .5), t75: checkedCurve.t(p, .75) },

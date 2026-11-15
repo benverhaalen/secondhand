@@ -1,9 +1,5 @@
-// The hero's motion: the open (the hands meet, part, and the wordmark is between them, then it settles in the header),
-// the wall of things drifting behind the line with items swapping out at random, and the wall speeding up and leaving
-// as the visitor scrolls or presses "See how it works". Everything runs on one clock, so it can be stepped for a check:
-// window.__hero.step(ms) advances it, and ?intro=0 or ?intro=1 skips or forces the open.
 (() => {
-  const html = document.documentElement, q = new URLSearchParams(location.search);
+  const html = document.documentElement;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const rand = (a, b) => a + Math.random() * (b - a);
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -91,54 +87,12 @@
   // "See how it works" glides to the next section; the scroll itself speeds the wall up and moves it out.
   document.querySelector('[data-go]')?.addEventListener('click', e => { e.preventDefault(); document.querySelector('#how').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); });
 
-  // The open.
-  const intro = document.querySelector('.intro'), lockup = document.querySelector('.lockup');
-  // An automated check without ?intro=1 sees the page settled, not mid-fade, as it does the open.
-  const settled = () => reduce || (navigator.webdriver && q.get('intro') !== '1');
   const show = () => {
     opened = true;
-    if (settled()) return;
+    if (reduce || navigator.webdriver) return;
     wall.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 900, easing: 'ease-out' });
     copy.animate([{ opacity: 0, transform: 'translate3d(0, 12px, 0)' }, { opacity: 1, transform: 'none' }], { duration: 700, delay: 120, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
   };
-  function open() {
-    const dap = intro.querySelector('.dap'), [h1, h2] = dap.querySelectorAll('.hand'), word = dap.querySelector('.intro-word');
-    const g = (window.fitHands && fitHands(dap, word, [h1, h2])) || 24;
-    const W = word.scrollWidth; word.style.width = '0px';
-    lockup.style.visibility = 'hidden'; intro.classList.add('playing');
-    // Stop motion, not smooth (Ben, 08:31): every move jumps from frame to frame, about ten frames a second.
-    const run = [], hold = { fill: 'forwards' };
-    // 1 and 2. The dap, from Codex's sprite (sprites/dap.svg, 8 frames of 48 by 24): the hands come in, meet and bump,
-    // frames 1 to 5. The sprite is scaled so its hands stand as tall as the hands beside the word.
-    const sprite = intro.querySelector('.sprite'), u = h1.getBoundingClientRect().height / 19;
-    Object.assign(sprite.style, { width: `${48 * u}px`, height: `${24 * u}px` });
-    for (const i of sprite.children) run.push(i.animate([{ maskPosition: '0% 0' }, { maskPosition: `${400 / 7}% 0` }], { duration: 500, easing: 'steps(5, jump-none)', ...hold }));
-    run.push(sprite.animate([{ visibility: 'visible' }, { visibility: 'hidden' }], { duration: 1, delay: 640, ...hold }));
-    for (const h of [h1, h2]) run.push(h.animate([{ visibility: 'hidden' }, { visibility: 'visible' }], { duration: 1, delay: 640, ...hold }));
-    // 3. They part, and the wordmark is between them, in four frames.
-    const part = { duration: 400, delay: 680, easing: 'steps(4, jump-end)', ...hold };
-    run.push(h1.animate([{ marginRight: '0px' }, { marginRight: `${g}px` }], part));
-    run.push(h2.animate([{ transform: 'scaleX(-1)', marginLeft: '0px' }, { transform: 'scaleX(-1)', marginLeft: `${g}px` }], part));
-    run.push(word.animate([{ width: '0px', opacity: 0 }, { width: `${W}px`, opacity: 1 }], part));
-    const inout = 'cubic-bezier(.65,0,.35,1)';
-    // 4. The mark settles into the header, and the page comes up under it.
-    const settle = () => {
-      const a = dap.getBoundingClientRect(), b = lockup.getBoundingClientRect(), k = b.height / a.height;
-      const go = dap.animate([{ transform: 'none' }, { transform: `translate(${b.left - a.left}px, ${b.top - a.top}px) scale(${k})` }], { duration: 560, easing: inout, fill: 'forwards' });
-      intro.animate([{ backgroundColor: getComputedStyle(intro).backgroundColor }, { backgroundColor: 'transparent' }], { duration: 560, easing: 'ease-out', fill: 'forwards' });
-      setTimeout(show, 160);
-      go.finished.then(() => { lockup.style.visibility = ''; intro.remove(); });
-    };
-    let done = false; const finish = () => { if (done) return; done = true; settle(); };
-    setTimeout(finish, 1300);
-    // A click or a key skips the open.
-    addEventListener('pointerdown', () => { if (done) return; run.forEach(a => a.finish()); finish(); }, { once: true });
-    addEventListener('keydown', () => { if (done) return; run.forEach(a => a.finish()); finish(); }, { once: true });
-  }
-
-  // An automated check (navigator.webdriver) sees the page as it settles, unless it asks for the open with ?intro=1.
-  const wantIntro = q.get('intro') === '1' || (q.get('intro') !== '0' && !reduce && !navigator.webdriver && !sessionStorageSeen());
-  function sessionStorageSeen() { try { const s = sessionStorage.getItem('opened'); sessionStorage.setItem('opened', '1'); return !!s; } catch { return false; } }
   // The wordmark face's lowercase stands taller than the text face's at one size; scale it so both x-heights match.
   function fit() {
     const h1 = document.querySelector('.hero-t'), cs = getComputedStyle(h1), cv = document.createElement('canvas').getContext('2d');
@@ -147,22 +101,8 @@
     const a = xh({ weight: cs.fontWeight, family: cs.fontFamily }), b = xh({ weight: hl.fontWeight, family: hl.fontFamily });
     if (a && b) html.style.setProperty('--hl-fit', (a / b).toFixed(3));
   }
-  // The hands as tall as the wordmark's ink and on its baseline, in the header and on either side of "secondhand" in the
-  // line (hands-fit.js; Ben, 07:34 and 08:31). The line's size follows the width, so they fit again on a resize.
-  // On a narrow screen "secondhand" with its hands can be wider than the column. The hands first close in to the
-  // smallest gap, 4; if it still does not fit, the line drops to the next size on the type scale, 36.
-  const fitLockup = () => {
-    if (!window.fitHands) return;
-    const head = document.querySelector('header .lockup'), lock = document.querySelector('.hl-lock'), h1 = document.querySelector('.hero-t');
-    const line = most => fitHands(lock, lock.querySelector('.hl'), lock.querySelectorAll('.hand'), most);
-    const fits = () => lock.getBoundingClientRect().width <= h1.clientWidth + 1;
-    if (head) fitHands(head, head.querySelector('.wordmark'), head.querySelectorAll('.hand'));
-    h1.style.fontSize = ''; line();
-    if (!fits()) line(4);
-    if (!fits()) { h1.style.fontSize = 'var(--t-36)'; fit(); line(); }
-  };
-  document.fonts.ready.then(() => { fit(); fitLockup(); });
-  addEventListener('resize', () => requestAnimationFrame(fitLockup));
+  document.fonts.ready.then(fit);
+  addEventListener('resize', () => requestAnimationFrame(fit));
 
   // The menu on narrow screens: a sheet under the header, closed by the button, Escape or a link.
   const btn = document.querySelector('.menu-btn'), menu = document.querySelector('#menu');
@@ -173,7 +113,7 @@
   matchMedia('(min-width: 900px)').addEventListener('change', e => { if (e.matches) setMenu(false); });
 
   build(); addEventListener('resize', () => { const w = innerWidth; if (Math.abs(w - (build.w ?? w)) > 40) build(); build.w = w; });
-  if (wantIntro) document.fonts.ready.then(open); else { html.classList.add('no-intro'); intro.remove(); show(); }
+  show();
   requestAnimationFrame(loop);
 
   // For checks: step the clock by hand, and read how many photos have been shown.
