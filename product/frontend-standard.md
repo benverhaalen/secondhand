@@ -19,35 +19,34 @@ Ask these in order. A later question never rescues an earlier failure.
 7. **Words.** Run the anti-claudish pass: `node scripts/copy-lint.mjs` (C1 to C12 in copy.md). Labels 1 to 3 words, no paragraphs, no em dashes.
 8. **Access.** Contrast, target size, Dynamic Type, VoiceOver labels, reduced motion.
 
-## 2. Build: Ben's ui-factory, with the RDD loop inside it
+## 2. Build: the loop
 
-Ben already has the process: his **ui-factory** skill (harness, on his Mac), built on the it-already-exists method ([ui-continuity](https://github.com/benverhaalen/it-already-exists/blob/main/skills/reference-driven-development/references/ui-continuity.md)) and Emil Kowalski's vendored skills. Agents with the harness run it. Agents without it (Nate's) follow this summary.
+This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored from his ui-factory skill. Each state says what happens and where it goes next. Any state can ask one research question with a time limit when it is unsure (the `research-note` skill), and comes back to where it was.
 
-**Size by how much the agent would guess.** In his words, ideation is for "bigger screens where an agent has to infer more intent" and "shouldn't be done for every sub state".
-- **Full:** a new surface, entry point or navigation level, for example Today, Sell grid, Buy, You, Capture and the Offer sheet.
-- **Light:** a state of an existing screen, a settled component or a small fix. Light has no images, follows the code and runs the checks on the changed screens only.
+**Size the work first.** The size is set by what a mistake costs and how often the screen is seen, and it sets how much of the loop runs.
 
-**Every screen, both sizes:**
-1. **Four screen lines.** Who the user is, how often they come, the main task, and the task with the worst consequence.
-2. **Read the coder card** (`brand/coder-card.md`) and this standard.
-3. **References with jobs.** Use real shipped screens, not AI galleries. One gives navigation, another density, another motion, another recovery. Write a transfer contract per borrowed property (§6).
-4. **Full only: direction images.** Made with the `image-gen` skill (`.agents/skills/image-gen/SKILL.md`): the Codex CLI with Astra, the reference pixels attached, and a brief that gives the loop and how to judge rather than the content.
-5. **Full only: fresh-context critique.** The critic sees the reference and candidate images but not the builder's rationale. It returns accept, revise or reject. Stop after two rounds with no new accepted finding and show the best candidate, not the latest.
-6. **Full only: the door check, before building.** A fresh helper answers, as an expert designer, what each control does, where Back goes and what each state shows. Those answers become `checks/<screen>.transitions.json`, which a different helper turns into Playwright checks. The builder can't edit the table.
-7. **Build.**
-   - Use `var(--token)` only, with controls from the Vercel UI SDK where they exist.
-   - Read Emil's `emil-design-eng` first.
-   - Load the real fonts and Hugeicons, and confirm they rendered.
-8. **Break it.** Emil's `break-ui` worst-case data behind a dev toggle: Demo, Worst case, Empty, One, Huge. Every state is captured. A state not captured is not verified.
-9. **Audit** with §5 on the rendered screen at 390×844 and at the largest Dynamic Type size.
-10. **Compare with the approved image.** A helper who is not the builder classifies each mismatch as intended adaptation, substitution or drift. Drift gets fixed.
-11. **End with "usable" and the unfinished list.** Don't claim a skill ran if its file wasn't read.
+| Size | Examples | Image rounds | Who judges | States it runs |
+|---|---|---|---|---|
+| Small | A 404, an empty state, a settings row, a state of a screen that exists | None | Scripts | 1, then 7 to 12 |
+| Medium | A new screen made mostly of parts that exist | One round of 3 | The model | All but 6 |
+| Large | Today, the Sell grid, Capture, the Offer sheet, a section of the web front page | Up to 3 | The model, then Ben | All |
 
-The two contracts run at once:
-- **Competence:** what the user can do, and the ordinary conventions of the task family.
-- **Character:** hierarchy, density, type and motion.
+| State | What happens | Next |
+|---|---|---|
+| 1. Triage | Size the work from the table above. | Small goes to 7. Otherwise 2. |
+| 2. Frame | Write who it is for, how often they come, what they came to do and where a mistake costs most. Say what they want, as opposed to what they would say ([Article 2.1](ui-constitution.md#article-2-start-from-the-person-not-the-screen)). | 3 |
+| 3. In the family? | List the parts in [app/src/ui](../app/src/ui/README.md), the patterns and the decisions that already cover this screen, and what is fixed around it: the tab bar, the header, the screens it sits between. A control that the Vercel UI SDK or shadcn already has is decided. | If the parts that exist can build it, 7, with no image. Otherwise 4. |
+| 4. Explore, 3 ways | Three designs, each from its own fresh call through the [`image-gen` skill](../.agents/skills/image-gen/SKILL.md), in parallel. Each call gets the intention, the fixed surroundings as images, feel references, the one named thing it differs on, how it will be judged and what not to do. It never gets a layout, copy, numbers or another design. | 5 |
+| 5. Judge and split | A fresh judge gets the images, the intention and the fail list from `node scripts/ui-rules.mjs judge`, written before it looks. Sort every finding: an exact fix (a size, a gap, a color) is saved for the build and never sent back to the image model. A feel note goes into the next round. | New feel notes: 4, with 2 or 3 designs, 3 rounds at most. Otherwise the best so far, not the latest, moves on. |
+| 6. Ben reacts | Large only. Ben sees the best one or two. A model is a weak judge of taste, so his reaction replaces a third round. | Pick: 7. Redirect: 2. |
+| 7. Static build | Recreate the image as a still screen with sample content, in the smallest change that fits, from the parts and the brand values. Read the [coder card](../brand/coder-card.md). Apply the saved exact fixes. A part that is missing is added to app/src/ui with its reason. | 8 |
+| 8. Behavior table | A fresh agent that has not seen the code looks at the still screen and writes `app/behavior/<screen>.json`: what each state shows, what each control does on tap and where Back goes. A control that leads to a screen that doesn't exist queues that screen at 1. | 9 |
+| 9. Tests first | An agent that is not the builder turns the table into tests that fail. The app's tests are Maestro files, explored once with agent-device ([decision](decisions.md)); the website's are Playwright. Tests read the event log, not pixels. The builder edits neither the table nor the tests. | 10 |
+| 10. Add behavior | Make the tests pass. Take motion and haptics from §3 for each kind of transition. A transition with no standard gets one, written once in §3. | 11 |
+| 11. Check | `node .agents/check.mjs`, then §5 on the screen at 390×844. A fresh agent compares the build with the chosen image and calls each difference intended, a substitution or drift. Large screens also get worst-case content (Empty, One, Huge) and a motion review. | Pass: 12. Fail: 10, stopping after two rounds with no progress. |
+| 12. Record | New parts go in app/src/ui, new motion standards in §3. Every finding from a judge, an audit or Ben goes through §7, so the next screen is checked for it. | Done |
 
-A beautiful screen with a dead control fails competence. A working screen that drifts from the selected look fails character.
+A beautiful screen with a dead control fails. So does a working screen that drifts from the chosen look.
 
 ## 3. Motion
 
@@ -186,10 +185,31 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 |---|---|---|---|---|
 | Example: offer response | eBay offers (interaction) | Accept / Counter / Decline, with counter pre-filled | The comps range sits beside the offer, and Counter is pre-filled from your floor | A user answers an offer in one tap without opening the item |
 
-## 7. Enforcement
+## 7. Enforcement, and how the rule set learns
 
-- **Words in the app:** `node scripts/copy-lint.mjs <files>` (or pipe the screen's strings in). It is a port of the product-surface rules from Ben's `writing` skill, his anti-claudish check, plus a ban on exclamation marks. It flags candidates, not verdicts. First ask of each string "should this exist?", then lint.
-- **Ben's hook:** on his Mac, `writing/hooks/reply_check.py` runs on Stop and UserPromptSubmit. It checks agents' replies to him (the owner surface), not screen text, and it never blocks. Screen text is checked only when ui-factory's check step runs the product lint. Nothing runs it automatically yet. *Agent proposal:* run `copy-lint` in CI on UI string files once the app exists.
-- **Scripted checks (ui-factory step 6):** token membership; Vercel SDK controls; geometry (overflow, clipping, overlap, small targets) at each viewport and state; axe-core `wcag22aa`; brand codes present and Article 13 tells absent; and the copy lint.
-- **Motion:** read Emil's `review-animations` and `STANDARDS.md` whenever a screen moves. The §5 motion items are written so Playwright can check most of them: computed `transition-property`, durations and a reduced-motion run.
-- **What scripts can't prove:** that a screen looks good, that a token sits in the right place, or that a first-time user can learn it. Cover-the-text, blur and critique need eyes; brand feel goes to Ben. Record each result in `brand/screens/<screen>.run.md`.
+Ben: "deterministic ways to assess adherence to certain rules whether its like a lint rule or something but getting the system to essentially 'learn'" ([words](words.md#2026-11-15-the-ui-system-learns-with-checks-for-its-rules)).
+
+**One list.** [.agents/ui-rules.json](../.agents/ui-rules.json) has a row for every pick Ben locked in the [brand ledger](../brand/ledger.md) and every rule of the loop. Each row says what holds the rule:
+
+| Kind | Held by | Costs |
+|---|---|---|
+| `check` | A script in `.agents/checks/` or a test, shown failing on what it exists to catch. Two rules of the image loop are held by the image runner, which refuses a bad plan when it is used | Nothing. It runs on every push |
+| `judge` | One "Fail if" line. `node scripts/ui-rules.mjs judge` prints them all, and only the judge reads them | One line in one prompt |
+| `ben` | Ben's eye | His attention |
+
+`node .agents/check.mjs` prints the count of each kind. The share held by a script is the number to push up.
+
+**How a new rule gets in.**
+
+| What came up | When it becomes a rule | What it becomes |
+|---|---|---|
+| Ben picks or corrects something | The same commit that records it. A locked row in the ledger with no row in the list fails the check | Whichever kind can hold it, a script first |
+| A script could find it: a banned word, a value outside the set, a part not from app/src/ui | The first time | A check in [picks.mjs](../.agents/checks/picks.mjs), keyed by the rule's id, with a test named `picks <id>:` |
+| Only a judge could find it | The second time. Note the first with `node scripts/ui-rules.mjs seen "<finding>" <where>`. A finding noted twice fails the check until it is a rule | A `judge` row whose line could fail a screen. "Arrows sit at the right edge of a row that opens a screen" is one. "Use arrows well" is not |
+| Taste about look or feel | When Ben says it | A do and a don't picture in `brand/reference/`, once that exists ([image-gen step 9](../.agents/skills/image-gen/SKILL.md)) |
+
+A rule leaves the list when removing it does not bring the mistake back, or when it keeps failing good work.
+
+**What scripts hold today.** Raw colors, literal fonts and the copy lint ([ui.mjs](../.agents/checks/ui.mjs)). The weight, space and radius scales ([brand.mjs](../.agents/checks/brand.mjs)). Screens built only from the fixed parts ([parts.mjs](../.agents/checks/parts.mjs)). The picks in picks.mjs: the name in lowercase, logos not names, no banned faces, no statistics notation, no handled counter, a fill and an icon for every state, square logos, no lines or grain, dark mode that changes only color, ink that is not pure black, one color family, text contrast on every hue's tint, fill and deep, and a behavior table for every screen.
+
+**What they can't hold yet.** Anything that needs the rendered screen: one field per view, color under a third of the view, inside tighter than between, small targets, overflow. They stay with the §5 audit until the app renders in a test. Words in the app also pass `node scripts/copy-lint.mjs`, which flags candidates, not verdicts. Scripts can't prove a screen looks good; brand feel goes to Ben.

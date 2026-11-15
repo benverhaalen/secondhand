@@ -1,16 +1,18 @@
 ---
 name: ui-screen
-description: Use in secondhand for any screen, component, state, motion, in-app copy or visual change. Routes to the brand codes, the frontend standard and the copy rules, and to the checks that catch raw colors, literal fonts and banned copy.
+description: Use in secondhand for any screen, component, state, motion, in-app copy or visual change. Runs Ben's UI loop sized to the work, builds from the fixed parts and brand values, and turns every finding into a check or a judge line.
 ---
 
 # ui-screen
 
-The failure this prevents: generic AI-looking UI, made-up values, and explaining in words what the screen should show.
+The failure this prevents: generic AI-looking UI, made-up values, explaining in words what the screen should show, and the same mistake corrected twice.
 
-1. Read `product/ui-constitution.md` (its decision path is how every UI question gets decided) and `brand/constitution.md` (ends, codes and the checks in Part IV). Read `brand/coder-card.md` before any edit. Values come only from `brand/tokens.css` as `var(--name)`.
-2. Judge and build by `product/frontend-standard.md`. Its §1 sets the order of questions: job, familiar, shown not said, attention, honest, motion, words, access. A later question never rescues an earlier failure.
-3. Words follow `product/copy.md`: minimal, shown rather than said, no em dashes. Every number shows its source, and every measurement says whether it is measured, estimated or "you said".
-4. Before inventing a pattern, find the screen in a shipped app that already does this job (`product/decision-map.md`). A new screen or navigation level is a `decide` call.
-5. Run `node .agents/check.mjs`. It fails raw colors, literal font names, dashes, and weights, spacing or radii outside the constitution's scales in app code, and lists copy candidates for you to judge. A clean run means little: still look at the screen itself.
+1. **Run the loop** in `product/frontend-standard.md` §2, starting at Triage. A small change skips the image model and most of the loop. A new screen or navigation level is also a `decide` call.
+2. **Build from what exists.** Screens use only the parts in `app/src/ui` (its README says which part and which separator). Values come only from `brand/tokens.css`. Read `brand/coder-card.md` before any edit. Words follow `product/copy.md`.
+3. **Judge with the list, not the docs.** A judge or critic gets the images, the intention and the output of `node scripts/ui-rules.mjs judge`. It never gets the builder's reasons or a rule doc.
+4. **Run `node .agents/check.mjs`.** It fails a screen for what a script can find and prints how much of the rule set scripts hold. A clean run means the rules were followed, not that the screen is good: look at the screen.
+5. **Teach the system before you finish.** For each thing a judge, an audit or Ben found: if a script could find it, add a check to `.agents/checks/picks.mjs` with a failing test and a `check` row in `.agents/ui-rules.json`. If not, run `node scripts/ui-rules.mjs seen "<finding>" <where>`. When Ben locks a pick, its row goes in the same commit. The table is in `product/frontend-standard.md` §7.
 
-Ben's `ui-factory` will be added here, tailored to secondhand, once the brand is settled ([Ben, 20:45](../../../product/words.md#2026-11-14-app-first-and-ui-factory-after-the-brand)). Until then this skill is the procedure for every agent. On-screen words also pass `python3 -I .agents/skills/writing/scripts/lint.py --surface product`.
+Worked example. A critic says twice that a marketplace is named in words. A script can find that, so it became `picks:L6`: a test with "Listed on eBay" that fails, then the check, then the row. No sentence was added to any doc.
+
+Retire when: Ben's `ui-factory` carries this loop and these checks itself.

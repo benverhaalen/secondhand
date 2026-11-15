@@ -13,3 +13,6 @@ logs/
 .harness/
 __pycache__/
 *.pyc
+
+# local state of the Databricks skills installer
+.databricks/

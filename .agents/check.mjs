@@ -15,6 +15,8 @@ import { brand } from './checks/brand.mjs';
 import { logging } from './checks/logging.mjs';
 import { code } from './checks/code.mjs';
 import { parts } from './checks/parts.mjs';
+import { picks } from './checks/picks.mjs';
+import { rules, tally } from './checks/rules.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const git = (...a) => { try { return execFileSync('git', a, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return null; } };
@@ -34,7 +36,7 @@ const results = [
   ...(touched.length ? [{ level: 'warn', where: `${touched.slice(0, 3).join(', ')}${touched.length > 3 ? ` and ${touched.length - 3} more` : ''}`, msg: 'Tier 1 (.agents/thinking.md): full decide, research behind it, owner\'s words for taste, fresh review, dependents updated' }] : []),
   ...layout(root).map(msg => ({ level: 'error', where: 'layout', msg })),
   ...links(root, { files, awaited: JSON.parse(read('.agents/awaited.json') || '[]') }), ...provenance(root, { wordsBase }), ...research(root, { files }),
-  ...secrets(root, { files }), ...ui(root, { files }), ...brand(root, { files }), ...logging(root, { files }), ...code(root, { files, changed }), ...parts(root, { files }),
+  ...secrets(root, { files }), ...ui(root, { files }), ...brand(root, { files }), ...logging(root, { files }), ...code(root, { files, changed }), ...parts(root, { files }), ...picks(root, { files }), ...rules(root),
 ];
 // Keep each human in the loop on the other's work: research and packets that landed in the last day.
 const news = (git('log', '--since=24 hours ago', '--name-only', '--format=@%h %an %ar', '--', 'research/*/nate', 'research/*/ben', '.agents/team/packets') ?? '')
@@ -43,8 +45,9 @@ const nate = news.filter(([, ...f]) => f.some(x => /\/nate\//.test(x) || /packet
 if (nate.length) console.log(`from Nate in the last day (summarize for Ben):\n${nate.map(([h, ...f]) => `  ${h}: ${f.join(', ')}`).join('\n')}`);
 for (const r of results) console.log(`${r.level === 'error' ? 'ERROR' : 'warn '} ${r.where}  ${r.msg}`);
 const n = results.filter(r => r.level === 'error').length;
+if (tally(root)) console.log(tally(root));
 console.log(n ? `\n${n} error(s). Fix them before pushing.` : `checks ok${results.length ? ` (${results.length} warning(s) to read)` : ''}`);
-const tests = files.filter(f => /^(\.agents|scripts|spec)\/.*\.test\.mjs$/.test(f));
+const tests = files.filter(f => /^(\.agents|scripts|spec)\/.*\.test\.mjs$|^app\/src\/.*\.test\.ts$/.test(f));
 const t = tests.length ? (() => { try { execFileSync(process.execPath, ['--test', ...tests], { cwd: root, stdio: 'pipe' }); return 0; } catch (e) { process.stdout.write(e.stdout); return 1; } })() : 0;
 console.log(t ? 'tests failed' : `tests ok (${tests.length} file(s))`);
 process.exitCode = n || t ? 1 : 0;
