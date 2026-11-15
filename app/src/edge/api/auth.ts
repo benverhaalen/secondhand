@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 export const EMAIL_CODES_PER_ADDRESS_HOUR = 5;
 export const EMAIL_CODES_PER_IP_HOUR = 20;
 const HOUR_MS = 3600000;
+const EMAIL_LIMIT_MAX_ENTRIES = 10000;
 type Bucket = { at: number; n: number };
 
 export function makeAuthHandlers(auth: Auth, store: AuthStore) {
@@ -21,6 +22,8 @@ export function makeAuthHandlers(auth: Auth, store: AuthStore) {
     for (const [bucket, maximum] of [[address, EMAIL_CODES_PER_ADDRESS_HOUR], [peer, EMAIL_CODES_PER_IP_HOUR]] as const) {
       if (bucket && bucket.n >= maximum) throw new ApiError('rate_limited', 'email code limit reached', 'send_code', { by: 'auto', after_s: Math.ceil((bucket.at + HOUR_MS - now) / 1000) });
     }
+    // Bounded like the visitor map: drop the oldest entries past the cap.
+    for (const buckets of [addresses, ips]) while (buckets.size >= EMAIL_LIMIT_MAX_ENTRIES) buckets.delete(buckets.keys().next().value!);
     addresses.set(email, { at: address?.at ?? now, n: (address?.n ?? 0) + 1 });
     if (ip !== null) ips.set(ip, { at: peer?.at ?? now, n: (peer?.n ?? 0) + 1 });
   };

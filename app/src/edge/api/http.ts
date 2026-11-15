@@ -150,7 +150,7 @@ export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' 
       if (visitor_id) res.headers.set('X-Visitor-Id', visitor_id);
     } catch (e) {
       const err = e instanceof ApiError
-        ? e.code === 'waking' && deps.started ? new ApiError('unavailable', 'dependency unavailable', e.failed_step, e.retry) : e
+        ? e.code === 'waking' && deps.started ? new ApiError('unavailable', e.message, e.failed_step, e.retry, e.extra) : e
         : new ApiError('unavailable', 'internal error', 'handler', { by: 'auto', after_s: 2 });
       if (!(e instanceof ApiError)) log.error('edge.api', e, { endpoint });
       res = Response.json(err.toJSON(), { status: err.status, headers: { 'X-Request-Id': request_id } });
