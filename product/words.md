@@ -1778,3 +1778,9 @@ Nate, build session (orchestrator), 2026-11-15 about 13:20 Central.
 > Ben has given full reign for me to handle backend
 
 Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 nate mercari in real time, fix the search, and work every percent to perfection
+Nate, build session (orchestrator), 2026-11-15 about 14:40 Central.
+> Can we get mercari data in realtime? and can we fix the search. Identify what we need to fix.  All the perecents need to be addresseed and expertly worked on to perfection
+
+Used in: [state of completion](../spec/plans/completion.md).
