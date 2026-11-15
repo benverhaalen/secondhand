@@ -555,3 +555,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate do not trust the published price tests, and we replicate thriftx and dupe ourselves
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > beyond just the fact verifying one, there were several other ideas, ones utilized to speed up data.  Also dont trust those tests for prices. Explain and save how they were done, but they defintiely werent done the right way. We will harness agents to utilize connection to sources of information, like the analyzed treg and other sites do. dupe, thriftx, we are applying the reverse analyzed and specced ourselves, geniusly architected to work backend systems to replicate what thriftx and dupe.com do.
+
+## 2026-11-14 nate deduce how the others work instead of saying it was not found
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the agent said parts of how Dupe.com and ThriftX work were not found.
+> I just believe that while you think it failed, its because you are stupidly not following what we have clearly searched and can logically deduce would work. We've seen how information is crawled and found on other sites, like im sure dupe.com is powered by but it takes you reing to understnad that entirely.
