@@ -143,7 +143,7 @@ export function Shelf({ id, title, count, onAll, folded = false, onFold, onLess,
       <View {...mark('shelf-head')} style={{ flexDirection: 'row', alignItems: 'center', height: size.siteBadge }}>
         <View style={{ flex: 1, flexDirection: 'row' }}>
           {onFold ? (
-            <Press id={`shelf-${id}-fold`} label={`${title}, ${count}, ${folded ? 'folded' : 'open'}`} onPress={onFold} round={false} hit={slop(size.controlMin, size.siteBadge)}>
+            <Press id={`shelf-${id}-fold`} label={`${title}, ${count}`} expanded={!folded} onPress={onFold} round={false} hit={slop(size.controlMin, size.siteBadge)}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2, height: size.siteBadge }}>
                 <Txt role="headline">{title}</Txt>
                 <Txt role="headline" tone="ink-2">{String(count)}</Txt>
