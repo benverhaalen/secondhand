@@ -1629,3 +1629,9 @@ Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the or
 > you havent worked out far enough, ebay does work in cases, I've seen it used
 
 Used in: [when eBay serves its public pages](../research/cross-cutting/nate/runs/ebay-when-it-serves.md).
+
+## 2026-11-15 nate there is a way to use browser use cloud we are not considering
+Nate, build session (orchestrator), 2026-11-15 about 08:00 Central, after the eBay finding.
+> Theres some way to browser use cloud you aren't considering
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
