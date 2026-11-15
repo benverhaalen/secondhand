@@ -20,7 +20,7 @@ Nate ([words](../../product/words.md#2026-11-14-nate-every-platform-gets-an-expe
 | 0 | Orchestrator | Fable | the canon files, `scripts/walk.mjs`, `scripts/prove.mjs`, the board | wave 0 scaffolds and fixtures, the walk, the reporter, the checkpoint reports | `node scripts/walk.mjs` |
 | 1 | Platform kernel | Opus | `app/src/edge/harness/*.ts` (not `sites/`) | the protocol envelope, sessions and leases, primitives, the release gate, the repair loop, route health, the hosted browser pool, the cookie-carrying request runner, the saved-password secret | `node --test app/src/edge/harness/` |
 | 2 | Events and pipeline | Opus | `app/src/edge/events/`, `jobs/pipeline/` | the event intake and outbox, the snapshot differ, webhook receivers, watcher scheduling by tier, one job per event with the policy check in code | `node --test app/src/edge/events/` |
-| 3 to 9 | One team per platform: eBay, Facebook, Depop, Poshmark, Mercari, OfferUp, Grailed | Opus each | `app/src/edge/harness/sites/<site>/` | that site's whole custom API, below | `node --test app/src/edge/harness/sites/<site>/` |
+| 3 to 7 | One team per platform: eBay, Facebook Marketplace, Depop, Poshmark, Mercari. Numbers 8 and 9 are unused: OfferUp and Grailed are a [future idea](../../ideas/post-to-grailed-and-offerup.md) ([Nate](../../product/words.md#2026-11-14-nate-five-sites-offerup-and-grailed-are-a-future-idea-and-ebays-push-only-if-it-beats-our-harness)) | Opus each | `app/src/edge/harness/sites/<site>/` | that site's whole custom API, below | `node --test app/src/edge/harness/sites/<site>/` |
 | 10 | Swarm intelligence | Fable or Opus | `app/src/engines/intelligence/`, `jobs/intelligence/` | the question protocols, the parallel source runner, extraction to schema, the gather request that widens when the basis is thin, the listing swarm, official stores and Amazon, product and seller reviews, the public search API and its MCP tools | the commands in [intelligence-api](../engines/intelligence-api.md) section 10 |
 | 11 | Weighing and scoring: money | Opus, Codex-heavy | `app/src/engines/valuation/`, `negotiation/`, `marketing/`, `score/`, `jobs/valuation/`, `jobs/negotiation/` | valuation with the price slider, negotiation, the marketing engine's site plan, the success score | `node --test app/src/engines/` and `python -m pytest jobs/valuation jobs/negotiation` |
 | 12 | Weighing and scoring: knowledge | Opus, Codex-heavy | `jobs/identity/`, `jobs/demand/`, `jobs/analytics/`, `jobs/style/`, `app/src/engines/trust/`, `jobs/trust/` | identity, demand and trend, platform analytics, recommendation and style, trust, learning the person | `python -m pytest jobs` |
@@ -64,8 +64,8 @@ The first hour of streams 1, 2, 10, 13 and 15 is therefore the interface, as typ
 ## Order
 
 1. Minute zero: the orchestrator launches streams 1, 2, 10, 13 and 15 with "interface first", stream 16's expert sessions, and its own wave 0.
-2. As soon as stream 1's envelope is pushed: all seven platform teams, and streams 11, 12 and 14, at once.
+2. As soon as stream 1's envelope is pushed: all five platform teams, and streams 11, 12 and 14, at once.
 3. The walk passes on fixtures, then stays green while every stream fills in.
 4. Deploy on the event workspace, one rehearsal, then tuning and live runs on Nate's go.
 
-Open for Nate: whether all seven sites are built tonight or a named five; eBay's push as a sale trigger.
+Settled by [Nate](../../product/words.md#2026-11-14-nate-five-sites-offerup-and-grailed-are-a-future-idea-and-ebays-push-only-if-it-beats-our-harness): the five sites are eBay, Facebook Marketplace, Depop, Poshmark and Mercari. eBay's own sale notification is used only if it beats what our harness can do: the eBay team measures both (seconds from sale to our event, for the push and for our watcher) and keeps the push as a trigger only if it is faster; the harness does every read and action either way.
