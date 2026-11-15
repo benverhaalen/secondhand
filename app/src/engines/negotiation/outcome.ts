@@ -1,3 +1,4 @@
+import { money } from '../money/ending.ts';
 // The offer_outcome row (product.md; negotiation.md §1, §6): one offer round, no buyer identity.
 // In memory; the Lakebase writer comes later. Amounts are integer cents. Key: (conversation_id, round, side).
 export type Response = 'accepted' | 'countered' | 'declined' | 'expired' | 'walked';
@@ -20,6 +21,9 @@ export function outcomeStore() {
     return row;
   };
   function settle(row: OfferOutcome, k: string, o: Observed) {
+    if (o.counter_cents !== undefined) money(o.counter_cents, 'counter_cents');
+    if (o.final_price_cents !== undefined) money(o.final_price_cents, 'final_price_cents');
+    if (o.at !== undefined && (!Number.isSafeInteger(o.at) || o.at < (offeredAt.get(k) ?? 0))) throw new RangeError('at');
     if (row.response !== null && row.response !== o.response) throw new Error(`round already ${row.response}, not ${o.response}`);
     row.response = o.response;
     row.counter = o.counter_cents ?? row.counter;
@@ -29,14 +33,20 @@ export function outcomeStore() {
   }
   return {
     fromOffer(r: OfferRead): void {
+      money(r.offer_cents, 'offer_cents'); money(r.ask_cents, 'ask_cents');
       const round = r.round ?? 1, side = r.side ?? 'sell', k = key(r.conversation_id, round, side);
+      if (!Number.isSafeInteger(round) || round < 1) throw new RangeError('round');
+      if (!Number.isSafeInteger(r.at) || r.at < 0) throw new RangeError('at');
       if (map.has(k)) return;
       // Whitelisted fields only: nothing about the buyer is copied in.
       map.set(k, { conversation_id: r.conversation_id, item_id: r.item_id, site: r.site, round, side, offer: r.offer_cents, ask: r.ask_cents, counter: null, response: null, final_price: null, ms_to_response: null });
       offeredAt.set(k, r.at);
     },
     fromReply(r: Reply): void {
-      const round = r.round ?? 1, side = r.side ?? 'sell', k = key(r.conversation_id, round, side), row = get(r.conversation_id, round, side);
+      const possible = [...map.values()].filter(o => o.conversation_id === r.conversation_id && (r.side === undefined || o.side === r.side) && (r.round === undefined || o.round === r.round));
+      if (possible.length !== 1) throw new RangeError('round and side must identify one offer read');
+      const selected = possible[0];
+      const round = r.round ?? selected.round, side = r.side ?? selected.side, k = key(r.conversation_id, round, side), row = get(r.conversation_id, round, side);
       if (r.outcome_unknown || !r.response) return; // reconcile() settles it when the reply is read back
       settle(row, k, { response: r.response, counter_cents: r.counter_cents, final_price_cents: r.final_price_cents, at: r.at, overruled: r.overruled });
     },

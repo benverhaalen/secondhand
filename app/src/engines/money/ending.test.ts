@@ -17,3 +17,18 @@ test('clamped to the floor and ask; null when nothing lies between', () => {
   assert.equal(roundToEnding(6100, undefined, 6000, 8000), 6500);
   assert.equal(roundToEnding(6100, undefined, 6000, 6400), null);
 });
+
+test('audit: distant bounds clamp the search and invalid money is refused', () => {
+  assert.equal(roundToEnding(100, undefined, 6000, 8000), 6500);
+  assert.equal(roundToEnding(99000, undefined, 6000, 8000), 7800);
+  assert.throws(() => endings(-1, 500), /lo_cents/);
+  assert.throws(() => roundToEnding(-1), /cents/);
+});
+
+test('existing callers use Infinity as the unbounded range sentinel', () => {
+  assert.equal(roundToEnding(7100, undefined, 0, Infinity), 6800);
+});
+
+test('money boundary refuses fractional cents before rounding to an ending', () => {
+  assert.throws(() => roundToEnding(7150.5), /cents/);
+});
