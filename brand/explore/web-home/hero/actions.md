@@ -26,7 +26,7 @@ One sentence and one action. A stranger learns what secondhand is from the line,
 | Press a pill or a page link | the pill | Scales to .97 on press-in, back on release | 150 ms | The app's press (Appllama: press feedback on press-in, 100 to 150 ms, scale .97) |
 | Hover the mark in the header | the right hand | Waves twice in three held poses | 480 ms, twice | L58. The only delight on the screen, and only when asked for |
 | Click the mark | the page | Back to the top | smooth, or a jump with Reduce Motion | The mark is home, as everywhere on the web |
-| Click "See how it works" | the page | Glides to section 2 | smooth, or a jump with Reduce Motion | The button's promise is kept on the same page, no load |
+| Click "See how it works" | the page | Glides to section 2, its heading clear of the header | smooth, or a jump with Reduce Motion | The button's promise is kept on the same page, no load |
 | Click a page link | that page | Opens it. How it works scrolls to section 2; the others open their page once it exists | none | A link that goes nowhere is a defect; until a page exists its link says so in the mock's notes |
 | Click Sign in | sign-in | Opens web sign-in once it exists | none | Gray, not black: one black pill per view (C4, L50) |
 | Tab through | each control in reading order | Mark, the four pages, Sign in, See how it works. Each shows the focus ring | at once | Keyboard users get the same order the eye takes |

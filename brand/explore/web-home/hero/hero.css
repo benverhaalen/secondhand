@@ -63,6 +63,8 @@ header { color: var(--ink); }
    around it: the screen is the product, a drawn phone is decoration. The step sits under its screen: its number in the
    second ink, its name, one line. On a phone the row scrolls sideways with each screen snapping to the edge, and runs
    out to the screen's edges (--bleed is the page margin turned back, so it stays on the spacing scale). */
+/* a section reached by a link starts under the fixed header, never behind it (actions.md: "See how it works") */
+section[id] { scroll-margin-top: var(--bar); }
 .how { background: var(--page); }
 .steps3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-7); margin: var(--s-8) 0 0; padding: 0; list-style: none; }
 .steps3 li { display: grid; gap: var(--s-3); align-content: start; }

@@ -100,6 +100,16 @@ for (const [w, h, name] of SCREENS) {
     await page.screenshot({ path: join(out, 'scrolled-1440.jpg'), type: 'jpeg', quality: 82 });
     await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(400);
   }
+  if (w === 390 || w === 1440) {
+    // "See how it works" lands on section 2 with its heading clear of the fixed header (actions.md), and the page there is
+    // what a person sees, so this is also the picture of section 2.
+    await page.click('a[data-go]');
+    await page.evaluate(async () => { let y = -1; for (let i = 0; i < 60 && y !== scrollY; i++) { y = scrollY; await new Promise(r => setTimeout(r, 100)); } });
+    f.how_heading_gap = await page.evaluate(() => Math.round(document.querySelector('#how h2').getBoundingClientRect().top - document.querySelector('header .wrap').getBoundingClientRect().bottom));
+    if (f.how_heading_gap < 16) { f.problems.push(`"See how it works" leaves the section 2 heading under the header (${f.how_heading_gap}px clear)`); broken++; }
+    await page.screenshot({ path: join(out, `how-${w}.jpg`), type: 'jpeg', quality: 82 });
+    await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(400);
+  }
   if (w === 390 || w === 1440) f.contrast_floor = await contrastFloor(page, { text: '.copy h1', at: [...Array(24).keys()], move: (p) => p.evaluate(() => window.__hero.step(5300)) });
   if (w === 390) {
     await page.reload(); await page.evaluate(() => document.fonts.ready);
