@@ -20,7 +20,7 @@ const landmarks = [
   [/^worth-state-offline$/, /^Waiting for signal$/], [/^worth/, /^(?:Worth$|worth-)/],
   [/^gone-by/, /^(Gone by |gone-|sweep-|Nothing to clear here$)/], [/^item-.*-pickup/, /^(Pickup|pickup-|meet-)/],
   [/^item-.*-ship/, /^(Ship|ship-|shipping-)/], [/^stage$/, /^(Post|Post here|post-|stage-)/],
-  [/^onboarding$/, /^(Your sites|Pickup spot|First photo|onboarding-)/],
+  [/^onboarding$/, /^(Welcome|Your sites|Pickup spot|First photo|onboarding-)/],
   [/^camera$/, /^(cam-|Camera is off$)/], [/^new$/, /^new-/],
   [/^dev-parts$/, /^Decision card, the lead \(state gradients, by time left\)$/], [/^launch$/, /^(secondhand|launch-)/],
 ];
@@ -145,7 +145,9 @@ export function checkCapture({ slug, tree, png, pageColors }) {
     if (flat) findings.push(finding('ERROR', 'N2', slug, 'PNG top', `${flat}/${rows} rows majority page color; maximum=${(Math.max(...rowPageShares) * 100).toFixed(1)}%, width=${width}px`));
   }
   const tabButtons = appElements.filter(e => e.type === 'Button' && /^tab-(today|sell|new|buy|you)$/.test(e.identifier));
-  const bar = appElements.find(e => e.type === 'TabBar')?.frame ?? (tabButtons.length ? {
+  // New and Camera are full-screen modals and Stage is a sheet (app/src/app/_layout.tsx): the tab bar stays in the tree under them, unseen.
+  const modal = /^(new|camera|stage)(-|$)/.test(slug);
+  const bar = modal ? null : appElements.find(e => e.type === 'TabBar')?.frame ?? (tabButtons.length ? {
     x: 0, y: Math.min(...tabButtons.map(e => e.frame.y)), width: window.frame.width, height: window.frame.height - Math.min(...tabButtons.map(e => e.frame.y)),
   } : null);
   const home = { x: 0, y: window.frame.height - 34, width: window.frame.width, height: 34 };
@@ -163,7 +165,8 @@ export function checkCapture({ slug, tree, png, pageColors }) {
     }
     const interactive = ['Button', 'Link', 'TextField', 'SecureTextField', 'TextView', 'Switch', 'Slider', 'Stepper', 'SegmentedControl'].includes(e.type);
     const tab = tabButtons.includes(e) || parents.some(p => p.type === 'TabBar');
-    if (interactive && !scroll && overlaps(f, window.frame) && !tab && (overlaps(f, home) || bar && overlaps(f, bar))) {
+    const scrim = f.width >= window.frame.width && f.height >= window.frame.height; // a tap-anywhere-to-close layer, not a control
+    if (interactive && !scroll && !scrim && overlaps(f, window.frame) && !tab && (overlaps(f, home) || bar && overlaps(f, bar))) {
       findings.push(finding('ERROR', 'N4', slug, name, `frame=${JSON.stringify(f)}pt overlaps ${bar && overlaps(f, bar) ? `tab bar y=${bar.y}` : `home safe area y=${home.y}`}pt; scroll ancestors=0`));
     }
     if (e.type === 'Button' && (f.width < 44 || f.height < 44)) findings.push(finding('WARN', 'N5', slug, name, `${f.width}x${f.height}pt; hit area needs 44x44pt; hitSlop is invisible to XCUITest frames (40pt visual controls are permitted)`));
