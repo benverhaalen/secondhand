@@ -1234,3 +1234,5 @@ Note, 07:18 UTC: the market research named in the 07:14 "Used in" line moved to 
 
 Ben, project chat, 07:18 UTC.
 > whenever i have a decision to make bring it here essentially. also considering a backtest, how would you set this up in a flattering but truthful way. like average price changes over season. we could potentially look up general trends and possible spikes in either buying or sales on the resale market. i feel like it goes in waves. and we can explain super well and intuitively to the user when these things happen. some could be dates too. see if theres any rdd for this. for our market we are trying to predict. things that are predictable as humans are relatively predictable. merge all prs get them onto main why havent you been doing this
+
+Used in (07:18 entry): [seasons-events-and-a-fair-backtest.md](../research/price/ben/seasons-events-and-a-fair-backtest.md), [money D6](../spec/determinations/money.md#d6-range-calibration-and-display-state) steps 6, 8 and 9, [market-insight M12](../spec/determinations/market-insight.md#m12-seasonality).

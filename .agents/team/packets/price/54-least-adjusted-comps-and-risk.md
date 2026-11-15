@@ -20,6 +20,7 @@ Ben asked for mechanisms from insurance, lending, appraisal and quant that impro
 - `jobs/valuation/backtest.py` reports coverage and q50 error per cell. Card 18 now reads PPE20 per cell, so the backtest output needs `hit_rate`, `ppe10`, `ppe20`, `mdape` and `share_over_30` next to coverage. Not added here, because it is your file.
 - `jobs/valuation/market.py` `adjusted_comps` ranks by distance and has no gross cap or `w_adj`. The TypeScript side (`app/src/engines/valuation/comps.ts`, `adjustDetail`, `extrapolated`) follows D1 now; the two disagree until one of us ports it.
 - `valuation_fit` rows would carry the five accuracy numbers if card 18 is to read them from Databricks.
+- Added the same day ([seasons-events-and-a-fair-backtest.md](../../../../research/price/ben/seasons-events-and-a-fair-backtest.md)): D6 now wants a third baseline in `backtest.py` (seasonal naive, on the subset where it exists), skill against the best baseline per cell, the listed-with-us and from-a-photo populations side by side, and a second run with the D3 season term off. M12 adds dated events fitted weekly on the M14, M5 and M4 series, refit only on data before each frozen date.
 
 ## Next action
 
