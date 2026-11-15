@@ -13,6 +13,7 @@ resources:
           environment_key: proof
           spark_python_task:
             python_file: ../../databricks/tasks/recompute.py
+            parameters: ["--root", "${workspace.file_path}"]
     load_logs:
       name: secondhand-load-logs
       environments:
@@ -24,6 +25,7 @@ resources:
           environment_key: proof
           spark_python_task:
             python_file: ../../databricks/tasks/load_logs.py
+            parameters: ["--root", "${workspace.file_path}"]
     parity:
       name: secondhand-parity
       environments:
@@ -35,6 +37,7 @@ resources:
           environment_key: proof
           spark_python_task:
             python_file: ../../databricks/tasks/parity_job.py
+            parameters: ["--root", "${workspace.file_path}"]
     measures_setup:
       name: secondhand-measures-setup
       tasks:

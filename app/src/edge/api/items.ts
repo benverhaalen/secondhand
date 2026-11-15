@@ -3,26 +3,45 @@ import type { Ctx, Handler } from './http.ts';
 import { exampleHandler, manifestFor, fromEngine, fields, text, bool, version, money, oneOf, object, invalid, sites, siteList } from './captures.ts';
 import { ApiError } from './http.ts';
 import { assembleCard, mergeAttribute, type CardPort, type CardRecord, type Attribute } from '../card/card.ts';
-import { planOf, type PlanChoice, type Objective } from '../../engines/valuation/path.ts';
+import { planOf, HORIZON_DAYS, type PlanChoice, type Objective } from '../../engines/valuation/path.ts';
 import { example } from './examples.ts';
+import { runtime, createRuntime, seedExamples, engine, owned, checkVersion, publicRow } from './runtime.ts';
+import { memoryStore, type Row } from '../events/ports.ts';
+import { itemLimits, validateLimits, limitsView } from './rules.ts';
+import { write, logReceived } from '../events/intake.ts';
+import { deps } from './http.ts';
 
 type ItemView = Record<string, unknown> & { id: string; title: string; state: string; quantity: number; product_id?: string; updated_at: string; version: number; attributes: (Omit<Attribute, 'confidence' | 'method' | 'at'> & { id: string })[]; photos: (CardRecord['photos'][number] & Record<string, unknown>)[]; listings: (CardRecord['listings'][number] & Record<string, unknown>)[] };
 const view = example('items.get').response as ItemView;
-const rows = new Map<string, CardRecord>();
-rows.set(view.id, {
-  item: { id: view.id, user_id: 'usr_8f2k', state: view.state, title: view.title, quantity: view.quantity, product_id: view.product_id },
-  attributes: view.attributes.map(a => ({ ...a, confidence: 0, method: a.evidence[0]?.extractor_version ?? 'not_visible', at: a.evidence[0]?.captured_at ?? view.updated_at })),
-  photos: view.photos.map(p => ({ ...p, file_ref: p.id })),
-  listings: view.listings.map(l => ({ ...l, required_fields: ['chest_width'] })),
-});
-const tiles = (example('items.list').response as { data: ItemView[] }).data;
-for (const tile of tiles) if (!rows.has(tile.id)) rows.set(tile.id, { item: { id: tile.id, user_id: 'usr_8f2k', state: tile.state, title: tile.title, quantity: tile.quantity }, attributes: [], photos: [], listings: [] });
-export const ports: CardPort & { write(user: string, row: CardRecord, expectedVersion: number): Promise<number> } = { async read(user, id) { const row = rows.get(id); return row?.item.user_id === user ? structuredClone(row) : undefined; }, async write(user, row, expectedVersion) { if (row.item.user_id !== user) throw new Error('item tenant mismatch'); const current = itemVersions.get(row.item.id); if (current !== expectedVersion) throw new ApiError('stale', 'item changed', 'version_check', { by: 'user' }, { current: { version: current } }); rows.set(row.item.id, structuredClone(row)); const next = current + 1; itemVersions.set(row.item.id, next); return next; } };
-
-const initialRows = structuredClone([...rows.entries()]);
-const itemVersions = new Map([[view.id, view.version]]);
-export function resetItems(version = view.version) { rows.clear(); for (const [id, row] of structuredClone(initialRows)) rows.set(id, row); itemVersions.set(view.id, version); }
-async function versionOf(ctx: Ctx) { const row = await ports.read(ctx.user_id!, ctx.params.id); if (!row) throw new ApiError('not_found', 'item not found', 'read'); return itemVersions.get(ctx.params.id) ?? view.version; }
+export const ports: CardPort & { write(user: string, row: CardRecord, expectedVersion: number): Promise<number> } = {
+  async read(user, id) {
+    const row = runtime.store.get('item', user, id);
+    if (!row || row.deleted) return undefined;
+    const attributes = row.attributes as ItemView['attributes'];
+    const photos = row.photos as ItemView['photos'];
+    return {
+      item: { id, user_id: user, state: String(row.state), title: String(row.title), quantity: Number(row.quantity), ...(row.product_id ? { product_id: String(row.product_id) } : {}) },
+      attributes: attributes.map(a => ({ ...a, confidence: 0, method: a.evidence[0]?.extractor_version ?? 'not_visible', at: a.evidence[0]?.captured_at ?? String(row.updated_at) })),
+      photos: photos.map(p => ({ ...p, file_ref: p.id })),
+      listings: runtime.store.rows('listing', { user_id: user, item_id: id }).filter(l => !l.import_preview).map(l => ({ id: l.id, site: String(l.site), state: String(l.state), required_fields: l.required_fields as string[] ?? [] })),
+    };
+  },
+  async write(user, row, expectedVersion) {
+    if (row.item.user_id !== user) throw new Error('item tenant mismatch');
+    const current = runtime.store.get('item', user, row.item.id);
+    if (!current) throw new ApiError('not_found', 'item not found', 'read');
+    checkVersion(current, expectedVersion);
+    return runtime.store.put('item', { ...current, ...row.item, attributes: row.attributes, photos: row.photos }).version!;
+  },
+};
+export function resetItems(version = view.version) {
+  const st = memoryStore();
+  seedExamples(st);
+  const initial = st.dump();
+  initial.rows.item!.find(row => row.id === view.id)!.version = version;
+  Object.assign(runtime, createRuntime(memoryStore(initial), deps.log));
+}
+async function versionOf(ctx: Ctx) { return owned('item', ctx, ctx.params.id).version!; }
 type PlanChoicesView = Record<string, unknown> & { item_id: string; choices: (Record<string, unknown> & { plan_choice: PlanChoice; objective: Objective })[] };
 const choices = example('items.plan_choices').response as PlanChoicesView;
 export const planPorts = { async read(id: string): Promise<PlanChoicesView> { if (id !== choices.item_id) throw new Error('not_found'); return structuredClone(choices); } };
@@ -30,21 +49,50 @@ export const handlers: Record<string, Handler> = {
   'GET /v1/items': fromEngine(exampleHandler('GET /v1/items', undefined, undefined, async (ctx, seed) => {
     const body = seed.body as { data: ItemView[]; next_cursor: string | null };
     const data = [];
-    for (const tile of body.data) {
-      const card = await assembleCard(ctx.user_id!, tile.id, ports, ctx.log);
-      data.push({ ...tile, title: card.item.title, state: card.item.state, quantity: card.item.quantity });
+    for (const row of runtime.store.rows('item', { user_id: ctx.user_id! }).filter(row => !row.deleted)) {
+      const card = await assembleCard(ctx.user_id!, row.id, ports, ctx.log);
+      const tile = row.tile as Record<string, unknown> ?? publicRow(row, true);
+      data.push({ ...tile, ...(row.price_cents ? { price_cents: row.price_cents } : {}), title: card.item.title, state: card.item.state, quantity: card.item.quantity, version: row.version });
     }
     return { ...seed, body: { ...body, data } };
   })),
-  'GET /v1/items/:id': fromEngine(exampleHandler('GET /v1/items/:id', undefined, undefined, async (ctx, seed) => {
-    const card = await assembleCard(ctx.user_id!, ctx.params.id, ports, ctx.log);
-    const body = seed.body as ItemView;
-    return { ...seed, body: { ...body, title: card.item.title, state: card.item.state, quantity: card.item.quantity, version: await versionOf(ctx),
-      attributes: card.attributes.map(a => { const meta = body.attributes.find(old => old.name === a.name); if (!meta) throw new Error('attribute projection missing'); return { ...meta, value: a.value, source: a.source, confirmed: a.confirmed, evidence: a.evidence }; }),
+  'GET /v1/items/:id': engine(async (ctx) => {
+    const row = owned('item', ctx, ctx.params.id);
+    const card = await assembleCard(ctx.user_id!, row.id, ports, ctx.log);
+    const { user_id, tile, strategy_options, ...body } = row;
+    const limits = runtime.store.get('limits', ctx.user_id!, row.id);
+    return { status: 200, body: { ...body, title: card.item.title, state: card.item.state, quantity: card.item.quantity,
+      attributes: card.attributes.map(a => { const { confidence, method, at, ...attribute } = a; return attribute; }),
       missing_fields: [...new Set(card.listings.flatMap(l => l.missing_fields))],
-      photos: card.photos.map(p => body.photos.find(old => old.id === p.id)), listings: card.listings.map(l => body.listings.find(old => old.id === l.id)) } };
-  })),
-  'PATCH /v1/items/:id': exampleHandler('PATCH /v1/items/:id', c => { fields(c.body, { version }, { title: text, location: v => object(v) && text(v.label), cost: money }); if (c.body.quantity !== undefined && !version(c.body.quantity)) throw invalid('quantity must be a whole number of at least 1', ['quantity']); if (!['title', 'location', 'cost', 'quantity'].some(k => c.body[k] !== undefined)) throw invalid('no item edits'); }),
+      photos: card.photos.map(p => { const { file_ref, ...photo } = p; return photo; }),
+      listings: runtime.store.rows('listing', { user_id: ctx.user_id!, item_id: row.id }).filter(l => !l.import_preview).map(l => publicRow(l)),
+      ...(limits ? { limits: limitsView(limits) } : {}) } };
+  }),
+  'PATCH /v1/items/:id': engine(ctx => {
+    const row = owned('item', ctx, ctx.params.id);
+    fields(ctx.body, { version }, { title: text, location: v => object(v) && text(v.label), cost: money, price_cents: money });
+    if (ctx.body.quantity !== undefined && !version(ctx.body.quantity)) throw invalid('quantity must be a whole number of at least 1', ['quantity']);
+    if (!['title', 'location', 'cost', 'quantity', 'price_cents'].some(k => ctx.body[k] !== undefined)) throw invalid('no item edits');
+    checkVersion(row, ctx.body.version);
+    const edits = Object.fromEntries(['title', 'location', 'quantity', 'cost', 'price_cents'].filter(key => ctx.body[key] !== undefined).map(key => [key, ctx.body[key]]));
+    if (object(edits.cost)) edits.cost = { ...(object(row.cost) ? row.cost : {}), ...edits.cost, source: 'you_said' };
+    const price = ctx.body.price_cents as { amount_cents: number; currency: string } | undefined;
+    const oldPrice = (row.price_cents ?? (row.tile as Record<string, unknown> | undefined)?.price_cents) as typeof price;
+    const changedPrice = price && (price.amount_cents !== oldPrice?.amount_cents || price.currency !== oldPrice?.currency);
+    const events: ReturnType<typeof write>[] = [];
+    const next = runtime.store.tx(st => {
+      const saved = st.put('item', { ...row, ...edits });
+      if (changedPrice) for (const listing of st.rows('listing', { user_id: ctx.user_id!, item_id: row.id }).filter(l => l.state === 'live' && !l.import_preview)) {
+        const at = new Date().toISOString();
+        events.push(write(st, { user_id: ctx.user_id!, source: 'app', action: 'app.reprice', actor: 'user', site: listing.site as 'ebay' | 'depop', account_id: String(listing.account_id), item_id: row.id, listing_id: listing.id, dedupe_key: `edit:${row.id}:${row.version}:${listing.id}`, observed_at: at, effective_at: at, trace_id: ctx.request_id,
+          payload: { price_cents: price!.amount_cents, slug: String(listing.url).split('/').filter(Boolean).at(-1), listing: { price_amount: price!.amount_cents / 100 } } }));
+      }
+      return saved;
+    });
+    for (const event of events) logReceived(ctx.log, event);
+    ctx.log.event('state.change', { entity: 'item', id: row.id, to: 'edited' });
+    return { status: 200, body: { id: row.id, ...edits, ...(events.length ? { push_my_edit: { listing_ids: events.map(e => e.job.listing_id), job_id: events[0].job.id } } : {}), version: next.version } };
+  }),
   'PATCH /v1/items/:id/attributes/:name': fromEngine(exampleHandler('PATCH /v1/items/:id/attributes/:name', c => { fields(c.body, { version }, { confirmed: bool }); if (c.body.value === undefined && c.body.confirmed !== false) throw invalid('value or confirmed false is required'); }, c => c.body.confirmed === false ? 'items.attribute.unpin' : 'items.attribute.correct', async (ctx, seed) => {
     const row = await ports.read(ctx.user_id!, ctx.params.id);
     if (!row) throw new ApiError('not_found', 'item not found', 'read');
@@ -58,7 +106,24 @@ export const handlers: Record<string, Handler> = {
     return { ...seed, body: { ...body, item_version, name: next.name, value: next.value, source: next.source, confirmed: next.confirmed, ...(body.evidence ? { evidence: next.evidence } : {}) } };
   }, versionOf)),
   'POST /v1/items/:id/sell': exampleHandler('POST /v1/items/:id/sell'),
-  'POST /v1/items/:id/strategy': exampleHandler('POST /v1/items/:id/strategy', c => { fields(c.body, { version, plan_choice: oneOf('sell', 'fast', 'best', 'reserve', 'check'), floor_cents: money }, { always_accept_cents: money, fallback: oneOf('ask', 'donate', 'keep', 'trade_in', 'relist'), markdown_on: bool, accept_mode: oneOf('auto', 'ask_all'), gone_by: v => text(v) && /^\d{4}-\d{2}-\d{2}$/.test(v) }); const floor = c.body.floor_cents as { amount_cents: number }, accept = c.body.always_accept_cents as { amount_cents: number } | undefined; if (accept && accept.amount_cents < floor.amount_cents) throw new ApiError('outside_limits', 'always_accept below floor', 'policy_check', { by: 'user' }); }),
+  'POST /v1/items/:id/strategy': engine(ctx => {
+    const row = owned('item', ctx, ctx.params.id);
+    fields(ctx.body, { version, plan_choice: oneOf('sell', 'fast', 'best', 'reserve', 'check'), floor_cents: money }, { always_accept_cents: money, fallback: oneOf('ask', 'donate', 'keep', 'trade_in', 'relist'), markdown_on: bool, accept_mode: oneOf('auto', 'ask_all'), gone_by: v => text(v) && /^\d{4}-\d{2}-\d{2}$/.test(v) });
+    validateLimits(ctx.body, runtime.store.get('limits', ctx.user_id!, row.id));
+    checkVersion(row, ctx.body.version);
+    const plan = planOf(ctx.body.plan_choice as PlanChoice);
+    const result = runtime.store.tx(st => {
+      const limits = itemLimits(ctx, row.id, ctx.body);
+      const userLimits = owned('limits', ctx, ctx.user_id!);
+      st.put('limits', userLimits);
+      const next = st.put('item', { ...row });
+      return { limits: limitsView(limits), item_version: next.version };
+    });
+    ctx.log.event('state.change', { entity: 'limits', id: row.id, to: 'updated' });
+    const options = row.strategy_options as Record<string, Record<string, unknown>[]> | undefined;
+    const strategies = (options?.[String(ctx.body.plan_choice)] ?? []).map(strategy => strategy.verdict === 'skip' ? strategy : { ...strategy, objective: plan.objective, horizon_days: HORIZON_DAYS[plan.objective], floor_cents: ctx.body.floor_cents, ...(!plan.path ? { price_path: [] } : {}) });
+    return { status: 200, body: { strategies, ...result } };
+  }),
   'POST /v1/items/:id/listings': exampleHandler('POST /v1/items/:id/listings', c => fields(c.body, { version, sites: siteList }, { dry_run: bool })),
   'GET /v1/items/:id/plan-choices': fromEngine(exampleHandler('GET /v1/items/:id/plan-choices', undefined, undefined, async (ctx, seed) => {
     const body = await planPorts.read(ctx.params.id);

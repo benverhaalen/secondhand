@@ -33,6 +33,22 @@ test('product rows: transaction rollback restores updates and removes inserts', 
   assert.deepEqual(s.rows('order', { user_id: 'u1' }), [], 'rollback removes new rows');
 });
 
+test('product rows: identical ids belong to each tenant and versions advance independently', () => {
+  const s = memoryStore();
+  const first = s.put('item', { id: 'it_1', user_id: 'u1', state: 'review' });
+  const second = s.put('item', { id: 'it_1', user_id: 'u2', state: 'live' });
+  assert.equal(second.version, 1, 'another tenant starts its own version');
+  assert.deepEqual(s.get('item', 'u1', 'it_1'), first, 'another tenant cannot replace the first row');
+  assert.deepEqual(s.get('item', 'u2', 'it_1'), second, 'each tenant can read its own row');
+  const updatedFirst = s.put('item', { ...first, state: 'live' });
+  assert.equal(updatedFirst.version, 2);
+  assert.deepEqual(s.get('item', 'u2', 'it_1'), second, 'first tenant update leaves the second version unchanged');
+  const updatedSecond = s.put('item', { ...second, state: 'review' });
+  assert.equal(updatedSecond.version, 2);
+  assert.deepEqual(s.get('item', 'u1', 'it_1'), updatedFirst, 'second tenant update leaves the first version unchanged');
+  assert.deepEqual(s.get('item', 'u2', 'it_1'), updatedSecond);
+});
+
 test('every event kind routes to one job kind', () => {
   for (const k of EVENT_KINDS) assert.ok(JOB_FOR[k], k);
 });
@@ -60,3 +76,54 @@ test('lease: a second job gets 409; params: row beats prior', async () => {
   assert.equal((await h.call('ebay', 'end', { account_id: 'a1' })).ok, true);
   assert.equal(h.calls.length, 1);
 });
+
+const operation = { id: 'op_1', user_id: 'u1', site: 'ebay', verb: 'post', sku_hash: 'hash_1', data: 'synthetic', at: '2026-11-15T00:00:00Z' } as const;
+
+test('operation claim: duplicate begin preserves the first row and tenant claims are independent', () => {
+  const s = memoryStore();
+  const first = s.beginOperation(operation);
+  assert.equal(first.duplicate, false);
+  assert.deepEqual(first.row, { ...operation, state: 'started', attempts: 1, version: 1 });
+  assert.deepEqual(s.beginOperation({ ...operation, verb: 'end', at: 'later' }), { row: first.row, duplicate: true });
+  assert.deepEqual(s.rows('operation', { user_id: 'u1' }), [first.row]);
+  assert.equal(s.get('operation', 'u2', operation.id), undefined);
+  assert.deepEqual(s.rows('operation', { user_id: 'u2' }), []);
+  const other = s.beginOperation({ ...operation, user_id: 'u2' });
+  assert.equal(other.duplicate, false);
+  s.settleOperation('u2', operation.id, { state: 'unknown', at: 'later' });
+  assert.deepEqual(s.get('operation', 'u1', operation.id), first.row);
+  assert.equal(s.get('operation', 'u2', operation.id)?.state, 'unknown');
+});
+
+test('operation claim: throwing transaction removes claim so it can be begun again', () => {
+  const s = memoryStore();
+  assert.throws(() => s.tx(t => { t.beginOperation(operation); throw new Error('abort claim'); }), /abort claim/);
+  assert.deepEqual(s.rows('operation', { user_id: 'u1' }), []);
+  assert.equal(s.beginOperation(operation).duplicate, false);
+});
+
+test('operation settlement: missing rows throw and the first done result is final', () => {
+  const s = memoryStore();
+  assert.throws(() => s.settleOperation('u1', operation.id, { state: 'done', at: 'later' }), /no operation/);
+  s.beginOperation(operation);
+  assert.throws(() => s.settleOperation('u2', operation.id, { state: 'done', at: 'later' }), /no operation/);
+  const unknown = s.settleOperation('u1', operation.id, { state: 'unknown', attempts: 2, at: 'later' });
+  assert.equal(unknown.version, 2);
+  assert.equal(unknown.attempts, 2);
+  const done = s.settleOperation('u1', operation.id, { state: 'done', envelope: { ok: true, data: { id: 'listing_1' } }, at: 'settled' });
+  assert.equal(done.version, 3);
+  assert.equal(done.at, 'settled');
+  assert.equal(done.data, operation.data);
+  assert.deepEqual(s.settleOperation('u1', operation.id, { state: 'done', envelope: { ok: false }, attempts: 5, at: 'replacement' }), done);
+  assert.deepEqual(s.settleOperation('u1', operation.id, { state: 'unknown', at: 'replacement' }), done);
+  assert.deepEqual(s.beginOperation(operation), { row: done, duplicate: true });
+});
+
+for (const key of ['cookie', 'accessToken', 'Authorization', 'password', 'Set-Cookie', 'buyer_name', 'shippingAddress']) {
+  test(`operation settlement: refuses nested ${key} without changing the row`, () => {
+    const s = memoryStore();
+    const { row } = s.beginOperation(operation);
+    assert.throws(() => s.settleOperation('u1', operation.id, { state: 'done', envelope: { data: [{ nested: { [key]: 'synthetic' } }] }, at: 'later' }), /envelope/);
+    assert.deepEqual(s.get('operation', 'u1', operation.id), row);
+  });
+}

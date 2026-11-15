@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import argparse
 import os
 import sys
 from collections import Counter
@@ -10,14 +11,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import NamedTuple
 
-ROOT = Path(__file__).resolve().parents[2]
+# Serverless executes the entrypoint without __file__; imported modules still have it.
+ROOT = Path(__file__).resolve().parents[2] if '__file__' in globals() else None
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--root', type=Path, default=ROOT, required=ROOT is None)
+    ROOT = parser.parse_args().root.resolve()
 sys.path.insert(0, str(ROOT / 'log'))
 from secondhand_log import create_log, stdout_sink
 
 ENVELOPE = {'ts', 'session', 'seq', 'src', 'level', 'event'}
 LOG_FIELDS = ENVELOPE | {'item', 'job', 'call', 'trace', 'user'}
-LOG_SCHEMA = 'user_id STRING, ts TIMESTAMP, session STRING, seq INT, src STRING, level STRING, event STRING, item STRING, job STRING, call STRING, trace STRING, body STRING'
-DECISION_SCHEMA = 'id STRING, user_id STRING, created_at TIMESTAMP, updated_at TIMESTAMP, version INT, kind STRING, item_id STRING, action STRING, actor STRING, price_cents BIGINT, floor_cents BIGINT, site STRING, policy_mode STRING, policy_result STRING, policy_version STRING, why STRING, state STRING, buyer_handle STRING'
+LOG_SCHEMA = 'data STRING, user_id STRING, ts TIMESTAMP, session STRING, seq INT, src STRING, level STRING, event STRING, item STRING, job STRING, call STRING, trace STRING, body STRING'
+DECISION_SCHEMA = 'data STRING, id STRING, user_id STRING, created_at TIMESTAMP, updated_at TIMESTAMP, version INT, kind STRING, item_id STRING, action STRING, actor STRING, price_cents BIGINT, floor_cents BIGINT, site STRING, policy_mode STRING, policy_result STRING, policy_version STRING, why STRING, state STRING, buyer_handle STRING'
 REPORT_SCHEMA = 'file STRING, lines BIGINT, loaded BIGINT, rejected BIGINT, reasons STRING'
 
 
@@ -60,6 +66,15 @@ def _validate(row) -> None:
             raise ValueError('decision.answer needs kind or decision')
 
 
+def provenance(row: dict) -> str:
+    if row.get('src') == 'policy_sweep':
+        return 'synthetic'
+    if row.get('src') == 'walk' or row.get('fixture') is True:
+        return 'example'
+    site = row.get('site')
+    return f'live:{site.strip()}' if isinstance(site, str) and site.strip() else 'example'
+
+
 def parse(lines, source_name: str) -> Parsed:
     """Return log rows, decision rows and rejects (file, 1-based line, reason)."""
     logs, decisions, rejects = [], [], []
@@ -72,7 +87,8 @@ def parse(lines, source_name: str) -> Parsed:
             continue
         ts = _timestamp(row['ts'])
         user = row.get('user') or 'system'
-        logs.append({'user_id': user, 'ts': ts, 'session': row['session'], 'seq': row['seq'],
+        data = provenance(row)
+        logs.append({'data': data, 'user_id': user, 'ts': ts, 'session': row['session'], 'seq': row['seq'],
                      **{k: row.get(k) for k in ('src', 'level', 'event', 'item', 'job', 'call', 'trace')},
                      'body': json.dumps({k: v for k, v in row.items() if k not in LOG_FIELDS}, ensure_ascii=False)})
         if row['event'] != 'decision.answer':
@@ -80,7 +96,7 @@ def parse(lines, source_name: str) -> Parsed:
         body = {k: v for k, v in row.items() if k not in ENVELOPE}
         kind = row.get('kind') or row.get('decision_kind') or row['decision'].removeprefix('walk_')
         decisions.append({'id': 'dec_' + hashlib.sha256(f"{row['session']}:{row['seq']}".encode()).hexdigest()[:16],
-                          'user_id': user, 'created_at': ts, 'updated_at': ts, 'version': 1,
+                          'data': data, 'user_id': user, 'created_at': ts, 'updated_at': ts, 'version': 1,
                           'kind': kind, 'item_id': row.get('item'), 'action': row.get('action') or kind,
                           'actor': 'auto' if row.get('src') == 'policy_sweep' else 'user',
                           'price_cents': row.get('price_cents'), 'floor_cents': row.get('floor_cents'),

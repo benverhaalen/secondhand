@@ -177,17 +177,19 @@ One block per site. Recon its own data calls before page driving; use official A
 
 ## 13 Databricks
 
+Design and what is proved: [databricks-build.md](../databricks-build.md#9-what-is-proved). Every number below was read on Nate's workspace (`--profile Nate`) on 2026-11-15. Boxes stay unticked until a fresh reviewer has read the diffs.
 
 - [ ] T0-1 workspace checks on the event workspace; browsers use Browser Use Cloud
 - [ ] interface first: the `param`, `observation`, `evidence`, `citation` shapes with an in-memory fake
 - [ ] Lakebase tables and migrations for the canon
 - [ ] the `param` registry: versions, promote on a backtest win, rollback
 - [ ] per-event updates in the transaction that records the outcome
-- [ ] nightly refits as jobs, champion and challenger
-- [ ] the proof layer: guarded numbers, `claim_check`, `rights` tags
-- [ ] the secret scope for sessions and saved passwords
+- [ ] nightly refits as jobs, champion and challenger: deployed as `secondhand-nightly-fits`, at most 4 tasks at once (Free Edition allows 5); its first run waits on the `--root` fix (serverless runs a task file with no `__file__`)
+- [ ] the proof layer: guarded numbers, `claim_check`, `rights` tags. Python twin of proof.ts: 20 of 20 parity cases equal (`python -m pytest databricks/parity/test_parity.py`). Isolation by the catalog ABAC policy `sh_owner_only`: 7 of the example loader's 14 guarded numbers visible to Nate, all `usr_nate` (`SELECT user_id, count(*) FROM secondhand.core.guarded_number GROUP BY 1`). Handles masked by `sh_mask_handle` (`m***`). Policy sweep over `check()`: 480 answers, all 32 never-performed answers refused (`node databricks/policy-sweep.mjs`)
+- [ ] the market layer: pipeline `secondhand-market` holds 1,688,603 comps from 6 public sold sets (bronze 1,688,864; 261 dropped by expectations), 1,581,374 cleared for modelling (StockX and Mercari Kaggle), update f5f78337 (`SELECT source, count(*) FROM secondhand.market.comp GROUP BY source`)
+- [ ] the secret scope for sessions and saved passwords: bound to the bundle (`databricks bundle deployment bind vault secondhand --target dev --profile Nate`)
 - [ ] jobs for watchers, gathers and refits, with their triggers
-- [ ] deployed on the event workspace; the edge reaches it
+- [ ] deployed on the event workspace; the edge reaches it. On Nate's workspace: bundle deployed, target dev; setup job SUCCESS (`node deploy/deploy.mjs deploy --target dev --profile Nate`)
 
 ## 14 Capture and photo
 
@@ -195,6 +197,7 @@ One block per site. Recon its own data calls before page driving; use official A
 - [ ] the type suggestion contract and both ways of confirming it (tap, and skip when confident)
 - [ ] the per-type process table as data: instant, series, scan
 - [ ] the follow-up inputs as data, one input per field a type needs
+- [ ] the deterministic plan ([capture engine §11](../engines/capture.md#11-the-deterministic-plan)): one table by family and dimension class, field states, per-site form, one completeness check, the question planner. Proved 2026-11-15 (merge 929926f1): 86 engine tests pass and six item types (T-shirt, sneakers, handbag, phone, chair from an unsure first frame, a bundle of three) walk from first photo to done, run twice with identical output, `node --test --test-concurrency=1 app/src/engines/capture/walk.test.ts`. Questions to done: T-shirt 3 (type, condition, size), sneakers 4, handbag 5 (one refused), phone 5, chair 2, bundle 9. Ticked after the fresh review; next: close variants and studio asks (round 3), the routes (cap-routes-1)
 - [ ] the free note reader: confirms, marks a contradiction, adds; never re-asks; address, phone and payment never reach a listing
 - [ ] photo ph-1 to ph-6
 - [ ] proof per [capture](../engines/capture.md) sections 9 and 10: `python -m pytest jobs/photo` and `node --test app/src/engines/capture/`

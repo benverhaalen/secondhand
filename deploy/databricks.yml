@@ -51,37 +51,37 @@ resources:
       tasks:
         - task_key: identity
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [identity, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [identity, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}", "--root", "${workspace.file_path}"] }
         - task_key: demand
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [demand, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [demand, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}", "--root", "${workspace.file_path}"] }
         - task_key: analytics
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [analytics, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [analytics, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}", "--root", "${workspace.file_path}"] }
         - task_key: style
           depends_on: [{ task_key: identity }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [style, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [style, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}", "--root", "${workspace.file_path}"] }
         - task_key: valuation
           depends_on: [{ task_key: demand }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [valuation, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [valuation, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}", "--root", "${workspace.file_path}"] }
         - task_key: negotiation
           depends_on: [{ task_key: analytics }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [negotiation, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [negotiation, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}", "--root", "${workspace.file_path}"] }
         - task_key: trust
           depends_on: [{ task_key: style }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [trust, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [trust, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}", "--root", "${workspace.file_path}"] }
         - task_key: score
           depends_on: [{ task_key: valuation }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [score, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [score, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}", "--root", "${workspace.file_path}"] }
         - task_key: person
           depends_on: [{ task_key: negotiation }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [person, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [person, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}", "--root", "${workspace.file_path}"] }
 
     purge_user:
       name: secondhand-purge-user

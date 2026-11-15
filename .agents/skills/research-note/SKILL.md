@@ -20,3 +20,5 @@ The failure this prevents: relying on pretraining or another model's summary, an
 7. Say what you searched and what you couldn't reach. A limited search doesn't show that something doesn't exist.
 
 Run `node .agents/check.mjs`. It fails a note that has no header or no evidence marks.
+
+A subagent that searches or reads for a note runs on Sonnet or Haiku, never Opus ([Ben](../../../product/words.md#2026-11-15-stop-hot-items-and-seasons-stay-on-nano-banana-depops-api-is-a-proposal-not-a-claim)).
