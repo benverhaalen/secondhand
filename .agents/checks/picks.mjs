@@ -3,7 +3,7 @@
 // Every check is keyed by the id of the rule it holds, and has a test named "picks <id>:" in checks.test.mjs.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { read, err, lineOf, withoutComments } from './util.mjs';
+import { read, err, warn, lineOf, withoutComments } from './util.mjs';
 
 const TOKENS = 'brand/tokens.css';
 const APP = f => /^app\/src\/.*\.(tsx?|jsx?)$/.test(f) && !/\.(test|generated)\./.test(f);
@@ -159,11 +159,11 @@ export const PICKS = {
       if (px('card-decision-h') !== px('card-item-h') + 12 + px('pill-card-h')) out.push(err(TOKENS, `--card-decision-h is ${px('card-decision-h')}: a decision card is an item card, 12 and a row of actions (ledger L46)`)); }
     return out; },
 
-  // Four states by color and no fifth: every pair of state fills stays .05 apart in Oklab under simulated protan and deutan vision.
+  // A warning, not a failure (Ben: "dont weight to colorblindness too much"): two state fills closer than .05 in Oklab under simulated protan or deutan vision.
   A10: (root) => { const t = tokens(root); if (!t) return []; const fills = STATE_FILLS.filter(n => HEX.test(t.light[n] ?? '')), out = [];
     for (const [kind, m] of Object.entries(CVD)) for (let i = 0; i < fills.length; i++) for (let j = i + 1; j < fills.length; j++) {
       const d = apart(seen(t.light[fills[i]], m), seen(t.light[fills[j]], m));
-      if (d < .05) out.push(err(TOKENS, `--${fills[i]} and --${fills[j]} are ${d.toFixed(3)} apart with ${kind} vision: two state fills stay .05 apart, so a color blind person can tell them (ledger A10)`)); }
+      if (d < .05) out.push(warn(TOKENS, `--${fills[i]} and --${fills[j]} are ${d.toFixed(3)} apart with ${kind} vision: under .05 a color blind person tells them by icon and word alone (ledger A10)`)); }
     return out; },
 
   // The text face is PP Neue Montreal 2.6: it is the first family the brand values name.

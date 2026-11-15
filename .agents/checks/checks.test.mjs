@@ -331,10 +331,12 @@ test('picks L46: a photo corner that does not nest in its card fails', async () 
   assert.equal(await pick('L46', sizes(20)), '');
 });
 
-test('picks A10: two state fills a color blind person cannot tell apart fail', async () => {
+test('picks A10: two state fills a color blind person cannot tell apart are warned about, not failed', async () => {
+  const { PICKS } = await import('./picks.mjs'); const said = files => run(PICKS.A10, files).map(o => `${o.level} ${o.msg}`).join('\n');
   const fills = lime => ({ 'brand/tokens.css': `:root { --sky: #A5E1FE; --mint: #A1EACB; --marigold: #F5D297; --lime: ${lime}; }` });
-  assert.equal(await pick('A10', fills('#EBF08F')), '');
-  assert.match(await pick('A10', fills('#DDCEFE')), /--sky and --lime are 0\.0\d\d apart with deutan vision/);
+  assert.equal(said(fills('#EBF08F')), '');
+  assert.match(said(fills('#DDCEFE')), /warn --sky and --lime are 0\.0\d\d apart with deutan vision/);
+  assert.equal(await pick('A10', fills('#DDCEFE')), '');
 });
 
 test('picks L8: statistics notation on a screen fails; the same fact in plain words passes', async () => {

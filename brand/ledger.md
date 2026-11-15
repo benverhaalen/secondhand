@@ -65,7 +65,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | A7 | Where Clofie goes: the wordmark, the screen title, the headline of a moment, web and post headlines. Never a number, never words a person wrote. Ben asked for the classing in [round 8](../product/words.md#2026-11-15-round-8-picks) | constitution Art. 6, [the reasons](explore/round-9/clofie-use.md) |
 | A8 | Type is centered by its ink: a label is trimmed to its cap height and baseline, and Clofie moves down .12 em where text cannot be trimmed. Ben asked for the tailoring in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 6.10, [the numbers](../research/cross-cutting/ben/brand-round-11.md) |
 | A9 | A pill is balanced at its icon: one step less padding at an icon end, and a tag is 20 with a 12 icon. Ben saw the imbalance in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 7.7 |
-| A10 | Four states by color and no fifth: state fills stay .05 apart in Oklab under simulated protan and deutan vision. Ben is color blind ([dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks)) | constitution Art. 5, Four states by color |
+| A10 | State fills are checked under simulated protan and deutan vision. Closer than .05 in Oklab is a warning, not a failure: Ben is color blind, and he also wrote "dont weight to colorblindness too much" ([his words](../product/words.md#2026-11-15-do-not-weight-color-blindness-too-much)) | constitution Art. 5, State colors and color blindness |
 
 ## Open (Ben picks; round 11)
 
