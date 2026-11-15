@@ -2546,3 +2546,15 @@ Nate, the orchestrator's session, 2026-11-15, about 15:09 UTC by the machine clo
 > lets focus on now with all benchmarks established , things appearing impressive, remember focusing on the story of our product, how we are aimed around a problem first, to help users find an easy way to measure, manage, and monitor second hand selling, simplify the hasstle of listing items, tracking its performance, how to market it well and handle requests. Driven by an advanced agentic search engine or however to technically but understandably describe it exactly, official terms, built around data bricks to leverage their storage services, security, etc.. and extending feature sets across their retail front and other to provide/deliver/bring something better. With this engine, we've also empowered buyers with a unified search engine that takes any product query, or even interesting question, and utilizes broad, "deeply dug" (that is the prompt, "to dig deep", ) osint and opted in platform search aggregation to deliver market insights, sales trends, fashion statements and industry speculation. We give people a way to negoitate at public sales like garage sales, with an in hand accurate appraiser, assessing, similar or exact product listings offered on online sites, even determining if you want what the price will be. SEND THIS TO BEN FOR WEBSITE AND PERHAPS VIDEO
 
 Used in: [packet 98](../.agents/team/packets/team/98-the-story-for-the-site-and-video.md), for Ben's website and video.
+
+## 2026-11-15 nate does everything actually work, measured so we can show it
+Nate, the orchestrator's session, 2026-11-15, about 15:13 UTC by the machine clock.
+> very important, but can you assess this works, like perectly, desing and ui aside, do all the things actually work, in a way we can benchmark and show how we're impressive.
+
+Used in: the scorecard in [the finalization spec, section 13](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator); each lead measures its area on one main.
+
+## 2026-11-15 nate everything off the Mac, onto main, buildable for TestFlight
+Nate, the orchestrator's session, 2026-11-15, about 15:15 UTC by the machine clock.
+> lets get every off mac and focus now on bringing it all here completely and pushing it to main. assessing and delviering final code working and buildable on testflight /goal
+
+Used in: no new Mac or Codex work; each lead brings its finished branches to a Windows worktree and hands the orchestrator one `w/<area>-final` branch on GitHub; the orchestrator merges them to main. The iOS bundle and `expo-doctor` are checked on Windows; the native Release build is walked on the Mac simulator; EAS build and submit stay Nate's.
