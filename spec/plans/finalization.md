@@ -106,7 +106,7 @@ The [coverage map](../../databricks/COVERAGE.md) (2026-11-15, read from the file
 
 | Id | Fix | Proof | State |
 |---|---|---|---|
-| DB11 | A `source_rights` row for each live source (eBay, Mercari, Poshmark, Depop pages; Apify shown-only, `may_model` false, `hackathon_demo`), and the loader refuses a line looser than its source's row | A loader test per source; `measures.model_clearance` lists every live site | Proposed |
+| DB11 | A `source_rights` row for each live source (eBay through treg and our own pages, never modelled; Mercari, Poshmark, Depop pages; Facebook Marketplace through Apify, the only Apify source, `may_model` true, `hackathon_demo`: [Nate](../../product/words.md#2026-11-15-nate-apify-for-facebook-marketplace-only-ebay-through-treg-and-our-own-pages)), and the loader refuses a line looser than its source's row or with no row | A loader test per source; `measures.model_clearance` lists every live site | In build (`w/dbx-rights-1`, with DB16) |
 | DB12 | A daily sweep deletes observations past `keep_until` or the source's `ttl_hours` | A test with one expired and one live row | Proposed; a schedule spends credit, so Nate's yes first |
 | DB13 | Every nightly fold task runs or says why: the eight engines without a Spark `main()` stop reporting a green skip, the person fold is found, capture and photo get tasks (with the engines lead, who owns the engine twins) | `fold.run` returns `ran` or a stated reason for all eleven | Proposed |
 | DB14 | The brand measure and the attribute record have a job: read `market.listing_obs`, build the record, run `jobs/measures/brand_premium.py`, export the `brand_premium` row (DB4) | `jobs/measures/test_brand_premium.py` and a fold test on seeded rows | Proposed |

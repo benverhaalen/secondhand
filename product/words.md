@@ -2393,3 +2393,13 @@ Nate, the search lead's session, 2026-11-15, about 13:40 UTC, after the harness 
 > ben will handle sign in proof, we are focusing on validating the full backend, chekcing and ensuring everything works,
 
 Used in: [harness coverage](../research/cross-cutting/nate/runs/harness-coverage-2026-11-15.md), [packet 88](../.agents/team/packets/team/88-search-handoff.md).
+
+## 2026-11-15 nate apify for facebook marketplace only; ebay through treg and our own pages
+Nate, the Databricks lead's session, 2026-11-15, about 13:40 UTC, while the lead was writing the rights rows for every live source (row DB11), which had allowed rows from any site read through an Apify actor.
+> apify for fb marketpalce only
+
+> we have treg for ebay and our own slow pages
+
+Read by the Databricks lead: an Apify row is a Facebook Marketplace row; a line from any other site through Apify has no rights row and is refused. eBay rows come through treg and our own page reads; eBay content still never fits a model, by any route ([data use](../spec/data-use.md)).
+
+Used in: [finalization.md DB11](../spec/plans/finalization.md), the rights brief `brief-dbx-rights-1`.
