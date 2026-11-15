@@ -286,7 +286,7 @@ function LiveToday() {
           const item = w.items.find(item => item.id === decision.item_id);
           const appearance = single(w, decision), links = linksFor(decision);
           const primary = decision.kind === 'relink'
-            ? { label: 'Sign in again', onPress: () => go('/you/accounts') }
+            ? { label: 'Sign in again', onPress: () => go('/you/connections') }
             : links.length === 1
               ? { label: 'Open on the site', onPress: () => void openListing(links[0].url) }
               : { label: links.length ? 'Choose site' : 'Review', onPress: () => setReview(decision.id) };

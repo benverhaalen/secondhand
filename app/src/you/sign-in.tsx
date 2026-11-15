@@ -33,7 +33,7 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
     if (busy || offline) return;
     setAppleBusy(true); setError(null);
     try { if (await appleSignIn(requestAppleToken)) await onDone(); }
-    catch (failure) { log.error('sign-in.apple', failure instanceof ApiFailure ? new Error(`Apple sign-in failed (${failure.status})`) : new Error('Apple sign-in failed')); setError(accountError(failure)); }
+    catch (failure) { log.error('sign-in.apple', failure instanceof ApiFailure ? new Error(`Apple sign-in failed (${failure.status})`) : new Error('Apple sign-in failed')); setError(failure instanceof ApiFailure ? accountError(failure) : `Apple sign-in failed: ${failure instanceof Error ? failure.message : String(failure)}`); }
     finally { setAppleBusy(false); }
   };
   const signInWithGoogle = async () => {
@@ -42,7 +42,7 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
     try { if (await googleSignIn(requestGoogleToken ?? (ios ? requestGoogleIdTokenIos : undefined))) await onDone(); }
     catch (failure) {
       log.error('sign-in.google', failure instanceof ApiFailure ? new Error(`Google sign-in failed (${failure.status})`) : new Error('Google provider unavailable'));
-      setError(failure instanceof GoogleSignInUnavailable ? 'Google sign-in is not available yet. Continue with email.' : accountError(failure));
+      setError(failure instanceof GoogleSignInUnavailable ? 'Google sign-in is not available yet.' : failure instanceof ApiFailure ? accountError(failure) : `Google sign-in failed: ${failure instanceof Error ? failure.message : String(failure)}`);
     } finally { setGoogleBusy(false); }
   };
   const send = async () => {

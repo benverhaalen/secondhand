@@ -38,7 +38,7 @@ export default function MessageThread() {
   const p = useLocalSearchParams<{ id: string; world?: string; take?: string }>();
   // A thread belongs to the world it was opened from, so ?state= draws over clearing unless ?world= names another.
   const s = useScreen();
-  const w = p.world ? s.w : world('clearing');
+  const w = p.world || !s.demo ? s.w : world('clearing');
   const conv = w.conversations.find(c => c.id === p.id);
   const q = p.world ? `?world=${p.world}` : '';
   if (s.state === 'loading' && conv) {
@@ -68,6 +68,7 @@ export default function MessageThread() {
 
 function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conversation; worldParam?: string; takeOver: boolean; asked: ScreenState | null }) {
   const q = worldParam ? `?world=${worldParam}` : '';
+  const { demo } = useScreen();
   // offline: the last copy, and every send waits on its pill until the signal returns, as on Today.
   const offline = asked === 'offline';
   const item = itemById(w, conv.item_id);
@@ -137,7 +138,7 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
   };
 
   const why = open?.kind === 'why' ? explain(w, conv, open.msg) : null;
-  const foot = blocked ? null : spans ? null : (
+  const foot = !demo ? <Meta text="Reply on the marketplace for now." icon="information-circle" /> : blocked ? null : spans ? null : (
     <Stack gap="tight">
       {taken ? <Meta text="Offers still follow your Plan" icon="information-circle" /> : null}
       <Composer id="composer" to={conv.buyer} value={text} onChange={setText} onSend={sendMine} sending={sending} />
@@ -210,7 +211,7 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
         <Notice id="thread-pickup" icon="location-01" text={`Pickup ${when(pickup.window.start, w.now)}`} onPress={() => router.push(`/item/${item!.id}/pickup${q}` as Href)} />
       ) : null}
 
-      {spans && !blocked ? (
+      {demo && spans && !blocked ? (
         <Draft key={draftKey} id="draft" who={conv.buyer} spans={spans} facts={facts} lead={draftLeads} status={draftStatus === 'editing' ? 'editing' : draftStatus}
           onSend={sendDraft} onChange={setSpans} onMine={() => { setSpans(null); setTaken(true); }} />
       ) : null}

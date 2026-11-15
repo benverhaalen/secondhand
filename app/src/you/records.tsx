@@ -1,7 +1,7 @@
 // Records: the year's sales, what each sold for, what the site and the label took, and what was kept; the cost only where a
 // purchase told us, never asked (insights.md, Profit). A CSV of every line is the one act, labelled a record, never tax advice.
 import { useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Share } from 'react-native';
 import { day, records } from '@/demo';
 import { EmptyState, FootButton, List, Nav, Screen, Section, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
@@ -26,6 +26,7 @@ export function Records() {
       a.download = `secondhand-${year}.csv`;
       a.click();
     }
+    else void Share.share({ title: `secondhand-${year}.csv`, message: [head, ...body].join('\n') });
     changed('records', year, 'downloaded');
     setSaved(true);
   };
