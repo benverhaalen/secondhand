@@ -7,7 +7,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { checkLog } from '../spec/log.mjs';
 
-const pct = (xs, p) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.min(s.length - 1, Math.floor(s.length * p))] : 0; };
+// Nearest rank: p50 of [900, 1100] is 900, p95 of 10 values is the 10th.
+const pct = (xs, p) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.max(0, Math.ceil(s.length * p) - 1)] : 0; };
 const sum = xs => xs.reduce((a, b) => a + b, 0);
 const usd = x => Math.round(x * 1e6) / 1e6;
 const byTotal = (a, b) => b.total_ms - a.total_ms;
@@ -20,7 +21,7 @@ function work(events) {
     r.ms.push(ms);
     if (e.ok === false) { r.failed++; r.failed_ms += ms; }
     if (typeof e.cost_usd === 'number') r.cost_usd += e.cost_usd;
-    r.tokens += (e.tokens_in ?? 0) + (e.tokens_out ?? 0);
+    r.tokens += e.token_count ?? (e.tokens_in ?? 0) + (e.tokens_out ?? 0);
   };
   for (const e of events) {
     if (e.event === 'call.start') started.set(`${e.session} ${e.call}`, `call ${e.kind} ${e.name}`);
@@ -32,9 +33,12 @@ function work(events) {
 
 function jobs(events) {
   const seen = new Map();
+  // A job is one id in one session. A retry starts a new attempt: its wait and run are measured from the first queued and the last running.
   for (const e of events.filter(e => e.event === 'job.state')) {
-    const j = seen.get(e.job) ?? seen.set(e.job, { kind: e.kind }).get(e.job);
-    j[e.state] = Date.parse(e.ts);
+    const id = `${e.session} ${e.job}`, j = seen.get(id) ?? seen.set(id, { kind: e.kind }).get(id), t = Date.parse(e.ts);
+    if (e.state === 'queued') j.queued ??= t;
+    else if (e.state === 'running') { j.running = t; delete j.done; delete j.failed; }
+    else j[e.state] = t;
   }
   const kinds = new Map();
   for (const j of seen.values()) {

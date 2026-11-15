@@ -42,3 +42,22 @@ test('rank splits a job into the wait before it ran and the run, per kind, and s
   assert.deepEqual(r.jobs, [{ kind: 'image', n: 2, failed: 1, wait_total_ms: 6000, wait_p95_ms: 5000, run_total_ms: 10000, run_p95_ms: 8000, failed_ms: 8000 }]);
   assert.deepEqual(r.agents, [{ agent: 'lister', n: 1, failed: 0, steps: 3, total_ms: 30, cost_usd: 0.5 }]);
 });
+
+test('rank keeps a job id apart per session, measures a retry from its last start, and counts a total token count', () => {
+  seq = 0;
+  const other = (ms, rest) => ({ ...line(ms, 'job.state', rest), session: 's_2' });
+  const r = rank([
+    line(0, 'job.state', { job: 'hero', kind: 'image', state: 'queued' }),
+    line(1000, 'job.state', { job: 'hero', kind: 'image', state: 'running' }),
+    line(2000, 'job.state', { job: 'hero', kind: 'image', state: 'failed', error: { type: 'E', msg: 'x' } }),
+    line(3000, 'job.state', { job: 'hero', kind: 'image', state: 'running' }),
+    line(4000, 'job.state', { job: 'hero', kind: 'image', state: 'done' }),
+    other(9000, { job: 'hero', kind: 'image', state: 'queued' }),
+    other(9500, { job: 'hero', kind: 'image', state: 'running' }),
+    other(9900, { job: 'hero', kind: 'image', state: 'done' }),
+    line(0, 'call.start', { call: 'c1', kind: 'tool', name: 'codex' }),
+    line(10, 'call.end', { call: 'c1', ok: true, ms: 10, token_count: 4089 }),
+  ]);
+  assert.deepEqual(r.jobs, [{ kind: 'image', n: 2, failed: 0, wait_total_ms: 3500, wait_p95_ms: 3000, run_total_ms: 1400, run_p95_ms: 1000, failed_ms: 0 }]);
+  assert.equal(r.work[0].tokens, 4089);
+});

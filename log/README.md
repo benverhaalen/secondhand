@@ -146,7 +146,7 @@ node log/climb.mjs logs/check-*.jsonl --top 15     # what makes the repo check s
 node log/climb.mjs <out>/logs/*.jsonl              # an image-gen run: job waits, call times, tokens
 ```
 
-`climb.mjs` ranks the work in the logs you give it: total time per call or timing name with its share, p50 and p95; the time failures threw away; cost and tokens; each job kind's wait before it ran and its run; each agent's runs, steps and the cost of their calls. Start at the top row.
+`climb.mjs` ranks the work in the logs you give it: total time per call or timing name with its share, p50 and p95; the time failures threw away; cost and tokens; each job kind's wait before it ran and its run; each agent's runs, steps and the cost of their calls. Start at the top row. A share adds up the time of each piece, so work that ran in parallel (test files) or a timing that wraps a logged call counts more than once, and the shares can total more than the wall clock.
 
 1. Pick one row and freeze the measure: the same command, the same input, the same machine. Run it three times and note the spread, so a change smaller than the noise is not read as a win.
 2. Make one change, run the measure again, and keep it or revert it. Write each attempt as a row in `logs/decision.tsv`: the date, the row, the change, before, after, kept or reverted.

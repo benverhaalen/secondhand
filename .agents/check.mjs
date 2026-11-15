@@ -79,16 +79,18 @@ async function runTests(paths) {
   const byFile = new Map(), report = [];
   const stream = run({ files: paths.map(f => join(root, f)), cwd: root, concurrency: true });
   const top = ok => d => {
-    if (d.nesting !== 0 || !d.file) return;
+    if (d.nesting !== 0 || !d.file || d.todo || d.skip) return; // node --test passes a failing todo, so this does too
     const f = byFile.get(d.file) ?? byFile.set(d.file, { ms: 0, n: 0, failed: 0, slowest: { ms: -1 } }).get(d.file), ms = d.details.duration_ms;
-    f.ms += ms; f.n++; if (!ok) f.failed++;
+    if (!ok) f.failed++;
+    if (d.name === d.file) return; // the file itself failed (a load error, a hook): counted as a failure, not as a test
+    f.ms += ms; f.n++;
     if (ms > f.slowest.ms) f.slowest = { name: d.name, ms };
   };
   stream.on('test:pass', top(true));
   stream.on('test:fail', top(false));
   for await (const chunk of stream.compose(new spec())) report.push(chunk);
   for (const [file, f] of byFile) log.event('timing', { name: `test ${file.slice(root.length).replace(/^\//, '')}`, ok: !f.failed, ms: Math.round(f.ms), tests: f.n, failed: f.failed, slowest: f.slowest.name, slowest_ms: Math.round(f.slowest.ms) }, f.failed ? 'error' : 'info');
-  const failed = [...byFile.values()].reduce((a, f) => a + f.failed, 0) || (process.exitCode ? 1 : 0);
+  const failed = [...byFile.values()].reduce((a, f) => a + f.failed, 0);
   if (failed) process.stdout.write(report.join(''));
   return failed;
 }

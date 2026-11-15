@@ -125,7 +125,6 @@ export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2
   const { max = 24, load = 0.7, ramp = 2, swap = 10, timeout = 600, model = 'gpt-6-astra' } = plan;
   const jobs = plan.jobs.map(j => ({ id: j.id, role: j.role ?? 'generator', state: 'waiting', after: j.after ?? [], makes: j.makes ?? 'image', job: j }));
   const byId = new Map(jobs.map(j => [j.id, j]));
-  for (const j of jobs) log?.job(j.id, 'image', 'queued');
   const folderOf = id => join(out, id), running = new Set();
   const peak = { running: 0, load: 0, cpu: 0, mem: 0, swap: 0 };
   let held = 0, quiet = BUSY_EVERY, finish, last;
@@ -172,6 +171,8 @@ export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2
       log?.note('machine', { load1: now.load1, cpu_pct: Math.round(now.cpu), mem_mb: Math.round(now.mem), swap_mb_s: Math.round(swapping), running: running.size });
       for (const j of jobs) if (j.state === 'waiting' && j.after.some(d => ['failed', 'skipped'].includes(byId.get(d).state))) { j.state = 'skipped'; j.why = 'what it waits for failed'; log?.job(j.id, 'image', 'failed', { skipped: true, reason: j.why, error: { type: 'ImageJob', msg: j.why } }); }
       const ready = jobs.filter(j => j.state === 'waiting' && j.after.every(d => byId.get(d).state === 'done'));
+      // A job is queued once what it waits for is done, so its logged wait is time spent on room to run, not on its inputs.
+      for (const j of ready) if (!j.queued) { j.queued = true; log?.job(j.id, 'image', 'queued'); }
       // Each new call takes memory a swapping machine does not have, so while it swaps, calls run one at a time.
       const room = short ? (running.size ? 0 : 1) : Math.min(max - running.size, busy ? (quiet >= BUSY_EVERY ? 1 : 0) : ramp);
       if ((busy || short) && ready.length) held++;
