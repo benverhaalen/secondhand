@@ -120,9 +120,12 @@ test('every figure says where it comes from, and every headline figure carries i
     if (w.spec.widgetType === 'custom-vega-viz') assert.deepEqual(w.spec.encodings.fields.map(f => f.fieldName), ['value_label', 'sub_label'], w.name);
   }
   const stats = sql(d, 'stats');
-  for (const key of ['cited', 'rebuilt', 'ours_range', 'locked', 'refused', 'held_back', 'allowed'])
+  for (const key of ['cited', 'rebuilt', 'ours_range', 'locked', 'refused', 'held_back', 'allowed', 'served_gap'])
     assert.match(stats, new RegExp(`'${key}'.*concat\\('of `), `${key}: its count reads "of N"`);
   assert.match(stats, /coalesce\(concat\(format_number\(within_20 \* 100, 1\), '%'\), 'Too few'\)/, 'a null rate reads Too few, never 0%');
+  // The workspace backtest scores the nightly market model; the app serves another engine, so nothing calls the market model ours.
+  assert.doesNotMatch(JSON.stringify(d), /Our price/, 'the market model is never labelled our price');
+  assert.match(stats, /FROM e WHERE contestant = 'engine_all_on'/, 'the served engine is on the page');
 });
 
 test('the metric view guards every rate the way the app does: null under 30 shown', () => {

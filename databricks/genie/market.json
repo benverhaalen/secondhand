@@ -120,6 +120,12 @@
         "identifier": "secondhand.measures.decisions_by_policy"
       },
       {
+        "identifier": "secondhand.measures.engine_ablation",
+        "description": [
+          "The engine the app serves (served = true) beside the last sale, the 90-day median, the engine before the ablation and the nightly market model, on the same 41,988 StockX 2019 test sales. A development reading of 2026-11-15, history, not live accuracy."
+        ]
+      },
+      {
         "identifier": "secondhand.measures.guard_violations"
       },
       {
@@ -168,11 +174,13 @@
           "A price statistic (median, average, percentile) over fewer than 30 sold rows is not answered. Say \"too few: N sales\" with the actual N, including zero, and name what would resolve it: a wider date range or the parent kind. Count the requested set before calculating a price statistic. Use sold rows only; asking and ended-unsold prices are not sales.",
           "Every accuracy answer names the dataset, the families and the date range from secondhand.measures.backtest_run and secondhand.measures.backtest_headline. Never call it today's market. The backtest is StockX sneaker sales, Off-White x Nike and Yeezy 350, 2017-09 to 2019-02 unless the table says otherwise. Include counts; refuse accuracy cells marked too_few. Distinguish configured test_from/test_to (exclusive end, possibly open) from observed sales dates. Unknown families or dates must be stated as unknown, never guessed. Families absent from the dataset are a gap, including furniture, one-off and unbranded items and Depop, Poshmark, Mercari and Facebook sales.",
           "Rows whose data is synthetic or example are never presented as real; say which they are. Keep data provenance groups separate in summaries.",
-          "For \"why is this number what it is\", \"where does number X come from\" or \"which sales does a price rest on\", read secondhand.measures.price_basis: one row per earlier sale behind each shown price, with rebuilt_exactly. In the SQL editor the same rows come from SELECT * FROM secondhand.measures.why('<id>'), which Genie does not call. Report rebuilt_exactly as given: false or null is not verified. No rows means the price is not shown or not visible to the asker.",
+          "For \"why is this number what it is\", \"where does number X come from\" or \"which sales does a price rest on\", read secondhand.measures.price_basis: one row per earlier sale behind each shown price, with rebuilt_exactly. rebuilt_exactly = true means the price rebuilds exactly from the sales it cites: the basis hash recomputed from those rows equals the hash stored with the price. It says nothing about whether a sale is real, verified, live or current; never describe it as verified, real or confirmed. Say \"rebuilt exactly from the N sales it cites\". False or null means it did not rebuild or was not checked. In the SQL editor the same rows come from SELECT * FROM secondhand.measures.why('<id>'), which Genie does not call. No rows means the price is not shown or not visible to the asker.",
           "Only rows with may_model = true were used to train; when asked what a model learned from, use secondhand.market.comp_for_model counts. These counts show eligible inputs; do not claim every eligible row was used in a particular fit without its fit evidence.",
           "A question about the earliest, latest or first N sales asks for a statistic over that row-limited set. Count the set first with the same filter and limit. If the count is under 30, the whole answer is \"too few: N sales\" with the actual N, the dataset and dates available, and a suggestion (a wider date range or the parent kind). Give no median, average or other price for that set, not even with a caveat.",
           "Price accuracy by who priced it, week, kind or dataset comes from the metric view secondhand.measures.valuation_metrics with MEASURE(); its rates are already null under 30 shown estimates. Families of a backtest come from secondhand.measures.backtest_estimate joined to secondhand.market.comp on item_id; query them rather than writing 'unknown'.",
-          "guard_violations reads only the rows the asker may see, so it is not a count across every owner; say so when quoting it. Governance questions read secondhand.measures.locks_in_force, a snapshot of the catalog policies taken at each governance run; give its read_at."
+          "guard_violations reads only the rows the asker may see, so it is not a count across every owner; say so when quoting it. Governance questions read secondhand.measures.locks_in_force, a snapshot of the catalog policies taken at each governance run; give its read_at.",
+          "Two price engines appear, and every accuracy figure names which one it is. The workspace backtest (secondhand.measures.backtest_estimate, backtest_headline, valuation_accuracy, the metric view's 'Market model' and the contestant 'model', and the metric valuation.model.q50) is the nightly market model, which the app does not serve. The engine the app serves is the row served = true in secondhand.measures.engine_ablation, a development reading on the same kind of StockX 2019 sales: it trails the last sale by about a point (vs_last_sale_points is the gap in the within-20-percent rate, in percentage points, paired on vs_last_sale_n sales; it is not a price difference: give it with its interval and count) and beats the 90-day median. Never call the market model \"our price\" or the price the app shows.",
+          "Every answer names its dataset (the data or source column, for example dataset:stockx_2019) and the count it rests on (sales, months, tables or rows). If the query returned no count, count it."
         ]
       }
     ],
@@ -282,7 +290,7 @@
           "Show the parameter walk moves in order."
         ],
         "sql": [
-          "SELECT m.run_id, m.month, m.name, m.scope, m.action, m.version, m.value,",
+          "SELECT m.run_id, m.month, count(DISTINCT m.month) OVER (PARTITION BY m.run_id) AS months_tested, m.name, m.scope, m.action, m.version, m.value,",
           "       m.held_out_score, m.champion_version, m.champion_score, m.diff, m.noise,",
           "       m.reason, m.data",
           "FROM secondhand.measures.param_moves m",
@@ -291,7 +299,7 @@
           "         m.version"
         ],
         "usage_guidance": [
-          "Within a month, rollback precedes the proposal and its promote/hold verdict. The table stores no event timestamp; do not claim a finer event order."
+          "Start the answer with the dataset in the data column and months_tested, e.g. \"On dataset:stockx_2019, over 14 months tested, ...\". Within a month, rollback precedes the proposal and its promote/hold verdict. The table stores no event timestamp; do not claim a finer event order. Give each move's evidence (held_out_score against champion_score, diff and noise)."
         ]
       },
       {
@@ -320,7 +328,8 @@
           "ORDER BY l.table_name"
         ],
         "usage_guidance": [
-          "has_owner_tag means the catalog ABAC row filter sh_owner_only applies through its governed tag; masked_columns are masked by sh_mask_handle. The rows are a snapshot from the last governance run; give read_at."
+          "has_owner_tag means the catalog ABAC row filter sh_owner_only applies through its governed tag; masked_columns are masked by sh_mask_handle. The rows are a snapshot from the last governance run; give read_at.",
+          "Give the number of tables."
         ]
       },
       {
@@ -401,7 +410,7 @@
           "  ORDER BY s.as_of DESC, s.id",
           "  LIMIT 1",
           ")",
-          "SELECT b.item, b.value_cents / 100.0 AS our_price_dollars, b.lo_cents / 100.0 AS low_dollars, b.hi_cents / 100.0 AS high_dollars,",
+          "SELECT 'nightly market model, not the engine the app serves' AS priced_by, b.item, b.value_cents / 100.0 AS market_model_price_dollars, b.lo_cents / 100.0 AS low_dollars, b.hi_cents / 100.0 AS high_dollars,",
           "       b.sold_cents / 100.0 AS it_sold_for_dollars, b.basis_count, b.basis_level, b.as_of, b.data,",
           "       b.basis_price_cents / 100.0 AS earlier_sale_dollars, b.basis_at, b.basis_source, b.source_url, b.rebuilt_exactly",
           "FROM secondhand.measures.price_basis b",
@@ -409,7 +418,7 @@
           "ORDER BY b.basis_at DESC"
         ],
         "usage_guidance": [
-          "Our price is valuation.model.q50 from the latest backtest estimate for that item: name the dataset (StockX 2019 public sales, history, not today) and its date, the range, what it really sold for, and each earlier sale it rests on with rebuilt_exactly. Money is cents divided by 100."
+          "Start the answer with who priced it: the nightly market model from the 2019 backtest, not the engine the app serves. Name the dataset (StockX 2019 public sales, history, not today) and its date, the range, what it really sold for, and the number of earlier sales it rests on, listing each. rebuilt_exactly = true means the price rebuilds exactly from those cited sales, not that the sales are verified or real. Money is cents divided by 100."
         ]
       },
       {
@@ -418,15 +427,24 @@
           "How did our price do against the last sale and the 90-day median on the same sales?"
         ],
         "sql": [
-          "SELECT `Price from`, MEASURE(`Sales tested`) AS sales_tested, MEASURE(`Estimates shown`) AS prices_given,",
-          "       MEASURE(`Within 20 percent`) AS within_20_percent, MEASURE(`Median error`) AS median_error,",
-          "       MEASURE(`Range held the sale`) AS range_held_the_sale",
-          "FROM secondhand.measures.valuation_metrics",
-          "GROUP BY ALL",
-          "ORDER BY within_20_percent DESC"
+          "WITH m AS (",
+          "  SELECT `Price from` AS price_from, MEASURE(`Sales tested`) AS sales_tested, MEASURE(`Estimates shown`) AS prices_given,",
+          "         MEASURE(`Within 20 percent`) AS within_20_percent, MEASURE(`Median error`) AS median_error,",
+          "         MEASURE(`Range held the sale`) AS range_held_the_sale",
+          "  FROM secondhand.measures.valuation_metrics",
+          "  GROUP BY ALL",
+          ")",
+          "SELECT 'workspace backtest, latest run' AS reading, price_from, sales_tested, prices_given, within_20_percent, median_error, range_held_the_sale,",
+          "       CAST(NULL AS DOUBLE) AS vs_last_sale_points, CAST(NULL AS DOUBLE) AS vs_last_sale_lo, CAST(NULL AS DOUBLE) AS vs_last_sale_hi",
+          "FROM m",
+          "UNION ALL",
+          "SELECT concat(a.reading, ', ', a.data) AS reading, a.label AS price_from, a.sales AS sales_tested, CAST(round(a.sales * a.priced) AS BIGINT) AS prices_given,",
+          "       a.within_20 AS within_20_percent, a.median_error, a.range_held AS range_held_the_sale, a.vs_last_sale_points, a.vs_last_sale_lo, a.vs_last_sale_hi",
+          "FROM secondhand.measures.engine_ablation a",
+          "ORDER BY reading, within_20_percent DESC"
         ],
         "usage_guidance": [
-          "All three are scored on the same held-out StockX 2019 sales; say so, give each count, and call it a historical backtest, never accuracy on live listings. A null rate means fewer than 30 prices were given in that cell: say too few with its count."
+          "Start with the dataset and give all three of: the engine the app serves (within 20%, its count, and that it trails the last sale by vs_last_sale_points percentage points with the interval, paired on vs_last_sale_n sales); the last sale and the 90-day median on the same sales; and the nightly market model's figure with its count, named as not served by the app. Both readings are historical StockX 2019 sales, never accuracy on live listings. A null rate means fewer than 30 prices were given in that cell: say too few with its count."
         ]
       },
       {
