@@ -4,11 +4,15 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { VERBS, type Verb } from '../../protocol.ts';
-import { depopAdapters, M, PATHS, readListing, readReviews, stillUp, toWatchSnapshot, type Client } from './adapter.ts';
+import { depopAdapters, extract, M, PATHS, readListing, readReviews, stillUp, toWatchSnapshot, type Client } from './adapter.ts';
 
 const fx = (f: string) => readFileSync(new URL(`./fixtures/${f}`, import.meta.url), 'utf8');
 const js = (f: string) => JSON.parse(fx(f)) as unknown;
 const s = new AbortController().signal;
+
+test('Depop extraction treats malformed embedded JSON as a missing candidate', () => {
+  assert.equal(extract('self.__next_f.push([1,"candidate{bad}"])', 'candidate', () => true), undefined);
+});
 
 // Routes a request to its recording by the path the live client would fetch.
 function client(o: { signed_in?: boolean; status?: number; html?: string; challenge?: boolean } = {}): Client {
