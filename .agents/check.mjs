@@ -47,7 +47,7 @@ for (const r of results) console.log(`${r.level === 'error' ? 'ERROR' : 'warn '}
 const n = results.filter(r => r.level === 'error').length;
 if (tally(root)) console.log(tally(root));
 console.log(n ? `\n${n} error(s). Fix them before pushing.` : `checks ok${results.length ? ` (${results.length} warning(s) to read)` : ''}`);
-const tests = files.filter(f => /^(\.agents|scripts|spec)\/.*\.test\.mjs$/.test(f));
+const tests = files.filter(f => /^(\.agents|scripts|spec)\/.*\.test\.mjs$|^app\/src\/.*\.test\.ts$/.test(f));
 const t = tests.length ? (() => { try { execFileSync(process.execPath, ['--test', ...tests], { cwd: root, stdio: 'pipe' }); return 0; } catch (e) { process.stdout.write(e.stdout); return 1; } })() : 0;
 console.log(t ? 'tests failed' : `tests ok (${tests.length} file(s))`);
 process.exitCode = n || t ? 1 : 0;

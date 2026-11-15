@@ -12,15 +12,17 @@ import { RULES, load, tally, judgeBrief } from '../.agents/checks/rules.mjs';
 const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
 // Adds a sighting to the lesson with this finding, or starts one. Returns the row.
 export function seen(list, finding, where) {
-  let row = list.find(r => r.kind === 'lesson' && same(r.finding, finding));
-  if (!row) { const n = Math.max(0, ...list.map(r => Number(/^X(\d+)$/.exec(r.id)?.[1] ?? 0))) + 1; list.push(row = { id: `X${n}`, kind: 'lesson', finding: finding.trim(), seen: [] }); }
+  let row = list.find(r => r?.kind === 'lesson' && typeof r.finding === 'string' && same(r.finding, finding));
+  if (!row) { const n = Math.max(0, ...list.map(r => Number(/^X(\d+)$/.exec(r?.id ?? '')?.[1] ?? 0))) + 1; list.push(row = { id: `X${n}`, kind: 'lesson', finding: finding.trim(), seen: [] }); }
+  if (!Array.isArray(row.seen)) row.seen = [];
   if (!row.seen.includes(where)) row.seen.push(where);
   return row;
 }
-const write = list => `[\n${list.map(r => `  ${JSON.stringify(r).replace(/^\{/, '{ ').replace(/\}$/, ' }').replace(/","/g, '", "').replace(/":/g, '": ')}`).join(',\n')}\n]\n`;
+// One row per line, built field by field so no string value is touched.
+export const write = list => `[\n${list.map(r => `  { ${Object.entries(r).map(([k, v]) => `${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(', ')} }`).join(',\n')}\n]\n`;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const root = join(fileURLToPath(new URL('.', import.meta.url)), '..'), [cmd, finding, where] = process.argv.slice(2);
+  const root = join(fileURLToPath(new URL('.', import.meta.url)), '..'), [cmd, finding, ...rest] = process.argv.slice(2), where = rest.join(' ');
   const list = load(root);
   if (!Array.isArray(list)) { process.stderr.write(`${RULES} is missing or not a JSON list\n`); process.exit(1); }
   if (cmd === 'judge') process.stdout.write(`${judgeBrief(list)}\n`);

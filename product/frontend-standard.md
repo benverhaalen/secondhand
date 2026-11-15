@@ -27,7 +27,7 @@ This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored
 
 | Size | Examples | Image rounds | Who judges | States it runs |
 |---|---|---|---|---|
-| Small | A 404, an empty state, a settings row, a state of a screen that exists | None | Scripts | 1, 7, 8, 10, 11, 12 |
+| Small | A 404, an empty state, a settings row, a state of a screen that exists | None | Scripts | 1, then 7 to 12 |
 | Medium | A new screen made mostly of parts that exist | One round of 3 | The model | All but 6 |
 | Large | Today, the Sell grid, Capture, the Offer sheet, a section of the web front page | Up to 3 | The model, then Ben | All |
 
@@ -193,10 +193,9 @@ Ben: "deterministic ways to assess adherence to certain rules whether its like a
 
 | Kind | Held by | Costs |
 |---|---|---|
-| `check` | A script in `.agents/checks/`, with a test that shows it failing on what it exists to catch | Nothing. It runs on every push |
+| `check` | A script in `.agents/checks/` or a test, shown failing on what it exists to catch. Two rules of the image loop are held by the image runner, which refuses a bad plan when it is used | Nothing. It runs on every push |
 | `judge` | One "Fail if" line. `node scripts/ui-rules.mjs judge` prints them all, and only the judge reads them | One line in one prompt |
 | `ben` | Ben's eye | His attention |
-| `open` | Nothing yet, because the pick behind it is still open | |
 
 `node .agents/check.mjs` prints the count of each kind. The share held by a script is the number to push up.
 
@@ -211,6 +210,6 @@ Ben: "deterministic ways to assess adherence to certain rules whether its like a
 
 A rule leaves the list when removing it does not bring the mistake back, or when it keeps failing good work.
 
-**What scripts hold today.** Raw colors, literal fonts and the copy lint ([ui.mjs](../.agents/checks/ui.mjs)). The weight, space and radius scales ([brand.mjs](../.agents/checks/brand.mjs)). Screens built only from the fixed parts ([parts.mjs](../.agents/checks/parts.mjs)). The picks in picks.mjs: the name in lowercase, logos not names, no banned faces, no statistics notation, no handled counter, a fill and an icon for every state, square logos, no lines or grain, dark mode that changes only color, ink that is not pure black, one color family, text contrast on every fill, and a behavior table for every screen.
+**What scripts hold today.** Raw colors, literal fonts and the copy lint ([ui.mjs](../.agents/checks/ui.mjs)). The weight, space and radius scales ([brand.mjs](../.agents/checks/brand.mjs)). Screens built only from the fixed parts ([parts.mjs](../.agents/checks/parts.mjs)). The picks in picks.mjs: the name in lowercase, logos not names, no banned faces, no statistics notation, no handled counter, a fill and an icon for every state, square logos, no lines or grain, dark mode that changes only color, ink that is not pure black, one color family, text contrast on every hue's tint, fill and deep, and a behavior table for every screen.
 
-**What they can't hold yet.** Anything that needs the rendered screen: one field per view, color under a third of the view, inside tighter than between, small targets, overflow. Those are `judge` rows until the app renders in a test. Words in the app also pass `node scripts/copy-lint.mjs`, which flags candidates, not verdicts. Scripts can't prove a screen looks good; brand feel goes to Ben.
+**What they can't hold yet.** Anything that needs the rendered screen: one field per view, color under a third of the view, inside tighter than between, small targets, overflow. They stay with the §5 audit until the app renders in a test. Words in the app also pass `node scripts/copy-lint.mjs`, which flags candidates, not verdicts. Scripts can't prove a screen looks good; brand feel goes to Ben.
