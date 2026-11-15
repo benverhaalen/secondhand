@@ -29,13 +29,13 @@ def market(n: int = 2000, seed: int = 7, end: str = "2026-11-15T00:00:00Z", days
     rows = []
     for i in range(n):
         cat, brand, cond, era, site = pick(TRUTH["category"]), pick(TRUTH["brand"]), pick(TRUTH["condition"], [0.45, 0.3, 0.1, 0.15]), pick(TRUTH["era"], [0.6, 0.25, 0.15]), pick(TRUTH["site"])
-        age = float(rng.uniform(0, days))
         asking = rng.random() < 0.3
+        age = 0.0 if asking else float(rng.uniform(0, days))   # a live ask is priced and stamped today
         logp = (math.log(TRUTH["category"][cat]) + TRUTH["brand"][brand] + TRUTH["condition"][cond] + TRUTH["era"][era]
                 + TRUTH["site"][site] + (TRUTH["asking"] if asking else 0.0) - TRUTH["trend_per_year"] * age / 365
                 + rng.normal(0, TRUTH["sigma"][cat]))
         rows.append({"comp_id": f"syn-{i}", "source": "synthetic", "price_type": "asking" if asking else "sold",
-                     "at": (t_end - timedelta(days=0 if asking else age)).isoformat().replace("+00:00", "Z"),
+                     "at": (t_end - timedelta(days=age)).isoformat().replace("+00:00", "Z"),
                      "price_cents": int(round(math.exp(logp) * 100)), "category": cat, "brand": brand, "condition": cond,
                      "era": era, "site": site, "size": pick(["s", "m", "l", "xl"])})
     return rows
