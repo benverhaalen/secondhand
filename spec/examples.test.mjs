@@ -53,7 +53,7 @@ const want = new Set([...canon, ...PROPOSED]);
 const PREFIXES = section(product, '## 7. Contract conventions', '### Requests').match(/`([a-z]+)_`/g).map((p) => p.slice(1, -1))
   .concat(['usr_', 'opt_', 'act_', 'vis_', 'fc_', 'sp_']);
 // Ids that are not ours: the site's own, a trace, a reverse-DNS route, a site category, a client-chosen key.
-const FOREIGN_ID = /^(trace_id|request_id|external_.*|site_.*|route_id|category_id|shopify_gid|google_id|call_id|span_id|template_key|push_token|operation_id|kind_id|index_id|family_id|version_id|client_id)$/;
+const FOREIGN_ID = /^(trace_id|request_id|external_.*|site_.*|route_id|source_id|category_id|shopify_gid|google_id|call_id|span_id|template_key|push_token|operation_id|kind_id|index_id|family_id|version_id|client_id)$/;
 const UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
 const TIME_KEY = /(_at|^as_of|^until|^deadline|^expires|^ship_by|^respond_by|^claim_until|^release_at|^start|^end|^at)$/;
 // The prefix each id key must carry, where the key names its entity.

@@ -2460,3 +2460,39 @@ Nate, the orchestrator's session, 2026-11-15, about 14:14 UTC.
 > Check the lens capture is also wired to the expo app, ben is testing and his model says its not wired
 
 Checked by the orchestrator on main the same minute: it is not wired. The app's photo step stops at an example upload address; identify and the Lens step are on Mac branches. Sent to the capture lead with a new order: identify merged as it is, the route join started at once, Lens behind it, a packet for Ben when the join lands.
+
+## 2026-11-15 nate working code reaches main regularly, and we develop with Opus directly
+Nate, the orchestrator's session, 2026-11-15, about 14:20 UTC.
+> Ensure all main pushes and fixes dont just live on the mac, but sync, that it regularly pushes the working code, we are being way too slow when audits and just full review to develop with you and opuses would fix this
+
+Read by the orchestrator as: work that passes lands on main at once instead of waiting on Mac branches for review rounds; an audit and one full review, then the orchestrator and the Opus leads write the code directly; Codex workers for bulk and for driving tests. Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate stop agents merging on top of each other; halt at good points; full focus on the needed fixes
+Nate, the orchestrator's session, 2026-11-15, about 14:24 UTC.
+> we need to stop agents from merging and working on top of eachother. ensure they halt at good poitns and we full focus on developing and carving out the needed fixes
+
+Acted on at once: every lead told to finish the step it is in, park the rest on its branch, write its handoff and stop; from then the orchestrator is the only one who merges to main, one change at a time.
+
+## 2026-11-15 nate a full packet of plans for Ben, then back to building and wiring the backend
+Nate, the orchestrator's session, 2026-11-15, about 14:35 UTC.
+> Give ben a full packet of plans, and ill compact and you will return to full /goal build and test and wire the backend to see it working
+
+Used in: [packet 97](../.agents/team/packets/team/97-the-plan-from-here-for-ben.md).
+
+*Orchestrator's note, 14:26 UTC by the machine clock:* the times on Nate's entries above from "organize, shut down what is finished" onward were written from memory and run up to fifteen minutes fast; their order is right.
+
+## 2026-11-15 nate add the keys, push everything to main, test every feature with leads and codex, benchmarks without eBay
+Nate, the orchestrator's session, 2026-11-15, between about 14:30 and 14:45 UTC by the machine clock, six messages in order. The first came with a pasted table of the variables each system needs (chat, email sign-in, browser reads, the photo lookup, Apify, eBay's API, Databricks).
+> WE HAVE NO TIME ADD THEM
+
+> great, ensure we push all to main, after fully seeing and just working and fixing it yourself
+
+> well address what tehy said needs fixing and do it, you are assured no conflicts so just go ahead
+
+> well finish whats not
+
+> just test all features, ensure they work, fully check all screens, all data, do it with leads and codex. did capture get everything needed. are all pipelines built? can we run benchmarks?
+
+> account for our benchmarks without ebay
+
+Acted on: four keys that exist on Nate's Windows machine were set on the Fly app by name through standard input (OPENROUTER_API_KEY, BROWSER_USE_API_KEY, TREG_TOKEN, APIFY_TOKEN), no value printed or written; the leads were put back to work as testers and fixers who do not merge; the benchmark is run with and without eBay.

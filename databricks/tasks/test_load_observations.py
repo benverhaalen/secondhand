@@ -437,7 +437,8 @@ def test_brand_fixture_with_permitted_rights_lands_from_the_sql_registry():
 
 def test_original_brand_fixture_cannot_claim_model_rights_from_the_sql_registry():
     _, policies = rights_rows()
-    result = loader.parse([FIXTURE.read_text().splitlines()[1]], source_rights=policies)
+    claimed = {**json.loads(FIXTURE.read_text().splitlines()[1]), 'may_model': True, 'use_scope': 'product'}
+    result = loader.parse([json.dumps(claimed)], source_rights=policies)
     assert result.observations == result.evidence == []
     assert result.rejects == [{'line': 1, 'reason': 'may_model exceeds source rights'}]
 

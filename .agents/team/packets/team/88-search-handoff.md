@@ -4,6 +4,34 @@ Updated: November 15, 2026, about 14:05 UTC. Owner: Nate. Agent: Claude Code, th
 
 Nate, 13:40 UTC: "ben will handle sign in proof, we are focusing on validating the full backend, chekcing and ensuring everything works" ([words](../../../../product/words.md#2026-11-15-nate-ben-handles-the-sign-in-proof-we-validate-the-full-backend)). So nothing signed in is ours to prove now. Validate and fix the signed-out search backend.
 
+## 0. At Nate's halt (about 14:25 UTC)
+
+Nate: "we need to stop agents from merging and working on top of eachother. ensure they halt at good poitns and we full focus on developing and carving out the needed fixes". From now on only the orchestrator merges to main, one change at a time. This lead stopped here and starts nothing until the orchestrator messages it.
+
+**On main from this lead:** a32b6bc1 (round 3 and the harness abort), 4a0f7370 (the Mercari linked fix), eb201bac (Google Shopping through treg), 42fc28ff (SR13), dd091716 (the harness table), ac7c90a4 (the backend validation), and the packet commits up to this one. Nothing staged and no merge open in `C:\dev\secondhand`.
+
+**On Mac branches, committed and not merged:**
+
+| Branch | Commit | Holds | Checks on the branch as it is (cut from c9e808f7) | On a tree merged with main |
+|---|---|---|---|---|
+| `w/search-late-1` | e0ce7930 | eBay `lands_late`: not aborted at the settle; it reads on for `search_late_window_ms` (30 s), arrives as `answer.late`, the job's result keeps its rows, `fill_until` covers it | search 110/110, latency 4/4, public search 23/23, tsc clean (worker's run) | not run (merges halted) |
+| `w/search-health-1` | 11e69a13 | `GET /v1/sources/health` for every signed-in person: rows `{ source_id, route_id, site, group, lane, composed, paused_until }` plus `reads`; no fabricated `success` or `checked_at` | sources 11/11, public search 23/23 (lead's run); tsc clean (worker's run) | not run |
+
+The worker's two boundary notes on `search-late-1`:
+- `app/src/api/client.ts:187` (the phone's client) stops after the first late frame, so with eBay and Facebook both late the second can be missed live. eBay still lands in the saved result.
+- `harness/protocol.ts:127` awaits `accounts.byId()` before the harness timeout starts, so a stalled account lookup is not bounded there.
+
+The first is the app's file. The second is ours, and it stays a later fix.
+
+**Half done:** nothing in the shared checkout. Both branches are complete for their briefs and waiting to be merged.
+
+**The settle time** (the parent's benchmark at 14:15 UTC on main: 16 of 16 answered, first rows p50 0.63 s, settled p50 7.99 s and p95 8.97 s, against a 5 s target; at 12:00 it settled in 1.48 s). What it waits for, from the code: `answer.settled` waits until every pending source has landed, or until `listings_matching`'s `settled_ms` of 10 s (`intel/protocols.ts`) plus the browser-start allowance. The last source is eBay. Its one public lane takes a read at a time, with a 10 s gap from one read's end to the next start, shared by every search, and that benchmark sent a search every 3.5 s. So most searches wait on eBay's queue until it answers near 8 s or the budget runs out. The reads themselves take 1.5 to 3 s. Two of its causes are on main since 12:00: round 3 measures eBay's gap from one read's end to the next start (*inferred* from the latency test's new assertion), and SR4 counts queue time against the budget.
+
+**Next, in order, once the orchestrator says so:**
+1. The orchestrator merges `w/search-late-1`, then `w/search-health-1`, each after `git merge origin/main` in its Mac worktree and a rerun of its checks there.
+2. Then the settle fix, a brief into the same worktree: the settle stops waiting for a `lands_late` source. The answer settles when every other source has landed, and eBay comes after it as `answer.late`, which is Nate's "the conversation answers from the first frames". Test: with eBay queued 8 s, `answer.settled` comes when the slowest other source lands, then one `answer.late` with eBay's rows. Measure the 16-query benchmark again; the bar is settled under 5 s.
+3. Then section 3's queue from item 2 on.
+
 ## 1. What is true on main
 
 | What | Commit | Proof, rerun by the lead (who wrote none of it) |
