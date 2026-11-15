@@ -101,6 +101,7 @@ def test_fitted_odds_are_calibrated_on_held_out_captures():
     assert fitted < 0.03 < overconfident
 
 
-def test_too_few_labels_keep_the_starting_odds():
+def test_thin_labels_blend_the_starting_odds():
     t, b, n = fit_odds(labelled(20, 10, 0.12, 0.55))
-    assert (t, b) == STARTING_ODDS and n == 20
+    assert abs(t - STARTING_ODDS[0]) < .02 and abs(b - STARTING_ODDS[1]) < .05 and n == 20
+    assert (t, b) != STARTING_ODDS

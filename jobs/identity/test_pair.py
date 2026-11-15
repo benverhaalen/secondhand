@@ -29,8 +29,8 @@ def test_identical_stock_photos_never_yield_exact():
 
 
 def test_fellegi_sunter_agreement_disagreement_and_missing():
-    weights = {"brand": {"m": {"a": 9, "b": 1}, "u": {"a": 1, "b": 9}},
-               "model": {"m": {"a": 9, "b": 1}, "u": {"a": 1, "b": 9}}}
+    weights = {"brand": {"m": {"alpha": 9, "beta": 1}, "u": {"alpha": 1, "beta": 9}},
+               "model": {"m": {"alpha": 9, "beta": 1}, "u": {"alpha": 1, "beta": 9}}}
     r = score_signals({"brand": True, "model": False, "mpn": None}, None, None, weights=weights)
     assert r["score"] == pytest.approx(0)
     assert score_signals({"brand": True}, 0, 0, weights=weights)["score"] == pytest.approx(math.log2(9))
