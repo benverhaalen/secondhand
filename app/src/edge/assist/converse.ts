@@ -56,28 +56,25 @@ export function clientFromEnv(env: { ANTHROPIC_API_KEY?: string; OPENROUTER_API_
 }
 
 function missingTokenUsage(usage: Message['usage']): boolean {
-  return !['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'cache_creation_input_tokens']
-    .some(key => typeof Reflect.get(usage, key) === 'number');
+  return usage.input_tokens == null || usage.output_tokens == null;
 }
 
 function usageOf(message: Message, max_tokens: number): Usage {
   const usage = message.usage as Message['usage'] & { cost?: number };
-  const providerCost = typeof usage.cost === 'number' && Number.isFinite(usage.cost) && usage.cost >= 0 ? usage.cost : undefined;
-  const missingTokens = providerCost === undefined && missingTokenUsage(usage);
-  const input_tokens = usage.input_tokens ?? 0, output_tokens = usage.output_tokens ?? (missingTokens ? max_tokens : 0);
+  const providerCost = typeof usage.cost === 'number' && Number.isFinite(usage.cost) && usage.cost >= 0 ? usage.cost : 0;
+  const input_tokens = usage.input_tokens ?? 0, output_tokens = usage.output_tokens ?? max_tokens;
   const cache_read_input_tokens = usage.cache_read_input_tokens ?? 0;
   const cache_creation_input_tokens = usage.cache_creation_input_tokens ?? 0;
   const web_searches = usage.server_tool_use?.web_search_requests ?? 0;
+  const tokenCost = input_tokens * PRICE_TABLE.input_per_million / 1e6
+    + output_tokens * PRICE_TABLE.output_per_million / 1e6
+    + cache_read_input_tokens * PRICE_TABLE.cache_read_per_million / 1e6
+    + cache_creation_input_tokens * PRICE_TABLE.cache_creation_per_million / 1e6
+    + web_searches * PRICE_TABLE.web_search;
   return {
     input_tokens, output_tokens, cache_read_input_tokens, web_searches,
-    cost_usd: providerCost ?? (
-      input_tokens * PRICE_TABLE.input_per_million / 1e6
-      + output_tokens * PRICE_TABLE.output_per_million / 1e6
-      + cache_read_input_tokens * PRICE_TABLE.cache_read_per_million / 1e6
-      + cache_creation_input_tokens * PRICE_TABLE.cache_creation_per_million / 1e6
-      + web_searches * PRICE_TABLE.web_search
-    ),
-    cost_source: providerCost !== undefined ? 'provider' : 'price_table',
+    cost_usd: Math.max(providerCost, tokenCost),
+    cost_source: providerCost > tokenCost ? 'provider' : 'price_table',
   };
 }
 
@@ -85,25 +82,36 @@ const TAGS = /\[(?:price_range|price_trend|sites|listings|alternatives|table|sou
 const ISO_DATE = /\d{4}-\d{2}-\d{2}(?:[Tt ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:[Zz]|[+-]\d{2}:?\d{2})?)?/;
 const MONTH = '(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\\.?';
 const WRITTEN_DATE = new RegExp(`(?:${MONTH}\\s+\\d{1,2},?\\s+\\d{4}|\\d{1,2}\\s+${MONTH}\\s+\\d{4})`, 'i');
-const MONEY_SUFFIX = '(?:dollars?|bucks?|USD|euros?|EUR|pounds?|GBP|cents?)\\b';
-const MONEY = new RegExp(`US\\$|USD|[$€£]|${MONEY_SUFFIX}`, 'i');
-const MONEY_UNITS = [
-  { pattern: /€|EUR|\beuros?\b/i, unit: 'eur', divisor: 1 },
-  { pattern: /£|GBP|\bpounds?\b/i, unit: 'gbp', divisor: 1 },
-  { pattern: /\bcents?\b/i, unit: 'usd', divisor: 100 },
-  { pattern: MONEY, unit: 'usd', divisor: 1 },
+const CURRENCIES = [
+  { words: 'US dollars?|U\\.S\\. dollars?|dollars?|bucks?|USD', symbols: ['$', 'US$'], unit: 'usd', divisor: 1 },
+  { words: 'CAD', symbols: ['CA$'], unit: 'cad', divisor: 1 },
+  { words: 'AUD', symbols: ['A$', 'AU$'], unit: 'aud', divisor: 1 },
+  { words: 'NZD', symbols: ['NZ$'], unit: 'nzd', divisor: 1 },
+  { words: 'HKD', symbols: ['HK$'], unit: 'hkd', divisor: 1 },
+  { words: 'euros?|EUR', symbols: ['€'], unit: 'eur', divisor: 1 },
+  { words: 'pounds?\\s+sterling|sterling|quid|GBP', symbols: ['£'], unit: 'gbp', divisor: 1 },
+  { words: 'yen|JPY', symbols: ['¥'], unit: 'jpy', divisor: 1 },
+  { words: 'rupees?|Rs\\.?|INR', symbols: ['₹'], unit: 'inr', divisor: 1 },
+  { words: 'francs?|CHF', symbols: [], unit: 'chf', divisor: 1 },
+  { words: 'CNY', symbols: [], unit: 'cny', divisor: 1 },
+  { words: 'MXN', symbols: [], unit: 'mxn', divisor: 1 },
+  { words: 'cents?', symbols: ['¢'], unit: 'usd', divisor: 100 },
 ];
-const NUMBERS = new RegExp(`(?:${ISO_DATE.source}|${WRITTEN_DATE.source}|(?:(?:US\\$|USD|EUR|GBP|[$€£])\\s*)?-?(?:\\d+(?:,\\d{3})*(?:\\.\\d+)?|\\.\\d+)(?:[\\s-]*(?:%|percent\\b|per\\s+cent\\b|${MONEY_SUFFIX}))?)`, 'gi');
-const NUMBER_WORD = '(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|dozen|half)';
-const MONEY_OR_PERCENT_WORD = '(?:dollars?|bucks?|euros?|pounds?|cents?|percent(?!\\s+(?:sure|certain)\\b)|per\\s+cent)';
-const WORD_FIGURE = new RegExp(`\\b${NUMBER_WORD}[\\s-]+${MONEY_OR_PERCENT_WORD}\\b`, 'i');
+const CURRENCY_WORD = CURRENCIES.map(currency => currency.words).join('|');
+const CURRENCY_CUE = new RegExp(`(?<![a-z])[a-z]+\\$|\\p{Sc}|(?<![a-z])(?:${CURRENCY_WORD})(?![a-z])`, 'giu');
+const NUMBERS = new RegExp(`${ISO_DATE.source}|${WRITTEN_DATE.source}|-?(?:\\d+(?:,\\d{3})*(?:\\.\\d+)?|\\.\\d+)`, 'gi');
+const NUMBER_WORD = '(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|dozen|half)';
+const WORD_FIGURE = new RegExp(`\\b${NUMBER_WORD}(?:[\\s-]+(?:(?:and|a)[\\s-]+)*(?:${NUMBER_WORD}))*[\\s-]+(?:(?:${CURRENCY_WORD})(?![a-z])|percent\\b|per\\s+cent\\b)`, 'gi');
+const PERCENT = /^[\s-]*(?:%|percent\b|per\s+cent\b)/i;
+const CERTAINTY = /^\s+(?:sure|certain)\b/i;
 const DATE_CONTEXT = /\b(?:in|since|by|from|until|of|January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\s*$/i;
-const UNIT_WORD = /^\s*(?:cm|mm|km|m|inches?|feet|ft|yards?|miles?|grams?|kg|kilograms?|pounds?|lbs?|oz|ounces?|dollars?|USD|percent|per\s+cent|items?|listings?|rows?|comps?|sales?|units?|pieces?|people|buyers?|sellers?|days?|weeks?|months?|years?|hours?|minutes?|seconds?)\b/i;
+const UNIT_WORD = /^\s*(?:cm|mm|km|m|inches?|feet|ft|yards?|miles?|grams?|kg|kilograms?|pounds?|lbs?|oz|ounces?|dollars?|USD|percent|per\s+cent|items?|listings?|rows?|comps?|sales?|units?|pieces?|people|buyers?|sellers?|days?|weeks?|months?|years?|hours?|minutes?|seconds?|times?|sizes?|pairs?|colors?|stars?|reviews?|photos?)\b/i;
 const SENTENCES = new Intl.Segmenter('en', { granularity: 'sentence' });
 export const MAX_TOOL_USES_PER_ROUND = 4;
 
 function sentences(text: string): { segment: string; index: number }[] {
-  const masked = text.replace(new RegExp(WRITTEN_DATE, 'gi'), date => date.replace(/\./g, ' '));
+  const masked = text.replace(new RegExp(WRITTEN_DATE, 'gi'), date => date.replace(/\./g, ' '))
+    .replace(/\b(?:U\.S\.|Rs\.|no\.)/gi, abbreviation => abbreviation.replace(/\./g, ' '));
   return [...SENTENCES.segment(masked)].map(({ segment, index }) => ({ segment: text.slice(index, index + segment.length), index }));
 }
 
@@ -123,50 +131,147 @@ function dateToken(raw: string): string | null {
   return `date${value.replace(/[^a-z0-9]/gi, '').toLowerCase()}`;
 }
 
-function numberToken(raw: string): string | null {
-  const value = Number(raw.match(/-?(?:\d+(?:,\d{3})*(?:\.\d+)?|\.\d+)/)![0].replace(/,/g, ''));
-  if (!Number.isFinite(value)) return null;
-  const percent = /%|percent|per\s+cent/i.test(raw);
-  const money = percent ? undefined : MONEY_UNITS.find(({ pattern }) => pattern.test(raw));
-  const unit = percent ? 'pct' : money?.unit ?? 'n';
-  return `${unit}${String(value / (money?.divisor ?? 1)).replace('-', 'm').replace('.', 'p')}`;
+function normalizeFigures(text: string): string {
+  return text.normalize('NFKC').replace(/\p{Nd}/gu, digit => {
+    const point = digit.codePointAt(0)!;
+    let first = point;
+    while (/\p{Nd}/u.test(String.fromCodePoint(first - 1))) first--;
+    return String((point - first) % 10);
+  }).replace(/\p{Cf}/gu, '').replace(/[*_`]/g, '')
+    .replace(new RegExp(`\\(\\s*(${CURRENCY_WORD})\\s*\\)|\\[\\s*(${CURRENCY_WORD})\\s*\\]`, 'gi'), (_match, paren: string | undefined, bracket: string | undefined) => paren ?? bracket!);
+}
+
+function figureToken(unit: string, value: number): string {
+  return `${unit}${String(value).replace('-', 'm').replace('.', 'p')}`;
+}
+
+function wordValue(raw: string): number {
+  const words = 'one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' ');
+  const tens = 'twenty thirty forty fifty sixty seventy eighty ninety'.split(' ');
+  let total = 0, group = 0, lastScale = Infinity;
+  const parts = raw.toLowerCase().trim().split(/[\s-]+/);
+  for (const [index, word] of parts.entries()) {
+    if (word === 'hundred') group = (group || 1) * 100;
+    else if (['thousand', 'million', 'billion'].includes(word)) {
+      const scale = { thousand: 1e3, million: 1e6, billion: 1e9 }[word]!;
+      if (scale >= lastScale) return NaN;
+      total += (group || 1) * scale;
+      lastScale = scale;
+      group = 0;
+    } else if (word === 'half') group = parts.slice(0, index).includes('and') ? group + 0.5 : (group || 1) * 0.5;
+    else if (word === 'dozen') group = (group || 1) * 12;
+    else if (words.includes(word)) group += words.indexOf(word) + 1;
+    else if (tens.includes(word)) group += (tens.indexOf(word) + 2) * 10;
+  }
+  return total + group;
+}
+
+type CurrencyCue = { start: number; end: number; unit: string; divisor: number };
+type Figure = { start: number; end: number; value: number; unit: string; divisor: number; scale: number; explained: boolean };
+
+function currencyCues(text: string): CurrencyCue[] {
+  const cues = [...text.matchAll(CURRENCY_CUE)].map(match => {
+    const currency = CURRENCIES.find(entry => entry.symbols.some(symbol => symbol.toLowerCase() === match[0].toLowerCase())
+      || new RegExp(`^(?:${entry.words})$`, 'i').test(match[0]));
+    return { start: match.index, end: match.index + match[0].length,
+      unit: currency?.unit ?? 'money_unknown', divisor: currency?.divisor ?? 1 };
+  });
+  if (/£|\b(?:GBP|sterling)\b/i.test(text)) {
+    for (const match of text.matchAll(/\bpounds?\b/gi)) {
+      if (!cues.some(cue => match.index >= cue.start && match.index < cue.end)) {
+        cues.push({ start: match.index, end: match.index + match[0].length, unit: 'gbp', divisor: 1 });
+      }
+    }
+  }
+  return cues.sort((a, b) => a.start - b.start);
+}
+
+function sentenceFigures(text: string): string[] {
+  const cues = currencyCues(text);
+  const tokens: string[] = [];
+  const figures: Figure[] = [];
+  const matches = [...text.matchAll(NUMBERS), ...text.matchAll(WORD_FIGURE)].sort((a, b) => a.index - b.index);
+  for (const match of matches) {
+    const raw = match[0], start = match.index, end = start + raw.length;
+    if (ISO_DATE.test(raw) || WRITTEN_DATE.test(raw)) {
+      tokens.push(dateToken(raw) ?? 'dateinvalid');
+      continue;
+    }
+    const isWord = /^[a-z]/i.test(raw);
+    const numericEnd = isWord ? start + raw.search(new RegExp(`(?:${CURRENCY_WORD}|percent|per\\s+cent)(?![a-z])`, 'i')) : end;
+    const before = text.slice(0, start), after = text.slice(numericEnd);
+    const value = isWord ? wordValue(text.slice(start, numericEnd)) : Number(raw.replace(/,/g, ''));
+    const percent = after.match(PERCENT);
+    if (value === 100 && percent && CERTAINTY.test(after.slice(percent[0].length))) continue;
+    const multiplier = after.match(/^\s*(bn|[kKmM])(?![a-z])/i);
+    const joined = cues.filter(cue => cue.end <= start ? /^[\s-]*$/.test(text.slice(cue.end, start))
+      : cue.start >= numericEnd + (multiplier?.[0].length ?? 0)
+        && /^[\s-]*$/.test(text.slice(numericEnd + (multiplier?.[0].length ?? 0), cue.start)));
+    if (/^\d{4}$/.test(raw) && DATE_CONTEXT.test(before) && !/\w/.test(after[0] ?? '')
+      && !UNIT_WORD.test(after) && joined.length === 0
+      && !/^\s*(?:[-–—/]|to\b|and\b|or\b|up\s+to\b)/i.test(after)) continue;
+    const gluedMultiplier = multiplier && !/^\s/.test(multiplier[0]);
+    const figure: Figure = { start, end: numericEnd, value, unit: percent ? 'pct' : 'n', divisor: 1, scale: 1,
+      explained: (!gluedMultiplier && UNIT_WORD.test(after)) || /(?:\b(?:size|no\.|model|style|lot|item)\s*|#\s*)$/i.test(before)
+        || /[\p{L}](?:-)?$/u.test(before) || (!gluedMultiplier && /^[\p{L}]/u.test(after)) };
+    // A hyphen inside an identifier or a range is not a negative sign.
+    if (raw.startsWith('-') && start > 0 && !/[\s([{]/.test(text[start - 1])) {
+      figure.value = Math.abs(value);
+      figure.start++;
+    }
+    if (!percent) {
+      const cue = joined[0];
+      if (cue) {
+        figure.unit = joined.every(other => other.unit === cue.unit && other.divisor === cue.divisor) ? cue.unit : 'money_unknown';
+        figure.divisor = cue.divisor;
+        figure.start = Math.min(start, cue.start);
+        figure.end = Math.max(numericEnd, cue.end);
+        if (cue.end <= start && /(?:^|[\s([{])-$/.test(text.slice(0, cue.start))) figure.value = -Math.abs(figure.value);
+      }
+    } else figure.end += percent[0].length;
+    if (multiplier) {
+      figure.scale = /^bn$/i.test(multiplier[1]) ? 1e9 : /^k$/i.test(multiplier[1]) ? 1e3 : 1e6;
+      figure.end = Math.max(figure.end, numericEnd + multiplier[0].length);
+    }
+    if (!Number.isFinite(value)) figure.unit = 'money_unknown';
+    figures.push(figure);
+  }
+  // Ranges inherit units in both directions, before the conservative sentence fallback.
+  for (let pass = 0; pass < figures.length; pass++) {
+    for (let i = 1; i < figures.length; i++) {
+      const left = figures[i - 1], right = figures[i];
+      if (!/^\s*(?:[-–—/]|to|and|or|up\s+to)\s*$/i.test(text.slice(left.end, right.start))) continue;
+      for (const [source, target] of [[left, right], [right, left]]) {
+        if (source.unit !== 'n' && source.unit !== 'pct' && target.unit === 'n' && !target.explained) {
+          target.unit = source.unit;
+          target.divisor = source.divisor;
+        }
+      }
+    }
+  }
+  const contextUnit = new Set(cues.map(cue => cue.unit)).size === 1 ? cues[0]?.unit : 'money_unknown';
+  for (const figure of figures) {
+    if (figure.unit === 'n' && cues.length && !figure.explained) figure.unit = contextUnit!;
+    const money = figure.unit !== 'n' && figure.unit !== 'pct';
+    tokens.push(figureToken(figure.unit, figure.value * (money ? figure.scale / figure.divisor : 1)));
+  }
+  return tokens;
 }
 
 function numbers(text: string): string[] {
-  const prose = text.replace(TAGS, '');
-  let previous: { end: number; unit: string } | undefined;
-  return [...prose.matchAll(NUMBERS)].flatMap(match => {
-    const raw = match[0];
-    if (ISO_DATE.test(raw) || WRITTEN_DATE.test(raw)) {
-      previous = undefined;
-      return [dateToken(raw) ?? 'dateinvalid'];
-    }
-    const after = prose.slice(match.index + raw.length);
-    if (/^\d{4}$/.test(raw) && DATE_CONTEXT.test(prose.slice(0, match.index))
-      && !/\w/.test(after[0] ?? '') && !UNIT_WORD.test(after)) return [];
-    const sign = raw.search(/-(?=[\d.])/);
-    const signed = sign < 0 || match.index + sign === 0 || /[\s([{]/.test(prose[match.index + sign - 1]);
-    let token = numberToken(signed ? raw : raw.slice(0, sign) + raw.slice(sign + 1));
-    const connector = previous ? prose.slice(previous.end, match.index) + (raw.startsWith('-') ? '-' : '') : '';
-    if (token?.startsWith('n') && previous && /^(?:usd|eur|gbp)$/.test(previous.unit)
-      && /^\s*(?:-|–|to)\s*$/i.test(connector)) {
-      token = previous.unit + numberToken(raw.replace(/^-/, ''))!.slice(1);
-    }
-    previous = { end: match.index + raw.length, unit: token?.match(/^[a-z]+/)?.[0] ?? '' };
-    return token ? [token] : [];
-  });
+  return sentences(normalizeFigures(text.replace(TAGS, ''))).flatMap(({ segment }) => sentenceFigures(segment));
 }
 
 function figureFacts(value: unknown, key: string): string[] {
   if (typeof value === 'number' && Number.isFinite(value)) {
     if (key.endsWith('_cents') && Number.isInteger(value)) return numbers(`${value / 100} dollars`);
     const tokens = numbers(String(value));
-    if (/(?:share|probability|p_sale|rate|change)/.test(key) && value >= 0 && value <= 1) {
-      tokens.push(...numbers(`${Number((value * 100).toFixed(10))}%`));
+    if (/(?:share|probability|p_sale|rate|change)/.test(key) && Math.abs(value) <= 1) {
+      tokens.push(...numbers(`${Number((Math.abs(value) * 100).toFixed(10))}%`));
     }
     return tokens;
   }
-  if (typeof value === 'string') return numbers(value);
+  if (typeof value === 'string' && !URL.canParse(normalizeFigures(value))) return numbers(value);
   return [];
 }
 
@@ -177,18 +282,19 @@ function toolFacts(results: Answer['results']): string[] {
   return Object.values(results).flatMap(result => {
     if (!result.ok) return [];
     const cited = result.citation_ids.length > 0;
-    const tokens = Object.values(result.counts).flatMap(value => numbers(String(value)));
+    const tokens = Object.entries(result.counts).filter(([key]) => !/(?:id|url|href|link|image|src)$/i.test(key))
+      .flatMap(([, value]) => numbers(String(value)));
     const fields = [...result.rows.flatMap(row => Object.entries(row)),
       ...Object.entries(result).filter(([key]) => !RESULT_METADATA.has(key) || key === 'as_of')];
     for (const [key, value] of fields) {
-      if (key === 'input' || key === 'inputs') continue;
-      if (DATE_FIELDS.has(key) && typeof value === 'string' && ISO_DATE.test(value)) {
-        const date = value.match(ISO_DATE)![0];
+      if (key === 'input' || key === 'inputs' || /(?:id|url|href|link|image|src)$/i.test(key)) continue;
+      if (DATE_FIELDS.has(key) && typeof value === 'string' && ISO_DATE.test(normalizeFigures(value))) {
+        const date = normalizeFigures(value).match(ISO_DATE)![0];
         const token = dateToken(date);
         if (token) tokens.push(token, dateToken(date.slice(0, 10))!);
       } else {
         tokens.push(...figureFacts(value, key).filter(token => !token.startsWith('date')
-          && (cited || token.startsWith('n'))));
+          && !token.startsWith('money_unknown') && (cited || token.startsWith('n'))));
       }
     }
     return tokens;
@@ -214,7 +320,7 @@ async function checkedDraft(message: Message | undefined, answer: Answer, text: 
   }
   const tokens = [...new Set([...toolFacts(answer.results),
     ...numbers(text).filter(token => token.startsWith('n') || (token.startsWith('date') && token !== 'dateinvalid')),
-    ...citedFacts.filter(token => !token.startsWith('date')),
+    ...citedFacts.filter(token => !token.startsWith('date') && !token.startsWith('money_unknown')),
     // shortcut: no person time zone; upgrade when the request carries one.
     ...[now, now - 12 * 60 * 60 * 1000].map(time => dateToken(new Date(time).toISOString().slice(0, 10))!)])];
   const facts = tokens.map((value, index) => ({ attribute_id: `number${index}`, name: 'number', value }));
@@ -223,17 +329,12 @@ async function checkedDraft(message: Message | undefined, answer: Answer, text: 
   const keptSpans: CitedSpan[] = [];
   for (const { segment: sentence, index } of sentences(draft)) {
     const claims = numbers(sentence).map(text => ({ text, kind: 'number' }));
-    const wordFigure = WORD_FIGURE.test(sentence.replace(TAGS, ''));
-    if (claims.length || wordFigure) {
+    const wordFigure = [...normalizeFigures(sentence.replace(TAGS, '')).matchAll(WORD_FIGURE)].length > 0;
+    if (claims.length) {
       answer.gate.checked++;
-      if (wordFigure) {
-        answer.gate.cut++;
-        answer.gate.cut_sentences.push(sentence.trim());
-        numberWords = true;
-        continue;
-      }
       const verdict = await gate({ subject: 'assist', text: claims.map(c => c.text).join(' ') }, facts, [], () => claims, { log });
       if (verdict.verdict !== 'pass') {
+        numberWords ||= wordFigure;
         answer.gate.cut++;
         answer.gate.cut_sentences.push(sentence.trim());
         continue;
@@ -355,8 +456,8 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
           tokens_out: usage.output_tokens, stop_reason: message.stop_reason };
       });
       const usage = usageOf(final, max_tokens);
-      if (usage.cost_source === 'price_table' && missingTokenUsage(final.usage)) {
-        o.log.note('assist.usage', { reason: 'missing_token_usage', round: round + 1, tokens_out: max_tokens });
+      if (missingTokenUsage(final.usage)) {
+        o.log.note('assist.usage', { reason: 'missing_token_usage', round: round + 1, tokens_in: usage.input_tokens, tokens_out: usage.output_tokens });
       }
       for (const key of ['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'web_searches', 'cost_usd'] as const) answer.usage[key] += usage[key];
       if (usage.cost_source === 'provider') answer.usage.cost_source = 'provider';

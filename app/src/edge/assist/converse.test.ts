@@ -285,12 +285,12 @@ test('logs contain the input hash, length, attachment flag and tool terms but ne
   assert.equal(calls.filter(c => c.kind === 'tool').length, 1);
 });
 
-test('usage sums rounds and provider cost wins over the price table, including zero', async () => {
+test('usage sums rounds using the larger of provider and token pricing', async () => {
   const t = setup('usage');
   const answer = await t.run();
   assert.deepEqual(answer.usage, {
     input_tokens: 300, output_tokens: 30, cache_read_input_tokens: 150, web_searches: 2,
-    cost_usd: 0.003, cost_source: 'provider',
+    cost_usd: 0.020915, cost_source: 'price_table',
   });
   const table = await setup('one-tool').run();
   assert.equal(table.usage.cost_source, 'price_table');
@@ -559,7 +559,7 @@ test('negative provider cost falls back to table pricing and cannot postpone the
   assert.equal(answer.usage.cost_usd, 0.4);
 });
 
-test('missing token counts default to zero and table pricing still reaches the cap', async () => {
+test('missing input counts default to zero and missing output uses max_tokens', async () => {
   const message = continuingRound({ output_tokens: 20000, cache_read_input_tokens: 0 });
   Reflect.deleteProperty(message.usage, 'input_tokens');
   const recording = replay(Array.from({ length: 6 }, () => structuredClone(message)));
@@ -570,7 +570,7 @@ test('missing token counts default to zero and table pricing still reaches the c
   assert.equal(answer.usage.cost_usd, 0.4);
   const missingOutput = textMessage('Done.');
   Reflect.deleteProperty(missingOutput.usage, 'output_tokens');
-  assert.equal((await setup('answer', { client: replay([missingOutput]).client }).run()).usage.output_tokens, 0);
+  assert.equal((await setup('answer', { client: replay([missingOutput]).client }).run()).usage.output_tokens, 16000);
 });
 
 test('non-finite accumulated cost reaches the cap', async () => {
@@ -720,7 +720,7 @@ test('a later tool fact cannot erase a streamed cut when the cap ends the turn',
 
 for (const [spelling, amount, other] of [
   ['400 euros', '€400', '$400'], ['400 euro', '€400', '£400'],
-  ['400 pounds', '£400', '$400'], ['400 pound', '£400', '€400'],
+  ['400 pounds sterling', '£400', '$400'], ['400 pound sterling', '£400', '€400'],
   ['400 EUR', '€400', '$400'], ['400 GBP', '£400', '$400'],
   ['a 400-dollar jacket', '$400', '€400'], ['400-dollars', '$400', '£400'],
   ['400-USD', '$400', '€400'], ['400 - bucks', '$400', '£400'],
@@ -821,8 +821,8 @@ test('a round without token fields or provider cost uses max_tokens pricing and 
   Object.assign(priced.usage, { cost: 0 });
   priced.stop_reason = 'end_turn';
   const provider = setup('answer', { client: replay([priced]).client });
-  assert.equal((await provider.run()).usage.cost_usd, 0, 'explicit zero provider cost wins');
-  assert.doesNotMatch(provider.sink.text(), /missing_token_usage/);
+  assert.equal((await provider.run()).usage.cost_usd, 0.16, 'missing output is priced even when provider reports zero');
+  assert.match(provider.sink.text(), /missing_token_usage/);
 });
 
 for (const text of ['It costs dollars five.',
@@ -862,3 +862,234 @@ for (const date of ['Nov 15, 2026', 'Nov. 15 2026', 'November 15 2026']) {
     assert.deepEqual(held.answer.gate.cut_sentences, [text], 'plain counts cannot back a date');
   });
 }
+
+
+const plantedMoney: [string, string[]][] = [
+  ['It is 400 US dollars.', ['$400']], ['It is 400 U.S. dollars.', ['$400']],
+  ['It costs 400 (dollars).', ['$400']], ['It costs _400_ dollars.', ['$400']],
+  ['400 €', ['€400']], ['50¢', ['$0.50']], ['¥400', ['JPY 400']],
+  ['400 yen', ['JPY 400']], ['₹400', ['INR 400']], ['Rs. 400', ['INR 400']],
+  ['CHF 400', ['CHF 400']], ['400 CAD', ['CAD 400']], ['400 quid', ['GBP 400']],
+  ['It sells for $４００.', ['$400']], ['It sells for ٤٠٠ dollars.', ['$400']],
+  ['$\u200b400', ['$400']], ['It runs 85-120 dollars.', ['$85', '$120']],
+  ['It runs $85—120.', ['$85', '$120']], ['$85/120', ['$85', '$120']],
+  ['$85 or 120', ['$85', '$120']], ['between $85 and 120', ['$85', '$120']],
+  ['from $85 up to 120', ['$85', '$120']], ['400 to 500 dollars', ['$400', '$500']],
+  ['$400k', ['$400000']], ['$1.2M', ['$1200000']],
+  ['four hundred USD', ['$400']], ['CA$400', ['CAD 400']], ['£5', ['GBP 5']],
+  ['It is 400 dollars, reduced from 500.', ['$400', '$500']],
+  ['A$400', ['AUD 400']], ['AU$400', ['AUD 400']], ['NZ$400', ['NZD 400']],
+  ['HK$400', ['HKD 400']], ['US$400', ['$400']], ['CNY 400', ['CNY 400']],
+  ['MXN 400', ['MXN 400']], ['400 francs', ['CHF 400']],
+  ['-$40', ['-$40']], ['$2bn', ['$2000000000']],
+  ['It costs **400** [dollars].', ['$400']], ['It costs `400` dollars.', ['$400']],
+];
+
+for (const [text, prices] of plantedMoney) {
+  test(`BC2 cuts planted ${text} and keeps its cited currency and value`, async () => {
+    const run = async (citedPrices: string[]) => {
+      const t = setup('answer', { text: 'I counted 400 and 85 items.' });
+      t.options.client = replay([fixture('parallel')[0], textMessage(text)]).client;
+      t.options.tools.run = async name => name === 'search_market'
+        ? { ...result, tool: 'search_market', citation_ids: [], counts: {}, rows: [{ url: 'https://www.ebay.com/itm/400?x=85', title: 'Kettlebell 5 pounds' }] }
+        : { ...result, counts: {}, rows: citedPrices.map(price => ({ price })) };
+      return { answer: await t.run(), events: t.events };
+    };
+    const held = await run(text === '$400k' || text === 'CA$400' ? ['$400'] : ['$120']);
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+    assert.equal(streamed(held.events), '', 'planted price must never stream');
+    const kept = await run(prices);
+    assert.equal(kept.answer.gate.cut, 0);
+    assert.equal(prose(kept.answer), text, 'normalization must not change displayed text');
+    assert.equal(streamed(kept.events), text);
+  });
+}
+
+test('BC1 reported zero never lowers token pricing or disables max_cost_usd', async () => {
+  const recording = replay([continuingRound({ cost: 0, input_tokens: 900000, output_tokens: 16000, cache_read_input_tokens: 0 })]);
+  const answer = await setup('answer', { client: recording.client, max_cost_usd: 0.25 }).run();
+  assert.equal(recording.requests.length, 1);
+  assert.equal(answer.reason, 'cost_cap');
+  assert.equal(answer.usage.cost_usd, 1.96);
+  assert.equal(answer.usage.cost_source, 'price_table');
+});
+
+test('BC1 missing input or output logs a note even when provider cost is present', async () => {
+  for (const field of ['input_tokens', 'output_tokens']) {
+    const message = textMessage('Done.');
+    Object.assign(message.usage, { cost: 0 });
+    Reflect.deleteProperty(message.usage, field);
+    const t = setup('answer', { client: replay([message]).client });
+    const answer = await t.run();
+    assert.equal(answer.usage[field === 'input_tokens' ? 'input_tokens' : 'output_tokens'], field === 'input_tokens' ? 0 : 16000);
+    const notes = t.sink.lines.map(line => JSON.parse(line)).filter(line => line.reason === 'missing_token_usage');
+    assert.equal(notes.length, 1);
+  }
+});
+
+test('BC2 weight, size, signed percent fractions and certainty keep their meaning', async () => {
+  for (const text of ['It weighs 5 pounds.', 'It weighs 5 lb.', 'It weighs 5 lbs.', 'It weighs 5 oz.']) {
+    const kept = await backedText(text, { ...result, citation_ids: [], rows: [{ weight: 5 }], counts: {} });
+    assert.equal(prose(kept.answer), text);
+  }
+  const size = await backedText('Size 10 sells for $120.', { ...result, rows: [{ price_cents: 12000 }] }, 'Size 10');
+  assert.equal(prose(size.answer), 'Size 10 sells for $120.');
+  const percent = await backedText('It is down 5%.', { ...result, rows: [{ change: -0.05 }] });
+  assert.equal(prose(percent.answer), 'It is down 5%.');
+  assert.equal((await backedText('It is down 5%.', { ...result, citation_ids: [], rows: [{ change: -0.05 }] }, '5')).answer.gate.cut, 1);
+  for (const text of ['I am 100% sure.', 'I am 100 percent certain.', 'I am one hundred percent sure.']) {
+    const kept = await backedText(text);
+    assert.equal(prose(kept.answer), text);
+    assert.equal(streamed(kept.events), text);
+  }
+});
+
+for (const context of ['10 items', '10 times', '10 sizes', '10 pairs', '10 colors', '10 stars', '10 reviews', '10 photos', '10 lb', '10 lbs', '10 oz', '10 pounds', 'size 10', '#10', 'no. 10', 'model 10', 'style 10', 'lot 10', 'item 10', 'A10', 'PS10', 'Y10K', 'MA-10', 'W10']) {
+  test(`BC2 explains ${context} as a count beside money`, async () => {
+    const text = `For ${context}, it costs $120.`;
+    const kept = await backedText(text, { ...result, rows: [{ price: '$120' }] }, '10');
+    assert.equal(prose(kept.answer), text);
+    assert.equal(streamed(kept.events), text);
+  });
+}
+
+test('BC2 shared normalization applies to result fields and person counts and dates', async () => {
+  const money = await backedText('It costs $400.', { ...result, rows: [{ price: '_٤٠٠_ (dollars)' }] });
+  assert.equal(prose(money.answer), 'It costs $400.');
+  const count = await backedText('There are 4 items. Sold on 2026-11-12.', { ...result, rows: [], counts: {} }, '４ items sold on ٢٠٢٦-١١-١٢');
+  assert.equal(count.answer.gate.cut, 0);
+});
+
+for (const key of ['id', 'external_id', 'url', 'photo_url', 'href', 'item_href', 'link', 'source_link', 'image', 'hero_image', 'src', 'photo_src']) {
+  test(`BC2 ${key} fields cannot back counts or money`, async () => {
+    for (const value of [400, '400', '$400']) {
+      const held = await backedText('There are 400 items. It costs $400.', { ...result, rows: [{ [key]: value }], counts: {} });
+      assert.equal(held.answer.gate.cut, 2);
+    }
+  });
+}
+
+test('BC2 a URL string under an innocent field name cannot supply figures', async () => {
+  const held = await backedText('There are 400 items. There are 85 items.', { ...result, rows: [{ title: 'https://www.ebay.com/itm/400?x=85' }], counts: {} });
+  assert.equal(held.answer.gate.cut, 2);
+  const kept = await backedText('There are 400 items.', { ...result, citation_ids: [], rows: [{ title: '400 items' }], counts: {} });
+  assert.equal(kept.answer.gate.cut, 0);
+});
+
+test('BC2 an unknown currency cannot be backed even by the identical cited spelling', async () => {
+  const text = 'It costs ₿400.';
+  const held = await backedText(text, { ...result, rows: [{ price: '₿400' }], counts: { sold: 400 } }, '400');
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.equal(streamed(held.events), '');
+});
+
+
+test('BC2 a minus before currency and a currency multiplier cannot borrow an unscaled positive price', async () => {
+  for (const text of ['-$40', '-CA$40', '$400k', '$1.2M', '$2bn']) {
+    const held = await backedText(text, { ...result, rows: [{ price: '$40' }, { price: 'CAD 40' }, { price: '$400' }, { price: '$1.2' }, { price: '$2' }] });
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  }
+});
+
+test('BC2 count metadata identifiers cannot supply counts', async () => {
+  const held = await backedText('There are 400 items.', { ...result, rows: [], counts: { external_id: 400 } });
+  assert.equal(held.answer.gate.cut, 1);
+});
+
+test('BC2 normalized result dates remain whole dates', async () => {
+  const kept = await backedText('Sold on 2026-11-12.', { ...result, rows: [{ sold_at: '٢٠٢٦-١١-١٢' }] });
+  assert.equal(prose(kept.answer), 'Sold on 2026-11-12.');
+});
+
+
+test('BC2 a year-shaped price or range endpoint cannot use the standalone year exemption', async () => {
+  for (const [text, prices] of [
+    ['It runs from 4000 to 5000 dollars.', ['$5000']],
+    ['It runs from 2026 to 4000 dollars.', ['$4000']],
+    ['In 2026 EUR.', ['$2026']],
+  ] as const) {
+    const held = await backedText(text, { ...result, rows: prices.map(price => ({ price })), counts: { sold: 4000 } }, '2026 and 4000');
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+    assert.equal(streamed(held.events), '');
+  }
+  const kept = await backedText('In 2026, it costs $120.', { ...result, rows: [{ price: '$120' }] });
+  assert.equal(kept.answer.gate.cut, 0);
+});
+
+
+for (const [suffix, value] of [['k', 120000], ['m', 120000000], ['M', 120000000], ['bn', 120000000000]] as const) {
+  test(`BC2 range endpoint ${suffix} scales as money rather than a glued count`, async () => {
+    const text = `It costs $85–120${suffix}.`;
+    const returned = { ...result, rows: [{ price: '$85' }] };
+    const held = await backedText(text, returned, '120 items');
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+    assert.equal(streamed(held.events), '');
+    const kept = await backedText(text, { ...returned, rows: [...returned.rows, { price: `$${value}` }] });
+    assert.equal(prose(kept.answer), text);
+  });
+}
+
+test('BC2 quid alone does not turn pounds of weight into currency', async () => {
+  const text = 'It weighs 5 pounds and costs 10 quid.';
+  const returned = { ...result, rows: [{ price: 'GBP 10', weight: 5 }] };
+  const kept = await backedText(text, returned, '5 pounds');
+  assert.equal(prose(kept.answer), text);
+  const held = await backedText('It costs £5.', { ...returned, rows: [{ title: 'Kettlebell 5 pounds' }] }, '5 pounds');
+  assert.deepEqual(held.answer.gate.cut_sentences, ['It costs £5.']);
+});
+
+
+for (const [words, wrong, honest] of [
+  ['a hundred', '$0', '$100'], ['a thousand', '$0', '$1000'],
+  ['one and a half', '$0.50', '$1.50'], ['half a million', '$1000000', '$500000'],
+] as const) {
+  test(`BC2 ${words} cannot be backed by a partial number-word value`, async () => {
+    const text = `It costs ${words} dollars.`;
+    const held = await backedText(text, { ...result, rows: [{ price: wrong }] });
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+    assert.equal(streamed(held.events), '');
+    const kept = await backedText(text, { ...result, rows: [{ price: honest }] });
+    assert.equal(prose(kept.answer), text);
+  });
+}
+
+test('BC2 a left multiplier inherits the range currency even with another currency present', async () => {
+  const text = 'It costs 85k–120 CAD or US$5.';
+  const returned = { ...result, rows: [{ price: 'CAD 85000' }, { price: 'CAD 120' }, { price: 'US$5' }] };
+  const kept = await backedText(text, returned);
+  assert.equal(prose(kept.answer), text);
+  assert.equal(streamed(kept.events), text);
+  const held = await backedText(text, { ...returned, rows: [{ price: 'CAD 85' }, { price: 'CAD 120' }, { price: 'US$5' }] }, '85');
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+});
+
+test('BC1 missing-input note records the actual output tokens', async () => {
+  const message = textMessage('Done.');
+  Object.assign(message.usage, { output_tokens: 50 });
+  Reflect.deleteProperty(message.usage, 'input_tokens');
+  const t = setup('answer', { client: replay([message]).client });
+  await t.run();
+  const note = t.sink.lines.map(line => JSON.parse(line)).find(line => line.reason === 'missing_token_usage');
+  assert.equal(note.tokens_out, 50);
+  assert.equal(note.tokens_in, 0);
+});
+
+
+for (const [words, wrong, honest] of [
+  ['two dozen', '$14', '$24'], ['half dozen', '$12.50', '$6'], ['one half', '$1.50', '$0.50'],
+] as const) {
+  test(`BC2 ${words} uses its full number-word amount`, async () => {
+    const text = `It costs ${words} dollars.`;
+    const held = await backedText(text, { ...result, rows: [{ price: wrong }] });
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+    const kept = await backedText(text, { ...result, rows: [{ price: honest }] });
+    assert.equal(prose(kept.answer), text);
+  });
+}
+
+test('BC2 uncertain consecutive number-word scales cannot back themselves', async () => {
+  const text = 'It costs one thousand million dollars.';
+  const held = await backedText(text, { ...result, rows: [{ price: text }] });
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.equal(streamed(held.events), '');
+});
