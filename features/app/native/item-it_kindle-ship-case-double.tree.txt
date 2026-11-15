@@ -1,56 +1,56 @@
-Attributes: Application, 0x10213ce40, pid: 83149, label: 'secondhand'
+Attributes: Application, 0x103439a70, pid: 19841, label: 'secondhand'
 Element subtree:
- →Application, 0x10213ce40, pid: 83149, label: 'secondhand'
-    Window (Main), 0x10211c790, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x1021671b0, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x1021265f0, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x1021785b0, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x102161940, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x10216a5d0, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x102129450, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x107304d10, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x1021637e0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x10730bd40, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10730a6e0, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x1021633c0, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x10216aff0, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x102154090, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x10216abd0, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x1021566b0, {{0.0, 0.0}, {402.0, 874.0}}
-                                    Other, 0x10212a620, {{0.0, 0.0}, {402.0, 874.0}}
-                                      Other, 0x10215bdb0, {{0.0, 0.0}, {402.0, 874.0}}
-                                        Other, 0x1021194d0, {{0.0, 0.0}, {402.0, 874.0}}
-                                          Other, 0x10211c370, {{0.0, 0.0}, {402.0, 874.0}}
-                                            Other, 0x102162ba0, {{0.0, 0.0}, {402.0, 874.0}}
-                                              Other, 0x102084f00, {{0.0, 0.0}, {402.0, 874.0}}
-                                                Other, 0x102081e60, {{0.0, 0.0}, {402.0, 874.0}}
-                                                  ScrollView, 0x10208b170, {{0.0, 0.0}, {402.0, 874.0}}
-                                                    Other, 0x102081410, {{0.0, 0.0}, {402.0, 874.0}}
-                                                      Other, 0x102083dc0, {{0.0, 0.0}, {402.0, 874.0}}
-                                                        Other, 0x10202d090, {{0.0, 0.0}, {402.0, 298.0}}
-                                                        Other, 0x102090fb0, {{20.0, 62.0}, {362.0, 44.0}}
-                                                          Button, 0x1020844b0, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
-                                                        StaticText, 0x10208f730, {{20.0, 165.0}, {362.0, 23.3}}, label: 'Sold on two sites'
-                                                          StaticText, 0x102091a50, {{20.0, 165.0}, {362.0, 23.3}}, label: 'Sold on two sites'
-                                                        StaticText, 0x102090500, {{20.0, 197.3}, {362.0, 20.3}}, label: 'Pick which buyer gets it first. Its label comes after.'
-                                                          StaticText, 0x10208a080, {{20.0, 197.3}, {362.0, 20.3}}, label: 'Pick which buyer gets it first. Its label comes after.'
-                                                        Button, 0x102086740, {{20.0, 237.7}, {121.7, 40.0}}, identifier: 'ship-double', label: 'Open Today'
-                                                    Other, 0x102085250, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                                      Other, 0x1020951a0, {{396.0, 65.0}, {3.0, 744.0}}
-                                                    Other, 0x10207bea0, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                      Other, 0x10202b440, {{65.0, 868.0}, {272.0, 3.0}}
-                                                    Other, 0x102094e00, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                                      Other, 0x10208f3d0, {{396.0, 65.0}, {3.0, 744.0}}
-                                                    Other, 0x102095510, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                      Other, 0x10208e2a0, {{65.0, 868.0}, {272.0, 3.0}}
-                                    Other, 0x10208f060, {{0.0, 0.0}, {402.0, 874.0}}
-                                      Other, 0x10202b0e0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x10208ecf0, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x102081ad0, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x103439a70, pid: 19841, label: 'secondhand'
+    Window (Main), 0x1034450d0, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x10343a220, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x10343ec60, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x103463610, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x10343bb30, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x103435580, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x10346cf60, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x103453900, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x10346d380, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x10346c4e0, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103453d20, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x103450bb0, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x10344ded0, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x10345abd0, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x103454560, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x103434d00, {{0.0, 0.0}, {402.0, 874.0}}
+                                    Other, 0x1034530a0, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x103454140, {{0.0, 0.0}, {402.0, 874.0}}
+                                        Other, 0x103437ec0, {{0.0, 0.0}, {402.0, 874.0}}
+                                          Other, 0x1034694e0, {{0.0, 0.0}, {402.0, 874.0}}
+                                            Other, 0x103469600, {{0.0, 0.0}, {402.0, 874.0}}
+                                              Other, 0x103469720, {{0.0, 0.0}, {402.0, 874.0}}
+                                                Other, 0x103469840, {{0.0, 0.0}, {402.0, 874.0}}
+                                                  ScrollView, 0x103469960, {{0.0, 0.0}, {402.0, 874.0}}
+                                                    Other, 0x103469a80, {{0.0, 0.0}, {402.0, 874.0}}
+                                                      Other, 0x103469ba0, {{0.0, 0.0}, {402.0, 874.0}}
+                                                        Other, 0x103469cc0, {{0.0, 0.0}, {402.0, 298.0}}
+                                                        Other, 0x103469de0, {{20.0, 62.0}, {362.0, 44.0}}
+                                                          Button, 0x103469f00, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                                        StaticText, 0x10346a020, {{20.0, 165.0}, {362.0, 23.3}}, label: 'sold on two sites'
+                                                          StaticText, 0x10346a140, {{20.0, 165.0}, {362.0, 23.3}}, label: 'sold on two sites'
+                                                        StaticText, 0x10346a260, {{20.0, 197.3}, {362.0, 20.3}}, label: 'Pick which buyer gets it first. Its label comes after.'
+                                                          StaticText, 0x10346a380, {{20.0, 197.3}, {362.0, 20.3}}, label: 'Pick which buyer gets it first. Its label comes after.'
+                                                        Button, 0x10346a4a0, {{20.0, 237.7}, {121.7, 40.0}}, identifier: 'ship-double', label: 'Open Today'
+                                                    Other, 0x10346a5c0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                                      Other, 0x10346a6e0, {{396.0, 65.0}, {3.0, 744.0}}
+                                                    Other, 0x10346a800, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                      Other, 0x10346a920, {{65.0, 868.0}, {272.0, 3.0}}
+                                                    Other, 0x10346aa40, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                                      Other, 0x10346ab60, {{396.0, 65.0}, {3.0, 744.0}}
+                                                    Other, 0x10346ac80, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                      Other, 0x10346ada0, {{65.0, 868.0}, {272.0, 3.0}}
+                                    Other, 0x10346aec0, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x10346afe0, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x10346b100, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10346b220, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x10213ce40, pid: 83149, label: 'secondhand'
+ →Application, 0x103439a70, pid: 19841, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x1023414c0, pid: 83149, label: 'secondhand'
+    Application, 0x103636ba0, pid: 19841, label: 'secondhand'
   }

@@ -145,4 +145,4 @@ Answered by Nate 2026-11-14 ([words](../product/words.md#2026-11-14-nate-sale-em
 - "Photo count matters far more than photo quality for whether something sells": the strong figure was for resale profit, not chance of sale ([open-facts-money-and-markets.md](../research/price/nate/open-facts-money-and-markets.md)).
 - "Databricks has nothing that generates and reconciles an ontology": it shipped one on 2026-11-11.
 - "A past table version can be re-read for about 30 days": 7 days by default, so a citation keeps the ids of the observations it used.
-- The claim that reverse engineering showed TikTok scoring attractiveness and reading emotion: no source opened supports it ([quality-and-value-classifiers.md](../research/price/nate/quality-and-value-classifiers.md)).
+- The claim that outside analysis showed TikTok scoring attractiveness and reading emotion: no source opened supports it ([quality-and-value-classifiers.md](../research/price/nate/quality-and-value-classifiers.md)).

@@ -1,4 +1,4 @@
-// Dupe.com search on the reduced recordings (fixtures/), plus the failure envelopes and Dupe's published conditions.
+// Dupe.com search on the fixtures (the envelopes as recorded, the search rows written by hand), plus the failure envelopes and Dupe's published conditions.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
