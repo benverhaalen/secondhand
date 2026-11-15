@@ -97,13 +97,13 @@ export function exampleHandler(endpoint: string, validate: (ctx: Ctx) => void = 
   };
 }
 
-type CaptureRow = { user_id: string; version: number; state: State; status: string; mode: string; photos: number; replacements: Record<string,number>; phone_suggestion: boolean; studio_plan?: StudioPlan };
+export type CaptureRow = { id: string; user_id: string; item_id: string; version: number; created_at: string; updated_at: string; data: 'example' | 'captured'; state: State; status: 'framing' | 'shooting' | 'uploading' | 'judged'; mode: string; photos: number; replacements: Record<string,number>; phone_suggestion: boolean; studio_plan?: StudioPlan };
 const open = example('captures.open').response as {id: string; item_id: string; created_at: string; picker: string[]};
 const linkedSites = (example('accounts.list').response as {data: {site: string}[]}).data
   .map(account => account.site).filter((site): site is Site => SITES.includes(site));
 const params = memoryStore();
 params.declare({name:'capture_label_sharp_min', family:'scalar', prior:.5});
-const captures = new Map<string, CaptureRow>();
+export const captureRows = new Map<string, CaptureRow>();
 let captureNumber = 0;
 let exampleOpened = false;
 function initial(body: Record<string, unknown>, id = open.id): State {
@@ -117,16 +117,17 @@ function initial(body: Record<string, unknown>, id = open.id): State {
     kept: [], retakes: {}, facts: {}, lookups: 'none', refused: [] };
 }
 export function resetCaptures() {
-  captures.clear();
+  captureRows.clear();
   captureNumber = 0; exampleOpened = false;
-  captures.set(open.id, {user_id: 'usr_8f2k', version: 1, state: initial(example('captures.open').request!.body as Record<string, unknown>), status: 'framing', mode: 'shots', photos: 0, replacements: {}, phone_suggestion: true});
+  const state=initial(example('captures.open').request!.body as Record<string, unknown>);
+  captureRows.set(open.id, {id:open.id,user_id:'usr_8f2k',item_id:state.item_id,version:1,created_at:open.created_at,updated_at:open.created_at,data:'example',state,status:'framing',mode:'shots',photos:0,replacements:{},phone_suggestion:true});
 }
 resetCaptures();
 function read(ctx: Ctx): CaptureRow {
   return ownedCapture(ctx.user_id!,ctx.params.id);
 }
 function ownedCapture(user_id: string, capture_id: string): CaptureRow {
-  const row = captures.get(capture_id);
+  const row = captureRows.get(capture_id);
   if (!row || row.user_id !== user_id) throw new ApiError('not_found', 'capture not found', 'read');
   return row;
 }
@@ -135,10 +136,10 @@ function view(row: CaptureRow) {
   return {id: row.state.capture_id, item_id: row.state.item_id, state: row.status, mode: row.mode, purpose: row.state.purpose,
     type: row.state.type, suggested_type: row.state.suggestion?.family ?? null, picker: open.picker,
     process: next.process, coverage: {needed: next.process.map(step => step.key).filter(key => !row.state.kept.includes(key)), kept: [...row.state.kept]},
-    created_at: open.created_at, version: row.version, plan: next};
+    created_at: row.created_at, version: row.version, plan: next};
 }
-function write(ctx: Pick<Ctx,'log'>, row: CaptureRow, status: string, detail: Record<string,unknown> = {}) {
-  row.status = status; row.version++;
+function write(ctx: Pick<Ctx,'log'>, row: CaptureRow, status: CaptureRow['status'], detail: Record<string,unknown> = {}) {
+  row.status = status; row.version++; row.updated_at = new Date(deps.now()).toISOString();
   ctx.log.event('state.change', {entity: 'capture', id: row.state.capture_id, to: status, ...detail});
 }
 function writable(row: CaptureRow) {
@@ -257,9 +258,9 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
         state.retakes[photo.key]=row.replacements[photo.key] ?? 0;
       }
     }
-    row.version++;
+    row.version++; row.updated_at=new Date(deps.now()).toISOString();
     const body=view(row);
-    captures.set(capture_id,row);
+    captureRows.set(capture_id,row);
     log.event('state.change',{entity:'capture',id:capture_id,to:row.status,kind:result.kind});
     return body;
   } catch (error) {
@@ -283,8 +284,9 @@ export const handlers: Record<string, Handler> = {
     }
     const id=ctx.user_id==='usr_8f2k' && !exampleOpened ? open.id : `cap_${++captureNumber}`;
     if (id===open.id) exampleOpened=true;
-    const row:CaptureRow={user_id:ctx.user_id!,version:1,state:initial(ctx.body,id),status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined};
-    captures.set(id,row);
+    const state=initial(ctx.body,id), created_at=new Date(deps.now()).toISOString();
+    const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined};
+    captureRows.set(id,row);
     ctx.log.event('state.change',{entity:'capture',id,to:row.status});
     return {status:201,body:view(row)};
   }),

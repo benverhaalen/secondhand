@@ -84,7 +84,7 @@
           ],
           "kept": []
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 1,
         "plan": {
           "family": "apparel",
@@ -469,7 +469,7 @@
               "tag"
             ]
           },
-          "created_at": "2026-11-15T03:50:00Z",
+          "created_at": "2026-11-15T03:50:00.000Z",
           "version": 2,
           "plan": {
             "family": "apparel",
@@ -795,7 +795,7 @@
             "tag"
           ]
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 3,
         "plan": {
           "family": "apparel",
@@ -1041,7 +1041,7 @@
               "tag"
             ]
           },
-          "created_at": "2026-11-15T03:50:00Z",
+          "created_at": "2026-11-15T03:50:00.000Z",
           "version": 4,
           "plan": {
             "family": "apparel",
@@ -1351,7 +1351,7 @@
             "back"
           ]
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 5,
         "plan": {
           "family": "apparel",
@@ -1676,7 +1676,7 @@
             "back"
           ]
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 5,
         "plan": {
           "family": "apparel",
@@ -2003,7 +2003,7 @@
           ],
           "kept": []
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 1,
         "plan": {
           "family": "apparel",
@@ -2327,7 +2327,7 @@
             "tag"
           ]
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 4,
         "plan": {
           "family": "apparel",

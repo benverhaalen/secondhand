@@ -8,11 +8,12 @@ import { handlers, manifest, resetCaptures } from './captures.ts';
 
 const prefixes = ["captures"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
+const exampleCreatedAt = (examples.find(e => e.name === 'captures.open')!.response as {created_at:string}).created_at;
 beforeEach(async t => {
   resetCaptures();
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
-  deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
+  deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.parse(exampleCreatedAt);
   const e = examples.find(e => t.name.startsWith(e.name + ':'));
   const name = e?.name ?? (t.name.startsWith('capture reconnect:') ? 'captures.finish' : '');
   if (['captures.set_type','captures.finish','captures.answer','captures.refuse','captures.generate'].includes(name)) {
@@ -251,7 +252,7 @@ test('T-shirt walks through routes twice with deterministic bodies', async t => 
   t.diagnostic(`capture.route.questions T-shirt=${first.questions}`);
 });
 
-async function askingCapture() {
+async function askingCapture(): Promise<CaptureBody> {
   let response=await requestCapture('POST /v1/captures',openInput);
   let capture=await response.json();
   response=await requestCapture(patchEndpoint,{version:capture.version,type:'apparel'}); capture=await response.json();
@@ -290,7 +291,7 @@ test('not_read tag allows two retakes then asks size without a proposal', async 
   }
 });
 
-type CaptureBody = {id:string;version:number;state:string;plan:ReturnType<typeof plan>};
+type CaptureBody = {id:string;item_id:string;version:number;state:string;created_at:string;plan:ReturnType<typeof plan>};
 async function bodyOf(response: Response): Promise<CaptureBody> {
   assert.ok(response.status < 300, JSON.stringify(await response.clone().json()));
   const body = await response.json();
@@ -302,6 +303,31 @@ function job(result: unknown, user = 'usr_8f2k', id = 'cap_3n9q'): CaptureBody {
   return (capturesApi.applyJobResult as (user:string,id:string,result:unknown)=>CaptureBody)(user,id,result);
 }
 const fieldOf = (capture:CaptureBody, field:string) => capture.plan.fields.find(f=>f.field===field)!;
+
+test('new capture rows are captured, use deterministic timestamps, and updates preserve creation time', async () => {
+  resetCaptures();
+  let now = Date.parse('2026-11-15T12:00:00.000Z');
+  deps.now = () => now;
+  const opened = await bodyOf(await requestCapture('POST /v1/captures',{mode:'shots',purpose:'sell'}));
+  const row = capturesApi.captureRows.get(opened.id);
+  assert.ok(row);
+  assert.equal(row.data,'captured');
+  assert.equal(row.created_at,'2026-11-15T12:00:00.000Z');
+  assert.equal(row.updated_at,row.created_at);
+  const createdAt = row.created_at;
+  now = Date.parse('2026-11-15T12:01:00.000Z');
+  await requestCapture(patchEndpoint,{version:opened.version,type:'apparel'});
+  const updated = capturesApi.captureRows.get(opened.id);
+  assert.ok(updated);
+  assert.equal(updated.created_at,createdAt);
+  assert.equal(updated.updated_at,'2026-11-15T12:01:00.000Z');
+});
+
+test('seeded capture row is marked as example data', () => {
+  const seeded = capturesApi.captureRows.get('cap_3n9q');
+  assert.ok(seeded);
+  assert.equal(seeded.data,'example');
+});
 const identify = (set:unknown[], action = 'confirm') => ({kind:'identify',action,set});
 const product = {product_id:'pr_table',family:'furniture',brand:'IKEA',model:'LACK',c:.98,dimensions:{width:55,depth:55,height:45}};
 const studioResult = {kind:'studio_plan',plan:{kind:'tee',asks:[{type:'flaw',text:'Show the mark.',zone:'hem',kind:'stain'}]}};
