@@ -60,6 +60,7 @@
   { "id": "L50", "kind": "judge", "fail": "Fail if a view shows a black pill on a card that is not on the field, unless that card's clock is under 60 minutes, or shows two black pills in one card." },
   { "id": "L51", "kind": "judge", "fail": "Fail if a tagline other than \"Your second hand, for everything secondhand.\" appears, or that line sits beside the wordmark.", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "L52", "kind": "ben" },
+  { "id": "L53", "kind": "judge", "fail": "Fail if something the agent did on its own is shown with a black pill or the field, a decision that asks is shown as done, a locked kind offers Always do this, or any screen or post says in words that a person decides.", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "A11", "kind": "judge", "fail": "Fail if a stuck listing's photo loses its color, a standing other than Hot or Stuck gets a color, or Hot shows without the fact that earned it.", "media": ["app", "web", "post"] },
   { "id": "A12", "kind": "judge", "fail": "Fail if the gradient sits on a card other than the first one that needs the person (a decision with a clock, nearest deadline first), or on a failed or news card." },
   { "id": "A13", "kind": "check", "by": "picks:L47" },

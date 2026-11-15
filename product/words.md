@@ -966,3 +966,7 @@ Ben, on the round 11 picks page, saved 2026-11-15 03:37 UTC; he wrote "done with
 
 **Overall.**
 > align on ui. focus on creating the basics and examples of great and bad ui practices and all those ways of really greatly creating ui or design under one brand and defining the brand in a human and agent readable way and interpretable way. also for the ui loop, the image ideation portion should be about screen organization under the design family rules and then the agent uses the brand system to recreate it and it notices if it should or shouldn't create new ones. it thinks very intentionally across what is needed in each thing
+
+## 2026-11-15 human in the loop is a decision, not a line
+Ben, thread "Set the secondhand brand identity", 2026-11-15 04:12 UTC, after the brand thread planned to add "a human always decides" to the brand's idea and voice. Before it, at 04:04 in the project chat: "also we should ensure to design around human in the loop to show it off as central to our product in the end".
+> dont use the quote a human always decides use it as a decision when navigating when to hand off to human vs agent.

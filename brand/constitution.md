@@ -115,6 +115,12 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 2. The first decision in a view, the one due soonest, sits on the field and has the black pill.
 3. Every other decision in the view leads with the light fill. It gets a black pill in two cases: its clock is under 60 minutes, or the first decision is answered and it moves up to the field.
 4. A sheet, a full-screen moment and the bar at the foot of a page each count as a view of their own.
+
+**Who acts, and how it looks.** Whether the agent acts or hands a thing to the person is decided in one place, [spec/product.md, Who may act](../spec/product.md#5-who-may-act): every decision kind is `auto`, `ask` or `locked`, and three unedited approvals offer "Always do this". The brand does not decide who acts. It gives each mode one look, so the hand-off is seen in what the screen does, never said in a line (Ben, [human in the loop is a decision](../product/words.md#2026-11-15-human-in-the-loop-is-a-decision-not-a-line): "use it as a decision when navigating when to hand off to human vs agent"; L53):
+1. `auto`: shown as done, in the past tense, with Undo where [Undo](../spec/product.md#undo) allows it. No black pill and no field.
+2. `ask`: a decision card with its options. The black pill follows the rule above.
+3. `locked` and the kinds never promoted (a price below your floor, a trade): the same card, which never offers "Always do this".
+4. A promotion is shown once, when it is offered, with the three approvals it rests on one tap away.
 - Boundary: never red, never on the field in anything but black, never two black pills side by side.
 
 **C5. Platform logos, not names.** Where a marketplace is meant, its real logo is shown, from [assets/platforms/](../assets/platforms/). Ben, 19:59.
@@ -375,7 +381,7 @@ How secondhand sounds, in every medium and language. The rules for app strings a
 
 1. **Plain words a person would say across a table.** If a stranger could not say what a line means back to you, rewrite it (E3).
 2. **Numbers mean something.** "Similar ones sold for $36 to $52", not "n=41". "You keep $46.95", not "Net: 46.95".
-3. **No chatter.** No greetings, motivational lines, "AI-powered", "seamless", "unlock". A feeling is carried by the design, never stated (copy.md C7). The brand has one line, and no other tagline: "Your second hand, for everything secondhand." (Ben, [round 11](../product/words.md#2026-11-15-round-11-picks); L51). It stands alone as a sentence, never beside the wordmark (C1). Where it goes is an agent proposal: the website's first screen, a store listing, a deck's opening slide, a post, and the first screen a new person sees in the app. It is on no other app screen.
+3. **No chatter.** No greetings, motivational lines, "AI-powered", "seamless", "unlock". A feeling is carried by the design, never stated (copy.md C7). That a person decides is shown by who acts on each screen (C4, Who acts), never written as a line such as "a human always decides". The brand has one line, and no other tagline: "Your second hand, for everything secondhand." (Ben, [round 11](../product/words.md#2026-11-15-round-11-picks); L51). It stands alone as a sentence, never beside the wordmark (C1). Where it goes is an agent proposal: the website's first screen, a store listing, a deck's opening slide, a post, and the first screen a new person sees in the app. It is on no other app screen.
 4. **Short.** Headlines under 8 words, captions under 2 sentences, buttons a verb and an object.
 5. **No exclamation marks, no em dashes and no emoji**, in any language. Ben: "ban all emojis" ([words](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis)).
 6. **Never invent** a number, a customer, a quote or a result. A slot without a source stays visibly empty.
