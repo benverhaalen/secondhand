@@ -2186,7 +2186,7 @@
   "capture_effort_number_with_unit": 3,
   "capture_effort_text": 3,
   "capture_effort_shot": 4,
-  "capture_part_size_slack": 0.1
+  "capture_part_size_slack": 0.03
  },
  "components": {
   "electronics.desktops": {

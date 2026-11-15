@@ -18,12 +18,14 @@ const desktop=()=>table.components['electronics.desktops'].parts;
 const slack=()=>bound(memoryStore(),'capture_part_size_slack');
 const read=(line:string,field='storage')=>readParts([{line,confidence:.93}],desktop().filter(row=>row.field===field),slack());
 const fact=(field:string,value:unknown,confidence=.93)=>({field:`part.${field}`,value,source:'label',confidence});
+test('F17: storage size matching uses the 0.03 prior',()=>assert.equal(slack(),0.03));
 for(const [line,value] of [
   ['Storage   123 GB used of 476 GB',512],
   ['Storage   1.82 TB',2000],['Storage   476.9 GB',512],
   ['Storage   2 TB',2000],['Storage   465.7 GB',500],
+  ['Storage   500.07 GB',500],['Storage   238.4 GB',256],
 ] as const)test(`F17: ${line} reads ${value}`,()=>assert.deepEqual(read(line),[fact('storage',value)]));
-test('300 GB and 447 GB are dropped beyond the 0.1 size slack',()=>{
+test('300 GB and 447 GB are dropped beyond the 0.03 size slack',()=>{
   assert.deepEqual(read('Storage   300 GB'),[]);assert.deepEqual(read('Storage   447 GB'),[]);
 });
 test('size slack is supplied by the caller',()=>assert.deepEqual(readParts([{line:'Storage 476.9 GB',confidence:.95}],desktop(),0),[]));
@@ -65,10 +67,21 @@ test('Device name and Product ID lines never appear in output',()=>{
 test('the last of clause determines capacity even with more than one of clause',()=>{
   assert.deepEqual(read('Storage 123 GB used of 256 GB of 2 TB'),[fact('storage',2000)]);
 });
-test('GB enum values use the smallest size above the reading regardless of row order',()=>{
+test('GB enum values use the nearest ratio regardless of row order',()=>{
   const row={...desktop().find(row=>row.field==='storage')!,values:[2048,512,2000,128]};
   assert.deepEqual(readParts([{line:'Storage 1.82 TB',confidence:.95}],[row],slack()),[fact('storage',2000,.95)]);
 });
+test('equal ratios between the two tries prefer the as-printed size regardless of row order',()=>{
+  const row={...desktop().find(row=>row.field==='storage')!,values:[128*1.073741824,128]};
+  assert.deepEqual(readParts([{line:'Storage 128 GB',confidence:.95}],[row],0),[fact('storage',128,.95)]);
+});
+test('size slack includes its ratio boundary and drops a reading just outside it',()=>{
+  const row={...desktop().find(row=>row.field==='storage')!,values:[100]};
+  const lines=[{line:'Storage 125 GB',confidence:.95}];
+  assert.deepEqual(readParts(lines,[row],.25),[fact('storage',100,.95)]);
+  assert.deepEqual(readParts(lines,[row],.249),[]);
+});
+test('a zero size cannot match a positive listed capacity',()=>assert.deepEqual(read('Storage 0 GB'),[]));
 test('trademark and CPU words are removed while interior model numbers remain',()=>{
   assert.deepEqual(read('Processor Intel® Core™ i7-10700 Processor CPU @ 2.90GHz 2.90 GHz','processor'),[fact('processor','Intel Core i7-10700')]);
 });

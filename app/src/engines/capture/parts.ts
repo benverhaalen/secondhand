@@ -17,8 +17,15 @@ function valueFor(text: string, row: FieldRow, slack: number): string|number|und
     const match=rest.match(/\b(\d+(?:\.\d+)?)\s*(GB|TB)\b/i);
     if(!match)return undefined;
     const reading=Number(match[1])*(match[2].toUpperCase()==='TB'?1000:1);
-    const size=row.values?.filter((value):value is number=>typeof value==='number' && value>=reading).sort((a,b)=>a-b)[0];
-    return size!==undefined && reading>=size*(1-slack) ? size : undefined;
+    let size:number|undefined,nearest=Infinity;
+    for(const attempt of [reading,reading*1.073741824]) {
+      for(const value of row.values ?? []) {
+        if(typeof value!=='number')continue;
+        const ratio=Math.max(attempt,value)/Math.min(attempt,value);
+        if(ratio<nearest) {size=value;nearest=ratio;}
+      }
+    }
+    return nearest<=1+slack ? size : undefined;
   }
   if(row.type==='number' && row.unit==='W') {
     const match=text.match(/\b(\d+(?:\.\d+)?)\s*W\b/i);

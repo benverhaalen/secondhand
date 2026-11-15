@@ -38,7 +38,15 @@ const walkHashes: Record<string,string> = {
   "E Chair": "fb3743b7e885a904d2e481b192c634259739ef6fb4dd502958796190cc5e38d6",
   "F Three T-shirts": "68c07c16d84f061b86821c914574dc5d5e8de4d8f57ebf95382c4a34d52eb7e1",
   "G1 Close table variants": "b03ecbb39c9cf59d9a2a35f3aba202bb52f73172f718831344e487e3ae4d3724",
-  "G2 Close table variants": "8499c52ce6cf93b99e84ab12bed322666b6271969b06703da7e7ced12124b496"
+  "G2 Close table variants": "8499c52ce6cf93b99e84ab12bed322666b6271969b06703da7e7ced12124b496",
+  // First baseline, recorded in F17 round 3.
+  "H Prebuilt desktop": "1072f280caad43f52c46746ea4b241161c7eb4ca7209bc09a4770297017fe1c0",
+  // First baseline, recorded in F17 round 3.
+  "I Custom desktop no screen": "d5cc438f5379f6cf728b0ff2a51984d38a3072c50e6c5217894dde1097019ab4",
+  // First baseline, recorded in F17 round 3.
+  "I Custom desktop screen read": "1b4f52c1addaf115f9b0dbf6796e799a44f77088eb99684e378121640a1d98f4",
+  // First baseline, recorded in F17 round 3.
+  "J Laptop": "d1fee28d58f3cdb38df2c9a81cc6f229d8388fae46783577280080a27dad5fb9"
 };
 test('without candidate detail every walk preserves its entire pinned plan sequence', () => {
  for(const fixture of walks) {
@@ -47,7 +55,9 @@ test('without candidate detail every walk preserves its entire pinned plan seque
    const facts=s.facts;Object.assign(s,event.patch);s.facts={...facts,...event.patch.facts};
    plans.push(plan(s,params));
   }
-  assert.equal(createHash('sha256').update(JSON.stringify(plans)).digest('hex'),walkHashes[fixture.name],fixture.name);
+  const serialized=JSON.stringify(plans,fixture.name==='D Phone' ? (key,value:unknown)=>key==='kind' && value==='phones' ? 'phones_laptops' : value : undefined);
+  assert.equal(createHash('sha256').update(serialized).digest('hex'),walkHashes[fixture.name],fixture.name);
+  if(fixture.name==='D Phone')for(const p of plans)assert.equal(p.kind,'phones');
  }
 });
 test('required site rows bypass a zero cap while optional, unlinked and capture-table rows do not', () => {
