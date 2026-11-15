@@ -199,7 +199,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: VoiceOver labels exist on icon-only controls and state pills, and a pill reads as "Live on eBay", not "green dot".
 - [ ] Block: the layout holds at the largest Dynamic Type size.
 - [ ] Block: state follows brand Art. 5's States rule (a word or an icon, never color alone). No dark ground has OKLCH hue 70 to 115 with L under .5: it reads brown.
-- [ ] Flag: renders checked under simulated protanopia and deuteranopia (Machado 2009), with two state colors in one view at least .056 apart in Oklab. Ben is color blind but asked that it not weigh too much ([02:18](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §6](../research/today/ben/today-wants-alerts-and-clickability.md#6-color-blindness); [02:59](words.md#2026-11-15-color-blindness-weighed-lightly): "dont weight to colorblindness too much"), so a near pair is a reason to write down, not a stop.
+- [ ] Flag: renders checked under simulated protanopia and deuteranopia (Machado 2009), with two state colors in one view at least .056 apart in Oklab. Ben is color blind but asked that it not weigh too much ([02:18](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §6](../research/today/ben/today-wants-alerts-and-clickability.md#6-color-blindness); [02:59](words.md#2026-11-15-do-not-weight-color-blindness-too-much): "dont weight to colorblindness too much"), so a near pair is a reason to write down, not a stop.
 
 ### Character
 - [ ] Block: tokens only, with the real fonts and Hugeicons rendered. The check is on the rendered result, not the CSS.
