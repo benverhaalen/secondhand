@@ -897,3 +897,7 @@ Nate, build session (orchestrator), 2026-11-14 about 22:00 Central, asked "Which
 ## 2026-11-15 the text weight is 500
 Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:23 UTC, after a side by side of Book, Medium on titles and a weight near 450. Recorded by the brand thread, which owns Article 6.
 > i think with font weights i like 500 unless you have a researched back reason to choose 450. what do you think
+
+## 2026-11-15 text at 500, and a pill behind the current tab
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:45 UTC. Just before it he picked "A pill behind the icon" on the decision card "Pick how the tab bar shows which tab you're on", over keeping round 10's filled icon with dimmer others, and a filled icon with a dot. At 03:23 he had written "i think with font weights i like 500 unless you have a researched back reason to choose 450".
+> also ensure font goes 500
