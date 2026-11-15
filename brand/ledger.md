@@ -51,13 +51,13 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 
 ## Open (Ben picks; round 8)
 
-Round 7 picks are recorded in [words.md](../product/words.md#2026-11-15-round-7-picks). Ben asked for this round without image generation first: colors, gradients and typefaces.
+Round 7 picks are recorded in [words.md](../product/words.md#2026-11-15-round-7-picks). Ben asked for this round without image generation first: colors, gradients and typefaces. The options are drawn in code on the [picks page](https://claude.ai/artifact/7a98Pc4VWDoarvKACEhvVP); the font sheets are in [explore/round-8/inputs/](explore/round-8/inputs/). QOVES's type settings, read from its stylesheets, are in [explore/round-8/qoves-type.md](explore/round-8/qoves-type.md).
 
 | # | Decision | Options | Leaning |
 |---|---|---|---|
-| R11 | The wordmark's face | A: Marist Book, no Clofie. B: Clofie SemiBold. C: Clofie Regular | open |
+| R11 | The wordmark and the type | A: Neue Montreal for everything, as QOVES sets it, no Clofie. B: the same with a Clofie SemiBold wordmark. C: the same with a Clofie Regular wordmark. D: Marist for the wordmark and headings, as in the last kit | open |
 | R12 | The palette | A: as now. B: lighter, the same hues. C: a wider set of hues under one rule | B (agent) |
-| R13 | What a gradient may be | A: one signature gradient only. B: a rule, any neighbors on the color wheel at the same lightness. C: the rule, and a gradient per state | B (agent) |
+| R13 | What a gradient may be | A: one gradient, sky to lime, always. B: a set by rule, where sky to lime is home and a big moment gets its own three neighbors. C: one gradient that travels slowly through the allowed colors | C (agent) |
 | R14 | Depth on the black button | A: near-black, flat. B: lit from above with a soft shadow. C: a faint glow | B (agent) |
 | R15 | The selected tab | A: filled icon only. B: a faint glow under it. C: a soft shadow | open |
 | R16 | The item in a feed | A: ruled row. B: a hairline box. C: a gray box | open |
