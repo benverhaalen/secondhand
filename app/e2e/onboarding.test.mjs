@@ -16,7 +16,7 @@ const STATES = {
   failed: { path: '/onboarding?state=failed', shows: ['Couldn’t sign in', 'Retry'], state: 'failed' },
   offline: { path: '/onboarding?state=offline', shows: ['Waiting for signal', 'Continue with Apple'], state: 'offline' },
   email: { taps: ['signin-email'], shows: ['Send code'] },
-  code: { taps: ['signin-email', 'signin-email-send'], fill: true, shows: ['Sent to sam@example.com', 'Continue'] },
+  code: { taps: ['signin-email', 'signin-email-send'], fill: true, shows: ['Sent to sam@example.com', 'Sign in'] },
   sites: { path: SIGNED, shows: ['1 of 3', 'Your sites', 'Link the ones you sell on. Each one is optional.', 'Not linked', 'Skip'], state: 'new' },
   'sites-loading': { path: SIGNED, taps: ['link-ebay'], shows: ['Signing in'], state: 'loading' },
   'sites-typical': { path: SIGNED, taps: ['link-ebay'], wait: 1600, shows: ['Linked', 'Continue'], state: 'typical' },

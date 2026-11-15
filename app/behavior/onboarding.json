@@ -13,7 +13,7 @@
   "states": [
     {
       "state": "new",
-      "shows": "the wordmark, one line on what the app does, and three choices: Continue with Apple, Continue with Google, Continue with email; no Skip, the step cannot be skipped"
+      "shows": "the wordmark, Sign in, and three choices: Continue with Apple, Continue with Google, Continue with email; no Skip, the step cannot be skipped"
     },
     {
       "state": "loading",
@@ -33,7 +33,7 @@
     },
     {
       "state": "code",
-      "shows": "the address the code went to, a 6-digit field, and Continue"
+      "shows": "the address the code went to, a 6-digit field, and Sign in"
     },
     {
       "state": "sites",
