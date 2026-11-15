@@ -559,3 +559,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate deduce how the others work instead of saying it was not found
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the agent said parts of how Dupe.com and ThriftX work were not found.
 > I just believe that while you think it failed, its because you are stupidly not following what we have clearly searched and can logically deduce would work. We've seen how information is crawled and found on other sites, like im sure dupe.com is powered by but it takes you reing to understnad that entirely.
+
+## 2026-11-14 nate a harness api on jev ultrafast or firecrawl, a pipeline on every event
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> It should be easy, we basically create a harness api, powered by jev ultrafast or firecrawl, to efficiently grab from our prestablished and optimally wired sites. every app event, databricks action, etc. Has a pipeline attached to an agent driving the platform. Then for the aggregated market intelligence, we utilize the systems we build, or if we can't which we defintily should be able to, we should just utilzie treg or something
