@@ -13,8 +13,6 @@ env:
 - extendedWaitUntil:
     visible: "Post from \\$225 on 2 sites"
     timeout: 30000
-- assertVisible: "Searched by model: specs in the title"
-- assertVisible: "Nearby, picks up today: pickup price"
 - assertVisible: ".*\\$200.40.*"
 # Untick a site: the count follows.
 - tapOn: { id: "post-facebook" }

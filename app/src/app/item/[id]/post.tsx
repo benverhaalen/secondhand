@@ -22,7 +22,7 @@ import { ListingPreview } from '@/ui/parts/listing-preview';
 import { RouteSheet } from '@/ui/parts/route-sheet';
 import { Switch } from '@/ui/parts/switch';
 import { usd, youKeep, type Item, type Site, type World } from '@/demo';
-import { AUDIENCE, LISTING_FORMS, listingTitle } from '@/demo/listing-forms';
+import { LISTING_FORMS, listingTitle } from '@/demo/listing-forms';
 import { hasStudio, photo as demoPhoto, studio, type Look } from '@/demo/photos';
 import { useScreen } from '@/demo/screen';
 import * as M from '@/item/model';
@@ -52,7 +52,7 @@ export default function ItemPost() {
   if (!found) {
     return (
       <RouteSheet name="item-post" state="failed" skip={skip('failed')} title="Preview" onClosed={() => router.back()}>
-        <EmptyState title="Can’t open this item" line="It was deleted, or it didn’t load."
+        <EmptyState title="Can’t open this item" line={state === 'failed' ? 'This item didn’t load' : 'This item is no longer available'}
           action={state === 'failed' ? { id: 'post-retry', label: 'Retry', onPress: () => router.replace(`/item/${id}/post` as Href) } : undefined} />
       </RouteSheet>
     );
@@ -62,7 +62,7 @@ export default function ItemPost() {
   if (m === 'sold' || m === 'done') {
     return (
       <RouteSheet name="item-post" state="empty" skip={skip('empty').replace('empty: a preview is of an item that exists; ', '')} title="Preview" onClosed={() => router.back()}>
-        <EmptyState title="Sold. Nothing to post" line="It sold, so there is nothing to post." />
+        <EmptyState title="Sold. Nothing to post" />
       </RouteSheet>
     );
   }
@@ -175,7 +175,7 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
           return (
             <Stack key={s.site} gap="tight">
               <ListingPreview site={s.site} photo={cover} off={!isOn}
-                title={own[s.site]?.title ?? listingTitle(s.site, item.title, item.attributes)} audience={AUDIENCE[s.site]} price={priceOn(s.site)} keep={youKeep(s.site, priceOn(s.site))}
+                title={own[s.site]?.title ?? listingTitle(s.site, item.title, item.attributes)} price={priceOn(s.site)} keep={youKeep(s.site, priceOn(s.site))}
                 photos={`${shown < photos ? `First ${shown} of ${photos} photos` : `${photos} ${photos === 1 ? 'photo' : 'photos'}`}, ${form.cover === '1:1' ? 'square' : 'cropped taller'}${look === 'ai' ? ', AI cover marked' : ''}${form.title === 'description_line_1' ? '. The name opens the description' : ''}`}
                 needs={missing && isOn ? <Line><Blank id={`needs-${s.site}`} name={missing.name} value={blank} onChange={setBlank} look="body" /></Line> : undefined}
                 toggle={<Switch id={`post-${s.site}`} label="Post here" on={isOn} disabled={status === 'working'} onChange={o => setOn(x => (o ? [...x, s.site] : x.filter(y => y !== s.site)))} />} />
@@ -198,7 +198,7 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
                     <Pill id={`retry-${s.site}`} label="Retry" icon="refresh" onPress={() => setFailed(f => f.filter(x => x !== s.site))} />
                     <Pill id={`skip-${s.site}`} label="Skip this site" kind="second" onPress={() => { setFailed(f => f.filter(x => x !== s.site)); setOn(x => x.filter(y => y !== s.site)); }} />
                   </Line>
-                  <List><ActionRow id={`myself-${s.site}`} label="Post it myself" line="Opens the site to post it there"
+                  <List><ActionRow id={`myself-${s.site}`} label="Post it myself"
                     onPress={() => { const url = item.listings.find(l => l.site === s.site)?.url; if (url) openSite(url); }} /></List>
                 </Stack>
               ) : null}
