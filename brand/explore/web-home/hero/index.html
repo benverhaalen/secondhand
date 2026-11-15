@@ -35,7 +35,7 @@
     </header>
     <div class="wall" aria-hidden="true"><div class="cols"></div></div><div class="tint" data-field aria-hidden="true"></div>
     <div class="copy center">
-      <h1 class="hero-t">Your second hand, for everything <span class="hl-lock"><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg><span class="hl">secondhand</span><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg></span></h1>
+      <h1 class="hero-t">Your second hand,<br> for everything <span class="hl-lock"><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg><span class="hl">secondhand</span><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg></span></h1>
       <p class="lead">Take one photo. It's priced, posted on five sites and sold for you.</p>
       <div class="act"><a class="pill" href="#how" data-go>See how it works</a><div class="logos" role="list" aria-label="Posts to">
         <span class="site" role="listitem"><img src="../../../../assets/platforms/square/ebay.png" alt="eBay"></span>
@@ -44,6 +44,21 @@
         <span class="site" role="listitem"><img src="../../../../assets/platforms/square/mercari.png" alt="Mercari"></span>
         <span class="site" role="listitem"><img src="../../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace"></span>
       </div></div>
+    </div>
+  </section>
+  <!-- The photo proof (Ben, 07:51 and 08:14: "how do we prove in some respect it doesnt"). One real tee, taped, measured
+       three ways by jobs/studio/proof.py; the numbers are in its proof.json and product/numbers.md. The claim is the check's,
+       never the AI's: the raw draw came out narrow and the check set it from the tape (research/studio/ben/measure-proof.md). -->
+  <section class="tape" id="proof">
+    <div class="wrap">
+      <h2 class="section-t center">Measured before it posts</h2>
+      <p class="lead center">Every AI photo is measured against your tape before it posts. If it can't match, your real photo posts instead.</p>
+      <div class="tape-row">
+        <figure><img src="../../../../research/studio/ben/slides/proof/20261115-0836/marquette-tee/photo.jpg" alt="The tee as photographed, laid flat, with the tape line drawn on" data-photo><figcaption><span class="feature-t v">21.25 in</span><span class="second">Your tape, pit to pit</span></figcaption></figure>
+        <figure><img src="../../../../research/studio/ben/slides/proof/20261115-0836/marquette-tee/drawn.jpg" alt="The AI's redraw of the tee as the model returned it, with the measured line drawn on" data-photo><figcaption><span class="feature-t v">18.6 in</span><span class="second">The AI's draw, 2.7 in narrow</span></figcaption></figure>
+        <figure><img src="../../../../research/studio/ben/slides/proof/20261115-0836/marquette-tee/final.jpg" alt="The photo that posts, with the measured line drawn on" data-photo><figcaption><span class="feature-t v">21.1 in</span><span class="second">What posts, set from your tape</span></figcaption></figure>
+      </div>
+      <p class="second center note">One tee so far. Across three runs, every photo that posted landed within 1.2% of the tape.</p>
     </div>
   </section>
   <section class="how" id="how">

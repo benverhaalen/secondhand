@@ -38,6 +38,15 @@ header { color: var(--ink); }
 :root { --tile: 168px; --soft: 3px; --dim: .62; --veil: .62; }
 @media (max-width: 760px) { :root { --tile: 104px; --soft: 2px; } }
 
+/* the photo proof (.tape, as .proof is the numbers grid in site.css): the tape against three pictures of one tee, the number on top of each, no field near the photos (C2) */
+.tape .lead { margin-top: var(--s-6); }
+.tape-row { margin-top: var(--s-8); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-6); }
+.tape figure { display: grid; gap: var(--s-4); align-content: start; }
+.tape img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--r-photo); }
+.tape figcaption { display: grid; gap: var(--s-1); }
+.tape .v { font-variant-numeric: tabular-nums; }
+.tape .note { margin-top: var(--s-7); }
+@media (max-width: 760px) { .tape-row { grid-template-columns: minmax(0, 1fr); gap: var(--s-7); } }
 .how { min-height: 100svh; display: grid; place-items: center; background: var(--page); }
 
 /* the open: the hands meet, part, and the wordmark is between them */
