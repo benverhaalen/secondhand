@@ -61,16 +61,16 @@ function gradientKind(el, pal) {
 
 // What is behind a piece of text, as one opaque color where that can be known.
 function ground(t, view, pal) {
-  let tint = null;
+  let tint = null, wash = false;
   for (const g of t.ground) {
     if (g.kind === 'photo') return { kind: 'photo' };
-    if (g.kind === 'gradient') { const el = view.els[g.el], kind = gradientKind(el, pal); if (kind === 'wash') break; return { kind, el }; }
+    if (g.kind === 'gradient') { const el = view.els[g.el], kind = gradientKind(el, pal); if (kind === 'wash') { wash = true; break; } return { kind, el }; }
     const c = rgba(g.color); if (!c) return { kind: 'unknown', raw: g.color };
     if (c[3] >= .99) return { kind: 'fill', raw: g.color, color: tint ? over(tint, c) : c, name: tint ? null : pal.name(g.color) };
     tint = tint ? [...over(tint, c), 1 - (1 - tint[3]) * (1 - c[3])] : c;
   }
   const page = pal.of('page') ?? [255, 255, 255, 1];
-  return { kind: 'fill', color: tint ? over(tint, page) : page, name: tint ? null : 'page' };
+  return { kind: 'fill', color: tint ? over(tint, page) : page, name: tint ? null : 'page', wash };
 }
 
 function checkView(view, ctx) {
@@ -111,12 +111,18 @@ function checkView(view, ctx) {
     if (!name) E('B7', q, `is colored ${t.color}, which is not a color in tokens.css: use var(--token)`);
     else if (!TEXT_INK.has(name)) E('B7', q, `is --${name} text: color is a ground, never ink. Text is ink, the second ink, or white on black, brick and the deep steps (Art. 5.1)`);
     // B6 what the text sits on
+    // Over a gradient there is no one color behind the text, so contrast is read from the pixels under it, at the worst point.
+    const lum = c => .2126 * lin(c[0]) + .7152 * lin(c[1]) + .0722 * lin(c[2]), ratio = (a, b) => (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+    const sampled = t.under && color && g.kind !== 'photo' && !(t.disabled && name === 'ink-disabled');
+    if (sampled) { const a = color[3] * (t.opacity ?? 1), ends = [t.under.lo, t.under.hi], inside = a >= .99 && lum(color) > lum(ends[0]) && lum(color) < lum(ends[1]);
+      const worst = inside ? 1 : Math.min(...ends.map(p => ratio(lum(over([color[0], color[1], color[2], a], p)), lum(p)))), need = g.wash ? 7 : t.size >= 24 ? 3 : 4.5;
+      if (worst < need) E('B6', q, `has ${worst.toFixed(1)}:1 contrast at its worst point over ${g.wash ? 'the wash' : g.kind === 'field' ? 'the field' : 'the gradient'}; it needs ${need}:1 (Art. 5.1${g.wash ? ', Art. 5 The wash' : ''})`); }
     if (g.kind === 'photo') E('B6', q, 'sits on a photo: text over a photo goes on the field or a white bar, in black (Art. 5.1)');
     else if (g.kind === 'field' || g.kind === 'built') { const ok = ['on-field', 'on-field-2'].map(pal.raw).filter(Boolean);
       if (ok.length ? !ok.includes(t.color) : !['ink', 'on-color'].includes(name)) E('B6', q, `is --${name ?? 'a raw color'} on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)`); }
     else if (g.kind !== 'fill' || g.name && hueOf(g.name)) { if (name && !['ink', 'on-color'].includes(name) || name === 'ink' && pal.of('ink')?.[0] > 128) E('B6', q, `is --${name ?? 'a raw color'} on ${g.kind === 'fill' ? `--${g.name}` : g.kind === 'tag' ? 'a state tag' : 'a gradient'}: text on a color is --on-color, black in light and dark (Art. 5.1)`); }
     if (name?.startsWith('on-field') && g.kind !== 'field' && g.kind !== 'built') E('B7', q, `is --${name} off the field: that ink is for text on the field (Art. 5.1)`);
-    else if (g.kind === 'fill' && color && !(t.disabled && name === 'ink-disabled')) { const c = contrast(hex(over([color[0], color[1], color[2], color[3] * (t.opacity ?? 1)], g.color)), hex(g.color)), need = t.size >= 24 ? 3 : 4.5;
+    else if (g.kind === 'fill' && color && !sampled && !(t.disabled && name === 'ink-disabled')) { const c = contrast(hex(over([color[0], color[1], color[2], color[3] * (t.opacity ?? 1)], g.color)), hex(g.color)), need = t.size >= 24 ? 3 : 4.5;
       if (c < need) E('B6', q, `has ${c.toFixed(1)}:1 contrast with what is behind it; it needs ${need}:1 (Art. 5.1)`); }
     // B17 on the web, text that wraps sits in a column of about 75 characters, 36 times its size (Part III)
     if (medium === 'web' && t.lines >= 2 && t.rect[2] - t.rect[0] > 36 * t.size + 1) E('B17', q, `runs ${Math.round(t.rect[2] - t.rect[0])} px wide on ${t.lines} lines at ${t.size} px: a column of text is ${Math.round(36 * t.size)} px at most, about 75 characters (Part III)`);

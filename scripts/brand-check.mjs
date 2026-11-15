@@ -126,6 +126,16 @@ async function share({ png, photos, w, h }) {
 }
 
 // Opens the output at each of the medium's canvas sizes and measures every view.
+// The darkest and the lightest pixel under each box, read from a screenshot taken with the text hidden. Runs in the page.
+async function under({ png, boxes }) {
+  const bmp = await createImageBitmap(await (await fetch(png)).blob()), c = new OffscreenCanvas(bmp.width, bmp.height), g = c.getContext('2d'); g.drawImage(bmp, 0, 0);
+  const lin = v => (v /= 255) <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4;
+  return boxes.map(([l, t, r, b]) => { const x = Math.max(0, Math.floor(l)), y = Math.max(0, Math.floor(t)), w = Math.min(bmp.width, Math.ceil(r)) - x, h = Math.min(bmp.height, Math.ceil(b)) - y; if (w < 1 || h < 1) return null;
+    const d = g.getImageData(x, y, w, h).data; let lo = null, hi = null, min = 2, max = -1;
+    for (let i = 0; i < d.length; i += 4) { const L = .2126 * lin(d[i]) + .7152 * lin(d[i + 1]) + .0722 * lin(d[i + 2]); if (L < min) { min = L; lo = [d[i], d[i + 1], d[i + 2]]; } if (L > max) { max = L; hi = [d[i], d[i + 1], d[i + 2]]; } }
+    return { lo, hi }; });
+}
+
 export async function collect(file, { medium, sheet, tokensCss, browser, cases = [], kinds = [] }) {
   const names = [...tokensCss.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].filter(m => COLOR.test(m[2].trim()) || /^var\(--/.test(m[2].trim())).map(m => m[1]);
   const views = [], stressed = [], outside = []; let colors, lengths = [], named = {}, grads = {}, fontsLoaded = true, screens = 0, scaled = false;
@@ -169,7 +179,12 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
       if (old) view.share = old.share;
       else { const clip = { x: Math.max(0, rect[0]), y: Math.max(0, rect[1]), width: Math.min(rect[2], canvas[0]), height: Math.min(rect[3], tall ? Math.ceil(rect[3]) : canvas[1]) };
         const png = `data:image/png;base64,${(await page.screenshot({ clip })).toString('base64')}`;
-        view.share = await page.evaluate(share, { png, photos: view.els.filter(e => e.photo).map(e => e.rect), w: clip.width, h: clip.height }); }
+        view.share = await page.evaluate(share, { png, photos: view.els.filter(e => e.photo).map(e => e.rect), w: clip.width, h: clip.height });
+        // Text over a gradient has no one color behind it, so its ground is read from the pixels, with the text hidden (Ben, 03:22: "how do you ensure when you layer colors whether its readable or not").
+        const over = view.texts.map((t, k) => t.ground.some(g => g.kind === 'gradient') ? k : -1).filter(k => k >= 0);
+        if (over.length) { const hide = await page.addStyleTag({ content: '*, *::before, *::after { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important; transition: none !important; }' });
+          const bare = `data:image/png;base64,${(await page.screenshot({ clip })).toString('base64')}`; await hide.evaluate(e => e.remove());
+          const got = await page.evaluate(under, { png: bare, boxes: over.map(k => view.texts[k].rect) }); over.forEach((k, j) => { view.texts[k].under = got[j]; }); } }
       if (tall) await page.setViewportSize({ width: canvas[0], height: canvas[1] });
       return { ...view, canvas, medium };
     };

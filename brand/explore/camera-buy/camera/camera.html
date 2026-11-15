@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>secondhand camera, round 2</title>
+<link rel="stylesheet" href="../../../tokens.css">
+<!-- fonts.local.css is not in git. It names the font files on this machine; without it the faces fall back. -->
+<link rel="stylesheet" href="fonts.local.css">
+<link rel="stylesheet" href="../../round-11/mock/screens.css">
+<link rel="stylesheet" href="camera.css">
+<style>
+  body { margin: 0; background: var(--gray); font: var(--w-regular) var(--t-15)/var(--lh-15) var(--font-text); }
+  .wall { display: flex; flex-wrap: wrap; gap: var(--s-6); padding: var(--s-6) var(--s-5); align-items: flex-start; }
+  .bare .wall { padding: 0; gap: 0; }
+</style>
+<body>
+<div class="wall" id="wall"></div>
+<script src="icons.js"></script>
+<script>
+// The camera in three moments: ?s=front, back or tag (with no ?s, all three side by side). &low=80 shows a saved lowest price.
+// The photos under it are generated stand-ins for the live feed (features/capture/design/feed/). The order of shots and the found fact are sample content for a jacket.
+// Motion (how the pop arrives and leaves, the point cloud, haptics, voice) is the camera motion preview's, not this still's.
+const I = n => `<svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true">${SH_ICONS[n]}</svg>`;
+const STAGES = 5;
+const MOMENTS = {
+  front: { ask: 'Show the front', done: 0, feed: 'feed-front', found: null },
+  back:  { ask: 'Now the back', done: 1, feed: 'feed-back', found: 'Carhartt', last: 'feed-front' },
+  tag:   { ask: 'Now the tag', done: 2, feed: 'feed-tag', found: null, last: 'feed-back' },
+};
+const FEED = '../../../../features/capture/design/feed/';
+
+function screen(k, low) {
+  const m = MOMENTS[k];
+  const stages = Array.from({ length: STAGES }, (_, i) => `<li data-part="stage" class="${i < m.done ? 'done' : i === m.done ? 'now' : ''}">${I('tick')}</li>`).join('');
+  return `<div class="sh fixed cam" data-view data-moment="${k}">
+    <img class="feed" src="${FEED}${m.feed}.jpg" alt="Camera view">
+    <i class="shade"></i>
+    <div class="os" data-chrome><span>9:41</span><span></span></div>
+    <div class="bar">
+      <button class="round" data-part="cam-round" aria-label="Close">${I('close')}</button>
+      <ol class="stages" aria-label="${m.done} of ${STAGES} photos taken">${stages}</ol>
+      <button class="round" data-part="cam-round" aria-label="Talk" aria-pressed="false">${I('mic')}</button>
+    </div>
+    <p class="ask" aria-live="polite">${m.ask}</p>
+    ${m.found ? `<div class="found" role="status">${m.found}<span class="dot">${I('tick')}</span></div>` : ''}
+    ${low ? `<div class="low t15">${I('lock')}Lowest $${low}</div>` : ''}
+    <div class="row">
+      ${m.last ? `<button class="last" aria-label="Last photo" style="background-image:url(${FEED}${m.last}.jpg)"></button>` : '<span></span>'}
+      <button class="shutter" aria-label="Take photo"></button>
+    </div>
+    <i class="home" data-chrome></i>
+  </div>`;
+}
+
+const q = new URLSearchParams(location.search), wall = document.getElementById('wall'), s = q.get('s');
+if (s) document.body.classList.add('bare');
+wall.innerHTML = (s ? [s] : Object.keys(MOMENTS)).map(k => screen(k, q.get('low'))).join('');
+</script>

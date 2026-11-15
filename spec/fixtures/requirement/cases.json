@@ -1,0 +1,334 @@
+{
+ "version": 1,
+ "cases": [
+  {
+   "name": "tee with only the front kept: the tag settles most",
+   "kind": "apparel",
+   "kept_views": [
+    "front"
+   ],
+   "unmet": [
+    "size_label",
+    "brand",
+    "fabric",
+    "condition"
+   ],
+   "value_at_stake": {
+    "size_label": 0.35,
+    "brand": 0.25,
+    "fabric": 0.05,
+    "condition": 0.3
+   },
+   "p_view_fills": {
+    "tag": {
+     "size_label": 0.9,
+     "brand": 0.8
+    },
+    "care_label": {
+     "fabric": 0.9
+    },
+    "flaw": {
+     "condition": 0.4
+    }
+   },
+   "bar": 0.1,
+   "facts": {
+    "condition": {
+     "state": "empty",
+     "p_preselect_right": 0.55,
+     "preselect": "good"
+    },
+    "fabric": {
+     "state": "empty",
+     "p_preselect_right": 0.6,
+     "preselect": "cotton"
+    },
+    "size_label": {
+     "state": "empty",
+     "p_preselect_right": 0.1,
+     "preselect": null
+    },
+    "brand": {
+     "state": "empty",
+     "p_preselect_right": 0.2,
+     "preselect": null
+    },
+    "sleeve_length": {
+     "state": "empty",
+     "p_preselect_right": 0.9,
+     "preselect": "short"
+    }
+   },
+   "expected": {
+    "next_view": {
+     "view": "tag",
+     "row_id": "req_apparel_size_label",
+     "worth": 0.945
+    },
+    "follow_ups": [
+     {
+      "field": "condition",
+      "preselect": "good"
+     },
+     {
+      "field": "size_label",
+      "preselect": null
+     },
+     {
+      "field": "brand",
+      "preselect": null
+     }
+    ]
+   }
+  },
+  {
+   "name": "tee with front, back, tag kept: nothing worth a view, the tag settled the label facts",
+   "kind": "apparel",
+   "kept_views": [
+    "front",
+    "back",
+    "tag"
+   ],
+   "unmet": [
+    "fabric",
+    "condition"
+   ],
+   "value_at_stake": {
+    "fabric": 0.02,
+    "condition": 0.04
+   },
+   "p_view_fills": {
+    "care_label": {
+     "fabric": 0.9
+    },
+    "flaw": {
+     "condition": 0.2
+    }
+   },
+   "bar": 0.1,
+   "facts": {
+    "size_label": {
+     "state": "settled"
+    },
+    "brand": {
+     "state": "settled"
+    },
+    "condition": {
+     "state": "empty",
+     "p_preselect_right": 0.7,
+     "preselect": "good"
+    },
+    "fabric": {
+     "state": "empty",
+     "p_preselect_right": 0.3,
+     "preselect": "cotton"
+    },
+    "sleeve_length": {
+     "state": "empty",
+     "p_preselect_right": 0.95,
+     "preselect": "short"
+    }
+   },
+   "expected": {
+    "next_view": null,
+    "follow_ups": [
+     {
+      "field": "condition",
+      "preselect": "good"
+     },
+     {
+      "field": "fabric",
+      "preselect": "cotton"
+     },
+     {
+      "field": "sleeve_length",
+      "preselect": "short"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sofa after the scan: dimensions measured, the maker mark is the view",
+   "kind": "furniture",
+   "kept_views": [
+    "scan"
+   ],
+   "unmet": [
+    "maker",
+    "condition"
+   ],
+   "value_at_stake": {
+    "maker": 0.5,
+    "condition": 0.2
+   },
+   "p_view_fills": {
+    "maker_mark": {
+     "maker": 0.6
+    },
+    "flaw": {
+     "condition": 0.3
+    }
+   },
+   "bar": 0.1,
+   "facts": {
+    "dimensions": {
+     "state": "settled"
+    },
+    "condition": {
+     "state": "empty",
+     "p_preselect_right": 0.5,
+     "preselect": "good"
+    },
+    "material": {
+     "state": "empty",
+     "p_preselect_right": 0.4,
+     "preselect": "fabric"
+    },
+    "maker": {
+     "state": "empty",
+     "p_preselect_right": 0.1,
+     "preselect": null
+    }
+   },
+   "expected": {
+    "next_view": {
+     "view": "maker_mark",
+     "row_id": "req_furniture_maker",
+     "worth": 0.9
+    },
+    "follow_ups": [
+     {
+      "field": "condition",
+      "preselect": "good"
+     },
+     {
+      "field": "maker",
+      "preselect": null
+     },
+     {
+      "field": "material",
+      "preselect": "fabric"
+     }
+    ]
+   }
+  },
+  {
+   "name": "phone: the About screenshot settles model and storage, function never preselected",
+   "kind": "electronics",
+   "kept_views": [
+    "front"
+   ],
+   "unmet": [
+    "model",
+    "storage",
+    "condition"
+   ],
+   "value_at_stake": {
+    "model": 0.5,
+    "storage": 0.3,
+    "condition": 0.2
+   },
+   "p_view_fills": {
+    "about_screenshot": {
+     "model": 0.95,
+     "storage": 0.9
+    },
+    "flaw": {
+     "condition": 0.3
+    }
+   },
+   "bar": 0.1,
+   "facts": {
+    "function": {
+     "state": "empty",
+     "p_preselect_right": 0.8,
+     "preselect": "works"
+    },
+    "condition": {
+     "state": "empty",
+     "p_preselect_right": 0.6,
+     "preselect": "good"
+    },
+    "model": {
+     "state": "empty",
+     "p_preselect_right": 0.1,
+     "preselect": null
+    },
+    "storage": {
+     "state": "empty",
+     "p_preselect_right": 0.2,
+     "preselect": null
+    }
+   },
+   "expected": {
+    "next_view": {
+     "view": "about_screenshot",
+     "row_id": "req_electronics_model",
+     "worth": 1.425
+    },
+    "follow_ups": [
+     {
+      "field": "condition",
+      "preselect": "good"
+     },
+     {
+      "field": "storage",
+      "preselect": null
+     },
+     {
+      "field": "function",
+      "preselect": null
+     }
+    ]
+   }
+  },
+  {
+   "name": "shoes with every view kept: no view, and at most 3 follow-ups of the 4 wanted",
+   "kind": "shoes",
+   "kept_views": [
+    "scan",
+    "size_label",
+    "soles"
+   ],
+   "unmet": [],
+   "value_at_stake": {},
+   "p_view_fills": {},
+   "bar": 0.1,
+   "facts": {
+    "condition": {
+     "state": "empty",
+     "p_preselect_right": 0.5,
+     "preselect": "good"
+    },
+    "size_label": {
+     "state": "empty",
+     "p_preselect_right": 0.2,
+     "preselect": null
+    },
+    "brand": {
+     "state": "empty",
+     "p_preselect_right": 0.3,
+     "preselect": null
+    },
+    "extra": {
+     "state": "empty",
+     "p_preselect_right": 0.4,
+     "preselect": null
+    }
+   },
+   "expected": {
+    "next_view": null,
+    "follow_ups": [
+     {
+      "field": "condition",
+      "preselect": "good"
+     },
+     {
+      "field": "size_label",
+      "preselect": null
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,63 @@
+/* The camera, pieced together from the brand system over a generated photo standing in for the live feed.
+   Colors are tokens. The sizes below are the ones the camera's motion preview uses, so the still and the motion share one set of values.
+   None of them is locked; each is one line, so a change is one edit. */
+.cam {
+  --bar-top: 54px; --bar-side: 16px; --bar-h: 44px;
+  --ctl-ground: rgb(255 255 255 / .12);           /* close and voice: white at 12% on the shade */
+  --ctl-icon: 22px;
+  --stage: 22px; --stage-gap: 10px;
+  --stage-ring: rgb(255 255 255 / .4);            /* a stage still to come */
+  --stage-halo: color-mix(in srgb, var(--sky) 25%, transparent);
+  --ask-top: 112px; --ask-side: 24px;
+  --ask-shadow: 0 1px 8px rgb(0 0 0 / .5);
+  --found-top: 156px; --found-h: 44px; --found-dot: 28px;
+  --found-shadow: 0 8px 24px rgb(0 0 0 / .25);
+  --low-h: 32px;                                   /* the saved lowest price, only when one is saved */
+  --row-bottom: 36px; --row-side: 28px;
+  --shutter: 76px; --shutter-fill: 60px;
+  --last: 48px; --last-r: 14px;
+  /* the shade is the ground for the white words at the top and the controls at the bottom */
+  --shade: linear-gradient(to bottom, var(--ink) 0%, color-mix(in srgb, var(--ink) 85%, transparent) 12%, transparent 30%, transparent 72%, color-mix(in srgb, var(--ink) 85%, transparent) 88%, var(--ink) 100%);
+}
+
+.sh.cam { background: var(--ink); color: var(--surface); }
+.cam .feed { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.cam .shade { position: absolute; inset: 0; background: var(--shade); pointer-events: none; }
+.cam .os { position: absolute; top: 0; left: 0; right: 0; color: var(--surface); }
+.cam .os::after { background: #000; }   /* the island is the phone's, not ours */
+
+.cam .bar { position: absolute; z-index: 4; top: var(--bar-top); left: var(--bar-side); right: var(--bar-side); height: var(--bar-h); display: flex; align-items: center; justify-content: space-between; }
+.cam .round { width: var(--bar-h); height: var(--bar-h); border-radius: var(--r-pill); border: 0; background: var(--ctl-ground); color: var(--surface); display: grid; place-items: center; cursor: pointer; flex: none; }
+.cam .round .ic { width: var(--ctl-icon); height: var(--ctl-icon); }
+
+/* A stage's state is its shape: a check when done, a ring with a halo now, a thin ring later. No words in them */
+.cam .stages { display: flex; gap: var(--stage-gap); list-style: none; margin: 0; padding: 0; }
+.cam .stages li { width: var(--stage); height: var(--stage); border-radius: var(--r-pill); box-shadow: inset 0 0 0 1.5px var(--stage-ring); display: grid; place-items: center; }
+.cam .stages li.now { box-shadow: inset 0 0 0 2px var(--surface), 0 0 0 4px var(--stage-halo); }
+.cam .stages li.done { background: var(--surface); box-shadow: none; color: var(--ink); }
+.cam .stages .ic { width: 14px; height: 14px; display: none; }
+.cam .stages .ic path { stroke-width: 2.4; }
+.cam .stages li.done .ic { display: block; }
+
+.cam .ask { position: absolute; z-index: 4; top: var(--ask-top); left: var(--ask-side); right: var(--ask-side); margin: 0; text-align: center;
+  font: var(--w-regular) var(--t-18)/24px var(--font-text); color: var(--surface); text-shadow: var(--ask-shadow); }
+
+/* What the app read, for a moment: the name in ink on white, and a check on mint */
+.cam .found { position: absolute; z-index: 5; top: var(--found-top); left: 50%; transform: translateX(-50%); height: var(--found-h); border-radius: calc(var(--found-h) / 2);
+  padding: 0 var(--s-2) 0 var(--s-5); display: flex; align-items: center; gap: 10px; background: var(--surface); color: var(--ink); box-shadow: var(--found-shadow);
+  font: var(--w-regular) var(--t-18)/24px var(--font-text); white-space: nowrap; }
+.cam .found .dot { width: var(--found-dot); height: var(--found-dot); border-radius: var(--r-pill); background: var(--mint); display: grid; place-items: center; color: var(--ink); }
+.cam .found .ic { width: 16px; height: 16px; }
+
+/* The saved lowest price, as a variant: a lock and the amount on white, above the shutter */
+.cam .low { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: calc(var(--row-bottom) + var(--shutter) + var(--s-4)); height: var(--low-h);
+  border-radius: var(--r-pill); padding: 0 var(--s-3) 0 var(--s-2); display: flex; align-items: center; gap: var(--s-1); background: var(--surface); color: var(--ink); white-space: nowrap; }
+.cam .low .ic { width: 16px; height: 16px; }
+
+.cam .row { position: absolute; z-index: 4; left: var(--row-side); right: var(--row-side); bottom: var(--row-bottom); height: var(--shutter); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.cam .last { width: var(--last); height: var(--last); border-radius: var(--last-r); border: 0; padding: 0; box-shadow: 0 0 0 2px var(--surface); background: var(--ctl-ground) center / cover no-repeat; cursor: pointer; justify-self: start; }
+.cam .shutter { grid-column: 2; width: var(--shutter); height: var(--shutter); border-radius: var(--r-pill); border: 0; padding: 0; cursor: pointer; background: transparent;
+  box-shadow: inset 0 0 0 4px var(--surface); display: grid; place-items: center; transition: transform var(--t-feedback) var(--ease-out); }
+.cam .shutter::before { content: ""; width: var(--shutter-fill); height: var(--shutter-fill); border-radius: var(--r-pill); background: var(--surface); }
+.cam .shutter:active { transform: scale(.94); }
+.cam .home { background: var(--surface); }

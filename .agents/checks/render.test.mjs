@@ -224,6 +224,8 @@ test('render: the wash behind the header of a screen passes, with the field on a
 CASES.push(['B4', 'the wash twice on a screen', app(`${WASH()}${WASH()}`), /B4 .*the wash 2 times/, 'app'],
   ['B4', 'the wash halfway down a screen', app(WASH('top:300px')), /B4 .*starts at the top of the screen/, 'app'],
   ['B4', 'the wash on a slide', deck(`<div style="height:160px;background:var(--wash)"></div>`), /B4 .*uses the wash on a deck/],
+  ['B6', 'text faded until it cannot be read on the field', app('<div class="f" style="margin:16px 20px;height:156px;padding:16px"><p style="font-size:15px;color:var(--on-field-2);opacity:.5">after fees</p></div>'), /B6 .*"after fees" has [\d.]+:1 contrast at its worst point over the field; it needs 4.5:1/, 'app'],
+  ['B6', 'the second ink over the wash', app(WASH('top:0', '<p style="font-size:15px;position:absolute;top:120px;left:20px;color:var(--ink-2)">3 need you</p>')), /B6 .*at its worst point over the wash; it needs 7:1/, 'app'],
   ['B7', 'the ink of the field used off the field', app('<p style="font-size:15px;margin:16px 20px;color:var(--on-field-2)">after fees</p>'), /B7 .*off the field/, 'app', 'dark'],
   ['B6', 'the second ink of the page used on a dark field', app('<div class="f" style="margin:16px 20px;height:156px;padding:16px"><p style="font-size:15px;color:var(--ink-2)">after fees</p></div>'), /B6 .*on the field/, 'app', 'dark']);
 // Ben, 02:46: the countdown "a little too close to the corner. think of the shape and the extreme ends".
