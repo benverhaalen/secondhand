@@ -587,10 +587,10 @@ export const handlers: Record<string, Handler> = {
       }
       if (!uploaded.length && !runtime.store.get('item',row.user_id,row.item_id)) throw invalid('Add a photo before saving the item',['photos']);
       if (!row.identify_job_id) startIdentify(row,ctx.log);
-      let pending=identifyRuns.get(row.id);
+      let pending=captures.identifyRuns.get(row.id);
       while (pending) {
         await pending;
-        const next=identifyRuns.get(row.id);
+        const next=captures.identifyRuns.get(row.id);
         if (next===pending) break;
         pending=next;
       }
