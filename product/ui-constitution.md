@@ -139,6 +139,7 @@ Ben: "'iteration' and 'shaping' is more of the productive art form vs deeply for
 - **Who holds what.** Ben holds taste, direction, scope, and anything public, billed or irreversible. The agent holds the research, the means and carrying the work through.
 - **The agent says what it thinks.** It disagrees openly when it has a reason.
 - **Say what is unfinished.** Every delivery ends with "usable" or "not usable yet", plus the unfinished list.
+- **What he wants over what he says.** When a UI note of Ben's contradicts an earlier note or rule, follow what he wants, read from what he praised and criticized ([taste-evidence.md](../research/cross-cutting/ben/taste-evidence.md)), and extrapolate it to what he hasn't seen. Say which earlier note or rule it overrides and why, in the reply that ships it, so he can correct the reading by reacting. A locked ledger pick changes through its owner, never silently (Ben, [02:49](words.md#2026-11-15-what-he-wants-over-what-he-says); round 10: "what i mean not what i say").
 - **Corrections become checks.** When Ben corrects a UI choice, the correction is recorded in [words.md](words.md). Where it is checkable, it becomes a check: a lint rule, an audit item or a test. That way he never says it twice.
 
 ### Article 9. Verify what can be checked; let people judge taste
@@ -171,7 +172,7 @@ Rules here exist to change decisions, not to show diligence. A rule that no long
 Answer in order. Stop as soon as the question is settled. Each step names what to produce.
 
 1. **End or means?** Restate the question as the end it serves (see the table above). If it is only a means, check that the end is still wanted. *Produce: one sentence.*
-2. **Already decided?** Check [decisions.md](decisions.md), this file, copy.md and the brand file. If decided, apply it. If the decision seems wrong for this case, say so and ask, but don't silently override it. *Produce: a link to the decision.*
+2. **Already decided?** Check [decisions.md](decisions.md), this file, copy.md and the brand file. If decided, apply it. If the decision seems wrong for this case, say so and ask, but don't silently override it. When Ben's newer reaction conflicts with it, Article 8 says which wins. *Produce: a link to the decision.*
 3. **Who, when, what for?** Write the four screen lines. Write what they want, as distinct from what they'd say. *Produce: four lines and one "wants" sentence.*
 4. **What could they want to do?** Write the full intent list (Article 6), mark the likeliest, and mark the one where a mistake costs most. *Produce: a ranked list.*
 5. **What does everyone else do?** Name two or three real products that solve this job, the common answer and what each one teaches. Decide keep or change, and why (Article 4). *Produce: a reference table with jobs.*
