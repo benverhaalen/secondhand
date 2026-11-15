@@ -801,3 +801,11 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate look into apify and build our own api on cloud browser use
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Look into https://apify.com/ and all made api's to create effectively our own api made through efficient anti bot detect browser use running cloud based
+
+## 2026-11-14 nate passwords are kept, opt in, as encrypted secrets we cannot see
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the Depop design said the system keeps no password.
+> we need to keep passwords, we indicate to the user they are set as encrypted environment variables we do not save or can see for ourselves, just used by the system, making it opt in
+
+## 2026-11-14 nate the person signs off, so it is their own agent acting
+Nate, same session, 2026-11-14, on the Depop design calling it automated access.
+> its not automated access, since the user is technically signing off on it, its like if they called Claude in chrome themselves
