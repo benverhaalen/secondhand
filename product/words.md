@@ -2311,3 +2311,9 @@ Nate, orchestrator's session, 2026-11-15, about 08:05 Central, after the cross-s
 > lets do our page read, and for websites its driven with something using their browser of some sort?
 
 Used in: [the finalization spec](../spec/plans/finalization.md), the search lead's rows.
+
+## 2026-11-15 nate understand how Databricks shapes dynamic pricing
+Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
+> Understand how databricks shapes dynamic pricing https://www.databricks.com/blog/dynamic-pricing-airlines-how-ai-can-reshape-revenue-strategy
+
+Used in: [the retail mapping](../research/data/nate/databricks-retail-solutions.md).
