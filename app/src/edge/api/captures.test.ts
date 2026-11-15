@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
-import { deps, route } from './http.ts';
+import { ApiError, deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
 import * as capturesApi from './captures.ts';
 import { handlers, manifest, resetCaptures } from './captures.ts';
+import type { Attribute } from '../card/card.ts';
+import { table } from '../../engines/capture/table.ts';
+import type { Store } from '../events/ports.ts';
 
 const prefixes = ["captures"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
@@ -14,6 +17,8 @@ beforeEach(async t => {
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.parse(exampleCreatedAt);
+  const { resetItems } = await import('./items.ts');
+  resetItems();
   const e = examples.find(e => t.name.startsWith(e.name + ':'));
   const name = e?.name ?? (t.name.startsWith('capture reconnect:') ? 'captures.finish' : '');
   if (['captures.set_type','captures.finish','captures.answer','captures.refuse','captures.generate'].includes(name)) {
@@ -501,15 +506,17 @@ test('judged captures refuse photos, answers, Generate and finish without versio
     assert.deepEqual(await getCapture(),finished);
   }
 });
-test('PATCH preserves status after shooting and logs only answered or refused field name', async () => {
+test('PATCH preserves status after shooting and logs only answered or refused field names', async () => {
   const sink=memorySink();deps.log=createLog({src:'test',build:'test',sink});
   let c=await askingCapture(); assert.equal(c.state,'uploading');
   c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,answer:{field:'condition',value:'good'}}));
   assert.equal(c.state,'uploading');
   c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,refuse:'size_label'}));
   const changes=sink.lines.map(s=>JSON.parse(s)).filter(e=>e.event==='state.change');
-  assert.ok(changes.some(e=>e.field==='condition'));assert.ok(changes.some(e=>e.field==='size_label'));
-  assert.ok(!changes.some(e=>'value' in e));
+  assert.ok(!changes.some(e=>e.field==='condition' || e.field==='size_label'));
+  const fields=sink.lines.map(s=>JSON.parse(s)).filter(e=>e.event==='note' && e.msg==='capture field updated');
+  assert.deepEqual(fields.map(e=>e.field),['condition','size_label']);
+  assert.ok(![...changes,...fields].some(e=>'value' in e));
 });
 
 test('identify confirm publishes lookup dimensions without a question and preserves candidate order', async () => {
@@ -560,7 +567,7 @@ test('photo score blurry tag yields retake, threshold passes and existing facts 
   c=job(scoreResult(.3,'front'));assert.ok(!c.plan.questions.some(q=>q.shot?.step==='tag'));
   resetCaptures();c=await askingCapture();c=job(scoreResult());assert.equal(fieldOf(c,'size_label').value,'M');
 });
-test('job results validate all fields before applying, bump once, log once and enforce ownership', async () => {
+test('job results validate all fields before applying, bump once, log input and enforce ownership', async () => {
   await askingCapture();
   const invalidResults:[unknown,string][]=[
     [{kind:'unknown'},'kind'],
@@ -590,7 +597,8 @@ test('job results validate all fields before applying, bump once, log once and e
   for(const result of [identify([],'ask'),studioResult,scoreResult()]) {
     const before=await getCapture();const c=job(result);assert.equal(c.version,before.version+1);
   }
-  assert.equal(sink.lines.map(s=>JSON.parse(s)).filter(e=>e.event==='state.change').length,3);
+  assert.equal(sink.lines.map(s=>JSON.parse(s)).filter(e=>e.event==='state.change').length,0);
+  assert.equal(sink.lines.map(s=>JSON.parse(s)).filter(e=>e.event==='user.input' && e.control==='capture.job_result').length,3);
 });
 
 test('identify refreshes its own suggestion but never the phone suggestion', async () => {
@@ -653,4 +661,237 @@ test('capture handlers and job results log through the event contract without an
   assert.deepEqual(checked.warnings,[]);
   const changes=checked.events.filter((e:{event:string})=>e.event==='state.change');
   assert.ok(changes.every((e:Record<string,unknown>)=>!('value' in e)));
+});
+
+const finishEndpoint = 'POST /v1/captures/:id/finish';
+async function storedAttributes(user:string, id:string):Promise<Attribute[]> {
+  const {runtime}=await import('./runtime.ts');
+  const row=runtime.store.get('item',user,id);
+  assert.ok(row,`finished capture creates item ${id} for ${user}`);
+  return row.attributes as Attribute[];
+}
+async function itemCard(id:string, token='good') {
+  const {handlers}=await import('./items.ts');
+  const endpoint='GET /v1/items/:id';
+  const response=await route(endpoint,handlers[endpoint])(new Request(`http://edge.test/v1/items/${id}`,{headers:{Authorization:`Bearer ${token}`}}));
+  assert.equal(response.status,200);
+  return response.json();
+}
+test('F4: facts land on the wrong person\'s item', async () => {
+  const {runtime}=await import('./runtime.ts');
+  const a=await askingCapture();
+  const b=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
+  await at(photosEndpoint,b.id,{photos:[photo('front',[{field:'colour',value:['white'],source:'seen',confidence:.99}])]},'other');
+  const bBefore=structuredClone(runtime.store.rows('item',{user_id:'usr_other'}));
+  assert.equal((await at(finishEndpoint,a.id,{version:a.version})).status,202);
+  assert.deepEqual(runtime.store.rows('item',{user_id:'usr_other'}),bBefore,'A finishing never changes B items');
+  const aItems=structuredClone(runtime.store.rows('item',{user_id:'usr_8f2k'}));
+  const forbidden=await at(finishEndpoint,a.id,{version:a.version},'other');
+  assert.equal(forbidden.status,404);assert.equal((await forbidden.json()).code,'not_found');
+  assert.equal((await at(finishEndpoint,b.id,{version:b.version+1},'other')).status,202);
+  assert.deepEqual(runtime.store.rows('item',{user_id:'usr_8f2k'}),aItems,'B finishing never writes A item');
+  assert.deepEqual((await storedAttributes('usr_other',b.item_id)).find(a=>a.name==='colour')?.value,['white']);
+  assert.equal((await itemCard(b.item_id,'other')).attributes.find((a:Attribute)=>a.name==='colour').source,'inferred');
+});
+
+test('F4: a proposal (not known) is written', async () => {
+  const c=await askingCapture();
+  assert.equal(fieldOf(c,'size_label').state,'proposed');
+  assert.equal((await requestCapture(finishEndpoint,{version:c.version})).status,202);
+  const attributes=await storedAttributes('usr_8f2k',c.item_id);
+  assert.ok(attributes.some(a=>a.name==='package_weight'),'known facts are written');
+  assert.ok(!attributes.some(a=>a.name==='size_label'));
+});
+
+test('F4: a you_said value on the item is overwritten by a capture\'s seen value', async () => {
+  const {runtime}=await import('./runtime.ts');
+  const current=runtime.store.get('item','usr_8f2k','it_7c2m')!;
+  const owner:Attribute={name:'colour',value:['red'],source:'you_said',confidence:1,confirmed:false,method:'owner',at:exampleCreatedAt,
+    evidence:[{kind:'owner',ref:'owner/colour',captured_at:exampleCreatedAt,extractor_version:'owner.v1'}]};
+  const pinned:Attribute={...owner,name:'brand',value:'Owner brand',source:'label',confirmed:true};
+  runtime.store.put('item',{...current,attributes:[...(current.attributes as Attribute[]).filter(a=>!['colour','brand'].includes(a.name)),owner,pinned]});
+  const c=await bodyOf(await requestCapture('POST /v1/captures',{...openInput,confirm_mode:'auto'}));
+  await requestCapture(photosEndpoint,{photos:[photo('front',[{field:'colour',value:['black'],source:'seen',confidence:.99},{field:'brand',value:'Label brand',source:'label',confidence:1}])]});
+  assert.equal((await requestCapture(finishEndpoint,{version:c.version+1})).status,202);
+  const attributes=await storedAttributes('usr_8f2k',c.item_id);
+  assert.deepEqual(attributes.find(a=>a.name==='colour'),owner);
+  assert.deepEqual(attributes.find(a=>a.name==='brand'),pinned);
+});
+
+test('F4: a failed item write leaves the capture judged', async t => {
+  const c=await askingCapture();
+  const before=structuredClone(capturesApi.captureRows.get(c.id));
+  const {runtime}=await import('./runtime.ts');
+  const itemBefore=structuredClone(runtime.store.get('item','usr_8f2k',c.item_id));
+  const tx=t.mock.method(runtime.store,'tx');
+  const put=t.mock.method(runtime.store,'put',()=>{throw new Error('item write failed');});
+  const response=await requestCapture(finishEndpoint,{version:c.version});
+  assert.equal(response.status,503);assert.equal((await response.json()).code,'waking');
+  assert.equal(tx.mock.callCount(),1,'item write runs inside the store transaction');
+  assert.equal(put.mock.callCount(),1);
+  assert.deepEqual(capturesApi.captureRows.get(c.id),before,'failed item write preserves capture status and version');
+  assert.deepEqual(runtime.store.get('item','usr_8f2k',c.item_id),itemBefore);
+});
+
+test('F4/F13: a job arriving after the item commit cannot replace the finished capture', async t => {
+  const c=await askingCapture();
+  const {runtime}=await import('./runtime.ts');
+  const tx=runtime.store.tx.bind(runtime.store);
+  let result:unknown;
+  t.mock.method(runtime.store,'tx',function<T>(fn:(st:Store)=>T):T {
+    const saved=tx(fn);
+    queueMicrotask(()=>{try {result=job(studioResult);} catch(error) {result=error;}});
+    return saved;
+  });
+  const finished=await bodyOf(await requestCapture(finishEndpoint,{version:c.version}));
+  assert.ok(result instanceof ApiError,'a job after the item commit must see a finished capture');
+  assert.equal(result.code,'stale');
+  assert.deepEqual(await getCapture(),finished);
+});
+
+test('F4: finish publishes known facts and evidence through the item route, preserving seeded attributes', async () => {
+  const {runtime}=await import('./runtime.ts');
+  const before=structuredClone(runtime.store.get('item','usr_8f2k','it_7c2m')!.attributes as Attribute[]);
+  let c=await bodyOf(await requestCapture('POST /v1/captures',{...openInput,confirm_mode:'auto'}));
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,type:'apparel'}));
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('front',[
+    {field:'colour',value:['black'],source:'seen',confidence:.99},
+    {field:'dimensions',value:{pit_to_pit:52,length:71},source:'measured',confidence:.98},
+  ]),photo('back'),photo('tag',[
+    {field:'size_label',value:'M',source:'label',confidence:.99},
+    {field:'brand',value:'Capture brand',source:'label',confidence:.99},
+  ])]}));
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,answer:{field:'condition',value:'good'}}));
+  const finishAt='2026-11-15T14:00:00.000Z';deps.now=()=>Date.parse(finishAt);
+  assert.equal((await requestCapture(finishEndpoint,{version:c.version})).status,202);
+  const attributes=await storedAttributes('usr_8f2k',c.item_id);
+  const card=await itemCard(c.item_id);
+  for(const [name,source,kind,step,confidence,confirmed] of [
+    ['colour','inferred','image_region','front',.99,false],['dimensions','measured','depth','front',.98,false],
+    ['size_label','label','label_text','tag',.99,false],
+    ['condition','you_said','owner','condition',1,true],['package_weight','inferred','image_region','package_weight',.8,false],
+  ] as const) {
+    const attribute=attributes.find(a=>a.name===name);assert.ok(attribute,name);
+    assert.equal(attribute.source,source,name);assert.equal(attribute.confidence,confidence,name);assert.equal(attribute.confirmed,confirmed,name);
+    assert.equal(attribute.at,finishAt);assert.equal(attribute.method,name==='package_weight'?'derived':name==='colour'?'seen':source);
+    assert.deepEqual(attribute.evidence,[{kind,ref:`${c.id}/${step}`,captured_at:finishAt,extractor_version:`capture.v${table.version}`}]);
+    const shown=card.attributes.find((a:Attribute)=>a.name===name);assert.ok(shown,name);
+    assert.equal(shown.source,source);assert.deepEqual(shown.value,attribute.value);assert.deepEqual(shown.evidence,attribute.evidence);
+  }
+  for(const old of before) if(!['colour','dimensions','size_label','condition','package_weight'].includes(old.name))
+    assert.deepEqual(attributes.find(a=>a.name===old.name),old,'untouched seeded attributes survive');
+  assert.ok(!attributes.some(a=>['type','lot_count'].includes(a.name)));
+});
+
+test('F4: new bundle item keeps per-piece names and lookup and derived resolutions', async () => {
+  const c=await bodyOf(await requestCapture('POST /v1/captures',{...openInput,pieces:2,confirm_mode:'auto'},'other'));
+  const state=capturesApi.captureRows.get(c.id)!.state;
+  state.type='apparel';
+  state.facts['size_label.1']={value:'M',source:'label',confidence:.99,step:'tag.1'};
+  state.facts['size_label.2']={value:'L',source:'you_said',confidence:1};
+  state.facts['brand.1']={value:'Lookup brand',source:'lookup',confidence:.94,confirmed:true};
+  state.facts.lot_count={value:2,source:'you_said',confidence:1};
+  assert.equal((await at(finishEndpoint,c.id,{version:c.version},'other')).status,202);
+  const {runtime}=await import('./runtime.ts');
+  const row=runtime.store.get('item','usr_other',c.item_id)!;
+  assert.equal(row.origin,'capture');assert.equal(row.data,'captured');assert.equal(row.quantity,2);
+  assert.equal(row.title,'');assert.equal(row.state,'researching');assert.deepEqual(row.photos,[]);
+  assert.equal(row.created_at,exampleCreatedAt);assert.equal(row.updated_at,exampleCreatedAt);
+  const attrs=await storedAttributes('usr_other',c.item_id);
+  assert.equal(attrs.find(a=>a.name==='size_label.1')?.value,'M');assert.equal(attrs.find(a=>a.name==='size_label.2')?.value,'L');
+  const brand=attrs.find(a=>a.name==='brand.1');assert.ok(brand);
+  assert.equal(brand.source,'spec');assert.equal(brand.method,'lookup');assert.equal(brand.confidence,.94);assert.equal(brand.confirmed,true);
+  assert.deepEqual(brand.evidence,[{kind:'lookup',ref:`${c.id}/brand.1`,captured_at:exampleCreatedAt,extractor_version:`capture.v${table.version}`}]);
+  assert.equal(attrs.find(a=>a.name==='package_weight')?.method,'derived');
+  assert.deepEqual(attrs.map(a=>a.name).sort(),['brand.1','package_weight','size_label.1','size_label.2']);
+  assert.ok(!attrs.some(a=>['type','lot_count'].includes(a.name)));
+  const card=await itemCard(c.item_id,'other');assert.equal(card.attributes.length,attrs.length);
+});
+
+test('F13: a job result changes a finished capture', async () => {
+  const c=await askingCapture();
+  const finished=await bodyOf(await requestCapture(finishEndpoint,{version:c.version}));
+  const before=structuredClone(capturesApi.captureRows.get(c.id));
+  const patch=await requestCapture(patchEndpoint,{version:finished.version,generate:true});
+  const expected=await patch.json();
+  for(const result of [identify([product]),studioResult,scoreResult()]) {
+    assert.throws(()=>job(result),error=>{
+      assert.ok(error instanceof ApiError);
+      assert.deepEqual(error.toJSON(),expected);
+      return true;
+    });
+    assert.deepEqual(capturesApi.captureRows.get(c.id),before);
+  }
+});
+
+test('F4: an owner answer replaces an existing confirmed item value', async () => {
+  const {runtime}=await import('./runtime.ts');
+  const current=runtime.store.get('item','usr_8f2k','it_7c2m')!;
+  const old:Attribute={name:'condition',value:'fair',source:'you_said',confidence:1,confirmed:true,method:'owner',at:exampleCreatedAt,
+    evidence:[{kind:'owner',ref:'owner/condition',captured_at:exampleCreatedAt,extractor_version:'owner.v1'}]};
+  runtime.store.put('item',{...current,attributes:[...(current.attributes as Attribute[]).filter(a=>a.name!=='condition'),old]});
+  let c=await askingCapture();
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,answer:{field:'condition',value:'good'}}));
+  assert.equal((await requestCapture(finishEndpoint,{version:c.version})).status,202);
+  const next=(await storedAttributes('usr_8f2k',c.item_id)).find(a=>a.name==='condition')!;
+  assert.equal(next.value,'good');assert.equal(next.source,'you_said');assert.equal(next.confirmed,true);
+  assert.equal(next.evidence[0].ref,`${c.id}/condition`);
+});
+
+test('F4: finish uses resolved variant and profile facts rather than only stored facts', async () => {
+  let c=await bodyOf(await requestCapture('POST /v1/captures',{mode:'shots',purpose:'sell'}));
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,type:'furniture'}));
+  c=job(identify([{...product,c:.98},{...product,product_id:'pr_other',c:.4,dimensions:{width:90,depth:55,height:45}}],'pick'));
+  const state=capturesApi.captureRows.get(c.id)!.state;state.profile={handover:'pickup'};
+  assert.equal(state.facts.dimensions,undefined);
+  assert.equal((await requestCapture(finishEndpoint,{version:c.version})).status,202);
+  const attributes=await storedAttributes('usr_8f2k',c.item_id);
+  const dimensions=attributes.find(a=>a.name==='dimensions')!;
+  assert.deepEqual(dimensions.value,product.dimensions);assert.equal(dimensions.source,'spec');assert.equal(dimensions.confidence,.98);
+  const handover=attributes.find(a=>a.name==='handover')!;
+  assert.equal(handover.value,'pickup');assert.equal(handover.method,'derived');assert.equal(handover.confidence,.9);
+});
+
+test('F13: a photo_score for an unkept key is applied', async () => {
+  await questionCapture('apparel');
+  for(const role of ['tag','front']) {
+    const before=structuredClone(capturesApi.captureRows.get('cap_3n9q'));
+    assert.throws(()=>job({kind:'photo_score',photos:[...scoreResult().photos,{...scoreResult().photos[0],key:'tag.99',role}]}),error=>{
+      assert.ok(error instanceof ApiError);
+      assert.equal(error.code,'invalid');assert.deepEqual(error.extra.fields,['tag.99']);return true;
+    });
+    assert.deepEqual(capturesApi.captureRows.get('cap_3n9q'),before,'whole result is rejected');
+  }
+});
+
+test('F15: a state.change without was', async () => {
+  const sink=memorySink();deps.log=createLog({src:'test',build:'test',sink});
+  async function dispatch(endpoint:string,body:Record<string,unknown>) {
+    const reply=await handlers[endpoint]({user_id:'usr_8f2k',visitor_id:null,request_id:'rq_capture_log',params:{id:'cap_3n9q'},query:new URLSearchParams(),body,headers:new Headers(),log:deps.log},new Request('http://edge.test'));
+    assert.ok(!(reply instanceof Response));return reply.body as CaptureBody;
+  }
+  let c=await dispatch('POST /v1/captures',openInput);
+  c=await dispatch(patchEndpoint,{version:c.version,type:'apparel'});
+  await dispatch(photosEndpoint,{photos:[photo('front'),photo('back'),photo('tag')]});
+  c=job(studioResult);
+  c=await dispatch(patchEndpoint,{version:c.version,answer:{field:'condition',value:'good'}});
+  c=await dispatch(patchEndpoint,{version:c.version,generate:true});
+  await dispatch(finishEndpoint,{version:c.version});
+  const {checkLog}=await import('../../../../spec/log.mjs');
+  deps.log.end();const checked=checkLog(sink.text());assert.deepEqual(checked.problems,[]);assert.deepEqual(checked.warnings,[]);
+  const changes=checked.events.filter((e:Record<string,unknown>)=>e.event==='state.change' && e.entity==='capture');
+  assert.deepEqual(changes.map((e:Record<string,unknown>)=>[e.was,e.to]),[[null,'framing'],['framing','shooting'],['shooting','uploading'],['uploading','judged']]);
+  for(const change of changes) for(const key of ['entity','id','to','was']) assert.ok(Object.hasOwn(change,key),key);
+});
+
+test('F15: a repeated state.change', async () => {
+  const sink=memorySink();deps.log=createLog({src:'test',build:'test',sink});
+  let c=await askingCapture();const previous=c.version;
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,answer:{field:'condition',value:'good'}}));
+  c=job(studioResult);assert.equal(c.version,previous+2,'versions advance without state moves');
+  await requestCapture(finishEndpoint,{version:c.version});
+  const last=new Map<string,string>();
+  for(const event of sink.lines.map(line=>JSON.parse(line)).filter(e=>e.event==='state.change' && e.entity==='capture')) {
+    assert.notEqual(event.to,last.get(event.id),`capture ${event.id} repeated ${event.to}`);last.set(event.id,event.to);
+  }
 });

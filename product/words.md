@@ -1898,3 +1898,39 @@ Nate, adaptation lead's session, 2026-11-15, evening Central, on the NBER eBay 2
 > i dont like that you're still focused on such old data, unless it can hold some relevance
 
 Used in: [spec/engines/adaptation.md §4](../spec/engines/adaptation.md#4-how-each-is-proved-before-it-is-trusted), [spec/engines/credibility.md](../spec/engines/credibility.md#what-data-can-prove-what).
+
+## 2026-11-15 page jobs, every control's intended action, iPhone standards, and two skills turned into checks
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 10:07 UTC.
+
+> look at the main states of the page. what each purpose should serve and the features each needs and then how an expert designer would design those broadly especially user flows and then use those to audit and fix and create checks on each of the actual implemented pages
+
+Ben, same thread, 10:08 UTC.
+
+> like that part in the loop where its supposed to point out the intended action in specifics. not just this button is supposed to go back, to where, how fast, what animation, all the time? how does it react to being pressed, haptics? but do this for all interactive states. and use codex to do it. alongside all this
+
+Ben, same thread, 10:11 UTC.
+
+> something else i think there needs to be some standards too. like for apple iphone design. fonts can only be so small. all text has to pass claudish pass. each text of the same size has the same font and the same numbers attached to it. same curves on everything. general states and general components are only things allowed. everything is contained and designed and hierarched like how an expert would so nothing breaks. quantifying things being crowded. text and fonts and weights not matching the design style. when things are too close. when distances are inconsistent. using deslopping ai skills too to know better ui specifics. principles that great ui design has and then tailoring tests to this scenario
+
+Ben, same thread, 10:13 UTC.
+
+> use this skill and write checks around it. https://github.com/Appllama/appllama-skills/blob/main/skills/appllama-app-design-skill/
+
+Ben, same thread, 10:14 UTC.
+
+> do the same with this: https://paste.rachel.systems/ukogokijaz.md
+
+Used in: [.agents/vendor/appllama](../.agents/vendor/appllama/SOURCE.md), `scripts/standards.mjs`, `.agents/checks/standards.mjs`.
+
+## 2026-11-15 nate how credibility should be weighed, and the value we bring truly defined
+Nate, adaptation lead's session, 2026-11-15, evening Central.
+> well how do you believe credibility should be weighed. The literature lays out alot and its important you assess that it's proven how we deliver things. That the value our system brings is truly defined
+
+Used in: [spec/engines/credibility.md](../spec/engines/credibility.md#how-credibility-is-weighed).
+
+## 2026-11-15 nate identify the product, find the same thing off brand, and learn whether the brand matters
+Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
+> Its important we develop the feature of the system being able to identify the product and what it is, and find off brand similar types of the same quality, material, but different brand, and developing insights on whether people care more about the specific main brand or not
+
+Used in: `spec/engines/adaptation.md` (the brand measure, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).

@@ -49,8 +49,8 @@ function FactLine({ fact }: { fact: Fact }) {
 }
 
 // The 72 row both cards share. The countdown ends 24 from the card's right edge, so it clears the 36 corner by 16 (--card-corner).
-function Body({ photo, title, site, tag, word, fact, due, now, faded }: {
-  photo?: PhotoSrc | null; title: string; site?: Site; tag: TagState; word?: string; fact: Fact; due?: number; now: number; faded?: boolean;
+function Body({ photo, title, site, tag, word, fact, due, now, faded, quiet }: {
+  photo?: PhotoSrc | null; title: string; site?: Site; tag: TagState; word?: string; fact: Fact; due?: number; now: number; faded?: boolean; quiet?: boolean;
 }) {
   return (
     <View style={{ flexDirection: 'row', height: size.photoCard, gap: space.s3 }}>
@@ -60,7 +60,7 @@ function Body({ photo, title, site, tag, word, fact, due, now, faded }: {
       </View>
       <View style={{ flex: 1, justifyContent: 'space-between' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: size.tagH }}>
-          <Tag state={tag} word={word} />
+          <Tag state={tag} word={word} quiet={quiet} />
           {due != null ? <View style={{ marginRight: size.cardCorner - size.cardPad }}><Countdown due={due} now={now} /></View> : null}
         </View>
         <Txt role="headline" lines={1}>{title}</Txt>
@@ -81,16 +81,18 @@ export type ItemCardProps = {
   fact: Fact;
   // When it is due, in ms since 1970. Only a deadline the data carries (frontend-standard §5, Honesty).
   due?: number;
+  // Under a header that names its group: the tag in gray (Tag quiet), so the group's color is not said twice (U13).
+  quiet?: boolean;
   onPress?: () => void;
 };
 
 // A thing, and the way into it. The whole card is the target.
-export function ItemCard({ id, title, photo, site, state, word, fact, due, onPress }: ItemCardProps) {
+export function ItemCard({ id, title, photo, site, state, word, fact, due, quiet, onPress }: ItemCardProps) {
   const now = useMinute();
   return (
     <Press id={id} label={title} onPress={onPress} round={false}>
       <Surface kind="card" part="card-item" box={{ height: size.cardItemH, padding: size.cardPad }}>
-        <Body {...{ photo, title, site, word, fact, due, now }} tag={state} faded={state === 'ended'} />
+        <Body {...{ photo, title, site, word, fact, due, now, quiet }} tag={state} faded={state === 'ended'} />
       </Surface>
     </Press>
   );
