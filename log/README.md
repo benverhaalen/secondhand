@@ -20,7 +20,11 @@ The same log is what agents grep to debug, what `spec/replay.mjs` checks against
 | Checker: contract, order, unfinished calls, leaks, replay, the numbers | Done | `node spec/log.mjs <file...>` |
 | Repo check: no prints in app code, no raw logs in git | Done | `node .agents/check.mjs` |
 | A worked session with every event | Done | `node log/example.mjs` |
-| The app, the server, the jobs, the Swift camera, the `events` table, MLflow | No code yet | [Wire a new program](#wire-a-new-program) |
+| The report that ranks what to make faster or cheaper | Done, tested | `node log/climb.mjs <file...>` |
+| The repo check, timed per check and per test file (CI keeps it as the `check-timings` artifact) | Done | `logs/check-*.jsonl` |
+| image-gen: queue wait, tokens per call, failed and skipped jobs | Done, tested | [run.mjs](../.agents/skills/image-gen/run.mjs) |
+| The edge server: `api`, `data`, `delist`, `events`, `harness`, `intel`, `mcp`, `notify`, `sold`, in part | Started | `app/src/edge/` |
+| The Expo screens, the Python jobs, the edge folders `assist`, `buy`, `gate`, `orders`, `replay`, `today`, `watch`, the Swift camera, the `events` table, MLflow | Not logging yet | [Wire a new program](#wire-a-new-program), [packet 48](../.agents/team/packets/team/48-logs-that-rank-speed-and-cost.md) |
 
 ## Use it
 
@@ -61,6 +65,7 @@ The table shows the JS calls. Python has the same methods with the extras as key
 | Something needs the person, and they answer or it lapses | `log.ask(decision, kind, tier)`, `log.answer(decision, option, { edited, card_ms })`, `log.close(decision, reason)` | `decision.open`, `decision.answer`, `decision.close` |
 | A step in an item's life (names from [lifecycle.mjs](../spec/lifecycle.mjs)) | `log.action(item, action, actor, { site, price, floor })` | `item.action` |
 | Another primitive changes state | `log.change(entity, id, to, { was })` | `state.change` |
+| Work inside the process you may want faster: a check, a test file, a build step, a pure engine | `log.timed(name, fn, fields)` (sync stays sync, a promise is awaited); Python `log.timed(name, fn)`, `await log.atimed(name, fn)` | `timing` |
 | Something fails outside a call | `log.error(where, e)` | `error` |
 | Nothing above fits | `log.note(msg)`, or add an event to the contract | `note` |
 
@@ -132,7 +137,21 @@ grep '"level":"error"' logs/*.jsonl                   # every failure
 
 The checker's warnings name each call, request and agent run that never finished in a session with no `session.end`. That is the first place to look after a crash or a hang.
 
-The numbers it prints are lines, errors, failed jobs, open Decisions, cost, and count, failures and p50 and p95 time per call. To improve one of them, keep the command and the input fixed, make one change, measure again, and keep or revert. Write each attempt as a row in `logs/decision.tsv`. Before trusting a number, say what else it could be counting: errors, skipped work, cached work. The numbers count log lines, so work that was never logged is not in them.
+The numbers it prints are lines, errors, failed jobs, open Decisions, cost, and count, failures and p50 and p95 time per call. The numbers count log lines, so work that was never logged is not in them.
+
+## Hill-climb
+
+```sh
+node log/climb.mjs logs/check-*.jsonl --top 15     # what makes the repo check slow
+node log/climb.mjs <out>/logs/*.jsonl              # an image-gen run: job waits, call times, tokens
+```
+
+`climb.mjs` ranks the work in the logs you give it: total time per call or timing name with its share, p50 and p95; the time failures threw away; cost and tokens; each job kind's wait before it ran and its run; each agent's runs, steps and the cost of their calls. Start at the top row.
+
+1. Pick one row and freeze the measure: the same command, the same input, the same machine. Run it three times and note the spread, so a change smaller than the noise is not read as a win.
+2. Make one change, run the measure again, and keep it or revert it. Write each attempt as a row in `logs/decision.tsv`: the date, the row, the change, before, after, kept or reverted.
+3. Before trusting a number, say what else it could be counting: errors, skipped work, cached work, a test that stopped running.
+4. Work that is not logged is not ranked. If a slow step has no line, wrap it in `log.timed` first, then measure.
 
 ## What the log does not hold
 
