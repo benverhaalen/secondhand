@@ -2423,3 +2423,16 @@ Nate, the orchestrator's session, 2026-11-15, about 14:00 UTC.
 > Lets have you fully start to organize and shut down running subagents when completed. assess what works, you yourself get it working, check with ben, we continously test with codex andd such
 
 Used in: [the finalization spec, section 13](../spec/plans/finalization.md).
+## 2026-11-15 paired tags replace hand branding
+
+Ben, Codex chat:
+> use the tags and then create an icon for it and make it an svg and make it have a transparent background and then remove all the hand icon ideas and parts of the logos from the website in the repo and get the app icon to actually be the one with tags and align the tags once separated and isolated to be in expert ui ux practices in alignment vertically and horizontally to the left of the wordmark where an expert would put it also on the app too
+
+Used in: brand/mark.svg, brand/constitution.md C1, app/src/ui/brand-mark.tsx, app/app.json, web/components/chrome.tsx, brand/explore/web-home.
+
+## 2026-11-15 Google sign-in UI for Nate to connect
+
+Ben, same Codex chat:
+> add a sign in with google to the app ui that nate can wire on the backend
+
+Used in: app/src/you/sign-in.tsx and sign-in-wire.ts. The UI does not claim a session until the existing server exchange succeeds.

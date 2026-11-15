@@ -359,6 +359,13 @@ browserTest('render: a pressable photo tile drawn as a background image, with no
   const found = await ids(app(`<div role="button" style="margin:16px 20px;width:167px;height:200px;cursor:pointer"><div data-photo aria-label="A jacket" style="width:167px;height:167px;border-radius:20px;background:url(${PX}) center/cover"></div><p style="font-size:15px">Carhartt jacket</p></div>`), 'app');
   assert.deepEqual(found.filter(o => /^U1 /.test(o)), []);
 });
+browserTest('render B32: a tag image inside the brand-mark wrapper belongs to the lockup', { skip: !pw }, async () => {
+  const body = `<section class="s" data-view><div style="display:flex;align-items:center;gap:8px"><span data-part="brand-mark" style="display:block;width:24px;height:24px;position:relative"><span style="display:block;height:0"><img src="${PX}" alt="" style="position:absolute;top:0;left:0;width:24px;height:24px"></span></span><p class="m">secondhand</p></div></section>`;
+  const found = await ids(body);
+  assert.deepEqual(found.filter(o => /^B32 /.test(o)), []);
+  const broken = await ids(body.replace('data-part="brand-mark"', ''));
+  assert.ok(broken.some(o => /^B32 /.test(o)));
+});
 // Each case renders in its own page of the one browser, so they run side by side.
 describe('render: in a real browser, side by side', { concurrency: 4 * availableParallelism() }, () => {
   for (const a of browserTests) test(...a);
