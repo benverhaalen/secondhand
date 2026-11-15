@@ -28,4 +28,4 @@ Nothing in the app reads these tables. If a `comp` table is built in Delta later
 
 ## Next action
 
-Nate: pull NBER into the workspace when there's a slot, and tell the backtest thread the CSV paths. Ben: the two decisions in the research note's "Grey areas" (third-party scrapes and the Kaggle rules).
+Nate: pull NBER into the workspace when there's a slot (Ben chose this over his Mac, 09:09), freeze it with `--share=0.05` (datasets.md §3 gives the reason), and tell the backtest thread the paths. Nothing runs until Ben says the backend is ready. Ben: third-party scrapes are still open; Kaggle Mercari is in, on his call.
