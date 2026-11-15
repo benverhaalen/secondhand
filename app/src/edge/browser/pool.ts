@@ -9,14 +9,14 @@ import { join } from 'node:path';
 import { mask } from '../../../../log/index.js';
 import type { Leases } from '../events/ports.ts';
 import type { Log } from '../../../../log/index.js';
-import type { Accounts, AuthVault, StorageState } from './auth.ts';
+import type { Accounts, AuthVault, StorageState, ProfileRegistry } from './auth.ts';
 import { PROFILES } from '../harness/platform.ts';
 import type { Site } from '../harness/protocol.ts';
 
 export type PoolPage = { close(): Promise<void> };
 export type PoolContext<P extends PoolPage = PoolPage> = { newPage(): Promise<P>; close(): Promise<void>; onClose(fn: () => void): void;
-  loadState?(s: StorageState): Promise<void>; exportState?(): Promise<StorageState> };
-export type LaunchOptions = { headless: boolean; timeoutMin?: number; proxy?: { server: string } };
+  profileSaved?(): boolean; loadState?(s: StorageState): Promise<void>; exportState?(): Promise<StorageState> };
+export type LaunchOptions = { headless: boolean; timeoutMin?: number; user_id?: string; account_id?: string; proxy?: { server: string } };
 export type Launcher<P extends PoolPage = PoolPage> = {
   persistent(profileDir: string, opts: LaunchOptions): Promise<PoolContext<P>>;   // one account's profile, kept on disk
   anonymous(opts: LaunchOptions): Promise<PoolContext<P>>;                         // a throwaway context on the shared browser
@@ -24,14 +24,14 @@ export type Launcher<P extends PoolPage = PoolPage> = {
 // Where an account's steady address comes from (a proxy in the person's region); undefined means this host's own address.
 export type AddressBook = (account_id: string) => string | undefined;
 
-export type Task<P extends PoolPage, T> = { account_id?: string; site?: Site; job_id: string; run(page: P): Promise<T> };
+export type Task<P extends PoolPage, T> = { user_id?: string; account_id?: string; site?: Site; job_id: string; run(page: P): Promise<T> };
 export type Dispatched<T> = { ok: true; value: T; ms: number; warm: boolean } | { ok: false; status: 409 | 'not_linked' | 'error'; message: string; ms: number };
 
 type Slot<P extends PoolPage> = { ctx: Promise<PoolContext<P>>; ready: boolean; dead: boolean; active?: boolean; lastUsed: number; loaded?: boolean; version?: number; headless?: boolean };
 
-export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts: linked, vault, address = () => undefined, maxAccounts = 32,
+export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts: linked, vault, registry, address = () => undefined, maxAccounts = 32,
   publicConcurrency = 8, leases, leaseTtlMs = 120_000, log, now = () => performance.now() }: {
-  launcher: Launcher<P>; profileRoot: string; accounts?: Accounts; vault?: AuthVault; address?: AddressBook; maxAccounts?: number;
+  launcher: Launcher<P>; profileRoot: string; accounts?: Accounts; vault?: AuthVault; registry?: ProfileRegistry; address?: AddressBook; maxAccounts?: number;
   publicConcurrency?: number; leases: Leases; leaseTtlMs?: number; log?: Log; now?: () => number;
 }) {
   const accounts = new Map<string, Slot<P>>();
@@ -46,14 +46,14 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
   };
   const profileDir = (account_id: string) => profileDirFor(profileRoot, account_id);
 
-  function slotFor(account_id: string, site?: Site): Slot<P> {
+  function slotFor(account_id: string, site?: Site, user_id?: string): Slot<P> {
     const have = accounts.get(account_id);
     if (have && !have.dead) return have;
     evictIdle();
     const slot: Slot<P> = { ctx: Promise.resolve(null as never), ready: false, lastUsed: now(), dead: false };
     launches++;
     // A restart relaunches the same directory, so the login survives; a site that logged us out answers auth_expired in its adapter.
-    slot.ctx = launcher.persistent(profileDir(account_id), opts(account_id, site)).then(c => { slot.ready = true; c.onClose(() => { slot.dead = true; }); return c; },
+    slot.ctx = launcher.persistent(profileDir(account_id), { ...opts(account_id, site), ...(registry ? { user_id, account_id } : {}) }).then(c => { slot.ready = true; c.onClose(() => { slot.dead = true; }); return c; },
       e => { slot.dead = true; throw e; });
     accounts.set(account_id, slot);
     return slot;
@@ -92,7 +92,7 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
 
   async function runOn<T>(ctx: Promise<PoolContext<P>>, task: Task<P, T>): Promise<T> {
     const page = await (await ctx).newPage();
-    try { return await task.run(page); } finally { await page.close().catch(e => { log?.error('pool.page_close', e); }); }
+    try { return await task.run(page); } finally { await page.close().catch(e => { log?.error('pool.page_close', registry ? new Error('profile page close failed') : e); }); }
   }
 
   async function dispatch<T>(task: Task<P, T>): Promise<Dispatched<T>> {
@@ -100,18 +100,21 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
     const go = async (): Promise<Dispatched<T>> => {
       if (task.account_id) {
         // Not linked, or no stored sign-in: nothing is launched for it.
-        const acct = linked ? await linked.byId(task.account_id) : undefined;
+        const profile = registry && task.user_id ? await registry.get(task.user_id, task.account_id) : undefined;
+        const acct = registry ? (profile?.state === 'linked' && profile.site === task.site ?
+          { account_id: profile.account_id, person_id: profile.user_id, site: profile.site, token_ref: '' } : undefined) :
+          linked ? await linked.byId(task.account_id) : undefined;
         if (!acct) return { ok: false, status: 'not_linked', message: 'this account is not linked', ms: now() - t0 };
         const leased = await leases.withLease<Dispatched<T>>(acct.account_id, task.job_id, leaseTtlMs, async () => {
           const before = accounts.get(acct.account_id);
           const warm = !!before && !before.dead && before.ready;
-          const slot = slotFor(acct.account_id, acct.site);
+          const slot = slotFor(acct.account_id, acct.site, task.user_id);
           if (slot.active) return { ok: false, status: 409, message: 'account already has a page in use', ms: now() - t0 };
           slot.active = true;
           let ran = false;
           try {
             const ctx = await slot.ctx;
-            if (!slot.loaded && ctx.loadState && vault) {
+            if (!registry && !slot.loaded && ctx.loadState && vault) {
               const snapshot = await vault.snapshot(acct.token_ref);
               if (!snapshot.state) {
                 slot.dead = true; await ctx.close();
@@ -130,7 +133,7 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
             // expiry must not erase the stored sign-in; the adapter reports auth_expired and the person relinks).
             try {
               const ctx = ran && slot.ready && !slot.dead ? await slot.ctx : undefined;
-              if (ctx?.exportState && vault && slot.version !== undefined) {
+              if (!registry && ctx?.exportState && vault && slot.version !== undefined) {
                 const st = await ctx.exportState();
                 const had = await vault.get(acct.token_ref);
                 if (st.cookies.length || !had?.cookies.length) {

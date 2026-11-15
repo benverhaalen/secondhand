@@ -405,6 +405,7 @@ test('F2: scheduler pool work inherits its account lease without releasing it ea
       assert.equal(leases.take('a', 'signin', 1000).ok, false, 'pool released the outer sweep lease');
       return { ok: true };
     } });
+  scheduler.resume('a'); // Explicitly due: new accounts now start spread across the first cadence.
   await scheduler.tick(); assert.equal(f.launched.length, 1); await pool.close();
 });
 
@@ -451,4 +452,20 @@ test('F2: an inherited lease also refuses success after ownership is lost', asyn
     });
     assert.equal(inner.ok, false, 'nested protected work reported success after losing the account');
   });
+});
+
+test('cloud profiles omit state import/export while local CDP retains both', async () => {
+  let loaded = 0, exported = 0, stopped = 0;
+  const ctx = { pages: () => [], newPage: async () => ({ close: async () => {} }), close: async () => {},
+    addCookies: async () => { loaded++; }, addInitScript: async () => {},
+    storageState: async () => { exported++; return { cookies: [], origins: [] }; } };
+  const pw: CdpPw = { chromium: { connectOverCDP: async () => ({ contexts: () => [ctx], newContext: async () => ctx, close: async () => {}, on() {} }) } };
+  for (const kind of ['local', 'cloud'] as const) {
+    const launcher = cdpLauncher(pw, { kind, open: async () => ({ cdpUrl: 'https://cdp.invalid', cloudProfile: kind === 'cloud', stop: async () => { stopped++; } }) });
+    const context = await launcher.persistent('/unused', { headless: true });
+    if (kind === 'cloud') { assert.equal(context.loadState, undefined); assert.equal(context.exportState, undefined); }
+    else { await context.loadState!({ cookies: [{ name: 'synthetic', value: 'example', domain: '.invalid', path: '/', expires: -1, httpOnly: true, secure: true, sameSite: 'Lax' }], origins: [] }); await context.exportState!(); }
+    await context.close();
+  }
+  assert.equal(loaded, 1); assert.equal(exported, 1); assert.equal(stopped, 2);
 });

@@ -1,34 +1,34 @@
 // The pool's browser-use launcher (Nate, product/words.md 2026-11-14 "use browser-use", "store auth through browser-use"). Server only.
 // Every browser is reached over CDP, as browser-use reaches it: a local Chrome on a kept profile directory, or a Browser Use Cloud
 // browser (POST /api/v4/browsers, then connect to its cdpUrl; https://github.com/browser-use/browser-use/blob/main/CLOUD.md).
-// The sign-in travels as storage state ({cookies, origins[].localStorage}, the shape browser-use's export_storage_state writes),
-// loaded when a lease starts and exported when it ends, behind account.token_ref (auth.ts). No captcha_solver: a challenge pauses.
+// Cloud profile sign-in stays with the vendor. Legacy local sessions load/export storage state behind account.token_ref
+// (auth.ts). No captcha_solver: a challenge pauses.
 import { spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Launcher, LaunchOptions, PoolContext } from './pool.ts';
-import type { StorageState } from './auth.ts';
+import type { StorageState, ProfileRegistry } from './auth.ts';
 
-export type CdpEndpoint = { cdpUrl: string; live_url?: string; stop(): Promise<void> };
+export type CdpEndpoint = { cdpUrl: string; live_url?: string; cloudProfile?: boolean; isStopped?(): boolean; stop(): Promise<void> };
 // Where a browser comes from. profileDir is undefined for an anonymous public browser.
 export type BrowserSource = { kind: 'local' | 'cloud'; open(profileDir: string | undefined, opts: LaunchOptions): Promise<CdpEndpoint> };
 
 type CdpPage = { close(): Promise<void> };
-type CdpContext = { pages(): CdpPage[]; newPage(): Promise<CdpPage>; addCookies(c: StorageState['cookies']): Promise<void>;
+type CdpContext<P extends CdpPage = CdpPage> = { pages(): P[]; newPage(): Promise<P>; addCookies(c: StorageState['cookies']): Promise<void>;
   addInitScript(s: { content: string }): Promise<void>; storageState(): Promise<StorageState>; close(): Promise<void> };
-type CdpBrowser = { contexts(): CdpContext[]; newContext(): Promise<CdpContext>; close(): Promise<void>; on(ev: 'disconnected', fn: () => void): void;
+type CdpBrowser<P extends CdpPage = CdpPage> = { contexts(): CdpContext<P>[]; newContext(): Promise<CdpContext<P>>; close(): Promise<void>; on(ev: 'disconnected', fn: () => void): void;
   newBrowserCDPSession?(): Promise<{ send(method: 'Browser.close'): Promise<unknown> }> };
-export type CdpPw = { chromium: { connectOverCDP(url: string, o?: { timeout?: number }): Promise<CdpBrowser> } };
+export type CdpPw<P extends CdpPage = CdpPage> = { chromium: { connectOverCDP(url: string, o?: { timeout?: number }): Promise<CdpBrowser<P>> } };
 
-export type AuthedContext<P> = PoolContext<P & CdpPage> & { loadState(s: StorageState): Promise<void>; exportState(): Promise<StorageState>; live_url?: string };
+export type AuthedContext<P> = PoolContext<P & CdpPage> & { loadState?(s: StorageState): Promise<void>; exportState?(): Promise<StorageState>; live_url?: string };
 
-export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage> {
-  async function connect(profileDir: string | undefined, opts: LaunchOptions): Promise<AuthedContext<CdpPage>> {
+export function cdpLauncher<P extends CdpPage>(pw: CdpPw<P>, source: BrowserSource): Launcher<P> {
+  async function connect(profileDir: string | undefined, opts: LaunchOptions): Promise<AuthedContext<P>> {
     const ep = await source.open(profileDir, opts);
-    let browser: CdpBrowser;
+    let browser: CdpBrowser<P>;
     try { browser = await pw.chromium.connectOverCDP(ep.cdpUrl, { timeout: 30_000 }); }
     catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/(wss?|https?):\/\/\S+/g, '[cdp]')}`); }
-    let ctx: CdpContext;
+    let ctx: CdpContext<P>;
     try { ctx = browser.contexts()[0] ?? await browser.newContext(); }
     catch (e) { await browser.close().catch(() => undefined); await ep.stop(); throw e; }
     let closed = false;
@@ -47,12 +47,17 @@ export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage>
         await ep.stop();
         closers.forEach(f => f());
       },
-      async loadState(s) {
+      // Cloud saves sign-in on stop: research/cross-cutting/nate/browser-use-cloud.md, Stored sign-in.
+      // Do not move cloud credentials through our process, even when a legacy vault is present.
+      ...(ep.cloudProfile ? {} : {
+      async loadState(s: StorageState) {
         if (s.cookies.length) await ctx.addCookies(s.cookies);
         for (const o of s.origins ?? []) if (o.localStorage.length) await ctx.addInitScript({ content:
           `if (location.origin === ${JSON.stringify(o.origin)}) { for (const [k, v] of ${JSON.stringify(o.localStorage.map(i => [i.name, i.value]))}) localStorage.setItem(k, v); }` });
       },
       exportState: () => ctx.storageState(),
+      }),
+      ...(ep.cloudProfile ? { profileSaved: () => ep.isStopped?.() === true } : {}),
       live_url: ep.live_url, // a cloud browser's live view; the server keeps it and hands the client only an opaque token
     };
   }
@@ -100,14 +105,14 @@ export function localChrome({ executablePath, scratch, headless, spawnFn = spawn
 // never in a URL; profileFor maps a profile directory to a cloud profile id when one was made (cloud_profile_id in browser-use 1.0).
 export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.browser-use.com/api/v4', country = 'us', timeoutMin = 5,
   profileFor = () => undefined, onStopFailed = () => undefined }: {
-  apiKey: string; fetchFn?: typeof fetch; base?: string; country?: string; timeoutMin?: number; profileFor?: (dir: string) => string | undefined;
+  apiKey: string; fetchFn?: typeof fetch; base?: string; country?: string; timeoutMin?: number; profileFor?: (dir: string, opts: LaunchOptions) => string | undefined | Promise<string | undefined>;
   onStopFailed?: (browser_id: string) => void;
 }): BrowserSource {
   const headers = { 'X-Browser-Use-API-Key': apiKey, 'content-type': 'application/json' };
   return {
     kind: 'cloud',
     async open(profileDir, opts) {
-      const profileId = profileDir ? profileFor(profileDir) : undefined;
+      const profileId = profileDir ? await profileFor(profileDir, opts) : undefined;
       const res = await fetchFn(`${base}/browsers`, { method: 'POST', headers,
         // the whole timeout is charged up front and refunded on stop, so it is sized to the job; a challenge is never solved here, it pauses for the person
         body: JSON.stringify({ proxyCountryCode: country, timeout: Math.min(240, Math.max(1, Math.ceil(opts.timeoutMin ?? timeoutMin))), solveCaptchas: false, ...(profileId ? { profileId } : {}) }) });
@@ -125,7 +130,7 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
       const { id, cdpUrl, live_url } = parsed;
       const stopOnce = () => stopId(id);
       let stopped = false;
-      return { cdpUrl, live_url, stop: async () => {
+      return { cdpUrl, live_url, cloudProfile: !!profileId, isStopped: () => stopped, stop: async () => {
         if (stopped) return;
         stopped = await stopOnce() || await stopOnce();
         if (!stopped) onStopFailed(id); // it may still be billing: the caller's sweep has to stop it
@@ -155,4 +160,14 @@ export function parseBrowser(value: unknown): { id: string; cdpUrl: string; live
   if (typeof id !== 'string' || !id.trim()) throw invalid();
   // Browser Use answers with an https: CDP address (seen 2026-11-15); connectOverCDP takes an http(s) endpoint as well as ws(s).
   return { id, cdpUrl: url(cdpUrl, ['ws:', 'wss:', 'https:', 'http:']), ...(live === undefined ? {} : { live_url: url(live, ['https:', 'http:']) }) };
+}
+
+// The directory is only a pool key. Ownership is checked using the explicit person and account.
+export function registryProfileFor(registry: ProfileRegistry) {
+  return async (_dir: string, opts: LaunchOptions): Promise<string> => {
+    if (!opts.user_id || !opts.account_id) throw new Error('profile owner required');
+    const row = await registry.get(opts.user_id, opts.account_id);
+    if (!row) throw new Error('profile not found');
+    return row.profile_id;
+  };
 }

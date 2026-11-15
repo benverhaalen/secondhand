@@ -1,6 +1,7 @@
 // A linked account's sign-in, held as browser-use storage state behind account.token_ref (spec/product.md#secrets-and-marketplace-sessions).
 // The state is a secret: it lives only in the secret scope (the vault port), never in a repo file, a log, a trace or a table.
-import type { Site } from '../harness/protocol.ts';
+import { SITES, type Site } from '../harness/protocol.ts';
+import { memoryStore, type Store, type Row } from '../events/ports.ts';
 
 export type Cookie = { name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: 'Strict' | 'Lax' | 'None' };
 export type StorageState = { cookies: Cookie[]; origins: { origin: string; localStorage: { name: string; value: string }[] }[] };
@@ -42,3 +43,55 @@ export function memoryAccounts(rows: (LinkedAccount | Omit<LinkedAccount, 'token
 }
 
 export { linkedList } from '../harness/linked.ts';
+
+// Cloud profiles contain the credentials at the vendor; these rows contain only references.
+export type ProfileRow = {
+  account_id: string; user_id: string; site: Site; profile_id: string;
+  state: 'linked' | 'needs_signin' | 'paused'; linked_at: string | null; last_ok_at: string | null;
+  data: 'synthetic' | 'example' | 'captured';
+};
+export type ProfileRegistry = {
+  get(user_id: string, account_id: string): Promise<ProfileRow | undefined>;
+  put(user_id: string, row: ProfileRow): Promise<void>;
+};
+
+
+function profileRow(row: ProfileRow): ProfileRow {
+  const id = (v: unknown) => typeof v === 'string' && /^[a-zA-Z0-9_-]{1,200}$/.test(v);
+  const date = (v: unknown) => v === null || (typeof v === 'string' && /^\d{4}-\d\d-\d\dT[\d:.]+Z$/.test(v) && Number.isFinite(Date.parse(v)));
+  if (![row.account_id, row.user_id, row.profile_id].every(id) || !SITES.includes(row.site) ||
+      !['linked', 'needs_signin', 'paused'].includes(row.state) || !['synthetic', 'example', 'captured'].includes(row.data) ||
+      !date(row.linked_at) || !date(row.last_ok_at)) throw new Error('invalid profile row');
+  return { account_id: row.account_id, user_id: row.user_id, site: row.site, profile_id: row.profile_id, state: row.state,
+    linked_at: row.linked_at, last_ok_at: row.last_ok_at, data: row.data };
+}
+
+export function storeProfileRegistry(store: Store): ProfileRegistry {
+  function owned(t: Store, user_id: string, account_id: string) {
+    if (!user_id || !account_id || t.systemRows('account', { id: account_id }).some(r => r.user_id !== user_id))
+      throw new Error('account owner mismatch');
+    return t.get<Row & Partial<ProfileRow>>('account', user_id, account_id);
+  }
+  return {
+    async get(user_id, account_id) {
+      const r = owned(store, user_id, account_id);
+      if (r && !r.profile_id) throw new Error('account needs profile migration');
+      return r?.profile_id ? profileRow(r as Row & ProfileRow) : undefined;
+    },
+    async put(user_id, input) {
+      if (input.user_id !== user_id) throw new Error('account owner mismatch');
+      const row = profileRow(input);
+      store.tx(t => {
+        const prior = owned(t, user_id, row.account_id);
+        if (prior?.site && prior.site !== row.site) throw new Error('account site mismatch');
+        if (t.systemRows('account', { profile_id: row.profile_id }).some(r => r.id !== row.account_id || r.user_id !== user_id))
+          throw new Error('profile already belongs to an account');
+        // Legacy token-backed accounts need an explicit migration; never discard their configuration here.
+        if (prior && !prior.profile_id) throw new Error('account needs profile migration');
+        t.put('account', { id: row.account_id, ...row, ...(prior ? { version: prior.version } : {}) });
+      });
+    },
+  };
+}
+
+export const memoryProfileRegistry = (): ProfileRegistry => storeProfileRegistry(memoryStore());
