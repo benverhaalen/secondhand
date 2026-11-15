@@ -23,7 +23,7 @@ export default function Shop() {
       <ShopView skip="empty, one, dense: a search answer says itself how many it found; offline: a search that cannot reach the server is failed"
         phase={shop.phase} state={shop.failure && shop.phase !== 'chat' ? 'failed' : shop.phase} turns={shop.turns} failure={shop.failure} saved={shop.saved}
         offer={shop.offer} onAskOffered={shop.askOffered} off={shop.off} onToggleSource={shop.toggleSource}
-        onAsk={shop.ask} onClose={close} onOpen={open} onReopen={shop.reopen} onRetry={shop.retry} />
+        onAsk={shop.ask} onAnswer={shop.answerAsk} onClose={close} onOpen={open} onReopen={shop.reopen} onRetry={shop.retry} />
     </Theme>
   );
 }

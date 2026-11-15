@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { valuate, basisOf, saleCurve, type ValuateCtx, type ValuationItem, type ObservationPort } from './valuate.ts';
@@ -6,7 +7,6 @@ import { fromResolved, nEff, type Comp } from './comps.ts';
 import { DECLARED, resolve } from './params.ts';
 import { memoryStore, type ParamStore, type Scope } from '../param/param.ts';
 import fs from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
 import { fittedReader } from '../param/export.ts';
 import { onOurSale } from './aci.ts';
 

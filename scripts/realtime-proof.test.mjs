@@ -80,7 +80,9 @@ test('7: route answer and per-site citations resolve to stored observation ids',
   const o = report.observed;
   assert.ok(o.citation_resolution.resolved.length > 1);
   assert.deepEqual(o.citation_resolution.missing, []);
-  for (const citation of [o.after.citation, o.after.last_sale.citation, ...o.after.per_site.map(s => s.citation)])
+  // A listing-dated comp is never a last sale (sold.ts dated_by), so last_sale is null when every comp is dated by its listing.
+  if (o.after.comps?.every(c => c.dated_by === 'listed')) assert.equal(o.after.last_sale, null);
+  for (const citation of [o.after.citation, ...(o.after.last_sale ? [o.after.last_sale.citation] : []), ...o.after.per_site.map(s => s.citation)])
     assert.ok(citation.basis_ids.every(id => o.observations.some(obs => obs.id === id)));
 });
 

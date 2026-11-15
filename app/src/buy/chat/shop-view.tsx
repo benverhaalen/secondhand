@@ -6,7 +6,7 @@
 // (ChatFrame); every row is a ListRow and every shelf a Rail of Tiles, so nothing has a size of its own.
 // Every word is in WORDS for the designer; every number is a field of a frame or a count of its rows.
 import { useCallback, useState } from 'react';
-import { Burst, Card, ChatFrame, EmptyState, IconButton, List, Message, money, Pill, Rail, SearchField, SITES, SourceFloat, Stack, Txt, type Point, type Site } from '@/ui';
+import { Burst, Card, ChatFrame, ChoiceChips, EmptyState, IconButton, List, Message, money, Pill, Rail, SearchField, SITES, SourceFloat, Stack, Txt, type Point, type Site } from '@/ui';
 import { AppState, StyleSheet, View } from 'react-native';
 import { useColors } from '@/ui/theme';
 import { markdown } from './markdown';
@@ -139,16 +139,44 @@ function Prose({ text }: { text: string }) {
   );
 }
 
-function Answer({ reply }: { reply: Reply }) {
+type AskBlock = Extract<NonNullable<Reply['blocks']>[number], { type: 'ask' }>['ask'];
+type OnAnswer = (ask: AskBlock, value: unknown, label: string) => void;
+
+function Answer({ reply, onAnswer }: { reply: Reply; onAnswer?: OnAnswer }) {
   const running = reply.state === 'running';
   return (
     <Stack gap="group">
       {running ? reply.tools.map(t => (
         <Txt key={t.id} role="caption">{[WORDS.tool[t.tool] ?? t.tool, t.phase === 'end' ? Object.values(t.counts)[0] : null].filter(v => v != null).join(' · ')}</Txt>
       )) : null}
-      {reply.blocks ? reply.blocks.map((b, i) => b.type === 'text' ? <Prose key={i} text={b.text} /> : <Widget key={i} result={reply.results[b.result_id]} widget={b.widget} />)
+      {reply.blocks ? reply.blocks.map((b, i) => b.type === 'text' ? <Prose key={i} text={b.text} />
+        : b.type === 'ask' ? <Question key={i} ask={b.ask} onAnswer={onAnswer} />
+        : <Widget key={i} result={reply.results[b.result_id]} widget={b.widget} />)
         : reply.text ? <Prose text={reply.text} /> : null}
       {reply.state === 'failed' || reply.error ? <Txt role="caption">{reply.error === 'cap_daily' ? WORDS.capDaily : WORDS.answerFailed}</Txt> : null}
+    </Stack>
+  );
+}
+
+// The chat's clarifying question, drawn as chips like a want's filters (spec/engines/capture.md section 4: one shape, one drawn part).
+// The proposed option shows picked; a tap answers once. Kinds without options are answered by typing in the bar.
+// shortcut: pick_many sends one tapped value as a one-item list, and a replaced ask is not hidden; upgrade when the chat asks pick_many questions.
+function Question({ ask, onAnswer }: { ask: AskBlock; onAnswer?: OnAnswer }) {
+  const [sent, setSent] = useState<string | null>(null);
+  const options = ask.kind === 'yes_no' && ask.options.length === 0
+    ? [{ value: true, label: 'Yes', proposed: false }, { value: false, label: 'No', proposed: false }] : ask.options;
+  const chips = options.map((o, i) => ({ id: String(i), label: o.label ?? String(o.value) }));
+  const proposed = options.findIndex(o => o.proposed);
+  const pick = (id: string) => {
+    if (sent !== null || !onAnswer) return;
+    const o = options[Number(id)];
+    setSent(id);
+    onAnswer(ask, ask.kind === 'pick_many' ? [o.value] : o.value, o.label ?? String(o.value));
+  };
+  return (
+    <Stack gap="group">
+      <Prose text={ask.words} />
+      {chips.length ? <ChoiceChips id={`ask-${ask.id}`} label={ask.words} options={chips} value={sent ?? (proposed >= 0 ? String(proposed) : '')} onChange={pick} /> : null}
     </Stack>
   );
 }
@@ -176,11 +204,11 @@ const SOURCE_CHIPS: { id: string; site?: Site; label?: string }[] = [
   { id: 'dupe', label: 'Dupe' }, { id: 'google_shopping', label: 'Google Shopping' },
 ];
 
-export function ShopView({ phase, state, skip, turns, failure, saved, offer, off = [], onToggleSource, onAsk, onAskOffered, onClose, onOpen, onReopen, onRetry }: {
+export function ShopView({ phase, state, skip, turns, failure, saved, offer, off = [], onToggleSource, onAsk, onAnswer, onAskOffered, onClose, onOpen, onReopen, onRetry }: {
   // The sources switched off for the next search, and the press that switches one. Shown before the first ask only.
   off?: string[]; onToggleSource?: (id: string) => void;
   phase: Phase; state: string; skip: string; turns: Turn[]; failure: ApiFailure | null; saved: Chat[]; offer: string | null;
-  onAsk: (text: string) => void; onAskOffered: () => void; onClose: () => void; onOpen: (url: string, id: string) => Promise<void>;
+  onAsk: (text: string) => void; onAnswer?: OnAnswer; onAskOffered: () => void; onClose: () => void; onOpen: (url: string, id: string) => Promise<void>;
   onReopen: (chat: Chat) => void; onRetry: () => void;
 }) {
   const [burst, setBurst] = useState<Bursting | null>(null);
@@ -221,7 +249,7 @@ export function ShopView({ phase, state, skip, turns, failure, saved, offer, off
             {t.reach.state === 'running' ? null : <Found reach={t.reach} query={query} onOpen={(url, id) => { onOpen(url, id); }} />}
           </Stack>
         )
-        : <Answer key={i} reply={t.reply} />)}
+        : <Answer key={i} reply={t.reply} onAnswer={i === turns.length - 1 ? onAnswer : undefined} />)}
       {offer ? <Pill id="shop-ask-why" kind="second" label={WORDS.askWhy} onPress={onAskOffered} /> : null}
       {failure && !turns.some(t => t.kind === 'search') ? <EmptyState title={WORDS.couldNot} line={WORDS.again} action={{ id: 'shop-retry', label: WORDS.retry, onPress: onRetry }} /> : null}
     </ChatFrame>
