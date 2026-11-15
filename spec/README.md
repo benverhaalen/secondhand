@@ -22,6 +22,7 @@ Everything under `spec/` that is not code is an *agent proposal* for Ben and Nat
 | [plans/workstreams.md](plans/workstreams.md) | The build piece by piece: the sessions, what each owns and delivers, the seams |
 | [plans/start-now.md](plans/start-now.md) | Every task that can begin this minute |
 | [plans/](plans/README.md) | How the build is organised: stages, task shape, test layers, the first tasks |
+| [hard-calls.md](hard-calls.md) | Where two good answers conflict (a better offer while the first buyer hasn't paid, silence, partial failures, disputes), the call we make and the field it is borrowed from |
 | [open-questions.md](open-questions.md) | What only Ben or Nate can settle, each with a recommendation |
 | [../docs/how-it-works/](../docs/how-it-works/README.md) | The same system explained for people, not for the agents that build it |
 
