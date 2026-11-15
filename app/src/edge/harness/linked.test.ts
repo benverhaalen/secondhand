@@ -1,6 +1,9 @@
 // Linked accounts only, end to end (spec/product.md "Added for the kernel"; Nate, product/words.md 2026-11-14):
 // a planted unlinked site gets zero launches, zero sweeps, zero scheduled jobs and zero adapter runs.
 import { test } from 'node:test';
+import { createRuntime } from '../api/runtime.ts';
+import { memoryStore } from '../events/ports.ts';
+import { createLog, memorySink } from '../../../../log/index.js';
 import assert from 'node:assert/strict';
 import { memoryAccounts, memoryVault } from '../browser/auth.ts';
 import { linkedList } from './linked.ts';
@@ -23,7 +26,7 @@ async function world() {
     const a = fakeAdapter(site, verb);
     return { ...a, run: (x: Record<string, unknown>, s: AbortSignal) => { runs.push(`${site}.${verb}`); return a.run(x, s); } };
   }));
-  return { vault, accounts, runs, harness: createHarness({ adapters, accounts }) };
+  return { vault, accounts, runs, harness: createHarness({ adapters, accounts: { ...accounts, byId: id => accounts.byId(id, 'p1') } }) };
 }
 
 test('harness: a call on an unlinked account runs no adapter', async () => {
@@ -65,4 +68,22 @@ test('pool, sweep and scheduler: the planted site gets zero launches, zero sweep
   const tick = await scheduler.tick();
   assert.deepEqual(swept, ['depop']);
   assert.deepEqual(tick.ran, ['a-depop']);
+});
+
+
+test('runtime harness gate refuses another person before adapter runs or writes', async () => {
+  let runs = 0;
+  const adapter = fakeAdapter('depop', 'end');
+  const runtime = createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink: memorySink() }), {
+    adapters: [{ ...adapter, async run(args, signal) { runs++; return adapter.run(args, signal); } }],
+  });
+  runtime.store.put('account', { id: 'owned', user_id: 'owner', site: 'depop', token_ref: 'fixture-owner' });
+  await runtime.vault.put('fixture-owner', { cookies: [], origins: [] });
+  const before = runtime.store.get('account', 'owner', 'owned');
+  const result = await runtime.harness.call('depop', 'end', { account_id: 'owned', person_id: 'other', operation_id: 'wrong-owner' });
+  assert.ok(!result.ok);
+  if (!result.ok) { assert.equal(result.error.code, 'policy_refused'); assert.equal(result.error.hint.kind, 'link_account'); }
+  assert.equal(result.meta.route_id, 'none'); assert.equal(runs, 0);
+  assert.deepEqual(runtime.store.get('account', 'owner', 'owned'), before);
+  assert.equal(runtime.store.jobs().length, 0);
 });

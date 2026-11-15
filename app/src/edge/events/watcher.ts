@@ -398,14 +398,16 @@ export function createWatcher(d: WatcherDeps) {
       return swept;
     },
     async relinked(account_id: string) {
-      const a = await d.accounts.byId(account_id);
+      const owner = (await d.accounts.linked()).find(a => a.account_id === account_id);
+      const a = owner ? await d.accounts.byId(account_id, owner.person_id) : undefined;
       if (!a) throw new Error(`cannot resume unlinked account ${account_id}`);
       markRelinked(store, log, { user_id: a.person_id, account_id });
       stale.delete(account_id);
       resumeAccount({ account_id, user_id: a.person_id, site: a.site as Site });
     },
     async cleared(account_id: string) {
-      const a = await d.accounts.byId(account_id);
+      const owner = (await d.accounts.linked()).find(a => a.account_id === account_id);
+      const a = owner ? await d.accounts.byId(account_id, owner.person_id) : undefined;
       if (!a) throw new Error(`cannot resume unlinked account ${account_id}`);
       resumeAccount({ account_id, user_id: a.person_id, site: a.site as Site });
       log.event('note', { msg: 'watcher account cleared', account_id });

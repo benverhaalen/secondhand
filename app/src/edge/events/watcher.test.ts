@@ -805,3 +805,17 @@ for (const contextualPort of [true, false]) test(`two sites negotiate against ne
   }
   assert.deepEqual(writes.sort(), ['depop', 'poshmark'], 'both offers are inside their own listing limits');
 });
+
+
+test('watcher resume resolves a linked row with its owner before writing', async () => {
+  const rig = smallRig(async () => ({ ok: true, data: [] }));
+  const account = (await rig.accounts.linked())[0];
+  const lookups: (string | undefined)[] = [];
+  const watcher = createWatcher({ ...rig, accounts: { async linked() { return [account]; }, async byId(id, person_id) {
+    lookups.push(person_id); return id === account.account_id && person_id === account.person_id ? account : undefined;
+  } } });
+  await watcher.relinked(account.account_id);
+  await watcher.cleared(account.account_id);
+  assert.deepEqual(lookups, [account.person_id, account.person_id]);
+  assert.deepEqual(rig.calls, []);
+});
