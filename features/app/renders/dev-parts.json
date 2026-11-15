@@ -6,6 +6,7 @@
   ],
   "skip": "",
   "catalog": true,
+  "wash": true,
   "status": "fail",
   "findings": [
     {
@@ -49,12 +50,6 @@
       "id": "B12",
       "where": "screen 6 \"$45\"",
       "msg": "is an amount with nothing beside it saying what it is: \"You keep $46.95\", not \"$46.95\" (C6)"
-    },
-    {
-      "level": "warn",
-      "id": "L2",
-      "where": "screen 8",
-      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
     },
     {
       "level": "warn",
