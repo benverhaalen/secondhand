@@ -18,7 +18,7 @@
 //
 // What the camera or a model filled sits on the lilac tint; what the person typed is plain (Ben, 08:12).
 // one at a time: cam-close (alternatives of one state each; .agents/checks/screens.mjs S2)
-import { Stack, router, useLocalSearchParams, type Href } from 'expo-router';
+import { Stack, router, useLocalSearchParams, type ErrorBoundaryProps, type Href } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
 import { useCameraPermissions, type CameraView } from 'expo-camera';
@@ -67,6 +67,15 @@ function start(drawn: Drawn | null, mode: Mode, lidar: boolean) {
     case 'done': return { done: steps.map(s => s.stage), facts: known(steps.length), stills: steps.length, phase: 'done' as Phase, cur: null };
     default: return { done: [], facts: {}, stills: 0, phase: 'typical' as Phase, cur: steps[0].stage };
   }
+}
+
+// A render error in capture shows a way out instead of closing the app (a Release build has no red screen).
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  useEffect(() => { log.error('camera.render', error); }, [error]);
+  const close = () => router.canGoBack() ? router.back() : router.replace('/' as Href);
+  return <Viewfinder state="failed">
+    <CameraOff title="Could not continue" line="Something went wrong with the camera." acts={[{ id: 'camera-crash-retry', label: 'Try again', onPress: () => void retry() }, { id: 'camera-crash-close', label: 'Close', onPress: close }]} />
+  </Viewfinder>;
 }
 
 export default function Camera() {
