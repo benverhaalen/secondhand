@@ -40,12 +40,12 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 
 | Id | State | Where |
 |---|---|---|
-| SV0 | built, on main; fresh Opus review running | the store is SQLite through node:sqlite (decision: [server-store.md](server-store.md)), c19e8af6; `node server/main.ts`, 9221b28a; proof `node --test server/main.test.ts` (6/6 on the Mac: a session written in `auth.ts` is read by the `/v1/me` route; limits and rules written in turn both survive). The full email sign-in through the server waits on SV3 |
-| SV1 | building | Mac workers srv-auth-1 (sign-in state), srv-http-1 (idempotency, visitor limits, decision key and versions, last open), srv-jobs-1 (jobs and frames on disk) |
-| SV2 | building | srv-jobs-1: a row is written only when its own `may_store` is true and `keep_until` has not passed; the search lead adds those fields to every row |
-| SV3 | building | srv-auth-1: the `sendCode` port, `SECONDHAND_DEV_CODE` for development only, refused in production; the vendor is open (§9.2) |
-| SV4 | partly on main | the entry starts the watcher and the pipeline (watch ticks logged, SIGTERM exits 0, run on the Mac); Dockerfile and fly.toml building (srv-host-1). Nothing created on Fly |
-| SV5 | partly on main; review running | account lookups scoped by person, fd545dcb; the job read and the example visitor in srv-jobs-1 |
+| SV0 | **done** (proof rerun by a fresh Opus reviewer on the Mac, 2026-11-15) | the store is SQLite through node:sqlite ([server-store.md](server-store.md)), c19e8af6 and review fixes fdff15a1; `node server/main.ts`, 9221b28a; proof `node --test server/proof.test.ts` (ff31ae39): the built server as its own process, sign in through the email routes, `/v1/me` through another route, two writes, restart, all holds |
+| SV1 | sign-in half **done** (same proof); the rest on main, review running | sign-in state 1ce5c2a3; jobs and frames dbbf817e; idempotency, visitor limits, decision key and versions, last open in srv-http-1 (building) |
+| SV2 | built, on main; fresh review running | dbbf817e: a listing row is persisted only when its own `may_store` is true and `keep_until` is absent, null or future (`api/keep.ts`); proof in `jobs.test.ts` (the stored JSON holds no `may_store: false` row while the live frame carried it). The search lead adds the fields to every row |
+| SV3 | **done** against its proof (start, verify, `/v1/me` on the server, rerun by a fresh reviewer); a real sender waits on Nate's vendor (§9.2) | 1ce5c2a3: `SECONDHAND_DEV_CODE` for development, refused at import in production; with no sender, start answers 503 and writes nothing; `configureSender(fn)` is the seam |
+| SV4 | built, on main; done when the container check passes in full | entry ticks the watcher and the pipeline (9221b28a); Dockerfile, fly.toml, `server/container-check.sh` (3c1a924a): on the Mac the image builds, `/healthz` answers, a watch tick is logged, SIGTERM exits 0, the database is on the volume; the refusal without `DECISION_SIGNING_KEY` waits on srv-http-1. Nothing created on Fly |
+| SV5 | account part **done** (fresh review, fd545dcb); the job read and the example visitor on main (dbbf817e), review running | |
 | SV6 | the engines lead's (EN6), agreed 2026-11-15 | built on the SV7 port |
 | SV7 | next | land the observation writer from `w/int-obs-1` with the rights refusal and per-row fields; ports agreed with the engines and data leads |
 | SV8 | not started | |
