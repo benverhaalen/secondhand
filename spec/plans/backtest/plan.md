@@ -193,9 +193,57 @@ Ben, 07:38: "wouldn't we want as close as possible? also pricing below vs above 
 | Source | Effort | What it gives | Terms | Use |
 |---|---|---|---|---|
 | **The forecast duel** (live listings, re-read later) | low: read pages twice | prospective price and speed outcomes, competitor comparison | the site's terms for reading listings, unread | **First choice.** The cleanest test |
-| Kaggle Mercari price challenge | lowest: one download | about 1.5M sold Mercari items, text only, no dates (*asserted* size) | the competition's data rules, unread | Model benchmark tonight (decision 31) |
+| Kaggle Mercari price challenge | lowest: one download | about 1.48M sold Mercari items, text only, no dates (*asserted* size) | the competition's data rules, unread | Model benchmark tonight (decision 31) |
 | Terapeak, by hand, about 200 items in the demo kinds | medium: a seller login, an hour | eBay sold prices and dates, up to 3 years | eBay content; the User Agreement is unread, and the API licence bars price modelling (§9 item 6) | Research only, kept out of the product, once someone reads the terms |
 | Mercari and Poshmark sold filters, by hand | medium | sold prices on those sites | unread | Second channel for apparel, shoes and bags |
 | Our own people's sales | grows with use | the truest rows: condition, fees, days | ours, with consent | The long-run test |
 | Ben's own Depop export | low | his past sales | his consent; he asked us earlier to stop using his Depop, so only if he offers it | Only on his word |
 | eBay API | - | - | the licence bars price modelling | **Not used** |
+
+## 8. What we can claim at each scale, and what runs in parallel
+
+Ben, 07:45: "compare the claims we can make at each scale and see if there is any way to do things in parallel where we can get more data ... with whatever data we get in each situation how do you test it then and what results would you be able to conclude ... the backend is not finished yet but we need to have an experiment designed and ready to run".
+
+### How sure each scale lets us be
+
+95% intervals, at a true within-20% rate of 70% and a true range coverage of 80%. "Smallest lift we can see" is the gain over the eBay median that the paired test detects 8 times in 10, assuming 30% of pairs disagree. Correlated sales (about 10 per product, *assumed* within-product correlation 0.1) roughly halve the effective n; the second figure includes that (*inferred*, my arithmetic).
+
+| Sales scored | Within 20% reads | Range coverage reads | Smallest lift we can see | Per kind (of 6) |
+|---|---|---|---|---|
+| 30 | 52 to 83% (45 to 87%) | 63 to 90% | 27 points | none |
+| 100 | 60 to 78% (57 to 81%) | 71 to 87% | 15 (21) points | none |
+| 300 | 65 to 75% (62 to 77%) | 75 to 84% | 9 (12) points | 56 to 81% each: exploratory |
+| 1,000 | 67 to 73% (66 to 74%) | 77 to 82% | 5 (7) points | 63 to 76% each: claimable |
+| 3,000 | 68 to 72% | 79 to 81% | 3 (4) points | 66 to 74% each |
+| about 1.48 million (Kaggle) | ±0.1 point | not applicable | under 1 point | yes |
+
+Speed odds calibrated within 5 points need about 385 resolved listings per probability bin, so speed calibration is claimable only at the 7- and 30-day reads of a large duel; before that it is shown as raw counts.
+
+### The scales, what each tests, and what it lets us say
+
+| Scale | Data | Ready when | Test | We can say | We cannot say |
+|---|---|---|---|---|---|
+| **S0. Now, no data** | a synthetic market with known premiums ([synthetic.py](../../../jobs/valuation/synthetic.py)), plus the deterministic benches | now; needs no backend | the harness's own checks (decision 23) and whether the model recovers the planted premiums | "The test catches leaks, a cheating oracle scores 100%, random comps score no better than the baseline; never sold twice; fees exact; the photo gate catches planted lies" | Anything about accuracy on real items |
+| **S1. Tonight, Kaggle Mercari** | about 1.48M sold items (*asserted* from memory), text and category only, random split | one download | our hedonic model (it uses brand, category and condition, which the data has) against the category median and the public leaderboard | "On about 1.5M real Mercari sales, text-only pricing scores RMSLE X against a winning 0.39": a tight number on a public test | The comp engine, time order, photos, speed |
+| **S2. Tonight, hand-collected sold rows** | about 300 sold rows, 6 people × 1 kind × 50 | an hour each, in parallel | the full backtest (decisions 1 to 22) with our engine or, until it is ready, the Python model in [market.py](../../../jobs/valuation/market.py) | Overall within-20%, $ off, bias, coverage, hit rate, and a lift if it is 9 to 12 points or more | Per-kind claims; small lifts; speed |
+| **S3. By the demo, the duel** | about 300 live listings recorded tonight, perhaps 20 to 60 sold by the demo | re-read once before the demo | prospective scoring of everything frozen tonight, including any competitor's price | "We wrote these down before they sold; here are the first N": a direction, honestly small | A lift under about 25 points; any speed claim |
+| **S4. 7 and 30 days, the duel** | perhaps half the 300 sold in a week (the eBay snapshot found about 50% of live fixed-price listings sold within roughly a week, *observed* as reported) | after the event | the same, plus speed odds against outcomes | Price claims at about ±7 points; speed in 2 or 3 bins | Fine speed calibration |
+| **S5. A weekend or a scraper** | 1,000 to 3,000 sold rows | after the event, once terms are read | the full cube, leave-one-kind-out, ceiling skill | Per-kind claims; lifts of 5 points; "works on kinds it was not tuned on" | Money and sell-through |
+| **S6. Our own users** | real listings and sales | months | everything, plus the paired live test | Money kept, sell-through, time saved | — |
+
+### What runs in parallel
+
+- **One collection pass feeds three tests.** For each kind, a collector saves 50 sold listings (the S2 backtest) and 50 live ones (the S3 duel); the same rows seed the season series later. Six kinds, six people, one hour.
+- **The duel records inputs, not just our answer.** Each live listing is saved with its title, photos link, ask and timestamp now. Any engine version can be scored on it later, prospectively, as long as that version's commit is older than the listing's sale and duel outcomes are never used for tuning. So the unfinished backend does not block starting the duel tonight.
+- **Contestants are interchangeable.** The runner takes any function `(rows before the freeze, item, freeze date) → q10, q50, q90, shown`. Today the contestants are the baselines and the Python model; the real engine plugs in when it is done, scored on the same frozen rows.
+- **S0 and S1 need no one.** They run on a laptop while people collect.
+
+### What each result lets us conclude, written before the run
+
+| Result on the primary claim (paired within-20% lift over the eBay median) | The sentence we may use |
+|---|---|
+| Interval above 0 | "On N real sales, we were within 20% of the sale price more often than the eBay sold median: X% against Y%." |
+| Interval includes 0, coverage passes | "As accurate as the eBay sold median, and unlike it, a range that held Z% of the time and a clear 'not sure' when the data is thin." |
+| Interval below 0 | "The eBay sold median beat us on these N sales." Shown, with the cells where we lost, and no accuracy claim made |
+| Coverage outside 75 to 85% | "Our ranges are not yet calibrated" and no range claim |
+| Too few resolved | "N resolved so far; too few to say", with the count and the date of the next read |
