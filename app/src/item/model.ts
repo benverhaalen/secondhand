@@ -276,7 +276,7 @@ export function planSites(w: World, it: Item, price: Cents, flipped: Site[] = []
     const blocked = fit?.verdict === 'blocked', avoid = fit?.verdict === 'avoid';
     const can = linked && !blocked;
     const on = can && listed.has(c.site) !== flipped.includes(c.site);
-    const keep = `You keep ${usd(youKeep(c.site, price))}`;
+    const keep = `You get ${usd(youKeep(c.site, price))}`;
     // A site that posts says why it was picked for this kind of thing, then what lands in the account there.
     const why = blocked ? `Not allowed here. ${fit!.why}` : !c.account ? 'Not linked' : !linked ? 'Signed out'
       : on ? (fit ? `${PICKED[fit.verdict]}: ${lower(fit.why)}. ${keep}` : `Posts at ${usd(price)}. ${keep}`)

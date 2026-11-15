@@ -102,7 +102,7 @@ test('the plan says why each site is picked, and lists them from where the thing
   assert.deepEqual(s.map(x => x.site), ['ebay', 'depop', 'poshmark', 'mercari', 'facebook'], 'best, good, then ok in the order the sites were linked');
   assert.ok(s[0].why.startsWith('Best for this: sports memorabilia and fan gear is core here'), s[0].why);
   assert.ok(s[1].why.startsWith('Sells well: jerseys are named under tops'), s[1].why);
-  assert.match(s[0].why, /\. You keep \$\d+(\.\d\d)?$/);
+  assert.match(s[0].why, /\. You get \$\d+(\.\d\d)?$/);
   assert.deepEqual(s.filter(x => x.on).map(x => x.site), ['ebay', 'depop'], 'best and good post by default; ok waits to be asked');
   const reach = planSites(w, item, 4000, ['facebook', 'poshmark', 'mercari']);
   assert.equal(reach.filter(x => x.on).length, 5, 'one draft can go to all five');
