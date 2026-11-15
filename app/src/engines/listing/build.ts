@@ -11,6 +11,7 @@
 import { buildTitle, lint } from '../../../../scripts/listing-lint.mjs';
 import { money } from './money.ts';
 import { missingFor, type SelectionContext } from '../capture/complete.ts';
+import type { Site as CaptureSite } from '../capture/table.ts';
 import platformFit from '../../../../research/list/ben/platforms/platform-fit.json' with { type: 'json' };
 
 export type Attr = {
@@ -67,6 +68,10 @@ function shorten(value: Attr['value'], max: number | null): Attr['value'] {
   return text.slice(0, max + 1).replace(/\S+$/, '').trimEnd();
 }
 
+function isCaptureSite(site: keyof typeof platformFit.platforms): site is CaptureSite {
+  return site === 'ebay' || site === 'facebook' || site === 'depop' || site === 'poshmark' || site === 'mercari';
+}
+
 export function buildListing(item: ItemCard, site: keyof typeof platformFit.platforms, opts: Options) {
   money(opts.price_cents, 'price_cents'); money(opts.floor_cents, 'floor_cents');
   const profile = platformFit.platforms[site];
@@ -83,7 +88,7 @@ export function buildListing(item: ItemCard, site: keyof typeof platformFit.plat
   rows.sort((a, b) => Number(search(b)) - Number(search(a)) ||
     (search(a) ? (rank[b.importance.rank[site]] ?? 0) - (rank[a.importance.rank[site]] ?? 0) : 0));
   const fields: Record<string, Attr['value']> = {};
-  const missing = missingFor(item.attrs, item.kind, site, opts.confirm_mode ?? 'tap', opts);
+  const missing = isCaptureSite(site) ? missingFor(item.attrs, item.kind, site, opts.confirm_mode ?? 'tap', opts) : [];
   for (const row of rows) {
     const target = row.site_names[site];
     const attr = item.attrs[row.field];

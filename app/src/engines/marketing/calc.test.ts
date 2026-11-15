@@ -4,6 +4,10 @@ import { calculate, scoreCandidate, type MarketingInput, type MoneyCandidate } f
 import { memoryStore } from '../param/param.ts';
 import { missingFor } from '../capture/complete.ts';
 const as_of = '2026-11-15T00:00:00Z';
+type ListedPlan = Extract<ReturnType<typeof calculate>, { verdict: 'list' }>;
+function assertListed(out: ReturnType<typeof calculate>): asserts out is ListedPlan {
+  assert.equal(out.verdict, 'list');
+}
 export const fixture = (site: MarketingInput['site'] = 'ebay'): MarketingInput => ({
   item: { item_id: 'i1', kind: 'apparel', attrs: { type: { value: 'Jacket', source: 'label', confirmed: true }, size_label: { value: 'M', source: 'label', confirmed: true }, condition: { value: 'good', source: 'you_said', confirmed: true }, colour: { value: 'Blue', source: 'label', confirmed: true }, department: { value: 'unisex', source: 'label', confirmed: true }, brand: { value: 'Patagonia', source: 'label', confirmed: true }, model: { value: 'Better Sweater', source: 'label', confirmed: true } }, photos: [{ photo_id: 'front', score: .9 }] },
   site, connected: true, category_allowed: true, fit: 'good', category_id: 'jacket', rows: [], objective: 'balanced',
@@ -28,6 +32,7 @@ test('two effective sales widen the plan more than forty without skipping', () =
     comp_rows:Array.from({length:n}, (_,i) => ({id:`sold:${i}`,source:'fixture:sold',at:as_of}))});
   const thin = plan(2), dense = plan(40);
   assert.equal(thin.verdict, 'list'); assert.equal(dense.verdict, 'list');
+  assertListed(thin); assertListed(dense);
   assert.equal(thin.basis_level, 'variant');
   assert.equal(thin.blend_weight, 2 / (2 + 6)); assert.equal(dense.blend_weight, 40 / (40 + 6));
   assert.ok(thin.price!.spread_cents.hi - thin.price!.spread_cents.lo > dense.price!.spread_cents.hi - dense.price!.spread_cents.lo);
@@ -37,6 +42,7 @@ test('every supplied fallback level is preserved and broader levels widen the sa
   for (const basis_level of ['variant', 'product', 'family', 'kind', 'prior'] as const) {
     const out = calculate({...fixture(), basis_level});
     assert.equal(out.verdict, 'list'); assert.equal(out.basis_level, basis_level);
+    assertListed(out);
     const next = out.price!.spread_cents.hi - out.price!.spread_cents.lo;
     assert.ok(next > width, basis_level); width = next;
   }
@@ -44,14 +50,17 @@ test('every supplied fallback level is preserved and broader levels widen the sa
 test('starting rung uses effective weights and moves toward the kind rung', () => {
   const x = {...fixture(), kind_rung_cents:4500};
   const out = calculate(x);
+  assertListed(out);
   assert.equal(out.blend_weight, .5);
   assert.equal(out.price?.start_cents, 5500);
   const weighted = calculate({...x, weights:[1, .01, .01, .01, .01, .01]});
+  assertListed(weighted);
   assert.ok(weighted.blend_weight! < out.blend_weight!);
   assert.ok(Math.abs(weighted.price!.start_cents - 4500) < Math.abs(out.price!.start_cents - 4500));
 });
 test('no comp rows or metric evidence still gives a prior plan without inventing citations', () => {
   const out = calculate({...fixture(),basis_level:'prior',adjusted_cents:[],weights:[],sales_12m:0,sales_90d:0,comp_rows:[],metric_basis:{}});
+  assertListed(out);
   assert.equal(out.verdict,'list'); assert.equal(out.basis_level,'prior'); assert.equal(out.blend_weight,0);
   assert.ok(out.price!.path.every(p => p.price_cents >= 4200));
   assert.equal(out.citation_id,null); assert.equal(out.metrics?.position.state,'hidden'); assert.deepEqual(out.alternatives,[]);
@@ -64,6 +73,7 @@ test('fallback weight is a scoped param with its promoted version cited', async 
   const row = x.params!.propose({...entry,scope,value_or_hyperparams:18,prior:entry.prior,n_eff:100,fitted_on_ids_hash:null,metric:'utility',held_out_score:1,guard_lo:null,guard_hi:null},0);
   x.params!.promote(entry.name,scope,row.version,0,x.as_of);
   const out = calculate(x);
+  assertListed(out);
   assert.equal(out.blend_weight,.25); assert.equal(out.citation?.param_versions.marketing_blend_k,1);
 });
 test('invalid fallback inputs refuse with their cause', () => {
@@ -80,6 +90,7 @@ test('worked example scores $31.09 net and $29.61 utility before pooling candida
 test('supplied candidates also pool their prices and recompute keep and sale probability', () => {
   const x = {...fixture(),kind_rung_cents:4500,adjusted_cents:[5000,6000],weights:[1,1],candidates:[{...example,path:[example.path[0]]}]};
   const out = calculate(x);
+  assertListed(out);
   assert.equal(out.blend_weight,.25); assert.equal(out.price?.start_cents,4800);
   assert.equal(out.scores?.e_net_cents,Math.round(x.curve.p(4800,30)*x.keep(4800,'buyer_pays')));
 });
@@ -89,7 +100,9 @@ test('a positive utility plan is retained below the objective sale-probability p
   assert.equal(out.verdict,'list'); assert.ok(out.scores!.utility_cents>0); assert.ok(out.scores!.p_sale.d30<.4);
 });
 test('forbidden lever and missing provenance fail with their cause', () => {
-  assert.equal(calculate({ ...fixture('poshmark'), requested_levers: ['relist'] }).suggestions?.[0]?.kind, 'repost');
+  const out = calculate({ ...fixture('poshmark'), requested_levers: ['relist'] });
+  assertListed(out);
+  assert.equal(out.suggestions?.[0]?.kind, 'repost');
   assert.throws(() => calculate({ ...fixture(), comp_rows: [{ id: 'c1', source: '', at: as_of }] }), /basis/);
 });
 test('planted path and likers offer below the floor cannot execute', () => {
@@ -114,7 +127,8 @@ test('the final price rung keeps selling through the full horizon', () => {
   const x = fixture(); x.adjusted_cents = [5000]; x.weights = [1];
   x.curve = { p: (_p, d) => 1 - Math.exp(-d / 20), t: () => 20 * Math.log(2) };
   const plan = calculate(x);
-  assert.equal(plan.verdict, 'list'); assert.ok('scores' in plan); assert.ok(plan.scores); assert.ok(Math.abs(plan.scores.p_sale.d30! - (1 - Math.exp(-30 / 20))) < 1e-9);
+  assertListed(plan);
+  assert.ok(plan.scores); assert.ok(Math.abs(plan.scores.p_sale.d30! - (1 - Math.exp(-30 / 20))) < 1e-9);
 });
 test('greater visibility lowers holding time using the same survival curve', () => {
   const curve = { p: (_p: number, d: number) => 1 - Math.exp(-d / 20), t: () => 14 };
@@ -172,6 +186,7 @@ test('visibility refuses an absent denominator and tied presentation is determin
 });
 test('cooldowns come from the site; Poshmark engagement is handed to the person', () => {
   const out = calculate({ ...fixture('poshmark'), requested_levers: ['share', 'like', 'repost'] });
+  assertListed(out);
   assert.equal(out.standing?.relist.allowed, false);
   assert.equal(out.suggestions?.length, 3);
   assert.ok(out.suggestions?.every(s => s.handoff && s.site === 'poshmark' && s.reason));
@@ -184,6 +199,7 @@ test('marketing executes valuation ladder endings and drift', async () => {
   const x = {...fixture(), drift: .05, ending:{above_cents:2000,digits:[5,8]}};
   const expected = ladder(x.adjusted_cents,x.weights,x.ending,x.drift);
   const out = calculate(x);
+  assertListed(out);
   assert.ok(out.price?.path.every(r => expected.includes(r.price_cents)));
 });
 test('thin and stale proof retain the plan and each metric keeps its guard and citation', () => {
@@ -191,6 +207,7 @@ test('thin and stale proof retain the plan and each metric keeps its guard and c
   assert.equal(calculate({...x,comp_rows:x.comp_rows.slice(0,1)}).verdict,'list');
   assert.equal(calculate({...x,as_of:'2030-01-01'}).verdict,'list');
   const out = calculate(x);
+  assertListed(out);
   assert.equal(out.metrics?.e_net_cents.state,'shown');
   assert.notEqual(out.metrics?.utility_cents.citation?.id,out.metrics?.e_net_cents.citation?.id);
 });
@@ -204,6 +221,7 @@ test('scoped params replace visibility and timing priors and are cited', async (
     x.params!.promote(name,scope,row.version,0,x.as_of);
   }
   const out = calculate({...x,person:'owner',presentation:[{visibility:1,views:100,comp_views:10,cover_id:'a',title_form:'a'}],timing:{n:2,lift:2,noise:1,peak_at:'2026-11-18T10:00:00Z'}});
+  assertListed(out);
   assert.equal(out.list_at,'2026-11-18T10:00:00Z');
   assert.equal(out.citation?.param_versions.marketing_vis_exponent,1);
   assert.equal(out.metrics?.e_net_cents.citation?.param_versions.marketing_timing_horizon_h,1);
@@ -216,12 +234,14 @@ test('candidate money refuses fractional or unsafe cents by field', () => {
 test('fresh sold comps cannot certify absent or stale rank evidence', () => {
   const x = fixture();
   const out = calculate({...x, metric_basis:{...x.metric_basis,position:[]}});
+  assertListed(out);
   assert.equal(out.metrics?.position.state,'hidden');
   assert.equal(out.scores?.position,null);
 });
 
 test('all alternative quantities require the alternative model basis', () => {
   const x = fixture(); const out = calculate({...x,metric_basis:{...x.metric_basis,alternatives:[]}});
+  assertListed(out);
   assert.deepEqual(out.alternatives,[]);
   assert.ok(out.metrics?.alternatives.every(a => a.p_sale.state === 'hidden' && a.tts_days.every(t => t === null || t.state === 'hidden')));
 });
