@@ -28,15 +28,15 @@ This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored
 | Size | Examples | Image rounds | Who judges | States it runs |
 |---|---|---|---|---|
 | Small | A 404, an empty state, a settings row, a state of a screen that exists | None | Scripts | 1, then 7 to 12 |
-| Medium | A new screen made mostly of parts that exist | One round of 3 | The model | All but 6 |
-| Large | Today, the Sell grid, Capture, the Offer sheet, a section of the web front page | Up to 3 | The model, then Ben | All |
+| Medium | A new screen made mostly of parts that exist | One round of 3: two open, one steered | The model | All but 6 |
+| Large | Today, the Sell grid, Capture, the Offer sheet, a section of the web front page | Up to 3 rounds of 4: two open, two steered | The model, then Ben | All |
 
 | State | What happens | Next |
 |---|---|---|
 | 1. Triage | Size the work from the table above. | Small goes to 7. Otherwise 2. |
 | 2. Frame | Write who it is for, how often they come, what they came to do and where a mistake costs most. Say what they want, as opposed to what they would say ([Article 2.1](ui-constitution.md#article-2-start-from-the-person-not-the-screen)). | 3 |
 | 3. In the family? | List the parts in [app/src/ui](../app/src/ui/README.md), the patterns and the decisions that already cover this screen, and what is fixed around it: the tab bar, the header, the screens it sits between. A control that the Vercel UI SDK or shadcn already has is decided. | If the parts that exist can build it, 7, with no image. Otherwise 4. |
-| 4. Explore, 3 ways | Three designs, each from its own fresh call through the [`image-gen` skill](../.agents/skills/image-gen/SKILL.md), in parallel. Each call gets the intention, the fixed surroundings as images, feel references, the one named thing it differs on, how it will be judged and what not to do. It never gets a layout, copy, numbers or another design. | 5 |
+| 4. Explore, 2 to 4 ways | Each design comes from its own fresh call through the [`image-gen` skill](../.agents/skills/image-gen/SKILL.md), in parallel. Every call gets the intention, the fixed surroundings as images, feel references, how it will be judged and what not to do. Two calls get nothing more. Each of the others also gets one lever to push as far as it goes, from the table below. No call gets a layout, copy, numbers or another design. | 5 |
 | 5. Judge and split | A fresh judge gets the images, the intention and the fail list from `node scripts/ui-rules.mjs judge`, written before it looks. Sort every finding: an exact fix (a size, a gap, a color) is saved for the build and never sent back to the image model. A feel note goes into the next round. | New feel notes: 4, with 2 or 3 designs, 3 rounds at most. Otherwise the best so far, not the latest, moves on. |
 | 6. Ben reacts | Large only. Ben sees the best one or two. A model is a weak judge of taste, so his reaction replaces a third round. | Pick: 7. Redirect: 2. |
 | 7. Static build | Recreate the image as a still screen with sample content, in the smallest change that fits, from the parts and the brand values. Read the [coder card](../brand/coder-card.md). Apply the saved exact fixes. A part that is missing is added to app/src/ui with its reason. | 8 |
@@ -47,6 +47,22 @@ This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored
 | 12. Record | New parts go in app/src/ui, new motion standards in §3. Every finding from a judge, an audit or Ben goes through §7, so the next screen is checked for it. | Done |
 
 A beautiful screen with a dead control fails. So does a working screen that drifts from the chosen look.
+
+### Levers for the steered designs
+
+Ben: two designs "not specifically prompted to look a certain way", and the others told "to maximize different levers" ([words](words.md#2026-11-15-bold-with-a-purpose-alive-and-levers-for-ideation)). The list is an *agent proposal* from [bold-and-alive.md](../research/cross-cutting/ben/bold-and-alive.md). One lever per design, never two. Each names a change in structure, because a model answers an adjective with decoration.
+
+| Lever | The line the call gets | It must keep | Use on |
+|---|---|---|---|
+| One departure | Break from how apps of this kind do this in one way you can name, and say what the break is for | Everything else conventional | App and site |
+| One thing | Give one element nearly all the size, color and contrast | Every action, made smaller, not removed | App and site |
+| Hands on it | Let the person act on the item itself: drag, swipe or pinch | A tap that does the same | App |
+| Photo as hero | The item photo takes most of the screen and everything else shrinks to fit it | The price and the next action in view | App and site |
+| Brand signature | With the name covered it could only be secondhand: the gradient, Clofie and the hues are structure, not decoration | Photos untinted and first | App and site |
+| First action | The main action is reachable at first glance, with no scroll | What the person needs to trust it | App |
+| Alive | The still frame shows what moves and why | Nothing delays reading or the first tap | Site |
+
+Pick the levers the screen's job points at: the Sell grid suits photo as hero, an offer suits first action, the site's front page suits alive and one departure. "One departure" is where boldness and innovation live. Its test is the bold-move lines in the judge's list (rules Q1 to Q5): one named departure, a purpose, ownable with the name covered, one per view, and it never breaks legibility or a familiar control.
 
 ## 3. Motion
 
@@ -59,6 +75,10 @@ Sources: Apple HIG Motion, NN/g on animation duration, Emil Kowalski's animation
   - showing where something came from or went
   - showing that state changed
   - showing progress
+  - telling the story of what the product does (the signed-out site)
+  - recognition: the one signature motion, the gradient's drift
+- **Named, with its reason.** Every motion in the app is a row in [app/src/ui/motion.ts](../app/src/ui/motion.ts) with one of these six reasons and a duration from the tokens. A raw duration in a screen fails the check.
+- **The signed-out site is alive.** The product's own flow plays as the hero, in code. The gradient drifts with a meaning. Sections reveal once. The moves, each with its purpose and where it backfires, are in [bold-and-alive.md](../research/cross-cutting/ben/bold-and-alive.md#what-makes-the-signed-out-site-alive).
 - **Frequency sets the budget.** Actions done many times a day (switching tabs, scrolling the grid, typing) get no custom animation. Actions done tens of times a day get a short, subtle one. Rare moments (a sale, a first post) may take longer (Emil, NN/g, HIG).
 - **Duration.**
   - Feedback: about 100 to 150 ms.
@@ -210,6 +230,6 @@ Ben: "deterministic ways to assess adherence to certain rules whether its like a
 
 A rule leaves the list when removing it does not bring the mistake back, or when it keeps failing good work.
 
-**What scripts hold today.** Raw colors, literal fonts and the copy lint ([ui.mjs](../.agents/checks/ui.mjs)). The weight, space and radius scales ([brand.mjs](../.agents/checks/brand.mjs)). Screens built only from the fixed parts ([parts.mjs](../.agents/checks/parts.mjs)). The picks in picks.mjs: the name in lowercase, logos not names, no banned faces, no statistics notation, no handled counter, a fill and an icon for every state, square logos, no lines or grain, dark mode that changes only color, ink that is not pure black, one color family, text contrast on every hue's tint, fill and deep, and a behavior table for every screen.
+**What scripts hold today.** Raw colors, literal fonts and the copy lint ([ui.mjs](../.agents/checks/ui.mjs)). The weight, space and radius scales ([brand.mjs](../.agents/checks/brand.mjs)). Screens built only from the fixed parts ([parts.mjs](../.agents/checks/parts.mjs)). The picks in picks.mjs: the name in lowercase, logos not names, no banned faces, no statistics notation, no handled counter, a fill and an icon for every state, square logos, no lines or grain, dark mode that changes only color, ink that is not pure black, one color family, text contrast on every hue's tint, fill and deep, a behavior table for every screen, and motion that is named with a reason, honors Reduce Motion and never listens to scroll.
 
 **What they can't hold yet.** Anything that needs the rendered screen: one field per view, color under a third of the view, inside tighter than between, small targets, overflow. They stay with the §5 audit until the app renders in a test. Words in the app also pass `node scripts/copy-lint.mjs`, which flags candidates, not verdicts. Scripts can't prove a screen looks good; brand feel goes to Ben.
