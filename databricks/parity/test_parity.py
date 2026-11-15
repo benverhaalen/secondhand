@@ -31,6 +31,22 @@ def test_every_committed_typescript_case_matches_python():
     assert all(r['equal'] for r in results), [r for r in results if not r['equal']]
 
 
+def test_public_citation_id_matches_every_typescript_fixture():
+    from proof import citationId
+
+    fixtures, ts = inputs()
+    expected = {row['case']: row['value'] for row in ts}
+    checked = 0
+    for fixture in fixtures:
+        value = expected[fixture['case']]
+        answer = value.get('answer', {}) if isinstance(value, dict) else {}
+        citation = answer.get('citation') if isinstance(answer, dict) else None
+        if citation:
+            assert citationId(citation, citation['basis_hash']) == citation['id'], fixture['case']
+            checked += 1
+    assert checked > 0
+
+
 def test_changed_typescript_string_and_integer_are_unequal():
     fixtures, ts = inputs()
     changed = copy.deepcopy(ts)
