@@ -72,3 +72,21 @@ def test_history_same_time_sales_share_the_prior_window_and_include_its_boundary
     # March 31 is exactly 90 days after January 1; December 31 has expired.
     expected = ((math.log(10) + math.log(20)) * .125 + math.log(2)) / (2 * .125 + 2)
     assert fitted['index']('f', '2020-04-01') == expected
+
+
+@pytest.mark.parametrize('params', [DEFAULTS, LEGACY])
+def test_a_cheap_items_q10_cannot_round_to_zero(params):
+    row = {'comp_id': 'four-dollars', 'site': 'ebay', 'sold_at': '2026-11-14', 'price_cents': 400,
+           'kind': 'sold', 'level': 'variant', 'condition': 'good', 'w_match': 1, 'w_extract': 1}
+    p = {**params, 'site_ratios': {'depop': {'ratio': 1, 'q25': .1, 'q75': 1, 'n': 20}}}
+    out = comparables({'condition': 'good', 'site': 'depop'}, [row], '2026-11-15', p)
+    assert out['range'] == {'q10': 100, 'q50': 400, 'q90': 400}
+
+
+@pytest.mark.parametrize('params', [DEFAULTS, LEGACY])
+@pytest.mark.parametrize('cents, expected', [(250, 300), (350, 400)])
+def test_the_two_languages_cannot_disagree_at_a_half_dollar(params, cents, expected):
+    row = {'comp_id': 'half', 'site': 'ebay', 'sold_at': '2026-11-14', 'price_cents': cents,
+           'kind': 'sold', 'level': 'variant', 'condition': 'good', 'w_match': 1, 'w_extract': 1}
+    out = comparables({'condition': 'good'}, [row], '2026-11-15', params)
+    assert out['range'] == dict.fromkeys(('q10', 'q50', 'q90'), expected)

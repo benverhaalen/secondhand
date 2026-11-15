@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { memoryStore } from '../param/param.ts';
 import { onOurSale, qg, resolve, calibrationForCheck } from './aci.ts';
+import { comparables, DEFAULTS } from './comps.ts';
 import { resolve as resolveValuation } from './params.ts';
 
 const at = '2026-08-01T00:00:00Z', group = { kind: 'apparel' };
@@ -176,4 +177,17 @@ test('sold_cents rejects nonpositive, nonfinite and unsafe amounts before any wr
     assert.throws(() => onOurSale(store, group, issued, bad, at), RangeError);
     assert.deepEqual(['valuation_aci_alpha', 'valuation_conformal_scores'].map(name => store.rows(name, group)), before);
   }
+});
+
+
+test('a cheap item keeps its learning event when the issued four-dollar range reaches onOurSale', () => {
+  const store = memoryStore();
+  const found = comparables({ condition: 'good', kind: 'apparel', retail_cents: 800, depreciation: .5 }, [], at,
+    { ...DEFAULTS, prior_log_spread: Math.log(10) });
+  assert.equal(found.range.q50, 400); assert.equal(found.range.q10, 100);
+  const issued = { q10: found.range.q10!, q90: found.range.q90! };
+  assert.equal(onOurSale(store, group, issued, 400, at).applied, true);
+  const state = store.read('valuation_conformal_scores', group).value as { scores: { score: number; at: string; err: number }[] };
+  assert.deepEqual(state.scores, [{ score: Math.max(Math.log(issued.q10 / 400), Math.log(400 / issued.q90)), at, err: 0 }]);
+  assert.equal(calibrationForCheck(store, group, issued).n, 1);
 });
