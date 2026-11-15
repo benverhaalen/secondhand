@@ -93,7 +93,7 @@ export default function Buy() {
         onSubmit={q => router.push(href(w, `/search?q=${encodeURIComponent(q)}`))} />
       {state === 'offline' ? <OfflineLine /> : null}
 
-      {nothing ? <EmptyState title={w.name === 'new' ? 'Search five sites at once' : 'Nothing on your list'} line="Search for something, then watch it to hear when one turns up." /> : null}
+      {nothing ? <EmptyState title="Nothing on your list" line="Search for something, then watch it to hear when one turns up." /> : null}
 
       {asks.length ? <CardGroup label="Needs you">{asks.map((d, i) => card(d, i === 0))}</CardGroup> : null}
 

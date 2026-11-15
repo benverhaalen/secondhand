@@ -58,7 +58,7 @@
     {
       "state": "new",
       "route": "/buy?state=new",
-      "shows": "Search five sites at once"
+      "shows": "Nothing on your list"
     },
     {
       "state": "dense",

@@ -94,36 +94,50 @@
   },
   "controls": [
     {
+      "control": "Back",
+      "on_tap": "goes back, or to Today when opened directly",
       "id": "nav-back",
       "does": "goes back, or to Today when opened directly",
       "goes": "/"
     },
     {
+      "control": "thriftqueen’s row",
+      "on_tap": "opens the conversation with thriftqueen",
       "id": "thread-cv_jd",
       "does": "opens the thread with thriftqueen",
       "goes": "/messages/cv_jd"
     },
     {
+      "control": "workwear_co’s row",
+      "on_tap": "opens the conversation with workwear_co",
       "id": "thread-cv_je",
       "does": "opens the conversation",
       "goes": "/messages/cv_je"
     },
     {
+      "control": "Jordan’s row",
+      "on_tap": "opens the conversation with Jordan",
       "id": "thread-cv_cf",
       "does": "opens the conversation",
       "goes": "/messages/cv_cf"
     },
     {
+      "control": "canvasfan’s row, Draft ready",
+      "on_tap": "opens the conversation with canvasfan, its draft at the foot",
       "id": "thread-cv_pd",
       "does": "opens the conversation",
       "goes": "/messages/cv_pd"
     },
     {
+      "control": "Alex’s row, Possible scam",
+      "on_tap": "opens the conversation with Alex, flagged as a possible scam",
       "id": "thread-cv_lf",
       "does": "opens the thread flagged as a possible scam",
       "goes": "/messages/cv_lf"
     },
     {
+      "control": "Try again",
+      "on_tap": "loads the list again",
       "id": "messages-retry",
       "does": "loads the list again",
       "route": "/messages?state=failed",
