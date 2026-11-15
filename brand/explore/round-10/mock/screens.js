@@ -21,7 +21,7 @@
 
   const OSR = '<svg viewBox="0 0 78 12" fill="currentColor" aria-hidden="true"><rect y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" width="3" height="12" rx="1"/><path d="M32 2.6c2.6 0 5 1 6.8 2.7l-1.3 1.4A7.9 7.9 0 0 0 32 4.5c-2.1 0-4 .8-5.5 2.2l-1.3-1.4A9.8 9.8 0 0 1 32 2.6zm0 3.6c1.6 0 3.1.6 4.2 1.7l-1.3 1.4a4.2 4.2 0 0 0-5.8 0l-1.3-1.4A6 6 0 0 1 32 6.2zm0 3.4c.7 0 1.3.3 1.8.7L32 12l-1.8-1.7c.5-.4 1.1-.7 1.8-.7z"/><rect x="48.5" y=".5" width="24" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="50" y="2" width="21" height="8" rx="2"/><rect x="74" y="4" width="2" height="4" rx="1" opacity=".4"/></svg>';
   const os = (cls = '') => `<div class="os ${cls}" data-chrome><span>9:41</span>${OSR}</div>`;
-  const nav = (l = '', r = '') => `<div class="nav"><span>${l}</span><span class="wm">secondhand<i class="hand" aria-hidden="true"></i></span><span>${r}</span></div>`;
+  const nav = (l = '', r = '') => `<div class="nav"><span>${l}</span><span class="wm">secondhand<i class="hand" data-part="hand" aria-hidden="true"></i></span><span>${r}</span></div>`;
   const tabs = cur => `<nav class="tabs" aria-label="Tabs">${[['today', 'Today'], ['sell', 'Sell'], ['add', ''], ['buy', 'Buy'], ['you', 'You']].map(([k, w]) =>
     k === 'add' ? `<button class="tab add" aria-label="Add an item"><i>${ic('add')}</i></button>`
       : `<button class="tab"${k === cur ? ' aria-current="page"' : ''}>${ic(k)}${w}</button>`).join('')}</nav><i class="home" data-chrome></i>`;
@@ -56,7 +56,7 @@
     ['ikea-chair', 'IKEA Poäng chair', 'Listed at $40', 'ended', ['facebook'], '4/5', -.8],
   ];
   const tile = ([pic, name, price, state, sites, ar, rot]) => `<div class="tile"><span class="shot" style="--ar:${ar};--rot:${rot}deg">${ph(pic, '', name)}${tag(state)}</span>${V(8)}
-    <div class="t15 one">${name}</div>${V(4)}<div class="ln mid">${price ? `<span class="t13 i2 fx">${price}</span>` : `<span class="t13 i2">Pricing</span>${H(8)}<i class="hand inline" aria-hidden="true"></i><span class="fx"></span>`}${logos(sites)}</div></div>`;
+    <div class="t15 one">${name}</div>${V(4)}<div class="ln mid">${price ? `<span class="t13 i2 fx">${price}</span>` : `<span class="t13 i2">Pricing</span>${H(8)}<i class="hand inline" data-part="hand" aria-hidden="true"></i><span class="fx"></span>`}${logos(sites)}</div></div>`;
   const col = odd => `<div class="gcol">${ITEMS.filter((_, i) => i % 2 === odd).map(tile).join(V(16))}</div>`;
   const sell = () => phone('fixed', `${os()}${nav()}${V(8)}${line(`<div class="ln mid"><h1 class="h36 fx">Sell</h1>${ib('sort', 'Sort', 'gray')}${H(8)}${ib('filter', 'Filter by store', 'gray')}</div>`)}${V(24)}
     ${line(`<div class="chips" role="group" aria-label="Show">${['All', 'Live', 'Needs you', 'Sold', 'Draft'].map((w, i) => `<button class="chip" aria-pressed="${i === 0}">${w}</button>`).join('')}</div>`)}${V(16)}
