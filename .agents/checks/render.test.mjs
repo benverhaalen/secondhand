@@ -235,6 +235,10 @@ browserTest('render: a Locked ledger row waives the checks it names, only where 
   const over = led => deck(`<div style="position:relative"${led}><img alt="A jacket" src="${PX}" style="width:800px;height:400px;display:block"><p class="b" style="position:absolute;top:32px;left:32px">Carhartt jacket</p></div>`);
   assert.deepEqual((await ids(over(' data-ledger="L56"'))).filter(f => /sits on a photo/.test(f)), []);
   assert.ok((await ids(over(' data-ledger="A1"'))).some(f => /sits on a photo/.test(f)));
+  // L60: the site's wall runs up under the header's wordmark; only the marked wall may come that close.
+  const under = led => `<section class="s" data-view><p class="m" style="position:relative;z-index:1">secondhand</p><div style="position:absolute;top:0;left:0;width:320px;height:200px"${led}><img data-photo alt="A jacket" src="${PX}" style="width:320px;height:200px;display:block"></div></section>`;
+  assert.deepEqual((await ids(under(' data-ledger="L60"'))).filter(f => f.startsWith('B32')), []);
+  assert.ok((await ids(under(''))).some(f => /^B32 .*sits within/.test(f)));
 });
 
 browserTest('render: a photo that a box clips away above it does not crowd the wordmark', { skip: !pw }, async () => {

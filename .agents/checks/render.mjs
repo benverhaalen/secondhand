@@ -233,7 +233,7 @@ function checkView(view, ctx) {
     if (g.kind === 'tag' || g.kind === 'fill' && g.name !== 'page' && !(g.name === 'ink' && n !== 'ink')) E('B32', '', `the wordmark sits on ${g.name ? `--${g.name}` : 'a color'}: it goes on the page or the field (C1)`);
     const unit = t.size / 2, zone = [t.rect[0] - unit, t.rect[1] - unit, t.rect[2] + unit, t.rect[3] + unit], up = new Set(); for (let i = t.el; i >= 0; i = view.els[i].parent) up.add(i);
     const near = [...text.filter(o => o !== t && hits(o.rect, zone)).map(o => short(o.text)),
-      ...view.els.filter((el, i) => !up.has(i) && el.part !== 'hand' && (el.paints || el.bg || el.borders.length) && el.seen !== null && hits(el.seen ?? el.rect, zone) && !(el.rect[0] <= t.rect[0] && el.rect[1] <= t.rect[1] && el.rect[2] >= t.rect[2] && el.rect[3] >= t.rect[3])).map(el => el.part ? `[${el.part}]` : `<${el.tag}>`)];
+      ...view.els.filter((el, i) => !up.has(i) && el.part !== 'hand' && !waives(el, 'B32') && (el.paints || el.bg || el.borders.length) && el.seen !== null && hits(el.seen ?? el.rect, zone) && !(el.rect[0] <= t.rect[0] && el.rect[1] <= t.rect[1] && el.rect[2] >= t.rect[2] && el.rect[3] >= t.rect[3])).map(el => el.part ? `[${el.part}]` : `<${el.tag}>`)];
     if (near.length) E('B32', '', `${[...new Set(near)].slice(0, 3).join(', ')} sits within ${unit} px of the wordmark: nothing but its ground comes within half its type size (C1)`);
   }
   // B33 logos in a row (C5): one height, one gap, none taller than the wordmark's type

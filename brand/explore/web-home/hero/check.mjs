@@ -56,6 +56,13 @@ const facts = () => {
     menu: vis(btn), links: vis(nav), button_h: tall(pill), menu_h: tall(btn),
     hl_fit: getComputedStyle(document.documentElement).getPropertyValue('--hl-fit') || null,
     logos_round: [...document.querySelectorAll('.logos img')].every(i => { const r = getComputedStyle(i).borderRadius; return r === '50%' || parseFloat(r) >= i.getBoundingClientRect().width / 2; }),
+    // Ben's 10:23 notes, held here (L60; actions.md): no subtext, no hands in the line, white hands, no fade at rest, centered.
+    subtext: document.querySelectorAll('.copy p').length,
+    line_hands: document.querySelectorAll('.copy .hand').length,
+    hands_ink: [...document.querySelectorAll('header .hand')].every(h => getComputedStyle(h).color === getComputedStyle(document.body).color),
+    wall_faded: [getComputedStyle(document.querySelector('.cols')).maskImage, getComputedStyle(document.querySelector('.cols')).webkitMaskImage].some(m => m && m !== 'none'),
+    header_fade: Number(getComputedStyle(document.querySelector('header'), '::before').opacity),
+    off_center: (() => { const r = document.querySelector('.copy .hero-t').getBoundingClientRect(); return Math.round(r.top + r.height / 2 - innerHeight / 2); })(),
   };
 };
 
@@ -73,12 +80,27 @@ for (const [w, h, name] of SCREENS) {
     f.menu && f.menu_h < 44 && `the menu button is ${f.menu_h}px tall`,
     !f.logos_round && 'a store logo is not round',
     !f.faces && !fallback && 'is drawn in a fallback face, not Clofie and PP Neue Montreal',
+    f.subtext && 'has a subtext under the line (L60)',
+    f.line_hands && 'has hands in the line (L60)',
+    !f.hands_ink && 'a hand in the header is not the ink (L60)',
+    f.wall_faded && 'the wall fades at the top at rest (L60)',
+    f.header_fade > 0 && 'the header fade shows before any scroll (L60)',
+    f.headline_lines !== 3 && h >= 568 && w >= 360 && `the line takes ${f.headline_lines} lines: it breaks only between its three phrases`,
+    h >= 568 && Math.abs(f.off_center) > Math.max(16, h * 0.02) && `the line sits ${f.off_center}px off the screen's middle`,
     ...page.errors.map(e => `a script error: ${e}`),
   ].filter(Boolean);
   broken += f.problems.length;
   await page.screenshot({ path: join(out, `${w}x${h}.jpg`), type: 'jpeg', quality: 82 });
   // Six moments in each of the four fields the overlay turns through (32 s each), so the floor covers every color.
-  if (w === 390 || w === 1440) f.contrast_floor = await contrastFloor(page, { text: '.copy h1, .copy .lead', at: [...Array(24).keys()], move: (p) => p.evaluate(() => window.__hero.step(5300)) });
+  if (w === 1440) {
+    // Scrolled, the header's fade comes in (L60).
+    await page.evaluate(() => scrollTo(0, 240)); await page.waitForTimeout(400);
+    f.header_fade_scrolled = await page.evaluate(() => Number(getComputedStyle(document.querySelector('header'), '::before').opacity));
+    if (f.header_fade_scrolled < 1) { f.problems.push('the header fade does not come in once scrolled (L60)'); broken++; }
+    await page.screenshot({ path: join(out, 'scrolled-1440.jpg'), type: 'jpeg', quality: 82 });
+    await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(400);
+  }
+  if (w === 390 || w === 1440) f.contrast_floor = await contrastFloor(page, { text: '.copy h1', at: [...Array(24).keys()], move: (p) => p.evaluate(() => window.__hero.step(5300)) });
   if (w === 390) {
     await page.reload(); await page.evaluate(() => document.fonts.ready);
     f.photos_in_a_minute = await page.evaluate(() => { window.__hero.step(60000); return { shown: window.__hero.shown(), pool: window.__hero.pool(), kinds: window.__hero.kinds() }; });
@@ -98,6 +120,15 @@ for (const [w, h] of process.env.RECORD === '1' ? [[390, 844], [1440, 900]] : []
   const webm = join(vdir, readdirSync(vdir).find(f => f.endsWith('.webm')));
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', webm, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '24', '-movflags', '+faststart', '-an', join(out, `open-${w}.mp4`)]);
   rmSync(vdir, { recursive: true, force: true });
+}
+
+// Without JavaScript the open must not cover the page (actions.md).
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });
+  const page = await ctx.newPage(); await page.goto(url);
+  audit.no_js_intro = await page.evaluate(() => getComputedStyle(document.querySelector('.intro')).display);
+  if (audit.no_js_intro !== 'none') { broken++; console.log('without JavaScript the open covers the page'); }
+  await ctx.close();
 }
 
 const { findings } = await check(file, 'web', { browser });

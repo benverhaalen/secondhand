@@ -1959,3 +1959,11 @@ Ben, same thread, 10:14 UTC.
 > do the same with this: https://paste.rachel.systems/ukogokijaz.md
 
 Used in: [.agents/vendor/appllama](../.agents/vendor/appllama/SOURCE.md), `scripts/standards.mjs`, `.agents/checks/standards.mjs`.
+
+## 2026-11-15 the first screen without its subtext, a darker wall, white hands, and app screens rendered from the app
+Ben, website thread, 2026-11-15 10:23 and 10:24 UTC.
+> ok there is a lot of bad ui practices that ideally you should use all the new checks and rules and lint rules that the app is working through to check it continue to refer back and make sure they can apply as checks to this too. i think remove the hands in the hero with the wordmark text. the subtext should be, sell everything as fast as possible for as much and buy what you want for the price you want like sort of that phrase but replacing it with one that sounds far better. also, i dont know if you have clearly defined each possible state according to how an expert would take advantage of our design system. i think the background can be a bit darker or have a gradient tint over it. i think the top of the page with it fading to black can go away. ensure you do something similar to how i was prompting the app building claude where you have to before hand really define every possible action that could be done and what the resulting ui response could be and why that fits with all the best practices and how an expert would do things. there are also two links / skills i gave and those principles should design everything too. actually get rid of the subtext. center the hero text a bit more. the two hands for secondhand should just be white now too. the fade at the top of the screen should only come in when you scroll.
+
+> C is better than A and B but it isnt exact. also the website should update screenshots from the respective parts of the app according to the app code itself. rerender on each build because the app updates a lot. also think of the best ways to convey it using screenshots. everything super intentional.
+
+Used in: [ledger L60 and L61](../brand/ledger.md), [the first screen's actions](../brand/explore/web-home/hero/actions.md), [web.md W3](constitutions/web.md).
