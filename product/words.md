@@ -1934,3 +1934,15 @@ Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
 > Its important we develop the feature of the system being able to identify the product and what it is, and find off brand similar types of the same quality, material, but different brand, and developing insights on whether people care more about the specific main brand or not
 
 Used in: `spec/engines/adaptation.md` (the brand measure, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate host the server output on the website's vercel deployment
+Nate, orchestrator's session, 2026-11-15, about 06:15 Central, asked whether the device test should run against a dev client on the LAN or a hosted server.
+> Lets host the server output sure, we can host it on the next.js deployment with vercel the website will live on
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md). The deploy itself is still asked each time.
+
+## 2026-11-15 nate parse more from each read instead of reading one by one
+Nate, orchestrator's session, 2026-11-15, about 06:25 Central, after hearing that eBay is held to one read every ten seconds.
+> well instead of reading one by one, can we build the system to parse and even more effectively ascertain info
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).

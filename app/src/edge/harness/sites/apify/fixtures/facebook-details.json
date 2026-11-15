@@ -1,0 +1,89 @@
+[
+ {
+  "facebookUrl": "https://www.facebook.com/marketplace/chicago/search?query=office%20chair",
+  "id": "1000000000000005",
+  "itemUrl": "https://www.facebook.com/marketplace/item/1000000000000005",
+  "listingAttributes": [
+   {
+    "attribute_name": "Condition",
+    "value": "used_fair",
+    "label": "Used - Fair"
+   }
+  ],
+  "condition": "Used - Fair",
+  "timestamp": "2026-11-08T17:44:52.000Z",
+  "deliveryTypes": [
+   "IN_PERSON"
+  ],
+  "listingPhotos": [],
+  "listingPrice": {
+   "formatted_amount_zeros_stripped": "$10",
+   "amount_with_offset_in_currency": "1000",
+   "amount": "10.00",
+   "currency": "USD"
+  },
+  "location": null,
+  "locationText": null,
+  "listingTitle": "Rolling Desk Chair",
+  "description": null,
+  "isHidden": false,
+  "isLive": true,
+  "isPending": false,
+  "isSold": false,
+  "isViewerSeller": false,
+  "listingVideo": null,
+  "listingCategoryId": "1583634935226685",
+  "strikethroughPrice": {
+   "formatted_amount": "$15",
+   "amount": "15.00"
+  },
+  "primaryListingPhoto": {
+   "listing_image": {
+    "uri": "https://scontent.xx.fbcdn.net/redacted.jpg"
+   }
+  },
+  "customSubTitlesWithRenderingFlags": []
+ },
+ {
+  "facebookUrl": "https://www.facebook.com/marketplace/chicago/search?query=office%20chair",
+  "id": "1000000000000006",
+  "itemUrl": "https://www.facebook.com/marketplace/item/1000000000000006",
+  "listingAttributes": [
+   {
+    "attribute_name": "Condition",
+    "value": "used_like_new",
+    "label": "Used - like new"
+   }
+  ],
+  "condition": "Used - like new",
+  "timestamp": "2026-11-13T14:49:52.000Z",
+  "deliveryTypes": [
+   "IN_PERSON"
+  ],
+  "listingPhotos": [],
+  "listingPrice": {
+   "formatted_amount_zeros_stripped": "$20",
+   "amount_with_offset_in_currency": "2000",
+   "amount": "20.00",
+   "currency": "USD"
+  },
+  "location": null,
+  "locationText": null,
+  "listingTitle": "Office Chair",
+  "description": null,
+  "isHidden": false,
+  "isLive": true,
+  "isPending": false,
+  "isSold": false,
+  "isViewerSeller": false,
+  "listingVideo": null,
+  "listingCategoryId": "1583634935226685",
+  "strikethroughPrice": null,
+  "primaryListingPhoto": {
+   "listing_image": {
+    "uri": "https://scontent.xx.fbcdn.net/redacted.jpg"
+   }
+  },
+  "customSubTitlesWithRenderingFlags": []
+ }
+]
