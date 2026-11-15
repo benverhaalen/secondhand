@@ -993,3 +993,7 @@ Ben, thread "Set the secondhand brand identity", 2026-11-15 04:12 UTC, after the
 ## 2026-11-14 nate the harness runs on browser-use with stored auth, not the app's built-in browser
 Nate, build session (orchestrator), 2026-11-14 about 22:50 Central, with a screenshot of the kernel session loading the built-in browser skill.
 > This agent is using the wrong skill, looking at anthropic built in browser, unless it hopefully plans to account for the specced out utilization of browser use. at least inspired by the technology to utilize for ourself. Store authentication, run the stealth browser jev ultrafast sessions, optimize for efficient and accurate operations for every feature
+
+## 2026-11-14 nate browser-use on cloud, tested the way production runs, with milestones that are finalised as they are hit
+Nate, build session (orchestrator), 2026-11-14 about 23:00 Central.
+> Run browser use on cloud, testing everything the way the app will be production built so we can validate as we build. Build everything in a way that establishes and finalizes milestones being hit and our app, system, everything being fully realized
