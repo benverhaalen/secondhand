@@ -137,6 +137,7 @@ const listingRow = (o: Obj) => {
 async function readListings(c: Client, a: CallArgs, s: AbortSignal): Promise<AdapterResult> {
   const shop = str(a.shop_id);
   if (!shop) return refuse('missing_input', 'read_listings needs the linked shop_id');
+  // shortcut: the first page of 24 per status only, follow page_info.last as offset when a shop has more.
   const which = a.status === 'sold' ? ['sold'] : a.status === 'active' ? ['products'] : ['products', 'sold'];
   const rows = [];
   for (const w of which) {
@@ -303,7 +304,8 @@ const WRITES: Record<'post' | 'revise' | 'end' | 'relist' | 'send_message' | 'an
   },
   make_offer: a => {
     const listing = id(a, 'listing_external_id'); if (!listing) return refuse('missing_input', 'make_offer needs listing_external_id');
-    const r = sellerOffer('depop', { list_cents: Number(a.list_cents), offer_cents: Number(a.offer_cents), lowest_cents: a.lowest_cents === undefined ? undefined : Number(a.lowest_cents),
+    // spec/sites.mjs defaults last_sent_at to null, which tsc reads as the only allowed type
+    const r = (sellerOffer as unknown as (site: string, o: Record<string, unknown>) => unknown)('depop', { list_cents: Number(a.list_cents), offer_cents: Number(a.offer_cents), lowest_cents: a.lowest_cents === undefined ? undefined : Number(a.lowest_cents),
       last_sent_at: a.last_sent_at ? new Date(String(a.last_sent_at)) : null, now: a.now ? new Date(String(a.now)) : new Date(), promised_elsewhere: a.promised_elsewhere === true }) as { ok: boolean; why?: string };
     if (!r.ok) return refuse('seller_offer', r.why ?? 'refused');
     return { dry: true, url: `${WWW}/sellinghub/`, request: { listing_external_id: listing, amount: (Number(a.offer_cents) / 100).toFixed(2) },
