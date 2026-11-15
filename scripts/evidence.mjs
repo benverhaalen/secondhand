@@ -5,7 +5,7 @@
 //                                                  (default origin/main; once pushed, pass the commit you started from)
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { chain, noteInfo } from '../.agents/checks/evidence.mjs';
 import { commitsSince, parseRests } from '../.agents/checks/rests.mjs';
 import { isProductCode } from '../.agents/checks/util.mjs';
@@ -67,7 +67,7 @@ export function brief(commits, base) {
   ].join('\n');
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) { // a file:// string built by hand never matches a Windows path
   const [cmd, ...rest] = process.argv.slice(2);
   if (cmd === 'brief') {
     const base = rest[0] ?? 'origin/main', b = brief(commitsSince(root, base), base);
@@ -75,5 +75,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     else { console.error(`no product code changed in ${base}..HEAD. Pass the commit you started from: node scripts/evidence.mjs brief <sha>`); process.exitCode = 1; }
   }
   else if (cmd && [cmd, ...rest].every(s => slugs.has(s))) console.log(report({ root, ...chain(root, files, [cmd, ...rest]) }, [cmd, ...rest]));
-  else { console.error(`usage: node scripts/evidence.mjs <slug>... | brief [base]\nslugs: ${[...slugs].sort().join(', ')}`); process.exitCode = 1; }
-}
+  else { console.error(`usage: node scripts/evidence.mjs <slug>... | brief [base]\nslugs: ${[...slugs].sort().join(', ')}`); process.exi
