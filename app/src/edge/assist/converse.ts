@@ -84,54 +84,41 @@ function usageOf(message: Message, max_tokens: number): Usage {
 const TAGS = /\[(?:price_range|price_trend|sites|listings|alternatives|table|sources):[^\]\r\n]*\]/g;
 const ISO_DATE = /\d{4}-\d{2}-\d{2}(?:[Tt ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:[Zz]|[+-]\d{2}:?\d{2})?)?/;
 const MONTH = '(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\\.?';
-const WRITTEN_DATE = new RegExp(`(?:${MONTH}\\s+\\d{1,2},?\\s+\\d{4}|\\d{1,2}\\s+${MONTH}\\s+\\d{4})`, 'i');
-const CURRENCIES = [
-  { words: 'US dollars?|U\\.S\\. dollars?|dollars?|bucks?|USD', symbols: ['$', 'US$'], unit: 'usd', divisor: 1 },
-  { words: 'CAD', symbols: ['CA$'], unit: 'cad', divisor: 1 },
-  { words: 'AUD', symbols: ['A$', 'AU$'], unit: 'aud', divisor: 1 },
-  { words: 'NZD', symbols: ['NZ$'], unit: 'nzd', divisor: 1 },
-  { words: 'HKD', symbols: ['HK$'], unit: 'hkd', divisor: 1 },
-  { words: 'euros?|EUR', symbols: ['€'], unit: 'eur', divisor: 1 },
-  { words: 'pounds?\\s+sterling|sterling|quid|GBP', symbols: ['£'], unit: 'gbp', divisor: 1 },
-  { words: 'yen|JPY', symbols: ['¥'], unit: 'jpy', divisor: 1 },
-  { words: 'rupees?|Rs\\.?|INR', symbols: ['₹'], unit: 'inr', divisor: 1 },
-  { words: 'francs?|CHF', symbols: [], unit: 'chf', divisor: 1 },
-  { words: 'CNY', symbols: [], unit: 'cny', divisor: 1 },
-  { words: 'MXN', symbols: [], unit: 'mxn', divisor: 1 },
-  { words: 'cents?', symbols: ['¢'], unit: 'usd', divisor: 100 },
-];
-const CURRENCY_WORD = CURRENCIES.map(currency => currency.words).join('|');
-const CURRENCY_CUE = new RegExp(`(?<![a-z])[a-z]+\\$|\\p{Sc}|(?<![a-z])(?:${CURRENCY_WORD})(?![a-z])`, 'giu');
-const NUMBERS = new RegExp(`${ISO_DATE.source}|${WRITTEN_DATE.source}|-?(?:\\d+(?:,\\d{3})*(?:\\.\\d+)?|\\.\\d+)`, 'gi');
-const NUMBER_WORD = '(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|dozen|half)';
-const WORD_FIGURE = new RegExp(`\\b${NUMBER_WORD}(?:[\\s-]+(?:(?:and|a)[\\s-]+)*(?:${NUMBER_WORD}))*[\\s-]+(?:(?:${CURRENCY_WORD})(?![a-z])|percent\\b|per\\s+cent\\b)`, 'gi');
-const PERCENT = /^[\s-]*(?:%|percent\b|per\s+cent\b)/i;
-const CERTAINTY = /^\s+(?:sure|certain)\b/i;
-const DATE_CONTEXT = /\b(?:in|since|by|from|until|of|January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\s*$/i;
-const UNIT_WORD = /^\s*(?:cm|mm|km|m|inches?|feet|ft|yards?|miles?|grams?|kg|kilograms?|pounds?|lbs?|oz|ounces?|dollars?|USD|percent|per\s+cent|items?|listings?|rows?|comps?|sales?|units?|pieces?|people|buyers?|sellers?|days?|weeks?|months?|years?|hours?|minutes?|seconds?|times?|sizes?|pairs?|colors?|stars?|reviews?|photos?)\b/i;
+const WRITTEN_DATE = new RegExp(`(?:${MONTH}\\s+\\d{1,2}(?:st|nd|rd|th)?,?\\s+\\d{4}|\\d{1,2}(?:st|nd|rd|th)?\\s+${MONTH}\\s+\\d{4})`, 'i');
 const SENTENCES = new Intl.Segmenter('en', { granularity: 'sentence' });
 export const MAX_TOOL_USES_PER_ROUND = 4;
 
-function sentences(text: string): { segment: string; index: number }[] {
-  const masked = text.replace(new RegExp(WRITTEN_DATE, 'gi'), date => date.replace(/\./g, ' '))
-    .replace(/\b(?:U\.S\.|Rs\.|no\.)/gi, abbreviation => abbreviation.replace(/\./g, ' '));
-  return [...SENTENCES.segment(masked)].map(({ segment, index }) => ({ segment: text.slice(index, index + segment.length), index }));
-}
+type Sentence = { segment: string; index: number; header?: string };
 
-function dateToken(raw: string): string | null {
-  if (WRITTEN_DATE.test(raw)) {
-    const parts = raw.replace(',', '').split(/\s+/);
-    const month = parts.find(part => /^[a-z]/i.test(part))!.slice(0, 3);
-    const months = 'January February March April May June July August September October November December'.split(' ');
-    const day = parts.find(part => /^\d{1,2}$/.test(part))!;
-    raw = `${parts[2]}-${String(months.findIndex(value => value.slice(0, 3).toLowerCase() === month.toLowerCase()) + 1).padStart(2, '0')}-${day.padStart(2, '0')}`;
+function sentences(text: string): Sentence[] {
+  const lines = [...text.matchAll(/[^\n]*\n|[^\n]+$/g)];
+  const units: Sentence[] = [];
+  let header: string | undefined, paragraph = '', paragraphIndex = 0;
+  const flush = () => {
+    const masked = paragraph.replace(new RegExp(WRITTEN_DATE, 'gi'), date => date.replace(/\./g, ' '))
+      .replace(/\b(?:U\.S\.|Rs\.|no\.)/gi, abbreviation => abbreviation.replace(/\./g, ' '));
+    for (const { segment, index } of SENTENCES.segment(masked)) {
+      units.push({ segment: paragraph.slice(index, index + segment.length), index: paragraphIndex + index });
+    }
+    paragraph = '';
+  };
+  for (const [i, line] of lines.entries()) {
+    const normalized = normalizeFigures(line[0]).trim();
+    const divider = /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(normalized);
+    const tableHeader = normalized.includes('|') && /^\s*\|?\s*:?-{3,}/.test(lines[i + 1]?.[0] ?? '');
+    const isHeader = /:$/.test(normalized) || /^#{1,6}\s/.test(normalized) || tableHeader;
+    const isRow = /^\s*(?:[-+*]|\d+[.)])\s/.test(line[0]) || normalized.includes('|');
+    if (isHeader || isRow || divider) {
+      flush();
+      units.push({ segment: line[0], index: line.index, ...(!isHeader && !divider ? { header } : {}) });
+      if (isHeader) header = line[0];
+    } else {
+      if (!paragraph) paragraphIndex = line.index;
+      paragraph += line[0];
+    }
   }
-  if (raw.length > 10 && !/(?:z|[+-]\d{2}:?\d{2})$/i.test(raw)) raw += 'Z';
-  const day = new Date(raw.slice(0, 10)), parsed = new Date(raw);
-  if (!Number.isFinite(day.getTime()) || !Number.isFinite(parsed.getTime())
-    || day.toISOString().slice(0, 10) !== raw.slice(0, 10)) return null;
-  const value = raw.length === 10 ? raw : parsed.toISOString();
-  return `date${value.replace(/[^a-z0-9]/gi, '').toLowerCase()}`;
+  flush();
+  return units;
 }
 
 function normalizeFigures(text: string): string {
@@ -140,180 +127,167 @@ function normalizeFigures(text: string): string {
     let first = point;
     while (/\p{Nd}/u.test(String.fromCodePoint(first - 1))) first--;
     return String((point - first) % 10);
-  }).replace(/\p{Cf}/gu, '').replace(/[*_`]/g, '')
-    .replace(new RegExp(`\\(\\s*(${CURRENCY_WORD})\\s*\\)|\\[\\s*(${CURRENCY_WORD})\\s*\\]`, 'gi'), (_match, paren: string | undefined, bracket: string | undefined) => paren ?? bracket!);
+  }).replace(/\p{Cf}/gu, '').replace(/[\p{Pd}\u2212]/gu, '-').replace(/[*_`]/g, '');
 }
 
-function figureToken(unit: string, value: number): string {
-  return `${unit}${String(value).replace('-', 'm').replace('.', 'p')}`;
-}
+const SMALL = 'zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' ');
+const TENS = 'twenty thirty forty fifty sixty seventy eighty ninety'.split(' ');
+const SCALES: Record<string, number> = { hundred: 100, thousand: 1e3, grand: 1e3, million: 1e6, billion: 1e9, trillion: 1e12 };
+const ORDINALS: Record<string, string> = {
+  zeroth: 'zero', first: 'one', second: 'two', third: 'three', fourth: 'four', fifth: 'five', sixth: 'six', seventh: 'seven',
+  eighth: 'eight', ninth: 'nine', tenth: 'ten', eleventh: 'eleven', twelfth: 'twelve', thirteenth: 'thirteen', fourteenth: 'fourteen',
+  fifteenth: 'fifteen', sixteenth: 'sixteen', seventeenth: 'seventeen', eighteenth: 'eighteen', nineteenth: 'nineteen',
+  twentieth: 'twenty', thirtieth: 'thirty', fortieth: 'forty', fiftieth: 'fifty', sixtieth: 'sixty', seventieth: 'seventy',
+  eightieth: 'eighty', ninetieth: 'ninety', hundredth: 'hundred', thousandth: 'thousand', millionth: 'million', billionth: 'billion',
+};
+const NUMBER_WORD = [...SMALL, ...TENS, ...Object.keys(SCALES), ...Object.keys(ORDINALS), 'dozen', 'couple', 'half', 'quarter'].join('|');
+const WORD_INTEGER = `(?:a[n]?[\\s-]+)?(?:${NUMBER_WORD})(?:[\\s-]+(?:(?:and|a|an)[\\s-]+)*(?:${NUMBER_WORD}))*`;
+const WORD_DIGITS = `(?:${SMALL.slice(0, 10).join('|')})(?:[\\s-]+(?:${SMALL.slice(0, 10).join('|')}))*`;
+const WORD_DECIMAL = `(?:${WORD_INTEGER}[\\s-]+)?point[\\s-]+${WORD_DIGITS}(?:[\\s-]+grand)?`;
+const WORD_FIGURE = new RegExp(`\\b(?:(?:minus|negative)[\\s-]+)?(?:${WORD_DECIMAL}|${WORD_INTEGER})\\b`, 'gi');
+const NUMERAL = '-?(?:\\d{1,3}(?:[, ]\\d{3})+(?:\\.\\d+)?(?!\\d)|\\d+(?:\\.\\d+)?|\\.\\d+)(?:(?:bn|[km])(?![a-z])|st|nd|rd|th|\\s+grand\\b)?';
+const NUMERALS = new RegExp(`${ISO_DATE.source}|${WRITTEN_DATE.source}|${NUMERAL}`, 'gi');
+type Figure = { value: number; ordinal: boolean; title?: string };
 
 function wordValue(raw: string): number {
-  const words = 'one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' ');
-  const tens = 'twenty thirty forty fifty sixty seventy eighty ninety'.split(' ');
+  const sign = raw.match(/^(?:minus|negative)[\s-]+/i);
+  if (sign) return -wordValue(raw.slice(sign[0].length));
+  const grand = raw.match(/^(.*?)[\s-]+grand$/i);
+  if (grand) return (/^an?$/i.test(grand[1]) ? 1 : wordValue(grand[1])) * SCALES.grand;
+  const decimal = raw.toLowerCase().split(/(?:^|[\s-]+)point[\s-]+/);
+  if (decimal.length === 2) {
+    const fraction = decimal[1].split(/[\s-]+/).map(word => SMALL.indexOf(word)).join('');
+    return wordValue(decimal[0]) + Number(`0.${fraction}`);
+  }
   let total = 0, group = 0, lastScale = Infinity;
-  const parts = raw.toLowerCase().trim().split(/[\s-]+/);
+  const parts = raw.toLowerCase().trim().split(/[\s-]+/).map(word => ORDINALS[word] ?? word);
   for (const [index, word] of parts.entries()) {
     if (word === 'hundred') group = (group || 1) * 100;
-    else if (['thousand', 'million', 'billion'].includes(word)) {
-      const scale = { thousand: 1e3, million: 1e6, billion: 1e9 }[word]!;
+    else if (word in SCALES) {
+      const scale = SCALES[word];
       if (scale >= lastScale) return NaN;
       total += (group || 1) * scale;
       lastScale = scale;
       group = 0;
-    } else if (word === 'half') group = parts.slice(0, index).includes('and') ? group + 0.5 : (group || 1) * 0.5;
-    else if (word === 'dozen') group = (group || 1) * 12;
-    else if (words.includes(word)) group += words.indexOf(word) + 1;
-    else if (tens.includes(word)) group += (tens.indexOf(word) + 2) * 10;
+    } else if (word === 'half' || word === 'quarter') {
+      const fraction = word === 'half' ? 0.5 : 0.25;
+      group = parts.slice(0, index).includes('and') ? group + fraction : (group || 1) * fraction;
+    } else if (word === 'dozen') group = (group || 1) * 12;
+    else if (word === 'couple') group += 2;
+    else if (SMALL.includes(word)) group += SMALL.indexOf(word);
+    else if (TENS.includes(word)) group += (TENS.indexOf(word) + 2) * 10;
   }
   return total + group;
 }
 
-type CurrencyCue = { start: number; end: number; unit: string; divisor: number };
-type Figure = { start: number; end: number; value: number; unit: string; divisor: number; scale: number; explained: boolean };
-
-function currencyCues(text: string): CurrencyCue[] {
-  const cues = [...text.matchAll(CURRENCY_CUE)].map(match => {
-    const currency = CURRENCIES.find(entry => entry.symbols.some(symbol => symbol.toLowerCase() === match[0].toLowerCase())
-      || new RegExp(`^(?:${entry.words})$`, 'i').test(match[0]));
-    return { start: match.index, end: match.index + match[0].length,
-      unit: currency?.unit ?? 'money_unknown', divisor: currency?.divisor ?? 1 };
-  });
-  if (/£|\b(?:GBP|sterling)\b/i.test(text)) {
-    for (const match of text.matchAll(/\bpounds?\b/gi)) {
-      if (!cues.some(cue => match.index >= cue.start && match.index < cue.end)) {
-        cues.push({ start: match.index, end: match.index + match[0].length, unit: 'gbp', divisor: 1 });
-      }
-    }
-  }
-  return cues.sort((a, b) => a.start - b.start);
+function checkingText(raw: string): string {
+  return normalizeFigures(raw.replace(TAGS, '')).replace(/\[r\d+\]/gi, '');
 }
 
-function sentenceFigures(text: string): string[] {
-  const cues = currencyCues(text);
-  const tokens: string[] = [];
+function numbers(raw: string): Figure[] {
+  const text = checkingText(raw);
   const figures: Figure[] = [];
-  const matches = [...text.matchAll(NUMBERS), ...text.matchAll(WORD_FIGURE)].sort((a, b) => a.index - b.index);
-  for (const match of matches) {
-    const raw = match[0], start = match.index, end = start + raw.length;
+  for (const match of text.matchAll(NUMERALS)) {
+    const raw = match[0];
     if (ISO_DATE.test(raw) || WRITTEN_DATE.test(raw)) {
-      tokens.push(dateToken(raw) ?? 'dateinvalid');
+      const month = raw.match(new RegExp(MONTH, 'i'))?.[0].slice(0, 3).toLowerCase();
+      if (month) figures.push({ value: 'jan feb mar apr may jun jul aug sep oct nov dec'.split(' ').indexOf(month) + 1, ordinal: false });
+      figures.push(...[...raw.matchAll(/\d+(?:\.\d+)?/g)].map(part => ({ value: Number(part[0]), ordinal: false })));
       continue;
     }
-    const isWord = /^[a-z]/i.test(raw);
-    const numericEnd = isWord ? start + raw.search(new RegExp(`(?:${CURRENCY_WORD}|percent|per\\s+cent)(?![a-z])`, 'i')) : end;
-    const before = text.slice(0, start), after = text.slice(numericEnd);
-    const value = isWord ? wordValue(text.slice(start, numericEnd)) : Number(raw.replace(/,/g, ''));
-    const percent = after.match(PERCENT);
-    if (value === 100 && percent && CERTAINTY.test(after.slice(percent[0].length))) continue;
-    const multiplier = after.match(/^\s*(bn|[kKmM])(?![a-z])/i);
-    const joined = cues.filter(cue => cue.end <= start ? /^[\s-]*$/.test(text.slice(cue.end, start))
-      : cue.start >= numericEnd + (multiplier?.[0].length ?? 0)
-        && /^[\s-]*$/.test(text.slice(numericEnd + (multiplier?.[0].length ?? 0), cue.start)));
-    if (/^\d{4}$/.test(raw) && DATE_CONTEXT.test(before) && !/\w/.test(after[0] ?? '')
-      && !UNIT_WORD.test(after) && joined.length === 0
-      && !/^\s*(?:[-–—/]|to\b|and\b|or\b|up\s+to\b)/i.test(after)) continue;
-    const gluedMultiplier = multiplier && !/^\s/.test(multiplier[0]);
-    const figure: Figure = { start, end: numericEnd, value, unit: percent ? 'pct' : 'n', divisor: 1, scale: 1,
-      explained: (!gluedMultiplier && UNIT_WORD.test(after)) || /(?:\b(?:size|no\.|model|style|lot|item)\s*|#\s*)$/i.test(before)
-        || /[\p{L}](?:-)?$/u.test(before) || (!gluedMultiplier && /^[\p{L}]/u.test(after)) };
-    // A hyphen inside an identifier or a range is not a negative sign.
-    if (raw.startsWith('-') && start > 0 && !/[\s([{]/.test(text[start - 1])) {
-      figure.value = Math.abs(value);
-      figure.start++;
-    }
-    if (!percent) {
-      const cue = joined[0];
-      if (cue) {
-        figure.unit = joined.every(other => other.unit === cue.unit && other.divisor === cue.divisor) ? cue.unit : 'money_unknown';
-        figure.divisor = cue.divisor;
-        figure.start = Math.min(start, cue.start);
-        figure.end = Math.max(numericEnd, cue.end);
-        if (cue.end <= start && /(?:^|[\s([{])-$/.test(text.slice(0, cue.start))) figure.value = -Math.abs(figure.value);
-      }
-    } else figure.end += percent[0].length;
-    if (multiplier) {
-      figure.scale = /^bn$/i.test(multiplier[1]) ? 1e9 : /^k$/i.test(multiplier[1]) ? 1e3 : 1e6;
-      figure.end = Math.max(figure.end, numericEnd + multiplier[0].length);
-    }
-    if (!Number.isFinite(value)) figure.unit = 'money_unknown';
-    figures.push(figure);
+    let value = Number(raw.replace(/(?:bn|[km]|st|nd|rd|th|\s+grand)$/i, '').replace(/[, ]/g, ''));
+    const suffix = raw.match(/(?:bn|[km]|grand)$/i)?.[0].toLowerCase();
+    if (suffix) value *= suffix === 'bn' ? 1e9 : suffix === 'k' || suffix === 'grand' ? 1e3 : 1e6;
+    // A hyphen in a range or identifier separates positive figures.
+    if (raw.startsWith('-') && match.index > 0 && /[\p{L}\p{N}]/u.test(text[match.index - 1])) value = Math.abs(value);
+    // A sign before a currency prefix still belongs to the figure.
+    if (/-[\p{L}\p{Sc}]+$|\b(?:minus|negative)\s*(?:[\p{L}]*\p{Sc}\s*)?$/iu.test(text.slice(0, match.index))) value = -Math.abs(value);
+    figures.push({ value, ordinal: /\d(?:st|nd|rd|th)$/i.test(raw) });
   }
-  // Ranges inherit units in both directions, before the conservative sentence fallback.
-  for (let pass = 0; pass < figures.length; pass++) {
-    for (let i = 1; i < figures.length; i++) {
-      const left = figures[i - 1], right = figures[i];
-      if (!/^\s*(?:[-–—/]|to|and|or|up\s+to)\s*$/i.test(text.slice(left.end, right.start))) continue;
-      for (const [source, target] of [[left, right], [right, left]]) {
-        if (source.unit !== 'n' && source.unit !== 'pct' && target.unit === 'n' && !target.explained) {
-          target.unit = source.unit;
-          target.divisor = source.divisor;
-        }
+  for (const match of text.replace(NUMERALS, '#').matchAll(WORD_FIGURE)) {
+    figures.push({ value: wordValue(match[0]), ordinal: match[0].toLowerCase().split(/[\s-]+/).some(word => word in ORDINALS) });
+  }
+  return figures;
+}
+
+function figureToken(figure: Figure): string {
+  return `${figure.title ? `title${figure.title}n` : figure.ordinal ? 'title' : 'n'}${String(figure.value).replace('-', 'm').replace('.', 'p')}`;
+}
+
+function figureFacts(value: unknown, key: string): Figure[] {
+  if (typeof value !== 'string' && typeof value !== 'number') return [];
+  if (typeof value === 'string' && URL.canParse(normalizeFigures(value))) return [];
+  const figures = numbers(String(value)).filter(figure => Number.isFinite(figure.value));
+  if (key.endsWith('_cents')) return figures.flatMap(figure => [figure, { value: figure.value / 100, ordinal: false }]);
+  const money = typeof value === 'string'
+    ? [...normalizeFigures(value).matchAll(new RegExp(`(?:-[\\p{L}]*\\p{Sc}|\\p{Sc})\\s*${NUMERAL}|${NUMERAL}\\s*\\p{Sc}`, 'giu'))].flatMap(match => numbers(match[0]))
+    : [];
+  if (figures.length === 1 && /(?:price|amount|cost|money)/i.test(key)) money.push(...figures);
+  return [...figures, ...money.map(figure => ({ value: Number((figure.value * 100).toFixed(10)), ordinal: false }))];
+}
+
+function toolFacts(result: ToolResult | undefined): string[] {
+  if (!result?.ok) return [];
+  const tokens: string[] = [];
+  const fields = [...result.rows.flatMap(row => Object.entries(row)), ...Object.entries(result.counts), ['basis', result.basis], ['as_of', result.as_of]];
+  for (const [key, value] of fields) {
+    if (key === 'input' || key === 'inputs' || /(?:id|url|href|link|image|src)$/i.test(key)) continue;
+    const figures = figureFacts(value, key);
+    for (const figure of figures) {
+      tokens.push(figureToken({ ...figure, ordinal: false }));
+      if (key === 'title' && typeof value === 'string') {
+        tokens.push(figureToken({ ...figure, ordinal: true }));
       }
     }
   }
-  const contextUnit = new Set(cues.map(cue => cue.unit)).size === 1 ? cues[0]?.unit : 'money_unknown';
-  for (const figure of figures) {
-    if (figure.unit === 'n' && cues.length && !figure.explained) figure.unit = contextUnit!;
-    const money = figure.unit !== 'n' && figure.unit !== 'pct';
-    tokens.push(figureToken(figure.unit, figure.value * (money ? figure.scale / figure.divisor : 1)));
+  for (const row of result.rows) {
+    if (typeof row.title === 'string' && !URL.canParse(normalizeFigures(row.title))) {
+      tokens.push(...titleFigures(row.title, titleAffixes(row.title)).map(figureToken));
+    }
   }
   return tokens;
 }
 
-function numbers(text: string): string[] {
-  return sentences(normalizeFigures(text.replace(TAGS, ''))).flatMap(({ segment }) => sentenceFigures(segment));
-}
+type TitleAffix = { side: 'before' | 'after'; text: string };
 
-function figureFacts(value: unknown, key: string): string[] {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    if (key.endsWith('_cents') && Number.isInteger(value)) return numbers(`${value / 100} dollars`);
-    const tokens = numbers(String(value));
-    if (/(?:share|probability|p_sale|rate|change)/.test(key) && Math.abs(value) <= 1) {
-      tokens.push(...numbers(`${Number((Math.abs(value) * 100).toFixed(10))}%`));
-    }
-    return tokens;
-  }
-  if (typeof value === 'string' && !URL.canParse(normalizeFigures(value))) return numbers(value);
-  return [];
-}
-
-const RESULT_METADATA = new Set(['tool', 'ok', 'reason', 'rows', 'counts', 'as_of', 'citation_ids', 'basis', 'not_built', 'widgets', 'ms']);
-const DATE_FIELDS = new Set(['as_of', 'sold_at', 'listed_at', 'read_at']);
-
-function toolFacts(results: Answer['results']): string[] {
-  return Object.values(results).flatMap(result => {
-    if (!result.ok) return [];
-    const cited = result.citation_ids.length > 0;
-    const tokens = Object.entries(result.counts).filter(([key]) => !/(?:id|url|href|link|image|src)$/i.test(key))
-      .flatMap(([, value]) => numbers(String(value)));
-    const fields = [...result.rows.flatMap(row => Object.entries(row)),
-      ...Object.entries(result).filter(([key]) => !RESULT_METADATA.has(key) || key === 'as_of')];
-    for (const [key, value] of fields) {
-      if (key === 'input' || key === 'inputs' || /(?:id|url|href|link|image|src)$/i.test(key)) continue;
-      if (DATE_FIELDS.has(key) && typeof value === 'string' && ISO_DATE.test(normalizeFigures(value))) {
-        const date = normalizeFigures(value).match(ISO_DATE)![0];
-        const token = dateToken(date);
-        if (token) tokens.push(token, dateToken(date.slice(0, 10))!);
-      } else {
-        tokens.push(...figureFacts(value, key).filter(token => !token.startsWith('date')
-          && !token.startsWith('money_unknown') && (cited || token.startsWith('n'))));
-      }
-    }
-    return tokens;
+function titleAffixes(title: string): TitleAffix[] {
+  const text = checkingText(title).toLowerCase();
+  const matches = [...text.matchAll(new RegExp(`${NUMERALS.source}|${WORD_FIGURE.source}`, 'gi'))];
+  return matches.flatMap(match => {
+    const before = text.slice(0, match.index);
+    const after = text.slice(match.index + match[0].length);
+    return [
+      ...[...before.matchAll(/(?<!\p{L})\p{L}/gu)].map(word => ({ side: 'before' as const, text: before.slice(word.index) })),
+      ...[...after.matchAll(/\p{L}(?!\p{L})/gu)].map(word => ({ side: 'after' as const, text: after.slice(0, word.index + word[0].length) })),
+    ];
   });
+}
+
+function titleFigures(text: string, affixes: TitleAffix[]): Figure[] {
+  const unique = new Map(affixes.map(affix => [`${affix.side}:${affix.text}`, affix]));
+  return [...unique.entries()].flatMap(([key, affix]) => {
+    const escaped = affix.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const figure = `(?:${NUMERALS.source}|${WORD_FIGURE.source})`;
+    const pattern = affix.side === 'before' ? `(?<![\\p{L}\\p{N}])${escaped}${figure}` : `${figure}${escaped}(?![\\p{L}\\p{N}])`;
+    return [...checkingText(text).matchAll(new RegExp(pattern, 'giu'))]
+      .flatMap(match => numbers(match[0]).map(figure => ({ ...figure, title: sha256Hex(key) })));
+  });
+}
+
+function titleClaims(unit: string, results: (ToolResult | undefined)[]): Figure[] {
+  const affixes = results.flatMap(result => result?.ok ? result.rows.flatMap(row =>
+    typeof row.title === 'string' && !URL.canParse(normalizeFigures(row.title)) ? titleAffixes(row.title) : []) : []);
+  return titleFigures(unit, affixes);
 }
 
 type CitedSpan = { start: number; end: number; sources: number[] };
 
-async function checkedDraft(message: Message | undefined, answer: Answer, text: string, log: Log, now: number, preview = false) {
+async function checkedDraft(message: Message | undefined, answer: Answer, _text: string, log: Log, _now: number, preview = false) {
   let draft = '';
   const spans: CitedSpan[] = [];
-  const citedFacts: string[] = [];
   for (const block of message?.content ?? []) {
     if (block.type !== 'text') continue;
     const cited = (block.citations ?? []).filter(c => c.type === 'web_search_result_location');
-    citedFacts.push(...cited.flatMap(c => numbers(c.cited_text)));
     spans.push({ start: draft.length, end: draft.length + block.text.length,
       sources: cited.flatMap(c => {
         const index = answer.sources.findIndex(source => source.url === c.url);
@@ -321,17 +295,17 @@ async function checkedDraft(message: Message | undefined, answer: Answer, text: 
       }) });
     draft += block.text;
   }
-  const tokens = [...new Set([...toolFacts(answer.results),
-    ...numbers(text).filter(token => token.startsWith('n') || (token.startsWith('date') && token !== 'dateinvalid')),
-    ...citedFacts.filter(token => !token.startsWith('date') && !token.startsWith('money_unknown')),
-    // shortcut: no person time zone; upgrade when the request carries one.
-    ...[now, now - 12 * 60 * 60 * 1000].map(time => dateToken(new Date(time).toISOString().slice(0, 10))!)])];
-  const facts = tokens.map((value, index) => ({ attribute_id: `number${index}`, name: 'number', value }));
   let kept = '';
   let numberWords = false;
   const keptSpans: CitedSpan[] = [];
-  for (const { segment: sentence, index } of sentences(draft)) {
-    const claims = numbers(sentence).map(text => ({ text, kind: 'number' }));
+  for (const { segment: sentence, index, header } of sentences(draft)) {
+    const unit = `${header ?? ''}${sentence}`;
+    const resultIds = [...normalizeFigures(unit).matchAll(/\[(r\d+)\]/gi)].map(match => match[1].toLowerCase());
+    const citedResults = resultIds.map(id => answer.results[id]);
+    const claims = [...numbers(unit), ...titleClaims(unit, citedResults)]
+      .map(figure => ({ text: Number.isFinite(figure.value) ? figureToken(figure) : 'invalid', kind: 'number' }));
+    const tokens = [...new Set(citedResults.flatMap(result => toolFacts(result)))];
+    const facts = tokens.map((value, index) => ({ attribute_id: `number${index}`, name: 'number', value }));
     const wordFigure = [...normalizeFigures(sentence.replace(TAGS, '')).matchAll(WORD_FIGURE)].length > 0;
     if (claims.length) {
       answer.gate.checked++;

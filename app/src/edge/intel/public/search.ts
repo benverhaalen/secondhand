@@ -56,6 +56,8 @@ const noRoute = (source: Source, kind: Kind): SiteResult => ({ rows: [], searche
 const sourceRouted = (source: Source, o: SearchOpts): boolean =>
   source.lane === 'treg' ? !!o.shopping : source.lane === 'apify' ? !!o.apify : source.lane !== 'harness' || !!o.harness && (o.routed?.(source.site) ?? true);
 
+export const sourceComposed = (source: Source): boolean => sourceRouted(source, runtimePorts);
+
 async function sourceAccount(source: Source, o: SearchOpts): Promise<LinkedAccount | undefined> {
   if (o.caller !== 'person' || !o.person_id) return undefined;
   const account = o.account === undefined ? (await o.accounts?.linked(o.person_id))?.find(a => a.site === source.site && a.person_id === o.person_id) : o.account;

@@ -1,46 +1,19 @@
 'use client';
 
 import Link from 'next/link';
+import { AccountAccess } from './chrome';
 import { useState } from 'react';
 import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, AccordionTrigger } from '@ui-sdk/react/accordion';
 import { Carousel, CarouselContent, CarouselIndicator, CarouselIndicatorGroup, CarouselItem, CarouselNext, CarouselPlayToggle, CarouselPrevious, CarouselViewport } from '@ui-sdk/react/carousel';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@ui-sdk/react/dialog';
 import { log } from '../../lib/log';
 import { wallPhotos } from './wall-photos';
 
 const repository = 'https://github.com/benverhaalen/secondhand';
 const docs = `${repository}/blob/main/product`;
-export const homeSections = [
-  ['how-it-works', 'How It Works'], ['features', 'Features'], ['data-use', 'Data Use'], ['faq', 'FAQ'],
-] as const;
+export { AccountAccess } from './chrome';
 
 function ExternalArrow() {
   return <svg className="external-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>;
-}
-
-export function Mark() {
-  return <Link className="marketing-lockup" href="/" aria-label="secondhand home"><img src="/brand/mark.svg" alt="" width="21" height="24" /><span>secondhand</span></Link>;
-}
-
-export function AccountAccess({ label, className = '' }: { label: string; className?: string }) {
-  const [open, setOpen] = useState(false);
-  return <Dialog open={open} onOpenChange={next => { setOpen(next); if (next) log.input('home', 'account-access', { label }); }}>
-    <DialogTrigger className={`marketing-pill ${className}`}>{label}</DialogTrigger>
-    <DialogContent className="account-dialog">
-      <DialogTitle>Account access is coming.</DialogTitle>
-      <DialogDescription>Web sign-in and account creation are still being connected. You can try the web search without an account.</DialogDescription>
-      <Link className="marketing-pill" href="/buy" onClick={() => setOpen(false)}>Try the web search <span aria-hidden="true">→</span></Link>
-      <DialogClose className="account-close" aria-label="Close account information">×</DialogClose>
-    </DialogContent>
-  </Dialog>;
-}
-
-export function MarketingHeader() {
-  return <header className="marketing-header"><div className="marketing-wrap marketing-header-row">
-    <Mark />
-    <nav className="marketing-nav" aria-label="Main">{homeSections.map(([id, label]) => <a key={id} href={`/#${id}`}>{label}</a>)}</nav>
-    <div className="marketing-header-actions"><a className="github-link" href={repository}>GitHub <ExternalArrow /></a><AccountAccess label="Sign in" className="marketing-pill-secondary" /></div>
-  </div></header>;
 }
 
 function Platforms({ labeled = false }: { labeled?: boolean }) {
@@ -67,7 +40,7 @@ function Phone({ screen, alt, priority = false }: { screen: string; alt: string;
 function HowItWorks() {
   return <section className="marketing-scene how-scene" id="how-it-works" aria-labelledby="how-title" data-field>
     <div className="marketing-wrap marketing-split how-split">
-      <div className="marketing-copy"><p className="section-label">How It Works</p><h2 id="how-title">Get your clothes ready to resell from as little as one photo</h2><p className="section-body">See what similar pieces sold for, compare what you’d keep, and review your listings before you post.</p><a className="marketing-text-link" href={`${docs}/app-flows.md`}>See the selling steps <ExternalArrow /></a></div>
+      <div className="marketing-copy"><p className="section-label">How It Works</p><h2 id="how-title">Get your clothes ready to resell from as little as one photo</h2><p className="section-body">See what similar pieces sold for, compare what you’d keep, and review your listings before you post.</p><Link className="marketing-text-link" href="/how-it-works">See the selling steps <span aria-hidden="true">→</span></Link></div>
       <figure className="selling-journey">
         <div className="phone-pair"><div><Phone screen="capture" alt="Sample app screen. Photographing the real Marquette tee." /><p className="phone-caption">Start with your photo</p></div><span className="journey-arrow" aria-hidden="true">→</span><div><Phone screen="preview" alt="Sample app screen. Review the same Marquette tee before posting." /><p className="phone-caption">Review what goes live</p></div></div>
         <figcaption><Platforms /><span>One item. Marketplace previews.<br /><span className="sample-note">App screens with sample data.</span></span></figcaption>
@@ -89,7 +62,7 @@ function Features() {
   return <section className="marketing-scene features-scene" id="features" aria-labelledby="features-title">
     <Carousel className="marketing-wrap feature-carousel" aria-label="What you can do with secondhand" defaultPlaying onPageChange={next => { setPage(next); log.input('home', 'feature-page', { value: next }); }}>
       <CarouselViewport className="feature-viewport"><CarouselContent className="feature-track">{features.map(item => <CarouselItem className="feature-slide" key={item.screen} aria-label={item.title}><div className="feature-phone-ground" data-field><Phone screen={item.screen} alt={item.alt} /></div></CarouselItem>)}</CarouselContent></CarouselViewport>
-      <div className="marketing-copy feature-copy"><p className="section-label">Features</p><h2 id="features-title">AI does the prep. You decide what goes live.</h2><p className="section-body feature-summary">It reads item details from photos, drafts listings for different sites, and helps buyers find what fits.</p><div className="feature-explanation"><h3>{feature.title}</h3><p className="section-body">{feature.body}</p></div><a className="marketing-text-link" href={`${docs}/features-proof.md`}>Explore features <ExternalArrow /></a></div>
+      <div className="marketing-copy feature-copy"><p className="section-label">Features</p><h2 id="features-title">AI does the prep. You decide what goes live.</h2><p className="section-body feature-summary">It reads item details from photos, drafts listings for different sites, and helps buyers find what fits.</p><div className="feature-explanation"><h3>{feature.title}</h3><p className="section-body">{feature.body}</p></div><Link className="marketing-text-link" href="/features">Explore features <span aria-hidden="true">→</span></Link></div>
       <div className="carousel-controls"><CarouselPrevious className="carousel-arrow" aria-label="Previous feature">←</CarouselPrevious><CarouselIndicatorGroup className="carousel-dots" aria-label="Choose a feature">{features.map((item, index) => <CarouselIndicator key={item.screen} page={index + 1} aria-label={item.title} />)}</CarouselIndicatorGroup><CarouselNext className="carousel-arrow" aria-label="Next feature">→</CarouselNext><CarouselPlayToggle className="carousel-play">{state => state.playing ? 'Pause' : 'Play'}</CarouselPlayToggle></div>
       <p className="feature-sample-note">App screens with sample data.</p>
     </Carousel>
@@ -120,7 +93,7 @@ function PricingProof() {
 }
 
 function DataUse() {
-  return <section className="marketing-scene data-scene" id="data-use" aria-labelledby="data-title"><div className="marketing-wrap data-layout"><div className="marketing-copy"><p className="section-label">Data Use</p><h2 id="data-title">From messy listings to a price you can check.</h2><p className="section-body">We use Databricks to check incoming records, record how they can be used, and show the sales behind an estimate.</p><a className="marketing-text-link" href={`${docs}/proof-without-sales.md`}>Explore Data Use <ExternalArrow /></a></div><div className="data-figures"><DataPipeline /><PricingProof /></div></div></section>;
+  return <section className="marketing-scene data-scene" id="data-use" aria-labelledby="data-title"><div className="marketing-wrap data-layout"><div className="marketing-copy"><p className="section-label">Data Use</p><h2 id="data-title">From messy listings to a price you can check.</h2><p className="section-body">We use Databricks to check incoming records, record how they can be used, and show the sales behind an estimate.</p><Link className="marketing-text-link" href="/data-use">Explore Data Use <span aria-hidden="true">→</span></Link></div><div className="data-figures"><DataPipeline /><PricingProof /></div></div></section>;
 }
 
 function FAQ() {
@@ -128,13 +101,9 @@ function FAQ() {
     { id: 'approval', question: 'Who can post from my account?', answer: 'You review the listing before approving it. The app prepares the photos, title and price for each site so you can check what will be sent.', source: `${docs}/pitch-constitution.md` },
     { id: 'two-sales', question: 'What if the same item sells on two sites?', answer: 'A second buyer can pay before the other listings are removed. The workflow is designed to flag a second payment so you can review both orders.', source: `${repository}/blob/main/scripts/bench/out/bench-sites-4.json` },
   ];
-  return <section className="marketing-scene faq-scene" id="faq" aria-labelledby="faq-title"><div className="marketing-wrap marketing-split"><div className="marketing-copy"><p className="section-label">FAQ</p><h2 id="faq-title">What should you know before you start?</h2></div><div className="faq-content"><Accordion className="marketing-faq">{questions.map(item => <AccordionItem key={item.id} value={item.id} className="faq-item"><AccordionHeader><AccordionTrigger className="faq-trigger">{item.question}<span aria-hidden="true">+</span></AccordionTrigger></AccordionHeader><AccordionPanel className="faq-panel"><p>{item.answer}</p><a href={item.source}>See how it works <ExternalArrow /></a></AccordionPanel></AccordionItem>)}</Accordion><a className="marketing-text-link" href={`${docs}/pitch-constitution.md`}>Read about control and trust <ExternalArrow /></a></div></div></section>;
-}
-
-export function MarketingFooter() {
-  return <footer className="marketing-footer"><div className="marketing-wrap"><Mark /><nav aria-label="Footer">{homeSections.map(([id, label]) => <a key={id} href={`/#${id}`}>{label}</a>)}<a href={`${docs}/vision.md`}>What’s Next <ExternalArrow /></a><Link href="/buy">Try search</Link><a href={repository}>GitHub <ExternalArrow /></a><a href="#top">Back to top ↑</a></nav></div></footer>;
+  return <section className="marketing-scene faq-scene" id="faq" aria-labelledby="faq-title"><div className="marketing-wrap marketing-split"><div className="marketing-copy"><p className="section-label">FAQ</p><h2 id="faq-title">What should you know before you start?</h2></div><div className="faq-content"><Accordion className="marketing-faq">{questions.map(item => <AccordionItem key={item.id} value={item.id} className="faq-item"><AccordionHeader><AccordionTrigger className="faq-trigger">{item.question}<span aria-hidden="true">+</span></AccordionTrigger></AccordionHeader><AccordionPanel className="faq-panel"><p>{item.answer}</p><a href={item.source}>See how it works <ExternalArrow /></a></AccordionPanel></AccordionItem>)}</Accordion><Link className="marketing-text-link" href="/faq">All questions <span aria-hidden="true">→</span></Link></div></div></section>;
 }
 
 export function MarketingHome() {
-  return <main id="main" className="marketing-home"><div id="top" /><Hero /><HowItWorks /><Features /><DataUse /><FAQ /><section className="marketing-scene signup-scene" id="access" aria-labelledby="signup-title"><div className="marketing-wrap signup-layout"><div className="marketing-copy"><p className="section-label">Sign Up</p><h2 id="signup-title">Start with one thing.</h2></div><AccountAccess label="Create an account" /></div></section><MarketingFooter /></main>;
+  return <main id="main" className="marketing-home"><div id="top" /><Hero /><HowItWorks /><Features /><DataUse /><FAQ /><section className="marketing-scene signup-scene" id="access" aria-labelledby="signup-title"><div className="marketing-wrap signup-layout"><div className="marketing-copy"><p className="section-label">Sign Up</p><h2 id="signup-title">Start with one thing.</h2></div><AccountAccess label="Create an account" /></div></section></main>;
 }

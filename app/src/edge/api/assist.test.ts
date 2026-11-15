@@ -14,7 +14,11 @@ import type { StreamClient } from '../assist/converse.ts';
 import type { ToolResult } from '../assist/types.ts';
 
 const NOW = Date.parse('2026-11-15T23:59:00Z');
-const message = () => (JSON.parse(readFileSync(new URL('../assist/fixtures/converse/numbers.json', import.meta.url), 'utf8')) as Message[])[1];
+const message = () => {
+  const reply = (JSON.parse(readFileSync(new URL('../assist/fixtures/converse/numbers.json', import.meta.url), 'utf8')) as Message[])[1];
+  reply.content = [{ type: 'text', text: 'It costs $999. It costs $45 [r1].', citations: null }];
+  return reply;
+};
 const noNetwork: typeof fetch = async () => { throw new Error('network forbidden'); };
 const tools = { defs: [], async run(): Promise<ToolResult> { throw new Error('unexpected tool'); } };
 

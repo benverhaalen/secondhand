@@ -65,6 +65,15 @@ test('search returns the recorded 202 body and sends text and filters to /v1/sea
   assert.deepEqual(JSON.parse(String(transport.requests[0].init.body)), { text: 'levi 501', filters });
 });
 
+test('search asks every source unless some are named: sources are sent only when chosen', async () => {
+  const transport = fakeFetch([Response.json(fixture.start, { status: 202 }), Response.json(fixture.start, { status: 202 })]);
+  const client = createClient({ graceMs: 0, origin: '', fetch: transport.fetch });
+  await client.search('levi 501', undefined, ['depop', 'poshmark']);
+  await client.search('levi 501', undefined, []);
+  assert.deepEqual(JSON.parse(String(transport.requests[0].init.body)), { text: 'levi 501', sources: ['depop', 'poshmark'] });
+  assert.deepEqual(JSON.parse(String(transport.requests[1].init.body)), { text: 'levi 501' });
+});
+
 test('a 400 server error preserves status, code, message, failed_step and retry', async () => {
   const retry = { by: 'user', after_s: 2 };
   const transport = fakeFetch([Response.json({ code: 'invalid', message: 'text is required', failed_step: 'parse', retry }, { status: 400, headers: { 'X-Visitor-Id': visitor } })]);

@@ -12,7 +12,9 @@ type Frame = { id: number; event: string; data: ObjectBody };
 const code = '246810';
 const emails = ['journey-one@example.invalid', 'journey-two@example.invalid'];
 const lists = ['today', 'items', 'orders', 'wants', 'conversations', 'events', 'lookups', 'accounts', 'decisions', 'follows', 'rules'];
-const savedEnv = new Map(['NODE_ENV', 'SECONDHAND_DATA_DIR', 'SECONDHAND_DEV_CODE'].map(name => [name, process.env[name]]));
+const savedEnv = new Map(['NODE_ENV', 'SECONDHAND_DATA_DIR', 'SECONDHAND_DEV_CODE', 'OPENROUTER_API_KEY', 'ANTHROPIC_API_KEY'].map(name => [name, process.env[name]]));
+// No model key in this walk: the chat must refuse cleanly, and no outside call may be attempted.
+delete process.env.OPENROUTER_API_KEY; delete process.env.ANTHROPIC_API_KEY;
 const realFetch = globalThis.fetch;
 let folder: string;
 let start: typeof import('./main.ts').start;
@@ -293,9 +295,9 @@ test('8. A want belongs to its author and an idempotency key cannot change its b
   typedError(await call(t, 'POST', '/v1/wants', headers, { ...input, text: 'a different want' }), 409, 'idempotency_mismatch');
 });
 
-test('9. The buying chat starts an assist job', { todo: 'BC3: the chat route is not built' }, async t => {
+test('9. The buying chat is a real route: with no model key it refuses as unavailable, never 404', async t => {
   const reply = await call(t, 'POST', '/v1/assist', bearer(one), { surface: 'buy', text: 'what is selling and why' });
-  status(reply, 202); string(reply.body.id); assert.equal(reply.body.kind, 'assist'); assert.equal(reply.body.state, 'running');
+  typedError(reply, 503, 'unavailable');
 });
 
 let deletionPaused: unknown = 'step 10 did not run';

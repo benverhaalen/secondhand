@@ -2480,3 +2480,39 @@ Nate, the orchestrator's session, 2026-11-15, about 14:35 UTC.
 Used in: [packet 97](../.agents/team/packets/team/97-the-plan-from-here-for-ben.md).
 
 *Orchestrator's note, 14:26 UTC by the machine clock:* the times on Nate's entries above from "organize, shut down what is finished" onward were written from memory and run up to fifteen minutes fast; their order is right.
+
+## 2026-11-15 nate add the keys, push everything to main, test every feature with leads and codex, benchmarks without eBay
+Nate, the orchestrator's session, 2026-11-15, between about 14:30 and 14:45 UTC by the machine clock, six messages in order. The first came with a pasted table of the variables each system needs (chat, email sign-in, browser reads, the photo lookup, Apify, eBay's API, Databricks).
+> WE HAVE NO TIME ADD THEM
+
+> great, ensure we push all to main, after fully seeing and just working and fixing it yourself
+
+> well address what tehy said needs fixing and do it, you are assured no conflicts so just go ahead
+
+> well finish whats not
+
+> just test all features, ensure they work, fully check all screens, all data, do it with leads and codex. did capture get everything needed. are all pipelines built? can we run benchmarks?
+
+> account for our benchmarks without ebay
+
+Acted on: four keys that exist on Nate's Windows machine were set on the Fly app by name through standard input (OPENROUTER_API_KEY, BROWSER_USE_API_KEY, TREG_TOKEN, APIFY_TOKEN), no value printed or written; the leads were put back to work as testers and fixers who do not merge; the benchmark is run with and without eBay.
+
+## 2026-11-15 nate every source by default, with a toggle to select; the env vars are in place
+Nate, the orchestrator's session, 2026-11-15, about 14:50 UTC by the machine clock, two messages.
+> default to all sources but have the toggle to select
+
+> all env vars are in place, all is great and prepared
+
+Used in: [the shop view](../app/src/buy/chat/shop-view.tsx) (one chip per source before the first ask, all picked; a tap leaves that source out of the search).
+
+## 2026-11-15 nate the system analyses its collective findings and knows how to read each, so the chat answers questions incredibly
+Nate, the Databricks lead's session, 2026-11-15, about 14:55 UTC, after the broad search benchmark started.
+> make the system more intelligent at first analyzing its collective findings and having understanding of what to interpret from each and how. Especially for the chats to answer questions incredibly
+
+Read by the Databricks lead: before the chat answers, code reads every source's rows for what they are (sold or asking, new or used, local or national, how literal the match, what the rights allow) and computes the findings across them; the model then explains those findings for the question asked. Used in: the findings spec draft `brief-eng-findings-1.md` in the orchestrator's notes, for the engines lead (who owns the chat).
+
+## 2026-11-15 nate that chat ui is so bad
+Nate, the orchestrator's session, 2026-11-15, about 14:47 UTC by the machine clock, with a screenshot of the shop after a search: the list rows drawn over the "More for sale" heading and the tiles, and the chat answer opening "I can't say what's selling most".
+> that chat ui is so bad
+
+Used in: [the shop view](../app/src/buy/chat/shop-view.tsx) (results laid out so nothing is drawn over anything else); the answer's words are the engines lead's (packet 70).
