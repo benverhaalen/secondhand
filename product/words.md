@@ -612,3 +612,7 @@ Ben, project chat, 22:23 UTC, in full. The part about photo tweaks is also under
 ## 2026-11-15 the ui system learns, with checks for its rules
 Ben, project chat, 00:50 UTC.
 > ensure somewhere in the ui system thing - also ensure that the ui system skill or factory or whatever is completely updated with my updated loop and anything i said in the brand picks rounds. but in the ui system thing that it creates deterministic ways to assess adherence to certain rules whether its like a lint rule or something but getting the system to essentially 'learn' from using the ai ideation and such.
+
+## 2026-11-14 nate speed with real-time accuracy, and score what to build and test first
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the agent proposed a "just value it" path, a figure for what your things are worth, and a notice when an owned item's value moves.
+> Im sure there are way more intuitive and genius ways to design out things to account for speed, while also maintaining the accuracy and focus realtime calculations give us. I love the gap things you said you would add, look at all aspects of the app, score what we have designed and should start building and testing to validate what we already expect will work and draft it out to me, score what might work, and ill help direct with you how to get it working
