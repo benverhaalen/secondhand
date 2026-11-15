@@ -73,12 +73,14 @@ export const isPage = (p: unknown): p is PageKey => typeof p === 'string' && p i
 
 // Linking a site, as the demo plays it (spec/features/connect.md; ways-out.md "It wants a code from my phone"). A tap starts a
 // sign-in that takes about a second. The first try on Mercari stops at the site's own code step and times out, so the error
-// and Try again are seen; the second try links. Each site runs on its own: one linking never blocks another (Ben, 03:22).
+// and Retry are seen; the second try links. Each site runs on its own: one linking never blocks another (Ben, 03:22).
 export type LinkState = { state: 'connected' | 'loading' | 'error' | 'not_connected'; note: string | null; tried?: boolean };
 export const SITE_ORDER: Site[] = ['ebay', 'facebook', 'depop', 'poshmark', 'mercari'];
 const SIGN_IN_MS = 1200;
 // seed starts some rows mid-way, so a page opened at ?state=loading or ?state=failed draws a site signing in or one that failed.
 export function useLinks(w: World, seed: Partial<Record<Site, LinkState>> = {}) {
+  const params = useLocalSearchParams<{ world?: string; state?: string }>();
+  const demo = !!params.world || !!params.state;
   const [links, setLinks] = useState<Record<Site, LinkState>>(() => Object.fromEntries(SITE_ORDER.map(s => {
     const c = w.connections.find(x => x.site === s);
     const st = c ? connectionState(c) : 'not_connected';
@@ -89,13 +91,17 @@ export function useLinks(w: World, seed: Partial<Record<Site, LinkState>> = {}) 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
   const set = (site: Site, next: LinkState) => { setLinks(l => ({ ...l, [site]: next })); changed('account', site, next.state); };
   const link = (site: Site) => {
+    if (!demo) { router.push('/you/connections'); return; }
     const n = (tries.current[site] = (tries.current[site] ?? 0) + 1);
     set(site, { state: 'loading', note: 'Signing in' });
     timers.current.push(setTimeout(() => set(site, site === 'mercari' && n === 1
       ? { state: 'error', note: 'The code from your phone timed out', tried: true }
       : { state: 'connected', note: null }), SIGN_IN_MS));
   };
-  const unlink = (site: Site) => set(site, { state: 'not_connected', note: null });
+  const unlink = (site: Site) => {
+    if (!demo) { router.push('/you/connections'); return; }
+    set(site, { state: 'not_connected', note: null });
+  };
   return { links, link, unlink };
 }
 

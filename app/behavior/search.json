@@ -18,7 +18,7 @@
     "Demo states by address: ?at=slow has only one site in so far; a query with no product finds nothing.",
     "While a site is still answering, a spinner takes the camera's place in the box, so nothing moves; the camera comes back when every site is in.",
     "Each row's fact line says its condition before what it costs ('Like new, delivered $72.50'): rows under one product share a title, so the condition tells them apart (break-ui).",
-    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
+    "Loading is the page's skeleton, failed says what did not load with Retry, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
   ],
   "states": [
     {
@@ -50,7 +50,7 @@
     {
       "state": "new",
       "route": "/search",
-      "shows": "Type what you want, paste a link, or take a photo. It looks on five sites at once."
+      "shows": "Search five sites at once."
     },
     {
       "state": "one",
@@ -62,13 +62,13 @@
       "route": "/search?state=failed",
       "shows": "Couldn’t load this search",
       "also": [
-        "Try again"
+        "Retry"
       ]
     },
     {
       "state": "offline",
       "route": "/search?state=offline",
-      "shows": "Waiting for signal. This is the last copy."
+      "shows": "Waiting for signal; showing saved results."
     }
   ],
   "controls": [

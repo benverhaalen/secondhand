@@ -1,0 +1,17 @@
+{
+  "source": "research/capture/ben/item-attributes-by-site.md#1-per-site-the-category-tree-and-the-attributes-asked",
+  "mark": "observed",
+  "date": "2026-11-15",
+  "rows": [
+    {"kind":"hoodie","department":"women","site":"poshmark","category":{"department":"Women","category":"Tops","subcategory":"Sweatshirts & Hoodies"},"source":"research/capture/ben/item-attributes-by-site.md#14-poshmark (P7)","mark":"observed"},
+    {"kind":"pants","department":"men","site":"ebay","category":{"category_id":"57989","name":"Men's Pants"},"source":"research/capture/ben/item-attributes-by-site.md#12-ebay (E7a, E8, E10)","mark":"observed"},
+    {"kind":"tee","department":"men","site":"ebay","category":{"category_id":"15687","name":"Men's T-Shirts"},"source":"research/capture/ben/item-attributes-by-site.md#12-ebay (E7a, E8, E10)","mark":"observed"},
+    {"kind":"dress","department":"women","site":"ebay","category":{"category_id":"63861","name":"Women's Dresses"},"source":"research/capture/ben/item-attributes-by-site.md#12-ebay (E7a, E8, E10)","mark":"observed"},
+    {"kind":"sofa","site":"ebay","category":{"category_id":"38208","name":"Sofas"},"source":"research/capture/ben/item-attributes-by-site.md#12-ebay (E7b, 2019 list)","mark":"observed"},
+    {"kind":"table","site":"ebay","category":{"category_id":"38204","name":"Tables"},"source":"research/capture/ben/item-attributes-by-site.md#12-ebay (E7b, 2019 list)","mark":"observed"},
+    {"kind":"dresser","site":"ebay","category":{"category_id":"114397","name":"Dressers"},"source":"research/capture/ben/item-attributes-by-site.md#12-ebay (E7b, 2019 list)","mark":"observed"},
+    {"kind":"lamp","site":"ebay","category":{"category_id":"112581","name":"Lamps"},"source":"research/capture/ben/item-attributes-by-site.md#12-ebay (E7b)","mark":"observed"},
+    {"kind":"vase","site":"ebay","category":{"category_id":"101415","name":"Vases"},"source":"research/capture/ben/item-attributes-by-site.md#12-ebay (E7b)","mark":"observed"},
+    {"kind":"mirror","site":"ebay","category":{"category_id":"20580","name":"Mirrors"},"source":"research/capture/ben/item-attributes-by-site.md#12-ebay (E7b)","mark":"observed"}
+  ]
+}

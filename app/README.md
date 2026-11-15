@@ -36,6 +36,17 @@ Two ways, both from a Mac checkout (November 15, 2026, Ben's iPhone 17 Pro, Xcod
   3. `xcodebuild -workspace ios/secondhand.xcworkspace -scheme secondhand -configuration Release -destination 'id=<device UDID>' -allowProvisioningUpdates DEVELOPMENT_TEAM=P522C656U3 CODE_SIGN_STYLE=Automatic build`
   4. `xcrun devicectl device install app --device <id> <secondhand.app>`. The first launch needs Settings → General → VPN & Device Management → Trust. Deep links use `secondhand://`.
 
+### Keep the phone current
+
+Run `node scripts/phone-loop.mjs --watch --now` from the repo on your Mac.
+It builds current `origin/main` now, then watches for app changes every 60 seconds.
+Later builds wait until pushes have stopped for 180 seconds.
+The loop owns `~/secondhand-phone`; `--dir <path>` chooses another private clone.
+It resets that clone, installs the Release app, captures screens and checks them.
+If the phone is unavailable, it uses the simulator; connection failures get one retry.
+Captures, checks, crash reports and logs go to `~/secondhand-phone-results/`; `latest` links to the last cycle.
+Use `--once` (the default) to wait for one update, or `--now` to build once immediately.
+
 ## Not done yet
 
 - Deployed edge: nothing is hosted. Builds use Nate's Expo account. The routes go on Databricks if possible, otherwise on Next.js beside the site; since a Databricks App accepts only Databricks sign-in, the Next.js site can be the edge in front of it either way, and the second workspace probe settles it ([Nate](../product/words.md#2026-11-14-nate-sale-emails-the-expo-account-where-routes-are-hosted-and-a-buy-page-shaped-by-your-style); *agent proposal*). A deployed edge needs `DATABRICKS_TOKEN` (a service identity) in its host's secrets and `origin` set for the `expo-router` plugin in `app.json`.

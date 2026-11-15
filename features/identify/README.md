@@ -22,6 +22,7 @@ All research for this feature: [research/identify/](../../research/identify/)
 - Ben: [research/identify/ben/](../../research/identify/ben/)
 - Nate: [research/identify/nate/](../../research/identify/nate/)
 - Nate: [clarifying-inputs.md](../../research/identify/nate/clarifying-inputs.md). How to ask the few remaining questions fast and hard to get wrong; shipped flows from Mercari and Poshmark, from search excerpts only.
+- Nate: [identify-from-photos-2026-11.md](../../research/identify/nate/identify-from-photos-2026-11.md). Code first, then visual search, then a model; prices per call for every paid route (treg's Lens rows from $0.003), what is free now, and what stays Nate's decision.
 - Nate: [identification-stack.md](../../research/identify/nate/identification-stack.md). Technologies and data sources that can identify an arbitrary used product; image search returns similar items, never proof of identity.
 - Nate: [identification-technologies.md](../../research/identify/nate/identification-technologies.md). With Google product search closed, four kinds of technology can identify a used product from photos; claims checked at source, some corrected.
 - Ben, tech stack: [openai-decisions-api.md](../../research/identify/ben/openai-decisions-api.md). OpenAI Decisions API returns probabilities but no reasons and no review queue, so we set thresholds and route low confidence to the user.

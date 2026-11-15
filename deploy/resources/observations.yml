@@ -1,0 +1,14 @@
+resources:
+  jobs:
+    load_observations:
+      name: secondhand-load-observations
+      environments:
+        - environment_key: observations
+          spec:
+            environment_version: "3"
+      tasks:
+        - task_key: load_observations
+          environment_key: observations
+          spark_python_task:
+            python_file: ../../databricks/tasks/load_observations.py
+            parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}"]

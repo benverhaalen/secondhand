@@ -1,10 +1,50 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ERROR_CODES, HINT_DO, createHarness, fakeAdapter, fakeSite, fail, parseEnvelope, classifyRead, fakeManifest, needsSession,
-  type Envelope, type ErrorCode } from './protocol.ts';
+  type Adapter, type Envelope, type ErrorCode } from './protocol.ts';
 import { createLog } from '../../../../log/index.js';
 
 const harness = createHarness({ adapters: fakeSite('depop'), timeoutMs: 50 });
+
+for (const rejects of [false, true]) test(`caller abort reaches the adapter and settles even when it ${rejects ? 'rejects' : 'ignores cancellation'}`, async () => {
+  const ctl = new AbortController(), began = Promise.withResolvers<AbortSignal>();
+  let fallback = 0;
+  const adapter: Adapter = { route_id: 'slow', manifest: fakeManifest('depop', 'search'), run(_args, signal) {
+    began.resolve(signal);
+    return new Promise((_resolve, reject) => {
+      if (rejects) signal.addEventListener('abort', () => reject(new Error('private abort reason')));
+    });
+  } };
+  const h = createHarness({ timeoutMs: 100, adapters: [adapter, { ...fakeAdapter('depop', 'search'), async run() {
+    fallback++; return { ok: true, data: [] };
+  } }] });
+  const pending = h.call('depop', 'search', {}, { signal: ctl.signal });
+  const received = await began.promise, start = performance.now();
+  ctl.abort(new Error('private caller reason'));
+  const result = await pending;
+  assert.equal(received.aborted, true);
+  assert.ok(performance.now() - start < 30, 'abort must settle without waiting for the harness deadline');
+  assert.ok(!result.ok && result.error.code === 'rate_limited');
+  assert.equal(result.error.message, 'the site did not answer in time');
+  assert.equal(fallback, 0);
+});
+
+test('a pre-aborted call runs no adapter; cancelling a sent write stays outcome_unknown', async () => {
+  let runs = 0;
+  const adapter = fakeAdapter('depop', 'search');
+  const h = createHarness({ adapters: [{ ...adapter, async run() { runs++; return { ok: true, data: [] }; } }] });
+  const result = await h.call('depop', 'search', {}, { signal: AbortSignal.abort() });
+  assert.ok(!result.ok && result.error.code === 'rate_limited');
+  assert.equal(runs, 0);
+  const ctl = new AbortController(), began = Promise.withResolvers<void>();
+  const w = createHarness({ timeoutMs: 100, adapters: [{ ...fakeAdapter('depop', 'post'), run() {
+    began.resolve(); return new Promise(() => {});
+  } }] });
+  const pending = w.call('depop', 'post', { operation_id: 'cancelled-write' }, { signal: ctl.signal });
+  await began.promise; ctl.abort();
+  const write = await pending;
+  assert.ok(!write.ok && write.error.code === 'outcome_unknown');
+});
 
 // The scripted agent from §9: it branches on hint.do only, never on message.
 function nextStep(e: Envelope): string {
@@ -144,4 +184,30 @@ test('a call logs through log/ with no args text', async () => {
   await h.call('depop', 'search', { query: 'secret-query-text' });
   assert.ok(sink.lines.length > 0);
   assert.ok(!sink.text().includes('secret-query-text'));
+});
+
+
+test("harness: one person's account id under another person is refused", async () => {
+  const { memoryAccounts, memoryVault } = await import('../browser/auth.ts');
+  const vault = memoryVault();
+  await vault.put('fixture', { cookies: [], origins: [] });
+  const accounts = memoryAccounts([{ account_id: 'owned', person_id: 'owner', site: 'depop', token_ref: 'fixture' }], vault);
+  let runs = 0;
+  const adapter = fakeAdapter('depop', 'read_listings');
+  const h = createHarness({ accounts, adapters: [{ ...adapter, async run(args, signal) {
+    runs++; return adapter.run(args, signal);
+  } }] });
+  for (const person_id of ['other', undefined, '', 42]) {
+    const result = await h.call('depop', 'read_listings', { account_id: 'owned', person_id });
+    assert.ok(!result.ok);
+    if (!result.ok) {
+      assert.equal(result.error.code, 'policy_refused');
+      assert.deepEqual(result.error.hint, { do: 'raise_decision', kind: 'link_account' });
+    }
+    assert.equal(result.meta.route_id, 'none');
+  }
+  assert.equal(runs, 0, 'refused calls must never reach an adapter');
+  assert.ok((await h.call('depop', 'read_listings', { account_id: 'owned', person_id: 'owner' })).ok,
+    'the caller can still read their own linked account');
+  assert.equal(runs, 1);
 });

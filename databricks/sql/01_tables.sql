@@ -10,7 +10,7 @@ CREATE SCHEMA IF NOT EXISTS secondhand.measures COMMENT 'Views a judge or a dash
 CREATE TABLE IF NOT EXISTS secondhand.core.observation (
   data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   id STRING NOT NULL COMMENT 'Prefixed id (obs_).',
-  user_id STRING NOT NULL COMMENT 'Owner. Row filter governance.owner_only applies.',
+  user_id STRING COMMENT 'Owner; null is a shared public read, never who asked',
   created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL COMMENT 'Bumped on each write.',
   kind STRING NOT NULL COMMENT 'listing, stats, price, rank, fact, trend, retail, rule.',
   site STRING COMMENT 'ebay, facebook, depop, poshmark, mercari, offerup, grailed.',
@@ -24,13 +24,21 @@ CREATE TABLE IF NOT EXISTS secondhand.core.observation (
   evidence_id STRING NOT NULL COMMENT 'The evidence row this observation rests on.',
   source_route STRING,
   retention_class STRING NOT NULL COMMENT 'device, transient, thread, order, item_audit, source_ttl, history.',
-  rights_mode STRING NOT NULL COMMENT 'own_scope, opt_in_shared, aggregate_only, public, internal, never_kept.'
+  rights_mode STRING NOT NULL COMMENT 'own_scope, opt_in_shared, aggregate_only, public, internal, never_kept.',
+  use_scope STRING COMMENT 'hackathon_demo or product: what this row may be used for; shown-only rows are hackathon_demo with may_model false on their evidence',
+  keep_until TIMESTAMP COMMENT 'When this public read must stop being kept; null means no stated deadline.',
+  channel STRING COMMENT 'official_retail or secondhand.',
+  query STRING COMMENT 'Public search terms, never who asked.',
+  via STRING COMMENT 'The provider used for this read, or null for a direct read.',
+  job_id STRING COMMENT 'The finished search that landed this read.'
 ) COMMENT 'The one general row every protocol read and information-engine find writes. Append-only. comp and rank_observation are typed views over it.'
 TBLPROPERTIES ('delta.appendOnly' = 'true');
 
 CREATE TABLE IF NOT EXISTS secondhand.core.evidence (
   data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
-  id STRING NOT NULL, user_id STRING NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL,
+  id STRING NOT NULL,
+  user_id STRING COMMENT 'Owner; null is a shared public read, never who asked',
+  created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL,
   shape STRING NOT NULL COMMENT 'attribute or comp (spec/product.md sub-shapes).',
   kind STRING COMMENT 'attribute shape: image_region, depth, label_text, lookup, owner.',
   ref STRING COMMENT 'attribute shape: what the fact rests on.',
@@ -40,7 +48,8 @@ CREATE TABLE IF NOT EXISTS secondhand.core.evidence (
   fingerprint STRING COMMENT 'comp shape: hash of the page as read.',
   extractor_version STRING NOT NULL,
   may_store BOOLEAN COMMENT 'rights tag from the source terms.', may_model BOOLEAN COMMENT 'rights tag.', may_show BOOLEAN COMMENT 'rights tag.', may_share BOOLEAN COMMENT 'rights tag.',
-  ttl_days INT COMMENT 'rights tag ttl.'
+  ttl_days INT COMMENT 'rights tag ttl.',
+  use_scope STRING COMMENT 'hackathon_demo or product: what this evidence may be used for.'
 ) COMMENT 'What a fact rests on. Hackathon build: rights recorded, not enforced; public launch enforces the same tags.';
 
 CREATE TABLE IF NOT EXISTS secondhand.core.citation (
@@ -85,6 +94,8 @@ CREATE TABLE IF NOT EXISTS secondhand.core.param (
   version INT NOT NULL, fitted_on_ids_hash STRING, n_eff DOUBLE NOT NULL, metric STRING,
   held_out_score DOUBLE COMMENT 'Required on a challenger written by a fit.', guard_lo DOUBLE, guard_hi DOUBLE,
   status STRING NOT NULL COMMENT 'champion, challenger, retired.', frozen BOOLEAN NOT NULL, promoted_at TIMESTAMP,
+  origin STRING COMMENT 'fit or event.', previous_version INT COMMENT 'Version this one replaces.',
+  keep STRING COMMENT 'JSON: retained evidence fraction.', days_since_last DOUBLE COMMENT 'Days since the previous update.',
   moved_by STRING COMMENT 'What wrote this version: propose, promote, rollback, and the job run.'
 ) COMMENT 'Every learned weight, threshold and interval, one row per version. Promote on a held-out win; rollback restores the last promoted version. Delta history and the change feed keep every move.'
 TBLPROPERTIES ('delta.enableChangeDataFeed' = 'true');

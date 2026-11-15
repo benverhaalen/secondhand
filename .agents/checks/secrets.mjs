@@ -21,11 +21,16 @@ const EMAIL_OK = /noreply|@example\.|@users\.noreply\.github\.com/i;
 const SECRET_NAME = /KEY|TOKEN|SECRET|PASSWORD|PRIVATE|CREDENTIAL/i;
 const MEANT_PUBLIC = /PUBLISHABLE|ANON_KEY/i; // keys a vendor issues to ship in clients, such as Stripe publishable or Supabase anon
 const serverSide = f => /\+api\.[tj]sx?$/.test(f) || f.startsWith('app/src/edge/');
+// Tests and recorded fixtures run in Node and no screen imports them, so Metro never bundles them.
+const neverShipped = f => /\.test\.[tj]sx?$/.test(f) || f.includes('/fixtures/');
+// A type-only import is erased at build and ships nothing; a value import from edge/ would bundle server code.
+const typeOnly = spec => /^type\b/.test(spec) || (/^\{[^}]*\}$/.test(spec) && spec.slice(1, -1).split(',').map(x => x.trim()).filter(Boolean).every(x => /^type\b/.test(x)));
+const valueFromEdge = text => [...text.matchAll(/\b(?:import|export)\s+([^;]*?)\s+from\s+['"][^'"]*\/edge\//g)].some(([, spec]) => !typeOnly(spec.trim()));
 function shipped(f, text) {
   const out = [];
   for (const m of text.matchAll(/\bEXPO_PUBLIC_\w+/g))
     if (SECRET_NAME.test(m[0].slice(12)) && !MEANT_PUBLIC.test(m[0])) out.push(err(f, `${m[0]} is compiled into the app, where anyone can read it: keep the secret on the server and call a /v1 route`));
-  if (f.startsWith('app/src/') && /\.[tj]sx?$/.test(f) && !serverSide(f) && /\bfrom\s+['"][^'"]*\/edge\//.test(text))
+  if (f.startsWith('app/src/') && /\.[tj]sx?$/.test(f) && !serverSide(f) && !neverShipped(f) && valueFromEdge(text))
     out.push(err(f, 'a screen imports from edge/, which holds server credentials: call the /v1 route instead'));
   if (f === 'app/app.json') {
     const walk = (o, path) => Object.entries(o ?? {}).forEach(([k, v]) => { if (SECRET_NAME.test(k)) out.push(err(f, `extra.${[...path, k].join('.')} ships inside the app, where anyone can read it`)); else if (v && typeof v === 'object') walk(v, [...path, k]); });
@@ -39,7 +44,12 @@ export function secrets(root, { files }) {
   for (const f of files) {
     if (/(^|\/)\.env(\.|$)/.test(f) && !f.endsWith('.example')) out.push(err(f, '.env files are never committed; add an .env.example with names only'));
     // The brand faces are licensed and this repo is public: they live in the BRAND_FONTS secret and fonts/ (ignored) only.
-    if (/\.(woff2?|ttf|otf)$/i.test(f)) { out.push(err(f, 'a font file is committed: the brand faces are licensed, so keep them in fonts/ (ignored) or the BRAND_FONTS secret')); continue; }
+    // An open-licensed fallback face may be committed, in a fonts-open/ folder with its licence file; a brand face never is.
+    if (/\.(woff2?|ttf|otf)$/i.test(f)) {
+      if (!/(^|\/)fonts-open\//.test(f)) out.push(err(f, 'a font file is committed: the brand faces are licensed, so keep them in fonts/ (ignored) or the BRAND_FONTS secret'));
+      else if (!files.some(x => x.startsWith(f.slice(0, f.lastIndexOf('/') + 1)) && /OFL|LICEN[SC]E/i.test(x))) out.push(err(f, 'an open font is committed without its licence file beside it'));
+      continue;
+    }
     if (/\.(png|jpe?g|gif|webp|ico|pdf|m4a|mp4|zip)$/i.test(f)) continue;
     const text = read(root, f) ?? '';
     for (const [name, re] of KEYS) if (re.test(text)) out.push(err(f, `looks like a ${name}; remove it and rotate it`));

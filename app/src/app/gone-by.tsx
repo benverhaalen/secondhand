@@ -138,8 +138,7 @@ export default function GoneBy() {
   if (shown === 'empty') {
     return (
       <Screen name="gone-by" state={named} nav={<Nav back={back} />}>
-        <EmptyState title="Nothing to clear here" line="The camera found nothing in this room to sell or give away."
-          action={{ id: 'scan', label: 'Scan the room', onPress: () => router.push('/camera' as Href) }} />
+        <EmptyState title="Nothing to clear here" action={{ id: 'scan', label: 'Scan the room', onPress: () => router.push('/camera' as Href) }} />
       </Screen>
     );
   }

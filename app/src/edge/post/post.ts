@@ -41,7 +41,7 @@ export function createPoster({ accounts, harness, operations, sessions, leases, 
     const steps: Step[] = [{ site: t.site, verb: 'post', args }, { site: t.site, verb: read.verb, args: read.args }];
     const base = { listing_id: t.listing_id, site: t.site, steps };
     const refuse = (reason: string): Result => ({ ...base, state: 'postFailed', reason });
-    const a = await accounts.byId(t.account_id);
+    const a = await accounts.byId(t.account_id, person_id);
     if (!a || a.person_id !== person_id || a.site !== t.site) return refuse('not_linked');
     if (!t.operation_id || t.listing.site !== t.site || !t.listing.ready) return refuse('not_ready');
     if (t.claim_check.subject !== t.listing_id || t.claim_check.verdict !== 'pass') return refuse('unbacked_claim');

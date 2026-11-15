@@ -52,7 +52,7 @@ export type Item = {
   kind?: string;
   cost?: { amount_cents: Cents; date: string; source: 'purchase' | 'bought_it' | 'you_said' };
   origin: 'capture' | 'purchase' | 'import' | 'folder'; location: { label: string }; quantity: number; group_id?: string;
-  note?: string; kept_reason?: string; photos: Photo[]; attributes: Attribute[]; valuation?: Valuation; limits?: ItemLimits;
+  description?: string; note?: string; kept_reason?: string; photos: Photo[]; attributes: Attribute[]; valuation?: Valuation; limits?: ItemLimits;
   listings: Listing[]; created_at: Iso; updated_at: Iso;
 };
 
@@ -107,6 +107,10 @@ export type MatchLabel = 'exact' | 'likely_same_model' | 'same_family_other_vari
 export type Cut = 'mens' | 'womens' | 'youth';
 export type Want = { id: string; state: 'active' | 'paused' | 'ended'; text: string; product_id: string | null; fit: { size?: string; cut?: Cut; condition_floor?: string; radius_mi?: number }; max_total_cents: Cents | null; sites: Site[]; checked: Partial<Record<Site, Iso>>; behind: Site[]; quiet_hours: { from: string; to: string } | null; alert: 'available' | 'under' };
 export type Match = { id: string; state: 'found' | 'alerted' | 'saved' | 'asked' | 'offered' | 'bought' | 'dismissed' | 'gone'; want_id: string | null; source: 'want' | 'search' | 'for_you'; label: MatchLabel; site: Site; title: string; key: PhotoKey; url: string; price_cents: Cents; delivered_cents: Cents; condition: string; seller: string; verdict: 'good' | 'fair' | 'high'; seen_at: Iso; product_id: string | null; size?: string };
+// One of the person's recent lookups (spec/redesign/new-results.md, What Recent is; GET /v1/lookups, packet 80): a capture made
+// to find out what a thing is (find) or what it is worth (worth) that became neither an item nor a want. short_name is what
+// the camera read before it knew the product ("Carhartt jacket"), so a find's row can say what it turned out to be.
+export type Lookup = { capture_id: string; kind: 'find' | 'worth'; product_id: string; short_name: string; at: Iso };
 export type RetailOffer = { id: string; product_id: string; relation: 'same_product' | 'successor' | 'functional_equivalent'; store: string; condition: 'new' | 'refurbished'; price_cents: Cents; delivered_cents: Cents; delivery_min_days: number; delivery_max_days: number; warranty_months: number; returns_days: number };
 export type Product = {
   id: string; brand: string; model: string; variant: string; category: KindFamily; key: PhotoKey;

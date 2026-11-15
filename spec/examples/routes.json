@@ -24,6 +24,20 @@
             "needs_session": true
           },
           {
+            "endpoint": "DELETE /v1/lookups",
+            "source": "engine",
+            "auth": "user",
+            "method": "DELETE",
+            "needs_session": true
+          },
+          {
+            "endpoint": "DELETE /v1/lookups/:capture_id",
+            "source": "engine",
+            "auth": "user",
+            "method": "DELETE",
+            "needs_session": true
+          },
+          {
             "endpoint": "DELETE /v1/me",
             "source": "engine",
             "auth": "user",
@@ -165,6 +179,13 @@
           },
           {
             "endpoint": "GET /v1/limits",
+            "source": "engine",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/lookups",
             "source": "engine",
             "auth": "user",
             "method": "GET",

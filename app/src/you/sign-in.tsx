@@ -1,94 +1,62 @@
-// Step 1 of first launch (spec/pages.md §6.1; spec/features/connect.md, "Signing in to secondhand"): Apple, Google or an
-// email code, and it cannot be skipped. The app has no client for /v1/auth yet, so the demo drives it: Apple and Google
-// succeed after a short wait, and the email code takes any 6 digits except 000000, which fails so Try again can be seen.
-// Every tap, state change and error goes through the app's log (src/ui/log.ts).
-import { useEffect, useRef, useState } from 'react';
-import { Blank, EmptyState, FootButton, Line, Nav, Pill, Screen, Stack, Txt } from '@/ui';
-import { log } from '@/ui/log';
-import { ListRow } from '@/ui/parts/list-row';
-import { changed } from '@/you/state';
+import { useEffect, useState } from 'react';
+import { ApiFailure } from '@/api/client';
+import { AccountField } from '@/account/field';
+import { accountError } from '@/account/session';
+import { FootButton, Nav, Pill, Screen, Stack, Txt, log } from '@/ui';
+import { emailSignIn } from './sign-in-wire';
 import type { ScreenState } from '@/demo/screen';
 
-type Way = 'apple' | 'google' | 'email';
-type Mode = 'choose' | 'email' | 'code';
-
-const SKIP = 'empty: sign-in is only for a person with no account on this phone; one: same; dense: same; typical: same';
-
-export function SignIn({ asked, onDone }: { asked: ScreenState | null; onDone: () => void }) {
-  const [mode, setMode] = useState<Mode>('choose');
-  const [busy, setBusy] = useState<Way | null>(asked === 'loading' ? 'apple' : null);
-  const [failed, setFailed] = useState(asked === 'failed');
-  const [address, setAddress] = useState(''), [code, setCode] = useState(''), [hint, setHint] = useState<string | null>(null);
-  const last = useRef<Way | null>(null), timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+type Phase = 'email' | 'code';
+export function SignIn({ asked, onDone }: { asked: ScreenState | null; onDone: () => void | Promise<void> }) {
+  const [phase, setPhase] = useState<Phase>('email');
+  const [address, setAddress] = useState(''), [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
+  const [resendAt, setResendAt] = useState(0), [now, setNow] = useState(Date.now());
   const offline = asked === 'offline';
-  useEffect(() => () => clearTimeout(timer.current), []);
-
-  const fail = (way: Way, why: string) => { log.event('error', { where: 'sign-in', way, why }); changed('session', way, 'failed'); setBusy(null); setFailed(true); };
-  const done = (way: Way) => { changed('session', way, 'signed_in'); setBusy(null); onDone(); };
-  const run = (way: Way, ok = true) => {
-    if (offline || busy) return;
-    last.current = way; setBusy(way); setFailed(false);
-    timer.current = setTimeout(() => (ok ? done(way) : fail(way, 'code did not match')), 700);
+  const email = address.trim(), valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const wait = Math.max(0, Math.ceil((resendAt - now) / 1000));
+  useEffect(() => {
+    if (!resendAt) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [resendAt]);
+  const send = async () => {
+    if (busy || !valid || offline) return;
+    setBusy(true); setError(null);
+    try {
+      const result = await emailSignIn().start(email);
+      setNow(Date.now()); setResendAt(Date.now() + result.resend_after_s * 1000);
+      setCode(''); setPhase('code');
+    } catch (failure) {
+      log.error('sign-in.email_start', failure);
+      setError(failure instanceof ApiFailure && failure.status === 503 ? 'Email sign-in is not available yet. Your account has not been created.' : accountError(failure));
+    } finally { setBusy(false); }
   };
-  const send = () => {
-    if (!address.includes('@')) { log.event('error', { where: 'sign-in', way: 'email', why: 'no address' }); setHint('Enter your email'); return; }
-    changed('session', 'email', 'code_sent'); setHint(null); setMode('code');
+  const verify = async () => {
+    if (busy || code.length !== 6 || offline) return;
+    setBusy(true); setError(null);
+    try { await emailSignIn().verify(email, code); await onDone(); }
+    catch (failure) {
+      log.error('sign-in.email_verify', failure);
+      setError(failure instanceof ApiFailure && [400, 401, 422].includes(failure.status) ? 'That code did not work or has expired. Check it or request another.' : accountError(failure));
+    } finally { setBusy(false); }
   };
-  const verify = () => { if (code.length === 6) run('email', code !== '000000'); else setHint('Enter the 6 digits'); };
-  const back = mode === 'choose' ? undefined : () => { setHint(null); setFailed(false); setMode(mode === 'code' ? 'email' : 'choose'); };
-  const state = failed ? 'failed' : busy ? 'loading' : offline ? 'offline' : 'new';
-
-  if (failed) {
-    // Try again runs the same way again: Apple or Google from the choices, the code from the code step.
-    const retry = () => { setFailed(false); if (last.current === 'email') setMode('code'); else if (last.current) run(last.current); };
-    return (
-      <Screen name="onboarding" state="failed" nav={<Nav back={back} />} skip={SKIP}>
-        <EmptyState title="Couldn’t sign in" line="Check your connection, then try again." action={{ id: 'signin-retry', label: 'Try again', onPress: retry }} />
-      </Screen>
-    );
-  }
-  if (mode === 'email') {
-    return (
-      <Screen name="onboarding" state={state} nav={<Nav back={back} />} skip={SKIP} foot={<FootButton id="signin-email-send" label="Send code" onPress={send} />}>
-        <Stack gap="tight"><Txt role="heading">Your email</Txt></Stack>
-        <Stack>
-          <Txt role="body" tone="ink-2">We send a 6-digit code. No password.</Txt>
-          <Blank id="signin-email-address" name="Your email" value={address} onChange={setAddress} />
-          {hint ? <Txt role="caption">{hint}</Txt> : null}
-        </Stack>
-      </Screen>
-    );
-  }
-  if (mode === 'code') {
-    return (
-      <Screen name="onboarding" state={state} nav={<Nav back={back} />} skip={SKIP}
-        foot={<FootButton id="signin-email-verify" label="Continue" state={busy ? 'working' : 'idle'} step="Signing in" onPress={verify} />}>
-        <Stack gap="tight"><Txt role="heading">Enter the code</Txt></Stack>
-        <Stack>
-          <Txt role="body" tone="ink-2">Sent to {address}</Txt>
-          <Blank id="signin-email-code" name="6-digit code" value={code} numeric onChange={v => setCode(v.replace(/\D/g, '').slice(0, 6))} />
-          {hint ? <Txt role="caption">{hint}</Txt> : null}
-        </Stack>
-      </Screen>
-    );
-  }
-  const pick = (way: Way) => () => { if (offline) return; if (way === 'email') setMode('email'); else run(way); };
-  return (
-    <Screen name="onboarding" state={state} nav={<Nav />} skip={SKIP}>
-      <Stack gap="tight"><Txt role="heading">Welcome</Txt></Stack>
-      {offline ? <ListRow id="signin-offline" lead="refresh" label="Waiting for signal" detail="Signing in needs it" /> : null}
-      <Stack>
-        <Txt role="body" tone="ink-2">secondhand lists your things on the sites, answers buyers and gets them sent.</Txt>
-        {busy ? (
-          <Line><Pill id="signin-working" label="Signing in" state="working" step="Signing in" /></Line>
-        ) : (
-          <>
-            <Line><Pill id="signin-apple" kind="primary" label="Continue with Apple" onPress={pick('apple')} /></Line>
-            <Line><Pill id="signin-google" kind="second" label="Continue with Google" onPress={pick('google')} /></Line>
-            <Line><Pill id="signin-email" kind="second" label="Continue with email" onPress={pick('email')} /></Line>
-          </>
-        )}
-      </Stack>
-    </Screen>
-  );
+  return <Screen name="onboarding" state={busy ? 'loading' : error ? 'failed' : offline ? 'offline' : 'new'}
+    nav={<Nav back={phase === 'code' ? () => { setPhase('email'); setCode(''); setError(null); } : undefined} />}
+    foot={<FootButton id={phase === 'email' ? 'signin-email-send' : 'signin-email-verify'}
+      label={phase === 'email' ? 'Continue with email' : 'Continue'} step={phase === 'email' ? 'Sending code' : 'Signing in'}
+      state={busy ? 'working' : offline || (phase === 'email' ? !valid : code.length !== 6) ? 'disabled' : 'idle'}
+      onPress={phase === 'email' ? send : verify} />}>
+    <Stack gap="tight">
+      <Txt role="heading">{phase === 'email' ? 'Welcome to secondhand' : 'Check your email'}</Txt>
+      <Txt role="body" tone="ink-2">{phase === 'email' ? 'Create an account or sign in with a code. No password needed.' : `Enter the code sent to ${email}.`}</Txt>
+    </Stack>
+    <AccountField kind={phase} value={phase === 'email' ? address : code} disabled={busy}
+      onChange={value => { setError(null); if (phase === 'email') setAddress(value); else setCode(value.replace(/\D/g, '').slice(0, 6)); }}
+      onSubmit={phase === 'email' ? send : verify} />
+    {offline ? <Txt role="body">Connect to the internet to sign in.</Txt> : null}
+    {error ? <Txt role="body">{error}</Txt> : null}
+    {phase === 'code' ? <Pill id="signin-resend" kind="second" label={wait ? `Resend in ${wait}s` : 'Send another code'}
+      state={busy || wait > 0 ? 'disabled' : 'idle'} onPress={send} /> : null}
+  </Screen>;
 }

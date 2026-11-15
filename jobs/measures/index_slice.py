@@ -486,7 +486,7 @@ def main(argv=None):
         log.stage('index_slice', 'groups', state='arrived', counts=output['counts'],
                   per_item={k: v['counts'] for k, v in output['items'].items()})
         output['benchmark_environment'] = {'python': sys.version.split()[0], 'platform': sys.platform,
-                                           'logical_cpus': os.cpu_count(), 'load_average': list(os.getloadavg())}
+                                           'logical_cpus': os.cpu_count(), 'load_average': list(os.getloadavg()) if hasattr(os, 'getloadavg') else None}
         artifacts = ((args.out, json.dumps(output, indent=2, sort_keys=True, allow_nan=False) + '\n', 'json'),
                      (args.table, render_markdown(output), 'table'),
                      (args.examples, json.dumps(examples(rows, items, match_spec), indent=2) + '\n', 'examples'))

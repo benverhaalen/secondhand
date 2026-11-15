@@ -5,39 +5,49 @@
 //   node --no-warnings app/src/edge/harness/sites/mercari/live.ts [query]
 import { freemem } from 'node:os';
 import { createRequire } from 'node:module';
-import { browserUseCloud, cdpLauncher, type CdpPw } from '../../../browser/cdp.ts';
+import { createLog, consoleSink } from '../../../../../../log/index.js';
+import { browserUseCloud, cdpLauncher, isCdpPw, type CdpPw } from '../../../browser/cdp.ts';
 import { mercariAdapters, nextData, readListing, readReviews, stillUp, type Client, type Page } from './adapter.ts';
 
 type Res = { url(): string; json(): Promise<unknown>; request(): { url(): string; postData(): string | null } };
 type Route = { request(): { resourceType(): string }; abort(): Promise<void>; continue(): Promise<void> };
-type PwPage = { goto(url: string, o: { waitUntil: string; timeout: number }): Promise<{ status(): number } | null>; content(): Promise<string>;
+type PwPage = { close(): Promise<void>; goto(url: string, o: { waitUntil: string; timeout: number }): Promise<{ status(): number } | null>; content(): Promise<string>;
   waitForTimeout(ms: number): Promise<void>; evaluate<R>(fn: () => R): Promise<R>; on(e: 'response', h: (r: Res) => void): void;
   route(p: string, h: (r: Route) => void): Promise<void> };
+
+const log = createLog({ src: 'app.src.edge.harness.sites.mercari.live', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 
 const q = process.argv[2] ?? 'carhartt hoodie';
 const apiKey = process.env.BROWSER_USE_API_KEY;
 if (!apiKey) { console.error('BROWSER_USE_API_KEY is not in this process (it is read by presence only)'); process.exit(2); }
 if (freemem() < 4 * 2 ** 30) { console.error(`only ${(freemem() / 2 ** 30).toFixed(1)} GB free: not starting`); process.exit(3); }
 
-const pw = createRequire(import.meta.url)('playwright-core') as CdpPw;
+const loadedPw: unknown = createRequire(import.meta.url)('playwright-core');
+if (!isCdpPw<PwPage>(loadedPw)) throw new Error('Playwright CDP interface unavailable');
+const pw: CdpPw<PwPage> = loadedPw;
 const t0 = performance.now(), ms = () => Math.round(performance.now() - t0);
 const ctx = await cdpLauncher(pw, browserUseCloud({ apiKey, timeoutMin: 2 })).anonymous({ headless: true });
 console.log(JSON.stringify({ connected_ms: ms() }));
 const s = AbortSignal.timeout(110_000);
 try {
-  const page = await ctx.newPage() as unknown as PwPage;
+  const page = await ctx.newPage();
   await page.route('**/*', r => { if (['image', 'media', 'font'].includes(r.request().resourceType())) void r.abort(); else void r.continue(); });
   // The page's own GraphQL answers, named by operationName (a url param on GET, a body field on POST).
   let api: Page['api'] = [];
   page.on('response', r => {
     const u = new URL(r.url()); if (u.pathname !== '/v1/api') return;
     let name = u.searchParams.get('operationName') ?? undefined;
-    if (!name) { try { name = (JSON.parse(r.request().postData() ?? '{}') as { operationName?: string }).operationName; } catch { /* not json */ } }
+    if (!name) {
+      try {
+        const body: unknown = JSON.parse(r.request().postData() ?? '{}');
+        if (body && typeof body === 'object' && 'operationName' in body && typeof body.operationName === 'string') name = body.operationName;
+      } catch (error) { if (!(error instanceof SyntaxError)) throw error; /* not JSON */ }
+    }
     // An answer whose request names no operation falls back to its first data key.
     r.json().then(body => {
       const data = (body as { data?: Record<string, unknown> } | null)?.data;
       api.push({ op: name ?? (data ? Object.keys(data)[0] : undefined), body });
-    }, () => {});
+    }, error => { log.error('live.response.json', error); });
   });
   let last: Page | undefined;
   const client: Client = {
@@ -55,7 +65,10 @@ try {
   const timed = async (read: string, f: () => Promise<{ ok: boolean; data?: unknown; error?: unknown }>) => {
     const a = ms();
     // one read's own failure (a timeout, a closed page) is printed and the run goes on
-    const r: { ok: boolean; data?: unknown; error?: unknown } = await f().catch((e: Error) => ({ ok: false, error: e.message.replace(/(wss?|https?):\/\/\S+/g, '[url]').slice(0, 200) }));
+    const r: { ok: boolean; data?: unknown; error?: unknown } = await f().catch((e: Error) => {
+      log.error('live.read', e);
+      return { ok: false, error: e.message.replace(/(wss?|https?):\/\/\S+/g, '[url]').slice(0, 200) };
+    });
     const count = Array.isArray(r.data) ? r.data.length : r.ok ? 1 : 0;
     // on a failure, the status and the op names the page answered with (names only), to see what moved
     console.log(JSON.stringify({ read, ok: r.ok, count, ms: ms() - a, ...(r.ok ? {} : { error: r.error, status: last?.status, ops: last?.api.map(x => x.op) }) }));
@@ -87,7 +100,7 @@ try {
   const hits = text.split('\n').filter(l => /robot|spider|scrap|crawl|automated (means|system|software|tool)/i.test(l)).map(l => l.trim().slice(0, 400));
   console.log(JSON.stringify({ read: 'terms', url: tos, ms: ms() - a, chars: text.length, automation_lines: hits.slice(0, 6) }));
 } catch (e) {
-  console.log(JSON.stringify({ error: (e as Error).message.replace(/(wss?|https?):\/\/\S+/g, '[url]').slice(0, 200) }));
+  log.error('live', e);
 } finally {
   await ctx.close(); // stops the cloud browser and its billing
   console.log(JSON.stringify({ stopped_ms: ms() }));

@@ -22,7 +22,7 @@
     {
       "state": "typical",
       "route": "/item/it_jacket/plan",
-      "shows": "What do you want?",
+      "shows": "If it doesn’t sell",
       "also": [
         "~about 4 to 9 days",
         "~$91.20",
@@ -74,7 +74,7 @@
     {
       "state": "researching",
       "route": "/item/it_hoodie/plan",
-      "shows": "Stays at its price until you change it",
+      "shows": "Price drops",
       "why": "no price yet: Preview waits"
     },
     {
@@ -86,7 +86,7 @@
       ],
       "skeleton": true,
       "absent": [
-        "What do you want?"
+        "If it doesn’t sell"
       ],
       "why": "the sheet’s skeleton over the item"
     },
@@ -95,10 +95,10 @@
       "route": "/item/it_jacket/plan?state=failed",
       "shows": "Can’t open this item",
       "also": [
-        "It was deleted, or it didn’t load.",
-        "Try again"
+        "This item didn’t load",
+        "Retry"
       ],
-      "why": "what failed; Try again is in the controls, missing"
+      "why": "what failed; Retry is in the controls, missing"
     },
     {
       "state": "not-found",
@@ -111,7 +111,7 @@
       "route": "/item/it_jacket/plan?state=offline",
       "shows": "Offline. Changes send when you’re back.",
       "also": [
-        "What do you want?"
+        "If it doesn’t sell"
       ],
       "why": "the last copy; a save waits for signal (ways-out Everywhere)"
     }
@@ -151,8 +151,8 @@
     {
       "id": "choice-reserve",
       "control": "Only at my price",
-      "on_tap": "picks Only at my price: no drops, never marked slow",
-      "shows": "Waits for your price. No drops, never marked slow."
+      "on_tap": "picks Only at my price: it waits for the price, with no drops",
+      "shows": "Waits for your price without price drops"
     },
     {
       "id": "choice-check",
@@ -219,7 +219,7 @@
       "control": "Prices across sites: Same take-home",
       "on_tap": "opens the four rules, each with its reason, to pick one for this item",
       "route": "/item/it_switch/plan",
-      "shows": "Every site shows one price, so buyers who look around see the same thing. You get less where fees are higher.",
+      "shows": "Every site shows one price; you get less where fees are higher",
       "then": "plan-spread-same_price"
     },
     {
@@ -230,7 +230,7 @@
       "after": [
         "plan-spread"
       ],
-      "shows": "Every site shows one price, so buyers who look around see the same thing. You get less where fees are higher."
+      "shows": "Every site shows one price; you get less where fees are higher"
     },
     {
       "id": "spread-why",
@@ -288,8 +288,7 @@
     {
       "id": "drops",
       "control": "Price drops switch",
-      "on_tap": "turns price drops off",
-      "shows": "Stays at its price until you change it"
+      "on_tap": "turns price drops off; the dated drops under it go"
     },
     {
       "id": "fallback-ask",
@@ -365,7 +364,7 @@
     },
     {
       "id": "plan-retry",
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "loads the plan again (frontend-standard §4 Error)",
       "route": "/item/it_jacket/plan?state=failed",
       "goes": "/item/it_jacket/plan"

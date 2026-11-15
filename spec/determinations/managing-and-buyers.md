@@ -157,7 +157,7 @@ Shared rules for every card:
 
 **Why this method**: No labelled base rate exists per site, so a learned probability would be invented; a sum of named signals is honest and each reason can be shown (inferred). Named signals come from [trust, returns, disputes](../../research/sold/nate/trust-returns-disputes.md) and [messages and offers](../../research/messages/ben/messages-and-offers.md). The alternative, a trained classifier, is the upgrade once confirmed scams are labelled; until then it would fit noise.
 
-**When it is not shown**: tier `none` shows nothing. No percentage is shown until the [calibration gate in trust.md](../engines/trust.md#the-calibration-gate-row-703-and-row-704) passes for the site group; below it the person sees reasons and real counts (*agent proposal*; the bar is open as [J33](../open-questions.md#for-both)).
+**When it is not shown**: tier `none` shows nothing. No percentage is shown until the [calibration gate in trust.md](../engines/trust.md#the-calibration-gate-rows-703-704) passes for the site group; below it the person sees reasons and real counts (*agent proposal*; the bar is open as [J33](../open-questions.md#for-both)).
 
 **How it is explained**: "This buyer asked for a code sent to your phone. That is a known scam." Tap opens the lines and what the scam does.
 

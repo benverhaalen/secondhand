@@ -107,7 +107,7 @@ test('the plan says why each site is picked, and lists them from where the thing
   assert.deepEqual(s.filter(x => x.on).map(x => x.site), ['ebay', 'depop'], 'best and good post by default; ok waits to be asked');
   const reach = planSites(w, item, 4000, ['facebook', 'poshmark', 'mercari']);
   assert.equal(reach.filter(x => x.on).length, 5, 'one draft can go to all five');
-  assert.ok(reach.find(x => x.site === 'mercari')!.why.startsWith('Reach: seasonal'), reach.find(x => x.site === 'mercari')!.why);
+  assert.ok(reach.find(x => x.site === 'mercari')!.why.startsWith('More buyers: seasonal'), reach.find(x => x.site === 'mercari')!.why);
 });
 
 test('Approve says exactly what it will do', () => {
@@ -169,7 +169,7 @@ test('an item posted before the rule was a choice keeps one price on every site'
 test('Why gives the reason in words, then the sales and each fee behind it', () => {
   const { w, item } = get('it_jacket');
   const y = why(w, item)!;
-  assert.match(y.says, /^41 like it sold lately on 2 sites/);
+  assert.equal(y.says, 'Similar ones sold for $85 to $115 lately');
   assert.equal(y.fees.find(f => f.site === 'depop')!.get, youKeep('depop', 9500));
   assert.ok(y.sales.length === 2 && y.events.length === 1);
   assert.equal(soldTicks(item).length, 42);

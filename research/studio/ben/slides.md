@@ -1,4 +1,5 @@
 # What every listing photo should look like, slide by slide, and how a few casual photos become that set
+Researched 2026-11-15 by Ben (Claude). Feature: studio.
 
 Written 2026-11-15 by Ben (Claude Code, thread "Perfect every listing photo automatically"). Feature: studio. Everything here is an *agent proposal* until Ben or Nate decides; lines marked *observed* come from runs in [slides/runs/](slides/runs/).
 
