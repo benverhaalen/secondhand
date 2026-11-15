@@ -12,23 +12,18 @@ const sellingSteps = [
   {
     id: 'selling', number: '01', title: 'Start with photos.',
     body: 'Add the item and any detail that could change its price, like a label or a flaw.',
-    image: 'capture', alt: 'The app camera frames the whole front of a gold Marquette tee.',
+    image: 'capture', alt: 'The app camera frames the whole front of a brown Carhartt jacket.',
   },
   {
     id: 'price', number: '02', title: 'Review the price.',
     body: 'Check similar items that sold and compare what you’d keep on each site.',
-    image: 'plan', alt: 'Price planning for the gold Marquette tee, with sold-price evidence and estimated proceeds.',
+    image: 'plan', alt: 'Price planning for a Carhartt jacket, with sold-price evidence and estimated proceeds.',
     href: '/data-use', link: 'Where the prices come from',
   },
   {
-    id: 'review', number: '03', title: 'Choose what goes live.',
-    body: 'Review the photos, price and listing for each site before you approve it.',
-    image: 'preview', alt: 'The gold Marquette tee is ready for review, with separate eBay and Depop listing previews.',
-  },
-  {
-    id: 'after-the-sale', number: '04', title: 'Keep the next step in view.',
-    body: 'When an item sells, check the shipping details and what needs to happen next.',
-    image: 'ship', alt: 'Shipping details for a sold Marquette tee, including the label and next action.',
+    id: 'review', number: '03', title: 'Review each listing.',
+    body: 'The app preview shows each site’s photos, price and listing details for you to review.',
+    image: 'preview', alt: 'A Carhartt jacket is ready for review, with separate marketplace listing previews.',
   },
 ];
 
@@ -36,49 +31,64 @@ function Arrow({ down = false }: { down?: boolean }) {
   return <span aria-hidden="true">{down ? '↓' : '→'}</span>;
 }
 
-function Phone({ name, alt, eager = false }: { name: string; alt: string; eager?: boolean }) {
+function Phone({ name, alt, eager = false, caption = 'App preview · Sample data' }: { name: string; alt: string; eager?: boolean; caption?: string }) {
   return <figure className={styles.phone}>
     <img src={`/marketing/app/${name}.png`} alt={alt} width={880} height={1840} loading={eager ? 'eager' : 'lazy'} decoding="async" />
-    <figcaption>App preview · Sample data</figcaption>
+    <figcaption>{caption}</figcaption>
   </figure>;
 }
 
 export default function HowItWorksPage() {
   return <main id="main" className={styles.page}>
-    <header className={`${styles.wrap} ${styles.intro}`}>
+    <header className="marketing-atmosphere" data-tone="process"><div className={`${styles.wrap} ${styles.intro}`}>
       <div>
         <p className={styles.label}>How It Works</p>
         <h1>From the first photo to the next decision.</h1>
-        <p className={styles.lead}>See how to sell something you own or find what you want used.</p>
+        <p className={styles.lead}>See the app preview for selling something you own or finding what you want used.</p>
       </div>
       <nav className={styles.paths} aria-label="Choose a walkthrough">
-        <a href="#selling"><span>Selling<small>From photos to a listing you approve.</small></span><Arrow down /></a>
+        <a href="#selling"><span>Selling<small>From photos to a listing you review.</small></span><Arrow down /></a>
         <a href="#buying"><span>Buying<small>Find what fits your budget and your plans.</small></span><Arrow down /></a>
       </nav>
-    </header>
+    </div></header>
 
-    <div className={styles.selling}>
-      {sellingSteps.map((step, index) => <section id={step.id} key={step.id} className={`${styles.step} ${index % 2 ? styles.reverse : ''}`} aria-labelledby={`${step.id}-title`}>
+    <div>
+      {sellingSteps.map((step, index) => <section id={step.id} key={step.id} className={`${styles.step} ${index % 2 ? styles.reverse : ''} ${index === 0 ? 'marketing-atmosphere' : ''}`} data-tone={index === 0 ? 'process' : undefined} aria-labelledby={`${step.id}-title`}>
         <div className={`${styles.wrap} ${styles.stepGrid}`}>
           <div className={styles.copy}>
-            <p className={styles.label}><span>Selling</span><span className={styles.stepNumber}>{step.number} / 04</span></p>
+            <p className={styles.label}><span>Selling</span><span className={styles.stepNumber}>{step.number} / 03</span></p>
             <h2 id={`${step.id}-title`}>{step.title}</h2>
             <p className={styles.body}>{step.body}</p>
             {step.href && <Link className={styles.textLink} href={step.href}>{step.link} <Arrow /></Link>}
+            {index === 0 && <nav className={styles.progression} aria-label="Selling steps"><a href="#selling">Photo</a><Arrow /><a href="#price">Price</a><Arrow /><a href="#review">Review</a></nav>}
           </div>
-          <Phone name={step.image} alt={step.alt} eager={index === 0} />
+          {index === 0 ? <div className={styles.phonePair}>
+            <Phone name={step.image} alt={step.alt} eager caption="Add your item" />
+            <div className={styles.pairedPreview}><Phone name="preview" alt={sellingSteps[2].alt} caption="Ready for review" /></div>
+            <p className={styles.sampleNote}>App preview · Sample data</p>
+          </div> : <Phone name={step.image} alt={step.alt} />}
         </div>
       </section>)}
     </div>
 
-    <section id="buying" className={styles.buying} aria-labelledby="buying-title">
+    <section id="after-the-sale" className={`${styles.step} ${styles.reverse}`} aria-labelledby="shipping-title">
+      <div className={`${styles.wrap} ${styles.stepGrid}`}>
+        <div className={styles.copy}>
+          <p className={styles.label}>After a sale</p>
+          <h2 id="shipping-title">See what needs shipping.</h2>
+          <p className={styles.body}>Check the label, drop-off options and next action for a sold item.</p>
+        </div>
+        <Phone name="ship" alt="A separate Kindle shipping example shows the shipping label, drop-off options and next action." caption="Separate shipping example · Sample data" />
+      </div>
+    </section>
+
+    <section id="buying" className={`${styles.buying} marketing-atmosphere`} data-tone="process" aria-labelledby="buying-title">
       <div className={`${styles.wrap} ${styles.buyingGrid}`}>
         <div className={styles.copy}>
           <p className={styles.label}>Buying</p>
           <h2 id="buying-title">Tell us what you’re looking for.</h2>
           <p className={styles.body}>Set your budget, fit and whether you can pick it up.</p>
           <dl className={styles.buyingDetails}>
-            <div><dt>Set your limits</dt><dd>Choose a price range, how you want to get it and the fit you prefer.</dd></div>
             <div><dt>Check the listing</dt><dd>Compare the item and delivery cost, then open its marketplace.</dd></div>
           </dl>
           <Link className={styles.textLink} href="/features">How matching works <Arrow /></Link>

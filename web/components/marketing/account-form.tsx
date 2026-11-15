@@ -29,7 +29,7 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [pending, setPending] = useState(false);
+  const [pending, setPending] = useState<'email/start' | 'email/verify' | 'google' | null>(null);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
   const [googleProblem, setGoogleProblem] = useState(false);
@@ -38,7 +38,7 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
   async function submit(route: 'email/start' | 'email/verify' | 'google', body: Record<string, string>) {
     if (busy.current) return;
     busy.current = true;
-    setPending(true);
+    setPending(route);
     setError('');
     setStatus('');
     try {
@@ -46,22 +46,27 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
       const result = response.status;
       if (route === 'email/start' && result === 202) {
         setStep('code');
-        setStatus('Check your email for a six-digit code.');
+        setStatus(`We sent a code to ${body.email}.`);
       } else if (route !== 'email/start' && result === 200) {
         await rememberSession(response, route === 'google' ? googleProfile(body.id_token) : {});
         router.replace('/app');
       } else if (result === 429) {
-        setError('Too many requests. Wait a moment before trying again.');
+        setError('Too many attempts. Try again later.');
       } else if (route === 'email/verify' && (result === 400 || result === 401 || result === 422)) {
         setError('That code is incorrect or expired. Try again or request a new one.');
       } else {
-        setError(route === 'google' ? 'Google sign-in could not finish. Try again or use email.' : 'Could not reach email sign-in. Try again.');
+        const messages = {
+          'google': 'Google sign-in could not finish. Try again or use email.',
+          'email/start': 'We couldn’t send a code. Try again.',
+          'email/verify': 'We couldn’t verify that code. Try again.',
+        };
+        setError(messages[route]);
       }
     } catch {
       setError('Could not reach sign-in. Try again.');
     } finally {
       busy.current = false;
-      setPending(false);
+      setPending(null);
     }
   }
 
@@ -88,18 +93,18 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
 
   return <main id="main" className="account-page">
     <div className="account-form-wrap">
-      <h1>{signup ? 'create your account' : 'sign in to secondhand'}</h1>
+      <h1>{signup ? 'Create your account' : 'Sign in to secondhand'}</h1>
       {googleClientId && <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" onReady={showGoogleButton} onError={() => setGoogleProblem(true)} />}
       {googleClientId && !googleProblem && <div className="google-account-button" ref={googleButton} />}
       {(!googleClientId || googleProblem) && <p className="account-quiet">Google sign-in is unavailable here. Use email to continue.</p>}
       {googleClientId && !googleProblem && <div className="account-divider">or use email</div>}
       <form onSubmit={send}>
         {step === 'email' ? <label>Email address<input type="email" name="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} required /></label>
-          : <label>Code sent to {email}<input type="text" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={code} onChange={event => setCode(event.target.value)} required autoFocus /></label>}
-        <button type="submit" className="account-primary" disabled={pending}>{pending ? 'Please wait' : step === 'email' ? 'Send me a code' : 'Verify code'}</button>
+          : <label>Six-digit code<input type="text" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={code} onChange={event => setCode(event.target.value)} required autoFocus /></label>}
+        <button type="submit" className="account-primary" disabled={Boolean(pending)}>{pending === 'email/start' ? 'Sending code…' : pending === 'email/verify' ? 'Checking code…' : step === 'email' ? 'Send me a code' : 'Verify code'}</button>
         {step === 'code' && <div className="account-options">
-          <button type="button" disabled={pending} onClick={() => { setStep('email'); setCode(''); setError(''); setStatus(''); }}>Change email</button>
-          <button type="button" disabled={pending} onClick={() => { setCode(''); void submit('email/start', { email: email.trim() }); }}>Send a new code</button>
+          <button type="button" disabled={Boolean(pending)} onClick={() => { setStep('email'); setCode(''); setError(''); setStatus(''); }}>Change email</button>
+          <button type="button" disabled={Boolean(pending)} onClick={() => { setCode(''); void submit('email/start', { email: email.trim() }); }}>Send a new code</button>
         </div>}
         {error && <p role="alert" className="account-error">{error}</p>}
         {status && <p role="status" className="account-quiet">{status}</p>}
@@ -137,11 +142,11 @@ export function AccountStatus() {
   }
 
   return <main id="main" className="account-page"><div className="account-form-wrap">
-    <h1>your account</h1>
+    <h1>Your account</h1>
     {state === 'checking' && <p role="status">Checking your sign-in…</p>}
     {state === 'active' && <><p>You’re signed in.</p><Link className="account-primary" href="/app">Open your workspace</Link><button className="account-options-button" type="button" disabled={signingOut} onClick={signOut}>{signingOut ? 'Signing out…' : 'Sign out'}</button></>}
     {state === 'signed-out' && <Link className="account-primary" href="/signin">Sign in</Link>}
-    {state === 'error' && <p role="alert">Could not check your session. <Link href="/signin">Return to sign-in</Link>.</p>}
+    {state === 'error' && <p role="alert">We couldn’t check whether you’re signed in. <Link href="/signin">Return to sign-in</Link>.</p>}
     {error && <p role="alert" className="account-error">{error}</p>}
   </div></main>;
 }

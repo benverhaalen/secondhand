@@ -4,9 +4,9 @@
 // one ready, it shows here with its amount guessed and dotted, and nothing is sent until the tap (ways-out: "Don't
 // message sellers for me"; buy_offer asks every time). Watch is a step that can be undone, so it is done with Undo.
 // The page's reasons and states are in app/behavior/listing/[id].json.
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Linking } from 'react-native';
 import { cover, offerAmounts, offerProblem, paysFor } from '@/buy/read';
 import { Failed, Loading, OfflineLine } from '@/buy/states';
 import { href, usePage } from '@/buy/world';
@@ -62,7 +62,7 @@ export default function Listing() {
     say('watch', next ? 'Saved to Watching' : 'Removed from Watching', () => setWatching(!next));
   };
   // The listing on its own site, through the referral link (spec buy.md, Link-outs; GET /v1/out).
-  const site = () => { Linking.openURL(m.url).catch(e => log.error('listing.open_site', e, { site: m.site })); };
+  const site = () => { openMarketplace(m.url).catch(e => log.error('listing.open_site', e, { site: m.site })); };
 
   // The page's one act at the foot: the waiting offer when there is one (a hand-off), else Open on site.
   const handoff = offer != null && sent == null && !visitor;

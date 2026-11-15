@@ -1,12 +1,10 @@
 'use client';
-import { createElement, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { requestAsUser } from '../../lib/browser-session';
 import { Dialog, DialogBackdrop, DialogClose, DialogContent, DialogTitle } from '@ui-sdk/react/dialog';
-import { ICONS } from '../../../app/src/ui/icons.generated';
+import { Icon } from '../icon';
 import { webLink } from '../../lib/desktop-api';
-export function Icon({ name, className = '' }: { name: keyof typeof ICONS; className?: string }) {
-  return <svg className={'desk-icon ' + className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ICONS[name].map(([tag, props], index) => createElement(tag, { ...props, key: index }))}</svg>;
-}
+export { Icon } from '../icon';
 export function Site({ site }: { site: string }) {
   return ['ebay', 'depop', 'facebook', 'mercari', 'poshmark'].includes(site) ? <img className="desk-site" src={`/marketing/platforms/${site}.png`} alt={site} width="36" height="36" /> : <span className="desk-tag">{site.replaceAll('_', ' ')}</span>;
 }

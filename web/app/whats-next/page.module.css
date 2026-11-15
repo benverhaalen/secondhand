@@ -11,7 +11,6 @@
 .page h1 { font-size: var(--t-50); line-height: 1.08; max-width: 15ch; }
 .page h2 { font-size: var(--t-36); line-height: var(--lh-36); }
 .page h3 { font-size: var(--t-21); line-height: 1.35; }
-.hero { background: var(--wash); }
 .intro { padding-block: calc(var(--s-9) * 2 + var(--s-8)) calc(var(--s-9) * 2); display: grid; grid-template-columns: .9fr 1.4fr; gap: var(--s-8); align-items: center; min-height: 810px; }
 .label { font-size: var(--t-15); line-height: 1.4; margin-bottom: var(--s-5); }
 .lead { margin-top: var(--s-6); font-size: var(--t-18); line-height: 1.55; max-width: 43ch; color: var(--ink-2); }
@@ -23,7 +22,7 @@
   .introCopy > .textLink:hover span { transform: translateY(var(--s-1)); }
 }
 .textLink:active { opacity: .8; }
-.introCopy > .textLink { margin-top: var(--s-8); }
+.heroAction { margin-top: var(--s-8); }
 .appraisalGroup { display: grid; grid-template-columns: 2.6fr 1fr; gap: var(--s-6); align-items: center; }
 .photoQuestions { max-width: 36ch; }
 .photoQuestions > p { font-size: var(--t-18); line-height: 1.4; }
@@ -78,7 +77,7 @@
   .intro { grid-template-columns: 1fr; padding-block: calc(var(--s-9) * 2 + var(--s-6)) var(--s-9); gap: var(--s-8); min-height: 0; }
   .page h1 { font-size: var(--t-36); }
   .page h2 { font-size: var(--t-36); }
-  .introCopy > .textLink { margin-top: var(--s-6); }
+  .heroAction { margin-top: var(--s-6); }
   .photoQuestions { margin-top: var(--s-4); }
   .photoQuestions ul { display: block; }
   .photoQuestions li { border-bottom: 1px solid var(--rule); padding-block: var(--s-3); }

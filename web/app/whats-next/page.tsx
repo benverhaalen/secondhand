@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import itemPhoto from './marquette-tee.jpg';
+import itemPhoto from './carhartt-jacket.jpg';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -39,20 +39,20 @@ function Arrow({ down = false }: { down?: boolean }) {
 
 export default function WhatsNextPage() {
   return <main id="main" className={styles.page}>
-    <header className={styles.hero}>
+    <header className="marketing-atmosphere" data-tone="next">
       <div className={`${styles.wrap} ${styles.intro}`}>
         <div className={styles.introCopy}>
           <p className={styles.label}>What’s Next</p>
           <h1>What else could a photo tell you?</h1>
-          <p className={styles.lead}>At a garage sale, in your closet, or clearing out a room. We want to help you understand what something might be worth before you decide what to do with it.</p>
-          <a className={styles.textLink} href="#next-steps">What we need to prove <Arrow down /></a>
+          <p className={styles.lead}>We want you to be able to photograph a garage-sale find and get a price estimate before you buy it.</p>
+          <a className={`marketing-pill ${styles.heroAction}`} href="#next-steps">What we need to prove <Arrow down /></a>
         </div>
         <div className={styles.appraisalGroup}>
           <figure className={styles.appraisal}>
             <div className={styles.photoGround}>
-              <Image className={styles.itemPhoto} src={itemPhoto} alt="A real gold Marquette tee laid flat, with its label and signs of wear visible." sizes="(max-width: 760px) calc(100vw - 48px), (max-width: 1100px) 50vw, 480px" preload />
+              <Image className={styles.itemPhoto} src={itemPhoto} alt="A sample brown Carhartt jacket laid flat." sizes="(max-width: 760px) calc(100vw - 48px), (max-width: 1100px) 50vw, 480px" preload />
             </div>
-            <figcaption>A real item. The next questions we want to answer.</figcaption>
+            <figcaption>Sample Carhartt jacket.</figcaption>
           </figure>
           <div className={styles.photoQuestions}>
             <p>What would help price this?</p>
@@ -88,7 +88,7 @@ export default function WhatsNextPage() {
         <div className={styles.cost}>
           <div className={styles.costAmount}><p className={styles.amount}>2 to 8¢</p><p>Modeled basic listing cost per item</p></div>
           <div className={styles.costContext}>
-            <p>An internal estimate from provider prices, not measured bills. Monitoring is additional. This is our estimated operating cost, not a customer price.</p>
+            <p>We modeled this cost using provider prices. Monitoring costs extra. Customer pricing is undecided.</p>
             <a className={styles.textLink} href="https://github.com/benverhaalen/secondhand/blob/main/product/numbers.md#what-it-costs-us">See the cost assumptions <Arrow /></a>
           </div>
         </div>

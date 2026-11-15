@@ -17,7 +17,11 @@ export const readCapture = (id: string) => api.call<Capture>(`GET /v1/captures/$
 export const answerCapture = (capture: Capture, question: Question, value: unknown) => api.call<Capture>(`PATCH /v1/captures/${encodeURIComponent(capture.id)}`, {
   body: { version: capture.version, answer: { field: question.field, value } },
 });
-export const skipQuestion = (capture: Capture, field: string) => api.call<Capture>(`PATCH /v1/captures/${encodeURIComponent(capture.id)}`, {
+// What the item is, picked before the camera: one of FAMILIES (engines/capture/process.ts); the shots follow from it.
+export const setType = (capture: Capture, type: string) => api.call<Capture>(`PATCH /v1/captures/${encodeURIComponent(capture.id)}`, {
+  body: { version: capture.version, type },
+});
+export const skipQuestion =(capture: Capture, field: string) => api.call<Capture>(`PATCH /v1/captures/${encodeURIComponent(capture.id)}`, {
   body: { version: capture.version, refuse: field },
 });
 export const requestStudio = (capture: Capture) => api.call<Capture>(`PATCH /v1/captures/${encodeURIComponent(capture.id)}`, {
