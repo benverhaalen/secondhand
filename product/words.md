@@ -1377,3 +1377,10 @@ Ben, project chat, 07:42 UTC.
 > see if any of these end up improving our methodology. see if other sites have anything similar. see how to use them effectively
 
 Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), app/src/engines/listing/aspects.ts.
+
+## 2026-11-15 demo the buy side live, Nate posts and my phone pings
+
+Ben, project chat, 07:46 UTC.
+> another thing - i feel like demoing the buy feature live would be so cool. like notify me when someone posts whatever product for whatever price and make it super low, etc but like nate does it live on his phone and it then notifies me right then and there
+
+Used in: [live-buy-demo.md](live-buy-demo.md), [scripts/demo/stage-watch.mjs](../scripts/demo/stage-watch.mjs).
