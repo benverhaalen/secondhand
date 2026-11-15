@@ -122,11 +122,45 @@ The [coverage map](../../databricks/COVERAGE.md) (2026-11-15, read from the file
 
 | Id | Fix | Proof |
 |---|---|---|
-| AP1 | One client: the server's address per build, a token kept in the device's secure store, refresh serialized, a job's stream read with the fetch that works on a device | Tests; the health screen answers on a simulator. **Done but the simulator**: `app/src/api/` (vault in the secure store on the phone, memory on web; one refresh shared by every 401; `expo/fetch` on the phone, UTF-8 by hand); `client.test.ts` 23 of 23, including five 401s sharing one refresh; `/dev/health` answers through the client on the dev server. Email sign-in is wired through the onboarding screen and proved on the dev server with a development code (bc23fd2d). Open: the simulator run, which needs a development build (AP5) |
+| AP1 | One client: the server's address per build, a token kept in the device's secure store, refresh serialized, a job's stream read with the fetch that works on a device | Tests; the health screen answers on a simulator. **Done but the simulator**: `app/src/api/` (vault in the secure store on the phone, memory on web; one refresh shared by every 401; `expo/fetch` on the phone, UTF-8 by hand); `client.test.ts` 23 of 23, including five 401s sharing one refresh; `/dev/health` answers through the client on the dev server. Email sign-in is wired through the onboarding screen and proved on the dev server with a development code (bc23fd2d). **The simulator run is done** (2026-11-15): a local Release build signs in by email code against `node server/main.ts` and keeps the session across a kill and relaunch (the native walks below) |
 | AP2 | Every search shows its reach while it loads, from the job's real frames | On the dev server the screen shows each source landing with its counts. **Done** (a98c8861, 822ca173): `/shop`, seen live on the dev server; `app/e2e/shop.test.mjs` 3 of 3 on the Mac |
 | AP3 | The wiring map: Ben's 23 items answered one by one, the N contracts marked ours or his with the shape proposed, then each screen wired in the map's order with the demo world kept as the fallback | `spec/plans/app-wiring.md`, and a reply packet to Ben. **Map and reply done** ([packet 85](../../.agents/team/packets/team/85-reply-to-79-left-to-wire.md): 19 items ours, 1 Ben's, 3 shared, 20 shapes proposed); wiring screen by screen continues in the map's order |
 | AP4 | The client faults the review found: three links to pages that do not exist, fold state that resets on a device, crash uploads sent to a path the server does not serve, development screens in a release build, an undeclared dependency, no not-found page | Tests and the type check. **Partly done**: the three links and the fold state are gone from main (Ben's rework); `+not-found.tsx` added; `/dev` redirects home outside `__DEV__`; `expo-file-system` declared. Open: crash uploads still post to `/api/log`, which only `log/receive.mjs` serves (a server route under `/v1`, the server lead's) |
-| AP5 | What a first internal build needs, listed and prepared: the development client, the address per profile, the privacy manifest. No build or submit runs without Nate's word | The list, checked on a simulator. **Prepared** ([app-wiring.md](app-wiring.md#the-first-internal-build-finalization-ap5)): development client, the simulator's address, privacy manifest. Waits on Nate: the production host, and his go for the first simulator build |
+| AP5 | What a first internal build needs, listed and prepared: the development client, the address per profile, the privacy manifest. No build or submit runs without Nate's word | The list, checked on a simulator. **Prepared** ([app-wiring.md](app-wiring.md#the-first-internal-build-finalization-ap5)): development client, the simulator's address, privacy manifest. **Simulator build done** on Nate's go ("natively with xcode", [words](../../product/words.md#2026-11-15-nate-simulate-full-user-experiences-verify-by-eye-natively-too-and-get-the-benchmarks-perfect)): one command, `zsh scripts/ios-sim.sh <name> [origin]` ([app-wiring.md](app-wiring.md#the-first-internal-build-finalization-ap5)). No EAS build, no device. Waits on the hosted server for the second set of walks |
+
+### The native walks (2026-11-15, the app's native-walks lead)
+
+Nate: "begin simulating full user experiences, checking and visually verifying the features" ([words](../../product/words.md#2026-11-15-nate-simulate-full-user-experiences-verify-by-eye-natively-too-and-get-the-benchmarks-perfect)), then "dont focus on ui as much as you should getting every system to work" ([words](../../product/words.md#2026-11-15-nate-systems-working-before-the-look)). So each row below is a system a person touches; the look findings went to Ben through the orchestrator and wait.
+
+How: an iPhone 17 Pro simulator (iOS 26.4) on glados, the app built in Release at main 79503d33 with `zsh scripts/ios-sim.sh`, against `node server/main.ts` at the same commit (`NODE_ENV=development`, scratch data, the dev code, no browser and no keys). Each step was driven by [app/e2e/sim](../../app/e2e/sim/README.md) (idb taps by `testID`, a screenshot and accessibility tree per step) and passes only on a screenshot the lead looked at. Screenshots stay on glados in `~/sh-walks/run2*` and `~/sh-walks/run3`.
+
+| Walk, step | Result | Commit, or owner |
+|---|---|---|
+| A1 A fresh install opens on sign-in | passed | ac133f38 (the guest gate) |
+| A2 Email, code, signed in (`/v1/auth/email/start` 202, `/verify` 200) | passed | ac133f38 |
+| A3 Connect services: Link on eBay opens the site's sign-in window, 2FA answered inside it, `complete` | **failing**: every row says "Service sign-in is not configured yet" | needs `BROWSER_USE_API_KEY` on the hosted server (Nate's); then the walk reruns against it |
+| A4 First photo step, Not now, Today | passed | ac133f38 |
+| B1 Buy's field opens `/shop` ready to type | failed at 79503d33 (the bar blurred back into a button during the push); **passed** after the fix | 34536298, merged 66302138 |
+| B2 Search: first source on screen | passed | a98c8861 |
+| B3 Settled results | passed with Dupe and Poshmark only. eBay and Depop answer `no_route` with no browser composed; with the Mac's Chrome both answered `blocked`, so reads stopped. Mercari needs a linked account | search lead (eBay and Depop through hosted Browser Use) |
+| B4 The chat: "What's selling and why", a typed follow-up | **failing**: `POST /v1/assist` 404 for every real person (`edge/api/assist.ts:14` is still an example handler) | engines lead (packet 70, first item) |
+| B5 Open a listing | passed (opens in Safari); a Dupe row goes through dupe.com's redirect page, and a knock-off ranks among the first rows | search lead |
+| C Signed-in tabs: Today, Sell, Buy, You (Dashboard, Settings), New | passed; 237 requests in the session, all 2xx except assist | ac133f38 |
+| D Killed and reopened: still signed in | passed | ac133f38 |
+| E Sign out (`/v1/auth/signout` 204), still out after a relaunch, sign in again | passed | ac133f38 |
+| F Sell: camera permission, Choose photos, the picker, a photo sent (`/v1/captures` 201, `/photos` 201) | **failing** after the photo: "Photo uploads are not connected yet" | capture lead and server lead (the Blobs upload target) |
+| F2 The picked photo reaches the app with its location ("Location Is Included") | open: is GPS stripped before upload? | capture lead |
+
+Timings, Release build, the same simulator, server on the same Mac. The tree is read by polling `idb ui describe-all` at about 250 to 300 ms a read, so each number is good to about 0.3 s ([timing.sh](../../app/e2e/sim/timing.sh)).
+
+| Measure | Samples | Result |
+|---|---|---|
+| Cold start, signed in: `simctl launch` to Today's tab bar | 7 | 1508 to 1559 ms, median 1541 ms |
+| Cold start, fresh install: launch to the sign-in field | 3 | 847 to 925 ms |
+| Search: Return key to the first source on screen | 10 | 275 to 304 ms, median 288 ms |
+| Search: Return key to the settled answer ("From N listings for sale now"), Dupe and Poshmark, five different live queries | 5 | 3377 to 5688 ms, median 3755 ms |
+
+Against the hosted server: not yet run; `secondhand-api.fly.dev/healthz` did not answer at 14:10 UTC. The same walks rerun with `zsh scripts/ios-sim.sh <name> https://<host>` when the server lead names the address.
 
 ## 7. Capture, and the website
 
