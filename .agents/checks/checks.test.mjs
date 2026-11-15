@@ -304,6 +304,41 @@ test('picks L7: a mono face, Marist or Inter in the brand values or the app fail
   assert.equal(await pick('L7', { 'brand/tokens.css': FAMILY, 'app/src/ui/text.tsx': 'const s = { fontFamily: type.text };' }), '');
 });
 
+test('picks L38: the text face is PP Neue Montreal, named first', async () => {
+  assert.match(await pick('L38', { 'brand/tokens.css': ':root { --font-text: "Neue Montreal", "Noto Sans", sans-serif; }' }), /starts with "Neue Montreal"/);
+  assert.equal(await pick('L38', { 'brand/tokens.css': ':root { --font-text: "PP Neue Montreal", "Noto Sans", sans-serif; }' }), '');
+});
+
+test('picks L44: a dark card too close to the page, pure white text, a yellow field and a glow all fail', async () => {
+  const light = ':root { --glow-1: rgb(1 2 3 / .5); --glow-2: rgb(1 2 3 / .5); --card-shade: rgb(1 2 3 / .5); }\n';
+  const dark = v => `${light}:root[data-theme="dark"] { ${v} }\n`;
+  const good = '--page: #101315; --surface: #1A1D20; --ink: #ECEFF1; --field-1: #0A4C65; --field-2: #03523B; --field-3: #025050; --glow-1: transparent; --glow-2: transparent; --card-shade: transparent;';
+  assert.equal(await pick('L44', { 'brand/tokens.css': dark(good) }), '');
+  assert.match(await pick('L44', { 'brand/tokens.css': dark(good.replace('#1A1D20', '#121517')) }), /from the page in lightness/);
+  assert.match(await pick('L44', { 'brand/tokens.css': dark(good.replace('#ECEFF1', '#FFFFFF')) }), /pure white/);
+  assert.match(await pick('L44', { 'brand/tokens.css': dark(good.replace('#025050', '#4D4A00')) }), /never yellow/);
+  assert.match(await pick('L44', { 'brand/tokens.css': dark(good.replace('--glow-1: transparent', '--glow-1: rgb(1 2 3 / .5)')) }), /no shadow and no glow/);
+});
+
+test('picks L45: a shipping pill in any fill but mint fails', async () => {
+  assert.match(await pick('L45', { 'app/src/ui/states.ts': "export const STATES = {\n  'Ship by': { fill: 'marigold', icon: 'package' },\n};" }), /"Ship by" is not mint/);
+  assert.equal(await pick('L45', { 'app/src/ui/states.ts': "export const STATES = {\n  'Ship by': { fill: 'mint', icon: 'package' },\n  Sold: { fill: 'mint', icon: 'money-01' },\n};" }), '');
+});
+
+test('picks L46: a photo corner that does not nest in its card fails', async () => {
+  const sizes = r => ({ 'brand/tokens.css': `:root { --r-card: 36px; --card-pad: 16px; --r-photo: ${r}px; --tag-h: 20px; --tag-icon: 12px; --photo-card: 72px; --card-item-h: 104px; --card-decision-h: 156px; --pill-card-h: 40px; }` });
+  assert.match(await pick('L46', sizes(8)), /--r-photo is 8/);
+  assert.equal(await pick('L46', sizes(20)), '');
+});
+
+test('picks A10: two state fills a color blind person cannot tell apart are warned about, not failed', async () => {
+  const { PICKS } = await import('./picks.mjs'); const said = files => run(PICKS.A10, files).map(o => `${o.level} ${o.msg}`).join('\n');
+  const fills = lime => ({ 'brand/tokens.css': `:root { --sky: #A5E1FE; --mint: #A1EACB; --marigold: #F5D297; --lime: ${lime}; }` });
+  assert.equal(said(fills('#EBF08F')), '');
+  assert.match(said(fills('#DDCEFE')), /warn --sky and --lime are 0\.0\d\d apart with deutan vision/);
+  assert.equal(await pick('A10', fills('#DDCEFE')), '');
+});
+
 test('picks L8: statistics notation on a screen fails; the same fact in plain words passes', async () => {
   assert.match(await pick('L8', screen('<Txt>Median $38 (n=41)</Txt>')), /"n=41" is statistics notation/);
   assert.equal(await pick('L8', screen('<Txt>From 41 sales</Txt>')), '');
@@ -442,4 +477,15 @@ test('picks M4: a named motion with no reason fails, and so does a missing list'
 test('picks D5: a straight apostrophe or three dots on a screen fails; the real marks pass', async () => {
   assert.match(await pick('D5', screen("<Txt>The server didn't answer...</Txt>")), /straight apostrophe in "n't"[\s\S]*three dots/);
   assert.equal(await pick('D5', screen("<Txt>The server didn’t answer…</Txt>\nconst a = [...items]; const k = 'ebay';")), '');
+});
+
+// Ben, 2026-11-15: the constitution leaves "little wiggle room". A word of degree needs a number, a token or an id on its line.
+test('vague: a word of degree with nothing to pin it down fails in a scoped article; a number, a token, an id or a quotation passes', async () => {
+  const { vague } = await import('./vague.mjs');
+  const doc = body => ({ 'brand/constitution.md': `# C\n\n## Part II. Articles\n\n### Article 3. References\n\nIt is usually fine.\n\n### Article 5. Color\n\n${body}\n\n## Part III. Media\n\nKeep it fairly short.\n` });
+  const bad = errors(run(vague, doc('The field drifts slowly.\nThe glow is faint.\n- Use color sparingly.')));
+  for (const w of ['"slowly"', '"faint"', '"sparingly"']) assert.ok(bad.includes(w), w);
+  assert.ok(!bad.includes('usually') && !bad.includes('fairly'), 'articles outside the scope are not read');
+  assert.match(bad, /constitution\.md:11 /);
+  assert.equal(errors(run(vague, doc('The field drifts slowly: one pass takes 26 s.\nThe glow is faint, as `--pill-glow` sets it.\nBen: "a little more depth or a slight shadow".\nIt drifts slowly (C2).'))), '');
 });

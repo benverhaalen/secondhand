@@ -41,7 +41,7 @@ Notes read: [search and similar finders](../research/watch/nate/teardown-search-
 | Traffic split with exploration | OpenRouter weighted by price, uptime, latency (*observed*) | better: weight by cost per useful result, 5% exploration | [data router](features/data.md#source-registry-and-router-agent-proposal) | added in this pass |
 | Per-call cost ceiling and ledger | treg headers (*observed (highlight)*) | adopt, plus a latency ceiling, `call_id` recovery, no charge on a provider error | [data router](features/data.md#source-registry-and-router-agent-proposal) | added in this pass |
 | Registry entry schema | MCP `server.json` (*observed*); Smithery score (*asserted*) | adopt the schema (input, output, auth kinds); better: a measured score, not a documentation score | [data router](features/data.md#source-registry-and-router-agent-proposal) | added in this pass |
-| Packaged fetchers, pay per result | Apify (*observed*) | adopt pay per result as the cost unit; `no_route` when nothing fits | [data router](features/data.md#source-registry-and-router-agent-proposal) | added in this pass |
+| Packaged fetchers, pay per result | Apify (*observed*) | adopt pay per result as the cost unit, the pattern only: Apify is not a route, since there is no paid fetcher ([handoff](../.agents/team/packets/team/45-handoff-to-the-build-session.md)); `no_route` when nothing fits | [data router](features/data.md#source-registry-and-router-agent-proposal) | added in this pass |
 | Unified commerce schema | API2Cart, Rutter (*observed (highlight)*) | harness verbs per site, comp schema in price | [connect](features/connect.md), [price](features/price.md) | in the spec |
 
 ## Crosslisting and selling tools

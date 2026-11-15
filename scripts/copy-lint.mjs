@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 
 const RULES = [
-  ["O13", /[—–]/g, "em or en dash (\"never use any em dashes in the ui ever\")"],
+  ["O13", /[—–―⸺⸻]/g, "em or en dash (\"never use any em dashes in the ui ever\")"],
   ["C1", /\b(?:Unlock|Elevate|Supercharge|Transform|Revolutionize|Empower|Unleash|Streamline|Reimagine|Harness)\b/g, "hero verb"],
   ["C1", /\bbuilt for (?:modern|the way)\b/gi, "line that fits any product"],
   ["C2", /\b(?:seamless(?:ly)?|effortless(?:ly)?|powerful|cutting-edge|next-gen(?:eration)?|world-class|best-in-class|blazing fast|robust|intuitive|game-?chang(?:er|ing)|ai-(?:powered|driven))\b/gi, "empty adjective"],
@@ -23,8 +23,9 @@ const RULES = [
   ["C11", /(?:\bnothing (?:here )?yet\s*!|\byour journey\b)/gi, "empty state as a cheer"],
   ["C12", /(?:©|\(c\))\s*20\d\d|\blorem ipsum\b/gi, "hard-coded year or placeholder text"],
   // secondhand additions (agent proposal, from product/copy.md)
-  ["S1", /!(?=\s|$|["'<])/g, "exclamation mark in UI copy"],
-  ["S2", /(?![©®™])\p{Extended_Pictographic}|[\u{1F1E6}-\u{1F1FF}]/gu, "emoji (\"ban all emojis\")"],
+  ["S1", /[!！‼⁉](?=\s|$|["'<)\]])/g, "exclamation mark in UI copy"],
+  ["S2", /\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F|[\u{1F1E6}-\u{1F1FF}]|[#*0-9]\uFE0F?\u20E3/gu, "emoji (\"ban all emojis\")"],
+  ["S3", /(?!\p{Emoji_Presentation})(?![©®™])\p{Extended_Pictographic}(?!\uFE0F)/gu, "a symbol some phones draw as an emoji: use an icon from the set, or a word"],
 ];
 
 // Mask inline code and URLs so they are not flagged (same as the Python original).

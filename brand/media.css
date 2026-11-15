@@ -1,0 +1,25 @@
+/* Made from media.json by scripts/media-css.mjs. Do not edit it: change media.json and run the script.
+   Link tokens.css, then this file, and set data-medium on <html>. The app and the website use tokens.css alone. */
+[data-medium="post"] {
+  --u: 3;
+  --canvas-w: 1080px; --canvas-h: 1350px;
+  --margin-x: 72px; --margin-top: 72px; --margin-bottom: 72px;
+  --mt-body: 40px; --mt-heading: 72px; --mt-peak: 200px; --mt-wordmark: 40px;
+}
+[data-medium="story"] {
+  --u: 3;
+  --canvas-w: 1080px; --canvas-h: 1920px;
+  --margin-x: 96px; --margin-top: 250px; --margin-bottom: 340px;
+  --mt-caption: 48px; --mt-title: 96px; --mt-wordmark: 120px;
+}
+[data-medium="deck"] {
+  --u: 2;
+  --canvas-w: 1920px; --canvas-h: 1080px;
+  --margin-x: 96px; --margin-top: 96px; --margin-bottom: 96px;
+  --mt-body: 32px; --mt-heading: 64px; --mt-peak: 200px; --mt-wordmark: 32px; --mt-wordmark-alone: 64px;
+}
+/* The space and radius scales, times the medium's unit: --ms-3 on a deck is --s-3 times 2. */
+[data-medium] {
+  --ms-1: calc(var(--s-1) * var(--u)); --ms-2: calc(var(--s-2) * var(--u)); --ms-3: calc(var(--s-3) * var(--u)); --ms-4: calc(var(--s-4) * var(--u)); --ms-5: calc(var(--s-5) * var(--u)); --ms-6: calc(var(--s-6) * var(--u)); --ms-7: calc(var(--s-7) * var(--u)); --ms-8: calc(var(--s-8) * var(--u)); --ms-9: calc(var(--s-9) * var(--u));
+  --mr-photo: calc(var(--r-photo) * var(--u)); --mr-card: calc(var(--r-card) * var(--u)); --mr-sheet: calc(var(--r-sheet) * var(--u));
+}

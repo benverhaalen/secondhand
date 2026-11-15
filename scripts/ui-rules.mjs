@@ -19,13 +19,17 @@ export function seen(list, finding, where) {
   return row;
 }
 // One row per line, built field by field so no string value is touched.
-export const write = list => `[\n${list.map(r => `  { ${Object.entries(r).map(([k, v]) => `${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(', ')} }`).join(',\n')}\n]\n`;
+export const write = list => `[\n${list.map(r => `  { ${Object.entries(r).map(([k, v]) => `${JSON.stringify(k)}: ${Array.isArray(v) ? `[${v.map(x => JSON.stringify(x)).join(', ')}]` : JSON.stringify(v)}`).join(', ')} }`).join(',\n')}\n]\n`;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const root = join(fileURLToPath(new URL('.', import.meta.url)), '..'), [cmd, finding, ...rest] = process.argv.slice(2), where = rest.join(' ');
   const list = load(root);
   if (!Array.isArray(list)) { process.stderr.write(`${RULES} is missing or not a JSON list\n`); process.exit(1); }
-  if (cmd === 'judge') process.stdout.write(`${judgeBrief(list, finding)}\n`);
+  if (cmd === 'judge') {
+    const media = Object.keys(JSON.parse(readFileSync(join(root, 'brand/media.json'), 'utf8')));
+    if (finding && !media.includes(finding)) { process.stderr.write(`no medium "${finding}": it is one of ${media.join(', ')}\n`); process.exit(1); }
+    process.stdout.write(`${judgeBrief(list, finding)}\n`);
+  }
   else if (cmd === 'tally') process.stdout.write(`${tally(root)}\n`);
   else if (cmd === 'seen' && finding && where) {
     const row = seen(list, finding, where);

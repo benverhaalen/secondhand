@@ -139,11 +139,11 @@ This refines the decision that "Databricks Apps hosts the backend and webhooks" 
 
 ### 3.1 The agent runtime: one loop, two triggers
 
-Every action secondhand takes on a marketplace, on every site, runs through one loop. Each site gets its own harness on Browser Use cloud ([decisions](../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)), and the sites are set ([decisions](../product/decisions.md#2026-11-14-the-platform-list-is-set)). The browser stays outside Databricks: Apps forbid root and apt, serverless jobs forbid custom images and OS packages, and the Apps proxy cuts a request at 300 seconds (*observed*, [web intake note](../research/data/nate/port-web-intake-and-browsers.md#databricks-side-checks)). Forum reports put the cut at 30 to 120 seconds (*asserted*, Ben's [proposal 7](../research/data/ben/databricks-judging-evidence.md#what-this-changes-agent-proposals)). Either way, every long job is start-then-poll: the App starts the job and returns at once, and the phone follows the job states started, running, arrived and failed through `GET /v1/jobs/:id/events` (*agent proposal*). Whether the Beta `system.ai.sandbox` could run a browser is untested.
+Every action secondhand takes on a marketplace, on every site, runs through one loop. Each site gets its own harness ([decisions](../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)), run in browsers we host ourselves, with no browser vendor ([Nate](../product/words.md#2026-11-14-nate-host-all-engines-ourselves-and-can-the-persons-own-device-do-the-work)), and the sites are set ([decisions](../product/decisions.md#2026-11-14-the-platform-list-is-set)). The hosted browser runs in a container on our own compute, outside Apps and serverless jobs, because Apps forbid root and apt, serverless jobs forbid custom images and OS packages, and the Apps proxy cuts a request at 300 seconds (*observed*, [web intake note](../research/data/nate/port-web-intake-and-browsers.md#databricks-side-checks)). Forum reports put the cut at 30 to 120 seconds (*asserted*, Ben's [proposal 7](../research/data/ben/databricks-judging-evidence.md#what-this-changes-agent-proposals)). Either way, every long job is start-then-poll: the App starts the job and returns at once, and the phone follows the job states started, running, arrived and failed through `GET /v1/jobs/:id/events` (*agent proposal*). Whether the Beta `system.ai.sandbox` or other Databricks compute could run the hosted browser is untested, and is a first-hour check in [assessment.md](assessment.md).
 
 ```mermaid
 flowchart LR
-  ev["Event: webhook, sale or message email, a tap"]
+  ev["Event: signed site push, watcher or public-page hit, a tap"]
   due["A scheduled check falls due: next_check_at"]
   job[("One job row in Lakebase, with an idempotency key")]
   pol["Policy check, in code"]
@@ -169,7 +169,7 @@ flowchart LR
 |---|---|---|---|
 | eBay | Our own adapter first; the official APIs (Inventory and Listing, Fulfillment, Message, Negotiation, Analytics, Notification) as the last fallback | Notification webhooks | Full API set (*observed*, [platform access](../research/connect/nate/platform-access.md)) |
 | Facebook Marketplace | Harness | Sale and message emails | The Partnership route is EU and EEA only, and lists as a link-out (*observed*, platform access) |
-| Depop | Our own adapter first; a partner API exists as the last fallback | Sale and message emails | Partner API: OAuth PKCE S256, gated by email, access tokens of 1 hour, refresh tokens of 1 year that rotate (*observed*, platform access). Its calls must run inside the page (*asserted*) |
+| Depop | Our own adapter over the signed-in session; no partner access ([Nate](../product/words.md#2026-11-14-nate-no-depop-partner-access-so-build-an-ai-driven-workaround), [engines/protocol-and-adapters.md §3.7](engines/protocol-and-adapters.md#37-depop-without-partner-access-agent-proposal)) | Signed-in watchers on the notification feed, inbox, offers and orders | The partner API (OAuth PKCE S256, gated by email; *observed*, platform access) is not granted to us, so it is not a route |
 | Poshmark | Harness | Sale and message emails | No API (*observed*, platform access). It flags server IPs, so replay stays in the page (*asserted*) |
 | Mercari | Harness | Sale and message emails | API is partner-only (*asserted*, platform access) |
 | OfferUp, Grailed | Search and price only | n/a | Decided ([decisions](../product/decisions.md#2026-11-14-the-platform-list-is-set)) |
@@ -186,9 +186,9 @@ flowchart LR
 **Route outcomes** (*agent proposal*, patterns from the treg router). Each attempt on a site writes one row to an append-only Delta table `route_call`: the event, the `comp` or `rank_observation` it produced, site, verb, route, attempt number, whether it fell back, time taken, HTTP status, a verdict (hit, empty, wrong or blocked), cost and the rules version. A route that answered (`ok`) is kept apart from one that returned the right thing (`hit`). Rules only reorder the candidate routes, carry a version, and have a switch that turns them off. Each call updates its route's `success` Beta `param` in the same transaction ([data](features/data.md#real-time-weights-agent-proposal)).
 
 **Coverage facts** (*asserted*, from our harness research):
-- The browser service keeps no network log. So a replay fast path, which repeats a site's own calls instead of clicking, needs a Chrome DevTools Protocol attach from the start of the session (Browserbase or Kernel offer it).
+- The browser service keeps no network log. So a replay fast path, which repeats a site's own calls instead of clicking, needs a Chrome DevTools Protocol attach from the start of the session, which our own hosted browser gives us.
 - Poshmark flags server IPs and Depop needs in-page calls, so replay stays inside the page.
-- Sites without webhooks are detected through their sale and message emails. Gmail push has no latency promise, and needs a restricted scope with a yearly security assessment. A forwarding filter avoids OAuth, but a forwarded email can be spoofed.
+- Sites without webhooks are detected by signed-in watchers, and on Poshmark and Mercari by the public listing page checked every 1 to 2 minutes with the signed-in read confirming ([engines/protocol-and-adapters.md §3.6](engines/protocol-and-adapters.md#36-how-every-event-reaches-the-system-agent-proposal)). Sale email is not used ([handoff](../.agents/team/packets/team/45-handoff-to-the-build-session.md)).
 
 **The removal test.** Each piece stays only if removing it would lose something a user or a judge can see. The aim is every existing platform strength used where it works best, and nothing used for show.
 
@@ -270,18 +270,18 @@ Each block gives the pieces, the data path, what the official skills say, what w
 - **Test first:** register one image model as a Gateway endpoint.
 
 ### 4.8 List ([spec](features/list.md))
-- **Pieces:** the marketplace layer `market.<fn>(account, input, {idempotency_key})` with the verbs of §3.1; the eBay validate dry run; a Browser Use harness for each site; DBOS steps on Lakebase for browser runs (§3.1); the scoring engine's per-site plan (§5.2).
+- **Pieces:** the marketplace layer `market.<fn>(account, input, {idempotency_key})` with the verbs of §3.1; the eBay validate dry run; our own harness for each site, in our hosted browsers; DBOS steps on Lakebase for browser runs (§3.1); the scoring engine's per-site plan (§5.2).
 - **Data path:** every write is one job in the loop of §3.1 and carries a key, such as `post:{item}:{site}:{n}`. A reconcile job runs every 5 minutes and compares what each site shows with what Lakebase holds.
 - **What the skills say:** databricks-agent-bricks names DurableAgentServer for runs that must survive a crash, and its tools run at least once (§1.5). So the post is a recorded step, and reconcile catches a repeat (*inferred*).
 - **Test first:** kill a run halfway through a post, and check that reconcile records the listing exactly once.
 
 ### 4.9 Connect ([spec](features/connect.md))
-- **Pieces:** the edge holds the PKCE verifier; tokens live in the server vault, a Databricks secret scope, and a row holds only `account.token_ref` ([product.md](product.md)); a health probe job runs every 30 minutes; Browser Use profiles; agents plus AI Search match imported listings to items.
+- **Pieces:** the edge holds the PKCE verifier; tokens live in the server vault, a Databricks secret scope, and a row holds only `account.token_ref` ([product.md](product.md)); a health probe job runs every 30 minutes; site sessions and opt-in saved passwords by `token_ref`, read only by the sign-in job; agents plus AI Search match imported listings to items.
 - **Data path:** the OAuth callback reaches the edge, which hands the code to the App. The App stores the encrypted token. The probe marks each account's health for You > Accounts, and account risk is shown per site. Access routes per site are in [platform access](../research/connect/nate/platform-access.md).
 - **Test first:** refresh a token across two probe cycles, and check that no token appears in any trace or log.
 
 ### 4.10 Watch ([spec](features/watch.md))
-- **Pieces:** Firecrawl monitors, eBay Browse, ScrapeCreators and Exa (decided); the job `watch_run`; a seen set; rules first, then models, at most 20 items per request.
+- **Pieces:** Firecrawl monitors, eBay Browse and Exa (decided), and our own adapters in place of the paid search API ([Nate](../product/words.md#2026-11-14-nate-we-do-not-pay-for-apify-priced-tools-prove-it-can-be-done-and-ours-is-free)); the job `watch_run`; a seen set; rules first, then models, at most 20 items per request.
 - **Data path:** an alert fires when `total <= max_total AND match >= 0.8 AND fits AND live`. Fetching runs in our harness and the fetch engine, and lands in a volume through the Files API (*inferred*). Each fetched page is kept as a WACZ snapshot and becomes a `comp` row whose `evidence` carries its `rights` tags (§5.1).
 - **Test first:** serverless reaches the Firecrawl and eBay APIs through the workspace's egress controls.
 
@@ -296,7 +296,7 @@ Each block gives the pieces, the data path, what the official skills say, what w
 - **Test first:** a trace of a message run contains no message text.
 
 ### 4.13 Sold ([spec](features/sold.md))
-- **Pieces:** webhooks at the edge, each written as a unique `sale_receipt` row and answered with a 2xx in under one second; one transaction that claims the sale; a delist fan-out with the key `delist:{item}:{site}`; for sites without webhooks, sale emails read through Gmail push or a forwarding filter (§3.1).
+- **Pieces:** webhooks at the edge, each written as a unique `sale_receipt` row and answered with a 2xx in under one second; one transaction that claims the sale; a delist fan-out with the key `delist:{item}:{site}`; for sites without webhooks, signed-in watchers and the public-page check (§3.1); no sale email.
 - **Data path:** the edge records the event, the App claims the sale in one Lakebase transaction, and a job delists everywhere else.
 - **Test first:** two webhooks for the same sale produce exactly one claim.
 
@@ -494,7 +494,7 @@ Decided: these are recorded as facts and do not shape the build ([decisions](../
 | Source | The fact | What changes at a public launch |
 |---|---|---|
 | eBay API licence | No price modelling; no "Conversion, completion or success rates" without written permission; no non-eBay AI; no bulk or aggregated distribution; listing information shown at most 6 hours older than eBay's site and other content 24 hours, with its age disclosed, a display-freshness rule that binds only rows read through eBay's API, our last-fallback route ([claims validated](../research/cross-cutting/nate/claims-validated-specs.md); [ranking algorithms](../research/list/nate/ranking-algorithms.md), [market intelligence](../research/data/nate/market-intelligence.md)) | Written permission from eBay, or the gate keeps eBay-tagged rows out of models, the index and shares, and purges them at 6 hours |
-| Mercari, Poshmark, Depop terms | Automated collection is barred; Poshmark also bars delete-and-repost ([platform access](../research/connect/nate/platform-access.md)) | Partner access or permission for each site; relist experiments on Poshmark stop |
+| Mercari, Poshmark, Depop terms | Automated collection is barred; Poshmark also bars delete-and-repost ([platform access](../research/connect/nate/platform-access.md)) | The person's own agent acts on their signed-in session after their sign-off ([Nate](../product/words.md#2026-11-14-nate-the-person-signs-off-so-it-is-their-own-agent-acting)); relist experiments on Poshmark stop |
 | StockX, PriceCharting | Reuse and display are barred ([market intelligence](../research/data/nate/market-intelligence.md)) | A licence, or their rows are never shown |
 | WatchCharts | Has a written storage path (same note) | Follow that path |
 | Etsy API | Commercial use needs approval (*asserted*) | Approval, if Etsy is ever added (it is skipped today) |

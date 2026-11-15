@@ -82,6 +82,10 @@ flowchart LR
   F --> G[Test with consent, update the pool]
 ```
 
+## One score for how each listing is doing
+
+Every listing carries one success score from 0 to 100, shown as one of four bands with its word: strong, on track, needs attention, at risk ([score spec](../../spec/features/score.md#the-success-score-agent-proposal-answered-by-nate), [Nate](../../product/words.md#2026-11-14-nate-the-system-runs-the-storefront-learns-the-person-and-scores-every-listing-with-one-success-score)). It compares how likely the listing is to sell, and what you would keep, as it stands now against the best plan the app can find for the same item, using everything the app knows: the price against sold prices, the photos, the title and fields, the site, demand, and the listing's own views, likes and offers. A tap shows the one change that would raise it most, with the points it is worth. Your whole storefront gets the same score, weighted by what each listing should bring in. While the app is still gathering what it needs, the band says "still learning". *Agent proposal*; Ben's agreement not recorded, and the colours are Ben's.
+
 ## What cannot be known
 
 [The spec lists what cannot be made credibly](../../spec/determinations/listing-and-marketing.md#what-cannot-be-made-credibly).

@@ -73,7 +73,7 @@ Nate's requirement: "It needs to be fast, credible and dynamic, yet transparent"
 
 | Thing | States |
 |---|---|
-| `score.state` | shown, hidden (`hide_reason`: `too_few_sales`, `interval_too_wide`, `gate_failed`, `below_noise_floor`, `panel_stale`, `ranker_changed`, `series_too_short`, `axis_hidden`) |
+| `score.state` | shown, hidden (`hide_reason`: `too_few`, `interval_too_wide`, `gate_failed`, `below_noise_floor`, `panel_stale`, `ranker_changed`, `series_too_short`, `axis_hidden`) |
 | `ranker_model` alias | Challenger, Champion, retired |
 | `experiment` | the strategy states: suggested, chosen, running, ended |
 | scoring `job` | queued, running, done, failed; stages started, running, arrived, failed |
@@ -87,7 +87,56 @@ Hide rules, one per axis:
 | Visibility | posterior interval on rank or impression share | panel size, days observed, noise floor | held-out agreement not above the floor, panel older than a day, or a change notice up |
 | Trend | change point or drift flag with run length | window and detector | series shorter than burn-in, or a change notice up for that site |
 
-The combined line is not an axis. Whether it exists waits on [product §9](../product.md) ("may the axes combine into one score"). If allowed: expected value, chance of sale within a horizon ([money D10](../determinations/money.md#d10-chance-of-sale-within-a-period-at-a-price)) times what you keep ([D9](../determinations/money.md#d9-what-you-keep-per-site)) less holding cost, with its weights as starting values, unsourced, shown to the person; hidden when any axis is hidden. A card for it goes in money.md before it ships.
+### The success score (agent proposal, answered by Nate)
+
+Nate, 2026-11-14 ([words](../../product/words.md#2026-11-14-nate-the-system-runs-the-storefront-learns-the-person-and-scores-every-listing-with-one-success-score)): "The system scores each listing a user has, which our UI is planned to use color indication as a helpful way of showing its projected performance, combing all engines and calculations we perform into a unified success score". This answers "may the axes combine into one score": yes. Ben's agreement is not recorded, and the colours and how they are drawn are Ben's.
+
+| Part | How |
+|---|---|
+| What it is | one number per listing, 0 to 100: the projected performance of this listing as it stands, against the best this item could do |
+| The calculation | `U_now / U_best`, scaled to 100. `U` is the marketing engine's objective: the chance of sale within the horizon ([money D10](../determinations/money.md#d10-chance-of-sale-within-a-period-at-a-price)) times what the person keeps ([D9](../determinations/money.md#d9-what-you-keep-per-site)) less holding cost. `U_now` uses the listing's own price, photos, title, fields, site and age. `U_best` is the same item under the best plan the engines can find at the person's [posture](../engines/valuation.md) |
+| What feeds it | every engine: valuation (price against sold comps, top listings and official prices), photo (quality and the site's set), the marketing engine (title, fields, site, timing), demand and trend (the forecast), platform analytics (how this site does for items like this), trust and account health, and the listing's own results so far (views, likes, offers) |
+| Bands | four, by score: strong, on track, needs attention, at risk. The cut points are `param` rows, refit so each band's actual sale rate differs from its neighbours'. Colour shows the band and is never the only signal: the band's word is always there |
+| On tap | the four axes, then the one change that would raise the score most, with the points it is worth ("Lower to $44: +12", "Add a photo of the tag: +6") and a button that does it where the autonomy setting allows |
+| Over time | recomputed on each event on the listing and hourly; a drop across a band is a `listing_stale` or `value_moved` notice |
+| Hidden when | any axis it needs is hidden for thin basis, after the gather request has run; then the band shows as "still learning" with what is being gathered |
+| Proof | on the fixed set and on our own listings, listings in a higher band sell more often and sooner than those in a lower one, with the measured rates shown; a score change that an action predicted is compared with what happened |
+
+For the whole storefront, the same score is averaged by expected keep per site and overall, and opens to the listings pulling it down ([insights](insights.md)).
+
+**Learning the person.** The system also learns how this person sells and buys, so it acts as their agent and not a generic one: their posture choices, which suggestions they take or undo, the offers they accept or refuse against what the policy proposed, how fast they ship, what they keep and what they sell, and their words in notes. These are `param` rows scoped to the person (prior: the market-wide value), read by the negotiation, marketing and recommendation engines. The person can see each one and reset it.
+
+### Standing against the market
+
+*Agent proposal*, from Ben's ask to "assess the standing of our listing against other listings and take into account the market listing" ([words](../../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)). The success score above compares a listing with the best this item could do. Standing is what the person reads: where the listing sits among the others like it, what that means for them, and the one thing they control.
+
+**What a seller wants to know** (*inferred* from [user-wants](../../research/cross-cutting/ben/user-wants.md) P1 to P3): will it sell, about when, and is anything in my control holding it back. Not a market report.
+
+| Comparison | Meaningful because | Source |
+|---|---|---|
+| Price place among live listings of the same product, condition and site: "3rd cheapest of 14" | it is what a buyer sorting by price sees | `comp` asking, same `product_id`, match label exact or likely same model; `strategy.scores.position` |
+| Price against recent sold prices: "sold ones went for $38 to $52" | sold sets value; asks never do | [money D5](../determinations/money.md#d5-fair-value-range-overall-and-per-site) |
+| Interest against listings of the same age: views, likes, offers | separates a price problem from a visibility problem, as D15 does | `listing_stat`, peers from `comp` |
+| Age against typical days to sell: "listed 6 days; these usually take 11" | tells the person whether to wait | [M7](../determinations/market-insight.md#m7-days-to-sell) |
+| Photos and missing fields, only as a fix: "add a photo of the tag" | the score's best next change | the success score's on-tap line |
+
+Not shown: a bare 0 to 100, percentiles, the band name alone, other sellers' names or ratings (the person cannot change them this week), rank across sites (different buyers), promoted listings as competition, retail beside the suggestion (P10), a standalone "lower your price" nudge (P4; a price fix always carries its consequence and never goes below `floor_cents`), and any comparison while comps are too few (it says "still learning").
+
+**One line, in this order: place, outlook, the fix.** "Cheapest of 9 like it. Should sell this week." / "Priced above 11 of 14. Likely 3 or more weeks at $60." / "Fewer views than similar listings. A clearer first photo would help." Place is always a count, never a percentile.
+
+**Judged against the intent** ([price](price.md#selling-intents)):
+
+| Intent | Good means | Says nothing when |
+|---|---|---|
+| Sell it | on pace against the plan's median days | on pace |
+| Gone fast | will clear before `gone_by` | never: a predicted miss is the one alarm |
+| Best price | interest is arriving at this ask | no sale yet inside the horizon |
+| Only at my price | how far the market is from their number | always quiet; never Slow or Stuck |
+| Just checking | the interest and offers received | no fixes pushed |
+
+So `U_best` in the success score is the best plan *under the chosen intent*, and a reserve or checking listing never takes the needs attention or at risk band. The standing words shown on tiles (Hot, On pace, Slow, Stuck, Still learning) and how they map to the bands are in [pages §3](../pages.md#3-what-every-card-and-tile-tells).
+
+Contract (*agent proposal*, asked of Nate in [packet 47](../../.agents/team/packets/team/47-what-the-pages-need-from-the-backend.md)): each listing carries `market_standing {word, place {rank, of, basis: price|interest}, outlook {days_lo, days_hi}, fix? {change, points, action_id}, citation_id, state, hide_reason?}`, recomputed with the score and sent on `score.change`.
 
 ## Axes
 
@@ -225,3 +274,4 @@ For Ben and Nate to mark.
 - Endpoints: `GET /v1/scores`, `GET /v1/scores/:id/basis`, `GET /v1/sites/:site/ranker`, `POST /v1/experiments/consent`.
 - Stream event `score.change`; a field `user.experiments_consent`.
 - `hide_reason` values as listed in States.
+- `listing.market_standing` (`strategy.standing` is already the standing levers) as in [Standing against the market](#standing-against-the-market), and `U_best` read under the per-item `limits.plan_choice`.

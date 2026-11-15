@@ -28,6 +28,16 @@ The padding below is Ben's proposal (agent proposal, inferred from each site's o
 
 The spec has a second route to the same number. [Card D13](../../spec/determinations/money.md#d13-listing-price) learns the room instead of fixing it. It picks the start rung with the best chance times keep, then on offer-heavy sites (eBay Best Offer, Poshmark, Mercari) lists at `start / (1 - d)`, where `d` is the median gap between ask and sold price on that site and category. It caps the result at the top of the value range and rounds to the site's most common price ending. The screen says "List at $45: you keep the most for a sale within a month", and a tap shows the ladder with the chance and the keep for each rung. How the learned discount and Ben's fixed multipliers relate is not written down, and is listed at the end.
 
+## What the price looks at, and the slider
+
+Sold prices still set the value. Asks never do. Three more things now shape the suggested ask ([valuation engine](../../spec/engines/valuation.md), [Nate](../../product/words.md#2026-11-14-nate-pricing-weighs-every-platforms-top-listings-official-listings-and-credible-discounts-with-a-slider-and-a-free-note)):
+
+- **Each site's top listings.** The first page a buyer sees for the same product on that site, in the site's own order, with price, condition and age. They place the ask among what a buyer can buy today.
+- **Every official listing.** The brand's own store, other retailers and Amazon, with today's price and whether it is in stock.
+- **Credible discounts.** A real sale on the new item lowers the ceiling: a used coat is not suggested above what a new one costs now, unless the new one is sold out, and the card says which. When the sale ends, the ceiling rises again and you are told.
+
+The price is then one slider, from priced to go (the lowest price a careful buyer would still think fair) to hard to negotiate (the top of what the market has paid, held firm). The three plans are three marks on it. It opens at the middle ([Nate](../../product/words.md#2026-11-14-nate-the-price-slider-defaults-to-the-middle)). As you drag it, the card shows the ask on each site, what you keep, the chance of a sale within 30 days and the expected days. Recent sold prices sit on the slider's own track as ticks, with how many and when, so you see where your price falls among real sales ([Nate](../../product/words.md#2026-11-14-nate-show-what-sold-prices-say-and-expert-research-sessions-that-first-name-what-must-be-determined)). The slider records a preference; it does not teach the model anything. *Agent proposal*; Ben's agreement not recorded.
+
 ## The floor and who can go below it
 
 The floor is the lowest price the app will take without asking you. [Card D14](../../spec/determinations/money.md#d14-floor-and-always-accept) writes it once: the largest of the lowest rung the path has reached, your cost plus the profit you asked for, and what the best route that is not a sale would keep (bundling, trading in, donating). A casual seller's profit target is zero.
@@ -95,6 +105,7 @@ flowchart LR
 ## Where to read more
 
 - [Price spec](../../spec/features/price.md) and [money determinations](../../spec/determinations/money.md)
+- [Valuation engine](../../spec/engines/valuation.md), for the pricing inputs and the slider
 - [Listing and marketing determinations](../../spec/determinations/listing-and-marketing.md#d3-best-plan-per-site), for the best plan per site
 - [value-and-price-history.md](value-and-price-history.md) and [selling-runs-itself.md](selling-runs-itself.md)
 - [Range calibration research](../../research/price/nate/range-calibration.md) and [fees and taxes](../../research/price/nate/fees-and-taxes.md)

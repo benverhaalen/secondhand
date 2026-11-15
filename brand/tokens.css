@@ -4,20 +4,25 @@
 :root {
   color-scheme: light;                 /* dark mode is out of scope (Art. 5) */
   /* color (constitution Art. 5): color is a ground, never ink */
-  --page:        #FFFFFF;
+  --page:        #FFFFFF;               /* what a screen is made of. R29: #F1F3F5 is proposed, so a white card separates */
+  --surface:     #FFFFFF;               /* a card, a sheet, the receipt: what lies on the page */
   --ink:         #0A0A0A;               /* all text, icons, the black pill (C4) */
-  --on-color:    #0A0A0A;               /* text on any fill or the field, in light and dark */
+  --on-color:    #0A0A0A;               /* text on a state fill, in light and dark */
   --ink-2:       rgb(10 10 10 / .65);   /* secondary text on white (6.1:1) and gray (5.4:1) only; 13px and up */
   --gray:        #EFF1F2;               /* filled secondary buttons, photo tiles (ref-12, ref-15) */
   --rule:        rgb(10 10 10 / .08);   /* hairlines */
+  /* on the field. These sit after --ink and --ink-2 on purpose: a checker that names a color by its value takes the first name */
+  --on-field:    #0A0A0A;               /* text on the field: the ink of its mode */
+  --on-field-2:  rgb(10 10 10 / .65);   /* secondary text on the field (5.3:1 on sky) */
+  --sec-on-field: rgb(255 255 255 / .72); /* a second button on the field */
   /* the ring (Art. 5; Ben, round 8): eight light hues under one rule, in ring order. A field is three neighbors on it */
-  --lilac:       #DDCEFE;               /* category */
-  --sky:         #A5E1FE;               /* state "shipping" */
-  --aqua:        #91EAE9;               /* category */
-  --mint:        #A1EACB;               /* state "live" */
-  --lime:        #EBF08F;               /* money: states "sold" and "paid" */
+  --lilac:       #DDCEFE;               /* no meaning yet. Under simulated deutan vision it sits .004 from sky (Art. 5) */
+  --sky:         #A5E1FE;               /* state "live" (Ben, round 10) */
+  --aqua:        #91EAE9;               /* the field only */
+  --mint:        #A1EACB;               /* state "sold" (Ben, round 10) */
+  --lime:        #EBF08F;               /* state "paid" */
   --marigold:    #F5D297;               /* state "needs you" only */
-  --peach:       #FECCAA;               /* category */
+  --peach:       #FECCAA;               /* the field only */
   --pink:        #FEC6D2;               /* category */
   --brick:       #C52B17;               /* failed; destructive confirm; white text on it 5.6:1 */
   /* the family (Art. 5, The family): every hue has three steps, built in OKLCH with the hue kept.
@@ -39,18 +44,25 @@
   --ink-disabled: rgb(10 10 10 / .3);   /* disabled labels; never the only sign */
   --scrim:       rgb(10 10 10 / .4);
   --focus-ring:  0 0 0 2px var(--page), 0 0 0 4px var(--ink);
-  --pill-glow:   0 6px 18px rgb(129 207 252 / .55), 0 2px 10px rgb(238 243 151 / .7);   /* under the black pill (C4; Ben, round 8) */
+  --glow-1: rgb(129 207 252 / .55); --glow-2: rgb(238 243 151 / .7);
+  --pill-glow:   0 6px 18px var(--glow-1), 0 2px 10px var(--glow-2);   /* under the black pill (C4; Ben, round 8). Light only */
   /* the field (C2): one per view, soft, no lines and no grain, black text only. Use background: var(--field); never rebuild it.
      Home is sky, mint and lime. The rest of the set, and how one field changes into the next, is open in the ledger (R17). */
-  --field-mesh: radial-gradient(at 30% 100%, var(--mint), transparent 60%), radial-gradient(at 100% 100%, var(--lime), transparent 65%);
-  --field: var(--field-mesh), var(--sky);
+  --field-1: var(--sky); --field-2: var(--mint); --field-3: var(--lime);
+  --field-mesh: radial-gradient(at 30% 100%, var(--field-2), transparent 60%), radial-gradient(at 100% 100%, var(--field-3), transparent 65%);
+  --field: var(--field-mesh), var(--field-1);
+  /* the wash: the field, faint, behind the header of a screen and nowhere else, 200 tall (Ben, 2026-11-15: "a gradient fading into the white ... at the top to give some character") */
+  --wash-1: rgb(165 225 254 / .3); --wash-2: rgb(161 234 203 / .25);    /* Ben, 02:46: "a little less invasive at the top" */
+  --wash: radial-gradient(120% 90% at 15% 0%, var(--wash-1), transparent 70%), radial-gradient(90% 80% at 95% 0%, var(--wash-2), transparent 70%);
+  --wash-h: 200px;
 
-  /* type (Art. 6; Ben, rounds 7 and 8): Neue Montreal as QOVES sets it, and Clofie SemiBold for the wordmark and the screen title */
+  /* type (Art. 6; Ben, rounds 7, 8 and 10): PP Neue Montreal 2.6 as QOVES sets it, and Clofie SemiBold for the wordmark and the screen title */
   /* never system-ui: it can resolve to an Inter-derived face. Scripts a face lacks fall to Noto */
-  --font-text:    "Neue Montreal", "Noto Sans", "Noto Sans JP", "Noto Sans Arabic", "Noto Sans Devanagari", -apple-system, sans-serif;
+  --font-text:    "PP Neue Montreal", "Noto Sans", "Noto Sans JP", "Noto Sans Arabic", "Noto Sans Devanagari", -apple-system, sans-serif;
   --font-display: "Clofie", var(--font-text);                     /* the wordmark and what Art. 6 lists, nothing else */
   --w-display: 600;                                               /* Clofie SemiBold, the only display weight */
-  --w-regular: 400; --w-medium: 500;                              /* text face; medium only on buttons and the selected tab */
+  --w-regular: 400; --w-medium: 500;                              /* text face: Book and Medium. Medium only on buttons; weight never changes with state */
+  --nudge-display: .12em;                                         /* Clofie sits this far above center in its line; move it down where text cannot be trimmed (Art. 6.10) */
   /* app sizes by role (Art. 6 roles); line heights are ratios so they grow with the text setting */
   --t-13: 13px; --lh-13: 1.385;                   /* caption, time, tab label */
   --t-15: 15px; --lh-15: 1.333;                   /* body, rows, buttons */
@@ -67,23 +79,35 @@
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 48px; --s-9: 64px;
   --gutter: 20px;
   /* radius (Art. 9) */
-  --r-photo: 8px; --r-card: 14px; --r-sheet: 20px; --r-pill: 999px;
+  /* corners nest: a photo in a card is the card's corner less the card's padding (36 - 16 = 20). Everything else is a capsule */
+  --r-photo: 20px; --r-card: 36px; --r-sheet: 20px; --r-pill: 999px;
   /* depth (Art. 9): hairlines by default */
   --card-border: 1px solid var(--rule);
   --shadow-soft: 0 1px 2px rgb(0 0 0 / .05), 0 8px 24px rgb(0 0 0 / .06);
+  --card-edge: rgb(10 10 10 / .08); --photo-veil: rgb(0 0 0 / 0);
+  --shadow-card: 0 0 0 1px var(--card-edge);   /* a card on the page: a hairline, no blur (Ben, 02:46: the shadow "looks a little weird") */
   /* size */
   --outline: var(--ink);               /* outline buttons: 1px ink, not --rule */
   --control-min: 44px; --button-h: 48px; --nav-h: 44px; --tab-h: 84px; --photo-card: 72px;
+  /* the parts and their sizes (Ben, 2026-11-15: "the spacing i like", "ensure that there are primitives of it all"; Art. 7.8) */
+  --card-pad: 16px; --card-decision-h: 156px; --card-item-h: 104px; --notice-h: 56px;
+  --pill-card-h: 40px; --pill-card-pad: 20px; --tag-h: 20px; --tag-icon: 12px; --badge-h: 20px; --site-badge: 24px;
   /* motion (frontend-standard §3) */
   --t-feedback: 150ms; --t-select: 200ms; --t-panel: 300ms; --ease-out: cubic-bezier(0, 0, .2, 1);
 }
-/* dark mode (Ben, round 6): the same brand on a dark page. Fills, the field and the black-on-color rule don't change;
-   only the page, the surfaces and the ink flip. Light is the default. */
+/* dark mode (Ben, 2026-11-15: "i like that dark mode a lot"). Only color changes (L22). The mirror rule is in Art. 5:
+   the page, the surfaces and the ink flip; the field goes deep and takes the ink of its mode; state tags keep their
+   light fills with black text; lime and marigold are never a dark ground; no shadow and no glow, a light edge instead. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --page: #0E0F10; --gray: #26292B; --gray-press: #32363A;
-  --ink: #FFFFFF; --ink-2: rgb(255 255 255 / .65); --ink-disabled: rgb(255 255 255 / .3);
-  --rule: rgb(255 255 255 / .12); --ink-press: #E2E5E7; --scrim: rgb(0 0 0 / .6);
-  --on-color: #0A0A0A;                  /* text on any fill or the field stays black in both modes */
+  --page: #101315; --surface: #1A1D20; --gray: #2A2F32; --gray-press: #363B3F;
+  --ink: #ECEFF1; --ink-2: #B4BABD; --ink-disabled: rgb(236 239 241 / .3);
+  --rule: rgb(255 255 255 / .12); --ink-press: #CDD2D4; --scrim: rgb(0 0 0 / .6);
+  --on-color: #0A0A0A;                  /* text on a state fill stays black in both modes */
+  --on-field: #ECEFF1; --on-field-2: #CDD2D4; --sec-on-field: rgb(255 255 255 / .14);
+  --field-1: #0A4C65; --field-2: #03523B; --field-3: #025050;   /* deep sky, deep mint, deep aqua. No lime in dark */
+  --wash-1: rgb(10 76 101 / .3); --wash-2: rgb(3 82 59 / .25);
+  --card-edge: rgb(255 255 255 / .08); --glow-1: transparent; --glow-2: transparent;
+  --photo-veil: rgb(0 0 0 / .08);       /* painted over a photo, so it does not glare on a dark page */
 }
 @media (prefers-reduced-motion: reduce) { :root { --t-feedback: 0ms; --t-select: 0ms; --t-panel: 0ms; } }

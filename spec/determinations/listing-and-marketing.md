@@ -280,7 +280,7 @@ Step 1, the determinations:
 | Photo count | Use the limit when photos exist | Rank 4 | Each extra image raised sale likelihood 0.049 in second-hand clothing (Tise, *observed*, working paper) |
 
 **Method**
-1. Cover: among photos meeting the site cover rule, pick the style with the largest share in `W_s` if its share beats the next style by more than the noise floor with 10 or more winners; else the site default (eBay plain background front; Depop and Poshmark the cleanest front). Within the style, the highest quality score. Touch-up per site follows Ben's levels in [platform-fit.json](../../research/list/ben/platforms/platform-fit.json) (level 2 only on Depop, Poshmark, Mercari covers).
+1. Cover: among photos meeting the site cover rule, pick the style with the largest share in `W_s` if its share beats the next style by more than the noise floor with 10 or more winners; else the site default (eBay plain background front; Depop and Poshmark the cleanest front). Within the style, the highest quality score. The cover is the true-colour real front at level 0 on every site ([photo §3](../engines/photo.md#3-the-calculation)). Retouch is off by default and runs only when the person taps Generate; Ben's per-site levels in [platform-fit.json](../../research/list/ben/platforms/platform-fit.json) are the level offered for each site, never switched on, and level 2 (pressed) is never a preset ([studio](../features/studio.md#retouch-chosen-by-the-person)).
 2. Then the coverage set in registry priority, flaws before extras.
 3. Then extras by quality score until the limit.
 4. Over the limit with coverage alone: keep cover, label and every flaw; drop the lowest-priority coverage views.
@@ -495,6 +495,8 @@ All rows from [ranking-algorithms.md](../../research/list/nate/ranking-algorithm
 
 **Check later**: listings marked behind should sell later than those on plan; if days to sale do not differ, the band is not informative.
 
+**Proposal from Ben's packet 43** (*agent proposal*, from [levers-and-signals](../../research/list/ben/levers-and-signals.md) via [packet 43](../../.agents/team/packets/price/43-platform-levers-and-signals.md); Ben's agreement not recorded on this wording): compute the band per signal, each signal carrying its stage from `levers.json` (exposure, attention, interest, intent), so a Mercari "view", which is an impression in search and feeds, is never compared with an eBay view, which is a listing open (*observed* in the note).
+
 ---
 
 ## D16 Next move on a live listing
@@ -542,6 +544,8 @@ All rows from [ranking-algorithms.md](../../research/list/nate/ranking-algorithm
 **Speed**: arithmetic at each check.
 
 **Check later**: sale within 72 hours after an offer against matched listings at the same age with a public drop; if not higher in 200 pairs, step 3 of D16 swaps.
+
+**Proposal from Ben's packet 43** (*agent proposal*, from [levers-and-signals](../../research/list/ben/levers-and-signals.md) via [packet 43](../../.agents/team/packets/price/43-platform-levers-and-signals.md); Ben's agreement not recorded on this wording): the first offer to likers goes at the site minimum (5% on eBay and Depop, 10% on Poshmark and Mercari); Depop and Mercari can send it natively to new likers.
 
 ---
 
@@ -602,6 +606,8 @@ All rows from [ranking-algorithms.md](../../research/list/nate/ranking-algorithm
 **Speed**: arithmetic.
 
 **Check later**: views in the 48 hours after trigger-sized drops against off-trigger drops of similar size; no difference in 200 pairs means rounding is dropped.
+
+**Proposal from Ben's packet 43** (*agent proposal*, from [levers-and-signals](../../research/list/ben/levers-and-signals.md) via [packet 43](../../.agents/team/packets/price/43-platform-levers-and-signals.md); Ben's agreement not recorded on this wording): each site's drop rule lives in `levers.json` (`rules.markdown`): Poshmark tells likers only of a drop 10% or more under the lowest-ever price that ends at $10 or more; Mercari Promote needs 5% or more under the lowest price so far, once a day; eBay tells watchers of a drop, and its sale events, markdowns and volume pricing need an eBay Store (all *observed* in the note). A struck-through price shows only after 7 days live at the old price (16 CFR 233.1), and visible drops are staggered across a person's live items.
 
 ---
 

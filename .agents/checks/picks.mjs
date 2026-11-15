@@ -3,7 +3,7 @@
 // Every check is keyed by the id of the rule it holds, and has a test named "picks <id>:" in checks.test.mjs.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { read, err, lineOf, withoutComments } from './util.mjs';
+import { read, err, warn, lineOf, withoutComments } from './util.mjs';
 
 const TOKENS = 'brand/tokens.css';
 const APP = f => /^app\/src\/.*\.(tsx?|jsx?)$/.test(f) && !/\.(test|generated)\./.test(f);
@@ -53,6 +53,15 @@ const OWN_FILL = new Set(['lime', 'brick']);
 const family = light => Object.keys(light).filter(n => HEX.test(light[n]) && HEX.test(light[`${n}-tint`] ?? '') && HEX.test(light[`${n}-deep`] ?? ''));
 const spread = xs => Math.max(...xs) - Math.min(...xs);
 const turn = (a, b) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+
+// Color blindness, simulated (Machado, Oliveira and Fernandes 2009, severity 1.0), on linear RGB. Distances are in Oklab.
+export const STATE_FILLS = ['sky', 'mint', 'marigold', 'lime'];
+const CVD = { protan: [[.152286, 1.052583, -.204868], [.114503, .786281, .099216], [-.003882, -.048116, 1.051998]],
+  deutan: [[.367322, .860646, -.227968], [.280085, .672501, .047413], [-.01182, .04294, .968881]] };
+const seen = (hex, m) => { const c = rgb(hex); return m.map(r => Math.min(1, Math.max(0, r[0] * c[0] + r[1] * c[1] + r[2] * c[2]))); };
+const lab = ([r, g, b]) => { const l = Math.cbrt(.4122214708 * r + .5363325363 * g + .0514459929 * b), m = Math.cbrt(.2119034982 * r + .6806995451 * g + .1073969566 * b), s = Math.cbrt(.0883024619 * r + .2817188376 * g + .6299787005 * b);
+  return [.2104542553 * l + .793617785 * m - .0040720468 * s, 1.9779984951 * l - 2.428592205 * m + .4505937099 * s, .0259040371 * l + .7827717662 * m - .808675766 * s]; };
+const apart = (a, b) => Math.hypot(...lab(a).map((v, i) => v - lab(b)[i]));
 
 export const PICKS = {
   // The wordmark is "secondhand", lowercase, wherever the app writes it.
@@ -121,6 +130,45 @@ export const PICKS = {
 
   // The filled button is black with depth, never pure black.
   L25: (root) => { const t = tokens(root); return /^(?:#0{3}|#0{6}|black|rgb\(0[ ,]+0[ ,]+0\))$/i.test(t?.light.ink ?? '') ? [err(TOKENS, `--ink is ${t.light.ink}: the black is never flat pure black (ledger L25)`)] : []; },
+
+  // Dark mode mirrors light: a card is a step off the page, text is never pure white, the field holds no yellow, and nothing glows.
+  L44: (root) => { const t = tokens(root); if (!t || !Object.keys(t.dark).length) return []; const d = t.dark, out = [];
+    if (!HEX.test(d.page ?? '') || !HEX.test(d.surface ?? '')) return [err(TOKENS, 'dark mode has no --page and --surface as hex colors, so a card cannot be told from the page (ledger L44)')];
+    const gap = Math.abs(oklch(d.surface).L - oklch(d.page).L);
+    if (gap < .04) out.push(err(TOKENS, `in dark a card is ${gap.toFixed(3)} from the page in lightness: it needs .04 (ledger L44)`));
+    if (/^#f{6}$/i.test(d.ink ?? '')) out.push(err(TOKENS, 'in dark --ink is pure white: text is #ECEFF1 or darker (ledger L44)'));
+    for (const n of ['field-1', 'field-2', 'field-3']) { const v = d[n] ?? '';
+      if (!HEX.test(v)) out.push(err(TOKENS, `in dark --${n} is not set to a hex color: the field goes deep in dark (ledger L44)`));
+      else { const c = oklch(v); if (c.L > .45 || (c.H > 60 && c.H < 135)) out.push(err(TOKENS, `in dark --${n} is ${v}: the dark field is deep (lightness .45 or less) and never yellow, lime or marigold, which read as brown (ledger L44)`)); } }
+    for (const n of ['glow-1', 'glow-2', 'card-shade']) if (n in t.light && !/^(?:transparent|rgb\([^)]*\/\s*0\))$/.test(d[n] ?? '')) out.push(err(TOKENS, `in dark --${n} is not transparent: dark has no shadow and no glow (ledger L44)`));
+    return out; },
+
+  // Anything about shipping a sold item is green: mint in the app's state map, never marigold.
+  L45: (root) => { const states = read(root, 'app/src/ui/states.ts'); if (states == null) return [];
+    return [...states.matchAll(/['"]?(Ship[\w ]*)['"]?\s*:\s*\{([^}]*)\}/g)].filter(m => !/\bfill\s*:\s*['"]mint['"]/.test(m[2]))
+      .map(m => err('app/src/ui/states.ts', `the pill "${m[1]}" is not mint: a sold item waiting to ship is green, never brown or yellow (ledger L45)`)); },
+
+  // The parts nest: a photo's corner is the card's corner less the card's padding, and a tag's icon sits 4 from its edges.
+  L46: (root) => { const t = tokens(root); if (!t) return []; const px = n => parseFloat(t.light[n]), out = [];
+    if (['r-card', 'card-pad', 'r-photo'].every(n => n in t.light) && px('r-photo') !== px('r-card') - px('card-pad'))
+      out.push(err(TOKENS, `--r-photo is ${px('r-photo')}: a photo in a card takes the card's corner less its padding, ${px('r-card')} less ${px('card-pad')} (ledger L46)`));
+    if (['tag-h', 'tag-icon'].every(n => n in t.light) && px('tag-h') - px('tag-icon') !== 8)
+      out.push(err(TOKENS, `--tag-icon is ${px('tag-icon')} in a tag of ${px('tag-h')}: the icon sits 4 from the top and the bottom (ledger L46)`));
+    if (['card-decision-h', 'card-item-h', 'card-pad', 'photo-card', 'pill-card-h'].every(n => n in t.light)) {
+      if (px('card-item-h') !== px('photo-card') + 2 * px('card-pad')) out.push(err(TOKENS, `--card-item-h is ${px('card-item-h')}: an item card is its photo and its padding twice (ledger L46)`));
+      if (px('card-decision-h') !== px('card-item-h') + 12 + px('pill-card-h')) out.push(err(TOKENS, `--card-decision-h is ${px('card-decision-h')}: a decision card is an item card, 12 and a row of actions (ledger L46)`)); }
+    return out; },
+
+  // A warning, not a failure (Ben: "dont weight to colorblindness too much"): two state fills closer than .05 in Oklab under simulated protan or deutan vision.
+  A10: (root) => { const t = tokens(root); if (!t) return []; const fills = STATE_FILLS.filter(n => HEX.test(t.light[n] ?? '')), out = [];
+    for (const [kind, m] of Object.entries(CVD)) for (let i = 0; i < fills.length; i++) for (let j = i + 1; j < fills.length; j++) {
+      const d = apart(seen(t.light[fills[i]], m), seen(t.light[fills[j]], m));
+      if (d < .05) out.push(warn(TOKENS, `--${fills[i]} and --${fills[j]} are ${d.toFixed(3)} apart with ${kind} vision: under .05 a color blind person tells them by icon and word alone (ledger A10)`)); }
+    return out; },
+
+  // The text face is PP Neue Montreal 2.6: it is the first family the brand values name.
+  L38: (root) => { const t = tokens(root); if (!t) return []; const first = (t.light['font-text'] ?? '').split(',')[0].trim().replace(/^["']|["']$/g, '');
+    return first === 'PP Neue Montreal' ? [] : [err(TOKENS, `--font-text starts with "${first}": the text face is PP Neue Montreal 2.6, Book and Medium (ledger L38)`)]; },
 
   // The palette is one family: every hue's tint, fill and deep are built the same way, with the hue kept.
   L33: (root) => {

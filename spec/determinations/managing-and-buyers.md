@@ -142,7 +142,7 @@ Shared rules for every card:
 |---|---|---|
 | Asks for a code sent to the seller's phone | hard | the Google Voice pattern (asserted, [trust, returns, disputes §8](../../research/sold/nate/trust-returns-disputes.md)) |
 | Claims an overpayment, sends a check, asks for a refund of the difference | hard | named pattern, same source (asserted) |
-| Asks to pay or talk off-site (Zelle, phone, email) | +2.0 | moves the deal outside site protection; also a locked action |
+| Asks to pay or talk off-site (Zelle, phone, email) before meeting, or on a deal with checkout | +2.0 | moves the deal outside site protection; also a locked action. On a Facebook local deal, cash or an app payment at the meeting scores 0 and is not `move_off_site`: that is how local sales are paid (*agent proposal*, as in [trust §2](../engines/trust.md#2-signals); open as [J32](../open-questions.md#for-both)) |
 | Asks to ship a local-only listing to another address | +1.5 | the "post it to me" pattern, one source only (asserted) |
 | Link in the first or second message | +1.0 | common phishing form (inferred) |
 | Account younger than 30 days, or no ratings | +0.7 | weak; many real buyers are new (inferred) |
@@ -157,7 +157,7 @@ Shared rules for every card:
 
 **Why this method**: No labelled base rate exists per site, so a learned probability would be invented; a sum of named signals is honest and each reason can be shown (inferred). Named signals come from [trust, returns, disputes](../../research/sold/nate/trust-returns-disputes.md) and [messages and offers](../../research/messages/ben/messages-and-offers.md). The alternative, a trained classifier, is the upgrade once confirmed scams are labelled; until then it would fit noise.
 
-**When it is not shown**: tier `none` shows nothing. No percentage is ever shown, because the base rate is unknown.
+**When it is not shown**: tier `none` shows nothing. No percentage is shown until the [calibration gate in trust.md](../engines/trust.md#the-calibration-gate-row-703-and-row-704) passes for the site group; below it the person sees reasons and real counts (*agent proposal*; the bar is open as [J33](../open-questions.md#for-both)).
 
 **How it is explained**: "This buyer asked for a code sent to your phone. That is a known scam." Tap opens the lines and what the scam does.
 
@@ -210,7 +210,7 @@ Shared rules for every card:
 **Method** (all code; the model only words the reply)
 1. `keep(x) = x - fees(x, site) - ship_cost`.
 2. If `keep(offer) >= keep(always_accept)`: accept.
-3. If `keep(floor) <= keep(offer) < keep(always_accept)`: accept if `keep(offer)` is at least the continuation value `V` of [money D16](money.md#d16-offer-response); else counter at `round_to_ending(max(floor, (offer + current price) / 2))`, rounded to a precise amount ending in 5 or 8 dollars over $20, whole dollars under. This is the one counter rule, the same as money D16: the midpoint between the offer and the current price, never below the floor (*agent proposal*).
+3. If `keep(floor) <= keep(offer) < keep(always_accept)`: accept if `keep(offer)` is at least the continuation value `V` of [money D16](money.md#d16-offer-response); else counter at the amount the [negotiation engine](../engines/negotiation.md#3-the-calculation) picks, rounded to a precise amount ending in 5 or 8 dollars over $20, whole dollars under, never below the floor. This is the one counter rule, the same as money D16: the midpoint `round_to_ending(max(floor, (offer + current price) / 2))` is the starting prior and first champion, replaced per (site, category) only when the learned policy passes the engine's [switch rule](../engines/negotiation.md#4-learning) (*agent proposal*).
 4. If `keep(offer) < keep(floor)`: never accepted. It becomes an ask (`price_below_floor`) that proposes the counter of step 3; the person decides.
 5. A higher open offer on the same item is answered first; one accept per item.
 
@@ -349,8 +349,8 @@ Shared rules for every card:
 | Source | What it contributes | Weight or rank | Why that weight |
 |---|---|---|---|
 | Paid order read back from the site (API or page) | the sale | the only signal that counts | the site's record of payment |
-| Site webhook or notification (eBay ORDER_CONFIRMATION, Depop order.new) | trigger | starts a read | best effort, can be late or missing (observed, [crosspost and delist](../../research/list/ben/crosspost-and-delist.md): eBay's REST `ORDER_CONFIRMATION` topic and Depop's "best-effort" `order.new`) |
-| Email or SMS from the site | trigger | starts a read | spoofable; never proof ([email and notification detection](../../research/sold/nate/email-and-notification-detection.md)) |
+| Signed site push (eBay ORDER_CONFIRMATION, signature checked; whether it is used as a trigger is open for Nate, [open questions](../open-questions.md)); Depop gives us no partner webhooks, so a signed-in watcher hit stands in | trigger | starts a read | best effort, can be late or missing (observed, [crosspost and delist](../../research/list/ben/crosspost-and-delist.md): eBay's REST `ORDER_CONFIRMATION` topic and Depop's "best-effort" `order.new`) |
+| Public listing page shows sold or out of stock (Poshmark, Mercari) | trigger | starts the signed-in read | cheap and needs no session, but a page is not a paid order ([cheap-sale-detection](../../research/sold/ben/cheap-sale-detection.md)); sale email is not used ([handoff](../../.agents/team/packets/team/45-handoff-to-the-build-session.md)) |
 | Scheduled `check_due` order poll (tiers in [card 15](#15-when-to-check-again)) and the nightly `reconcile` | backstop | starts a read | catches what triggers miss |
 | The person marks it sold (Facebook, cash) | the sale | counts for sites without orders | no order exists to read |
 
@@ -430,7 +430,7 @@ Shared rules for every card:
 
 | Source | What it contributes | Weight or rank | Why that weight |
 |---|---|---|---|
-| Events (webhook, email hint, person opens the thread) | set to now | rank 1 | a fresh signal beats a schedule |
+| Events (a signed site push, a public-page or watcher hit, the person opens the thread) | set to now | rank 1 | a fresh signal beats a schedule |
 | Tier floors and ceilings, owned here (starting values, below) | bounds | rank 2 | one table, so [messages](../features/messages.md), [sold](../features/sold.md) and [connect](../features/connect.md) link here instead of stating their own |
 | Change seen on the last check | adapt within bounds | rank 3 | a revisit should follow how often a thing changes (asserted, web crawler revisit policy) |
 | Site pacing and account lease | delays | hard | one lease per account session, paced per site |
@@ -440,7 +440,8 @@ Tiers (*agent proposal*, starting values; they merge the earlier connect and mes
 | Row in this state | Floor | Ceiling |
 |---|---|---|
 | Open offer, or a buyer waiting on our reply | 1 min | 2 min |
-| Sold page on a site without sale events (Poshmark, Mercari) | 1 min | 2 min |
+| Public listing page on a site without sale events (Poshmark, Mercari), fetched from our server with no session; a hit triggers the signed-in read, which confirms (*agent proposal* from Ben's [packet 44](../../.agents/team/packets/sold/44-cheap-sale-detection.md), taken by Nate in the [handoff](../../.agents/team/packets/team/45-handoff-to-the-build-session.md)) | 1 min | 2 min |
+| Signed-in watcher on the notification feed, inbox, offers and orders (Depop and every site with no push) | 1 min | 2 min hot, 15 min live, 60 min quiet |
 | Thread active in the last 24 h, waiting on the buyer | 10 min | 60 min |
 | Live listing with views or watchers | 1 h | 2 h |
 | Quiet live listing or thread | 2 h | 24 h |
@@ -462,7 +463,7 @@ Tiers (*agent proposal*, starting values; they merge the earlier connect and mes
 
 ## 16. Which route to use
 
-**Determines**: for one action on one site, the official API, a recorded-call replay, or the cloud browser.
+**Determines**: for one action on one site, the route: our own adapter (an endpoint or page recipe, run in the cloud browser or on the person's own device), our fetch engine for public reads, or, last, the site's official API or an outside aggregator ([product.md routes](../product.md#the-harness-protocol), [protocol and adapters](../engines/protocol-and-adapters.md#35-starting-routes-site-by-verb), [Nate's words](../../product/words.md#2026-11-14-nate-our-own-protocol-official-apis-last)).
 
 **Sources and weights**
 
@@ -474,7 +475,7 @@ Tiers (*agent proposal*, starting values; they merge the earlier connect and mes
 | Cost per call | cost | rank 3 | cheapest among equally fast |
 | Recipe state ([replay](../features/replay.md)) | only `active` recipes | hard | `drifted` and `retired` are off |
 
-**Method**: among eligible routes, keep those whose success lower bound `>= 0.95`; pick the fastest median, ties to the cheaper. If none qualify, pick the highest success mean. Default order when data is thin (fewer than 20 calls): API, active recipe, browser ([replay](../features/replay.md)). On failure, fall back down that order; the job result records `{route, fell_back, ms}`. A challenge page stops all routes and sets the account `broken`.
+**Method**: among eligible routes, keep those whose success lower bound `>= 0.95`; pick the fastest median, ties to the cheaper. If none qualify, pick the highest success mean. Default order when data is thin (fewer than 20 calls): our own adapter (active recipe, endpoint before page), then our fetch engine for public reads, then the official API or an outside aggregator last ([protocol and adapters §3.5](../engines/protocol-and-adapters.md#35-starting-routes-site-by-verb)). On failure, fall back down that order; the job result records `{route, fell_back, ms}`. A challenge page stops all routes and sets the account `broken`.
 
 **Why this method**: A lower bound rather than the mean keeps a route with 3 lucky calls from taking over (inferred); measured success, speed and freshness per tool is the [treg routing note](../../research/cross-cutting/nate/treg-tool-routing.md) design (observed in the note). The alternative, a fixed order, ignores that a recipe can beat the API on one site and drift on another.
 
