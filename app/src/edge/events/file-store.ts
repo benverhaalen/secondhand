@@ -28,7 +28,7 @@ function validState(value: unknown): value is StoreState {
 function load(path: string): StoreState | undefined {
   if (!existsSync(path)) return undefined;
   try {
-    const state: unknown = JSON.parse(readFileSync(path, 'utf8'));
+    const state: unknown = JSON.parse(readFileSync(path, 'utf8')); // bundle-safe: reads the Store's own data file, not a repo file
     if (!validState(state)) throw new Error('invalid Store state');
     for (const job of state.jobs) if (job.state === 'running') job.state = 'queued';
     return state;
