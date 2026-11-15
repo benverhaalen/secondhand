@@ -1,0 +1,741 @@
+{
+ "version": 1,
+ "importance_weight": {
+  "high": 3,
+  "medium": 2,
+  "low": 1
+ },
+ "importance_weight_note": "high 3, medium 2, low 1 is a guess; no source gives numbers",
+ "rows": [
+  {
+   "id": "req_apparel_size_label",
+   "item_kind": "apparel",
+   "node": "size_label",
+   "field": "size_label",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "size_label",
+     "max_length": 65,
+     "required": true
+    },
+    "depop": {
+     "name": "size_label",
+     "max_length": 40,
+     "required": true
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "high",
+    "rank": {
+     "ebay": "high",
+     "depop": "high"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "label",
+     "route": "read_tag"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [
+    "tag"
+   ],
+   "seconds": 8,
+   "effort": 2,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_apparel_brand",
+   "item_kind": "apparel",
+   "node": "brand",
+   "field": "brand",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "brand",
+     "max_length": 65,
+     "required": true
+    },
+    "depop": {
+     "name": "brand",
+     "max_length": 40,
+     "required": true
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "medium",
+    "rank": {
+     "ebay": "high",
+     "depop": "high"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "label",
+     "route": "read_tag"
+    },
+    {
+     "rung": "lookup",
+     "route": "catalogue"
+    }
+   ],
+   "views_needed": [
+    "tag"
+   ],
+   "seconds": 8,
+   "effort": 2,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_apparel_fabric",
+   "item_kind": "apparel",
+   "node": "fabric",
+   "field": "fabric",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "fabric",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "fabric",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "medium",
+    "value": "medium",
+    "rank": {
+     "ebay": "medium",
+     "depop": "medium"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "label",
+     "route": "read_tag"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [
+    "care_label"
+   ],
+   "seconds": 8,
+   "effort": 3,
+   "priority": "medium",
+   "version": 1
+  },
+  {
+   "id": "req_apparel_condition",
+   "item_kind": "apparel",
+   "node": "condition",
+   "field": "condition",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "condition",
+   "site_names": {
+    "ebay": {
+     "name": "condition",
+     "max_length": 65,
+     "required": true
+    },
+    "depop": {
+     "name": "condition",
+     "max_length": 40,
+     "required": true
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "high",
+    "rank": {
+     "ebay": "high",
+     "depop": "high"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "seen",
+     "route": "capture_judge"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [
+    "flaw"
+   ],
+   "seconds": 10,
+   "effort": 3,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_apparel_sleeve_length",
+   "item_kind": "apparel",
+   "node": "sleeve_length",
+   "field": "sleeve_length",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "sleeve_length",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "sleeve_length",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "low",
+    "value": "low",
+    "rank": {
+     "ebay": "low",
+     "depop": "low"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "seen",
+     "route": "capture_judge"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [],
+   "seconds": 0,
+   "effort": 2,
+   "priority": "low",
+   "version": 1
+  },
+  {
+   "id": "req_shoes_size_label",
+   "item_kind": "shoes",
+   "node": "size_label",
+   "field": "size_label",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "size_label",
+     "max_length": 65,
+     "required": true
+    },
+    "depop": {
+     "name": "size_label",
+     "max_length": 40,
+     "required": true
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "high",
+    "rank": {
+     "ebay": "high",
+     "depop": "high"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "label",
+     "route": "read_tag"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [
+    "size_label"
+   ],
+   "seconds": 8,
+   "effort": 2,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_shoes_brand",
+   "item_kind": "shoes",
+   "node": "brand",
+   "field": "brand",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "brand",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "brand",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "medium",
+    "rank": {
+     "ebay": "high",
+     "depop": "high"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "seen",
+     "route": "capture_judge"
+    },
+    {
+     "rung": "label",
+     "route": "read_tag"
+    }
+   ],
+   "views_needed": [
+    "size_label"
+   ],
+   "seconds": 8,
+   "effort": 2,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_shoes_condition",
+   "item_kind": "shoes",
+   "node": "condition",
+   "field": "condition",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "condition",
+   "site_names": {
+    "ebay": {
+     "name": "condition",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "condition",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "high",
+    "rank": {
+     "ebay": "high",
+     "depop": "high"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "seen",
+     "route": "capture_judge"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [
+    "soles"
+   ],
+   "seconds": 10,
+   "effort": 3,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_furniture_dimensions",
+   "item_kind": "furniture",
+   "node": "dimensions",
+   "field": "dimensions",
+   "type": "measurement",
+   "values_or_unit": "mm",
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "dimensions",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "dimensions",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "high",
+    "rank": {
+     "ebay": "medium",
+     "depop": "medium"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "measured",
+     "route": "lidar_scan"
+    },
+    {
+     "rung": "lookup",
+     "route": "catalogue"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [
+    "scan"
+   ],
+   "seconds": 25,
+   "effort": 3,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_furniture_material",
+   "item_kind": "furniture",
+   "node": "material",
+   "field": "material",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "material",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "material",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "medium",
+    "value": "medium",
+    "rank": {
+     "ebay": "medium",
+     "depop": "medium"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "seen",
+     "route": "capture_judge"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [],
+   "seconds": 0,
+   "effort": 2,
+   "priority": "medium",
+   "version": 1
+  },
+  {
+   "id": "req_furniture_maker",
+   "item_kind": "furniture",
+   "node": "maker",
+   "field": "maker",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "maker",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "maker",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "medium",
+    "value": "high",
+    "rank": {
+     "ebay": "medium",
+     "depop": "medium"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "label",
+     "route": "read_tag"
+    },
+    {
+     "rung": "lookup",
+     "route": "catalogue"
+    }
+   ],
+   "views_needed": [
+    "maker_mark"
+   ],
+   "seconds": 8,
+   "effort": 3,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_furniture_condition",
+   "item_kind": "furniture",
+   "node": "condition",
+   "field": "condition",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "condition",
+   "site_names": {
+    "ebay": {
+     "name": "condition",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "condition",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "high",
+    "rank": {
+     "ebay": "high",
+     "depop": "high"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "seen",
+     "route": "capture_judge"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [
+    "flaw"
+   ],
+   "seconds": 10,
+   "effort": 3,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_electronics_model",
+   "item_kind": "electronics",
+   "node": "model",
+   "field": "model",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "model",
+     "max_length": 65,
+     "required": true
+    },
+    "depop": {
+     "name": "model",
+     "max_length": 40,
+     "required": true
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "high",
+    "rank": {
+     "ebay": "high",
+     "depop": "high"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "label",
+     "route": "read_tag"
+    },
+    {
+     "rung": "seen",
+     "route": "capture_judge"
+    }
+   ],
+   "views_needed": [
+    "about_screenshot"
+   ],
+   "seconds": 6,
+   "effort": 2,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_electronics_storage",
+   "item_kind": "electronics",
+   "node": "storage",
+   "field": "storage",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "attribute",
+   "site_names": {
+    "ebay": {
+     "name": "storage",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "storage",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "medium",
+    "value": "high",
+    "rank": {
+     "ebay": "medium",
+     "depop": "medium"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "label",
+     "route": "read_tag"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [
+    "about_screenshot"
+   ],
+   "seconds": 6,
+   "effort": 2,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_electronics_function",
+   "item_kind": "electronics",
+   "node": "function",
+   "field": "function",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "function",
+   "site_names": {
+    "ebay": {
+     "name": "function",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "function",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "high",
+    "rank": {
+     "ebay": "high",
+     "depop": "high"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [],
+   "seconds": 0,
+   "effort": 3,
+   "priority": "high",
+   "version": 1
+  },
+  {
+   "id": "req_electronics_condition",
+   "item_kind": "electronics",
+   "node": "condition",
+   "field": "condition",
+   "type": "text",
+   "values_or_unit": null,
+   "role": "condition",
+   "site_names": {
+    "ebay": {
+     "name": "condition",
+     "max_length": 65,
+     "required": false
+    },
+    "depop": {
+     "name": "condition",
+     "max_length": 40,
+     "required": false
+    }
+   },
+   "importance": {
+    "match": "high",
+    "value": "high",
+    "rank": {
+     "ebay": "high",
+     "depop": "high"
+    }
+   },
+   "fill_ladder": [
+    {
+     "rung": "seen",
+     "route": "capture_judge"
+    },
+    {
+     "rung": "asked",
+     "route": "clarify"
+    }
+   ],
+   "views_needed": [
+    "flaw"
+   ],
+   "seconds": 10,
+   "effort": 3,
+   "priority": "high",
+   "version": 1
+  }
+ ]
+}
