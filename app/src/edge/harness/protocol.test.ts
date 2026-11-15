@@ -145,3 +145,29 @@ test('a call logs through log/ with no args text', async () => {
   assert.ok(sink.lines.length > 0);
   assert.ok(!sink.text().includes('secret-query-text'));
 });
+
+
+test("harness: one person's account id under another person is refused", async () => {
+  const { memoryAccounts, memoryVault } = await import('../browser/auth.ts');
+  const vault = memoryVault();
+  await vault.put('fixture', { cookies: [], origins: [] });
+  const accounts = memoryAccounts([{ account_id: 'owned', person_id: 'owner', site: 'depop', token_ref: 'fixture' }], vault);
+  let runs = 0;
+  const adapter = fakeAdapter('depop', 'read_listings');
+  const h = createHarness({ accounts, adapters: [{ ...adapter, async run(args, signal) {
+    runs++; return adapter.run(args, signal);
+  } }] });
+  for (const person_id of ['other', undefined, '', 42]) {
+    const result = await h.call('depop', 'read_listings', { account_id: 'owned', person_id });
+    assert.ok(!result.ok);
+    if (!result.ok) {
+      assert.equal(result.error.code, 'policy_refused');
+      assert.deepEqual(result.error.hint, { do: 'raise_decision', kind: 'link_account' });
+    }
+    assert.equal(result.meta.route_id, 'none');
+  }
+  assert.equal(runs, 0, 'refused calls must never reach an adapter');
+  assert.ok((await h.call('depop', 'read_listings', { account_id: 'owned', person_id: 'owner' })).ok,
+    'the caller can still read their own linked account');
+  assert.equal(runs, 1);
+});

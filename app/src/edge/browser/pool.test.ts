@@ -178,8 +178,8 @@ test('sign-in state loads at lease start, is exported at lease end, and never re
   const log = createLog({ src: 'browser', build: 'test', sink: (l: string) => { lines.push(l); } });
   const accounts = memoryAccounts([{ account_id: 'a', person_id: 'p1', site: 'depop', token_ref: 'ref-a' }], vault);
   const pool = createPool({ ...{ leases: memoryLeases() }, launcher, profileRoot: '/profiles', accounts, vault, log });
-  assert.ok((await pool.dispatch({ account_id: 'a', job_id: 'j1', run: async () => { current = state(`${secret}-rotated`); return 1; } })).ok);
-  assert.ok((await pool.dispatch({ account_id: 'a', job_id: 'j2', run: async () => 2 })).ok);
+  assert.ok((await pool.dispatch({ account_id: 'a', user_id: 'p1', job_id: 'j1', run: async () => { current = state(`${secret}-rotated`); return 1; } })).ok);
+  assert.ok((await pool.dispatch({ account_id: 'a', user_id: 'p1', job_id: 'j2', run: async () => 2 })).ok);
   assert.equal(loaded.length, 1, 'loaded once per launch, not per lease');
   assert.equal(loaded[0].cookies[0].value, secret);
   assert.equal((await vault.get('ref-a'))?.cookies[0].value, `${secret}-rotated`, 'the rotated cookie went back to the vault');
@@ -301,12 +301,12 @@ test('review: a failed load, a failed run, or a logged-out export never overwrit
     async anonymous() { throw new Error('unused'); },
   };
   const pool = createPool({ ...{ leases: memoryLeases() }, launcher, profileRoot: '/profiles', accounts, vault });
-  assert.ok(!(await pool.dispatch({ account_id: 'a', job_id: 'j1', run: async () => 1 })).ok);
+  assert.ok(!(await pool.dispatch({ account_id: 'a', user_id: 'p1', job_id: 'j1', run: async () => 1 })).ok);
   assert.deepEqual(await vault.get('ref-a'), good, 'a failed load keeps the stored state');
   failLoad = false;
-  assert.ok(!(await pool.dispatch({ account_id: 'a', job_id: 'j2', run: async () => { throw new Error('boom'); } })).ok);
+  assert.ok(!(await pool.dispatch({ account_id: 'a', user_id: 'p1', job_id: 'j2', run: async () => { throw new Error('boom'); } })).ok);
   assert.deepEqual(await vault.get('ref-a'), good, 'a failed run keeps the stored state');
-  assert.ok((await pool.dispatch({ account_id: 'a', job_id: 'j3', run: async () => 1 })).ok);
+  assert.ok((await pool.dispatch({ account_id: 'a', user_id: 'p1', job_id: 'j3', run: async () => 1 })).ok);
   assert.deepEqual(await vault.get('ref-a'), good, 'an export with no cookies (logged out) keeps the stored state');
 });
 
@@ -326,12 +326,12 @@ test('F2: a newer vault revision survives a warm export; invalidation closes and
     close: async () => { closes++; }, loadState: async s => { loaded.push(s); }, exportState: async () => state('old') }; },
     async anonymous() { throw new Error('unused'); } };
   const pool = createPool({ ...{ leases: memoryLeases() }, launcher, profileRoot: '/profiles', accounts, vault });
-  await pool.dispatch({ account_id: 'a', job_id: 'first', run: async () => 1 });
+  await pool.dispatch({ account_id: 'a', user_id: 'p', job_id: 'first', run: async () => 1 });
   await vault.put('ref-a', state('fresh'));
-  await pool.dispatch({ account_id: 'a', job_id: 'second', run: async () => 1 });
+  await pool.dispatch({ account_id: 'a', user_id: 'p', job_id: 'second', run: async () => 1 });
   assert.deepEqual(await vault.get('ref-a'), state('fresh'), 'old context must not replace a newer vault entry');
   await pool.invalidate('a'); assert.equal(closes, 1);
-  await pool.dispatch({ account_id: 'a', job_id: 'third', run: async () => 1 });
+  await pool.dispatch({ account_id: 'a', user_id: 'p', job_id: 'third', run: async () => 1 });
   assert.deepEqual(loaded, [state('old'), state('fresh')]);
   await pool.close();
 });
@@ -479,6 +479,30 @@ test('registry warming skips legacy account lookup and unowned profile launches'
     accounts: { byId: async id => { lookups++; return allLinked.byId(id); }, linked: async () => { lookups++; return [{ account_id: 'a', person_id: 'p1', site: 'ebay', token_ref: 'ref' }]; } } });
   await pool.warm(['a'], 0); await pool.warmLinked('p1', 0);
   assert.equal(lookups, 0); assert.equal(f.launched.length, 0); await pool.close();
+});
+
+
+test('account lookup, dispatch and warm require the account owner', async () => {
+  const vault = memoryVault();
+  await vault.put('owner-ref', { cookies: [], origins: [] });
+  const accounts = memoryAccounts([{ account_id: 'owner-account', person_id: 'owner', site: 'ebay', token_ref: 'owner-ref' }], vault);
+  assert.equal(await accounts.byId('owner-account', 'other'), undefined);
+  assert.equal(await accounts.byId('owner-account'), undefined);
+  assert.equal((await accounts.byId('owner-account', 'owner'))?.person_id, 'owner');
+  const f = fakeLauncher(0);
+  const pool = createPool({ launcher: f.launcher, profileRoot: '/profiles', accounts, leases: memoryLeases() });
+  let runs = 0;
+  const task = { account_id: 'owner-account', job_id: 'job', run: async () => { runs++; return 1; } };
+  assert.deepEqual(await pool.dispatch({ ...task, user_id: 'other' }).then(r => r.ok ? 'ran' : r.status), 'not_linked');
+  assert.equal((await pool.dispatch(task)).ok, false);
+  await pool.warm(['owner-account'], 0, 'other');
+  await pool.warm(['owner-account'], 0);
+  assert.equal(f.launched.length, 0);
+  assert.equal(runs, 0);
+  await pool.warm(['owner-account'], 0, 'owner');
+  assert.equal(f.launched.length, 1);
+  assert.equal((await pool.dispatch({ ...task, user_id: 'owner' })).ok, true);
+  await pool.close();
 });
 
 test('Playwright is accepted only when its CDP entry point exists', () => {

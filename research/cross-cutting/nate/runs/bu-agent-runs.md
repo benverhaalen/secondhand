@@ -1,4 +1,5 @@
 # Browser Use V4 agent runs: what ran and what was held back
+Researched 2026-11-15 by Nate. Feature: cross-cutting.
 
 Run by a Nate subagent seat (Opus 5.5) on 2026-11-15, for the agent-run section of [browser-use-cloud.md](../browser-use-cloud.md#the-agent-run-surface-v4-runs-for-the-site-harness). Every line is *observed* in these calls unless marked. The key was checked by presence only and sent only in the `X-Browser-Use-API-Key` header. No CDP or live-view URL was printed or kept. The scripts are in the seat's scratchpad, not the repo.
 

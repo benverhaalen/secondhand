@@ -20,7 +20,7 @@ export function Sites() {
     if (l.state === 'connected') { const t = checked(site); const soon = w.connections.find(c => c.site === site)?.account?.health === 'expiring'; return soon ? 'Its sign-in ends soon. Link again to keep it' : t ? `Checked ${ago(t, w.now).toLowerCase()}` : 'Checked just now'; }
     if (l.state === 'loading') return 'Finish on the site’s own sign-in page';
     if (l.state === 'error') return undefined;
-    return 'Post, answer buyers and end listings here';
+    return undefined;
   };
   const linked = SITE_ORDER.filter(s => links[s].state === 'connected').length;
   const off = allMismatches(w, SITE_ORDER);

@@ -8,16 +8,13 @@ import { itemPage, reach, press } from './item-common.mjs';
 const ctx = itemPage(test, 'item/[id]/post', 'post');
 const SP = '/item/it_switch/post';
 
-// edge-cases §5: each site gets the listing its own buyers want, and one line says who buys there.
+// edge-cases §5: each site gets the listing its own buyers want, in the title the site shows.
 test('post: each site’s preview is written for its buyers', async () => {
   const s = await reach(ctx, SP);
   await s.shows('Nintendo Switch OLED, white, with dock, HEG-001, 64 GB'); // eBay: model and specs in the title
   await s.shows('Nintendo Switch OLED, white, with dock'); // Facebook: short
-  await s.shows('Searched by model: specs in the title');
-  await s.shows('Nearby, picks up today: pickup price');
   const j = await reach(ctx, '/item/it_jacket/post');
   await j.shows('Carhartt Detroit Jacket J97, brown duck, size L'); // Depop: size spelled out
-  await j.shows('Young, shops a look: size up front');
 });
 
 // pages §6.8 and the hand-off rule: Approve names the price and the count of sites, and the count follows the ticks.

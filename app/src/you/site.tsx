@@ -41,7 +41,7 @@ export function SitePage() {
       <List>
         <ListRow id="site-state" site={site} label={WORD[l.state]} tone={l.state === 'error' ? 'brick' : 'ink'}
           detail={l.state === 'error' ? (l.note ?? 'Signed out') : l.state === 'connected' ? (a.read.checked_at ? `Checked ${ago(a.read.checked_at, w.now).toLowerCase()}` : 'Checked just now') : l.state === 'loading' ? 'Finish on the site’s own sign-in page' : 'Unlinking left your listings up'}
-          trail={l.state === 'connected' ? undefined : <Pill id={`link-${site}`} kind="second" label={l.state === 'error' ? 'Try again' : 'Link'} icon={l.state === 'error' ? 'refresh' : undefined} state={l.state === 'loading' ? 'working' : 'idle'} onPress={() => link(site)} />} />
+          trail={l.state === 'connected' ? undefined : <Pill id={`link-${site}`} kind="second" label={l.state === 'error' ? 'Retry' : 'Link'} icon={l.state === 'error' ? 'refresh' : undefined} state={l.state === 'loading' ? 'working' : 'idle'} onPress={() => link(site)} />} />
       </List>
 
       {a.mismatches.length ? (

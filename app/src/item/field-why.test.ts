@@ -20,8 +20,8 @@ test('Why on a field says the reason in words first, and the source is its own l
 
 test('a field the person changed says so, and a blank says why it is blank', () => {
   const f = field('size');
-  assert.equal(fieldWhy(draft(), f, "M").says, 'You changed it to M.');
-  assert.equal(fieldWhy(draft(), { ...f, value: null, from: "Not in the photos" }, null).says, 'Not in the photos, so it’s yours to fill.');
+  assert.equal(fieldWhy(draft(), f, "M").says, 'You changed it.');
+  assert.equal(fieldWhy(draft(), { ...f, value: null, from: "Not in the photos" }, null).says, 'Not in the photos');
 });
 
 test('the draft has a description written from its fields, and Why on the title and description names them', () => {

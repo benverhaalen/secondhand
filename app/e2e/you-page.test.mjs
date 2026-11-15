@@ -18,7 +18,7 @@ const STATES = {
   'records typical': { shows: ['Records', '2026', 'Sold, 4 sales', 'Fees and labels', '$25.37', 'Kept', '$163.63', 'Download CSV'] },
   'records new': { shows: ['Records', 'No sales this year'], hidden: ['Download CSV'] },
   'connections mismatch': { shows: ['Doesn’t match', 'Brass desk lamp with cream shade', 'Open on the site'] },
-  'connections typical': { shows: ['Your sites', 'Linked', 'Needs you', 'Signed out yesterday at 9 pm', 'Try again', 'Not linked', 'Link', 'Your password goes to the site, never to secondhand.'] },
+  'connections typical': { shows: ['Your sites', 'Linked', 'Needs you', 'Signed out yesterday at 9 pm', 'Retry', 'Not linked', 'Link', 'Your password goes to the site, never to secondhand.'] },
   'connections loading': { taps: ['link-mercari'], shows: ['Signing in'] },
   'connections failed': { taps: ['link-mercari'], wait: 1600, shows: ['Didn’t link', 'The code from your phone timed out'] },
   'rules typical': { shows: ['Rules and limits', 'Runs on its own', 'Answer questions about facts', 'Asks you first. Approved 2 of 3 times without a change', 'Permissions', 'Lowest prices', 'Brass desk lamp with cream shade'] },
@@ -26,10 +26,10 @@ const STATES = {
   'log typical': { shows: ['Activity', 'Today', 'Yesterday', 'Answered “blanket lined” from the tag photo', 'Undo'] },
   'log new': { shows: ['Activity', 'Nothing done for you yet'] },
   'notifications typical': { shows: ['Notifications', 'Right away', 'In the next summary', 'It sold', 'An offer you’d take', 'Never sent', 'Group by item', 'Quiet hours', '10 pm', '8 am', 'On the lock screen', 'Accept, Approve and Counter', 'Face ID', 'Show messages and addresses'] },
-  'defaults typical': { shows: ['App defaults', 'How it sells', 'Sell it', 'Sites', 'Prices across sites', 'Same take-home', 'Ship or pickup', 'Pickup spot', 'Library parking lot, Main St', 'Lowest price', 'Suggested', 'Clean up', 'Enhance with AI', 'Off: photos are never redrawn', 'Never suggest photo edits', 'Replies sound', 'Like you', 'Measurements', 'Inches', 'US dollars'] },
-  'permissions typical': { shows: ['Permissions', 'Counter offers above your lowest', 'On its own', 'Asks first', 'Take a listing down after it sells', 'So it can’t sell twice', 'Always asks you', 'Sharing your address', 'Always asks', 'Never', 'Taking a deal off the site', 'Rules and limits'] },
+  'defaults typical': { shows: ['App defaults', 'How it sells', 'Sell it', 'Sites', 'Prices across sites', 'Same take-home', 'Ship or pickup', 'Pickup spot', 'Library parking lot, Main St', 'Lowest price', 'Suggested', 'Clean up', 'Enhance with AI', 'Never suggest photo edits', 'Replies sound', 'Like you', 'Measurements', 'Inches', 'US dollars'] },
+  'permissions typical': { shows: ['Permissions', 'Counter offers above your lowest', 'On its own', 'Asks first', 'Take a listing down after it sells', 'So it can’t sell twice', 'Always asks you', 'Sharing your address', 'Never', 'Taking a deal off the site', 'Rules and limits'] },
   'loading (any page)': { shows: ['Payouts'], state: 'loading' },
-  'failed (any page)': { shows: ['Couldn’t load your payouts', 'Try again'], state: 'failed' },
+  'failed (any page)': { shows: ['Couldn’t load your payouts', 'Retry'], state: 'failed' },
   'offline (any page)': { shows: ['Waiting for signal', 'On its way'], state: 'offline' },
   'settings typical': { shows: ['Settings', 'Pause selling', 'Notifications', 'App defaults', 'Permissions', 'Signed in with', 'Apple', 'Export your data', 'Sign out', 'Delete account'] },
   'not found': { shows: ['Not found'] },
@@ -48,7 +48,7 @@ for (const st of table.states) test(`you/[page]: ${st.state} shows ${st.shows.sl
   for (const t of want.hidden ?? []) assert.equal(await s.count(t, { exact: true }), 0, `${st.state} should not show "${t}"`);
 });
 
-// Linking one site never blocks another (Ben, 03:22): while Mercari signs in, Poshmark's Try again still works.
+// Linking one site never blocks another (Ben, 03:22): while Mercari signs in, Poshmark's Retry still works.
 test('you/[page]: one site signing in never blocks the rest', async () => {
   const s = await app.open('/you/connections');
   await s.tap('link-mercari');
