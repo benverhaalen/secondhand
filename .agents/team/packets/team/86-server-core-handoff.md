@@ -83,3 +83,12 @@ The email sender's vendor (none composed; `configureSender` is ready). Each Fly 
 - `search-latency.test.ts` failed 3 on main for search's own changes; the search lead is fixing it.
 
 **Last note (13:45 UTC):** the search lead's own restore (eaa2d679) and mine (ff56bbda) agree: on main the 18 files equal 125a56bb and `store/secrets.ts` is present. The search lead saw `server/main.test.ts` fail one test ("one Node server shares sign-in state, rows and streams across route wrappers") in their run; on the Mac at ff56bbda it passed 8 of 8. Rerun it on the Mac at current main first; if it fails only on Windows, suspect a port or a shared temp database held by a running dev server.
+
+## Hosted, 2026-11-15 13:27 UTC (by the capture lead, on Nate's "Yes, Fly now")
+
+- **Origin:** `https://secondhand-api.fly.dev` (app `secondhand-api`, personal org, region `ord`, one machine `8e170ec76731d8`, volume `secondhand_data` 1 GB encrypted with daily snapshots). Deployed from a clean worktree of main at 8f878066 (`C:\dev\secondhand-deploy`, `flyctl deploy --remote-only --ha=false`), never from the shared checkout.
+- **Before it:** `bash server/container-check.sh` passed every step on the Mac at a6c0ae78 (build, /healthz, 401 on /v1/routes, watch tick, SIGTERM 0, db on /data, refusal without `DECISION_SIGNING_KEY`). A fresh Opus security review said deploy, no must-fix for this configuration (`side-session-notes/.../deploy-security-review-1.md`).
+- **After it:** `/healthz` 200 in 0.14 s, `/v1/routes` and `/v1/today` 401 `unauthenticated`, `/v1/stage` 200. Fly's check passes.
+- **Secrets set by name only:** `DECISION_SIGNING_KEY`, `SECONDHAND_VISITOR_KEY`, `SECONDHAND_VAULT_KEY` (random 32 bytes each, through stdin; nobody holds a copy, so a rotation is a fresh `fly secrets import`). No vendor key is set.
+- **Must fix before turning each on** (from the review): an email sender (a resend resets the guess count and auth 'none' routes have no address limit: about 10 guesses a minute per email); `OPENROUTER_API_KEY` (visitor search reaches a paid model with no daily cap); `DATABRICKS_HOST` with a warehouse (`/v1/health` runs a query on every unauthenticated call). Never set `SECONDHAND_EXAMPLES=1` on Fly. Should fix: `req.text()` reads any body before auth with no size cap on a 512 MB machine.
+- **Waiting:** the photo store (`w/cap-blobs-1`, 6dcdb099, in review) and capture's route join, then a redeploy; `SECONDHAND_API_ORIGIN` on the site's Vercel project (Nate said yes to that earlier).

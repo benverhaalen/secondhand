@@ -544,6 +544,7 @@
       "path": "/v1/sources/health?site=ebay&need=sold",
       "status": 200,
       "response": {
+        "reads": [],
         "routes": [
           {
             "route_id": "com.ebay.browse.sold",
