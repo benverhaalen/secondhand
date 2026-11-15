@@ -3,6 +3,7 @@ import { fieldState, viewsFor, type Resolution } from './fields.ts';
 import { completeness, type Completeness } from './complete.ts';
 import { bound, compare, linked, type AskKind, type FieldRow, type Target } from './table.ts';
 import type { ParamStore } from '../param/param.ts';
+import { SITES } from '../../../../spec/sites.mjs';
 export type { State, Fact } from './select.ts';
 
 export type Question = {
@@ -178,6 +179,7 @@ function capQuestions(candidates: Candidate[], rows: FieldRow[], state: State, p
 }
 
 export function plan(state: State, params: ParamStore) {
+  if (targets(state).length === 0) state = {...state,sites:[...SITES] as State['sites']};
   const selected = select(state,params);
   const keys = selected.process.map(step => step.key);
   const rows = selected.rows.filter(row => usedByLinkedSite(row,state));
@@ -214,7 +216,8 @@ export function plan(state: State, params: ParamStore) {
     ...step,
     state:questions.some(question=>question.shot?.step===step.key && question.shot.reason==='retake') ? 'retake' as const : state.kept.includes(step.key) ? 'kept' as const : 'pending' as const,
   }));
-  const status = shooting ? 'shooting' as const : questions.length ? 'asking' as const : 'done' as const;
+  const waiting = fields.some(field => field.state === 'waiting' && field.required_by.length > 0);
+  const status = shooting ? 'shooting' as const : questions.length || waiting ? 'asking' as const : 'done' as const;
   const {rows:_rows,...selection} = selected;
   return {...selection,process,fields,questions,complete,status};
 }
