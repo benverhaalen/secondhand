@@ -40,6 +40,9 @@ It makes no outward call to a site. Every read goes through [protocol and adapte
 | Sold rows | the person's own `read_orders`; sold search through our adapters; Firecrawl and treg reads; licensed feeds, each with its `rights` tags ([databricks](../databricks.md)) | warm per product family; a fresh pull on the Check |
 | Accepted Best Offer amounts | the person's own eBay seller session ([M3](../determinations/market-insight.md#m3-used-price-per-site-over-time)) | per sync |
 | Live asks and ended unsold listings | `search` and `read_listings` | hourly per family |
+| The top listings for the product on each secondhand site: the first page in the site's own order, with price, condition, age, likes or watchers, and whether offers are on | `search` through our adapters, gathered by the [intelligence engine](intelligence-api.md) | on the Check, then hourly per family |
+| Every official listing: the brand's own store, retailers and Amazon, with the current price, the list price and stock | `retail_offer` rows ([D7](../determinations/money.md#d7-original-retail-price)) | on the Check, then daily |
+| Discounts from credible sources: a sale price or code published by the brand, an authorised retailer or a source the registry rates credible, with its end date | the intelligence engine, each as an `observation` with its source | on the Check, then daily while the listing is up |
 | Retail now and then | [D7](../determinations/money.md#d7-original-retail-price) | daily |
 | Shipping and fit | [D8](../determinations/money.md#d8-shipping-cost-and-fit-per-site) | per item |
 | Fee rows | [D9](../determinations/money.md#d9-what-you-keep-per-site) | daily, flagged after 30 days |
@@ -119,7 +122,27 @@ The person can:
 - remove a comp ("Not the same"). This recomputes at once, and the removal is a labelled `w_match` row for the nightly fit;
 - add a sale they know of, which carries `w_extract` 0.7 until checked;
 - type their own price, and see the keep and the chance of sale for it;
-- choose a plan (quick, balanced, max_return; D15).
+- choose a plan (quick, balanced, max_return; D15);
+- drag the price slider, described below.
+
+### The price slider (agent proposal, from [Nate](../../product/words.md#2026-11-14-nate-pricing-weighs-every-platforms-top-listings-official-listings-and-credible-discounts-with-a-slider-and-a-free-note))
+
+Nate: "with a range of lowball to hard to negoitate the user can use a slider to select their preference."
+
+One value, `posture`, from 0 (priced to go: the lowest price a careful buyer would still think fair) to 1 (hard to negotiate: the top of what the market has paid, held firm). The three plans are three marked points on it (quick 0.15, balanced 0.5, max_return 0.85), so the plan choice and the slider are the same control.
+
+| What `posture` sets | At 0 | At 1 |
+|---|---|---|
+| The suggested ask | the q20 of the sold range, and under the cheapest comparable top listing on that site | the q85, capped by live asks and by the cheapest official price after credible discounts |
+| The room left for offers | none: the ask is the price | the learned offer discount for the site and category |
+| The [negotiation](negotiation.md) policy | accept at or above the floor at once | counter high, concede slowly, decline low offers without a counter |
+| Markdown over time | early and steep | late and shallow |
+
+As the slider moves, the card shows for that point: the ask per site, what the person keeps, the chance of sale within 30 days and the expected days, each from the same curves the plans use, so the person sees the trade and not only a number. The floor is never crossed at any setting.
+
+How the new signals enter: sold comps still set the value (asks never do). The top listings place the ask among what a buyer sees today on that site. An official price after a credible discount is a ceiling: a used item is not suggested above what the new one costs now, unless the new one is out of stock, and the card says which. A discount that ends raises the ceiling again on its end date, as a `value_moved` notice.
+
+`posture` is stored on the listing and as the person's default (`param` rows learn nothing from it; it is a preference). Open for Ben and Nate: is the default 0.5, or the person's last choice?
 
 ## 7. How it beats what exists
 
