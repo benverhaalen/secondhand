@@ -18,3 +18,25 @@ jobs:
       - run: node .agents/check.mjs
         env:
           CHECK_BASE: ${{ github.event.before || github.event.pull_request.base.sha }}
+  # Every app screen on its real web render: the brand checks on each route, then the behavior tests (app/e2e/README.md).
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: app/package-lock.json }
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/pw" --no-save playwright@1.63.0
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+          echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
+      - run: npm ci
+        working-directory: app
+      - run: npx expo export --platform web
+        working-directory: app
+      - run: node scripts/app-check.mjs --dark --sheet
+      - run: node --test "app/e2e/*.test.mjs"
+        if: ${{ !cancelled() }}
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with: { name: app-screens, path: features/app/ }

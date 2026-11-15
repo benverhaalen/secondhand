@@ -1005,3 +1005,50 @@ Nate, build session (orchestrator), 2026-11-14 about 23:10 Central, after asking
 ## 2026-11-14 nate combine signed-in actions with public no-login fetches for the fastest searches
 Nate, build session (orchestrator), 2026-11-14 about 23:25 Central, after the Browser Use Cloud reference was saved.
 > well lets take all this into consideration, understand the docs, the ways its built to optimize around this, to maximize the speed of our searches, combining the actions we need to perform on the authenticated platform with public no login needed firecrawls?
+
+## 2026-11-15 one place makes the ui, every correction becomes a check, emil's skills vet every page, and the system designs any new page
+Ben, project chat and thread "Roll the UI system out everywhere", 2026-11-15, times UTC.
+
+03:49:
+> also, there are some things to unify with the other ui chats. like you have been sometimes using the specific site icons and sometimes not. you should always use the icdons you grabbed. also ensuring things dont move over. like when the gray box is there, things are moving over. effective audits of pages is kinda necessary in a way
+
+03:50:
+> these should be things caught in our ui system or how you write code, effectively update and continue to update when i correct. a rule mught be there but it isnt always super effective
+
+03:50:
+> ensure you continue to consider the prompts i write in other ui related things. also ensure you again use the codewriting principles. ensure you continue to consider effective auditing and really really good ui principles
+
+03:56:
+> i want one managing but i want things done as fast as possible in super parallel
+
+03:57:
+> so i dont have to edit and critique a bunch of different conflicting sources on what the ui actually looks like because somehow they look different across so my taste is fragmented and same with my attention. recall the thing that planned how to get going. that document you gave me. is that still driving everything
+
+04:00:
+> also ensure emil's or my skills are going to vet the pages. like there are a bunch of useful ones. like the break a page thing where you try to make it break and strengthen the ui creation rules around it
+
+04:03:
+> what emil skills are you using
+
+04:04:
+> also we should ensure to design around human in the loop to show it off as central to our product in the end
+
+04:05:
+> how close is the brand system to being done? when should we just stop and start actually making ui's? and then i can correct it as things generate but we generate super quickly and create super quickly to be able to effectively integrate with what nate's doing
+
+04:07:
+> how would you solve ambiguity on decisions? when going through this loop and how are you going to create a system that learns once and doesnt fail again in creating ui that is generalizable. like the website cant look like the app. but the app probably has specific rules too. segmenting off. also ensuring to update the skill over time too
+
+04:09:
+> for ambiguity it should think from a product sense, the personas, the users, how we want it to be used, how an expert would design it. how are the e2e tests run too. and the flow of it all. like the loop i engineered well. or how can you get the emil skills to be deterministic checks. maybe these corrections are good before you start because your explanation doesnt align with how i want things. i set everything up so it should just be able to run and i get a finished, professional, well designed, deep app (or website)
+
+04:10:
+> and then the system i created could be used to design any new page.
+
+04:11:
+> what else would become a check? not just break ai. ensure your process is generalizable
+
+04:12, thread "Build the brand system for everything":
+> dont use the quote a human always decides use it as a decision when navigating when to hand off to human vs agent.
+
+Used in: [.agents/ui-build/README.md](../.agents/ui-build/README.md) (the page contract, the method, the one intake, the hand-off rule), checks U6 and U7 in [.agents/checks/render.mjs](../.agents/checks/render.mjs), [.agents/vendor/](../.agents/vendor/).
