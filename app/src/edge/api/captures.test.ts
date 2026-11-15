@@ -88,6 +88,29 @@ test('one capture end to end', async t => {
   for(const id of ids) {assert.ok(await blobs.read('usr_8f2k',id));assert.equal(await blobs.read('usr_other',id),undefined);}
 });
 
+test('with TREG_TOKEN and a public address, a capture sent as the app sends it (no tag text) gets its brand from Lens once the front photo lands', async t => {
+  await captureBlobs(t);
+  const saved={token:process.env.TREG_TOKEN,origin:process.env.SECONDHAND_PUBLIC_ORIGIN};
+  process.env.TREG_TOKEN='test-token';process.env.SECONDHAND_PUBLIC_ORIGIN='https://api.test';
+  t.after(()=>{for(const [name,value] of [['TREG_TOKEN',saved.token],['SECONDHAND_PUBLIC_ORIGIN',saved.origin]] as const)
+    if(value===undefined) delete process.env[name]; else process.env[name]=value;});
+  const replay=readFileSync(new URL('../identify/fixtures/lens-carhartt.json',import.meta.url),'utf8');
+  let calls=0;
+  t.mock.method(globalThis,'fetch',async()=>{calls++;return new Response(replay,{status:200,headers:{'X-Treg-Cost-Micro':'3000'}});});
+  let c=await openedIntent('sell');
+  const {handlers:uploads}=await import('./uploads.ts');
+  for(const role of ['front','back','tag']) {
+    const body=await (await at(photosEndpoint,c.id,{photos:[{...photo(role),bytes:jpeg.byteLength}]})).json();c=body.capture;
+    const put=await route('PUT /v1/uploads/:id',uploads['PUT /v1/uploads/:id'],{auth:'none',body:'raw',max_bytes:jpeg.byteLength})(new Request(body.photos[0].upload.url,{method:'PUT',body:jpeg}));
+    assert.equal(put.status,204);
+  }
+  await capturesApi.pendingIdentify('usr_8f2k',c.id);
+  c=await joinedCapture(c.id);
+  assert.equal(calls,1,'one Lens call for the capture');
+  const brand=c.plan.questions.find(q=>q.field==='brand');
+  assert.ok(brand?.options.some(o=>o.value==='Carhartt'),'Lens offers Carhartt as the brand');
+});
+
 test('captures: every specified endpoint is registered and declares its answer source', () => {
   assert.deepEqual(Object.keys(handlers).sort(), [...new Set(examples.filter(e => e.status < 400).map(e => e.endpoint))].sort());
   assert.deepEqual(manifest.map(m => m.endpoint).sort(), Object.keys(handlers).sort());
