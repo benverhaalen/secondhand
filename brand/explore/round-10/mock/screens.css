@@ -9,7 +9,6 @@
   --field-depth: 50%;             /* R17: how much of the stronger step the anchor takes. Ben left the lab at 50 */
   --soft-1: 55%; --soft-2: 60%; --soft-3: 65%; --drift: 26s;   /* R17: softness and drift as Ben left the lab */
   --photo-edge: var(--rule);      /* agent proposal: a 1 px inner edge, so a pale photo cannot merge with the page */
-  --r-logo: 4px;                  /* off the radius scale. A 20 px logo at 8 reads as a circle. Needs a ruling */
   --pill-h: var(--control-min);   /* buttons inside a box are 44. The bar at the foot of a moment is --button-h, 48 */
   --chip-h: 36px;                 /* a filter chip is 36 tall with a 44 touch area. Not in the tokens yet */
   --press: .97;                   /* frontend-standard says .97, constitution Art. 5 says .98. This follows the standard */
@@ -21,7 +20,7 @@
 .sh.fixed { height: 844px; }
 .sh.strip { min-height: 0; height: var(--tab-h); }               /* a specimen that shows the tab bar alone */
 .sh *, .sh *::before, .sh *::after { box-sizing: border-box; }
-.sh button { font: inherit; color: inherit; margin: 0; }
+.sh button { font: inherit; color: inherit; margin: 0; padding: 0; }
 .sh .ln { display: flex; }
 .sh .mid { align-items: center; }
 .sh .fx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -33,12 +32,12 @@
 .measure .sh .sp::after { content: attr(data-n); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3;
   font: 500 9px/1 ui-sans-serif, sans-serif; color: #B0125A; background: #fff; border-radius: 3px; padding: 1px 2px; }
 
-/* The phone's own parts, not ours: the status bar and the home bar are drawn in the system face. */
+/* The phone's own parts, not ours: the status bar and the home bar are drawn in the system face, and marked data-chrome. */
 .sh .os { height: 54px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 8px 32px 0 48px;
   font: 600 16px/1 -apple-system, "Helvetica Neue", sans-serif; position: relative; z-index: 4; }
 .sh .os svg { height: 12px; width: auto; display: block; }
 .sh .os::after { content: ""; position: absolute; left: 50%; top: 11px; width: 124px; height: 36px; margin-left: -62px; border-radius: var(--r-pill); background: #000; }
-.sh .home { position: absolute; left: 50%; bottom: 8px; width: 134px; height: 5px; margin-left: -67px; border-radius: var(--r-pill); background: var(--ink); z-index: 6; }
+.sh .home { position: absolute; left: calc(50% - 67px); bottom: 8px; width: 134px; height: 5px; border-radius: var(--r-pill); background: var(--ink); z-index: 6; }
 
 /* type, by role (Art. 6) */
 .sh .t13 { font-size: var(--t-13); line-height: var(--lh-13); }
@@ -77,7 +76,9 @@
 /* photos lead (C3). The inner edge is a proposal */
 .sh .ph { display: block; object-fit: cover; flex: none; border-radius: var(--r-photo); outline: 1px solid var(--photo-edge); outline-offset: -1px; background: var(--gray); }
 .sh .p72 { width: var(--photo-card); height: var(--photo-card); }
-.sh .logo { width: 20px; height: 20px; border-radius: var(--r-logo); display: block; flex: none; }
+.sh .logo { width: 20px; height: 20px; display: block; flex: none; }   /* square, as the site's own file is (C5: unaltered) */
+.sh .slot { width: var(--photo-card); height: var(--photo-card); border-radius: var(--r-photo); background: var(--page); display: grid; place-items: center; flex: none; }   /* where a photo would be, for a thing with no photo */
+.sh .slot .logo { width: 40px; height: 40px; }
 .sh .logos { display: flex; gap: var(--s-1); }
 
 /* buttons (C4): one black pill per decision, with the glow. The next most likely is an outline. The rest sit under More */
@@ -108,11 +109,12 @@
 .sh .tag.white { background: var(--page); }                      /* on the field a state is white, so it does not vanish (C2) */
 .sh .shot { position: relative; display: block; }
 .sh .shot .tag { position: absolute; left: var(--s-2); top: var(--s-2); background: linear-gradient(120deg, var(--t), var(--c)); }
+.sh .shot .tag.s-draft, .sh .shot .tag.s-ended { background: var(--c); }   /* no hue, so no gradient */
 
 /* tab bar: places only. The selected tab is the filled icon and a medium label, and nothing under it (L29) */
 .sh .tabs { position: absolute; left: 0; right: 0; bottom: 0; height: var(--tab-h); background: var(--page); border-top: var(--card-border);
   display: grid; grid-template-columns: repeat(5, 1fr); align-items: start; padding: 4px var(--s-2) 0; z-index: 5; }
-.sh .tab { height: 46px; border: 0; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer;
+.sh .tab { height: 46px; border: 0; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-1); cursor: pointer;
   font-size: var(--t-13); line-height: var(--lh-13); color: var(--ink-2); }
 .sh .tab[aria-current] { color: var(--ink); font-weight: var(--w-medium); }
 .sh .tab[aria-current] .ic > :first-child { fill: currentColor; }
@@ -147,7 +149,8 @@
 .sh .paper { display: flex; flex-direction: column; }
 
 /* the item page */
-.sh .hero { position: relative; flex: none; margin-top: -54px; }
+.sh .hero { position: relative; flex: none; }
+.sh .os.float { position: absolute; left: 0; right: 0; top: 0; }
 .sh .hero .ph { width: 390px; height: 390px; border-radius: 0; outline: 0; }
 .sh .hero .over { position: absolute; left: var(--s-2); right: var(--s-2); top: 54px; display: flex; justify-content: space-between; }
 
