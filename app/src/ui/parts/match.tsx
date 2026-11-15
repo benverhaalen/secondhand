@@ -16,13 +16,16 @@ import { size, space } from '../tokens.generated';
 import { FLAT, mark, type Site } from './mark';
 import { SiteBadge } from './small';
 
-export type Verdict = 'good' | 'fair' | 'high';
+// under: the live buy beat's read (product/live-buy-demo.md). A listing found live has no fair range behind it on stage,
+// so the one true read is against the person's own ceiling.
+export type Verdict = 'good' | 'fair' | 'high' | 'under';
 export type Likeness = 'exact' | 'likely_same_model' | 'same_family_other_variant' | 'comparable' | 'unresolved';
 
 export const VERDICT: Record<Verdict, { icon: IconName; word: string }> = {
   good: { icon: 'checkmark-circle-02', word: 'Good price' },
   fair: { icon: 'tick-02', word: 'Fair price' },
   high: { icon: 'alert-02', word: 'High price' },
+  under: { icon: 'checkmark-circle-02', word: 'Under your price' },
 };
 export const LIKENESS: Record<Exclude<Likeness, 'exact'>, { icon: IconName; word: string }> = {
   likely_same_model: { icon: 'information-circle', word: 'Likely the same' },
@@ -36,8 +39,8 @@ export function PriceRead({ verdict, likeness = 'exact' }: { verdict: Verdict; l
   const r = likeness === 'exact' ? VERDICT[verdict] : LIKENESS[likeness];
   return (
     <View {...mark('price-read', { verdict, likeness, fit: 'content' })} style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1, height: size.tagH, ...FLAT }}>
-      <Icon name={r.icon} size={12} tone={verdict === 'good' && likeness === 'exact' ? 'ink' : 'ink-2'} />
-      <Txt role="caption" tone={verdict === 'good' && likeness === 'exact' ? 'ink' : 'ink-2'} lines={1}>{r.word}</Txt>
+      <Icon name={r.icon} size={12} tone={(verdict === 'good' || verdict === 'under') && likeness === 'exact' ? 'ink' : 'ink-2'} />
+      <Txt role="caption" tone={(verdict === 'good' || verdict === 'under') && likeness === 'exact' ? 'ink' : 'ink-2'} lines={1}>{r.word}</Txt>
     </View>
   );
 }

@@ -26,7 +26,7 @@ The rules for every clip:
 | 9 | Find this, used | the same jacket photo on the Buy side | every site at once, a fair range, the total with shipping | the range with its n | live if search answers in rehearsal |
 | 10 | Both sell at once | two buyers pay within a minute | the one card that names both and suggests keeping the first paid | "60,936 orders checked; break the refund and it fails in 6 steps" | the checker live in a terminal; the card demo world |
 | 11 | When the page changes | a site's page shape breaks our reader | the fallback finds the listings anyway | "48 of 48 in 0.64 s (observed 2026-11-15)" | recorded, trace hp-9 |
-| 12 | Nate posts, Ben's phone pings | Nate's thumb on Post | the watcher's terminal, then Ben's lock screen: "Under $25: $18 on Poshmark" | "Found N s after it was listed, by Poshmark's own clock" | the watcher is built and tested on sample pages; record at tonight's rehearsal ([plan](live-buy-demo.md)) |
+| 12 | Nate posts, the find shows on Ben's phone | Nate's thumb on Post | the watcher's terminal, then Ben's phone: the want screen with the find, "Under your price" | "Found N s after it was listed, by Poshmark's own clock" | the watcher is built and tested on sample pages; record at tonight's rehearsal ([plan](live-buy-demo.md)) |
 
 Clips 1, 3 and 10 are the three to shoot first: each is our own engineering, each runs today, and each answers a question judges ask ("will it put my couch on Depop?", "is the photo lying?", "what if both sell?").
 

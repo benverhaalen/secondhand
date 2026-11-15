@@ -22,3 +22,8 @@ Nate: decide where the job runs (Lakeflow worker or the edge) and wire `asks` an
 ## Evidence
 
 Runs: `research/studio/ben/slides/runs/20261115-0652-43687372523/` (current), `-0638-…`, `-0616-…`. Bench: `research/studio/ben/slides/bench/relay-lies-20261115.json`.
+
+## Update, 2026-11-15 08:30 (thread "Quantify every feature with why and ROI")
+
+- **Renders now lead with Seedream 5.5** (Ben asked again at 08:09): `jobs/studio/slides_run.py` runs four Seedream 5.5 seeds and one Nano Banana 2.1 fallback; `openrouter.IMAGE_PREFS` lists Seedream first. The OpenRouter page is live but the slug was missing from the models list this morning, so the first real run tells us whether OpenRouter serves it; if not, Runware is the next host (same $0.02 an image).
+- **No tape, no redraw.** `jobs/studio/check.py` now drops every whole-item redraw that has no tape reading (Ben: "can only ai beautify if you have dimensions"). The photo-outline comparison is still reported, as a number only. Tests: `jobs/studio/test_check.py`.
