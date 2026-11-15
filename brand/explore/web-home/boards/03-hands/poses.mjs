@@ -48,7 +48,7 @@ body{margin:0;background:#101315;color:#ECEFF1;font:400 22px/1.25 var(--font-tex
 h1{font:500 40px/1.2 var(--font-text);margin:0 0 6px} .sub{color:#CDD2D4;margin:0 0 40px;max-width:1400px}
 .locks{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:56px}
 .lock{background:#171B1E;border-radius:28px;padding:40px 24px 28px;display:flex;flex-direction:column;align-items:center;gap:24px}
-.lu{display:flex;align-items:center;gap:20px;font-size:56px} .lu svg{width:60px;height:60px;display:block} .r{transform:scaleX(-1)}
+.lu{display:flex;align-items:baseline;gap:.2em;font-size:56px;line-height:1} .lu svg{width:1em;height:1em;display:block} .r svg{transform:scaleX(-1)}
 .lock p,.pose p{margin:0;color:#CDD2D4;font-size:19px;text-align:center}
 .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:20px}
 .pose{background:#171B1E;border-radius:24px;padding:28px 12px 18px;display:flex;flex-direction:column;align-items:center;gap:14px}
@@ -57,7 +57,7 @@ h1{font:500 40px/1.2 var(--font-text);margin:0 0 6px} .sub{color:#CDD2D4;margin:
 .solid .l{color:var(--sky)} .solid .r{color:var(--mint)}
 .f.grad .l svg{fill:url(#live)} .f.grad .r svg{fill:url(#sold)} .s.grad .l svg{stroke:url(#live)} .s.grad .r svg{stroke:url(#sold)}
 .close{display:flex;gap:40px} .card{background:#101315;border-radius:28px;padding:32px 40px 40px;width:520px}
-.big svg{width:420px;height:420px;display:block;margin:0 auto} .card .lu{font-size:30px;gap:12px;margin-top:28px;justify-content:center} .card .lu svg{width:30px;height:30px}
+.big svg{width:420px;height:420px;display:block;margin:0 auto} .card .lu{font-size:30px;margin-top:28px;justify-content:center}
 .card .lt{background:#fff;color:#0A0A0A;border-radius:999px;padding:14px;margin-top:20px}`;
 // The ring's own colors (brand/tokens.css): sky to lilac is the "live" gradient's pair, mint to lime the "sold" one's.
 const defs = `<svg width="0" height="0" style="position:absolute"><defs>
@@ -65,18 +65,21 @@ const defs = `<svg width="0" height="0" style="position:absolute"><defs>
 <linearGradient id="sold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A1EACB"/><stop offset="1" stop-color="#EBF08F"/></linearGradient></defs></svg>`;
 const pair = (m, k, cls = '') => `<div class="lu ${k} ${cls}"><span class="l">${m}</span><span class="wm">secondhand</span><span class="r">${m}</span></div>`;
 
+const fit = readFileSync(join(here, '../../hands-fit.js'), 'utf8');
 const browser = await playwright().chromium.launch();
 const shoot = async (html, file, width = 1800) => {
   const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1.5 });
   await page.setContent(`<!doctype html><meta charset="utf-8"><style>${css}</style>${defs}${html}`);
-  await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(200);
+  await page.evaluate(() => document.fonts.ready); await page.addScriptTag({ content: fit });
+  await page.evaluate(() => document.querySelectorAll('.lu').forEach(l => fitHands(l, l.querySelector('.wm'), l.querySelectorAll('.l svg, .r svg'))));
+  await page.waitForTimeout(200);
   await page.screenshot({ path: join(out, file), fullPage: true, type: 'jpeg', quality: 86 }); await page.close();
   console.log(file);
 };
 for (const [id, p] of Object.entries(PACKS)) {
   const m = svg(p.main), k = kind(p.main);
   const lock = (cls, note) => `<div class="lock">${pair(m, k, cls)}<p>${note}</p></div>`;
-  await shoot(`<h1>${p.title}</h1><p class="sub">The pair beside the wordmark three ways, then every hand position in the pack (${p.poses.length}).</p>
+  await shoot(`<h1>${p.title}</h1><p class="sub">The pair beside the wordmark three ways, each hand as tall as the wordmark and on its baseline, then every hand position in the pack (${p.poses.length}).</p>
   <div class="locks">${lock('', 'One ink, as now')}${lock('solid', 'Two colors from the Home field, no gradient: sky and mint')}${lock('grad', 'A gradient each: sky to lilac, mint to lime')}</div>
   <div class="grid">${p.poses.map(([n, f]) => `<div class="pose ${kind(f)}">${svg(f)}<p>${n}</p></div>`).join('')}</div>`, `hands-${id}-poses.jpg`);
 }
