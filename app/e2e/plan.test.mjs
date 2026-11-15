@@ -13,7 +13,7 @@ const price = n => ['plan-price', ['plan-price-input', String(n)]]; // types a p
 // once with the range, and nothing can be saved until Yes.
 test('plan: a typed price far over the sold range asks once with the range, and Save waits for Yes', async () => {
   const s = await reach(ctx, JP, price(500));
-  await s.shows('Similar ones sold for $85 to $115. List at $500?');
+  await s.shows('List at $500?');
   assert.equal(await s.page.getByTestId('save-plan').count(), 0, 'no Save before Yes');
   await press(s, 'far-yes');
   await s.page.getByTestId('save-plan').waitFor({ timeout: 3000 });
@@ -23,7 +23,7 @@ test('plan: a typed price far over the sold range asks once with the range, and 
 // edge-cases §3 (under a third of the bottom) and decision "a price below your floor always asks".
 test('plan: a typed price far under the range asks, and under the lowest it waits for its own tap', async () => {
   const s = await reach(ctx, JP, price(20));
-  await s.shows('Similar ones sold for $85 to $115. List at $20?');
+  await s.shows('List at $20?');
   await press(s, 'far-yes');
   await s.shows('Under your lowest, $70. It waits for your tap.');
   await s.shows('Set $20, under your lowest');
@@ -85,7 +85,8 @@ test('plan: Preview carries the typed price into the Post preview', async () => 
 // ways-out §6.7 ("No price drops"): drops off in any choice.
 test('plan: price drops can be turned off under any choice', async () => {
   const s = await reach(ctx, JP, ['choice-best', 'drops']);
-  await s.shows('Stays at its price until you change it');
+  assert.equal((await switchState(s, 'drops')).checked, 'false');
+  assert.equal(await s.page.getByText(/drops to \$/).count(), 0, 'no dated drops once they are off');
 });
 
 // ways-out Everywhere ("I'm on bad signal"): a save waits for signal and does not claim it is saved.

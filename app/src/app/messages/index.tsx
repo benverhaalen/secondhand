@@ -60,7 +60,7 @@ export default function Messages() {
       </Stack>
       {asked === 'failed' ? (
         <EmptyState title="Messages didn’t load"
-          action={{ id: 'messages-retry', label: 'Try again', onPress: () => router.replace(('/messages' + q) as Href) }} />
+          action={{ id: 'messages-retry', label: 'Retry', onPress: () => router.replace(('/messages' + q) as Href) }} />
       ) : null}
 
       {alerts.length ? <List>{alerts.map(alert => (

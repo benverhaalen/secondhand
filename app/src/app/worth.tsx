@@ -74,7 +74,7 @@ export default function Worth() {
   const named = (v: string) => { setModel(v); setTyping(false); if (v.trim()) setStage('check'); };
 
   if (waiting === 'loading' || waiting === 'failed' || waiting === 'offline') {
-    // The sales have not answered yet. Loading holds the range's place; failed says so with Try again; offline waits for
+    // The sales have not answered yet. Loading holds the range's place; failed says so with Retry; offline waits for
     // the signal (ways-out, Everywhere). No number is shown that the sales did not give.
     return (
       <Screen name="worth" state={waiting} skip={SKIP} nav={nav}>
@@ -85,7 +85,7 @@ export default function Worth() {
           <Stack>
             <Txt role="body">{waiting === 'failed' ? 'The sales didn’t load.' : 'Waiting for signal'}</Txt>
             {waiting === 'failed'
-              ? <Line gap="tight"><Pill id="worth-retry" label="Try again" onPress={() => setRetried(true)} /></Line>
+              ? <Line gap="tight"><Pill id="worth-retry" label="Retry" onPress={() => setRetried(true)} /></Line>
               : <Txt role="body" tone="ink-2">It checks the sales when you’re back online.</Txt>}
           </Stack>
         )}
@@ -202,8 +202,8 @@ export default function Worth() {
       {glance ? null : (
         <Stack gap="tight">
           <List>
-            <Choice id="worth-price" icon="money-03" label="Have a price in mind?" line={mine ? `Yours: ${usd(mine)}` : undefined} onPress={() => setPricing(true)} />
-            <Choice id="worth-model" icon="edit-02" label="Not this one? Type the model number" onPress={() => setTyping(true)} />
+            <Choice id="worth-price" icon="money-03" label="Set your price" line={mine ? `Yours: ${usd(mine)}` : undefined} onPress={() => setPricing(true)} />
+            <Choice id="worth-model" icon="edit-02" label="Type the model number" onPress={() => setTyping(true)} />
             <Choice id="worth-deep" icon="search-01" label={deep ? 'Looking deeper' : 'Look deeper'} line={deep ? 'It lands on Today when it’s done.' : 'More sites and older sales. Takes a few minutes.'} disabled={deep} onPress={() => setDeep(true)} />
           </List>
           {typing ? <Blank id="worth-model-field" name="Model number" onChange={named} /> : null}

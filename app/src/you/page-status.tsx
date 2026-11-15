@@ -1,5 +1,5 @@
 // How every page under You draws the three states that come from the network (Art. 5; frontend-standard §3). loading: gray
-// shapes where the rows will be, so nothing moves when they come. failed: what didn't load, that nothing changed, and Try again.
+// shapes where the rows will be, so nothing moves when they come. failed: what didn't load, that nothing changed, and Retry.
 // offline: the last copy, under a line that says so; a change made now is sent when the signal is back (ways-out, Everywhere).
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
@@ -11,7 +11,7 @@ export function PageStatus({ asked, what, children }: { asked: ScreenState | nul
   if (asked === 'loading') return <Stack><Skeleton of="notice" /><Skeleton of="notice" /><Skeleton of="notice" /></Stack>;
   if (asked === 'failed') {
     return <EmptyState title={`Couldn’t load ${what}`} line="The site didn’t answer."
-      action={{ id: 'page-retry', label: 'Try again', onPress: () => router.setParams({ state: '' }) }} />;
+      action={{ id: 'page-retry', label: 'Retry', onPress: () => router.setParams({ state: '' }) }} />;
   }
   if (asked === 'offline') {
     return (

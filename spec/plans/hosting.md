@@ -25,7 +25,7 @@ Common answer: "Deploy the Expo server output to Vercel with the adapter." Dropp
 | The watcher is a ticking process, every 60 s | `scripts/watch.mjs` | something that runs every minute next to the API |
 | Cloud-browser reads take seconds; a full search answer up to the 15 s budget | `app/src/edge/intel/protocols.ts` | requests that may stay open for tens of seconds |
 
-Moving the Store to Postgres means an async port across every caller; it is not started ([packet 69 §4](../../.agents/team/packets/team/69-integration-handoff.md#4-decisions-and-what-waits-on-nate)).
+Moving the Store to Postgres means an async port across every caller; it is not started ([packet 69 §4](../../.agents/team/packets/team/69-integration-handoff.md)).
 
 ## Options
 

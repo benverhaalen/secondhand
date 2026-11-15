@@ -18,7 +18,7 @@
     "A want with no product photo takes the photo of the newest thing it found, else the empty photo slot: never a made-up picture.",
     "Over your most: the primary act is Walk away, the agent's suggestion; raising the most is the second and is the person's own limit, so it saves with Undo.",
     "Worlds: ?world=buyer is the hunter; no world is clearing (one want, nothing found); ?world=new is empty. Every link keeps the world.",
-    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page.",
+    "Loading is the page's skeleton, failed says what did not load with Retry, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page.",
     "A want's card is titled with what it is (\"Standing desk\"), not the sentence it was typed as: the most is already on its line (\"Nothing yet under $150\") and the distance and size are on the want's page. Art. 7.15, check U14; a bought thing takes its short name the same way.",
     "Recent sits right under the search box, as Recent searches do in the App Store and Safari: a find and an unkept appraisal are things the person looked up, so they come back where they look things up (spec/redesign/new-results.md, Why these homes). No lookups, no Recent at all: it is history, not a list to fill.",
     "Each Recent row is a ListRow with the thing's photo, what the camera read (\"Carhartt jacket\") and what the lookup said: the used range for an appraisal (\"$85 to $115 used\"), the product for a find (\"Nike Dunk Low\"). It opens the value page or the product page again, with today's prices.",
@@ -110,13 +110,13 @@
       "route": "/buy?state=failed",
       "shows": "Couldn’t load your list",
       "also": [
-        "Try again"
+        "Retry"
       ]
     },
     {
       "state": "offline",
       "route": "/buy?state=offline",
-      "shows": "Waiting for signal. This is the last copy."
+      "shows": "Waiting for signal; showing saved results."
     }
   ],
   "controls": [

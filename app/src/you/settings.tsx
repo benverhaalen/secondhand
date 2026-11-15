@@ -42,7 +42,7 @@ export function Settings({ embedded = false }: { embedded?: boolean } = {}) {
         <ListRow id="settings-notifications" lead={PAGES.notifications.icon} label={PAGES.notifications.title} onPress={() => go.to('/you/notifications')} />
         <ListRow id="settings-defaults" lead={PAGES.defaults.icon} label={PAGES.defaults.title} detail="What a new listing starts from" onPress={() => go.to('/you/defaults')} />
         <ListRow id="settings-records" lead={PAGES.records.icon} label={PAGES.records.title} detail="Every sale this year" onPress={() => go.to('/you/records')} />
-        <ListRow id="settings-permissions" lead={PAGES.permissions.icon} label={PAGES.permissions.title} detail="On its own, asks first, or never, for each kind of step" onPress={() => go.to('/you/permissions')} />
+        <ListRow id="settings-permissions" lead={PAGES.permissions.icon} label={PAGES.permissions.title} onPress={() => go.to('/you/permissions')} />
       </List>
 
       <Section title="Account">

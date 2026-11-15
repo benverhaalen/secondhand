@@ -1,4 +1,4 @@
-# Finalization: every fix, in order, and who carries it
+# Finalization: every fix, in order, and who carries it Built: `harness/compose.ts` on main (87363be1), `SECONDHAND_CHROME` the one name. Waiting on the server lead to call it from runtime.ts; then the benchmark | Done (5477b7e7): `api/search.test.ts` 59 rerun by the lead | Built (5477b7e7): settles without Apify, no shown-only row reaches the call (tests rerun). Open: the run-cap port in the Store and the token, both the server lead's; the late frame after `done` | In build (search-route-1, round 2) | Done (5477b7e7): ten visitors, one eBay and one Depop read (test rerun by the lead) | In build (search-route-1, round 2) | Built (5477b7e7): commit navigation, one in-page call, `bench/reads.mjs` keeps the log. Live run 2026-11-15 12:28 UTC: eBay answered 403 on the first read; rerun after the back-off | Built (06e40795): seven classes, counts in `/v1/sources/health`, a refusal pauses the site 15 min doubling to 4 h. Depop live 12:29 UTC: 24 answered, 8 empty, 0 refused or challenged of 32 | Done (06e40795): `scripts/search-errors-check.mjs` prints [] (rerun by the lead) | Built (87363be1): compose.test.ts shows the live flag never reaches a fetch; done when the server lead removes runtime.ts's fetch clients |
 
 Written 2026-11-15 by the orchestrator for Nate's side (Claude Code, Fable), on Nate's word: "Lets address all fixes, and then also fully realize the system" ([words](../../product/words.md#2026-11-15-nate-address-every-fix-then-fully-realize-the-system-how-capture-should-run)). It rests on [the audit of main](audit-2026-11-15.md), written first from the code, and on Ben's plan, read after it ([what's left](whats-left.md), [the redesign's wiring list](../redesign/README.md#8-left-to-wire)). Everything here that Nate has not said himself is an *agent proposal* until he rules.
 
@@ -38,8 +38,8 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 
 ## 3. Search and the sources (lead: search)
 
-| Id | Fix | Proof |
-|---|---|---|
+| Id | Fix | Proof | State |
+|---|---|---|---|
 | SR1 | The anonymous browser clients are composed into the runtime when their key or a local browser is present, so Depop and eBay answer a person who is not signed in. One name for the local browser path | The dev server shows four sources arriving; the benchmark's 20 items run twice |
 | SR2 | A visitor is a visitor: the caller comes from the request, person-only rows are not asked for a visitor, and Mercari says "needs your account" | Tests for each; the visitor's job has no failed Facebook or Mercari stage |
 | SR3 | Apify never sits in the path an answer waits on: it fills in the background, its rows are stored as shown-only and never handed to a model, and the per-person cap is in the Store. The Facebook row is not shown until the fill exists | A test that a search with the token set settles without waiting on Apify, and that no shown-only row reaches the same-product call |
@@ -106,7 +106,7 @@ The gate and the type check on every merge; the Python suites (after DB5); the p
 3. One marketplace account linked through the live view (SV9).
 4. His own sign-in on Fly.io, and his yes before anything is deployed.
 5. Whether the served-engine figure stays on the judges' dashboard before Ben has seen it.
-6. Whether Apify rows may ever be counted in a measure (today: shown only).
+6. Whether a row marked `may_model: false` (Apify rows today, eBay interface rows later) may enter the comps a shown price range is computed from. [The valuation spec](../engines/valuation.md) says such a row can be shown and cited as a comp and never fit a weight; the ruling on Apify says shown and never modelled on. Until he rules, the engines lead keeps those rows out of every price basis and out of the observation store; they are still shown as listings.
 7. Real items photographed and measured, eight to ten for the stopwatch and twenty for the benchmark.
 
 ## 10. Done, as one condition

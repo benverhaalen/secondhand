@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createScheduler, type Account } from './schedule.ts';
 import { memoryLeases, memoryParams } from './ports.ts';
+import { createHarness, fakeAdapter } from '../harness/protocol.ts';
 
 const PRIORS = { 'watch_cadence_s': 900 };
 const params = () => memoryParams(PRIORS, { 'watch_cadence_s@depop/hot': 90, 'watch_cadence_s@depop/live': 900, 'watch_cadence_s@depop/quiet': 3600 });
@@ -185,4 +186,31 @@ for (const after_s of [undefined, NaN, Infinity]) test(`short cadence honors a m
     accounts: () => [acct('a')], stateOf: () => 'hot', onStale: () => {},
     runSweep: async () => ({ ok: false, error: { code: 'rate_limited', message: 'wait', hint: { do: 'retry_after', after_s } } }) });
   await s.tick(); assert.equal(s.nextDue().a, 60000);
+});
+
+
+test("schedule: one person's account id under another person is refused", async () => {
+  const schedules: Record<string, number>[] = [{ a: 0 }, {}];
+  for (const user_id of ['u1', 'other']) for (const due of schedules.map(due => ({ ...due }))) {
+    const lookups: (string | undefined)[] = [], work: string[] = [];
+    const alreadyDue = 'a' in due;
+    const state = savedState(due);
+    const account = { account_id: 'a', person_id: 'u1', site: 'depop' as const, token_ref: 'fixture' };
+    const accounts = { async linked() { return [account]; }, async byId(id: string, person_id?: string) {
+      lookups.push(person_id); return id === account.account_id && person_id === account.person_id ? account : undefined;
+    } };
+    const adapter = fakeAdapter('depop', 'read_storefront');
+    const harness = createHarness({ accounts,
+      adapters: [{ ...adapter, async run(args, signal) { work.push('adapter'); return adapter.run(args, signal); } }] });
+    const s = createScheduler({ params: params(), leases: memoryLeases(), now: () => 0,
+      accounts: () => [{ ...acct('a'), user_id }], stateOf: () => 'live', state,
+      runSweep: async () => { work.push('sweep'); return { ok: true }; }, onStale: () => {},
+      storefront: { accounts, harness,
+      store: { async put() { work.push('write'); } } } });
+    const result = await s.tick();
+    assert.ok(lookups.every(person_id => person_id === user_id), 'every lookup must name the scheduled owner');
+    if (user_id === 'other') {
+      assert.deepEqual(result.skipped, ['a']); assert.deepEqual(work, []); assert.deepEqual(state.changes, []);
+    } else if (alreadyDue) assert.deepEqual(work, ['sweep', 'adapter', 'write'], 'the real owner still sweeps');
+  }
 });

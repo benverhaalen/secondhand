@@ -62,7 +62,7 @@ function Wordmark() {
 // It taps through to You. Nothing new means no slot, and never $0.00. A new person sees their next setup step instead.
 export function TopSlot({ news, setup }: {
   news?: { since: string; kept: number; line: string; onPress?: () => void } | null;
-  setup?: { id: string; step: string; line: string; onPress?: () => void } | null;
+  setup?: { id: string; step: string; line?: string; onPress?: () => void } | null;
 }) {
   if (news && news.kept > 0) {
     return (
@@ -83,7 +83,7 @@ export function TopSlot({ news, setup }: {
     return (
       <Press id={setup.id} label={setup.step} onPress={setup.onPress} round={false}>
         <View {...mark('top-setup')} style={{ gap: space.s1 }}>
-          <Txt role="caption" tone="ink-2">{setup.line}</Txt>
+          {setup.line ? <Txt role="caption" tone="ink-2">{setup.line}</Txt> : null}
           {/* Room above and below for the display face's nudge, so the step's glyphs stay inside the slot (B34). */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2, height: type.t21.lineHeight + 2 * Math.round(type.t21.fontSize * nudge.display) }}>
             <Txt role="title">{setup.step}</Txt>

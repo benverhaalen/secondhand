@@ -79,7 +79,7 @@ export default function Sell() {
         </FilterRow>
       </Stack>
       {state === 'offline' ? <Txt role="body" tone="ink-2">Waiting for signal</Txt> : null}
-      {state === 'failed' ? <EmptyState title="Your things didn’t load" action={{ id: 'sell-retry', label: 'Try again', onPress: () => router.setParams({ state: '' }) }} />
+      {state === 'failed' ? <EmptyState title="Your things didn’t load" action={{ id: 'sell-retry', label: 'Retry', onPress: () => router.setParams({ state: '' }) }} />
         : state === 'loading' ? <Grid columns={2}>{[0, 1, 2, 3].map(i => <TileSkeleton key={i} />)}</Grid>
         : entries.length ? <Grid columns={2}>{entries.map(({ id, item, order }) => (
           <Tile key={id} id={`tile-${id}`} title={shortName(item)} photo={item.photos[0] ? item.photos[0].key as PhotoSrc : null}

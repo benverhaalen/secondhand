@@ -17,7 +17,7 @@ const WORLD_OF: Partial<Record<ScreenState, AnyWorld>> = { new: 'new', one: 'one
 
 // state is null when the URL names none: the page then draws what its world gives (usually typical) and says which in
 // <Screen state=…>. empty, loading, failed and offline are the page's to draw over its world: empty is this page with no
-// rows, loading its skeleton, failed what did not load with Try again, offline the last copy with "Waiting for signal".
+// rows, loading its skeleton, failed what did not load with Retry, offline the last copy with "Waiting for signal".
 export function useScreen(fallback?: AnyWorld): { w: World; state: ScreenState | null; name: AnyWorld } {
   const p = useLocalSearchParams<{ state?: string; world?: string }>();
   const state = (SCREEN_STATES as readonly string[]).includes(p.state ?? '') ? (p.state as ScreenState) : null;

@@ -25,7 +25,7 @@ export default function Today() {
   const { state: asked, name: picked } = useScreen();
   const params = useLocalSearchParams<{ world?: string; fail?: string }>();
   const offline = asked === 'offline', loading = asked === 'loading';
-  // empty draws this page with nothing on it; failed (asked for in the URL) is the page that did not load, with Try again.
+  // empty draws this page with nothing on it; failed (asked for in the URL) is the page that did not load, with Retry.
   const bare = asked === 'empty' || asked === 'failed' || loading;
   // stops: the clearing world on a day things went wrong (app/src/today/stops.ts, spec/edge-cases.md §1 and §7). one: one
   // card, since the demo's one world has nothing to decide (stops.ts, oneCardWorld). empty: a quiet month with things live
@@ -147,7 +147,7 @@ export default function Today() {
     // there or isnt there").
     <Screen name="today" state={state} wash nav={<TabNav title="Today" inbox={{ count: unread }} />} foot={queue ? undefined : toastEl}>
       {offline ? <Txt role="caption" tone="ink-2">Waiting for signal</Txt> : null}
-      {asked === 'failed' ? <EmptyState title="Today didn’t load" action={{ id: 'retry', label: 'Try again', onPress: () => router.setParams({ state: '' }) }} /> : null}
+      {asked === 'failed' ? <EmptyState title="Today didn’t load" action={{ id: 'retry', label: 'Retry', onPress: () => router.setParams({ state: '' }) }} /> : null}
 
       {loading ? (
         <Stack gap="cards"><Skeleton of="card-decision" /><Skeleton of="card-decision" /><Skeleton of="notice" /></Stack>

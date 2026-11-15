@@ -100,6 +100,21 @@ Builds on, and does not repeat: [identification-technologies](identification-tec
 - Bing Visual Search: Microsoft Learn overview page fetched; retirement of Bing Search APIs on 2025-08-11 is in the earlier note. A Visual Search replacement: *not-found*.
 - Other official product-recognition APIs: Google Vision Product Search is in maintenance per the earlier note. Nothing else found. A limited search; this does not show none exists.
 
+
+### treg, as one route beside the free ones
+
+Nate set treg up for the tools identify needs ([words](../../../product/words.md#2026-11-15-nate-set-up-treg-for-the-tools-identification-needs-an-open-font-for-every-system)): "For the things it requries the tooling for like google lens and such". So treg is treg.to, a paid catalogue billed per call to his team's prepaid balance. The token is a user-level variable on the Windows machine only, checked by presence (*observed* present, 2026-11-15).
+
+| Job | treg endpoint | Price | Reliability | Mark |
+|---|---|---|---|---|
+| Google Lens, reverse image search | `serper.google.serp.lens`, POST `{url, gl, hl}`; the image must be a publicly fetchable JPG or PNG address | $0.003 a call, an empty answer included (3 credits, checked 2026-09-24) | 11,224 samples, 100% working, p50 2.2 s | *observed*, catalogue search 2026-11-15 |
+| Lens, cheaper and async | `dataforseo.x.serp-google-search-by-image-task-post`, then task-get | $0.0006 post, get free | no samples | *observed* |
+| Lens through SerpApi | `serpapi.x.google-lens` | $0.015 a success | 2,456 samples, 99.6% | *observed* |
+| Google Shopping search | `serper.google.serp.shopping` | $0.002 a call | | *observed* via the orchestrator, 2026-11-15 12:55 UTC |
+| OCR, barcode, UPC lookup, product recognition | none: catalogue searches for "ocr", "barcode", "upc lookup" and "product recognition" return 0 results | | | *observed*, 2026-11-15 |
+
+The team balance was $1.00 on 2026-11-15 (*observed* by the orchestrator). So the code rungs (tag text, RN, lexicon, barcode) stay ours and free, and treg is the visual rung only.
+
 ## 3. Open source on an M4 Max 64 GB
 
 | Model | Licence | Size / Ollama | Published | Mark |
@@ -166,7 +181,7 @@ Free and can start now: Apple Vision barcode and text, zxing-cpp, ZBar, Tesserac
 
 ### Open question: treg
 
-We assume treg is treg.to (its catalogue is unauthenticated at https://treg.to/catalog/search). Nate must confirm that this is the treg the repo means and that its rows may be relied on.
+Answered: Nate set up treg.to himself on 2026-11-15 (section 2, treg). Still open: what each provider's terms let us keep from an answer (Serper's and DataForSEO's terms were not read).
 
 ## Not found
 

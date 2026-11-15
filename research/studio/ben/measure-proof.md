@@ -1,4 +1,5 @@
 # Proving a redrawn photo keeps the item's real size
+Researched 2026-11-15 by Ben (Claude). Feature: studio.
 
 Written 2026-11-15 by Ben (Claude Code, thread "Perfect every listing photo automatically"). Feature: studio. An *agent proposal* until Ben or Nate decides. Lines marked *observed* come from runs in [slides/runs/](slides/runs/) and the proof sheets in [slides/proof/](slides/proof/).
 

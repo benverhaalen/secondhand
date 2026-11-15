@@ -71,7 +71,7 @@ export function Choices({ id, choices, value, onPick }: { id: string; choices: C
               <Txt role="body">{x.does ? `${x.label} ` : x.label}</Txt>
               {x.does ? <Txt role="caption" tone="ink-2">{x.does}</Txt> : null}
             </View>
-            {x.id === value ? <Icon name="tick-02" size={20} label="Chosen" /> : <View style={{ width: 20 }} />}
+            {x.id === value ? <Icon name="tick-02" size={20} /> : <View style={{ width: 20 }} />}
           </View>
         </Press>
       ))}
