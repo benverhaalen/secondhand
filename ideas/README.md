@@ -13,7 +13,8 @@ Sorted by what to pick up first once the demo works: the ones that reuse the mos
 | 3 | [Our own page monitor](own-page-monitor.md) | Ben | Watch alerts working on the bought services |
 | 4 | [Treg rebuilt on Databricks](treg-on-databricks.md) | Nate | Price and watch working through Treg |
 | 5 | [More marketplaces](more-marketplaces.md) | Ben | The five core sites working |
-| 6 | [A public launch](public-launch.md) | Ben and Nate | The hackathon ending |
+| 6 | [Hot items and a pricing model that learns from signals](hot-items-and-learned-pricing.md) | Ben | Signals logged per site, and a few hundred finished listings |
+| 7 | [A public launch](public-launch.md) | Ben and Nate | The hackathon ending |
 
 ## Adding or taking an idea
 

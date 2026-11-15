@@ -18,3 +18,4 @@ In the spec. Every method, weight and hide rule is a card in [spec/determination
 
 ## Research
 Research for this feature is filed under [research/data/](../../research/data/) (no folder of its own yet).
+- Ben: [levers-and-signals.md §4 and §5](../../research/list/ben/levers-and-signals.md#4-seller-signals-what-each-site-gives-and-how-to-read-it). What each site reports to sellers and how to read it (Mercari "views" are impressions; Facebook and Depop do report stats), and *agent proposal:* compare signals within a site against listings like it, convert across sites by each site's signals per sale, show the furthest stage reached on a tile. Code in [levers/interest.mjs](../../research/list/ben/levers/interest.mjs).

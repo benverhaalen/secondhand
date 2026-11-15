@@ -1,0 +1,38 @@
+# Which findings about how buyers and sellers behave around secondhand prices and offers should shape secondhand now?
+Researched 2026-11-15 by Ben (Claude Code, Opus 5.5, with a research helper; four rounds). Feature: price.
+
+Ben asked for "other things that you should psychologically research that could be useful in the product we are building now" ([words](../../../product/words.md#2026-11-15-pricing-levers-signals-and-hot-items)). This extends [psychology.md](../../cross-cutting/ben/psychology.md), which already covers endowment, anchoring on comps, round against precise asking prices, defaults and trust; none of that is repeated. Where each finding lands in the product is in [levers-and-signals.md §6](../../list/ben/levers-and-signals.md#6-design-agent-proposal).
+
+Marks: *observed* = read in the paper or page at the link; *asserted* = known by title or from memory; *inferred* = our design reasoning. Robustness is the evidence's, not ours.
+
+## Findings and what each changes
+
+| # | Finding | Evidence | Robustness | What it changes now |
+|---|---|---|---|---|
+| 1 | Low first offers are normal on eBay: mean 61% of the list price, most common 50%. Sellers decline 40%, counter 27%, accept 33%; after a decline buyers come back 37% of the time; 45% of threads end in a sale | Backus, Blake, Larsen, Tadelis, QJE 2020, 25.5M threads ([NBER w24306](https://www.nber.org/system/files/working_papers/w24306/w24306.pdf)), *observed* | strong, one site | eBay auto-decline sits at 50% of the price, not the floor; never show a lowball as an alarm; counter instead of declining |
+| 2 | Splitting the difference is the most common seller counter, and a midpoint counter is accepted 5.1 points more in the first round and 6.8 to 9.9 more later | same paper, *observed*; the pattern across many markets in Keniston, Larsen et al. ([NBER w29111](https://www.nber.org/papers/w29111)), *asserted* | strong | money D16's midpoint counter becomes *observed*; under the floor, counter at `max(floor, midpoint)` |
+| 3 | Slow replies lose sales: twice the reply time, 4.4% fewer sales, 6.3% fewer buyer counters; under $30, 9% fewer counters; the final price rises only $0.74 | Fong and Waisman, Management Science 2025, 5.9M eBay negotiations ([Kellogg Insight](https://insight.kellogg.northwestern.edu/article/in-price-negotiations-every-second-counts)), *observed* | strong field data | inside the person's lines, answer in minutes; an offer that needs them gets a push with a one-tap answer |
+| 4 | Experienced sellers get 1.4 to 6.4% more, and the gap is patience, not toughness | Backus et al. 2020, *observed* | moderate | the agent supplies patience: it holds above always accept while waiting is worth more (money D16's `V`) |
+| 5 | Owners anchor on what they paid: paying just under a round $10k step leads to listing about 1.8% lower later | Wiltermuth, Gubler, Pierce, Org Sci 2023 ([IDEAS](https://ideas.repec.org/a/inm/ororsc/v34y2023i5p1839-1863.html)), *observed* | moderate | never put the purchase price next to the suggested price; lead with sold comps (this matches [insights](../../../spec/features/insights.md): cost is never asked for) |
+| 6 | Owners facing a loss ask more and sell much slower; owner-occupants show about twice the effect of investors | Genesove and Mayer, QJE 2001 ([IDEAS](https://ideas.repec.org/p/wop/pennzl/323.html)), *observed* | strong | frame a drop as days and money kept ("sells in about 5 days, you keep $38"), never as a loss against what they paid |
+| 7 | Where offers are the norm, a higher list price goes with a higher sale price | Bucchianeri and Minson, JEBO 2013, 14k home sales ([IDEAS](https://ideas.repec.org/a/eee/jeborg/v89y2013icp76-92.html)), *observed* | moderate | supports money D13's room above target, capped at the D5 high |
+| 8 | Buyers count shipping less than price: each $1 of shipping lowers the price by about $0.82; free shipping goes with about $2.50 more revenue; the effect of a low price plus high shipping vanishes when the charge looks odd | Einav, Kuchler, Levin, Sundaresan, AEJ Micro 2015 ([PDF](https://web.stanford.edu/~leinav/pubs/AEJmicro2015.pdf)); Hossain and Morgan ([PDF](https://faculty.haas.berkeley.edu/rjmorgan/eBay.pdf)), *observed* | strong that it is partly ignored; the free-shipping premium is correlational | charge the category's usual shipping, never more; on sites where free shipping is the norm, build it in |
+| 9 | Sale signs lose force as more items carry one | Anderson and Simester, Marketing Science 2001 ([IDEAS](https://ideas.repec.org/a/inm/ormksc/v20y2001i2p121-142.html)), *observed* | strong | stagger visible drops (about 25% of a site's live items a week, a starting value); prefer private offers to likers |
+| 10 | A "was" price must be a real former price, openly offered for a reasonably substantial period | [16 CFR 233.1](https://www.law.cornell.edu/cfr/text/16/233.1), *observed* | law | struck-through prices only after 7 days live at the old price; never list high to stage a cut |
+| 11 | True social proof works: +10% claimed on Amazon deals, +2.08% cart adds the next hour | Cui, Zhang, Bassamboo, Management Science 2019, randomised ([IDEAS](https://ideas.repec.org/a/inm/ormnsc/v65y2019i3p1216-1235.html)), *observed* | strong | the sites show their own counts; we never invent one. For the seller, show counts against listings like it, not raw |
+| 12 | Tight deadlines cause breakdowns, not better terms: 31.4% disagreement with 90 seconds against 4.5% with 10 minutes | Karagözoğlu and Kocher, Exp Econ 2019 ([Cambridge](https://www.cambridge.org/core/journals/experimental-economics/article/bargaining-under-time-pressure-from-deadlines/F388EC46629F094DDB48A96AE00F8DCC)), *observed* | lab only | keep each site's own offer expiry; one reminder before it ends, only when true; no countdown copy |
+| 13 | Some buyers wait for markdowns: 5.2 to 19.2% of airline buyers | Li, Granados, Netessine, Management Science 2014 ([econpapers](https://econpapers.repec.org/RePEc:inm:ormnsc:v:60:y:2014:i:9:p:2114-2137)), *observed* | moderate, another market | the first offer to likers is the site minimum; drops do not follow a fixed weekly schedule buyers can learn |
+| 14 | An instantly accepted first offer feels like money left behind | Galinsky et al. 2002, *asserted* (title only) | lab | after an auto-accept, show "accepted: at or above the $X you set", pointing to their own choice |
+
+## What not to build
+
+- Invented urgency or scarcity ("3 people viewing", countdowns). Truthful counts work (row 11); fabricated ones are dark patterns (Mathur et al. 2019, *asserted*).
+- Inflated "was" prices, or listing high to stage a sale (rows 9 and 10).
+- High shipping to make the price look lower (row 8).
+- Slow replies to look firm (row 3). Desai and Jindal (Marketing Science 2024, lab) found a delay raised willingness to pay; row 3 is field data at far larger scale.
+- Short exploding offers (row 12).
+- Treating split-the-difference as a law: about 7% of offers are exact midpoints. It has an acceptance edge, not a rule buyers follow; money D16 keeps measuring acceptance by counter level.
+
+## Not found
+
+No study of buyers liking or saving to wait for an offer on any resale site (row 13 is the nearest); no measured comparison of offers to likers against public drops; no study of how showing like or watcher counts to sellers changes their pricing; no randomised free-shipping test on a resale site. Known by title only and not read, because a shared page-read limit ran out: PNAS 2023 on eBay first offers and impasse; Tucker, Zhang, Zhu 2013 on days on market; Arlen and Tontrup 2015 on handing a sale to an agent; Morewedge et al. 2009 on brokers.
