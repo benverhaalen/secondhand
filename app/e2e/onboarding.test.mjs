@@ -45,7 +45,7 @@ test('onboarding: a pickup spot is optional, and saved when typed', async () => 
   const s = await app.open('/onboarding');
   await s.tap('onboarding-next');
   await s.shows('Skip');
-  for (const t of ['hours', 'Calendar', 'Mon', 'Weekdays']) assert.equal(await s.page.getByText(t, { exact: true }).count(), 0, `no "${t}" on the pickup step`);
+  for (const t of ['hours', 'Calendar', 'Mon', 'Weekdays']) assert.equal(await s.count(t, { exact: true }), 0, `no "${t}" on the pickup step`);
   await s.tap('onboarding-spot');
   await s.page.getByTestId('onboarding-spot-input').fill('Library parking lot, Main St');
   await s.page.getByTestId('onboarding-spot-input').press('Enter');

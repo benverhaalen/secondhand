@@ -3,7 +3,7 @@
 // { type: 'haptic' } to globalThis.__events, so the tests read what happened, not pixels.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { behavior, controlTests, start } from './behavior.mjs';
+import { behavior, controlTests, start, WAIT } from './behavior.mjs';
 
 const table = behavior('camera');
 let app;
@@ -57,7 +57,7 @@ test('camera: Sell reads the union of what every site asks for a jacket', async 
 test('camera: Review the draft opens the draft at its review, with every fact the stills read', async () => {
   const s = await app.open('/camera?world=new&state=done');
   await s.tap('cam-done');
-  await s.page.waitForURL(u => new URL(u).pathname === '/item/it_draft', { timeout: 3000 });
+  await s.page.waitForURL(u => new URL(u).pathname === '/item/it_draft', { timeout: WAIT });
   for (const t of ['Review', 'Where it will post', 'Cotton duck', 'Men’s', '1990s']) await s.shows(t);
   await s.page.close();
 });
@@ -66,23 +66,23 @@ test('camera: a still is judged, the found pop-up says what it read, a light hap
   const s = await app.open('/camera?world=new');
   await s.shows('Show the whole front');
   await s.tap('cam-shutter');
-  const found = await s.saw({ type: 'found', text: 'Carhartt' }, { timeout: 4000 });
+  const found = await s.saw({ type: 'found', text: 'Carhartt' }, { timeout: WAIT });
   assert.equal(found.stage, 'Kind');
   await s.shows('Carhartt');
   await s.saw({ type: 'haptic', kind: 'light' });
-  await s.saw({ type: 'stage', stage: 'Kind', done: true }, { timeout: 4000 });
-  await s.shows('Turn it over', { timeout: 4000 });
+  await s.saw({ type: 'stage', stage: 'Kind', done: true }, { timeout: WAIT });
+  await s.shows('Turn it over', { timeout: WAIT });
   await s.page.close();
 });
 
 test('camera: all five stages end in a success haptic and the real comparison', async () => {
   const s = await app.open('/camera?world=new');
   for (const ask of ['Show the whole front', 'Turn it over', 'Closer on the tag', 'Smooth it flat', 'Closer on any wear']) {
-    await s.shows(ask, { timeout: 5000 });
+    await s.shows(ask, { timeout: WAIT });
     await s.tap('cam-shutter');
   }
-  await s.saw({ type: 'haptic', kind: 'success' }, { timeout: 6000 });
-  await s.shows('Matching against 41 sold jackets', { timeout: 3000 });
+  await s.saw({ type: 'haptic', kind: 'success' }, { timeout: WAIT });
+  await s.shows('Matching against 41 sold jackets', { timeout: WAIT });
   const stages = (await s.events()).filter(e => e.type === 'stage' && e.done).map(e => e.stage);
   assert.deepEqual(stages, ['Kind', 'Photos', 'Label', 'Measure', 'Condition']);
   await s.page.close();
@@ -92,7 +92,7 @@ test('camera: Worth walks only the stages that set a price, and ends at what it 
   const s = await app.open('/camera?world=new&mode=worth&state=done');
   await s.shows('See what it’s worth');
   await s.tap('cam-done');
-  await s.page.waitForURL(u => new URL(u).pathname === '/worth', { timeout: 3000 });
+  await s.page.waitForURL(u => new URL(u).pathname === '/worth', { timeout: WAIT });
   // The value is of the thing the camera read, the jacket, not another product.
   await s.shows(/Carhartt Detroit Jacket J97/);
   await s.page.close();
@@ -101,7 +101,7 @@ test('camera: Worth walks only the stages that set a price, and ends at what it 
 test('camera: switching mode keeps the stills', async () => {
   const s = await app.open('/camera?world=new');
   await s.tap('cam-shutter');
-  await s.saw({ type: 'stage', stage: 'Kind', done: true }, { timeout: 5000 });
+  await s.saw({ type: 'stage', stage: 'Kind', done: true }, { timeout: WAIT });
   await s.tap('cam-mode-find');
   await s.saw({ type: 'show', screen: 'camera', mode: 'find', stills: 1 });
   await s.page.close();
@@ -110,7 +110,7 @@ test('camera: switching mode keeps the stills', async () => {
 test('camera: a still that matches a held item asks Same thing? before making a second', async () => {
   const s = await app.open('/camera?world=clearing');
   await s.tap('cam-shutter');
-  await s.shows('Same thing?', { timeout: 6000 });
+  await s.shows('Same thing?', { timeout: WAIT });
   await s.page.close();
 });
 
