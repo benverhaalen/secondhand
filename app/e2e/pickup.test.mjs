@@ -47,6 +47,25 @@ test('pickup: dragging a span changes the time it says, and a span after dark ho
   assert.notEqual(await s.page.getByTestId('meet-draft-send').getAttribute('aria-disabled'), 'true');
 });
 
+// spec/notifications.md, "A pickup within the hour": On my way, only then.
+test('pickup: On my way shows within the hour and tells the buyer', async () => {
+  const later = await reach(app, table);
+  assert.equal(await later.page.getByTestId('pickup-on-my-way').count(), 0);
+  const s = await reach(app, table, { route: '/item/it_chair/pickup?case=soon' });
+  await s.tap('pickup-on-my-way');
+  await s.shows('Told Jordan you’re on your way');
+});
+
+// Ben, 06:19: a way back to the site, and its own picture where a time has to be checked.
+test('pickup: the site is one tap away, by its logo, with its own picture of the thread', async () => {
+  const s = await reach(app, table);
+  await s.page.getByTestId('pickup-site').filter({ visible: true }).waitFor({ state: 'visible', timeout: 3000 });
+  assert.equal(await s.page.getByText('Facebook', { exact: true }).filter({ visible: true }).count(), 0);
+  await s.tap('pickup-snapshot');
+  await s.shows('As the site shows it');
+  await s.page.getByTestId('pickup-copy-site').filter({ visible: true }).waitFor({ state: 'visible', timeout: 3000 });
+});
+
 // edge-cases §16 step 3 and 4: who is coming before the yes, and the calendar only after it.
 test('pickup: the buyer’s pick shows who is coming, and the calendar comes only after Approve', async () => {
   const s = await reach(app, table, { route: '/item/it_chair/pickup?case=pick' });

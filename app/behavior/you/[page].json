@@ -89,7 +89,7 @@
     {
       "state": "defaults typical",
       "path": "/you/defaults",
-      "shows": "App defaults; A new listing: How it sells (Sell it), Sites (3 of 3 linked), Ship or pickup, Pickup spot as a field, Lowest price (Suggested); Photos: Clean up on, Enhance with AI off, Never suggest photo edits; Words and units: Replies sound (Like you), Measurements (Inches), Money (US dollars)"
+      "shows": "App defaults; A new listing: How it sells (Sell it), Sites (3 of 3 linked), Prices across sites (Same take-home), Ship or pickup, Pickup spot as a field, Lowest price (Suggested); Photos: Clean up on, Enhance with AI off, Never suggest photo edits; Words and units: Replies sound (Like you), Measurements (Inches), Money (US dollars)"
     },
     {
       "state": "permissions typical",
@@ -438,6 +438,50 @@
       }
     },
     {
+      "id": "default-spread",
+      "control": "Prices across sites",
+      "on_tap": "opens a sheet with the four price rules, each its name and one plain reason, a tick on the one in force",
+      "does": "opens the price rule sheet",
+      "path": "/you/defaults"
+    },
+    {
+      "id": "spread-same_price",
+      "control": "Same price",
+      "on_tap": "makes Same price the account's rule for cross-listing; the tick moves and the sheet stays open so its numbers are a tap away",
+      "does": "sets the account's price rule",
+      "path": "/you/defaults",
+      "before": [
+        "default-spread"
+      ],
+      "logs": {
+        "type": "change",
+        "entity": "setting",
+        "id": "crosslist_spread",
+        "to": "same_price"
+      }
+    },
+    {
+      "id": "spread-numbers",
+      "control": "See the numbers",
+      "on_tap": "shows the rule in force on one jacket listed on Depop at $95: each site's price, its fees and what you get",
+      "does": "opens the worked example",
+      "path": "/you/defaults",
+      "before": [
+        "default-spread"
+      ]
+    },
+    {
+      "id": "spread-rules",
+      "control": "Back to the rules",
+      "on_tap": "goes back to the four rules",
+      "does": "reopens the price rule sheet",
+      "path": "/you/defaults",
+      "before": [
+        "default-spread",
+        "spread-numbers"
+      ]
+    },
+    {
       "id": "clean-up",
       "control": "Clean up",
       "on_tap": "turns clean-up off for new photos",
@@ -601,6 +645,7 @@
     "Taking a listing down after it sells stays On its own with no control, and its row says why: so it can't sell twice.",
     "App defaults start from spec: Sell it, the lowest price suggested from sold prices and set by the person, Clean up on and Enhance with AI off, replies in the person's voice, ship or pickup from their limits, the saved pickup spot, and only linked sites as default sites.",
     "Every page draws loading, failed and offline from ?state= (app/src/demo/screen.ts) the same way, through app/src/you/page-status.tsx: gray shapes, Couldn’t load with Try again, or the last copy under Waiting for signal. Your sites draws loading and failed on a site's row instead, since one site signing in never blocks the page.",
-    "A page that lists every setting from the start (Settings, Notifications, App defaults, Permissions) skips empty and one, with why."
+    "A page that lists every setting from the start (Settings, Notifications, App defaults, Permissions) skips empty and one, with why.",
+    "App defaults holds the account's cross-listing price rule, Same take-home unless the person switches it (decisions.md, 2026-11-15: cross-listing starts on same take-home). Each rule is its name and its one plain reason from SPREADS; the numbers for one jacket sit a tap under them (Ben 06:53: \"in plain language ... then see numbers if need be\"), priced by the engine's own sitePrice. One item's own rule is set on its Plan, not here."
   ]
 }

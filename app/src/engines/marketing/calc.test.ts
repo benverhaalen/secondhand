@@ -45,7 +45,7 @@ test('the final price rung keeps selling through the full horizon', () => {
   const x = fixture(); x.adjusted_cents = [5000]; x.weights = [1];
   x.curve = { p: (_p, d) => 1 - Math.exp(-d / 20), t: () => 20 * Math.log(2) };
   const plan = calculate(x);
-  assert.ok(plan.scores); assert.ok(Math.abs(plan.scores.p_sale.d30! - (1 - Math.exp(-30 / 20))) < 1e-9);
+  assert.equal(plan.verdict, 'list'); assert.ok('scores' in plan); assert.ok(plan.scores); assert.ok(Math.abs(plan.scores.p_sale.d30! - (1 - Math.exp(-30 / 20))) < 1e-9);
 });
 test('greater visibility lowers holding time using the same survival curve', () => {
   const curve = { p: (_p: number, d: number) => 1 - Math.exp(-d / 20), t: () => 14 };

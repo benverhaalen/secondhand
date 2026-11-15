@@ -19,6 +19,11 @@ export type CheckInput = {
 export async function check(x: CheckInput) {
   return x.log.timed('valuation.check', async () => {
     if (!Number.isSafeInteger(x.floor_cents) || x.floor_cents < 0) throw new RangeError('invalid floor');
+    const sites = x.sites.map(s => {
+      const site = s.site;
+      if (site !== 'ebay' && site !== 'facebook' && site !== 'depop' && site !== 'poshmark' && site !== 'mercari') throw new RangeError(`unsupported valuation site: ${site}`);
+      return { ...s, site };
+    });
     const controller = new AbortController();
     const rows = [...x.warm_comps];
     let partial = false;
@@ -47,7 +52,7 @@ export async function check(x: CheckInput) {
       state: calibrated && found.state === 'ok' ? 'checked' : 'not_checked_yet', group: x.calibration?.group ?? null,
       share_shown: calibrated ? Math.floor(x.calibration!.coverage * 10) / 10 : null,
     } : { q10: warm?.low ?? null, q50: null, q90: warm?.high ?? null, state: warm ? 'not_checked_yet' : 'hidden', group: null, share_shown: null };
-    const per_site = x.sites.map(s => {
+    const per_site = sites.map(s => {
       const local = comparables({ condition: x.condition, site: s.site }, unique, x.as_of, x.params);
       const p = local.range.q50;
       return { site: s.site, ...local.range, translated: local.comps.some(c => c.site !== s.site),

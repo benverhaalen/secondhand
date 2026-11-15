@@ -1,3 +1,4 @@
+import { object } from './captures.ts';
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
@@ -102,4 +103,25 @@ test('search: owned Expo files bind auth and export the contract method', async 
     assert.ok(source.includes("export const " + method + " = route('" + entry.endpoint + "'"), relative);
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
+});
+
+test('search stores the public engine rows on the job, without a network dependency', async () => {
+  const { jobs } = await import('./jobs.ts');
+  const response = await call(examples.find(e => e.name === 'search.text')!);
+  const body = await response.json();
+  const result = jobs.st.getJob(body.id)?.result;
+  assert.ok(object(result) && Array.isArray(result.results), 'searchAll must populate the job result');
+});
+
+test('new searches have distinct jobs within and across visitor sessions', async () => {
+  const { jobs } = await import('./jobs.ts');
+  const e = examples.find(e => e.name === 'search.text')!;
+  const first = await (await call(e, { headers: { 'X-Visitor-Id': 'vis_first01', 'Idempotency-Key': 'first-search' } })).json();
+  const saved = structuredClone(jobs.get(first.id, 'vis_first01')?.result);
+  const second = await (await call(e, { body: { text: 'another jacket' }, headers: { 'X-Visitor-Id': 'vis_second01', 'Idempotency-Key': 'second-search' } })).json();
+  const third = await (await call(e, { body: { text: 'different jacket' }, headers: { 'X-Visitor-Id': 'vis_first01', 'Idempotency-Key': 'third-search' } })).json();
+  assert.notEqual(first.id, second.id); assert.notEqual(first.id, third.id);
+  assert.ok(jobs.get(second.id, 'vis_second01'));
+  assert.equal(jobs.get(second.id, 'vis_first01'), undefined);
+  assert.deepEqual(jobs.get(first.id, 'vis_first01')?.result, saved);
 });
