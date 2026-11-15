@@ -1583,3 +1583,11 @@ Ben, project thread "Prove the Brewers jersey buy alert", 08:36 UTC.
 > nate will register. the giannis one can count. ensure the flow asks and helps me specify what i want considering dynamic ui. color, size, etc. if not done already
 
 Used in: [scripts/demo/wants/brewers-jersey.json](../scripts/demo/wants/brewers-jersey.json), [spec/features/watch.md](../spec/features/watch.md), [app/src/app/want.tsx](../app/src/app/want.tsx), [brewers-alert-trial.md](../research/watch/ben/brewers-alert-trial.md).
+
+## 2026-11-15 the demo runs on nates harness and the cadence is a lever
+Ben, project chat, 08:42 and 08:43 UTC. Two messages.
+> plan to use however nate builds the harness to end up doing the demo. im hearing ebay api takes like a day for approval so im just going to end up using whatever he engineers up. try and see the drawbacks or benefits to levers in our design about how often we do things. so like what is the drawback of making it an hour? we can design a demo mode that never says demo mode for the backend so that we can increase the rate at which it polls or have some mechanism to make it instant. but carefully choosing how often we probe to improve our roi. also from the ways we could make money including proposed ways we need to assess the whole market for such a thing too. ask codex to conduct all this research to save my precious claude usage though just ensure ot prompt it right
+
+> switch research over to codex when you get the chance without setting the research back at all
+
+Used in: [live-buy-demo.md](live-buy-demo.md), [research/watch/ben/codex-briefs/cadence-and-market.md](../research/watch/ben/codex-briefs/cadence-and-market.md).

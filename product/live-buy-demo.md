@@ -17,6 +17,23 @@ Ben, 07:46: "demoing the buy feature live would be so cool... nate does it live 
 
 So the beat is real detection by our code on the site's own public page, shown in our own app. The rest of the want screen (the price dots, the sites' status) is demo data, and the watching runs from the laptop. Say that if asked.
 
+## On Nate's harness, with a stage cadence (Ben, 08:42)
+
+Ben: "plan to use however nate builds the harness to end up doing the demo. im hearing ebay api takes like a day for approval" and "we can design a demo mode that never says demo mode for the backend so that we can increase the rate at which it polls or have some mechanism to make it instant" ([words](words.md#2026-11-15-the-demo-runs-on-nates-harness-and-the-cadence-is-a-lever)). *Agent proposal*:
+
+| Part | How it works | What it needs from Nate |
+|---|---|---|
+| The read | Nate's Poshmark `search` verb with `sort: added_desc`, on one warm cloud browser page, about 2 to 2.5 s a read ([harness README](../app/src/edge/harness/sites/poshmark/README.md)) | search rows that also carry `size`, `department`, `category` and `listed_at` (`first_published_at`), all already in `$_search.gridData` ([packet 66](../.agents/team/packets/watch/66-demo-on-the-harness.md)) |
+| The match | `scripts/demo/want.mjs` `judge`: team, jersey, cut, category, size, price, still for sale; then the listing's own page | nothing; built and tested |
+| The stage cadence | a server setting, not a UI state: the one demo want's `next_check_at` floor drops to 10 s for the length of the beat. Nothing on screen changes, and nothing says "demo" | a per-want floor override read from the server's environment |
+| The instant path | when a listing is posted *through secondhand* (the harness `post` verb), its own completion event runs the matcher against active wants at once, so the find shows before any search has indexed it. This is a real product path, not staged: we know the moment our own cross-lister posts | `post` emits a completion event with the listing's fields; the matcher subscribes. `post` is dry until Nate says go |
+
+**Which path on stage.** If Nate's `post` goes live by the demo, Nate posts *through our app* and the find is instant: "it was listed through secondhand, so we matched it the moment it went up". Otherwise Nate posts in the Poshmark app and the 10 s search catches it: "on stage this search runs every 10 seconds; in the product it's every few minutes, shared across everyone watching the same thing".
+
+**What we never do.** No alert that a real listing didn't cause. No timer that fakes a find. The stage cadence and the instant path are both real code reading a real listing; only the rate is turned up, and we say so if asked.
+
+**The cadence lever.** How often a want checks a site trades money and site load against the chance the listing sells first. Codex is researching the numbers (time-to-sale for underpriced listings, cost per read on each route, sharing across users, ROI at 1, 5, 15 and 60 minutes) into [research/watch/ben/cadence-levers.md](../research/watch/ben/cadence-levers.md); the brief is [here](../research/watch/ben/codex-briefs/cadence-and-market.md).
+
 ## Which site
 
 | Site | How soon a new listing shows in a signed-out search | Verdict |
