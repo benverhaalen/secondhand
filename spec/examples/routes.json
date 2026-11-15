@@ -256,8 +256,8 @@
           },
           {
             "endpoint": "GET /v1/photos/:id",
-            "auth": "user",
             "source": "engine",
+            "auth": "user",
             "method": "GET",
             "needs_session": true
           },

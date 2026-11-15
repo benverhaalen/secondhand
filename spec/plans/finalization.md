@@ -266,21 +266,20 @@ Proofs rerun by the orchestrator, who wrote none of these fixes. Each line is *o
 
 Nate, 14:00 UTC: "assess what works, you yourself get it working, check with ben, we continously test with codex" ([words](../../product/words.md#2026-11-15-nate-organize-shut-down-what-is-finished-get-it-working-yourself-check-with-ben-keep-testing-with-codex)). One row per thing a person or a judge touches. "Seen" means the orchestrator saw it run, with the time; anything else is a lead's claim. Updated in place.
 
-| What | State at 14:47 UTC | Seen | Next, and who |
+| What | State at 15:35 UTC, main f6eceb9b | Measured | Next, and who |
 |---|---|---|---|
-| Sign-in by email code | Works on the dev server with a development code; the session survives reloads | seen 13:40, browser | On the host: an email sender key (Nate, section 9) |
-| Search, signed out and signed in | Works: four sources, 100 to 300 listings, 3.3 to 9.2 s; photos and real Depop titles since bcd35ce1 and e45dd58e | seen 13:25 and 13:40, browser | eBay sometimes read in pounds, shipping not shown: search lead |
-| The price summary | Works, in dollars | seen 13:45 after 06be368e | none |
-| The chat after a search | Works end to end on the dev server: `POST /v1/assist` is the real route (5314d834, d0890a16). The answer is rough: raw markdown, a widget tag in prose, reason codes, it stops early | seen about 14:40 in the app, about 40 s | engines lead, seven items; the gate rewrite before a made-up figure can pass |
-| The four tabs and Messages on owned data | Work, empty for a new person; `/v1/lookups` since 530a217f | seen 13:45, browser | Layout and labels: Ben, packet 94 |
-| Capture: photo, identify, questions | Upload, identify as a job and questions are on main (dccab7f9, captures 168 tests, a second person locked out). Lens, depth and parts are on Mac branches | tests seen 14:40; not yet driven by eye with a real photo | capture lead proves it end to end; Lens next |
-| A valuation of the person's own item | Route on main, 205 tests | tests seen 13:25; not walked in the app | engines lead |
-| The hosted server | Deployed, stops five minutes after each start | did not answer at 13:40 | a card on Fly (Nate), then walk it |
-| The app on an iOS simulator | Not yet | no | walks lead |
-| Databricks: workspace, dashboard, Genie, retail views | Read back healthy by the data lead (WORKS.md) | not by the orchestrator today | the alert change at 19:00 UTC; data lead |
-| The full check on the Mac | 5 of 5,271 failing, Python 618 pass, type check clean, static errors 126 | seen 14:45 | server lead (all five) |
-| A person's whole path through the server, as one test | On main: 11 steps pass, one open (a workspace purge with no workspace configured) | seen 14:42 | server lead extends it to every route |
-| Live benchmarks | With every source: 16 of 16, settled 7.99 s median, top ten on target 0.93. Without eBay: 15 of 16, settled 1.28 s median, 0.84 | seen 14:15 and 14:50 | the settle no longer waiting for eBay: search lead |
+| Sign-in by email code | Works with a development code; survives reloads | journey test 19 steps pass on a real server process (b7eab65d) | host: email sender key (Nate) |
+| Search across sources | Works; the answer no longer waits for eBay (cdabb061) | 16 queries: 16 of 16, first rows 0.63 s, on target 0.93, 4,372 read (14:15). 51 items (data lead): on target 0.91 | rerun at current main: search lead |
+| The chat after a search | Works; headings and tables drawn in the app (d1cffe8a) | 10 of 10 answered, $0.37 for ten; BC4 25 of 25 answered, judged 0.80, p50 3.7 s, $0.006 an answer; the gate holds 20 of 20 planted false prices | round 5 and the question block: engines lead (w/eng-final) |
+| Capture, every family | All 14 open, take their type and ask exactly their steps through the real API, 3 to 12 ms; type page, Measure-style coach for every step, bordered camera card (26315c58, f6eceb9b) | 14 of 14 families (scratchpad families.mjs); live walk 19 of 25 steps pass, finish's fact check fails since Ben's d1006a17 | capture lead (w/cap-final); by eye on the simulator: walks lead |
+| Photo upload from an iPhone | Fixed (raw bytes through the platform fetch, 8863edea) | walks lead's simulator run | walks lead |
+| Valuation of a person's own item | Works end to end: capture, finish, item, valuation done in 3.6 s from 31 Poshmark sold comps; an unidentified item is not priced (eng-loop-1) | backtest on 41,988 held-out sales: median error 3.89%, 96.0% within 20%, 80% range holds 86.0%; beats the 90-day median by 7.4 points within 20%, trails last sale by 1.0 | rerun on current main: data lead (running) |
+| The real-time loop | 10 of 10 links earned from the route path (eng-loop-1) | realtime-proof 10 of 10 | links 8 and 9 rest on a synthetic agreement signal: engines lead |
+| Lens | On main, off without TREG_TOKEN; its three must-fix items closed | lens 29, lens route 3 | first live call: Nate's top-up and yes |
+| Databricks | Pipeline, 15 jobs, alert, dashboard, Genie deployed and read back; DB19 audit on main | dashboard 12 of 12 datasets, Genie 8 of 8 questions (12:45) | the alert to daily at 19:00 UTC |
+| iOS build | JS bundle builds for iOS (5.8 MB Hermes), expo-doctor 20 of 20, bundle id, privacy manifest and EAS project set | on Windows, 15:20 | Release on the simulator: walks lead; EAS build and submit: Nate |
+| The hosted server | Deployed, stops five minutes after each start | not answering | a card on Fly (Nate) |
+| The full check | Mac: only captures (Ben's rule), fixed renders and routes red; Windows-only failures (paths, SQLite cleanup, image-gen guard) fixed | Mac 15:25; Python 618 pass; tsc clean | capture lead |
 
 **2026-11-15, 14:15 to 14:47 UTC, main up to b3b72c6c; the clock read 14:47 when this was written, and the times inside this entry are approximate** (the orchestrator, after the leads were halted and put back as testers who do not merge):
 - **Benchmark, 16 queries as a visitor, followed on the job's stream.** With every source: 16 of 16 answered, first rows 0.63 s median, settled 7.99 s median and 8.97 s at the 95th, 3.3 sources answering, top ten on target 0.93, 4,372 listings read and 2,133 kept, a photo on every row, none outside dollars. **Without eBay** (`sources: dupe, depop, poshmark`; Nate: "account for our benchmarks without ebay"): 15 of 16 answered, first rows 0.71 s, settled 1.28 s median and 4.16 s at the 95th, 2.25 sources answering, top ten on target 0.84, 1,297 read and 655 kept. The settle time is eBay's queue: without it the answer is inside the 5 s target.

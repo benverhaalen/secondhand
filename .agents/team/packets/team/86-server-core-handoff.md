@@ -2,6 +2,34 @@
 
 Updated: 2026-11-15, about 09:30 Central (15:30 UTC), at the halt, by the second server-core lead; first written about 13:15 UTC. Owner: Nate. Agent: Claude Code, the server-core lead (Opus 5.5), handing off at about half context per [packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills). Area: [finalization §2](../../../../spec/plans/finalization.md#2-server-core-lead-server), rows SV0 to SV10. Nothing was deployed, nothing was created on Fly, no secret was set anywhere.
 
+## Redeploy of current main to Fly, prepared and not run (2026-11-15, about 16:00 UTC)
+
+Nothing below has been run. Each step is Nate's yes, asked each time. Fly runs an old image (main 9c8eab08); the machine stops five minutes after each start until a card is on the Fly account.
+
+**The exact steps, from the clean deploy worktree (never the shared checkout):**
+
+```
+cd C:\dev\secondhand-deploy
+git fetch origin
+git checkout --detach origin/main
+git log --oneline -1
+%USERPROFILE%\.fly\bin\flyctl.exe deploy --remote-only --ha=false -a secondhand-api
+%USERPROFILE%\.fly\bin\flyctl.exe machine start 8e170ec76731d8 -a secondhand-api
+```
+
+Before it: `bash server/container-check.sh` on the Mac in a worktree at the same commit (every step ok), and `server/journey.test.ts` green there. After it, probe from the Mac (the campus resolver answers NXDOMAIN for fly.dev): `/healthz` 200, `/v1/routes` 401, `PUT /v1/uploads/abc` 404, `POST /v1/auth/email/start` 503 until a sender exists. The deploy carries the new `fly.toml` env: `SECONDHAND_PUBLIC_ORIGIN`, `APPLE_CLIENT_IDS`, `GOOGLE_CLIENT_IDS` (iOS and Web), `SECONDHAND_WEB_ORIGINS` (asecondhand.app, www., secondhand-eight.vercel.app).
+
+**What each key set on Fly turns on in main today, and what must be fixed first** (from `side-session-notes/.../deploy-security-review-1.md`, rechecked against main):
+
+| Key | Turns on | Fault named for it | State on main | Before the machine runs with it |
+|---|---|---|---|---|
+| `OPENROUTER_API_KEY` | The identity reconciler in every visitor search (`intel/jev.ts`, paid per call), and the buying chat's model (`assist/converse.ts` `clientFromEnv`, signed-in only) | Review item 2: anonymous visitors reach a paid call with only the 30-a-minute per-address bucket; no per-day or global cap | Still open: no Jev daily cap on main | **Must fix:** a global per-day cap on Jev calls (a `searchParams` row like `search_apify_runs_per_day`, counted in `kv`), and a per-person daily cap on the chat. The key is already set, so even starting the old image exposes this |
+| `BROWSER_USE_API_KEY` | Cloud browser reads for public eBay and Depop pages (`harness/compose.ts` `browserUseCloud`), on every search, visitors included | Not in the review (it predates the composition) | No daily cap found | **Should fix:** a per-day session cap counted in `kv`, as for Apify |
+| `TREG_TOKEN` | Google Shopping reads through treg (`createShopping`), capped by `search_shopping_usd_per_day` (prior $1.00) | Not in the review | Capped, but the counter is in memory (`memoryShoppingSpend`, marked `shortcut:`): a restart resets the day's spend | Move the counter to `kv` (the server core's part of SR3) |
+| `APIFY_TOKEN` | Nothing in the server today: `composeSources` returns no `apifyToken` until Apify runs only as a background fill (SR3) | Capped by `search_apify_runs_per_day` (prior 200) once composed | Not read by the server | Compose `apifyRuns.reserve` in `kv` when the search lead says SR3 is ready |
+
+**Open for any public run, whatever the keys:** review item 4, `http.ts:173` reads any JSON body with `req.text()` before auth with no size cap (one stranger can exhaust the 512 MB machine); item 1, a resend resets the email guess count (dormant until `RESEND_API_KEY` is set); items 3 and 5, `/v1/health` and `/v1/stage` are bare routes (health is harmless until `DATABRICKS_HOST` is set). Never set `SECONDHAND_EXAMPLES=1` on Fly.
+
 ## At the halt, 2026-11-15 about 15:30 UTC (the second server-core lead; read this first)
 
 Nate halted all leads ("we need to stop agents from merging and working on top of eachother"). From now the orchestrator alone merges to main, from the branches below.

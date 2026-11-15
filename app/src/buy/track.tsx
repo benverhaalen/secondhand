@@ -84,12 +84,10 @@ export function TrackItem({ id, query = '' }: { id?: string; query?: string }) {
           {high && !valid && min !== null && max !== null && max < min ? <Txt role="caption">Maximum must be at least your minimum.</Txt> : null}
         </Stack>
       </Section>
-      <Section>
-        {sizes.length ? <Stack gap="tight"><Txt role="headline">Size</Txt><SizePicker id="want-size" systems={sizes} system={sizes.some(option => option.id === system) ? system : sizes[0].id} value={size} onChange={(next, value) => { setSystem(next); setSize(value); }} /></Stack> : null}
-        {kind === 'apparel' ? <Stack gap="tight"><Txt role="headline">Fit</Txt><ChoiceChips id="want-cut" label="Fit" options={CUTS} value={cut} onChange={setCut} /></Stack> : null}
-        <Stack gap="tight"><Txt role="headline">Does color matter?</Txt><Blank id="want-color" name="Any color" value={color} onChange={setColor} /></Stack>
-        {kind === 'furniture' ? <Stack gap="tight"><Txt role="headline">Will it fit?</Txt><Blank id="want-dimensions" name="Dimensions or space available, optional" value={dimensions} onChange={setDimensions} /></Stack> : null}
-      </Section>
+      {sizes.length ? <Section title="Size"><SizePicker id="want-size" systems={sizes} system={sizes.some(option => option.id === system) ? system : sizes[0].id} value={size} onChange={(next, value) => { setSystem(next); setSize(value); }} /></Section> : null}
+      {kind === 'apparel' ? <Section title="Fit"><ChoiceChips id="want-cut" label="Fit" options={CUTS} value={cut} onChange={setCut} /></Section> : null}
+      <Section title="Does color matter?"><Blank id="want-color" name="Any color" value={color} onChange={setColor} /></Section>
+      {kind === 'furniture' ? <Section title="Will it fit?"><Blank id="want-dimensions" name="Dimensions or space available, optional" value={dimensions} onChange={setDimensions} /></Section> : null}
       <Section title="How it gets to you"><ChoiceChips id="want-handover" label="Delivery" value={handover} options={[{ id: 'either', label: 'Either' }, { id: 'delivery', label: 'Shipping' }, { id: 'pickup', label: 'Pickup' }]} onChange={setHandover} /></Section>
       <Section title="Anything else?"><Blank id="want-description" name="Style, condition, details to match" value={description} onChange={setDescription} /></Section>
       <Txt role="caption" tone="ink-2">Finds and updates go to Messages.</Txt>

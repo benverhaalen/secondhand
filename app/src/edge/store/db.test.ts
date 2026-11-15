@@ -9,9 +9,10 @@ import { dataPath, openDb, migrate, tx, db } from './db.ts';
 import { memorySink, observeLogs } from '../../../../log/index.js';
 
 function fixture(t: TestContext) {
-  const dir = mkdtempSync(join(tmpdir(), 'secondhand-db-'));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return join(dir, 'nested', 'secondhand.db');
+  const dir = mkdtempSync(join(tmpdir(), 'secondhand-db-')), handles: DatabaseSync[] = [];
+  // Windows cannot remove a directory holding an open database, so the handles close before the removal.
+  t.after(() => { for (const handle of handles) if (handle.isOpen) handle.close(); rmSync(dir, { recursive: true, force: true }); });
+  return { path: join(dir, 'nested', 'secondhand.db'), handles };
 }
 
 test('transactions emit no timing lines and log a synchronous failure once', t => {
@@ -38,8 +39,8 @@ test('dataPath chooses the explicit folder, test memory, stated development temp
 });
 
 test('openDb creates missing folders and shares configured handles across module copies, including memory', async t => {
-  const path = fixture(t), first = openDb(path);
-  t.after(() => first.close());
+  const { path, handles } = fixture(t), first = openDb(path);
+  handles.push(first);
   const copy: typeof import('./db.ts') = await import(new URL('./db.ts?cache-copy', import.meta.url).href);
   assert.equal(copy.openDb(path), first);
   assert.equal(copy.openDb(':memory:'), openDb(':memory:'));
@@ -50,8 +51,8 @@ test('openDb creates missing folders and shares configured handles across module
 });
 
 test('migrate records names once across handles and rolls back failed schema changes', t => {
-  const path = fixture(t), first = openDb(path), second = new DatabaseSync(path);
-  t.after(() => { first.close(); second.close(); });
+  const { path, handles } = fixture(t), first = openDb(path), second = new DatabaseSync(path);
+  handles.push(first, second);
   migrate(first, 'one', 'CREATE TABLE example (id TEXT); INSERT INTO example VALUES (\'first\');');
   migrate(second, 'one', 'INSERT INTO example VALUES (\'duplicate\');');
   assert.equal(second.prepare('SELECT count(*) AS n FROM example').get()?.n, 1);

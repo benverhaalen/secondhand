@@ -30,3 +30,13 @@ The main Today, Sell, Buy and You compositions and New chooser remain protected.
 Use a non-demo account and non-demo IDs from the normal entry point. Verify reload/reopen persistence and actual response semantics. Include failed, stale-version and queued-job states. Assert that a fixture is never substituted for missing account data, and that a successful local animation cannot stand in for delivery, publication or payment.
 
 These findings were read from actual route implementations. Controlled browser tests demonstrated the earlier selling and capture wiring; they do not demonstrate marketplace message transport or publication. No paid provider call, marketplace message, listing publication or transfer was made during this audit.
+
+## Large headings and density correction
+
+Owner: Ben
+
+Ben's latest [heading and spacing correction](../../../../product/words.md#2026-11-15-large-app-headings-and-breathing-room) supersedes the app wordmark-only interpretation. App heading role (36) uses Clofie SemiBold 600, lowercase; wordmark stays Clofie 600. Text roles and prices stay PP Neue Montreal 500. Do not restore the wordmark-only app restriction from an older packet or brand file.
+
+Scoped visual changes preserve existing handlers and controls: wrapped permissions rows use 16pt vertical padding and 4pt text gaps; live Want uses separate sections for Size, Fit, Color and Dimensions. Review, price, preview and sale retain their existing section layout. Typography consistency is checked against the corrected font assignment, not the superseded wordmark-only assignment.
+
+Remaining density finding for Nate, not implemented: secondary search result cards inherit a fixed 104pt card and 72pt text column, leaving only 4pt total between verdict, title and detail; titles truncate at one line. Proposed correction: a content-driven secondary result-list variant with 4pt text gaps and up to two title lines. Preserve the compact main-tab variant and every result action. Render against current real response data before adopting. This is a layout proposal, not evidence of backend wiring or authorization for a broader UI replacement.

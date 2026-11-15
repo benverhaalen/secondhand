@@ -22,7 +22,7 @@ function Mark() {
   return <Link className="marketing-lockup" href="/" aria-label="secondhand home"><picture className="marketing-logo-symbol"><img className="marketing-mark-dark" src="/brand/mark.svg" alt="" width="18" height="21" /><img className="marketing-mark-light" src="/brand/mark-light.svg" alt="" width="18" height="21" /></picture><span>secondhand</span></Link>;
 }
 
-function MobileNavigation({ current }: { current: string }) {
+function MobileNavigation({ current, signedIn }: { current: string; signedIn: boolean }) {
   const menu = useRef<HTMLDetailsElement>(null);
   const trigger = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -41,14 +41,19 @@ function MobileNavigation({ current }: { current: string }) {
       document.removeEventListener('keydown', escape);
     };
   }, []);
+  const close = () => { if (menu.current) menu.current.open = false; };
   return <details className="marketing-menu" ref={menu}>
-    <summary ref={trigger} className="marketing-menu-trigger" aria-label="Pages"><Icon name="more-horizontal" size={20} /></summary>
+    <summary ref={trigger} className="marketing-menu-trigger" aria-label="Menu"><Icon name="more-horizontal" size={20} /></summary>
     <nav className="marketing-menu-panel" aria-label="Main">
       {[...pages, ['/whats-next', 'What’s Next'] as const].map(([url, label]) =>
-        <Link key={url} href={url} aria-current={current === url ? 'page' : undefined} onClick={() => { if (menu.current) menu.current.open = false; }}>
+        <Link key={url} href={url} aria-current={current === url ? 'page' : undefined} onClick={close}>
           {label}<Icon name="arrow-right-01" size={16} />
         </Link>
       )}
+      <div className="marketing-menu-actions">
+        <a href={repository} onClick={close}>GitHub <Icon name="link-01" size={16} /></a>
+        {!signedIn && <Link href="/signin" onClick={close}>Sign in <Icon name="arrow-right-01" size={16} /></Link>}
+      </div>
     </nav>
   </details>;
 }
@@ -67,7 +72,7 @@ export function MarketingHeader({ current }: { current: string }) {
   return <header className={current === '/buy' ? 'marketing-header marketing-header-in-flow' : 'marketing-header'}><div className="marketing-wrap marketing-header-row">
     <Mark />
     <nav className="marketing-nav" aria-label="Main">{pages.map(([url, label]) => <Link key={url} href={url} aria-current={current === url ? 'page' : undefined}>{label}</Link>)}</nav>
-    <div className="marketing-header-actions"><a className="github-link" href={repository}>GitHub <span aria-hidden="true">↗</span></a>{session ? <Link className="marketing-avatar" aria-label="Open your workspace" href="/app">{session.profile.photo ? <img src={session.profile.photo} alt="" referrerPolicy="no-referrer" /> : <span aria-hidden="true">{session.profile.name?.slice(0, 1) || <img src="/brand/mark.svg" alt="" />}</span>}</Link> : <AccountAccess label="Sign in" className="marketing-pill-secondary" />}<MobileNavigation current={current} /></div>
+    <div className="marketing-header-actions"><a className="github-link marketing-desktop-action" href={repository}>GitHub <span aria-hidden="true">↗</span></a>{session ? <Link className="marketing-avatar" aria-label="Open your workspace" href="/app">{session.profile.photo ? <img src={session.profile.photo} alt="" referrerPolicy="no-referrer" /> : <span aria-hidden="true">{session.profile.name?.slice(0, 1) || <img src="/brand/mark.svg" alt="" />}</span>}</Link> : <AccountAccess label="Sign in" className="marketing-pill-secondary marketing-desktop-action" />}<MobileNavigation current={current} signedIn={Boolean(session)} /></div>
   </div></header>;
 }
 

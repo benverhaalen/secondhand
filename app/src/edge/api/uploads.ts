@@ -40,6 +40,13 @@ export function photos(env: Record<string, string | undefined> = process.env): B
 let upload: Handler | undefined;
 // A test binds its own store; otherwise the route uses the process's photo store, the one capture hands targets from.
 export function setBlobs(blobs: Blobs | undefined): void { upload = blobs ? createUploads(blobs) : undefined; }
+export const handlers: Record<string, Handler> = {
+  'PUT /v1/uploads/:id': (ctx, req) => (upload ??= createUploads(photos()))(ctx, req),
+  'GET /v1/photos/:id': (ctx, req) => readPhoto(ctx, req),
+};
+
+export const manifest = [{ endpoint: 'PUT /v1/uploads/:id', source: 'engine' as const, auth: 'none' as const }, { endpoint: 'GET /v1/photos/:id', source: 'engine' as const, auth: 'user' as const }];
+
 export const readPhoto: Handler = async ctx => {
   const photo = await photos().read(ctx.user_id!, ctx.params.id);
   if (!photo) throw new ApiError('not_found', 'photo not found', 'read');
@@ -47,10 +54,3 @@ export const readPhoto: Handler = async ctx => {
     'Content-Type': photo.content_type, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff',
   } });
 };
-
-export const handlers: Record<string, Handler> = {
-  'PUT /v1/uploads/:id': (ctx, req) => (upload ??= createUploads(photos()))(ctx, req),
-  'GET /v1/photos/:id': readPhoto,
-};
-
-export const manifest = [{ endpoint: 'PUT /v1/uploads/:id', source: 'engine' as const, auth: 'none' as const }, { endpoint: 'GET /v1/photos/:id', source: 'engine' as const, auth: 'user' as const }];

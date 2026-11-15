@@ -27,13 +27,13 @@ export function PublishItem({ item, edit }: { item: ReviewItem; edit: () => void
   async function copy() {
     setBusy(true); setError(undefined); setSelected(false); setCopied(undefined);
     try { await navigator.clipboard.writeText(details); setCopied(details); }
-    catch { setError('The clipboard is unavailable. Your details are selected so you can copy them with your keyboard.'); select(); }
+    catch { setError('Couldn’t access the clipboard.'); select(); }
     finally { setBusy(false); }
   }
   return <section className={styles.handoff} aria-labelledby={`${fieldId}-heading`}>
     <div className={styles.intro}>
       <h2 id={`${fieldId}-heading`}>Finish on a site</h2>
-      <p className="desk-muted">Copy the details, then add your photos and publish on the site you choose. Each listing form opens in a new tab.</p>
+      <p className="desk-muted">Listing forms open in a new tab.</p>
     </div>
     {!ready ? <div className={styles.intro}>
       <p>Add {item.title.trim() ? 'an asking price' : item.price_cents ? 'a title' : 'a title and asking price'} before preparing your listing.</p>
@@ -46,7 +46,7 @@ export function PublishItem({ item, edit }: { item: ReviewItem; edit: () => void
           <button className="desk-primary" onClick={copy} disabled={busy}>{busy ? 'Copying…' : copied === details ? 'Copied' : 'Copy listing details'}</button>
           <button className="desk-secondary" onClick={() => { setError(undefined); select(); }}>Select details</button>
         </div>
-        <p id={`${fieldId}-help`} className="desk-meta" role="status">{selected ? 'Press ⌘C on Mac or Ctrl+C on Windows to copy the selected details.' : copied === details ? 'Listing details copied. Paste them into the listing form.' : 'You can also select the details and copy them with your keyboard.'}</p>
+        <p id={`${fieldId}-help`} className="desk-meta" role="status">{selected ? 'Press ⌘C on Mac or Ctrl+C on Windows to copy the selected details.' : copied === details ? 'Paste into the listing form.' : ''}</p>
         <ErrorNotice error={error} />
       </div>
       <div className={styles.step}>
@@ -54,7 +54,7 @@ export function PublishItem({ item, edit }: { item: ReviewItem; edit: () => void
         <div className={styles.sites}>{destinations.map(destination => <a key={destination.site} href={destination.url} target="_blank" rel="noopener noreferrer" className={styles.destination} aria-label={`Open ${destination.name} listing form in a new tab`}>
           <Site site={destination.site} /><span><span>{destination.name}</span><span className="desk-meta">Open listing form ↗</span></span>
         </a>)}</div>
-        <p className="desk-meta">Opening a form does not post your item or change its status in Secondhand.</p>
+
       </div>
     </>}
   </section>;
