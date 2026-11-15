@@ -122,7 +122,7 @@ const line = f => `${f.level === 'error' ? 'ERROR' : 'warn '} ${f.id}  ${f.where
 // The page names itself: data-screen on the screen's root, and data-state there (or on each data-view) for the state it is drawn in.
 const names = page => page.evaluate(() => {
   const el = document.querySelector('[data-screen]'), states = [el, ...document.querySelectorAll('[data-view][data-state]')].flatMap(e => (e?.dataset.state ?? '').split(/[\s,]+/)).filter(Boolean);
-  return { screen: el?.dataset.screen ?? null, states: [...new Set(states)], skip: el?.dataset.skip ?? '', catalog: !!document.querySelector('[data-sheet]'), wash: !!document.querySelector('[data-part="wash"]') };
+  return { screen: el?.dataset.screen ?? null, states: [...new Set(states)], skip: el?.dataset.skip ?? '', catalog: !!document.querySelector('[data-sheet]'), wash: !!document.querySelector('[data-part="wash"]'), top: !!document.querySelector('[data-part="nav"],[data-part="page-head"]') };
 });
 async function readNames(url, { browser }) {
   const page = await browser.newPage({ viewport: { width: W, height: H } });
@@ -131,12 +131,12 @@ async function readNames(url, { browser }) {
 // A status a person or a builder set ("tests", "fixed") stands while the checks stay clean.
 const kept = file => { try { const s = JSON.parse(readFileSync(file, 'utf8')).status; return ['built', 'tests', 'fixed'].includes(s) ? s : null; } catch { return null; } };
 
-// U8 the wash sits on every main tab and on nothing else (Ben, 06:21: "sometimes the gradient at the top of the screen is
-// there or isnt there"). A main tab is a route under (tabs)/; a pushed page, a sheet or a full-screen moment has none.
-export function washRule(route, hasWash) {
-  const tab = route.startsWith('(tabs)/');
-  if (tab && !hasWash) return { level: 'error', id: 'U8', where: 'screen', msg: 'is a main tab with no wash: every main tab carries the wash at its top, so the tabs look like one place (<Screen wash>)' };
-  if (!tab && hasWash) return { level: 'error', id: 'U8', where: 'screen', msg: 'is a pushed page with the wash: the wash marks a main tab only, so a page that is not a tab has none' };
+// U8 the wash sits at the top of every page that has a top (a nav or a tab's title), and on nothing else: a sheet, the
+// camera and a full-screen moment have none. Ben, 06:21: "sometimes the gradient at the top of the screen is there or isnt
+// there"; 09:56: "the gradient at the top of the screen is on some pages and not on others". Screen draws it by default.
+export function washRule(route, hasWash, hasTop = true) {
+  if (hasTop && !hasWash) return { level: 'error', id: 'U8', where: 'screen', msg: 'has a top with no wash under it: every page with a nav or a title carries the wash, so no page looks unlike the next (<Screen> draws it whenever it has a nav)' };
+  if (!hasTop && hasWash) return { level: 'error', id: 'U8', where: 'screen', msg: 'has the wash with no nav or title above it: the wash marks the top of a page, so a sheet or a full-screen moment has none' };
   return null;
 }
 
@@ -162,7 +162,7 @@ export async function checkRoute({ route, path }, { browser, base, out = RENDERS
     .map(f => catalog && composition.has(f.id) ? { ...f, level: 'warn' } : f);
   // B35 for the screen: every required state is drawn on one of its pages, url?state=<s> (app/src/demo/screen.ts), or skipped with why.
   // The state page drops ?world= and replaces any ?state=, so a route checked with its own query asks the same question.
-  const washed = own.catalog ? null : washRule(route, own.wash); if (washed) list.push(washed);
+  const washed = own.catalog ? null : washRule(route, own.wash, own.top); if (washed) list.push(washed);
   if (!catalog) list.push(...await checkComposition(url, { browser, route, typical: !new URL(url).searchParams.has('state') }));
   const have = new Set(own.states), skip = new Map();
   const skips = n => { for (const x of n.skip.split(';')) { const [id, why] = x.split(':').map(y => y.trim()); if (id) skip.set(id, why ?? ''); } };
