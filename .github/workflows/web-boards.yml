@@ -76,4 +76,6 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add brand/explore/web-home/boards brand/explore/web-home/hero
           git commit -m "test(web): section boards drawn in the brand faces" || exit 0
-          git pull --no-rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"
+          # Two runs can overlap: the newer run's renders win any clash over the same out/ files, since they are drawn
+          # from the newer code.
+          git pull --no-rebase -X ours origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"
