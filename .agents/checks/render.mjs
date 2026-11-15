@@ -182,7 +182,7 @@ function checkView(view, ctx) {
     // B34 text a box cuts off ends in an ellipsis, and text stays inside the part that holds it
     if (t.cut && !t.dots) E('B34', q, 'is cut off by its box with no ellipsis: text that can run long ends in an ellipsis or wraps (ledger L37)');
     const home = (() => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].part) return view.els[i]; return null; })();
-    if (home && !t.cut && (t.full[0] < home.rect[0] - 1 || t.full[2] > home.rect[2] + 1 || (t.ink ?? t.full)[1] < home.rect[1] - 1 || (t.ink ?? t.full)[3] > home.rect[3] + 1)) E('B34', q, `spills out of [${home.part}]: a thing holds what is in it (ledger L37)`);
+    if (home && !t.cut && !t.scroller && (t.full[0] < home.rect[0] - 1 || t.full[2] > home.rect[2] + 1 || (t.ink ?? t.full)[1] < home.rect[1] - 1 || (t.ink ?? t.full)[3] > home.rect[3] + 1)) E('B34', q, `spills out of [${home.part}]: a thing holds what is in it (ledger L37)`);
     // margins: text stays inside them
     const m = sheet.margin, mx = typeof m.x === 'object' ? m.x[String(view.canvas?.[0])] ?? 0 : m.x ?? 0, x0 = mx;
     const [l, tp, r, b] = t.rect, off = [!t.scroller && (l < x0 - 1 || r > view.w - x0 + 1), m.top != null && tp < m.top - 1, m.bottom != null && b > view.h - m.bottom + 1];
@@ -344,7 +344,9 @@ function checkView(view, ctx) {
       E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a row that opens a screen and ends in no chevron: nothing shows it can be pressed');
     // The fill may sit on a child that covers the whole button, as a Press wrapper around a pill draws it.
     const covers = k => inside(k) && (k.bg || k.borders.length || k.gradient) && k.rect[0] <= el.rect[0] + 1 && k.rect[1] <= el.rect[1] + 1 && k.rect[2] >= el.rect[2] - 1 && k.rect[3] >= el.rect[3] - 1;
-    if (el.button && el.part !== 'tab' && el.hasText && !el.bg && !el.borders.length && !el.gradient && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img') && inside(k) || covers(k))) E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a button with no fill and no outline: a button is a pill or a filled shape'); });
+    // Judged only when the whole button is on screen: a row cut by the fold has its chevron below, and the next screenful sees it whole.
+    const whole = el.rect[0] >= -1 && el.rect[1] >= -1 && el.rect[2] <= view.w + 1 && el.rect[3] <= view.h + 1;
+    if (whole && el.button && el.part !== 'tab' && el.hasText && !el.bg && !el.borders.length && !el.gradient && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img') && inside(k) || covers(k))) E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a button with no fill and no outline: a button is a pill or a filled shape'); });
   // B36 edges line up or clearly differ: two blocks of text, one above the other, never start 1 to 3 px apart
   // Words inside a small box of their own (a tag, a pill, a button) start where the box's padding puts them, so they are left out.
   const boxed = t => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].bg || view.els[i].borders.length) return size(view.els[i])[0] < view.w / 2; return false; };

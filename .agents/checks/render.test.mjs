@@ -337,6 +337,13 @@ test('render: tag gradients on tiles under a field are not more fields, and logo
   const found = await ids(app(`<div class="f" style="margin:16px 20px;height:96px"></div><div style="display:flex;gap:16px;margin:0 20px">${tile}${tile}</div>`), 'app');
   assert.deepEqual(found.filter(o => /^B(4|33) /.test(o)), []);
 });
+// From the You tab (06:53): a row cut by the fold, whose chevron is below it, and a row of chips that scrolls sideways.
+test('render: a row cut by the fold and text in a sideways scroller are judged when they are in view, not before', { skip: !pw }, async () => {
+  const chevron = '<svg width="20" height="20" viewBox="0 0 20 20" style="position:absolute;right:16px;top:36px"><path d="M8 5l5 5-5 5" stroke="currentColor" fill="none"/></svg>';
+  const found = await ids(app(`<div style="position:absolute;top:812px;left:20px;right:20px"><button style="position:relative;display:block;width:100%;height:56px;border:0;background:none;text-align:left;font:500 15px var(--font-text);color:var(--ink)">Notifications${chevron}</button></div>
+    <div data-part="chip-row" style="margin:16px 20px;overflow-x:auto;white-space:nowrap;height:36px">${'<span style="display:inline-block;height:36px;padding:8px 12px;margin-right:8px;background:var(--gray);border-radius:999px;font-size:15px">Nike Dunks</span>'.repeat(5)}</div>`), 'app');
+  assert.deepEqual(found.filter(o => /^(U1|B34) /.test(o)), []);
+});
 // Each case renders in its own page of the one browser, so they run side by side.
 describe('render: in a real browser, side by side', { concurrency: 4 * availableParallelism() }, () => {
   for (const a of browserTests) test(...a);
