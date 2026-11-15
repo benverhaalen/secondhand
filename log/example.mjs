@@ -62,6 +62,13 @@ export async function runExample(sinkFor, build = '0.1.0+example') {
   item.ask('dc_2', 'pickupTime', 'never_alone', { why: 'a pickup time is only ever set by the person' });
   item.close('dc_2', 'expired');
   item.change('conversation', 'cv_1', 'answered', { was: 'waiting' });
+  // A site event from a watcher, and an intelligence question streaming its answer (protocol-and-adapters 3.6, intelligence-api 1).
+  server.event('event.received', { source: 'watcher_signed_in', kind: 'offer.received', site: 'depop', account: 'ac_1', dedupe: 'depop:of_9', duplicate: false });
+  const ans = { kind: 'sold_price', state: 'thin', found: { comps: 3 }, searched: ['ebay', 'depop'] };
+  server.event('answer.partial', { job: 'jb_2', answer: ans });
+  server.event('gather.update', { job: 'jb_2', n: 1, answer: { ...ans, state: 'shown', found: { comps: 14 } } });
+  server.event('answer.settled', { job: 'jb_2', answer: { ...ans, state: 'shown', found: { comps: 14 } } });
+  server.event('answer.late', { job: 'jb_2', answer: { ...ans, state: 'shown', found: { comps: 15 } } });
   server.note('reconcile found nothing to fix', { checked: 2 });
   app.end(); server.end();
 }
