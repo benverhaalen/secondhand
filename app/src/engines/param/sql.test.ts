@@ -280,3 +280,29 @@ test('B5 migration refuses ambiguous preexisting post-fit event history', async 
     await db.exec('rollback');
   }
 });
+
+for (const keep_evidence of [true, false]) test(`fit rollback restores the existing event champion without inserting a version (keep_evidence=${keep_evidence})`, async () => {
+  await reset();
+  const rollbackAt = '2026-11-16T12:00:00.000Z';
+  await run(null, async (s) => {
+    await s.propose(fit({ name: 'assist_span_open', family: 'beta', value_or_hyperparams: { alpha: 8, beta: 2 }, prior: { alpha: 8, beta: 2 } }), 0);
+    await s.promote('assist_span_open', D, 1, 0, AT);
+    await s.observe('assist_span_open', D, { success: 0, weight: 2, days_since_last: 0 }, AT);
+    await s.propose(fit({ name: 'assist_span_open', family: 'beta', value_or_hyperparams: { alpha: 18, beta: 2 }, prior: { alpha: 8, beta: 2 }, held_out_score: 0.8 }), 2);
+    await s.promote('assist_span_open', D, 3, 0, AT);
+    await s.propose(fit({ name: 'assist_span_open', family: 'beta', value_or_hyperparams: { alpha: 28, beta: 2 }, prior: { alpha: 8, beta: 2 }, held_out_score: 0.7 }), 3);
+  });
+  const before = await run(null, (s) => s.rows('assist_span_open', D));
+  const restored = { ...before[1], status: 'champion', promoted_at: rollbackAt };
+  await run(null, async (s) => {
+    assert.deepEqual(await s.rollback('assist_span_open', D, rollbackAt, keep_evidence), restored);
+    assert.deepEqual(await s.rows('assist_span_open', D), [before[0], restored, { ...before[2], status: 'retired' }, before[3]]);
+  }, false);
+  assert.deepEqual(await run(null, (s) => s.rows('assist_span_open', D)), before, 'rolling back the transaction undoes both champion status changes');
+  await run(null, async (s) => {
+    assert.deepEqual(await s.rollback('assist_span_open', D, rollbackAt, keep_evidence), restored);
+  });
+  assert.deepEqual(await run(null, (s) => s.rows('assist_span_open', D)), [before[0], restored, { ...before[2], status: 'retired' }, before[3]]);
+  const read = await run(null, (s) => s.read('assist_span_open', D));
+  assert.deepEqual([read.version, read.value, read.n_eff], [2, before[1].value_or_hyperparams, before[1].n_eff]);
+});
