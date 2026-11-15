@@ -1,50 +1,50 @@
-Attributes: Application, 0x10211c790, pid: 83460, label: 'secondhand'
+Attributes: Application, 0x103439a70, pid: 19884, label: 'secondhand'
 Element subtree:
- →Application, 0x10211c790, pid: 83460, label: 'secondhand'
-    Window (Main), 0x1021671b0, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x1021265f0, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x1021785b0, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x10217dbe0, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x10216a5d0, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x10216abd0, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x10215bdb0, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x102159550, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x1021633c0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x10212a620, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x1021637e0, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x1021194d0, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x102162ba0, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x10211c370, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x102125ea0, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x1021566b0, {{0.0, 0.0}, {402.0, 874.0}}
-                                    ScrollView, 0x102131330, {{0.0, 0.0}, {402.0, 874.0}}
-                                      Other, 0x102151010, {{0.0, 0.0}, {402.0, 874.0}}
-                                        Other, 0x1021662f0, {{0.0, 0.0}, {402.0, 874.0}}
-                                          Other, 0x102153c70, {{0.0, 0.0}, {402.0, 298.0}}
-                                          Other, 0x10217d160, {{20.0, 62.0}, {362.0, 44.0}}
-                                            StaticText, 0x10216f810, {{141.7, 75.3}, {118.7, 23.3}}, label: 'secondhand'
-                                              StaticText, 0x102174370, {{141.7, 75.3}, {118.7, 23.3}}, label: 'secondhand'
-                                          StaticText, 0x102164b00, {{20.0, 118.0}, {362.0, 41.3}}, label: 'Welcome'
-                                            StaticText, 0x102181340, {{20.0, 118.0}, {362.0, 41.3}}, label: 'Welcome'
-                                          StaticText, 0x1021603e0, {{20.0, 187.3}, {362.0, 40.3}}, label: 'secondhand lists your things on the sites, answers buyers and gets them sent.'
-                                            StaticText, 0x10217e9c0, {{20.0, 187.3}, {362.0, 40.3}}, label: 'secondhand lists your things on the sites, answers buyers and gets them sent.'
-                                          Button, 0x10217eae0, {{20.0, 239.7}, {171.7, 40.0}}, identifier: 'signin-apple', label: 'Continue with Apple'
-                                          Button, 0x10217ec00, {{20.0, 291.7}, {181.3, 40.0}}, identifier: 'signin-google', label: 'Continue with Google'
-                                          Button, 0x10217ed20, {{20.0, 343.7}, {168.0, 40.0}}, identifier: 'signin-email', label: 'Continue with email'
-                                      Other, 0x10217ee40, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                        Other, 0x10217ef60, {{396.0, 65.0}, {3.0, 744.0}}
-                                      Other, 0x10217f080, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x10217f1a0, {{65.0, 868.0}, {272.0, 3.0}}
-                                      Other, 0x10217f2c0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                        Other, 0x10217f3e0, {{396.0, 65.0}, {3.0, 744.0}}
-                                      Other, 0x10217f500, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x10217f620, {{65.0, 868.0}, {272.0, 3.0}}
-                      Other, 0x10217f740, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10217f860, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x103439a70, pid: 19884, label: 'secondhand'
+    Window (Main), 0x10343a220, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x1034450d0, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x103471c90, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x103463610, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x10343ec60, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x103454560, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x10344ded0, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x103450bb0, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x10345abd0, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x103453900, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x1034530a0, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x10346cf60, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x103454140, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x10346c4e0, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x10346b780, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x103453d20, {{0.0, 0.0}, {402.0, 874.0}}
+                                    ScrollView, 0x10346f890, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x103473fc0, {{0.0, 0.0}, {402.0, 874.0}}
+                                        Other, 0x10346d380, {{0.0, 0.0}, {402.0, 874.0}}
+                                          Other, 0x103462090, {{0.0, 0.0}, {402.0, 298.0}}
+                                          Other, 0x1034749d0, {{20.0, 62.0}, {362.0, 44.0}}
+                                            StaticText, 0x103437ec0, {{20.0, 75.3}, {118.7, 23.3}}, label: 'secondhand'
+                                              StaticText, 0x1034732d0, {{20.0, 75.3}, {118.7, 23.3}}, label: 'secondhand'
+                                          StaticText, 0x1034733f0, {{20.0, 118.0}, {362.0, 41.3}}, label: 'welcome'
+                                            StaticText, 0x103473510, {{20.0, 118.0}, {362.0, 41.3}}, label: 'welcome'
+                                          StaticText, 0x103473630, {{20.0, 187.3}, {362.0, 40.3}}, label: 'secondhand lists your things on the sites, answers buyers and gets them sent.'
+                                            StaticText, 0x103473750, {{20.0, 187.3}, {362.0, 40.3}}, label: 'secondhand lists your things on the sites, answers buyers and gets them sent.'
+                                          Button, 0x103473870, {{20.0, 239.7}, {171.7, 40.0}}, identifier: 'signin-apple', label: 'Continue with Apple'
+                                          Button, 0x103473990, {{20.0, 291.7}, {181.3, 40.0}}, identifier: 'signin-google', label: 'Continue with Google'
+                                          Button, 0x103473ab0, {{20.0, 343.7}, {168.0, 40.0}}, identifier: 'signin-email', label: 'Continue with email'
+                                      Other, 0x103473bd0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x103475230, {{396.0, 65.0}, {3.0, 772.0}}
+                                      Other, 0x103475350, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x103475470, {{3.0, 834.0}, {396.0, 3.0}}
+                                      Other, 0x103475590, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x1034756b0, {{396.0, 65.0}, {3.0, 772.0}}
+                                      Other, 0x1034757d0, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x1034758f0, {{3.0, 834.0}, {396.0, 3.0}}
+                      Other, 0x103475a10, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103475b30, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x10211c790, pid: 83460, label: 'secondhand'
+ →Application, 0x103439a70, pid: 19884, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x10208a420, pid: 83460, label: 'secondhand'
+    Application, 0x103477130, pid: 19884, label: 'secondhand'
   }

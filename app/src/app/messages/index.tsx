@@ -1,15 +1,18 @@
-// Messages: every conversation from every site in one list, newest first, as Mail and iMessage order an inbox
-// (spec/pages.md §6.3; decision "All messages live behind a chat icon with a count"). Replies start as drafts, so the page
-// opens on the replies waiting to be sent, one at a time like a queue card: the buyer's words, the exact reply and the facts
-// it states with their sources, then Send, Edit or Take over, and Send all for replies that state only confirmed facts
-// (spec/ways-out.md §6.3, "Let me approve replies fast", Ben 05:18). Each row says what waits for the person, or that the
-// agent answered for them. Behavior: app/behavior/messages/index.json.
+// Messages: every conversation from every site in one list, newest first, as Mail and iOS Messages list an inbox
+// (spec/pages.md §6.3; decision "All messages live behind a chat icon with a count"; Ben, 09:56: "messages should just list
+// the messages"). A row is the conversation: who, the thing, their last words, when, and how many are new. What waits on it
+// is one quiet word ("Draft ready"), and the draft itself is answered inside the conversation, where its buyer's words are
+// (app/src/app/messages/[id].tsx). Behavior and the reason for each element: app/behavior/messages/index.json.
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Message, Draft, EmptyState, Icon, Line, List, Meta, Nav, Notice, Photo, Pill, Press, Row, Screen, Section, Sheet, Stack, ThreadRow, Txt, type Span } from '@/ui';
-import { ago, itemById, ms, world } from '@/demo';
-import { inbox, needWord, replyQueue } from '@/demo/inbox';
+import { useMemo } from 'react';
+import { EmptyState, List, Meta, Nav, Screen, Stack, Txt } from '@/ui';
+import { ConvoRow, type ConvoNote } from '@/ui/parts/convo-row';
+import { ListRow } from '@/ui/parts/list-row';
+import { cards, notices } from '@/today/cards';
+import { ago, itemById, usd, world } from '@/demo';
+import { draftFor, inbox } from '@/demo/inbox';
 import { photo } from '@/demo/photos';
+import { shortName } from '@/demo/short-name';
 import { useScreen } from '@/demo/screen';
 
 // The states this page cannot draw honestly yet, each with why (B35, app/src/demo/screen.ts).
@@ -22,109 +25,59 @@ const back = () => (router.canGoBack() ? router.back() : router.replace('/' as H
 export default function Messages() {
   const p = useLocalSearchParams<{ world?: string; item?: string }>();
   // ?state= draws over the clearing world (app/src/demo/screen.ts): one keeps its first conversation, because the one world
-  // has sold nothing and so has no thread; empty and failed have no rows; offline is the last copy with every send held.
+  // has sold nothing and so has no thread; empty and failed have no rows; offline is the last copy.
   const s = useScreen();
   const asked = s.state;
   const w = asked === 'one' && !p.world ? world('clearing') : s.w;
-  const offline = asked === 'offline';
   const q = p.world ? `?world=${p.world}` : '';
-  const [only, setOnly] = useState<string | null>(p.item ?? null);
-  const [filter, setFilter] = useState(false);
   const all = useMemo(() => (asked === 'empty' || asked === 'failed' ? [] : asked === 'one' ? inbox(w).slice(0, 1) : inbox(w)), [w, asked]);
-  const queue = useMemo(() => replyQueue(w).filter(r => all.some(a => a.c.id === r.c.id)), [w, all]);
-  // What the person did with each reply in the queue: sent as written, sent after an edit, or taken over.
-  const [done, setDone] = useState<Record<string, 'sent' | 'edited'>>({});
-  const [edits, setEdits] = useState<Record<string, Span[]>>({});
-  const [sending, setSending] = useState<string | 'all' | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
-  const left = queue.filter(r => !done[r.c.id]);
-  const now = left[0];
-  const sure = left.filter(r => r.sure && !edits[r.c.id]);
-  const sentCount = Object.keys(done).length;
-
-  const shown = only ? all.filter(r => r.c.item_id === only) : all;
-  const items = [...new Map(all.filter(r => r.item).map(r => [r.item!.id, r.item!])).values()];
+  // ?item= shows one thing's conversations, for a link from that thing's page.
+  const shown = p.item ? all.filter(r => r.c.item_id === p.item) : all;
+  const alerts = asked === 'empty' || asked === 'failed' || p.item ? [] : [
+    ...cards(w).map(card => ({ id: card.key, title: card.title, detail: card.word, to: card.open })),
+    ...notices(w).map(notice => ({ id: notice.id, title: notice.text, detail: undefined, to: notice.to })),
+    ...w.matches.filter(match => {
+      const want = w.wants.find(want => want.id === match.want_id && want.state === 'active');
+      return want && ['found', 'alerted'].includes(match.state)
+        && ['exact', 'likely_same_model'].includes(match.label)
+        && (want.max_total_cents == null || match.delivered_cents <= want.max_total_cents)
+        && (!want.fit.size || match.size?.toLowerCase() === want.fit.size.toLowerCase());
+    }).map(match => ({ id: `found-${match.id}`, title: match.title, detail: `Found for ${usd(match.delivered_cents)}`, to: `/listing/${match.id}` })),
+  ];
   const state = asked === 'failed' || asked === 'offline' ? asked
     : all.length === 0 ? (w.name === 'new' ? 'new' : 'empty') : all.length === 1 ? 'one' : 'typical';
-  const open = (id: string, take = false) => router.push((`/messages/${id}` + q + (take ? `${q ? '&' : '?'}take=1` : '')) as Href);
-  const choose = (id: string | null) => { setOnly(id); setFilter(false); };
-  const send = (ids: string[], key: string) => {
-    setSending(key);
-    timer.current = setTimeout(() => { setSending(null); setDone(d => ({ ...d, ...Object.fromEntries(ids.map(id => [id, edits[id] ? 'edited' : 'sent'])) })); }, 700);
-  };
-  // What the agent did: the messages it sent for the person in the last week. The row opens the setting and its log.
-  const sentForYou = w.messages.filter(m => m.actor === 'auto' && ms(w.now) - ms(m.sent_at) < 7 * 864e5).length;
+  const open = (id: string) => router.push((`/messages/${id}` + q) as Href);
+  // The one word a row carries: a possible scam first, then a reply waiting for a tap, then what the agent sent.
+  const noteOf = ({ c, last, waiting }: (typeof all)[number]): ConvoNote | undefined =>
+    c.state === 'blocked' ? 'blocked' : waiting?.kind === 'scam_warning' ? 'scam' : draftFor(w, c.id) ? 'draft' : last?.actor === 'auto' ? 'auto' : undefined;
 
   return (
-    <Screen name="messages" state={state} skip={SKIP}
-      nav={<Nav back={back} action={items.length > 1 ? { id: 'messages-filter', icon: 'filter-horizontal', label: 'Show one item', onPress: () => setFilter(true) } : undefined} />}>
+    <Screen name="messages" state={state} skip={SKIP} nav={<Nav back={back} />}>
       <Stack gap="tight">
         <Txt role="heading">Messages</Txt>
-        {only ? <Txt role="body" tone="ink-2" lines={1}>{itemById(w, only)?.title ?? ''}</Txt> : null}
-        {offline ? <Meta icon="hourglass" text="Waiting for signal" /> : null}
+        {p.item ? <Txt role="body" tone="ink-2" lines={1}>{shortName(itemById(w, p.item) ?? { title: '' })}</Txt> : null}
+        {asked === 'offline' ? <Meta icon="hourglass" text="Waiting for signal" /> : null}
       </Stack>
       {asked === 'failed' ? (
         <EmptyState title="Messages didn’t load"
-          action={{ id: 'messages-retry', label: 'Try again', onPress: () => router.replace(('/messages' + q) as Href) }} />
+          action={{ id: 'messages-retry', label: 'Retry', onPress: () => router.replace(('/messages' + q) as Href) }} />
       ) : null}
 
-      {queue.length && !only ? (
-        <Section title={now ? `${left.length} ${left.length === 1 ? 'reply' : 'replies'} to send` : 'Replies sent'}>
-          {now ? (
-            <Stack key={now.c.id}>
-              {/* Which thing the reply is about, by its picture first (Ben, 06:19: say it with more than words). */}
-              {now.item ? (
-                <Row lead={<Photo src={pic(now.item.photos[0].key)} label={now.item.title} />}>
-                  <Txt role="body" lines={2}>{now.item.title}</Txt>
-                </Row>
-              ) : null}
-              {now.asked ? (
-                <Message side="theirs" id={`queue-thread-${now.c.id}`} label={`Open the thread with ${now.c.buyer}`} onPress={() => open(now.c.id)}
-                  meta={<Meta text={`${now.c.buyer}, ${ago(now.asked.sent_at, w.now)}`} />}>{now.asked.text}</Message>
-              ) : null}
-              <Draft id="queue" who={now.c.buyer} spans={edits[now.c.id] ?? now.draft.spans} facts={now.draft.facts}
-                status={sending === now.c.id ? 'sending' : 'ready'} lead hold={offline}
-                onChange={s => setEdits(e => ({ ...e, [now.c.id]: s }))}
-                onSend={() => send([now.c.id], now.c.id)} onMine={() => open(now.c.id, true)} />
-            </Stack>
-          ) : null}
-          {sentCount ? <Meta icon="tick-02" text={`Sent ${sentCount} ${sentCount === 1 ? 'reply' : 'replies'}`} /> : null}
-          {sure.length > 1 && !offline ? (
-            <Line><Pill id="queue-send-all" kind="second" label={`Send all ${sure.length}`} state={sending === 'all' ? 'working' : 'idle'} step="Sending" onPress={() => send(sure.map(r => r.c.id), 'all')} /></Line>
-          ) : null}
-        </Section>
-      ) : null}
-
+      {alerts.length ? <List>{alerts.map(alert => (
+        <ListRow key={alert.id} id={`alert-${alert.id}`} label={alert.title} detail={alert.detail}
+          onPress={() => router.push((alert.to + (alert.to.includes('?') ? q.replace('?', '&') : q)) as Href)} />
+      ))}</List> : null}
       {shown.length ? (
         <List>
-          {shown.map(({ c, last, item, waiting }) => (
-            <ThreadRow key={c.id} id={`thread-${c.id}`} who={c.buyer} photo={item ? pic(item.photos[0].key) : null} title={item?.title ?? ''} site={c.site}
-              need={waiting && !done[c.id] ? { state: 'need', word: needWord(waiting) } : undefined}
-              did={c.state === 'blocked' ? 'Blocked' : done[c.id] ? 'Drafted and sent by you' : last?.actor === 'auto' ? 'Sent for you' : last?.actor === 'user' ? 'You' : undefined}
-              last={last?.text ?? ''} mine={last?.actor !== 'counterpart'} time={last ? ago(last.sent_at, w.now) : ''} unread={done[c.id] ? 0 : c.unread} onPress={() => open(c.id)} />
+          {shown.map(r => (
+            <ConvoRow key={r.c.id} id={`thread-${r.c.id}`} who={r.c.buyer} photo={r.item ? pic(r.item.photos[0].key) : null} name={r.item ? shortName(r.item) : ''}
+              site={r.c.site} note={noteOf(r)} last={r.last?.text ?? ''} time={r.last ? ago(r.last.sent_at, w.now) : ''} unread={r.c.unread} onPress={() => open(r.c.id)} />
           ))}
         </List>
       ) : null}
-      {all.length === 0 && asked !== 'failed' ? (
+      {all.length === 0 && alerts.length === 0 && asked !== 'failed' ? (
         <EmptyState title="No messages yet" line={w.name === 'new' ? 'Connect a site, and buyers on it write to you here.' : 'When a buyer writes on any site, it shows up here.'} />
       ) : null}
-      {all.length ? <Notice id="messages-answering" icon="bubble-chat" text={sentForYou ? `${sentForYou} sent for you this week` : 'Draft for me is on'} onPress={() => router.push('/you/messages' as Href)} /> : null}
-
-      <Sheet open={filter} title="Show messages about" onClose={() => setFilter(false)}>
-        <List>
-          <Press id="filter-all" label="Every item" selected={!only} onPress={() => choose(null)} round={false}>
-            <Row trail={!only ? <Icon name="tick-02" /> : undefined}><Txt role="headline">Every item</Txt></Row>
-          </Press>
-          {items.map(it => (
-            <Press key={it.id} id={`filter-${it.id}`} label={it.title} selected={only === it.id} onPress={() => choose(it.id)} round={false}>
-              <Row lead={<Photo src={pic(it.photos[0].key)} label={it.title} />} trail={only === it.id ? <Icon name="tick-02" /> : undefined}>
-                <Txt role="body" lines={2}>{it.title}</Txt>
-              </Row>
-            </Press>
-          ))}
-        </List>
-      </Sheet>
     </Screen>
   );
 }

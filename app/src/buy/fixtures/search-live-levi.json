@@ -1,0 +1,1241 @@
+{
+ "recorded": "2026-11-15 05:50 Central, the dev server (npm run web), POST /v1/search {\"text\":\"levi 501\"} as a visitor, then GET /v1/jobs/:id/events. Results are cut to the first 3 in each frame; every other field is as recorded. Dupe rows are removed (Dupe allows no stored rows); Dupe's counts and timing stay.",
+ "start": {
+  "id": "job_8d4i5",
+  "kind": "search",
+  "state": "running",
+  "stages": [
+   {
+    "name": "site:dupe",
+    "state": "running",
+    "started_at": "2026-11-15T11:48:35.788Z",
+    "ended_at": null,
+    "found": {
+     "sources_searched": 0,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {}
+    }
+   },
+   {
+    "name": "site:depop",
+    "state": "running",
+    "started_at": "2026-11-15T11:48:35.788Z",
+    "ended_at": null,
+    "found": {
+     "sources_searched": 0,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {}
+    }
+   },
+   {
+    "name": "site:poshmark",
+    "state": "running",
+    "started_at": "2026-11-15T11:48:35.788Z",
+    "ended_at": null,
+    "found": {
+     "sources_searched": 0,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {}
+    }
+   },
+   {
+    "name": "site:mercari",
+    "state": "running",
+    "started_at": "2026-11-15T11:48:35.788Z",
+    "ended_at": null,
+    "found": {
+     "sources_searched": 0,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {}
+    }
+   },
+   {
+    "name": "site:facebook",
+    "state": "running",
+    "started_at": "2026-11-15T11:48:35.788Z",
+    "ended_at": null,
+    "found": {
+     "sources_searched": 0,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {}
+    }
+   },
+   {
+    "name": "site:ebay",
+    "state": "running",
+    "started_at": "2026-11-15T11:48:35.788Z",
+    "ended_at": null,
+    "found": {
+     "sources_searched": 0,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {}
+    }
+   }
+  ],
+  "stream": "/v1/jobs/job_8d4i5/events"
+ },
+ "frames": [
+  {
+   "id": 1,
+   "event": "job.state",
+   "data": {
+    "job_id": "job_8d4i5",
+    "kind": "search",
+    "state": "running",
+    "at": "2026-11-15T11:48:35.788Z"
+   }
+  },
+  {
+   "id": 2,
+   "event": "job.stage",
+   "data": {
+    "job_id": "job_8d4i5",
+    "stage": "site:depop",
+    "state": "failed",
+    "at": "2026-11-15T11:48:35.794Z",
+    "found": {
+     "sources_searched": 1,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {
+      "depop": 0
+     }
+    },
+    "error": {
+     "code": "no_route",
+     "message": "no live route composed"
+    }
+   }
+  },
+  {
+   "id": 3,
+   "event": "answer.partial",
+   "data": {
+    "job_id": "job_8d4i5",
+    "site": "depop",
+    "product": null,
+    "results": [],
+    "identity": {
+     "by": "default",
+     "model_ok": false
+    },
+    "official": [],
+    "sites_pending": [
+     "dupe",
+     "poshmark",
+     "mercari",
+     "facebook",
+     "ebay"
+    ],
+    "answer": {
+     "id": "job_8d4i5",
+     "kind": "listings_matching",
+     "slots": {
+      "text": "levi 501"
+     },
+     "protocol_version": 1,
+     "facts": [],
+     "found": {
+      "sources_searched": 1,
+      "results_found": 0,
+      "results_used": 0,
+      "dropped_by_reason": {},
+      "sites": {
+       "depop": 0
+      }
+     },
+     "searched": [
+      {
+       "site": "depop",
+       "route_id": "depop.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      }
+     ],
+     "stage": "first",
+     "ms": {
+      "first": null,
+      "settled": null
+     }
+    }
+   }
+  },
+  {
+   "id": 4,
+   "event": "job.stage",
+   "data": {
+    "job_id": "job_8d4i5",
+    "stage": "site:mercari",
+    "state": "failed",
+    "at": "2026-11-15T11:48:35.799Z",
+    "found": {
+     "sources_searched": 1,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {
+      "mercari": 0
+     }
+    },
+    "error": {
+     "code": "no_route",
+     "message": "no live route composed"
+    }
+   }
+  },
+  {
+   "id": 5,
+   "event": "answer.partial",
+   "data": {
+    "job_id": "job_8d4i5",
+    "site": "mercari",
+    "product": null,
+    "results": [],
+    "identity": {
+     "by": "default",
+     "model_ok": false
+    },
+    "official": [],
+    "sites_pending": [
+     "dupe",
+     "poshmark",
+     "facebook",
+     "ebay"
+    ],
+    "answer": {
+     "id": "job_8d4i5",
+     "kind": "listings_matching",
+     "slots": {
+      "text": "levi 501"
+     },
+     "protocol_version": 1,
+     "facts": [],
+     "found": {
+      "sources_searched": 2,
+      "results_found": 0,
+      "results_used": 0,
+      "dropped_by_reason": {},
+      "sites": {
+       "depop": 0,
+       "mercari": 0
+      }
+     },
+     "searched": [
+      {
+       "site": "depop",
+       "route_id": "depop.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "mercari",
+       "route_id": "mercari.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      }
+     ],
+     "stage": "first",
+     "ms": {
+      "first": null,
+      "settled": null
+     }
+    }
+   }
+  },
+  {
+   "id": 6,
+   "event": "job.stage",
+   "data": {
+    "job_id": "job_8d4i5",
+    "stage": "site:facebook",
+    "state": "failed",
+    "at": "2026-11-15T11:48:35.805Z",
+    "found": {
+     "sources_searched": 1,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {
+      "facebook": 0
+     }
+    },
+    "error": {
+     "code": "no_route",
+     "message": "no live route composed"
+    }
+   }
+  },
+  {
+   "id": 7,
+   "event": "answer.partial",
+   "data": {
+    "job_id": "job_8d4i5",
+    "site": "facebook",
+    "product": null,
+    "results": [],
+    "identity": {
+     "by": "default",
+     "model_ok": false
+    },
+    "official": [],
+    "sites_pending": [
+     "dupe",
+     "poshmark",
+     "ebay"
+    ],
+    "answer": {
+     "id": "job_8d4i5",
+     "kind": "listings_matching",
+     "slots": {
+      "text": "levi 501"
+     },
+     "protocol_version": 1,
+     "facts": [],
+     "found": {
+      "sources_searched": 3,
+      "results_found": 0,
+      "results_used": 0,
+      "dropped_by_reason": {},
+      "sites": {
+       "depop": 0,
+       "mercari": 0,
+       "facebook": 0
+      }
+     },
+     "searched": [
+      {
+       "site": "depop",
+       "route_id": "depop.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "mercari",
+       "route_id": "mercari.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "facebook",
+       "route_id": "apify.facebook.search",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed",
+       "cost_usd_est": 0
+      }
+     ],
+     "stage": "first",
+     "ms": {
+      "first": null,
+      "settled": null
+     }
+    }
+   }
+  },
+  {
+   "id": 8,
+   "event": "job.stage",
+   "data": {
+    "job_id": "job_8d4i5",
+    "stage": "site:ebay",
+    "state": "failed",
+    "at": "2026-11-15T11:48:35.813Z",
+    "found": {
+     "sources_searched": 1,
+     "results_found": 0,
+     "results_used": 0,
+     "dropped_by_reason": {},
+     "sites": {
+      "ebay": 0
+     }
+    },
+    "error": {
+     "code": "no_route",
+     "message": "no live route composed"
+    }
+   }
+  },
+  {
+   "id": 9,
+   "event": "answer.partial",
+   "data": {
+    "job_id": "job_8d4i5",
+    "site": "ebay",
+    "product": null,
+    "results": [],
+    "identity": {
+     "by": "default",
+     "model_ok": false
+    },
+    "official": [],
+    "sites_pending": [
+     "dupe",
+     "poshmark"
+    ],
+    "answer": {
+     "id": "job_8d4i5",
+     "kind": "listings_matching",
+     "slots": {
+      "text": "levi 501"
+     },
+     "protocol_version": 1,
+     "facts": [],
+     "found": {
+      "sources_searched": 4,
+      "results_found": 0,
+      "results_used": 0,
+      "dropped_by_reason": {},
+      "sites": {
+       "depop": 0,
+       "mercari": 0,
+       "facebook": 0,
+       "ebay": 0
+      }
+     },
+     "searched": [
+      {
+       "site": "depop",
+       "route_id": "depop.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "mercari",
+       "route_id": "mercari.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "facebook",
+       "route_id": "apify.facebook.search",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed",
+       "cost_usd_est": 0
+      },
+      {
+       "site": "ebay",
+       "route_id": "ebay.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      }
+     ],
+     "stage": "first",
+     "ms": {
+      "first": null,
+      "settled": null
+     }
+    }
+   }
+  },
+  {
+   "id": 10,
+   "event": "job.stage",
+   "data": {
+    "job_id": "job_8d4i5",
+    "stage": "site:poshmark",
+    "state": "arrived",
+    "at": "2026-11-15T11:48:37.155Z",
+    "found": {
+     "sources_searched": 1,
+     "results_found": 48,
+     "results_used": 47,
+     "dropped_by_reason": {
+      "duplicate": 1
+     },
+     "sites": {
+      "poshmark": 47
+     }
+    }
+   }
+  },
+  {
+   "id": 11,
+   "event": "answer.partial",
+   "data": {
+    "job_id": "job_8d4i5",
+    "site": "poshmark",
+    "product": null,
+    "results": [
+     {
+      "id": "ls_poshmark_6ace6e5bb55223caa65a6bbb",
+      "listing_id": "ls_poshmark_6ace6e5bb55223caa65a6bbb",
+      "external_id": "6ace6e5bb55223caa65a6bbb",
+      "title": "LEVIS 501 Original Fit Button-Fly  Black Straight Leg Denim Jeans Size 38X32",
+      "url": "https://poshmark.com/listing/6ace6e5bb55223caa65a6bbb",
+      "site": "poshmark",
+      "route_id": "public.poshmark",
+      "data": "live:poshmark",
+      "condition": "ug",
+      "relation": "exact",
+      "source_kind": "marketplace",
+      "price_cents": {
+       "amount_cents": 2500,
+       "currency": "USD"
+      },
+      "shipping_cents": null,
+      "delivered_cents": {
+       "amount_cents": 2500,
+       "currency": "USD"
+      },
+      "shipping_estimated": true,
+      "also_on": [],
+      "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2026/10/13/6ace6e5bb55223caa65a6bbb/m_6ace6e7470333fdb1bff2d20.jpg"
+     },
+     {
+      "id": "ls_poshmark_6af99977ed364e54a751f33c",
+      "listing_id": "ls_poshmark_6af99977ed364e54a751f33c",
+      "external_id": "6af99977ed364e54a751f33c",
+      "title": "Levi's 501 Original Fit‎ Jeans Men's Size 34x32 Blue Medium Wash Distressed",
+      "url": "https://poshmark.com/listing/6af99977ed364e54a751f33c",
+      "site": "poshmark",
+      "route_id": "public.poshmark",
+      "data": "live:poshmark",
+      "condition": "uf",
+      "relation": "exact",
+      "source_kind": "marketplace",
+      "price_cents": {
+       "amount_cents": 2700,
+       "currency": "USD"
+      },
+      "shipping_cents": null,
+      "delivered_cents": {
+       "amount_cents": 2700,
+       "currency": "USD"
+      },
+      "shipping_estimated": true,
+      "also_on": [],
+      "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2026/11/15/6af99977ed364e54a751f33c/m_6af99977ed364e54a751f33d.jpg"
+     },
+     {
+      "id": "ls_poshmark_6ad66f9428951f14d03c2cbf",
+      "listing_id": "ls_poshmark_6ad66f9428951f14d03c2cbf",
+      "external_id": "6ad66f9428951f14d03c2cbf",
+      "title": "Levi's 501 Light Blue Straight Leg Women's Jeans W 25 L30",
+      "url": "https://poshmark.com/listing/6ad66f9428951f14d03c2cbf",
+      "site": "poshmark",
+      "route_id": "public.poshmark",
+      "data": "live:poshmark",
+      "condition": "ug",
+      "relation": "exact",
+      "source_kind": "marketplace",
+      "price_cents": {
+       "amount_cents": 3900,
+       "currency": "USD"
+      },
+      "shipping_cents": null,
+      "delivered_cents": {
+       "amount_cents": 3900,
+       "currency": "USD"
+      },
+      "shipping_estimated": true,
+      "also_on": [],
+      "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2026/10/19/6ad66f9428951f14d03c2cbf/m_6ad66fabde48831bf7c823e6.jpg"
+     }
+    ],
+    "identity": {
+     "by": "model",
+     "model_ok": true
+    },
+    "official": [],
+    "sites_pending": [
+     "dupe"
+    ],
+    "answer": {
+     "id": "job_8d4i5",
+     "kind": "listings_matching",
+     "slots": {
+      "text": "levi 501"
+     },
+     "protocol_version": 1,
+     "facts": [],
+     "found": {
+      "sources_searched": 5,
+      "results_found": 48,
+      "results_used": 47,
+      "dropped_by_reason": {
+       "duplicate": 1
+      },
+      "sites": {
+       "depop": 0,
+       "mercari": 0,
+       "facebook": 0,
+       "ebay": 0,
+       "poshmark": 47
+      }
+     },
+     "searched": [
+      {
+       "site": "depop",
+       "route_id": "depop.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "mercari",
+       "route_id": "mercari.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "facebook",
+       "route_id": "apify.facebook.search",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed",
+       "cost_usd_est": 0
+      },
+      {
+       "site": "ebay",
+       "route_id": "ebay.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "poshmark",
+       "route_id": "public.poshmark",
+       "query": "levi 501",
+       "outcome": "hit",
+       "ms": 1153,
+       "pace": {
+        "per_minute": 20,
+        "min_gap_ms": 3000
+       }
+      }
+     ],
+     "stage": "first",
+     "ms": {
+      "first": 1362,
+      "settled": null
+     }
+    }
+   }
+  },
+  {
+   "id": 12,
+   "event": "job.stage",
+   "data": {
+    "job_id": "job_8d4i5",
+    "stage": "site:dupe",
+    "state": "arrived",
+    "at": "2026-11-15T11:48:37.248Z",
+    "found": {
+     "sources_searched": 1,
+     "results_found": 40,
+     "results_used": 22,
+     "dropped_by_reason": {
+      "duplicate": 18
+     },
+     "sites": {
+      "dupe": 22
+     }
+    }
+   }
+  },
+  {
+   "id": 13,
+   "event": "answer.partial",
+   "data": {
+    "job_id": "job_8d4i5",
+    "site": "dupe",
+    "product": null,
+    "results": [],
+    "identity": {
+     "by": "model",
+     "model_ok": true
+    },
+    "official": [],
+    "sites_pending": [],
+    "answer": {
+     "id": "job_8d4i5",
+     "kind": "listings_matching",
+     "slots": {
+      "text": "levi 501"
+     },
+     "protocol_version": 1,
+     "facts": [],
+     "found": {
+      "sources_searched": 6,
+      "results_found": 88,
+      "results_used": 69,
+      "dropped_by_reason": {
+       "duplicate": 19
+      },
+      "sites": {
+       "depop": 0,
+       "mercari": 0,
+       "facebook": 0,
+       "ebay": 0,
+       "poshmark": 47,
+       "dupe": 22
+      }
+     },
+     "searched": [
+      {
+       "site": "depop",
+       "route_id": "depop.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "mercari",
+       "route_id": "mercari.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "facebook",
+       "route_id": "apify.facebook.search",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed",
+       "cost_usd_est": 0
+      },
+      {
+       "site": "ebay",
+       "route_id": "ebay.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "poshmark",
+       "route_id": "public.poshmark",
+       "query": "levi 501",
+       "outcome": "hit",
+       "ms": 1153,
+       "pace": {
+        "per_minute": 20,
+        "min_gap_ms": 3000
+       }
+      },
+      {
+       "site": "dupe",
+       "route_id": "dupe.search.api",
+       "query": "levi 501",
+       "outcome": "hit",
+       "ms": 1224,
+       "pace": {
+        "per_minute": 20,
+        "min_gap_ms": 3000
+       }
+      }
+     ],
+     "stage": "first",
+     "ms": {
+      "first": 1362,
+      "settled": null
+     }
+    }
+   }
+  },
+  {
+   "id": 14,
+   "event": "answer.settled",
+   "data": {
+    "job_id": "job_8d4i5",
+    "product": null,
+    "results": [
+     {
+      "id": "ls_poshmark_6ace6e5bb55223caa65a6bbb",
+      "listing_id": "ls_poshmark_6ace6e5bb55223caa65a6bbb",
+      "external_id": "6ace6e5bb55223caa65a6bbb",
+      "title": "LEVIS 501 Original Fit Button-Fly  Black Straight Leg Denim Jeans Size 38X32",
+      "url": "https://poshmark.com/listing/6ace6e5bb55223caa65a6bbb",
+      "site": "poshmark",
+      "route_id": "public.poshmark",
+      "data": "live:poshmark",
+      "condition": "ug",
+      "relation": "exact",
+      "source_kind": "marketplace",
+      "price_cents": {
+       "amount_cents": 2500,
+       "currency": "USD"
+      },
+      "shipping_cents": null,
+      "delivered_cents": {
+       "amount_cents": 2500,
+       "currency": "USD"
+      },
+      "shipping_estimated": true,
+      "also_on": [],
+      "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2026/10/13/6ace6e5bb55223caa65a6bbb/m_6ace6e7470333fdb1bff2d20.jpg"
+     },
+     {
+      "id": "ls_poshmark_6af99977ed364e54a751f33c",
+      "listing_id": "ls_poshmark_6af99977ed364e54a751f33c",
+      "external_id": "6af99977ed364e54a751f33c",
+      "title": "Levi's 501 Original Fit‎ Jeans Men's Size 34x32 Blue Medium Wash Distressed",
+      "url": "https://poshmark.com/listing/6af99977ed364e54a751f33c",
+      "site": "poshmark",
+      "route_id": "public.poshmark",
+      "data": "live:poshmark",
+      "condition": "uf",
+      "relation": "exact",
+      "source_kind": "marketplace",
+      "price_cents": {
+       "amount_cents": 2700,
+       "currency": "USD"
+      },
+      "shipping_cents": null,
+      "delivered_cents": {
+       "amount_cents": 2700,
+       "currency": "USD"
+      },
+      "shipping_estimated": true,
+      "also_on": [],
+      "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2026/11/15/6af99977ed364e54a751f33c/m_6af99977ed364e54a751f33d.jpg"
+     },
+     {
+      "id": "ls_poshmark_6ad66f9428951f14d03c2cbf",
+      "listing_id": "ls_poshmark_6ad66f9428951f14d03c2cbf",
+      "external_id": "6ad66f9428951f14d03c2cbf",
+      "title": "Levi's 501 Light Blue Straight Leg Women's Jeans W 25 L30",
+      "url": "https://poshmark.com/listing/6ad66f9428951f14d03c2cbf",
+      "site": "poshmark",
+      "route_id": "public.poshmark",
+      "data": "live:poshmark",
+      "condition": "ug",
+      "relation": "exact",
+      "source_kind": "marketplace",
+      "price_cents": {
+       "amount_cents": 3900,
+       "currency": "USD"
+      },
+      "shipping_cents": null,
+      "delivered_cents": {
+       "amount_cents": 3900,
+       "currency": "USD"
+      },
+      "shipping_estimated": true,
+      "also_on": [],
+      "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2026/10/19/6ad66f9428951f14d03c2cbf/m_6ad66fabde48831bf7c823e6.jpg"
+     }
+    ],
+    "identity": {
+     "by": "model",
+     "model_ok": true
+    },
+    "official": [],
+    "sites_pending": [],
+    "found": {
+     "sources_searched": 6,
+     "results_found": 88,
+     "results_used": 69,
+     "dropped_by_reason": {
+      "duplicate": 19
+     },
+     "sites": {
+      "depop": 0,
+      "mercari": 0,
+      "facebook": 0,
+      "ebay": 0,
+      "poshmark": 47,
+      "dupe": 22
+     }
+    },
+    "searched": [
+     {
+      "site": "depop",
+      "kind": "search",
+      "url": null,
+      "outcome": "failed",
+      "ms": 0,
+      "count": 0,
+      "error_code": "no_route",
+      "reason": "no live route composed"
+     },
+     {
+      "site": "mercari",
+      "kind": "search",
+      "url": null,
+      "outcome": "failed",
+      "ms": 0,
+      "count": 0,
+      "error_code": "no_route",
+      "reason": "no live route composed"
+     },
+     {
+      "site": "facebook",
+      "kind": "search",
+      "url": null,
+      "outcome": "failed",
+      "ms": 0,
+      "count": 0,
+      "error_code": "no_route",
+      "reason": "no live route composed",
+      "route_id": "apify.facebook.search",
+      "cost_usd_est": 0
+     },
+     {
+      "site": "ebay",
+      "kind": "search",
+      "url": null,
+      "outcome": "failed",
+      "ms": 0,
+      "count": 0,
+      "error_code": "no_route",
+      "reason": "no live route composed"
+     },
+     {
+      "site": "poshmark",
+      "kind": "search",
+      "url": "https://poshmark.com/search?query=levi%20501",
+      "outcome": "hit",
+      "ms": 1153,
+      "count": 48,
+      "pace": {
+       "per_minute": 20,
+       "min_gap_ms": 3000
+      }
+     },
+     {
+      "site": "dupe",
+      "kind": "search",
+      "url": null,
+      "outcome": "hit",
+      "ms": 1224,
+      "count": 40,
+      "pace": {
+       "per_minute": 20,
+       "min_gap_ms": 3000
+      }
+     }
+    ],
+    "answer": {
+     "id": "job_8d4i5",
+     "kind": "listings_matching",
+     "slots": {
+      "text": "levi 501"
+     },
+     "protocol_version": 1,
+     "facts": [],
+     "found": {
+      "sources_searched": 6,
+      "results_found": 88,
+      "results_used": 69,
+      "dropped_by_reason": {
+       "duplicate": 19
+      },
+      "sites": {
+       "depop": 0,
+       "mercari": 0,
+       "facebook": 0,
+       "ebay": 0,
+       "poshmark": 47,
+       "dupe": 22
+      }
+     },
+     "searched": [
+      {
+       "site": "depop",
+       "route_id": "depop.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "mercari",
+       "route_id": "mercari.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "facebook",
+       "route_id": "apify.facebook.search",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed",
+       "cost_usd_est": 0
+      },
+      {
+       "site": "ebay",
+       "route_id": "ebay.search.page",
+       "query": "levi 501",
+       "outcome": "failed",
+       "ms": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "poshmark",
+       "route_id": "public.poshmark",
+       "query": "levi 501",
+       "outcome": "hit",
+       "ms": 1153,
+       "pace": {
+        "per_minute": 20,
+        "min_gap_ms": 3000
+       }
+      },
+      {
+       "site": "dupe",
+       "route_id": "dupe.search.api",
+       "query": "levi 501",
+       "outcome": "hit",
+       "ms": 1224,
+       "pace": {
+        "per_minute": 20,
+        "min_gap_ms": 3000
+       }
+      }
+     ],
+     "stage": "settled",
+     "ms": {
+      "first": 1362,
+      "settled": 1477
+     }
+    }
+   }
+  },
+  {
+   "id": 15,
+   "event": "job.state",
+   "data": {
+    "job_id": "job_8d4i5",
+    "kind": "search",
+    "state": "done",
+    "at": "2026-11-15T11:48:37.272Z",
+    "result": {
+     "product": null,
+     "results": [
+      {
+       "id": "ls_poshmark_6ace6e5bb55223caa65a6bbb",
+       "listing_id": "ls_poshmark_6ace6e5bb55223caa65a6bbb",
+       "external_id": "6ace6e5bb55223caa65a6bbb",
+       "title": "LEVIS 501 Original Fit Button-Fly  Black Straight Leg Denim Jeans Size 38X32",
+       "url": "https://poshmark.com/listing/6ace6e5bb55223caa65a6bbb",
+       "site": "poshmark",
+       "route_id": "public.poshmark",
+       "data": "live:poshmark",
+       "condition": "ug",
+       "relation": "exact",
+       "source_kind": "marketplace",
+       "price_cents": {
+        "amount_cents": 2500,
+        "currency": "USD"
+       },
+       "shipping_cents": null,
+       "delivered_cents": {
+        "amount_cents": 2500,
+        "currency": "USD"
+       },
+       "shipping_estimated": true,
+       "also_on": [],
+       "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2026/10/13/6ace6e5bb55223caa65a6bbb/m_6ace6e7470333fdb1bff2d20.jpg"
+      },
+      {
+       "id": "ls_poshmark_6af99977ed364e54a751f33c",
+       "listing_id": "ls_poshmark_6af99977ed364e54a751f33c",
+       "external_id": "6af99977ed364e54a751f33c",
+       "title": "Levi's 501 Original Fit‎ Jeans Men's Size 34x32 Blue Medium Wash Distressed",
+       "url": "https://poshmark.com/listing/6af99977ed364e54a751f33c",
+       "site": "poshmark",
+       "route_id": "public.poshmark",
+       "data": "live:poshmark",
+       "condition": "uf",
+       "relation": "exact",
+       "source_kind": "marketplace",
+       "price_cents": {
+        "amount_cents": 2700,
+        "currency": "USD"
+       },
+       "shipping_cents": null,
+       "delivered_cents": {
+        "amount_cents": 2700,
+        "currency": "USD"
+       },
+       "shipping_estimated": true,
+       "also_on": [],
+       "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2026/11/15/6af99977ed364e54a751f33c/m_6af99977ed364e54a751f33d.jpg"
+      },
+      {
+       "id": "ls_poshmark_6ad66f9428951f14d03c2cbf",
+       "listing_id": "ls_poshmark_6ad66f9428951f14d03c2cbf",
+       "external_id": "6ad66f9428951f14d03c2cbf",
+       "title": "Levi's 501 Light Blue Straight Leg Women's Jeans W 25 L30",
+       "url": "https://poshmark.com/listing/6ad66f9428951f14d03c2cbf",
+       "site": "poshmark",
+       "route_id": "public.poshmark",
+       "data": "live:poshmark",
+       "condition": "ug",
+       "relation": "exact",
+       "source_kind": "marketplace",
+       "price_cents": {
+        "amount_cents": 3900,
+        "currency": "USD"
+       },
+       "shipping_cents": null,
+       "delivered_cents": {
+        "amount_cents": 3900,
+        "currency": "USD"
+       },
+       "shipping_estimated": true,
+       "also_on": [],
+       "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2026/10/19/6ad66f9428951f14d03c2cbf/m_6ad66fabde48831bf7c823e6.jpg"
+      }
+     ],
+     "identity": {
+      "by": "model",
+      "model_ok": true
+     },
+     "official": [],
+     "sites_pending": [],
+     "found": {
+      "sources_searched": 6,
+      "results_found": 88,
+      "results_used": 69,
+      "dropped_by_reason": {
+       "duplicate": 19
+      },
+      "sites": {
+       "depop": 0,
+       "mercari": 0,
+       "facebook": 0,
+       "ebay": 0,
+       "poshmark": 47,
+       "dupe": 22
+      }
+     },
+     "searched": [
+      {
+       "site": "depop",
+       "kind": "search",
+       "url": null,
+       "outcome": "failed",
+       "ms": 0,
+       "count": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "mercari",
+       "kind": "search",
+       "url": null,
+       "outcome": "failed",
+       "ms": 0,
+       "count": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "facebook",
+       "kind": "search",
+       "url": null,
+       "outcome": "failed",
+       "ms": 0,
+       "count": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed",
+       "route_id": "apify.facebook.search",
+       "cost_usd_est": 0
+      },
+      {
+       "site": "ebay",
+       "kind": "search",
+       "url": null,
+       "outcome": "failed",
+       "ms": 0,
+       "count": 0,
+       "error_code": "no_route",
+       "reason": "no live route composed"
+      },
+      {
+       "site": "poshmark",
+       "kind": "search",
+       "url": "https://poshmark.com/search?query=levi%20501",
+       "outcome": "hit",
+       "ms": 1153,
+       "count": 48,
+       "pace": {
+        "per_minute": 20,
+        "min_gap_ms": 3000
+       }
+      },
+      {
+       "site": "dupe",
+       "kind": "search",
+       "url": null,
+       "outcome": "hit",
+       "ms": 1224,
+       "count": 40,
+       "pace": {
+        "per_minute": 20,
+        "min_gap_ms": 3000
+       }
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

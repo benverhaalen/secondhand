@@ -12,9 +12,13 @@ env:
     visible: "Messages"
     timeout: 30000
 - assertVisible: "Possible scam"
-- tapOn: { id: "messages-filter" }
-- tapOn: { id: "filter-it_jacket" }
-- assertNotVisible: { id: "thread-cv_cf" }
+- assertVisible: "Draft ready"
+- assertNotVisible: "Send all"
+- tapOn: { id: "thread-cv_pd" }
+- extendedWaitUntil:
+    visible: { id: "draft-send" }
+    timeout: 10000
+- back
 - tapOn: { id: "thread-cv_jd" }
 - extendedWaitUntil:
     visible: "Counter"

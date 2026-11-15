@@ -1,0 +1,62 @@
+Outcome: a search screen that runs a real /v1/search job and shows each source as it is asked and as it lands (listings read, kept, dropped and why, time per source, failures in the server's terms), then the ranked results, with the wiring in one module and the look in another so the designer replaces the look without opening the wiring.
+
+Done when (run from app/, each exits 0):
+  node --test --test-concurrency=1 src/buy/live/use-search.test.ts
+  npx tsc --noEmit -p .    (no error in the files you own)
+  node ../scripts/copy-lint.mjs    (no finding in the files you own)
+The lead runs the e2e test (it starts a server and a browser, which you must not).
+
+Files you own (create; change nothing else):
+  app/src/buy/live/use-search.ts       the wiring: a React hook. No JSX, no styling, no strings a person reads.
+  app/src/buy/live/use-search.test.ts  tests of the hook's pure core (see below).
+  app/src/buy/live/search-reach.tsx    the look: renders a Reach. Only parts from '@/ui' and the brand tokens; no fetch, no state beyond what a part needs.
+  app/src/app/dev/search.tsx           the route /dev/search: the search box, then <SearchReach>. Wires the hook to the look and nothing else.
+  app/behavior/dev/search.json         the behavior table (states and controls), in the shape of app/behavior/search.json.
+  app/e2e/dev-search.test.mjs          the e2e test, written from the table, driven by the recorded stream (see below).
+
+Read first: AGENTS.md; .agents/skills/build/SKILL.md; .agents/skills/ui-screen/SKILL.md; product/copy.md; app/src/ui/README.md and app/src/ui/index.ts (the parts); app/src/ui/parts/list-row.tsx, search-field.tsx, overlays.tsx (EmptyState, Skeleton), layout.tsx (Screen, Section, List, Stack); app/src/ui/log.ts; app/src/api/ (client.ts and README.md: api.search, api.jobFrames, ApiFailure); app/src/buy/reach.ts (reach(), Reach, SourceReach); app/src/buy/fixtures/ (three recorded streams and README.md); research/buy/nate/search-in-progress.md (the four patterns, which this screen follows); app/src/app/search.tsx and app/behavior/search.json (the designer's demo search page: follow its conventions, do not change it); app/e2e/README.md, app/e2e/behavior.mjs (start().open(route, { api }): a function answer gets the Playwright route), app/e2e/table-tests.mjs, app/e2e/want.test.mjs.
+
+The wiring, use-search.ts:
+  useSearch() -> { reach: Reach | null; failure: ApiFailure | null; run(text: string): void; stop(): void }.
+  run(text): aborts any search in flight, calls api.search(text), then api.jobFrames(id, { signal, onFrame }), keeps the 202 body and every frame, and sets reach = reach(start, frames) after each frame. A failure of either call sets failure (reach stays as it was). Unmount aborts. Log through log from '@/ui': the search started (query length, not the text), each frame's event name and id, a failure with its code.
+  Put the fold in a pure function exported from the same file, e.g. fold(state, action) for start, frame, failure and reset, and test it with the recorded fixtures: frames applied one by one give the same Reach as reach(start, frames) at every step; a new run discards the old frames; a failure after three frames keeps those three.
+
+The look, search-reach.tsx: <SearchReach reach={reach} failure={failure} onRetry={...} onOpen={url => ...} />.
+  - Above everything, one line of counts, each a field of Reach: sources answered of sources asked (landed.length of sources.length), listings read and kept (found.results_found, found.results_used), and once settled the time to first rows and to the full answer (ms.first, ms.settled, as seconds to one decimal).
+  - One ListRow per source in sources order, from the first frame: a marketplace in SITES gets its logo (site), any other source (dupe) a lead icon and its name capitalised. The detail line says, for the row's state:
+      running: asking
+      arrived with kept > 0: "<read> read, <kept> kept", then each dropped reason with its count ("18 duplicates")
+      arrived with read 0 or outcome empty: nothing for this search
+      outcome needs_account: needs your account
+      failed: the server's error in plain words by code (no_route: not connected here; blocked: refused us; page_changed or unknown: couldn't read the page; anything else: couldn't search), tone brick
+      late: too slow, left out
+      cached refreshing: saved copy, checking again; cached kept: saved copy
+    and the value is the source's ms as seconds to one decimal once it has landed. Keep every word minimal and lowercase where the part's style is; the designer will rewrite them, so put every string in one object at the top of the file.
+  - Results: one ListRow per result (title as label, the price as value from delivered_cents or price_cents, formatted with money from '@/ui', the source site as detail), pressing it calls onOpen(url). While state is running the section title marks them as so far; after settle it does not.
+  - state failed or a failure: EmptyState with what did not load and Try again (onRetry). No rows invented.
+  - The screen root names itself for the gallery and the e2e (dataSet screen 'dev/search', state from Reach: new, running, done, failed), as other screens do through <Screen name state>.
+  No animation beyond what the parts already do. Motion, layout and words are the designer's.
+
+The route, app/src/app/dev/search.tsx: SearchField id "search-box" (placeholder "Find an item or paste a link", working while state is running) whose submit calls run; ?q= on the address runs that query on open; the reach below. Opening a result uses expo-web-browser's openBrowserAsync, or Linking.openURL, whichever the folder already uses; log a failure to open.
+
+The behavior table app/behavior/dev/search.json: states new, running, done, failed with what each shows (the words you chose), and controls search-box (submit runs a search) and one result row id pattern (opens the listing on its site). Use the field names of app/behavior/search.json.
+
+The e2e test app/e2e/dev-search.test.mjs (Node test runner, the helpers in e2e/behavior.mjs), from app/src/buy/fixtures/search-live-levi.json:
+  - api '/v1/search' answers fixture.start; the events path '/v1/jobs/<start.id>/events' is a function answer that, on the first request, fulfils status 200, content-type text/event-stream, with frames 1 to 9 encoded as SSE (`id: N\nevent: E\ndata: JSON\n\n`), and on the reconnect (Last-Event-ID 9) waits 1500 ms and fulfils the rest.
+  - open '/dev/search?q=levi%20501'; during the wait: six source rows show, the four failed ones say not connected here, Dupe and Poshmark say asking, and the counts line says 4 of 6.
+  - after: Dupe says 40 read, 22 kept and 18 duplicates; Poshmark 48 read, 47 kept and 1 duplicate; results show; the state is done; the counts line shows 88 read and 69 kept (the settled found, which is not the sum of the sources: cross-source duplicates come out at settle).
+  - '/v1/search' answering 'fail' shows the failed state with Try again.
+  Use tableTests from e2e/table-tests.mjs too if it fits the table; otherwise write the tests directly.
+
+Out of scope: app/src/app/search.tsx, the Buy tab, app/src/ui, app/src/api, app/src/buy/reach.ts (if one of them needs a change, say exactly what in the report). If something cannot be done from the repo, write what is missing in the report and move on; never invent data or loosen a test.
+
+tsc reports no error in the files you own (cd app && npx tsc --noEmit -p .).
+
+How to work:
+- Read AGENTS.md and .agents/skills/build/SKILL.md first, then the documents this brief names. The files this brief says you own are the only files you create or change.
+- Before code, work out how the thing operates and what is most likely to break it, and write a test for each break so a failure names its cause. Write the failing test first. Take every name from spec/product.md. Follow the patterns of the code already in the same folder; reuse what exists (the param registry in app/src/engines/param and jobs/param, the proof layer in app/src/engines/proof, the log in log/).
+- Run only your own checks, one test file at a time: Python with ./.venv/bin/python -m pytest <file> -q ; TypeScript with node --test --test-concurrency=1 <file> . Never run scripts/prove.mjs with --wave or --tune, never run .agents/check.mjs, never start a server or a browser, never use the network.
+- No secret, token or personal data in any file. No console.log in app code (log through log/). No `any` in TypeScript. No swallowed errors.
+- Do not run git commit, push, checkout or any git command that writes; the lead commits your work.
+- Do every task in the brief. If one truly cannot be done from the repo, say exactly what is missing and move to the next.
+- When finished, write WORKER_REPORT.md in the folder root: one line per task with its check command and exit code, the files you created, and anything not done with the reason.

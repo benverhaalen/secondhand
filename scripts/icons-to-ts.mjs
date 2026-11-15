@@ -20,6 +20,8 @@ const NAMES = [
   // things a card or a page names
   'printer', 'location-01', 'camera-01', 'image-01', 'store-01', 'bubble-chat', 'delivery-truck-01', 'credit-card', 'calendar-03',
   'notification-01', 'information-circle', 'checkmark-circle-02', 'link-01', 'star',
+  // New's four jobs: Track watches for one (binoculars), Find says what a thing is (search by sight)
+  'binoculars', 'search-visual',
 ];
 const pascal = n => n.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join('') + 'Icon';
 const KEEP = new Set(['d', 'cx', 'cy', 'r', 'rx', 'ry', 'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'points', 'fill', 'fillRule', 'clipRule']);

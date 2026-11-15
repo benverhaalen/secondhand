@@ -126,7 +126,7 @@ env:
 - extendedWaitUntil:
     visible: "Couldn’t load this product"
     timeout: 15000
-- assertVisible: "Try again"
+- assertVisible: "Retry"
 # product-retry: loads the page afresh
 - openLink: ${URL}/product/pr_dunk?state=failed
 - extendedWaitUntil:
@@ -136,5 +136,5 @@ env:
 # State: offline
 - openLink: ${URL}/product/pr_dunk?state=offline
 - extendedWaitUntil:
-    visible: "Waiting for signal\\. This is the last copy\\."
+    visible: "Waiting for signal; showing saved results\\."
     timeout: 15000

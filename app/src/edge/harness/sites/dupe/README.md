@@ -53,7 +53,7 @@ The probe made 7 specific, item-level searches, each with a category. Each retur
 
 The eighth search sent a bad argument on purpose, to record the validation error. No 429 and no rate-limit headers were seen, and no Mercari row appeared. The Google Shopping rows named "Ebay" come back with `secondhand: false`, so Dupe's flag undercounts eBay. We keep the flag as given.
 
-`fixtures/` holds the trimmed recordings: `initialize.sse`, `tools-list.sse` (the search tool's schema in full) and `search.sse` (6 of the 40 levi's 501 rows).
+`fixtures/` holds the trimmed recordings: `initialize.sse`, `tools-list.sse` (the search tool's schema in full) and `search.sse` (6 rows written by hand in the recorded shape: invented titles, `EXAMPLE` redirect links that resolve to nothing, no real thumbnail; no Dupe result is kept in the repo).
 
 Run: `node --test --test-concurrency=1 app/src/edge/harness/sites/dupe/adapter.test.ts`. The live run is `node app/src/edge/harness/sites/dupe/live.ts`, and its timings are in [ad-dupe.md](../../../../../../research/cross-cutting/nate/runs/ad-dupe.md).
 

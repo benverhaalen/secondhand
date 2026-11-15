@@ -1,9 +1,35 @@
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+import { DOMParser } from '@xmldom/xmldom';
+import { ebayListingSpec } from './sites/ebay/adapter.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createLog, memorySink } from '../../../../log/index.js';
 import type { Launcher, PoolContext } from '../browser/pool.ts';
-import { publicClients, type PublicPage } from './public-client.ts';
+import { EBAY_FIRST_CARD_MS, publicClients, type PublicPage } from './public-client.ts';
 import { API, WWW } from './sites/depop/adapter.ts';
+
+function isolatedDocument(html: string): Document {
+  const dom = new DOMParser().parseFromString(/<html[\s>]/i.test(html) ? html : `<html><body>${html}</body></html>`, 'text/html');
+  type Node = Element;
+  const matches = (node: Node, selectors: string): boolean => selectors.split(',').some(selector => {
+    const s = selector.trim(), tag = s.match(/^[\w-]+/)?.[0];
+    if (tag && node.tagName !== tag) return false;
+    if ([...s.matchAll(/\.([\w-]+)/g)].some(m => !(node.getAttribute('class') ?? '').split(/\s+/).includes(m[1]!))) return false;
+    return [...s.matchAll(/\[([\w-]+)(?:="([^"]*)")?\]/g)].every(m => node.hasAttribute(m[1]!) && (m[2] === undefined || node.getAttribute(m[1]!) === m[2]));
+  });
+  const wrap = (node: Node): unknown => Object.freeze({
+    textContent: node.textContent, getAttribute: (name: string) => node.hasAttribute(name) ? node.getAttribute(name) : null,
+    matches: (s: string) => matches(node, s),
+    querySelectorAll: (s: string) => Array.from(node.getElementsByTagName('*')).filter(n => matches(n, s)).map(wrap),
+    querySelector: (s: string) => Array.from(node.getElementsByTagName('*')).filter(n => matches(n, s)).map(wrap)[0] ?? null,
+  });
+  return Object.freeze({
+    title: dom.getElementsByTagName('title')[0]?.textContent ?? '', documentElement: { outerHTML: html },
+    querySelectorAll: (s: string) => Array.from(dom.getElementsByTagName('*')).filter(n => matches(n, s)).map(wrap),
+    querySelector: (s: string) => Array.from(dom.getElementsByTagName('*')).filter(n => matches(n, s)).map(wrap)[0] ?? null,
+  }) as unknown as Document;
+}
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -23,20 +49,59 @@ class FakePage implements PublicPage {
   interceptions = 0;
   navigations: { url: string; timeout: number; waitUntil: string }[] = [];
   waits: number[] = [];
+  selectors: { selector: string; timeout: number; state: string }[] = [];
+  selectorNext?: () => Promise<void>;
+  evaluateNext?: () => unknown;
+  arrival?: { html: string; ms: number };
+  observers = 0;
+  disconnectedObservers = 0;
+  contentReads = 0;
   events = new Map<string, Set<() => void>>();
   gotoNext?: () => Promise<void>;
   contentNext?: () => Promise<void>;
   evaluated: string[] = [];
   fetches: { url: string; init?: RequestInit }[] = [];
-  async goto(url: string, options: { waitUntil: 'domcontentloaded'; timeout: number }) {
+  async goto(url: string, options: { waitUntil: 'domcontentloaded' | 'commit'; timeout: number }) {
     this.navigations.push({ url, ...options });
     await this.gotoNext?.();
     return { status: () => this.status };
   }
-  async content() { await this.contentNext?.(); return this.html; }
+  async content() { this.contentReads++; await this.contentNext?.(); return this.html; }
+  async waitForSelector(selector: string, options: { timeout: number; state: 'attached' }) { this.selectors.push({ selector, ...options }); await this.selectorNext?.(); }
   async waitForTimeout(ms: number) { this.waits.push(ms); }
-  async evaluate<T, A>(fn: (arg: A) => Promise<T>, arg: A): Promise<T> {
+  async evaluate<T, A>(fn: string | ((arg: A) => T | Promise<T>), arg: A): Promise<T> {
     this.evaluated.push(String(arg));
+    if (this.evaluateNext) return this.evaluateNext() as T;
+    if (typeof fn === 'string' || typeof arg === 'object') {
+      let clock = 0, next = 0;
+      const tasks = new Map<number, { at: number; fn: () => void }>();
+      const schedule = (fn: () => void, ms: number) => { tasks.set(++next, { at: clock + ms, fn }); return next; };
+      const page = this;
+      const document = new Proxy({} as Document, { get(_target, key) {
+        const doc = isolatedDocument(page.html), value = Reflect.get(doc, key);
+        return typeof value === 'function' ? value.bind(doc) : value;
+      } });
+      class MutationObserver {
+        active = false;
+        callback: () => void;
+        constructor(callback: () => void) { this.callback = callback; }
+        observe(target: Document, options: MutationObserverInit) {
+          assert.equal(target, document); assert.deepEqual({ ...options }, { childList: true, subtree: true });
+          this.active = true; page.observers++;
+          if (page.arrival) schedule(() => { page.html = page.arrival!.html; if (this.active) this.callback(); }, page.arrival.ms);
+        }
+        disconnect() { this.active = false; page.disconnectedObservers++; }
+      }
+      const result = runInNewContext(typeof fn === 'string' ? fn : `(${fn.toString()})(input)`, {
+        input: arg, document, URL, MutationObserver, performance: { now: () => clock },
+        setTimeout: schedule, clearTimeout: (id: number) => tasks.delete(id),
+      }) as T;
+      while (tasks.size) {
+        const [id, task] = [...tasks].sort((a, b) => a[1].at - b[1].at)[0]!;
+        tasks.delete(id); clock = task.at; task.fn();
+      }
+      return await result;
+    }
     // Execute the actual in-page function, so endpoint, credentials and headers are tested.
     const original = globalThis.fetch;
     globalThis.fetch = async (input, init) => {
@@ -102,7 +167,10 @@ test('lazy anonymous clients reuse one context and page per site, logging cold t
       assert.ok(Number((e.result as Record<string, unknown>).ms) > 0); assert.ok(String(e.origin).startsWith('https://www.'));
       assert.ok(String(e.path).startsWith('/'));
     }
-    assert.deepEqual(f.contexts[0].page.waits, [1500, 1500]);
+    assert.deepEqual(f.contexts[0].page.waits, []);
+    assert.deepEqual(f.contexts[0].page.selectors, []);
+    assert.ok(f.contexts[0].page.navigations.every(n => n.waitUntil === 'commit'));
+    assert.ok(f.contexts[1].page.navigations.every(n => n.waitUntil === 'domcontentloaded'));
     assert.deepEqual(f.contexts[1].page.waits, []);
   } finally { await f.clients.close(); }
 });
@@ -375,4 +443,154 @@ test('a rejected idle close remains visible to shutdown and never opens an overl
   assert.equal(f.contexts.length, 1);
   await assert.rejects(f.clients.close());
   assert.ok(!f.sink.text().includes('private-query'));
+});
+
+const recorded = readFileSync(new URL('./sites/ebay/fixtures/page-search.html', import.meta.url), 'utf8');
+
+test('eBay returns compact rows from the isolated page and logs pinned fixture sizes in each lane', async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal());
+    const p = f.contexts[0].page; p.html = recorded; p.contentReads = 0;
+    const compact = await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), { tokens: ['501'], narrow: false });
+    assert.ok(!('html' in compact));
+    assert.deepEqual([compact.status, compact.rows.length, compact.total, compact.dropped, compact.facts, compact.narrowed_out], [200, 3, 3, 0, 48, 0]);
+    assert.ok(compact.rows.every(row => row.name_match === 'all'));
+    assert.equal(p.contentReads, 0);
+    assert.equal(ends(f.sink).at(-1)?.parsed, 'page');
+    assert.equal(ends(f.sink).at(-1)?.bytes_out, 1283);
+    assert.equal(Buffer.byteLength(JSON.stringify(compact.rows)), 1283);
+    const legacy = await f.clients.ebay.page(ebayUrl, signal());
+    assert.equal(legacy.html, recorded);
+    assert.equal(ends(f.sink).at(-1)?.parsed, 'server');
+    assert.equal(ends(f.sink).at(-1)?.bytes_out, 13447);
+    assert.equal(Buffer.byteLength(recorded), 13447);
+    assert.equal(p.routes, 0); assert.equal(p.interceptions, 0); assert.equal(p.fetches.length, 0);
+  } finally { await f.clients.close(); }
+});
+
+for (const fault of ['throw', 'result_null', 'bad_state', 'primitive_state', 'bad_wait', 'null', 'bad_rows', 'bad_counts', 'extra_html', 'zero'] as const) test(`eBay ${fault} evaluation uses HTML fallback and records why without raw errors`, async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal());
+    const p = f.contexts[0].page; p.html = recorded;
+    const empty = { rows: [], dropped: 0, total: 0, facts: 0, narrowed_out: 0 };
+    const state = { blocked: false, signin: false, error: false, heading: true, empty: false };
+    p.evaluate = async (fn, arg) => {
+      if (fault === 'throw') throw new Error('private-query https://vendor.invalid/secret');
+      if (fault === 'result_null') return null as never;
+      if (fault === 'primitive_state') return { state: 1, parsed: empty, waited_ms: 0 } as never;
+      if (fault === 'bad_state') return { state: {}, parsed: empty, waited_ms: 0 } as never;
+      if (fault === 'bad_wait') return { state, parsed: empty, waited_ms: -1 } as never;
+      return { state, waited_ms: 0, parsed: (fault === 'null' ? null : fault === 'bad_rows' ? { ...empty, total: 1, rows: [{ item_id: '1' }] } : fault === 'bad_counts' ? { ...empty, total: -1 } : fault === 'extra_html' ? { ...empty, html: 'page bytes' } : empty) } as never;
+    };
+    assert.deepEqual(await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {}), { status: 200, html: recorded });
+    const line = ends(f.sink).at(-1)!;
+    assert.equal(line.parsed, 'server'); assert.equal(line.fallback, fault === 'throw' ? 'evaluation' : fault === 'zero' ? 'zero_cards' : 'shape');
+    assert.equal(line.bytes_out, Buffer.byteLength(recorded));
+    assert.doesNotMatch(f.sink.text(), /private-query|vendor.invalid/);
+  } finally { await f.clients.close(); }
+});
+
+for (const file of ['page-empty.html', 'page-sold-signin.html'] as const) test(`eBay ${file} is detected before parsing`, async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal());
+    const p = f.contexts[0].page; p.html = readFileSync(new URL(`./sites/ebay/fixtures/${file}`, import.meta.url), 'utf8'); p.contentReads = 0;
+    const result = await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {});
+    if (file === 'page-empty.html') { assert.ok(!('html' in result)); assert.equal(result.total, 0); assert.equal(p.contentReads, 0); assert.equal(ends(f.sink).at(-1)?.parsed, 'page'); }
+    else assert.deepEqual(result, { status: 200, html: p.html });
+  } finally { await f.clients.close(); }
+});
+
+for (const html of ['<title>Pardon Our Interruption...</title>', '<title>Search</title><p>captcha</p>', '<title>Error Page | eBay</title>', '<title>Something changed</title>']) test(`eBay passes page state through as HTML: ${html}`, async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal()); const p = f.contexts[0].page; p.html = html;
+    const before = p.evaluated.length;
+    assert.deepEqual(await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {}), { status: 200, html });
+    assert.equal(p.evaluated.length - before, 1);
+  } finally { await f.clients.close(); }
+});
+
+test('a card already present skips waiting and uses exactly one evaluate after commit', async () => {
+  const f = setup({ now: () => 7 });
+  try {
+    await f.clients.ebay.page(ebayUrl, signal());
+    const p = f.contexts[0].page; p.html = recorded;
+    const before = p.evaluated.length;
+    const result = await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {});
+    assert.ok(!('html' in result)); assert.equal(result.rows.length, 3);
+    assert.equal(p.evaluated.length - before, 1); assert.equal(p.observers, 1); // only the initial blank page waited
+    assert.equal(ends(f.sink).at(-1)?.waited_ms, 0);
+    assert.equal(ends(f.sink).at(-1)?.nav_ms, 0);
+    assert.equal(p.navigations.at(-1)?.waitUntil, 'commit'); assert.deepEqual(p.selectors, []);
+  } finally { await f.clients.close(); }
+});
+
+test('a card arriving after commit wakes the observer before the first-card cap', async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal()); const p = f.contexts[0].page;
+    p.html = '<title>Loading</title>'; p.arrival = { html: recorded, ms: 42 };
+    const before = p.evaluated.length;
+    const result = await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {});
+    assert.ok(!('html' in result)); assert.equal(result.rows.length, 3);
+    assert.equal(p.evaluated.length - before, 1);
+    const waited = Number(ends(f.sink).at(-1)?.waited_ms);
+    assert.equal(waited, 42); assert.ok(waited > 0 && waited < EBAY_FIRST_CARD_MS);
+    assert.equal(p.observers, p.disconnectedObservers);
+  } finally { await f.clients.close(); }
+});
+
+for (const heading of [true, false]) test(`no card by the cap falls back once with ${heading ? 'zero_cards' : 'page_state'}`, async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal()); const p = f.contexts[0].page;
+    p.html = `<title>Search</title>${heading ? '<h1 id="srp-results-heading">Results</h1>' : ''}`;
+    p.contentReads = 0;
+    assert.deepEqual(await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {}), { status: 200, html: p.html });
+    assert.equal(p.contentReads, 1); assert.equal(ends(f.sink).at(-1)?.waited_ms, EBAY_FIRST_CARD_MS);
+    assert.equal(ends(f.sink).at(-1)?.fallback, heading ? 'zero_cards' : 'page_state');
+    assert.equal(p.observers, p.disconnectedObservers);
+  } finally { await f.clients.close(); }
+});
+
+test('a destroyed evaluate context falls back once without another navigation', async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal()); const p = f.contexts[0].page;
+    p.html = recorded; p.contentReads = 0;
+    p.evaluateNext = () => { throw new Error('Execution context was destroyed ?private-query'); };
+    const before = p.navigations.length;
+    assert.deepEqual(await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {}), { status: 200, html: recorded });
+    assert.equal(p.contentReads, 1); assert.equal(p.navigations.length - before, 1);
+    assert.equal(ends(f.sink).at(-1)?.fallback, 'evaluation'); assert.doesNotMatch(f.sink.text(), /private-query/);
+  } finally { await f.clients.close(); }
+});
+
+test('a challenge title takes page_state without parsing or navigating a second time', async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal()); const p = f.contexts[0].page;
+    p.html = '<title>Pardon Our Interruption...</title>'; p.contentReads = 0;
+    const before = p.navigations.length, evaluations = p.evaluated.length;
+    assert.deepEqual(await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {}), { status: 200, html: p.html });
+    assert.equal(p.contentReads, 1); assert.equal(p.navigations.length - before, 1);
+    assert.equal(p.evaluated.length - evaluations, 1); assert.equal(ends(f.sink).at(-1)?.fallback, 'page_state');
+    assert.equal(p.routes, 0); assert.equal(p.interceptions, 0);
+  } finally { await f.clients.close(); }
+});
+
+test('the read deadline still bounds an evaluate waiting for its first card', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const f = setup({ timeoutMs: 25 }), hold = deferred<void>();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal()); const p = f.contexts[0].page;
+    p.evaluate = async () => hold.promise as Promise<never>;
+    const read = f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {});
+    const rejected = assert.rejects(read, { name: 'TimeoutError' });
+    await turn(); t.mock.timers.tick(25); await rejected;
+    assert.equal(f.contexts[0].closes, 1);
+  } finally { hold.resolve(); await f.clients.close(); }
 });

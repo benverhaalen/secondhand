@@ -34,6 +34,7 @@ import {
   List, usePlus, type Bubble, type CirclePhase, type PhotoSrc,
 } from '@/ui';
 import { CandidateRow } from '@/ui/parts/candidates';
+import { LiveCapture } from '@/capture/live';
 
 type Phase = 'typical' | 'loading' | 'found' | 'done';
 type Drawn = 'loading' | 'found' | 'same' | 'offline' | 'done' | 'denied' | 'unsure' | 'valuable';
@@ -49,7 +50,7 @@ const NONE = 'None of these';
 // Only the LiDAR scan finds them (engines/capture/fields.ts: the measured way needs has_lidar).
 const SIZED: FactKey[] = ['chest', 'length', 'sleeve'];
 const scannedBy = (lidar: boolean) => (f: { fact: FactKey }) => lidar || !SIZED.includes(f.fact);
-const MODES = CHOICES.map(c => ({ mode: c.mode, icon: MODE_ICON[c.mode], label: c.mode === 'sell' ? 'Sell' : c.mode === 'worth' ? 'Worth' : 'Find' }));
+const MODES = CHOICES.map(c => ({ mode: c.mode, icon: MODE_ICON[c.mode], label: ({ sell: 'Sell', worth: 'Worth', track: 'Track', find: 'Find' } as const)[c.mode] }));
 const plural = (n: number, one: string, many: string) => `${new Intl.NumberFormat('en-US').format(n)} ${n === 1 ? one : many}`;
 
 // Where a drawn moment starts: which stages are done, what is known, how many stills.
@@ -69,12 +70,17 @@ function start(drawn: Drawn | null, mode: Mode, lidar: boolean) {
 }
 
 export default function Camera() {
+  const params = useLocalSearchParams<{ mode?: string; world?: string; state?: string }>();
+  return params.world || params.state ? <DemoCamera /> : <LiveCapture mode={params.mode ?? 'sell'} />;
+}
+
+function DemoCamera() {
   const params = useLocalSearchParams<{ mode?: string; state?: string; lidar?: string }>();
   const lidar = params.lidar !== '0';
   const drawn = DRAWN.includes(params.state as Drawn) ? (params.state as Drawn) : null;
   // The person it is drawn for (useScreen is the one way a page reads ?world=); the camera's own moments are its ?state=.
   const { w } = useScreen();
-  const first = (['sell', 'worth', 'find'] as Mode[]).includes(params.mode as Mode) ? (params.mode as Mode) : 'sell';
+  const first = (['sell', 'worth', 'track', 'find'] as Mode[]).includes(params.mode as Mode) ? (params.mode as Mode) : 'sell';
   const begin = useMemo(() => start(drawn, first, lidar), [drawn, first, lidar]);
 
   const [mode, setMode] = useState<Mode>(first);

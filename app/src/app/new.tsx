@@ -1,7 +1,10 @@
 // New, the ＋: the one way a thing gets in (spec/pages.md §6.4; app/behavior/new.json). The button grows into a circle of
-// the brand's field that covers the screen, and its three jobs rise out of it, centered: Sell it, What's it worth, Find or buy it.
-// A job opens the camera out of the circle it was touched on. The pencil at each job's end does the same job from words
-// or a pasted link, for a thing that is not at hand (ways-out §6.4). × plays it back into the button.
+// the brand's field that covers the screen, and its four jobs rise out of it, centered (Ben, 11:29 and 11:32): Appraise an
+// item (what the secondhand market pays for it now), Sell an item (the draft), Track an item (watch for one secondhand, a
+// Brewers jersey) and Find an item (what a thing is). A job opens the camera out of the circle it was touched on; × plays it
+// back into the button. The pencils that typed a job in are gone (Ben, 11:29); words or a link come in through Buy's search
+// field, and a link shared into the app still opens its job's sheet here (?sheet=, ?link=). Where each result lives after:
+// spec/redesign/new-results.md.
 import { Stack, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
@@ -14,9 +17,9 @@ import {
   type CirclePhase,
 } from '@/ui';
 
-const MODES: Mode[] = ['sell', 'worth', 'find'];
+const MODES: Mode[] = ['sell', 'worth', 'track', 'find'];
 // The states the checks look for that New has no reason to draw (B35).
-const SKIP = 'new: the same three jobs for a new person; empty: there are always three jobs; one: there are always three; dense: there are only ever three; loading: nothing here waits on anything; failed: nothing here can fail, a link that will not come in fails on the draft; offline: a job opens the camera, which keeps stills until signal returns';
+const SKIP = 'new: the same four jobs for a new person; empty: there are always four jobs; one: there are always four; dense: there are only ever four; loading: nothing here waits on anything; failed: nothing here can fail, a link that will not come in fails on the draft; offline: a job opens the camera, which keeps stills until signal returns';
 const isLink = (s: string) => /^https?:\/\/\S+$/i.test(s.trim());
 
 export default function New() {
@@ -46,17 +49,22 @@ export default function New() {
   const opened = useCallback((p: CirclePhase) => {
     if (p === 'open' && picked) router.replace({ pathname: '/camera', params: { mode: picked.mode } } as Href);
   }, [picked]);
-  const choose = (mode: Mode, index: number) => { rememberMode(mode); setPicked({ mode, index }); };
-  const typeIn = (mode: Mode) => { rememberMode(mode); setSheet(mode); };
+  const choose = (mode: Mode, index: number) => {
+    rememberMode(mode);
+    if (mode === 'track') { router.replace('/want' as Href); return; }
+    setPicked({ mode, index });
+  };
   // Each job ends where its camera ends: a draft to review, the value page, the matches.
   const go = () => {
     if (sheet === 'sell') { if (ask && !asked) { setAsked(true); return; } router.replace(`/item/${DRAFT_ID}` as Href); return; }
     if (sheet === 'worth') { router.replace((match ? `/worth?product=${match.id}` : '/worth') as Href); return; }
-    router.replace({ pathname: '/search', params: { q: match ? `${match.brand} ${match.model}` : what.trim() } } as Href);
+    const q = match ? `${match.brand} ${match.model}` : what.trim();
+    if (sheet === 'track') { router.replace({ pathname: '/want', params: { q } } as Href); return; }
+    router.replace((match ? `/product/${match.id}` : { pathname: '/search', params: { q } }) as Href);
   };
   const job = CHOICES.find(c => c.mode === sheet);
   const goLabel = sheet === 'sell' ? (asked && typedCents != null ? `List at ${usd(typedCents)}` : link ? 'Bring it in' : 'Make a draft')
-    : sheet === 'worth' ? 'See what it’s worth' : 'Find it';
+    : sheet === 'worth' ? 'See what it’s worth' : sheet === 'track' ? 'Watch for it' : 'See what it is';
 
   return (
     <TakeoverPlace name="new" state={sheet === 'sell' && asked ? 'ask' : sheet ?? 'typical'} skip={SKIP}>
@@ -66,7 +74,7 @@ export default function New() {
         <ChoiceColumn count={choices.length}>
           {choices.map((c, i) => (
             <ChoiceCapsule key={c.mode} id={`new-${c.mode}`} label={c.label} icon={MODE_ICON[c.mode]} lead={i === 0} index={i} shown={shown}
-              onPress={() => choose(c.mode, i)} onType={() => typeIn(c.mode)} />
+              onPress={() => choose(c.mode, i)} />
           ))}
         </ChoiceColumn>
       </CircleStage>

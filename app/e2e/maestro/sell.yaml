@@ -19,10 +19,12 @@ env:
 - extendedWaitUntil:
     visible: "Needs you"
     timeout: 15000
+- assertNotVisible: { id: "filter-live" }
+- tapOn: { id: "shelf-needs_you-all" }
 - tapOn: { id: "filter-live" }
 - tapOn: { id: "filter-all" }
 - tapOn: { id: "filter-site-ebay" }
-- tapOn: { id: "filter-all" }
+- tapOn: { id: "filter-site-ebay" }
 # select: keep the lamp, then undo.
 - tapOn: { id: "sell-select" }
 - assertVisible: "Select items"

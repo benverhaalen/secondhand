@@ -92,7 +92,7 @@ export default function Listing() {
       </Stack>
 
       {handoff ? (
-        <Section title="Ready to send">
+        <Section>
           <Stack gap="tight">
             {/* The amount says what it is beside it (C6), as the want's rows do. */}
             <Row>
@@ -100,7 +100,7 @@ export default function Listing() {
               <Guess id="listing-offer-amount" name="Offer" value={usd(offer)} numeric
                 onChange={v => { const n = Math.round(Number(v.replace(/[^0-9.]/g, '')) * 100); if (n > 0) setOffer(n); }} />
             </Row>
-            <Txt role="body" tone="ink-2">{`They ask ${usd(m.price_cents)}.${want?.max_total_cents ? ` Your most is ${usd(want.max_total_cents)} delivered.` : ''}`}</Txt>
+            {want?.max_total_cents ? <Txt role="body" tone="ink-2">{`Your most is ${usd(want.max_total_cents)} delivered.`}</Txt> : null}
           </Stack>
         </Section>
       ) : null}

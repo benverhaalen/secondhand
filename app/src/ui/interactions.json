@@ -632,7 +632,7 @@
       "result": {
         "kind": "replace",
         "to": "/camera?mode={c.mode}",
-        "back": "Remember the selected sell, worth or find mode and replace New with fullScreenModal /camera?mode={c.mode} over the original tab presenter; preserve the presenter beneath it, remove New so Back never reopens the completed menu. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
+        "back": "Remember the selected sell, worth, track or find mode and replace New with fullScreenModal /camera?mode={c.mode} over the original tab presenter; preserve the presenter beneath it, remove New so Back never reopens the completed menu. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
       },
       "press": {
         "feedback": "scale",
@@ -656,37 +656,6 @@
       },
       "always": true,
       "log": "user.input(screen, control=new-{c.mode}, value=tap); ui.show for the resulting visible state."
-    },
-    "new-{c.mode}-type": {
-      "screen": "/new",
-      "intent": "Open these actions",
-      "result": {
-        "kind": "sheet",
-        "to": null,
-        "back": "Open a form for this same sell/worth/find job from words or a pasted link, leaving the New menu behind it. formSheet; detents medium and large, initially medium; expand to large for keyboard or overflowing content. Back, scrim or downward dismissal closes the sheet and restores its trigger and scroll position. Unsaved modal work asks Discard or Keep editing. Edge swipe never pops the page behind the sheet."
-      },
-      "press": {
-        "feedback": "opacity",
-        "ms": 150
-      },
-      "motion": {
-        "name": "sheet",
-        "ms": 300,
-        "curve": "cubic-bezier(0,0,0.2,1); next touch cancels or retargets from current value; never wait.",
-        "reduce": "Instant final state, 0 ms; retain words, selection and focus."
-      },
-      "haptic": {
-        "type": "none",
-        "when": "Never fires. Never on press-in or scroll."
-      },
-      "freq": "occasional",
-      "states": {
-        "disabled": "Never while present.",
-        "loading": "No asynchronous local work. Ignore a repeated navigation tap until its route mounts; never stack duplicate routes.",
-        "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
-      },
-      "always": false,
-      "log": "user.input(screen, control=new-{c.mode}-type, value=tap); ui.show for the resulting visible state."
     },
     "type-field": {
       "screen": "/new",
@@ -1434,11 +1403,11 @@
     },
     "want-cut-{o.id}": {
       "screen": "/want",
-      "intent": "Cut",
+      "intent": "Fit",
       "result": {
         "kind": "in-place",
         "to": null,
-        "back": "Set cut; Any clears it. Back first dismisses keyboard or temporary picker, then follows the screen stack. Edge swipe follows the same rule. Committed changes persist."
+        "back": "Set fit; Any clears it. Back first dismisses keyboard or temporary picker, then follows the screen stack. Edge swipe follows the same rule. Committed changes persist."
       },
       "press": {
         "feedback": "scale",
@@ -2209,7 +2178,7 @@
     },
     "worth-retry": {
       "screen": "/worth",
-      "intent": "Try again",
+      "intent": "Retry",
       "result": {
         "kind": "in-place",
         "to": null,
@@ -5059,6 +5028,192 @@
       "always": false,
       "log": "user.input(screen, control=buy-search-camera, value=tap); ui.show for the resulting visible state."
     },
+    "recent-{r.capture_id}": {
+      "screen": "/buy",
+      "intent": "Open a recent lookup again",
+      "result": {
+        "kind": "push",
+        "to": "/product/{product_id} for a find, /worth?product={product_id} for an appraisal",
+        "back": "Open the lookup's page again with today's prices. Back and edge swipe pop to Buy with scroll and Recent's See all retained. Cold entry has its tab root beneath it. Back changes navigation only."
+      },
+      "press": {
+        "feedback": "highlight",
+        "ms": 150
+      },
+      "motion": {
+        "name": "native default",
+        "ms": 0,
+        "curve": "System duration and curve; 0 means no app-added animation. New navigation or gesture cancels or grabs the live transition.",
+        "reduce": "System Reduce Motion, no added spatial motion."
+      },
+      "haptic": {
+        "type": "none",
+        "when": "Never fires. Never on press-in or scroll."
+      },
+      "freq": "tens",
+      "states": {
+        "disabled": "Never while present.",
+        "loading": "No asynchronous local work. Ignore a repeated navigation tap until its route mounts; never stack duplicate routes.",
+        "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
+      },
+      "always": true,
+      "log": "user.input(screen, control=recent-{capture_id}, value=tap); ui.show for the resulting visible state."
+    },
+    "recent-{r.capture_id}-remove": {
+      "screen": "/buy",
+      "intent": "Remove this lookup from Recent",
+      "result": {
+        "kind": "in-place",
+        "to": null,
+        "back": "Take the row out of Recent at once and show Removed with Undo for 5 seconds; the row's own tap does not also open it. Back follows the screen stack. Committed changes persist."
+      },
+      "press": {
+        "feedback": "opacity",
+        "ms": 150
+      },
+      "motion": {
+        "name": "native default",
+        "ms": 0,
+        "curve": "System duration and curve; 0 means no app-added animation. New navigation or gesture cancels or grabs the live transition.",
+        "reduce": "System Reduce Motion, no added spatial motion."
+      },
+      "haptic": {
+        "type": "none",
+        "when": "Never fires. Never on press-in or scroll."
+      },
+      "freq": "tens",
+      "states": {
+        "disabled": "Never while present.",
+        "loading": "No asynchronous work in the demo; with GET /v1/lookups behind it, the row leaves at once and DELETE runs after the 5 s Undo, latched to one operation ID.",
+        "failed": "If the DELETE fails the row comes back where it was, with Could not remove and Retry; never shown as gone when the server still has it."
+      },
+      "always": true,
+      "log": "user.input(screen, control=recent-{capture_id}-remove, value=tap); state.change lookup removed; call.start/call.end for DELETE /v1/lookups/:capture_id after Undo lapses; ui.show for the toast."
+    },
+    "recent-all": {
+      "screen": "/buy",
+      "intent": "See all",
+      "result": {
+        "kind": "in-place",
+        "to": null,
+        "back": "Show every lookup in Recent, up to 20, in place; the control becomes Show less. Back follows the screen stack and does not fold it."
+      },
+      "press": {
+        "feedback": "scale",
+        "ms": 150
+      },
+      "motion": {
+        "name": "native default",
+        "ms": 0,
+        "curve": "System duration and curve; 0 means no app-added animation. New navigation or gesture cancels or grabs the live transition.",
+        "reduce": "System Reduce Motion, no added spatial motion."
+      },
+      "haptic": {
+        "type": "none",
+        "when": "Never fires. Never on press-in or scroll."
+      },
+      "freq": "tens",
+      "states": {
+        "disabled": "Never while present; present only when there are more than three lookups.",
+        "loading": "No asynchronous work: the 20 are already loaded.",
+        "failed": "No failure: nothing leaves the device."
+      },
+      "always": false,
+      "log": "user.input(screen, control=recent-all, value=tap); ui.show(recent expanded)."
+    },
+    "recent-less": {
+      "screen": "/buy",
+      "intent": "Show less",
+      "result": {
+        "kind": "in-place",
+        "to": null,
+        "back": "Fold Recent back to its three newest; the control becomes See all. Back follows the screen stack."
+      },
+      "press": {
+        "feedback": "scale",
+        "ms": 150
+      },
+      "motion": {
+        "name": "native default",
+        "ms": 0,
+        "curve": "System duration and curve; 0 means no app-added animation. New navigation or gesture cancels or grabs the live transition.",
+        "reduce": "System Reduce Motion, no added spatial motion."
+      },
+      "haptic": {
+        "type": "none",
+        "when": "Never fires. Never on press-in or scroll."
+      },
+      "freq": "tens",
+      "states": {
+        "disabled": "Never while present; present only while Recent is open past three.",
+        "loading": "No asynchronous work.",
+        "failed": "No failure: nothing leaves the device."
+      },
+      "always": false,
+      "log": "user.input(screen, control=recent-less, value=tap); ui.show(recent folded)."
+    },
+    "recent-clear": {
+      "screen": "/buy",
+      "intent": "Clear Recent",
+      "result": {
+        "kind": "in-place",
+        "to": null,
+        "back": "Remove every lookup from Recent at once and show Cleared with Undo for 5 seconds; Recent is gone from the page until Undo. Back follows the screen stack. Committed changes persist."
+      },
+      "press": {
+        "feedback": "scale",
+        "ms": 150
+      },
+      "motion": {
+        "name": "native default",
+        "ms": 0,
+        "curve": "System duration and curve; 0 means no app-added animation. New navigation or gesture cancels or grabs the live transition.",
+        "reduce": "System Reduce Motion, no added spatial motion."
+      },
+      "haptic": {
+        "type": "none",
+        "when": "Never fires. Never on press-in or scroll."
+      },
+      "freq": "occasional",
+      "states": {
+        "disabled": "Never while present; Recent and its Clear are absent when there are no lookups.",
+        "loading": "No asynchronous work in the demo; with the server, DELETE /v1/lookups runs after the 5 s Undo, latched to one operation ID.",
+        "failed": "If the DELETE fails Recent comes back as it was, with Could not clear and Retry."
+      },
+      "always": true,
+      "log": "user.input(screen, control=recent-clear, value=tap); state.change lookups cleared; call.start/call.end for DELETE /v1/lookups after Undo lapses; ui.show for the toast."
+    },
+    "recent-undo": {
+      "screen": "/buy",
+      "intent": "Undo removing from Recent",
+      "result": {
+        "kind": "in-place",
+        "to": null,
+        "back": "Put back the row or rows the last remove or Clear took, where they were, and dismiss the toast. Back follows the screen stack."
+      },
+      "press": {
+        "feedback": "scale",
+        "ms": 150
+      },
+      "motion": {
+        "name": "native default",
+        "ms": 0,
+        "curve": "System duration and curve; 0 means no app-added animation. New navigation or gesture cancels or grabs the live transition.",
+        "reduce": "System Reduce Motion, no added spatial motion."
+      },
+      "haptic": {
+        "type": "none",
+        "when": "Never fires. Never on press-in or scroll."
+      },
+      "freq": "occasional",
+      "states": {
+        "disabled": "Present only for 5 seconds after a remove or Clear, while nothing has been sent.",
+        "loading": "No asynchronous work: nothing was sent before the toast lapsed.",
+        "failed": "No failure: the DELETE has not been sent yet."
+      },
+      "always": false,
+      "log": "user.input(screen, control=recent-undo, value=undo); state.change lookups restored; ui.show for the restored rows."
+    },
     "match-{m.id}": {
       "screen": "/buy",
       "intent": "Open this item",
@@ -5370,15 +5525,15 @@
       "log": "user.input(screen, control=pulse-{r.id}, value=tap); ui.show for the resulting visible state."
     },
     "you-all-live": {
-      "screen": "/you",
-      "intent": "you all live",
+      "screen": "/you/insights",
+      "intent": "See everything live",
       "result": {
         "kind": "push",
         "to": "/sell?filter=live",
         "back": "Open Sell filtered to Live. Back first dismisses keyboard or temporary picker, then follows the screen stack. Edge swipe follows the same rule. Committed changes persist. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
       },
       "press": {
-        "feedback": "highlight",
+        "feedback": "scale",
         "ms": 150
       },
       "motion": {
@@ -5391,7 +5546,7 @@
         "type": "none",
         "when": "Never fires. Never on press-in or scroll."
       },
-      "freq": "tens",
+      "freq": "occasional",
       "states": {
         "disabled": "Never while present.",
         "loading": "No asynchronous local work. Ignore a repeated navigation tap until its route mounts; never stack duplicate routes.",
@@ -5431,9 +5586,40 @@
       "always": true,
       "log": "user.input(screen, control=you-insights, value=tap); ui.show for the resulting visible state."
     },
-    "you-records": {
+    "you-payouts": {
       "screen": "/you",
-      "intent": "Use this control",
+      "intent": "See where the money is",
+      "result": {
+        "kind": "push",
+        "to": "/you/payouts",
+        "back": "Open /you/payouts. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
+      },
+      "press": {
+        "feedback": "highlight",
+        "ms": 150
+      },
+      "motion": {
+        "name": "native default",
+        "ms": 0,
+        "curve": "System duration and curve; 0 means no app-added animation. New navigation or gesture cancels or grabs the live transition.",
+        "reduce": "System Reduce Motion, no added spatial motion."
+      },
+      "haptic": {
+        "type": "none",
+        "when": "Never fires. Never on press-in or scroll."
+      },
+      "freq": "tens",
+      "states": {
+        "disabled": "Never while present.",
+        "loading": "No asynchronous local work. Ignore a repeated navigation tap until its route mounts; never stack duplicate routes.",
+        "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
+      },
+      "always": true,
+      "log": "user.input(screen, control=you-payouts, value=tap); ui.show for the resulting visible state."
+    },
+    "settings-records": {
+      "screen": "/you/settings",
+      "intent": "See every sale this year",
       "result": {
         "kind": "push",
         "to": "/you/records",
@@ -5460,7 +5646,7 @@
         "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
       },
       "always": true,
-      "log": "user.input(screen, control=you-records, value=tap); ui.show for the resulting visible state."
+      "log": "user.input(screen, control=settings-records, value=tap); ui.show for the resulting visible state."
     },
     "you-connections": {
       "screen": "/you",
@@ -5524,9 +5710,9 @@
       "always": true,
       "log": "user.input(screen, control=you-rules, value=tap); ui.show for the resulting visible state."
     },
-    "you-log": {
-      "screen": "/you",
-      "intent": "Use this control",
+    "rules-activity": {
+      "screen": "/you/rules",
+      "intent": "See every step it took, with Undo",
       "result": {
         "kind": "push",
         "to": "/you/log",
@@ -5553,7 +5739,7 @@
         "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
       },
       "always": true,
-      "log": "user.input(screen, control=you-log, value=tap); ui.show for the resulting visible state."
+      "log": "user.input(screen, control=rules-activity, value=tap); ui.show for the resulting visible state."
     },
     "you-notifications": {
       "screen": "/you",
@@ -5933,7 +6119,7 @@
       "result": {
         "kind": "push",
         "to": "/you/settings",
-        "back": "Open /you/settings at Pause selling; the current /you/pause route is not registered. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
+        "back": "Open /you/settings at Pause selling. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
       },
       "press": {
         "feedback": "highlight",
@@ -16593,11 +16779,11 @@
     },
     "lr-error-p": {
       "screen": "/dev/parts",
-      "intent": "Try again",
+      "intent": "Retry",
       "result": {
         "kind": "in-place",
         "to": null,
-        "back": "Developer specimen: Try again. Keep page and data unchanged; no action handler is supplied. Back first dismisses keyboard or temporary picker, then follows the screen stack. Edge swipe follows the same rule. Committed changes persist."
+        "back": "Developer specimen: Retry. Keep page and data unchanged; no action handler is supplied. Back first dismisses keyboard or temporary picker, then follows the screen stack. Edge swipe follows the same rule. Committed changes persist."
       },
       "press": {
         "feedback": "scale",
@@ -22604,37 +22790,6 @@
       },
       "always": true,
       "log": "user.input(screen, control=you-on-its-way, value=tap); ui.show for the resulting visible state."
-    },
-    "you-live": {
-      "screen": "/you",
-      "intent": "you live",
-      "result": {
-        "kind": "push",
-        "to": "/sell?filter=live",
-        "back": "Open Sell filtered to Live. Back first dismisses keyboard or temporary picker, then follows the screen stack. Edge swipe follows the same rule. Committed changes persist. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
-      },
-      "press": {
-        "feedback": "scale",
-        "ms": 150
-      },
-      "motion": {
-        "name": "native default",
-        "ms": 0,
-        "curve": "System duration and curve; 0 means no app-added animation. New navigation or gesture cancels or grabs the live transition.",
-        "reduce": "System Reduce Motion, no added spatial motion."
-      },
-      "haptic": {
-        "type": "none",
-        "when": "Never fires. Never on press-in or scroll."
-      },
-      "freq": "occasional",
-      "states": {
-        "disabled": "Never while present.",
-        "loading": "No asynchronous local work. Ignore a repeated navigation tap until its route mounts; never stack duplicate routes.",
-        "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
-      },
-      "always": true,
-      "log": "user.input(screen, control=you-live, value=tap); ui.show for the resulting visible state."
     },
     "you-sell": {
       "screen": "/you",

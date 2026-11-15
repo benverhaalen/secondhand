@@ -1,12 +1,12 @@
 {
   "screen": "(tabs)/index",
-  "what": "Today: what needs me, and how am I doing. The money kept since the last look, one feed of decisions in three tiers, the notices, and one quiet line for what the agent did on its own.",
+  "what": "Today: clear what needs you, the most urgent first. The most flattering true number at the top, one feed of decisions in three tiers under quiet headers, the notices, and one Activity row that opens what the agent did on its own.",
   "frame": [
     "Who: everyone with something waiting; leans to the person clearing out their own things (primary persona), held up by the flipper's 40-card day and the new person's empty first launch.",
     "How often: the most-seen screen, opened from launch, the tab and every push, several times a day; each card is answered in one tap, so every card has the same shape and the same four states.",
     "What they came to do: see in a second whether it is working (the top slot) and whether anything needs them (the first card, nearest its deadline), then answer and leave.",
     "Where a mistake costs most: an offer or a pickup that expires unseen, an address or a price sent without the person's tap, and an act that cannot be taken back. So deadlines lead, the safe choice is the black pill on a pickup, and every act holds 5 s with Undo before it reaches the site.",
-    "Ways out (spec/ways-out.md, Today): Later on every card (back before its deadline), More holds the rest of the actions and the way to the item or the chat, a batch can go One by one, the agent's amount can be changed in a sheet, and a held tap waits for signal. The person stays in the loop at every price, address and pickup: those wait for a tap, and what the agent did alone is one quiet line that opens its log with Undo."
+    "Ways out (spec/ways-out.md, Today): Later on every card (back before its deadline), More holds the rest of the actions and the way to the item or the chat, a batch can go One by one, the agent's amount can be changed in a sheet, and a held tap waits for signal. The person stays in the loop at every price, address and pickup: those wait for a tap, and what the agent did alone is one Activity row that opens its log (/you/log), where its Undo is."
   ],
   "decisions": [
     "The cards' words and order live in app/src/today/cards.ts, not in the screen, so they are tested in node and the item page can read the same card (one fact, one place).",
@@ -23,11 +23,11 @@
     "A thing sold on two sites is one card, Sold twice, with Keep first buyer as the one tap and Compare opening both sales side by side (site, buyer's price, what each keeps, what cancelling each costs); the top slot counts it once until the person picks (spec/edge-cases.md §1).",
     "Each stop on the auto-list tree is one card with one question in its fact line and the likely answer as the black pill, so a stopped tree costs a tap, never a restart; a retake opens the camera (spec/edge-cases.md §7). The stops world (/?world=stops) draws them all.",
     "Every card's More ends with I did this already, Open the chat and Open the item (ways-out, Today: 'I already did that on the site', 'None of these buttons').",
-    "An amount typed under the person's lowest asks once in the sheet ('Under your lowest, $70. Tap again to send it.') instead of refusing: it is their call, made on purpose (edge-cases §3, Min persona).",
+    "An amount typed under the person's lowest asks once in the sheet ('Below your minimum of $70.') instead of refusing: it is their call, made on purpose (edge-cases §3, Min persona).",
     "One black pill per view (C4, DecisionCard): only the lead card, nearest its deadline, and any card due within the hour lead with black; every other card leads with the light fill.",
-    "The state one is one card drawn from the clearing day (the pickup), since the demo's one world has nothing to decide and on Today that is the empty state; failed asked for in the URL is the page that did not load, with Try again, and a card that failed is the failed state reached with ?fail=.",
+    "The state one is one card drawn from the clearing day (the pickup), since the demo's one world has nothing to decide and on Today that is the empty state; failed asked for in the URL is the page that did not load, with Retry, and a card that failed is the failed state reached with ?fail=.",
     "Every tier sits under its header with its count, always (Needs you now, Can wait, Good to know), drawn with Sell's shelf head, so Today reads as organized as Sell (Ben 06:19: \"the sell one seems very organized and it's very easy to see like needs you in progress\"); the risk order holds inside each.",
-    "The lead card keeps its state gradient and says why over it, with a clock: Due first, today at 3 pm (Ben 06:19: \"I don't really know why the first entry is like colored\"). The color is the one card due soonest; nothing else is colored.",
+    "The lead card keeps its state gradient, and its countdown is the soonest on the screen; the 'Due first' line over it is cut (spec/redesign/tabs.md, Today; clean-copy rung 2): the card already carries its deadline, and a fourth level of hierarchy over a card breaks Art. 7.11.",
     "Money that reaches the person reads one way on every card, You get $81.55, after fees and shipping, beside the buyer's price on the pill (Ben 06:19: \"you keep this much money. There's probably a better way to word that\").",
     "A buyer asking to pay off the site is tagged Possible scam, with Block and Say no (Ben 06:19: \"rather than careful, it could be like possibly a scam\").",
     "The top is always the most flattering true number, by a ladder in cards.ts (top), each rung unit-tested (Ben 07:12: \"the top thing should be the most flattering metric ... what do you say when nothings gone on yet\"): a. money since the last open with the photos of what sold; b. else this week's money, else this month's; c. never sold and something live: what it could bring, the low end of its worth with the high end named, before fees; d. else views, likes and watchers since the last open; c again when nothing came in; e. nothing listed: no number, See what your things are worth, opening the camera. Never $0, never rounded up, always its window. It is drawn by the MoneyNews part: the caption names the window, the figure at the peak size, the photos with their site badges.",
@@ -36,13 +36,15 @@
     "Can wait and Good to know draw as a pile when they hold more than one card: the top card in full and the edges of the next two (Pile part), so the shape says there is more. A tap on the edges, or Show all in the shelf's header, fans them out in place with a spring of --t-panel (Reduce Motion: at once); Show less folds them back (Ben 07:12: \"use the collapsable pile where they are layered and an animation expands them\"). Needs you now stays spread, since hiding a deadline there breaks Today's promise (research/today/ben/top-of-today-and-stacking.md §2). The piled height is fixed; only the person's tap moves it (U7).",
     "The top card of a pile is the tier's first in the feed's order, the soonest deadline and then the most money; a queue, being its own stack, is never on top.",
     "The states new, one and empty each land on a different rung of the ladder: new is e (nothing listed), one is b (the clearing person looked after this week's sales), empty is d (a quiet month: sold in October, three things live, interest since yesterday; app/src/today/stops.ts quietWorld). /?world=one shows c.",
-    "The middle tier reads Can wait, not When you can: it pairs with Needs you now at a glance, and its count no longer sits 2 px off the one above (B36)."
+    "The middle tier reads Can wait, not When you can: it pairs with Needs you now at a glance, and its count no longer sits 2 px off the one above (B36).",
+    "Only the lead card shows its second act; on every other card the second act opens first under More, so the first screen asks for at most seven presses (U12, Art. 7.13) and every act stays one sheet away.",
+    "A tier whose every card carries the same state draws its tags quiet, keeping their words (Offer, Pickup, Possible scam), since its header already names the state (U13, Art. 7.14). Tier headers are quiet labels, one step from the card titles (U10)."
   ],
   "states": [
     {
       "state": "typical",
       "route": "/?world=clearing",
-      "shows": "the wash; Since yesterday $97.33 beside the chair and the jacket that sold, each on its site; Needs you now 4: Due first, today at 3 pm over the pickup on its state gradient (Meet in public, Send address), the jacket's 2 offers (You get $81.55), Possible scam, the signed-out site; Can wait 4 as a pile: 2 to ship on top, the edges of two cards under it, Show all in its header; Good to know: a review, two notices and the handled line"
+      "shows": "the wash; Since yesterday $97.33 beside the chair and the jacket that sold, each on its site; Needs you now 4: the pickup on its state gradient (Meet in public, Send address), the jacket's 2 offers (You get $81.55, Accept $85 and More), Possible scam, the signed-out site; Can wait 4 as a pile: 2 to ship on top, the edges of two cards under it, Show all in its header; Good to know: a review, two notices and the handled line"
     },
     {
       "state": "fanned",
@@ -62,12 +64,12 @@
     {
       "state": "dense",
       "route": "/?state=dense",
-      "shows": "Since this morning $137.97, three offers, a label, 5 to ship as one batch card, 40 to post drawn as a stack, the photos to approve, a notice and the handled line"
+      "shows": "Since this morning $137.97, three offers, a label, 5 to ship as one batch card, 40 to post drawn as a stack, the photos to approve, a notice and the Activity row"
     },
     {
       "state": "empty",
       "route": "/?state=empty",
-      "shows": "Since yesterday 38 views, 6 likes, 2 watching, beside the jacket, the lamp and the fleece; then Nothing needs you, with no cards, no notices and no handled line"
+      "shows": "Since yesterday 38 views, 6 likes, 2 watching, beside the jacket, the lamp and the fleece; then Nothing needs you, with no cards, no notices and no Activity row"
     },
     {
       "state": "one",
@@ -97,7 +99,7 @@
     {
       "state": "did not load",
       "route": "/?state=failed",
-      "shows": "Today didn’t load and Try again, with no money and no cards; Try again draws Today"
+      "shows": "Today didn’t load and Retry, with no money and no cards; Retry draws Today"
     },
     {
       "state": "batch failed",
@@ -185,7 +187,7 @@
     {
       "id": "dec_jacket-more",
       "control": "More on the offer card",
-      "on_tap": "opens a sheet with Counter another amount, Decline both, Later, Open the chat, Open the item"
+      "on_tap": "opens a sheet with Counter $92 first, then Counter another amount, Decline both, Later, Open the chat and the rest"
     },
     {
       "id": "dec_jacket-amount",
@@ -263,15 +265,10 @@
       "goes": "/item/it_switch"
     },
     {
-      "id": "handled",
-      "control": "Took 2 listings down, and 1 more",
-      "on_tap": "opens Done for you: each thing the agent did, with Undo where it still can be undone"
-    },
-    {
-      "id": "log-all",
-      "control": "Everything it did, in the log sheet",
-      "on_tap": "opens the automation log",
-      "goes": "/you/automation"
+      "id": "activity",
+      "control": "Activity, under the tiers",
+      "on_tap": "opens Activity, everything the agent did on its own with Undo where it still can",
+      "goes": "/you/log"
     },
     {
       "id": "queue-first_post-review",
@@ -336,7 +333,7 @@
     {
       "id": "retry",
       "route": "/?state=failed",
-      "control": "Try again, when Today did not load",
+      "control": "Retry, when Today did not load",
       "on_tap": "loads Today again"
     },
     {

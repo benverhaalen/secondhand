@@ -14,37 +14,42 @@ const gap = (n, state, reason) => {
   assert.equal(row(n).reason, reason, `link ${n} needs its reason reviewed`);
 };
 
-test('1: the Check loses the thin-basis level and note', () => {
-  gap(1, 'wrong', 'check drops the level and too_few state computed by comparables; its answer has neither basis_level nor a too_few note.');
+test('1: the Check retains the thin-basis level and note', () => {
+  assert.equal(row(1).state, 'works');
+  assert.equal(row(1).reason, null);
   const { before, thin } = report.observed;
   assert.equal(thin.state, 'too_few');
-  assert.equal(thin.level, 'category');
+  assert.equal(thin.level, 'product'); // the blended fallback names the level its one product comp supports (valuation.md §3)
   assert.equal(before.n_eff, 1);
-  assert.equal(before.basis_level, undefined);
-  assert.equal(before.notes, undefined);
-  assert.equal(before.range.notes, undefined);
+  assert.equal(before.basis_level, 'product');
+  assert.deepEqual(before.notes, ['too_few']);
+  assert.deepEqual(before.range.notes, ['too_few']);
+  assert.notEqual(before.range.state, 'hidden');
   assert.equal(before.range.hide_reason, undefined);
   assert.equal(before.range.q50, 1900);
   assert.ok(row(1).spec_quote && row(1).code_quote);
 });
 
-test('2: valuation never starts gather; shown thin facts stop, while a no-basis control gets a deadline', () => {
+test('2: shown thin facts start gathering when called, but the route never starts gather', () => {
   gap(2, 'built, not called', 'check and runPlan never call gather; the proof invokes it separately on a guarded diagnostic.');
   assert.deepEqual(report.observed.importers.gather, []);
   assert.deepEqual(report.observed.gather_events_from_valuation, []);
   const g = report.observed.gather;
   assert.equal(g.answer.facts[0].guarded.state, 'shown');
   assert.deepEqual(g.answer.facts[0].guarded.notes, ['too_few']);
-  assert.equal(g.stop, 'nothing_to_gather');
-  assert.equal(g.request, null);
+  assert.equal(g.stop, 'exhausted');
+  assert.equal(g.request.product, 'pr_realtime');
+  assert.equal(g.request.claim, 'sold_range');
+  assert.equal(Date.parse(g.request.deadline) - Date.parse(report.as_of), 120000);
   const hidden = report.observed.no_basis_gather;
   assert.deepEqual(hidden.answer.facts[0].guarded, { state: 'hidden', hide_reason: 'source_gap', basis_count: 0 });
   assert.equal(hidden.request.product, 'pr_realtime');
   assert.equal(hidden.request.claim, 'sold_range');
   assert.equal(Date.parse(hidden.request.deadline) - Date.parse(report.as_of), 120000);
   assert.equal(hidden.stop, 'exhausted');
-  assert.equal(report.observed.shown_thin_gather.stop, 'nothing_to_gather');
-  assert.equal(report.observed.shown_thin_gather.request, null);
+  assert.equal(report.observed.shown_thin_gather.stop, 'exhausted');
+  assert.equal(report.observed.shown_thin_gather.request.claim, 'sold_range');
+  assert.equal(Date.parse(report.observed.shown_thin_gather.request.deadline) - Date.parse(report.as_of), 120000);
 });
 
 test('3: the configured recorded source reaches the real reader only after a separate search request', () => {
@@ -61,12 +66,13 @@ test('3: the configured recorded source reaches the real reader only after a sep
   assert.deepEqual(config.sources.map(s => [s.id, s.lane, s.on, s.needs_ask]), [
     ['dupe', 'mcp', true, false], ['depop', 'harness', true, false],
     ['poshmark', 'public_page', true, false], ['mercari', 'harness', true, true],
-    ['facebook', 'harness', false, false], ['ebay', 'harness', true, false],
+    ['facebook', 'apify', true, false], ['ebay', 'harness', true, false],
   ], 'source rows changed: review the replay coverage before updating this pin');
+  assert.equal(config.sources.find(s => s.id === 'facebook').person_only, true);
   assert.deepEqual(config.reads.map(r => r.fixture), ['poshmark', 'poshmark-empty']);
   assert.deepEqual(config.unrecorded_requests, []);
   assert.deepEqual(report.observed.learning.empty_search.searched.map(r => [r.site, r.outcome]), [['poshmark', 'empty']]);
-  assert.deepEqual(report.observed.gather.records, []);
+  assert.deepEqual(report.observed.gather.records, [{ n: 6, n_eff: 0, ms: 0, added: 0, outcome: 'skipped' }]);
   assert.deepEqual(report.observed.no_basis_gather.records, [{ n: 6, n_eff: 0, ms: 0, added: 0, outcome: 'skipped' }]);
   for (const fixture of report.fixtures) {
     assert.equal(readFileSync(new URL(`../${fixture.path}`, import.meta.url), 'utf8'),
@@ -84,7 +90,7 @@ test('4: the real reconciler refuses to invent a product relation without identi
 });
 
 test('5: no gathered observation or evidence is persisted', () => {
-  gap(5, 'not built', 'No search-to-observation writer exists; the shared Store has no observation table. memoryProof is a separate in-memory store.');
+  gap(5, 'built, not called', 'valuate writes new source rows through ObservationPort; the route does not call it and the shared Store has no observation table.');
   assert.ok(!report.observed.tables.includes('observation'));
   assert.deepEqual(report.observed.observations, []);
   assert.equal(report.observed.observation_writes, 0);
@@ -92,14 +98,14 @@ test('5: no gathered observation or evidence is persisted', () => {
 });
 
 test('6: D1 arithmetic works on hand-fed sold comps, but no store read supplies gathered comps', () => {
-  gap(6, 'built, not called', 'comparables accepts Comp arrays; no observation-store projection feeds the Check. The wider sold set is a separate direct diagnostic.');
+  gap(6, 'built, not called', 'valuate reads ObservationPort and shares Kish with gather.measure; the route does not call valuate. The wider sold set is a separate direct diagnostic.');
   const d = report.observed.direct_basis;
   assert.ok(d.wider.n_eff > d.thin.n_eff);
   const w = d.wider.comps.map(c => c.w);
   const kish = w.reduce((a, b) => a + b, 0) ** 2 / w.reduce((a, b) => a + b * b, 0);
   assert.ok(Math.abs(d.wider.n_eff - kish) < 1e-12, 'D1 Kish effective sample size changed');
   assert.ok(d.match_weights.family < d.match_weights.product && d.match_weights.product < d.match_weights.variant);
-  assert.notEqual(d.gather_measure.n_eff, d.wider.n_eff, 'gather.measure was fixed: update the discrepancy');
+  assert.equal(d.gather_measure.n_eff, d.wider.n_eff, 'gather.measure must use valuation Kish weights');
   assert.equal(report.observed.after.n_eff, report.observed.before.n_eff);
 });
 
@@ -127,7 +133,7 @@ test('8: only the explicit learning diagnostic moves a posterior; timestamps hal
   assert.equal(p.observe_calls[1].outcome.days_since_last, 30);
 });
 
-test('9: the next valuation ignores the moved contribution row and retains its supplied version', () => {
+test('9: the route still ignores contribution learning but cites resolved valuation versions', async () => {
   gap(9, 'built, not called', 'contributionMean and cutOrder read learned weights only in the direct diagnostic; runPlan and valuation do not read them.');
   const p = report.observed.learning;
   assert.equal(p.mean_before, 0.5);
@@ -135,7 +141,9 @@ test('9: the next valuation ignores the moved contribution row and retains its s
   assert.equal(p.second.version, 2);
   assert.deepEqual(report.observed.after_learning, report.observed.before);
   assert.equal(report.observed.after_learning.param_version, 1);
-  assert.equal(report.observed.after_learning.citation.param_versions.valuation, 1);
+  assert.equal(report.observed.after_learning.citation.param_versions.valuation, undefined);
+  const { DECLARED } = await import('../app/src/engines/valuation/params.ts');
+  assert.deepEqual(report.observed.after_learning.citation.param_versions, Object.fromEntries(DECLARED.map(p => [p.name, 0])));
 });
 
 test('the overridden valuation input port must be reviewed when its real wiring changes', () => {
@@ -163,7 +171,7 @@ test('10: two fresh stores produce byte-identical observed outputs', () => {
   assert.equal(row(10).state, 'works');
   assert.equal(report.determinism.identical, true);
   assert.equal(report.determinism.first_sha256, report.determinism.second_sha256);
-  assert.equal(report.works, 1);
+  assert.equal(report.works, 2);
   assert.equal(report.total, 10);
   assert.deepEqual(report.links.map(r => r.link), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   for (const r of report.links) {
@@ -201,5 +209,5 @@ test('CLI exits zero, prints all ten rows and writes the same evidence, count an
   assert.equal(written.works, written.links.filter(r => r.state === 'works').length);
   for (const r of written.links) assert.ok(cli.stdout.includes(
     `${r.link} | ${r.state} | ${r.function} | ${r.file}:${r.line} | ${r.evidence}`), `missing printed link ${r.link}`);
-  assert.match(cli.stdout, /1\/10 works/);
+  assert.match(cli.stdout, /2\/10 works/);
 });

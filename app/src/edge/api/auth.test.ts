@@ -2,11 +2,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAuth, memoryStore } from '../auth.ts';
-import { deps, route } from './http.ts';
+import { deps, resetRequestState, route } from './http.ts';
 import { example } from './examples.ts';
 import { makeAuthHandlers } from './auth.ts';
 import { createLog, memorySink, observeLogs } from '../../../../log/index.js';
 import { createHash } from 'node:crypto';
+import { DatabaseSync } from 'node:sqlite';
+import { kv } from '../store/kv.ts';
 
 const keys = (o: unknown): unknown => Array.isArray(o) ? (typeof o[0] === 'object' ? keys(o[0]) : 'array') : o && typeof o === 'object' ? Object.fromEntries(Object.keys(o).sort().map((k) => [k, keys((o as Record<string, unknown>)[k])])) : typeof o;
 const shape = (name: string) => keys((example(name) as { response: unknown }).response);
@@ -23,8 +25,11 @@ function world() {
     verifyGoogle: async (tok) => (tok.startsWith('google:') ? { subject: tok.slice(7), email: 'sam@example.com', email_verified: true } : null),
     sendCode: (_e, c) => { sent.push(c); },
   });
-  deps.verify = auth.verifyAccess; deps.idem.clear(); deps.now = () => t;
-  const h = makeAuthHandlers(auth, store);
+  deps.verify = auth.verifyAccess; resetRequestState(); deps.now = () => t;
+  const handle = new DatabaseSync(':memory:');
+  const limits = kv(handle, () => t);
+  const h = makeAuthHandlers(auth, store, limits);
+  const newStart = () => route('POST /v1/auth/email/start', makeAuthHandlers(auth, store, kv(handle, () => t)).emailStart, { auth: 'none' });
   const routes = {
     apple: route('POST /v1/auth/apple', h.apple, { auth: 'none' }), google: route('POST /v1/auth/google', h.google, { auth: 'none' }),
     start: route('POST /v1/auth/email/start', h.emailStart, { auth: 'none' }), verify: route('POST /v1/auth/email/verify', h.emailVerify, { auth: 'none' }),
@@ -33,7 +38,7 @@ function world() {
   };
   const post = (r: (q: Request) => Promise<Response>, path: string, body: unknown, bearer?: string, extra: Record<string, string> = {}) =>
     r(new Request(`http://x${path}`, { method: 'POST', body: JSON.stringify(body), headers: { ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}), ...extra } }));
-  return { routes, post, sent, advance: (ms: number) => { t += ms; }, peer: (value: string) => { peer = value; } };
+  return { routes, post, sent, newStart, advance: (ms: number) => { t += ms; }, peer: (value: string) => { peer = value; } };
 }
 const apple = (w: ReturnType<typeof world>, sub: string, extra = {}) => w.post(w.routes.apple, '/v1/auth/apple', { identity_token: `apple:${sub}`, nonce: 'n', ...extra });
 
@@ -154,4 +159,24 @@ test('with no client address bound, codes are limited per address only, never in
   for (let i = 0; i < 25; i++) assert.equal((await w.post(w.routes.start, '/v1/auth/email/start', { email: `shared${i}@example.com` })).status, 202, 'visitors with no bound address must not share one IP bucket');
   for (let i = 0; i < 5; i++) await w.post(w.routes.start, '/v1/auth/email/start', { email: 'same@example.com' });
   assert.equal((await w.post(w.routes.start, '/v1/auth/email/start', { email: 'same@example.com' })).status, 429);
+});
+
+
+test('email address limits survive a new handler bundle and reset exactly after the hour', async () => {
+  const w = world();
+  for (let i = 0; i < 5; i++) {
+    assert.equal((await w.post(w.newStart(), '/v1/auth/email/start', { email: 'bundles@example.com' })).status, 202);
+    w.advance(30_000);
+  }
+  assert.equal((await w.post(w.newStart(), '/v1/auth/email/start', { email: 'bundles@example.com' })).status, 429);
+  w.advance(3600_000 - 150_000);
+  assert.equal((await w.post(w.newStart(), '/v1/auth/email/start', { email: 'bundles@example.com' })).status, 202);
+});
+
+test('email IP limits survive a new handler bundle and reset exactly after the hour', async () => {
+  const w = world();
+  for (let i = 0; i < 20; i++) assert.equal((await w.post(w.newStart(), '/v1/auth/email/start', { email: `bundle${i}@example.com` })).status, 202);
+  assert.equal((await w.post(w.newStart(), '/v1/auth/email/start', { email: 'blocked@example.com' })).status, 429);
+  w.advance(3600_000);
+  assert.equal((await w.post(w.newStart(), '/v1/auth/email/start', { email: 'blocked@example.com' })).status, 202);
 });

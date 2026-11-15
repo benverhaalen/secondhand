@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
-import { searchAll, searchSite, searchSource } from './search.ts';
+import { searchAll, searchSite, searchSource, memoryApifyRuns } from './search.ts';
 import { SOURCES } from './sources.ts';
 import type { PageResult } from '../fetch.ts';
 import { _reset, runPlan, searchParams } from '../run.ts';
@@ -14,7 +14,7 @@ test('one site uses the same reader and counts as searchAll, with exactly one fe
   const opts = { sources: SOURCES.filter(s => s.id === 'poshmark'), sites: ['poshmark'] as const, now: () => 0, fetchPage: async () => { calls++; return page(fixture); } };
   const one = await searchSite('poshmark', 'levi 501', 'search', opts);
   assert.equal(calls, 1);
-  assert.deepEqual(await searchAll('levi 501', opts), { results: one.rows.map(row => ({ site: 'poshmark', row })), searched: [{ ...one.searched, pace: opts.sources[0].pace }] });
+  assert.deepEqual(await searchAll('levi 501', opts), { results: one.rows.map(row => ({ site: 'poshmark', row: { ...row, may_store: true } })), searched: [{ ...one.searched, pace: opts.sources[0].pace }] });
   assert.equal(calls, 2);
 });
 
@@ -85,7 +85,7 @@ test('eBay sold uses only the asking person’s account and reports relink witho
   assert.equal(r.searched.error_code, 'auth_expired'); assert.equal(reads, 0);
 });
 
-test('the shared Dupe slot spends its 3 second gap once and starts the deadline after that gap', async t => {
+test('the shared Dupe slot spends its 3 second gap once inside the job deadline', async t => {
   _reset();
   t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: 1000 });
   const { createDupe } = await import('../../harness/sites/dupe/adapter.ts');
@@ -101,8 +101,8 @@ test('the shared Dupe slot spends its 3 second gap once and starts the deadline 
         : body.method === 'tools/list' ? recording('tools-list') : body.method === 'tools/call' ? recording('search') : '' };
     } });
   const source = SOURCES.find(s => s.site === 'dupe')!;
-  const ask = (query: string) => runPlan({ kind: 'listings_matching', slots: {}, protocol_version: 1, first_ms: 10, settled_ms: 20,
-    targets: [{ target_id: query, query, freshness_s: 0, deadline_ms: 20, routes: [{
+  const ask = (query: string) => runPlan({ kind: 'listings_matching', slots: {}, protocol_version: 1, first_ms: 10, settled_ms: 4000,
+    targets: [{ target_id: query, query, freshness_s: 0, deadline_ms: 4000, routes: [{
       route_id: 'dupe.search.api', host: 'mcp.dupe.com', site: 'dupe', lane: source.lane, pace: source.pace, p95_ms: 10, cache: false,
       async run(q) { const r = await searchSource(source, q, 'search', { dupe, paced: true }); return { outcome: 'hit', rows: r.rows }; },
     }] }], calculate: () => ({ facts: [] }) });
@@ -130,18 +130,18 @@ test('a thrown fetch is recorded as timeout with its reason; unsupported sold se
 });
 
 
-test('Dupe is the first MCP source; Depop has no public-page lane and unavailable readers stay off', async () => {
+test('Dupe is the first MCP source; Depop uses its harness and Facebook uses person-only Apify', async () => {
   const { SOURCES } = await import('./sources.ts');
   const dupe = SOURCES[0];
   assert.equal(dupe.id, 'dupe'); assert.equal(dupe.lane, 'mcp');
   assert.equal(dupe.on, true); assert.equal(dupe.needs_ask, false);
   for (const site of ['poshmark', 'depop', 'ebay', 'etsy', 'chairish']) assert.ok(dupe.covers.includes(site));
   assert.equal(SOURCES.find(s => s.id === 'depop')!.lane, 'harness');
-  assert.equal(SOURCES.find(s => s.id === 'facebook')!.on, false);
-  assert.equal(SOURCES.find(s => s.id === 'facebook')!.reason, 'not built');
+  assert.equal(SOURCES.find(s => s.id === 'facebook')!.on, true);
+  assert.equal(SOURCES.find(s => s.id === 'facebook')!.lane, 'apify');
   const mercari = await searchSource(SOURCES.find(s => s.id === 'mercari')!, 'jeans', 'search', { caller: 'person' });
   assert.equal(mercari.searched.outcome, 'needs_account');
-  assert.equal(mercari.searched.reason, "needs the person's account");
+  assert.equal(mercari.searched.reason, 'needs your account');
 });
 
 test('Dupe sends the specific query to its module and preserves the fixture rows verbatim', async () => {
@@ -192,4 +192,174 @@ test('anonymous Depop reads call its real harness search verb with no public-pag
   const sold = await searchSource(source, 'carhartt jacket XL', 'sold', opts);
   assert.equal(sold.searched.outcome, 'failed'); assert.equal(sold.searched.error_code, 'no_route');
   assert.equal(urls.length, 2, 'unsupported sold search never falls back to plain fetch');
+});
+
+const facebook = () => SOURCES.find(s => s.id === 'facebook')!;
+const ebay = () => SOURCES.find(s => s.id === 'ebay')!;
+const apifyRow = { id: 'facebook:demo', title: 'levi 501', price_cents: 1500, currency: 'USD', url: 'https://www.facebook.com/marketplace/item/demo',
+  via: 'apify', actor: 'apify~facebook-marketplace-scraper', may_model: false, use_scope: 'hackathon_demo' } as const;
+
+test('a not-routed source never takes a pace slot that delays a following runnable eBay read', async () => {
+  _reset();
+  const source = { ...ebay(), pace: { per_minute: 60, min_gap_ms: 1000 } };
+  for (let i = 0; i < 2; i++) {
+    const at = performance.now();
+    const result = await searchSource(source, 'unrouted', 'search', { caller: 'person' });
+    assert.equal(result.searched.error_code, 'no_route');
+    assert.equal(result.searched.reason, 'no live route composed');
+    assert.ok(performance.now() - at < 100, 'a not-routed source took a pace slot');
+  }
+  const { createHarness, fakeAdapter } = await import('../../harness/protocol.ts');
+  const at = performance.now();
+  await searchSource(source, 'routed', 'search', { caller: 'person', harness: createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => ({ ok: true as const, data: [] }) }] }), routed: () => true });
+  assert.ok(performance.now() - at < 100, 'an unrouted read moved the eBay pace clock');
+  _reset();
+});
+
+test('Facebook is person_only, distinct from needs_ask, and a background caller never reaches Apify', async () => {
+  const { sourcesFor } = await import('./sources.ts');
+  assert.equal(facebook().lane, 'apify'); assert.equal(facebook().on, true);
+  assert.equal(facebook().person_only, true); assert.equal(facebook().needs_ask, false);
+  assert.ok(!sourcesFor('background').includes(facebook()));
+  let calls = 0;
+  const apify = { search: async () => { calls++; return { ok: true as const, data: { rows: [apifyRow], dropped: 0, total: 1 } }; } };
+  for (const caller of [undefined, 'background'] as const) {
+    const result = await searchSource(facebook(), 'levi 501', 'search', { caller, visitor_id: 'background', apify });
+    assert.equal(result.searched.outcome, 'blocked');
+  }
+  assert.equal(calls, 0, 'Facebook reached by a background caller');
+});
+
+test('Apify without a composed token route returns no_route immediately; rows keep may_model and use_scope', async () => {
+  const at = performance.now();
+  const missing = await searchSource(facebook(), 'levi 501', 'search', { caller: 'person', visitor_id: 'missing' });
+  assert.equal(missing.searched.error_code, 'no_route');
+  assert.equal(missing.searched.cost_usd_est, 0);
+  assert.ok(performance.now() - at < 100);
+  const calls: unknown[] = [];
+  const apify: NonNullable<import('./search.ts').SearchOpts['apify']> = { search: async (lane, args) => {
+    calls.push([lane, args]); return { ok: true, data: { rows: [apifyRow], dropped: 0, total: 1 } };
+  } };
+  const result = await searchSource(facebook(), 'levi 501', 'search', { caller: 'person', person_id: 'terms', apify, apifyRuns: memoryApifyRuns() });
+  assert.deepEqual(result.rows, [{ ...apifyRow, may_store: true }], 'Apify rows lost their terms or provenance');
+  assert.equal(result.searched.cost_usd_est, 0.005);
+  assert.equal(result.searched.route_id, 'apify.facebook.search');
+  assert.equal(calls.length, 1);
+  assert.equal((calls[0] as [string, { city: string }])[1].city, 'chicago');
+});
+
+test('Apify reserves both caps before concurrent calls and keys a person before the visitor id', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2040-01-01T12:00:00Z').getTime() });
+  searchParams.declare({ name: 'search_apify_runs_per_person_day', family: 'scalar', prior: 2 });
+  searchParams.declare({ name: 'search_apify_runs_per_day', family: 'scalar', prior: 3 });
+  t.after(() => {
+    searchParams.declare({ name: 'search_apify_runs_per_person_day', family: 'scalar', prior: 10 });
+    searchParams.declare({ name: 'search_apify_runs_per_day', family: 'scalar', prior: 200 });
+  });
+  let calls = 0;
+  const apify = { search: async () => { calls++; return { ok: true as const, data: { rows: [], dropped: 0, total: 0 } }; } };
+  const apifyRuns = memoryApifyRuns();
+  const results = await Promise.all([0, 1, 2].map(i => searchSource(facebook(), 'cap', 'search', { caller: 'person', person_id: 'same-person', visitor_id: `rotated-${i}`, apify, apifyRuns })));
+  assert.equal(calls, 2, 'Apify called over the person cap');
+  assert.equal(results[2].searched.outcome, 'blocked'); assert.equal(results[2].searched.error_code, 'rate_limited');
+  assert.match(results[2].searched.reason!, /search_apify_runs_per_person_day/);
+  await searchSource(facebook(), 'cap', 'search', { caller: 'person', person_id: 'other-person', apify, apifyRuns });
+  const global = await searchSource(facebook(), 'cap', 'search', { caller: 'person', person_id: 'another-person', apify, apifyRuns });
+  assert.equal(calls, 3, 'Apify called over the daily cap across people');
+  assert.equal(global.searched.error_code, 'rate_limited'); assert.match(global.searched.reason!, /search_apify_runs_per_day/);
+  t.mock.timers.tick(24 * 60 * 60 * 1000);
+  await searchSource(facebook(), 'new day', 'search', { caller: 'person', person_id: 'same-person', apify, apifyRuns });
+  assert.equal(calls, 4, 'daily counts did not reset at the next UTC day');
+});
+
+test('eBay never falls back to Apify after blocked, no_route, hit or empty', async () => {
+  const { createHarness, fakeAdapter, fail } = await import('../../harness/protocol.ts');
+  let calls = 0;
+  const apify: NonNullable<import('./search.ts').SearchOpts['apify']> = { search: async (lane, args) => {
+    assert.equal(lane, 'ebay'); assert.equal(args.q, 'fallback'); assert.ok(Number(args.limit) > 0);
+    calls++; return { ok: true, data: { rows: [{ ...apifyRow, id: 'ebay:demo', actor: 'automation-lab~ebay-scraper' }], dropped: 0, total: 1 } };
+  } };
+  for (const code of ['blocked', 'no_route'] as const) {
+    const adapter = { ...fakeAdapter('ebay', 'search'), run: async () => fail(code, code, code === 'blocked' ? { do: 'pause_session' as const, site: 'ebay' as const } : { do: 'handoff' as const, url: '' }) };
+    const result = await searchSource(ebay(), 'fallback', 'search', { paced: true, caller: 'person', visitor_id: 'fallback', apify, harness: createHarness({ adapters: [adapter] }) });
+    assert.equal(result.searched.fallback, undefined); assert.equal(result.searched.error_code, code);
+  }
+  const direct = await searchSource(ebay(), 'fallback', 'search', { caller: 'person', visitor_id: 'fallback', apify });
+  assert.equal(direct.searched.error_code, 'no_route'); assert.equal(direct.searched.fallback, undefined);
+  assert.equal(calls, 0, 'eBay fallback called Apify');
+  const before = calls;
+  for (const rows of [[], [{ external_id: 'ok', title: 'levi 501', price_cents: 1200, currency: 'USD', url: 'https://www.ebay.com/itm/ok', state: 'active' }]]) {
+    const page = await searchSource(ebay(), 'fallback', 'search', { paced: true, caller: 'person', visitor_id: 'fallback', apify, harness: createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => ({ ok: true as const, data: rows }) }] }) });
+    assert.equal(page.searched.outcome, rows.length ? 'hit' : 'empty');
+  }
+  await searchSource(ebay(), 'fallback', 'search', { caller: 'background', apify });
+  assert.equal(calls, before, 'eBay Apify fallback ran after a page-lane hit, empty, or a background read');
+});
+
+test('a visitor id never reserves Apify spend, even if a caller claims to be a person', async () => {
+  let reservations = 0, calls = 0;
+  const result = await searchSource(facebook(), 'visitor', 'search', { caller: 'person', visitor_id: 'rotated',
+    apifyRuns: { reserve: async () => { reservations++; return { ok: true }; } },
+    apify: { search: async () => { calls++; return { ok: true, data: { rows: [], dropped: 0, total: 0 } }; } },
+  });
+  assert.equal(reservations, 0); assert.equal(calls, 0); assert.equal(result.searched.outcome, 'blocked');
+});
+
+test('Apify requires a reservation port and honors a durable reservation refusal across reader restarts', async () => {
+  let calls = 0;
+  const apify = { search: async () => { calls++; return { ok: true as const, data: { rows: [], dropped: 0, total: 0 } }; } };
+  const missing = await searchSource(facebook(), 'no port', 'search', { caller: 'person', person_id: 'person', apify });
+  assert.equal(missing.searched.error_code, 'no_route'); assert.equal(calls, 0);
+  const reservations: [string, string][] = [];
+  const apifyRuns = { reserve: async (person: string, day: string) => {
+    reservations.push([person, day]); return { ok: false as const, cap: 'search_apify_runs_per_day' };
+  } };
+  for (let i = 0; i < 2; i++) {
+    _reset();
+    const restarted = await searchSource(facebook(), 'restart', 'search', { caller: 'person', person_id: 'person', apify, apifyRuns });
+    assert.equal(restarted.searched.error_code, 'rate_limited');
+    assert.equal(restarted.searched.reason, 'search_apify_runs_per_day');
+  }
+  assert.equal(calls, 0); assert.deepEqual(reservations, Array.from({ length: 2 }, () => ['person', new Date().toISOString().slice(0, 10)]));
+});
+
+test('SV2 source rights are required data and override a Dupe row claiming it may be stored', async () => {
+  const source = SOURCES.find(s => s.id === 'dupe')!;
+  const keep_until = '2040-01-01T00:00:00.000Z';
+  const result = await searchSource(source, 'rights', 'search', { paced: true, dupe: { search: async () => ({ ok: true, data: {
+    rows: [{ id: 'rights', title: 'chair', price_cents: 1000, currency: 'USD', url: 'https://example.test/item',
+      source_site: 'ebay', secondhand: true, commercial_link: true, attribution: 'Dupe.com', keep_until, may_store: true }],
+    dropped: 0, total: 1, keep_until,
+  } }) } });
+  for (const source of SOURCES) assert.equal(typeof source.rights.may_store, 'boolean', source.id);
+  assert.equal(result.rows[0].may_store, false);
+  assert.equal(result.rows[0].keep_until, keep_until);
+});
+
+test('SR4 source signals reach both page and harness read boundaries', async () => {
+  const controller = new AbortController();
+  const { createHarness, fakeAdapter } = await import('../../harness/protocol.ts');
+  const harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => ({ ok: true, data: [] }) }] });
+  const call = harness.call;
+  harness.call = (site, verb, args) => { assert.equal(args?.signal, controller.signal); return call(site, verb, args); };
+  await searchSource(SOURCES.find(s => s.id === 'ebay')!, 'signal', 'search', { paced: true, harness, signal: controller.signal });
+  await searchSource(SOURCES.find(s => s.id === 'poshmark')!, 'signal', 'search', { paced: true, signal: controller.signal,
+    fetchPage: async (_url, options) => { assert.equal((options as typeof options & { signal?: AbortSignal }).signal, controller.signal); return page('No results'); } });
+});
+
+test('SR4 the default public-page transport actually aborts its fetch when the source is cancelled', async t => {
+  const controller = new AbortController();
+  let observed: AbortSignal | undefined;
+  let entered!: () => void;
+  const started = new Promise<void>(resolve => { entered = resolve; });
+  t.mock.method(globalThis, 'fetch', (_input: Parameters<typeof fetch>[0], init?: RequestInit) => {
+    observed = init?.signal ?? undefined; entered();
+    return new Promise<Response>((_resolve, reject) => {
+      observed?.addEventListener('abort', () => reject(new Error('fixture fetch aborted')), { once: true });
+    });
+  });
+  const reading = searchSite('poshmark', 'abort', 'search', { signal: controller.signal, deadline_ms: 100 });
+  await started; controller.abort();
+  assert.equal(observed?.aborted, true, 'the source signal stopped at the fetch boundary');
+  assert.equal((await reading).searched.outcome, 'timeout');
 });

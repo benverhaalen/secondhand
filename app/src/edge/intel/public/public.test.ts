@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHarness, SITES } from '../../harness/protocol.ts';
@@ -9,6 +9,9 @@ import type { FetchOpts, PageResult } from '../fetch.ts';
 import { readPage, searchUrl, BASE } from './readers.ts';
 import { searchAll as runSearchAll, searchSite, searchSource, type SearchOpts } from './search.ts';
 import { SOURCES } from './sources.ts';
+import { _reset } from '../run.ts';
+
+beforeEach(() => _reset());
 
 const searchAll = (query: string, opts: SearchOpts = {}) => runSearchAll(query, { sources: SOURCES.filter(s => s.id !== 'dupe'), ...opts });
 
@@ -183,11 +186,11 @@ test('searchAll queries approved public sources in parallel and maps outcomes pe
   };
   const t0 = performance.now();
   const r = await searchAll('levi 501', { fetchPage, sources: [...SOURCES.filter(s => s.id !== 'dupe'),
-    { pace: { per_minute: 20, min_gap_ms: 3000 }, id: 'offerup', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true }] });
+    { pace: { per_minute: 20, min_gap_ms: 3000 }, rights: { may_store: true }, id: 'offerup', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true }] });
   assert.equal(peak, 2);
   assert.ok(performance.now() - t0 < 40 * 3);
   const by = Object.fromEntries(r.searched.map(s => [s.site, s]));
-  assert.deepEqual(Object.keys(by).sort(), ['depop', 'ebay', 'offerup', 'poshmark']);
+  assert.deepEqual(Object.keys(by).sort(), ['depop', 'ebay', 'mercari', 'offerup', 'poshmark']);
   assert.deepEqual(requested.map(url => SITES.find(site => url.startsWith(BASE[site]))).sort(), ['offerup', 'poshmark']);
   assert.equal(by.facebook, undefined);
   assert.equal(by.depop!.outcome, 'failed');
@@ -230,7 +233,9 @@ test('Mercari uses only the asking person’s linked account and never anonymous
   const harness = createHarness({ accounts, adapters: mercariAdapters({ signed_in: true, page: async () => { reads++; return recording; } }) });
   const opts = { sites: ['mercari'] as const, person_id: account.person_id, accounts, harness,
     fetchPage: async (): Promise<PageResult> => { assert.fail('Mercari must use the linked harness'); } };
-  assert.deepEqual(await searchAll('carhartt hoodie', opts), { results: [], searched: [] });
+  const visitor = await searchAll('carhartt hoodie', opts);
+  assert.deepEqual(visitor.results, []);
+  assert.equal(visitor.searched[0]!.outcome, 'needs_account');
   for (const overrides of [
     { person_id: undefined },
     { accounts: undefined },
@@ -240,7 +245,7 @@ test('Mercari uses only the asking person’s linked account and never anonymous
     const denied = await searchAll('carhartt hoodie', { ...opts, ...overrides, caller: 'person' });
     assert.deepEqual(denied.results, []);
     assert.equal(denied.searched[0]!.outcome, 'needs_account');
-    assert.equal(denied.searched[0]!.reason, "needs the person's account");
+    assert.equal(denied.searched[0]!.reason, 'needs your account');
   }
   assert.equal(reads, 0);
   const allowed = await searchAll('carhartt hoodie', { ...opts, caller: 'person' });

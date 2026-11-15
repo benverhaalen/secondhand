@@ -64,6 +64,7 @@ export function afterAccept(site) {
 }
 
 // May we send this offer now? promised_elsewhere: a sale or an accepted offer is in progress on another site.
+/** @param {string} site @param {{ list_cents: number, offer_cents: number, lowest_cents?: number, last_sent_at?: Date | null, now: Date, promised_elsewhere?: boolean }} o @returns {{ ok: boolean, why?: string }} */
 export function sellerOffer(site, { list_cents, offer_cents, lowest_cents = list_cents, last_sent_at = null, now, promised_elsewhere = false }) {
   const no = why => ({ ok: false, why });
   const min = fact('offer.seller.min_off_pct', site);

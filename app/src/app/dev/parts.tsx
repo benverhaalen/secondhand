@@ -10,6 +10,9 @@ import {
   Feed, QueueView, MoneyNews, Pile, type SoldThing,
 } from '@/ui';
 import { ChoiceChips, ColourSwatches, Gallery, MatchCard, OfferSheet, PriceChart, PriceRange, RangeSlider, SearchField, SiteStrip, SizePicker } from '@/ui';
+import { CardGroup } from '@/ui/parts/card-group';
+import { ConvoRow } from '@/ui/parts/convo-row';
+import { Glance } from '@/ui/parts/glance';
 import { GoalBar } from '@/ui/parts/goal-bar';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
@@ -20,6 +23,7 @@ import { MoneyBar } from '@/ui/parts/money-bar';
 import { StateBar } from '@/ui/parts/state-bar';
 import { PulseKey, PulseRow } from '@/ui/parts/pulse-row';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
+import { SiteChip } from '@/ui/parts/site-chip';
 import { Shelf, Tile } from '@/ui/parts/tile';
 import { KeepRow, Range } from '@/ui/parts/worth';
 import { photo } from '@/demo/photos';
@@ -75,7 +79,7 @@ function Sheetful() {
           due={at(3.67)} lead primary={{ id: 'd-need-accept', label: 'Accept $38' }} second={{ id: 'd-need-counter', label: 'Counter' }} more={{ id: 'd-need-more', label: 'More' }} />
         <DecisionCard id="d-ship" kind="ship" word="Ship" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} site="ebay" fact={{ label: 'You get', amount: 31.4 }}
           due={at(30)} lead primary={{ id: 'd-ship-print', label: 'Print label' }} second={{ id: 'd-ship-spots', label: 'Drop-off spots' }} />
-        <DecisionCard id="d-live" kind="live" word="Price" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} site="poshmark" fact={{ label: 'Lower to', amount: 52 }}
+        <DecisionCard id="d-live" kind="live" word="Price" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} site="poshmark" fact={{ label: 'You get', amount: 41.6 }}
           lead primary={{ id: 'd-live-lower', label: 'Lower to $52' }} second={{ id: 'd-live-keep', label: 'Keep $58' }} />
         <DecisionCard id="d-paid" kind="paid" word="Paid" title="Levi’s 501, 32 × 32" photo="levis-501" site="poshmark" fact={{ label: 'You get', amount: 44.1 }}
           due={at(47)} lead primary={{ id: 'd-paid-out', label: 'Cash out' }} second={{ id: 'd-paid-later', label: 'Later' }} />
@@ -143,7 +147,7 @@ function Sheetful() {
       </Section>
 
       <Section title="Notice">
-        <Notice id="n-plain" icon="tick-02" text="Handled 6 things today" />
+        <Notice id="n-plain" icon="tick-02" text="6 actions today" />
         <Notice id="n-need" icon="waving-hand-01" text="2 questions from buyers" tone="need" />
       </Section>
 
@@ -206,6 +210,8 @@ function Sheetful() {
 
       <Section title="Amount">
         <Amount value={46.95} what="You get, after fees" />
+        <Glance value={163.63} what="You got from 4 sales, after fees" stats={[{ value: '$132.33', word: 'On its way' }, { value: '4', word: 'Live' }]} />
+        <CardGroup label="Looking for"><ItemCard id="cg-want" title="Standing desk" photo={null} state="working" word="2 of 3 sites" fact={{ label: 'Nothing yet under', amount: '$150' }} /></CardGroup>
       </Section>
 
       <Section title="Grid tile, shelf, filter row (Sell)">
@@ -213,7 +219,8 @@ function Sheetful() {
           <Chip id="c-sort" icon="sorting-01" label="Latest" onPress={() => {}} />
           <Chip id="c-all" label="All" picked onPress={() => {}} />
           <Chip id="c-need" label="Needs you" count={8} onPress={() => {}} />
-          <Chip id="c-ebay" site="ebay" onPress={() => {}} />
+          <SiteChip id="c-ebay" site="ebay" onPress={() => {}} />
+          <SiteChip id="c-depop" site="depop" picked onPress={() => {}} />
         </FilterRow>
         <Shelf id="p-need" title="Needs you" count={8} onAll={() => {}}>
           <Grid columns={2}>
@@ -257,13 +264,19 @@ function Sheetful() {
       </Section>
 
       <Section title="Top slot, a new person">
-        <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: 'Connect a site' }} />
+        <TopSlot setup={{ id: 'top-setup', step: 'Connect a site' }} />
       </Section>
 
       <Section title="Messages: thread row, message, draft, composer">
         <List>
           <ThreadRow id="tr-need" who="canvasfan" photo="carhartt-jacket" title="Carhartt Detroit jacket" site="depop" need={{ state: 'need', word: 'Offer' }} last="Would you take $85?" time="5m ago" unread={2} />
           <ThreadRow id="tr-did" who="vintage_workwear_collector_and_reseller_since_2009" photo="nike-dunks" title="Nike Dunk Low, 10.5" site="ebay" did="Sent for you" last="Yes, it’s still available. It ships tomorrow." mine time="Yesterday" unread={0} />
+        </List>
+        <List>
+          <ConvoRow id="cr-draft" who="canvasfan" photo="carhartt-jacket" name="Carhartt Detroit jacket" site="depop" note="draft" last="Is the inseam really 36?" time="9h ago" unread={1} />
+          <ConvoRow id="cr-scam" who="Alex" photo="nike-dunks" name="Nike Dunk Low" site="facebook" note="scam" last="Can you text me? I’ll pay by Zelle" time="10h ago" unread={1} />
+          <ConvoRow id="cr-read" who="vintage_workwear_collector_and_reseller_since_2009" photo={null} name="Nike Dunk Low" site="ebay" last="Yes, it’s still available." time="Yesterday" unread={0} />
+          <ConvoRow id="cr-auto" who="workwear_co" photo="carhartt-jacket" name="Carhartt Detroit jacket" site="ebay" note="auto" last="It ships tomorrow." time="5h ago" unread={0} />
         </List>
         <Message side="theirs" meta={<Meta text="canvasfan, 5m ago" />}>What’s the inseam?</Message>
         <Message side="mine" meta={<Meta text="Sent for you, 4m ago" info />}>It’s 32 inches.</Message>
@@ -288,8 +301,8 @@ function Sheetful() {
       <BuySide />
       <Section title="New and the camera (on the bar)">
         <FeedSwatch>
-          <ChoiceCapsule id="nc-sell" label="Sell it" icon="tag-01" lead index={0} shown onType={() => {}} />
-          <ChoiceCapsule id="nc-worth" label="What’s it worth" icon="money-03" index={1} shown onType={() => {}} />
+          <ChoiceCapsule id="nc-sell" label="Sell an item" icon="tag-01" lead index={0} shown />
+          <ChoiceCapsule id="nc-worth" label="Appraise an item" icon="money-03" index={1} shown />
           <CaptureFrame sample band={<Chips><FactChip id="nc-frame-brand" name="Brand" value="Carhartt" /><FactChip id="nc-frame-size" name="Size" /></Chips>} />
           <StageBubbles stages={[{ name: 'Kind', state: 'done' }, { name: 'Photos', state: 'now' }, { name: 'Label', state: 'skipped' }, { name: 'Measure', state: 'later' }, { name: 'Condition', state: 'later' }]} />
           <Instruction text="Closer on the tag" />
@@ -319,9 +332,10 @@ function Sheetful() {
           <ListRow id="lr-switch" label="Pause selling" detail="Sites use their own away mode. The rest end and come back on your date" trail={<Switch id="sw-1" label="Pause selling" on={on} onChange={setOn} />} />
           <ListRow id="lr-off" label="Buy shipping labels" detail="Asks you first. Approved 2 of 3 times without a change" trail={<Switch id="sw-2" label="Buy shipping labels" on={false} disabled />} />
           <ListRow id="lr-site" site="depop" label="Linked" detail="Checked 5m ago" onPress={() => {}} />
+          <ListRow id="lr-photo" photo="carhartt-jacket" label="Carhartt jacket" detail="$85 to $115 used" onPress={() => {}} />
           <ListRow id="lr-link" site="mercari" label="Not linked" trail={<Pill id="lr-link-p" kind="second" label="Link" />} />
           <ListRow id="lr-linking" site="ebay" label="Signing in" trail={<Pill id="lr-linking-p" kind="second" label="Link" state="working" />} />
-          <ListRow id="lr-error" site="poshmark" tone="brick" label="Didn’t link" trail={<Pill id="lr-error-p" kind="second" label="Try again" icon="refresh" />} />
+          <ListRow id="lr-error" site="poshmark" tone="brick" label="Didn’t link" trail={<Pill id="lr-error-p" kind="second" label="Retry" icon="refresh" />} />
         </List>
         <GoalBar label="November goal" kept={132.33} target={300} />
         <WeekBars weeks={[{ label: 'Sep 22', amount: 31.3 }, { label: '29', amount: 0 }, { label: 'Oct 6', amount: 64 }, { label: '13', amount: 12.5 }, { label: '20', amount: 0 }, { label: '27', amount: 88.1 }, { label: 'Nov 3', amount: 40 }, { label: '10', amount: 132.33, now: true }]} />

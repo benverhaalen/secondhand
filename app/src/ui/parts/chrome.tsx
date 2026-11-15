@@ -29,8 +29,6 @@ export function Wash({ under = 0 }: { under?: number }) {
   );
 }
 
-// The nav, 350 by 44 (Art. 7.8). main: the wordmark centered (C1, L3) and the inbox right in a 44 target, with its count.
-// back: a pushed page, with Back on the left and at most one action on the right; its title is the page's own heading below.
 export function Nav({ inbox, back, action }: {
   inbox?: { count: number; onPress?: () => void };
   back?: () => void;
@@ -38,10 +36,7 @@ export function Nav({ inbox, back, action }: {
 }) {
   return (
     <View {...mark('nav')} style={{ height: size.navH, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <View style={{ width: size.controlMin, alignItems: 'flex-start' }}>
-        {back ? <IconButton id="nav-back" icon="arrow-left-01" label="Back" look="plain" onPress={back} /> : null}
-      </View>
-      {back ? <View /> : <Wordmark />}
+      {back ? <IconButton id="nav-back" icon="arrow-left-01" label="Back" look="plain" onPress={back} /> : <Wordmark />}
       <View style={{ width: size.controlMin, alignItems: 'flex-end' }}>
         {inbox ? (
           <IconButton id="nav-inbox" icon="inbox" label={inbox.count ? `Messages, ${inbox.count} new` : 'Messages'} look="plain" onPress={inbox.onPress ?? (() => router.push('/messages' as Href))}>
@@ -53,14 +48,10 @@ export function Nav({ inbox, back, action }: {
   );
 }
 
-// "secondhand" in Clofie, lowercase. Half its type size is kept clear on each side, where the two hand marks will sit (L52):
-// the slots are empty until the marks are drawn. Clofie sits low in its line box, so Txt nudges it down; the mark keeps
-// that much room above and below, so its glyphs stay inside its own box and its centre does not move (B34).
 function Wordmark() {
   const clear = Math.ceil(type.t21.fontSize / 2), room = Math.round(type.t21.fontSize * nudge.display);
   return (
     <View {...mark('wordmark', { fit: 'content' })} accessibilityRole="header" style={{ flexDirection: 'row', alignItems: 'center', height: type.t21.lineHeight + 2 * room }}>
-      <View {...mark('hand', { side: 'left' })} style={{ width: clear }} />
       <Txt role="title">secondhand</Txt>
       <View {...mark('hand', { side: 'right' })} style={{ width: clear }} />
     </View>
@@ -71,7 +62,7 @@ function Wordmark() {
 // It taps through to You. Nothing new means no slot, and never $0.00. A new person sees their next setup step instead.
 export function TopSlot({ news, setup }: {
   news?: { since: string; kept: number; line: string; onPress?: () => void } | null;
-  setup?: { id: string; step: string; line: string; onPress?: () => void } | null;
+  setup?: { id: string; step: string; line?: string; onPress?: () => void } | null;
 }) {
   if (news && news.kept > 0) {
     return (
@@ -92,7 +83,7 @@ export function TopSlot({ news, setup }: {
     return (
       <Press id={setup.id} label={setup.step} onPress={setup.onPress} round={false}>
         <View {...mark('top-setup')} style={{ gap: space.s1 }}>
-          <Txt role="caption" tone="ink-2">{setup.line}</Txt>
+          {setup.line ? <Txt role="caption" tone="ink-2">{setup.line}</Txt> : null}
           {/* Room above and below for the display face's nudge, so the step's glyphs stay inside the slot (B34). */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2, height: type.t21.lineHeight + 2 * Math.round(type.t21.fontSize * nudge.display) }}>
             <Txt role="title">{setup.step}</Txt>
@@ -105,16 +96,12 @@ export function TopSlot({ news, setup }: {
   return null;
 }
 
-// The tab bar: five fixed equal slots, Today, Sell, New, Buy, You. Places only. The tab you are on is its filled icon on
-// a 56 by 32 pill of --tab-on, with its label in ink at the same weight (L29). Nothing moves when the tab changes: every
-// slot has the same box in every state, and the pill is drawn behind the icon (U7). Switching tabs has no animation (§3).
-// New is a raised 56 ink circle with a plus; it opens New, not a tab.
 export type TabKey = 'index' | 'sell' | 'buy' | 'you';
 const TABS: { key: TabKey | 'new'; word: string; icon: IconName }[] = [
   { key: 'index', word: 'Today', icon: 'home-01' },
   { key: 'sell', word: 'Sell', icon: 'tag-01' },
   { key: 'new', word: 'New', icon: 'add-01' },
-  { key: 'buy', word: 'Buy', icon: 'search-01' },
+  { key: 'buy', word: 'Buy', icon: 'money-03' },
   { key: 'you', word: 'You', icon: 'user' },
 ];
 
@@ -129,7 +116,7 @@ export function TabBar({ current, badges = {}, onTab }: {
   // design"): a capsule 62 tall, 16 in from each side and 21 above the bottom of the glass, so its round ends follow the
   // phone's round corners instead of a flat bar with a line meeting them. It is told apart by tone (surface on the page),
   // not a line or a shadow. On a phone with no home bar it sits 12 above the edge.
-  const below = inset.bottom ? Math.max(inset.bottom - 13, space.s3) : space.s3;
+  const below = barBelow(inset.bottom);
   return (
     <OnGround ground="card">
       <View style={{ backgroundColor: c.page, paddingHorizontal: space.s4, paddingTop: space.s2, paddingBottom: below }}>
@@ -144,10 +131,6 @@ export function TabBar({ current, badges = {}, onTab }: {
   );
 }
 
-// A tab: its icon over its word, centered in the capsule's height, the slot the capsule's full height (B31). The tab you are
-// on is its filled icon on a 56 by 32 pill of --tab-on, behind the icon only, with its word in ink at the same weight
-// (L29; Ben, 03:22: "a less subtle way to show what section you are on"). The pill is drawn behind the icon in a box every
-// state shares, so nothing moves when the tab changes (U7).
 const PILL = { w: 56, h: 32 };
 
 function TabSlot({ id, word, icon, on, dot, onPress }: { id: string; word: string; icon: IconName; on: boolean; dot: boolean; onPress: () => void }) {
@@ -167,12 +150,17 @@ function TabSlot({ id, word, icon, on, dot, onPress }: { id: string; word: strin
               {dot ? <View style={{ position: 'absolute', top: -2, right: -4, width: 8, height: 8, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.marigold }} /> : null}
             </View>
           </View>
-          <Txt role="caption" tone={on ? 'ink' : 'ink-2'}>{word}</Txt>
         </View>
       </Press>
     </View>
   );
 }
+
+// How far the capsule's foot sits above the bottom of the glass, and where New's circle is: the middle of the window, on
+// the capsule's middle line. New's close button (takeover.tsx) is drawn from this, so it lands exactly on the + it replaces.
+export const NEW_D = 48;
+export function barBelow(insetBottom: number) { return insetBottom ? Math.max(insetBottom - 13, space.s3) : space.s3; }
+export function newCenter(width: number, height: number, insetBottom: number) { return { x: width / 2, y: height - barBelow(insetBottom) - size.tabH / 2 }; }
 
 function NewSlot({ onPress }: { onPress: () => void }) {
   return (
@@ -187,7 +175,7 @@ function NewCircle({ pressed }: { pressed: boolean }) {
   const c = useColors();
   // Inside the capsule and centered in it, on the same middle line as every tab (Ben, 09:56: "the middle + circle isnt
   // aligned"). 48 across: the black that marks the one act that starts everything.
-  const d = 48;
+  const d = NEW_D;
   return (
     <View {...mark('new-button')} style={{ width: d, height: d, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: pressed ? c.inkPress : c.ink, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name="add-01" tone="page" />

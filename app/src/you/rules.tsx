@@ -49,7 +49,7 @@ export function Rules() {
             {w.rules.map(r => {
               const ready = r.state === 'eligible' || r.state === 'auto' || r.unedited_approvals >= PROMOTE_AT;
               const detail = on[r.id] ? ruleSentence(r) : ready
-                ? `Approved ${PROMOTE_AT} times without a change. Turn on to let it run`
+                ? `Approved ${PROMOTE_AT} times without a change`
                 : `Asks you first. Approved ${r.unedited_approvals} of ${PROMOTE_AT} times without a change`;
               return <ListRow key={r.id} id={`rule-${r.id}`} label={ruleName(r)} detail={detail}
                 trail={<Switch id={`rule-switch-${r.id}`} label={ruleName(r)} on={on[r.id]} disabled={!on[r.id] && !ready} onChange={next => flip(r.id, next)} />} />;
@@ -61,8 +61,10 @@ export function Rules() {
       </Section>
 
       <List>
-        <ListRow id="rules-permissions" label="Permissions" detail="What it does with Undo, what always asks, and what it never does"
+        <ListRow id="rules-permissions" label="Permissions"
           onPress={() => go.to('/you/permissions')} />
+        {/* What it did on its own, with Undo, beside the rules that let it (moved from You, Ben 10:27). */}
+        <ListRow id="rules-activity" label={PAGES.log.title} detail="Every step it took, with Undo" onPress={() => go.to('/you/log')} />
       </List>
 
       {live.length ? (
@@ -78,9 +80,9 @@ export function Rules() {
         <Stack>
           <ListRow id="limit-floor-row" label="Lowest you’d take" detail="Under this, it always asks you"
             trail={<Line><Guess id="limit-floor" name="Lowest you’d take" value={draft.floor} numeric changed={saved === 'done'} look="body" onChange={v => setDraft(d => ({ ...d, floor: v }))} /></Line>} />
-          <ListRow id="limit-top-row" label="Accept at once at" detail="An offer this high is taken without asking"
+          <ListRow id="limit-top-row" label="Accept at once at"
             trail={<Line><Guess id="limit-top" name="Accept at once at" value={draft.top} numeric changed={saved === 'done'} look="body" onChange={v => setDraft(d => ({ ...d, top: v }))} /></Line>} />
-          {!valid ? <Txt role="caption">The accept line can’t be under your lowest.</Txt> : null}
+          {!valid ? <Txt role="caption">Accept-at-once price must be at least your lowest price.</Txt> : null}
         </Stack>
         <Approve id="limit-save" does={floor !== null ? `Save ${cash(floor)}${top !== null ? ` and ${cash(top)}` : ''}` : 'Save'} status={saved}
           done="Saved" onApprove={valid ? save : undefined} onUndo={undoSave} />

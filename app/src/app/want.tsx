@@ -17,6 +17,7 @@ import {
   ALL_SITES, CONDITIONS, conditionId, CUTS, coloursFor, draftOf, firstPass, kindOf, priceBounds, RADII, sizesFor, soldDots, wantFromWords, type How, type WantDraft,
 } from '@/buy/read';
 import { afterListing, parseStage, SAMPLE, type StageAlert } from '@/buy/stage';
+import { TrackItem } from '@/buy/track';
 import { Failed, Loading, OfflineLine } from '@/buy/states';
 import { href, usePage } from '@/buy/world';
 import { ago, product, usd, type Cut, type Site } from '@/demo';
@@ -34,6 +35,11 @@ const LIVE_EVERY_MS = 2000;
 const SKIP = 'one: a want is one thing, with no list in it to hold one or many; dense: the same, a want has no list to fill';
 
 export default function Want() {
+  const params = useLocalSearchParams<{ id?: string; q?: string; world?: string; state?: string; live?: string }>();
+  return params.world || params.state || params.live ? <DemoWant /> : <TrackItem id={params.id} query={params.q} />;
+}
+
+function DemoWant() {
   const { w, state } = usePage();
   const params = useLocalSearchParams<{ id?: string; q?: string; live?: string }>();
   // A state named with no want in the address draws the world's first want, or a new one from the demo's Dunks search.
@@ -151,7 +157,7 @@ export default function Want() {
           <Stack gap="tight">
             <Txt role="headline">{`${usd(low)} to ${usd(most)}`}</Txt>
             <RangeSlider id="want-price" label="Price, delivered" {...priceBounds(low / 100, most / 100, dots)} low={low / 100} high={most / 100} dots={dots}
-              caption={dots.length ? `Each dot is a sale of the same one: ${dots.length} sold` : 'Not enough sales yet to show'} onChange={setPrice} />
+              caption={dots.length ? 'Each dot is a sale of the same item' : 'Not enough sales yet to show'} onChange={setPrice} />
           </Stack>
         ) : <Blank id="want-most" look="body" name="Around what price?" numeric onChange={typed} />}
       </Section>
@@ -176,8 +182,8 @@ export default function Want() {
       ) : null}
 
       {kind === 'apparel' ? (
-        <Section title="Cut">
-          <ChoiceChips id="want-cut" label="Cut" value={x.fit.cut ?? 'any'} options={CUTS}
+        <Section title="Fit">
+          <ChoiceChips id="want-cut" label="Fit" value={x.fit.cut ?? 'any'} options={CUTS}
             onChange={v => edit({ ...x, fit: { ...x.fit, cut: v === 'any' ? undefined : v as Cut } })} />
         </Section>
       ) : null}
@@ -200,7 +206,7 @@ export default function Want() {
           <ChoiceChips id="want-alert" label="Tell me" value={x.alert} onChange={k => edit({ ...x, alert: k as WantDraft['alert'] }, 'Saved', false)}
             options={[{ id: 'under', label: most != null ? `Under ${usd(most)}` : 'Under my price' }, { id: 'available', label: 'Any new one' }]} />
           <Row>
-            <Txt role="caption">Quiet</Txt>
+            {x.quiet_hours ? <Txt role="caption">Quiet hours</Txt> : null}
             {x.quiet_hours ? <Guess id="want-quiet" look="body" name="Quiet hours" value={`${hour(x.quiet_hours.from)} to ${hour(x.quiet_hours.to)}`} changed={!fresh} onChange={() => edit(x, 'Saved', false)} />
               : <Blank id="want-quiet" look="body" name="No quiet hours" onChange={() => edit({ ...x, quiet_hours: { from: '22:00', to: '07:00' } }, 'Saved', false)} />}
           </Row>

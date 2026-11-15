@@ -5,7 +5,7 @@
     "margin": { "x": 20 },
     "sizes": { "390": [13, 15, 18, 21, 36] },
     "peak": 50,
-    "wordmark": { "sizes": [21], "at": "top-center" },
+    "wordmark": { "sizes": [21], "at": "top-left" },
     "act": true,
     "scrolls": true
   },

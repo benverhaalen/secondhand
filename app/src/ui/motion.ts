@@ -24,4 +24,10 @@ export const MOTIONS: Record<string, { why: Why; ms: number | 'spring' }> = {
   foundFly: { why: 'origin', ms: motion.panel },      // and flies to the bubble of the stage it settles
   cloudPoint: { why: 'progress', ms: motion.select }, // a point lands where a feature was found
   shutter: { why: 'feedback', ms: motion.feedback },  // the feed blinks when a still is taken
+  // The shop takeover (Nate, words.md 2026-11-15: "animate the source in, with its listings, like a logo of it").
+  sourceIn: { why: 'progress', ms: motion.select },   // a source's logo comes in when its job asks it
+  listingIn: { why: 'progress', ms: motion.feedback }, // each listing it found slides in beside its logo as its frame lands
+  barDrop: { why: 'state', ms: motion.panel },         // after the first answer the bar moves to the bottom: now it is a chat
+  float: { why: 'recognition', ms: 1600 },            // a source's logo drifts a few points, so it reads as live and pressable
+  burst: { why: 'origin', ms: 420 },                   // a pressed logo's colour grows from it to fill the page, and its site opens
 };

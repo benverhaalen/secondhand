@@ -38,7 +38,7 @@ export function Range({ low, high, what }: { low: string; high: string; what: st
 export function RangeSkeleton() {
   const c = useColors();
   return (
-    <View {...mark('range', { skeleton: 'true' })} accessibilityLabel="Loading" style={{ gap: space.s1 }}>
+    <View {...mark('range', { skeleton: 'true' })} accessibilityLabel="Loading value" style={{ gap: space.s1 }}>
       <View style={{ height: 60, justifyContent: 'center' }}><View style={{ width: '70%', height: 44, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} /></View>
       <View style={{ height: 20, justifyContent: 'center' }}><View style={{ width: '60%', height: 14, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} /></View>
     </View>

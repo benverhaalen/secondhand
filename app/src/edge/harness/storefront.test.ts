@@ -16,7 +16,7 @@ test('the sweep reads each linked storefront once and stores a snapshot; a plant
   ], vault);
   const calls: Site[] = [];
   const sites: Site[] = ['depop', 'ebay', 'mercari', 'poshmark'];
-  const harness = createHarness({ adapters: sites.map(s => { const a = fakeAdapter(s, 'read_storefront'); return { ...a, run: (x, sig) => { calls.push(s); return a.run(x, sig); } }; }) });
+  const harness = createHarness({ accounts, adapters: sites.map(s => { const a = fakeAdapter(s, 'read_storefront'); return { ...a, run: (x, sig) => { calls.push(s); return a.run(x, sig); } }; }) });
   const rows: StorefrontSnapshot[] = [];
   const out = await sweepStorefronts({ accounts, harness, store: { put: async r => { rows.push(r); } }, person_id: 'p1', now: () => new Date('2026-11-15T05:00:00Z') });
   assert.deepEqual(calls.sort(), ['depop', 'ebay']);
@@ -34,7 +34,7 @@ test('a site that fails is reported, and the others are still stored', async () 
   const vault = memoryVault();
   await vault.put('r', { cookies: [], origins: [] });
   const accounts = memoryAccounts([{ account_id: 'a1', person_id: 'p', site: 'depop', token_ref: 'r' }, { account_id: 'a2', person_id: 'p', site: 'ebay', token_ref: 'r' }], vault);
-  const harness = createHarness({ adapters: [fakeAdapter('depop', 'read_storefront'),
+  const harness = createHarness({ accounts, adapters: [fakeAdapter('depop', 'read_storefront'),
     { ...fakeAdapter('ebay', 'read_storefront'), run: a => fakeAdapter('ebay', 'read_storefront').run({ ...a, fake: 'blocked' }, new AbortController().signal) }] });
   const rows: StorefrontSnapshot[] = [];
   const out = await sweepStorefronts({ accounts, harness, store: { put: async r => { rows.push(r); } } });
@@ -56,4 +56,33 @@ test('untrusted data: wrong types and negative counts are dropped and named miss
 test('read_storefront on a search-only site answers no_route with the reason', async () => {
   const e = await createHarness({ adapters: [] }).call('grailed', 'read_storefront');
   assert.ok(!e.ok && e.error.code === 'no_route' && /search and price only/.test(e.error.message));
+});
+
+
+test("sweepStorefronts: one person's account id under another person is refused", async () => {
+  const vault = memoryVault();
+  await vault.put('fixture', { cookies: [], origins: [] });
+  const accounts = memoryAccounts([
+    { account_id: 'owned', person_id: 'owner', site: 'depop', token_ref: 'fixture' },
+    { account_id: 'other-owned', person_id: 'other', site: 'ebay', token_ref: 'fixture' },
+  ], vault);
+  const calls: { account_id: unknown; person_id: unknown }[] = [];
+  const rows: StorefrontSnapshot[] = [];
+  const harness = createHarness({ accounts, adapters: (['depop', 'ebay'] as const).map(site => {
+    const adapter = fakeAdapter(site, 'read_storefront');
+    return { ...adapter, async run(args, signal) {
+      calls.push({ account_id: args.account_id, person_id: args.person_id });
+      return adapter.run(args, signal);
+    } };
+  }) });
+  const sweep = (person_id?: string) => sweepStorefronts({ accounts, harness, person_id,
+    store: { async put(row) { rows.push(row); } } });
+  assert.deepEqual(await sweep('other'), { swept: ['other-owned'], failed: [] });
+  assert.deepEqual(calls, [{ account_id: 'other-owned', person_id: 'other' }]);
+  assert.deepEqual(rows.map(row => row.account_id), ['other-owned']);
+  calls.length = 0; rows.length = 0;
+  assert.deepEqual(await sweep(), { swept: ['owned', 'other-owned'], failed: [] });
+  assert.deepEqual(calls, [
+    { account_id: 'owned', person_id: 'owner' }, { account_id: 'other-owned', person_id: 'other' },
+  ], 'the system sweep must pass each account row’s own person');
 });

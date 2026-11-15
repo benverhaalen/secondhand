@@ -35,6 +35,33 @@ for (const s of table.states) test(`sell: ${s.state} shows ${s.shows}`, async ()
   assert.equal(state, s.state);
 });
 
+// iOS Photos puts Select in its title row; a row of its own under the title was one more line before the first tile (U11).
+test('sell: Select sits in the title row, and Done takes its place while picking', async () => {
+  const screen = await app.open('/sell?world=clearing');
+  await screen.page.locator('[data-part="page-head"] [data-testid="sell-select"]').waitFor({ state: 'visible', timeout: WAIT });
+  await screen.tap('sell-select');
+  await screen.page.locator('[data-part="page-head"] [data-testid="select-done"]').waitFor({ state: 'visible', timeout: WAIT });
+});
+
+// U19, Ben 10:27 ("a lot of clutter"): the shelves name themselves, so their chips show only once one shelf is open alone.
+test('sell: a shelf is named once: no shelf chip on the whole page, the chips after See all', async () => {
+  const screen = await app.open('/sell?world=clearing');
+  await screen.page.locator('[data-shelf="needs_you"]').waitFor({ state: 'visible', timeout: WAIT });
+  for (const id of ['filter-all', 'filter-needs_you', 'filter-live']) assert.equal(await screen.page.getByTestId(id).count(), 0, id);
+  await screen.tap('shelf-needs_you-all');
+  for (const id of ['filter-all', 'filter-needs_you', 'filter-live']) await screen.page.getByTestId(id).waitFor({ state: 'visible', timeout: WAIT });
+  assert.equal(await screen.page.locator('[data-part="shelf-head"]').count(), 0, 'a shelf open alone has no header to repeat');
+});
+
+// Art. 7.14: a shelf whose every tile would wear one tag shows none; the header already names them (the flipper's Sold, all Paid).
+test('sell: a shelf of one state wears no tags; a shelf of kinds keeps them', async () => {
+  const screen = await app.open('/sell?world=flipper');
+  await screen.shows('Needs you');
+  const tags = id => screen.page.locator(`[data-shelf="${id}"] [data-part="tag"]`).count();
+  assert.equal(await tags('sold'), 0, 'Sold, all Paid, shows no tags');
+  assert.ok(await tags('needs_you') > 0, 'Needs you tells its tiles apart by tag');
+});
+
 test('sell: the filters sit on one row', async () => {
   const screen = await app.open('/sell?world=flipper');
   await screen.shows('Needs you');
@@ -154,7 +181,7 @@ test('sell: offline, a change waits for the signal', async () => {
   assert.equal(await screen.page.locator('[data-shelf="needs_you"] [data-testid="tile-it_lamp"]').count(), 1, 'the lamp stays until the change is sent');
 });
 
-test('sell: failed says so, and Try again loads the things', async () => {
+test('sell: failed says so, and Retry loads the things', async () => {
   const screen = await app.open('/sell?state=failed');
   await screen.tap('sell-retry');
   await screen.shows('Needs you');

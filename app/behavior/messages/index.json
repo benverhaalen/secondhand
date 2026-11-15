@@ -2,52 +2,52 @@
   "screen": "messages/index",
   "route": "/messages",
   "frame": [
-    "Who: every seller. Carol (clearing out) opens it when the chat icon shows a count; a flipper opens it many times a day.",
-    "Came to: send the replies the agent drafted, and see who wrote, on which site, and what waits for them, without opening five apps.",
-    "A mistake costs most where an offer runs out unseen, or where a scammer gets an answer.",
-    "Ways out (spec/ways-out.md §6.3): show one item's messages; Answer for me can be turned off from the line that opens it; a blocked buyer stays in the list as Blocked.",
-    "In the loop: replies start as drafts (ways-out §6.3). The page opens on the replies to send, each with the buyer's words, the exact reply and the facts it states with their sources; nothing goes without Send or Send all."
+    "Who: every seller. Carol (clearing out) opens it when the inbox shows a count; a flipper opens it many times a day.",
+    "Came to: see who wrote, about which thing, and open the one to answer, without opening five apps.",
+    "A mistake costs most where an offer runs out unseen, or where a scammer gets an answer: the scam row says so in its one word, and Today holds every decision with its deadline.",
+    "Ways out (spec/ways-out.md §6.3): show one item's messages (?item=); a blocked buyer stays in the list as Blocked; Ask me first and Take over live in the conversation.",
+    "In the loop: replies start as drafts (ways-out §6.3). A row with one says Draft ready; the draft is sent, edited or taken over inside the conversation, next to the words it answers."
   ],
   "decisions": [
     {
-      "decision": "The page opens on \"N replies to send\", one at a time like a queue card",
-      "why": "ways-out §6.3, \"Let me approve replies fast\" (Ben, 05:18): replies start as drafts the person approves."
+      "decision": "The page is the list and nothing else: a back arrow, the large title, one row per conversation",
+      "why": "Ben, 09:56: \"messages should just list the messages\"; iOS Messages and Mail open this way (10:01, \"standard to apple iphone design\")."
     },
     {
-      "decision": "Each reply shows the buyer's words, the exact reply, and a chip per fact with where it came from",
-      "why": "So the person checks the source, not only the sentence (ways-out §6.3)."
+      "decision": "The drafts queue, Send all and the inline Send, Edit and Take over left the list",
+      "why": "A draft is answered next to the buyer's words, in the conversation, where it already has Send, Edit and Take over; on the list it put a second page and four buttons above the rows."
     },
     {
-      "decision": "Send, Edit, Take over on the card; Send all only for replies whose every fact is confirmed and unedited",
-      "why": "ways-out §6.3: Send all is for replies that only state confirmed facts. Take over opens the thread to write it myself."
+      "decision": "A row with a draft says Draft ready, quietly, as Mail marks a Draft",
+      "why": "The person sees where a reply waits without a colored tag on every row (Art. 7.14)."
     },
     {
-      "decision": "The foot line says \"Draft for me is on\" when nothing was sent for the person this week",
-      "why": "Draft for me is the default for a new person (ways-out §6.3); the line opens the setting."
+      "decision": "The state tags (Offer, Reply, Pickup) left the rows; Possible scam stays, as one word with its icon in brick",
+      "why": "Today already holds every decision; a scam is the one a person must not miss on the list (copy.md, safety copy is the exception)."
     },
     {
-      "decision": "Every site in one list, newest first",
-      "why": "Mail and iMessage order an inbox this way, and decision \"All messages live behind a chat icon with a count\" puts every site here."
+      "decision": "Each row is who and the time, the thing's short name, their last words and the count",
+      "why": "Mail's sender, subject and preview: a buyer's name alone means nothing, the thing tells which conversation it is (brief, Art. 7.15)."
     },
     {
       "decision": "Each row carries the site's square logo on the item's photo",
       "why": "The photo says which thing, the logo which site; a site's name is never written as words (kit, SiteBadge)."
     },
     {
-      "decision": "An unread count, not a dot",
-      "why": "The brief asks for the count, and it matches the count on the chat icon in the nav."
+      "decision": "An unread count, not a dot; the last words stay in the second ink",
+      "why": "It matches the count on the inbox in every tab's title row; one mark for unread is enough, and three levels (who at 18, the thing at 15 in ink, their words at 15 in the second ink) are Mail's sender, subject and preview."
     },
     {
-      "decision": "A row says what waits (Offer, Reply, Pickup, Possible scam) or what the agent did (Sent for you)",
-      "why": "So the list itself shows who acts next, without opening each thread."
+      "decision": "Every site in one list, newest first",
+      "why": "Mail and iMessage order an inbox this way, and decision \"All messages live behind a chat icon with a count\" puts every site here."
     },
     {
-      "decision": "A line at the foot counts what was sent for the person this week and opens the setting",
-      "why": "What the agent did stays visible and reversible (ways-out, \"Stop doing that for me\")."
+      "decision": "The filter button and its sheet of items went; ?item= still shows one thing's conversations",
+      "why": "No world holds more than five conversations, so the filter cost a control and a sheet for nothing; a thing's page can link straight to its own."
     },
     {
-      "decision": "The filter is a sheet of items, offered only when more than one item has messages",
-      "why": "One item has nothing to filter; a sheet holds a long list of titles."
+      "decision": "The \"sent for you this week\" line went; a row whose last message the agent sent says Sent for you",
+      "why": "What the agent did stays visible on the row it did it in, and its why and Ask me first are one tap away in the conversation."
     }
   ],
   "states": [
@@ -72,20 +72,20 @@
     {
       "state": "typical",
       "world": "clearing",
-      "shows": "2 replies to send",
-      "why": "five conversations across sites, two replies drafted, one flagged as a possible scam"
+      "shows": "Draft ready",
+      "why": "five conversations across sites, two with a draft ready, one flagged as a possible scam"
     },
     {
       "state": "failed",
       "route": "/messages?state=failed",
       "shows": "Messages didn’t load",
-      "why": "the list did not load; Try again asks again"
+      "why": "the list did not load; Retry asks again"
     },
     {
       "state": "offline",
       "route": "/messages?state=offline",
       "shows": "Waiting for signal",
-      "why": "the last copy, with Send held and Send all hidden until the signal returns"
+      "why": "the last copy of the list; a reply waits in its conversation until the signal returns"
     }
   ],
   "skips": {
@@ -94,92 +94,50 @@
   },
   "controls": [
     {
+      "control": "Back",
+      "on_tap": "goes back, or to Today when opened directly",
       "id": "nav-back",
       "does": "goes back, or to Today when opened directly",
       "goes": "/"
     },
     {
-      "id": "messages-filter",
-      "does": "opens the sheet of items to show one"
-    },
-    {
-      "id": "filter-all",
-      "does": "shows every item's messages",
-      "after": [
-        "messages-filter"
-      ]
-    },
-    {
-      "id": "filter-it_jacket",
-      "does": "shows only that item's messages",
-      "after": [
-        "messages-filter"
-      ]
-    },
-    {
+      "control": "thriftqueen’s row",
+      "on_tap": "opens the conversation with thriftqueen",
       "id": "thread-cv_jd",
       "does": "opens the thread with thriftqueen",
       "goes": "/messages/cv_jd"
     },
     {
+      "control": "workwear_co’s row",
+      "on_tap": "opens the conversation with workwear_co",
       "id": "thread-cv_je",
-      "does": "opens that thread",
+      "does": "opens the conversation",
       "goes": "/messages/cv_je"
     },
     {
+      "control": "Jordan’s row",
+      "on_tap": "opens the conversation with Jordan",
       "id": "thread-cv_cf",
-      "does": "opens that thread",
+      "does": "opens the conversation",
       "goes": "/messages/cv_cf"
     },
     {
+      "control": "canvasfan’s row, Draft ready",
+      "on_tap": "opens the conversation with canvasfan, its draft at the foot",
       "id": "thread-cv_pd",
-      "does": "opens that thread",
+      "does": "opens the conversation",
       "goes": "/messages/cv_pd"
     },
     {
+      "control": "Alex’s row, Possible scam",
+      "on_tap": "opens the conversation with Alex, flagged as a possible scam",
       "id": "thread-cv_lf",
       "does": "opens the thread flagged as a possible scam",
       "goes": "/messages/cv_lf"
     },
     {
-      "id": "messages-answering",
-      "does": "opens the Answer for me setting and what it sent",
-      "goes": "/you/messages"
-    },
-    {
-      "id": "queue-thread-cv_pd",
-      "does": "opens the thread the reply answers",
-      "goes": "/messages/cv_pd"
-    },
-    {
-      "id": "queue-text",
-      "does": "edits the reply in place"
-    },
-    {
-      "id": "queue-edit",
-      "does": "edits the reply in place"
-    },
-    {
-      "id": "queue-done",
-      "does": "keeps the edit; changed words turn solid",
-      "after": [
-        "queue-edit"
-      ]
-    },
-    {
-      "id": "queue-send",
-      "does": "sends this reply and shows the next"
-    },
-    {
-      "id": "queue-take",
-      "does": "opens the thread to write it myself",
-      "goes": "/messages/cv_pd"
-    },
-    {
-      "id": "queue-send-all",
-      "does": "sends every reply that states only confirmed facts"
-    },
-    {
+      "control": "Retry",
+      "on_tap": "loads the list again",
       "id": "messages-retry",
       "does": "loads the list again",
       "route": "/messages?state=failed",

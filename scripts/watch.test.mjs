@@ -1,10 +1,23 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
+
+function savedRows(dir, table) {
+  const db = new DatabaseSync(join(dir, 'secondhand.db'), { readOnly: true });
+  try {
+    const rows = table === 'jobs'
+      ? db.prepare('SELECT body FROM jobs ORDER BY seq').all()
+      : db.prepare('SELECT body FROM rows WHERE tbl = ? ORDER BY rowid').all(table);
+    return rows.map(row => JSON.parse(row.body));
+  } finally {
+    db.close();
+  }
+}
 
 function temp(t) {
   const dir = mkdtempSync(join(tmpdir(), 'secondhand-watch-'));
@@ -19,6 +32,16 @@ function counts(stdout) {
   for (const value of Object.values(row)) assert.ok(Number.isFinite(value) && value >= 0);
   return row;
 }
+test('importing the runtime leaves the background job queue free of API example jobs', t => {
+  const child = spawnSync(process.execPath, ['--input-type=module', '-e', `
+    import assert from 'node:assert/strict';
+    const { runtime } = await import('./app/src/edge/api/runtime.ts');
+    assert.deepEqual(runtime.store.jobs(), [], 'runtime composition imported and seeded API example jobs');
+  `], {
+    env: { ...process.env, SECONDHAND_DATA_DIR: temp(t), SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
+  });
+  assert.equal(child.status, 0, child.stderr);
+});
 test('--once runs the composed runtime, prints one count line, and exits cleanly', t => {
   const child = spawnSync(process.execPath, ['scripts/watch.mjs', '--once'], {
     env: { ...process.env, SECONDHAND_DATA_DIR: temp(t), SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
@@ -46,7 +69,7 @@ test('--once counts watcher and route jobs separately', t => {
   assert.equal(child.status, 0, child.stderr);
   assert.equal(counts(child.stdout).jobs_run, 1);
   assert.equal(counts(child.stdout).route_jobs_run, 1);
-  assert.ok(JSON.parse(readFileSync(join(dir, 'store.json'), 'utf8')).jobs.every(job => job.state === 'done'));
+  assert.ok(savedRows(dir, 'jobs').every(job => job.state === 'done'));
 });
 
 test('one --once runs jobs enqueued by the import and unlink routes', t => {
@@ -77,11 +100,11 @@ test('one --once runs jobs enqueued by the import and unlink routes', t => {
     env: { ...process.env, SECONDHAND_DATA_DIR: dir, SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
   });
   assert.equal(child.status, 0, child.stderr);
-  const saved = JSON.parse(readFileSync(join(dir, 'store.json'), 'utf8'));
-  assert.ok(saved.jobs.every(job => job.state === 'done'), 'one tick must finish all jobs queued by routes');
+  const jobs = savedRows(dir, 'jobs');
+  assert.ok(jobs.every(job => job.state === 'done'), 'one tick must finish all jobs queued by routes');
   assert.equal(counts(child.stdout).route_jobs_run, 3);
   assert.equal(counts(child.stdout).jobs_run, 0);
-  assert.ok(saved.rows.listing.some(row => row.account_id === 'acc_dp1' && !row.import_preview && row.id !== 'ls_dp1'), 'the import engine must have created stored listings');
+  assert.ok(savedRows(dir, 'listing').some(row => row.account_id === 'acc_dp1' && !row.import_preview && row.id !== 'ls_dp1'), 'the import engine must have created stored listings');
 });
 
 test('--once drains follow-up reconcile work created while running a route job', t => {
@@ -105,7 +128,7 @@ test('--once drains follow-up reconcile work created while running a route job',
     env: { ...process.env, SECONDHAND_DATA_DIR: dir, SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
   });
   assert.equal(child.status, 0, child.stderr);
-  const jobs = JSON.parse(readFileSync(join(dir, 'store.json'), 'utf8')).jobs;
+  const jobs = savedRows(dir, 'jobs');
   assert.deepEqual(jobs.map(job => [job.kind, job.state, job.attempts]), [['post', 'failed', 1], ['reconcile', 'done', 1]], 'new follow-up work must run in the same tick');
   assert.equal(counts(child.stdout).route_jobs_run, 2);
 });
@@ -125,7 +148,7 @@ test('--once stops draining when remaining route jobs are delayed or cannot take
     env: { ...process.env, SECONDHAND_DATA_DIR: dir, SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
   });
   assert.equal(child.status, 0, child.stderr);
-  const jobs = JSON.parse(readFileSync(join(dir, 'store.json'), 'utf8')).jobs;
+  const jobs = savedRows(dir, 'jobs');
   assert.deepEqual(jobs.map(job => [job.idempotency_key, job.state, job.attempts]), [['busy', 'queued', 0], ['later', 'queued', 0], ['ready', 'done', 1]]);
   assert.equal(counts(child.stdout).route_jobs_run, 1, 'claims released without running must not count');
 });

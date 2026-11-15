@@ -1,0 +1,35 @@
+# Allow only runtime source and its imported data into the build context.
+**
+!server/
+!server/**
+!app/
+!app/src/
+!app/src/**
+!app/package.json
+!app/package-lock.json
+!log/
+!log/**
+!spec/
+!spec/sites.mjs
+!spec/examples/
+!spec/examples/**
+# Data files the server imports at runtime from outside app/.
+!jobs/studio/slides.json
+!jobs/capture/process.json
+!research/list/ben/platforms/platform-fit.json
+
+# These exclusions override the allowed directories, including nested files.
+**/.git
+**/node_modules
+**/.env*
+**/*.db
+**/*.db-*
+**/store.json
+docs/
+ideas/
+web/
+databricks/
+bench/
+probes/
+logs/
+.agents/

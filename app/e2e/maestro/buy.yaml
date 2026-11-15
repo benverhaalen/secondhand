@@ -200,7 +200,7 @@ env:
 # State: new
 - openLink: ${URL}/buy?state=new
 - extendedWaitUntil:
-    visible: "Search five sites at once"
+    visible: "Nothing on your list"
     timeout: 15000
 # State: dense
 - openLink: ${URL}/buy?state=dense
@@ -214,7 +214,7 @@ env:
 - extendedWaitUntil:
     visible: "Couldn’t load your list"
     timeout: 15000
-- assertVisible: "Try again"
+- assertVisible: "Retry"
 # buy-retry: loads the page afresh
 - openLink: ${URL}/buy?state=failed
 - extendedWaitUntil:
@@ -224,5 +224,5 @@ env:
 # State: offline
 - openLink: ${URL}/buy?state=offline
 - extendedWaitUntil:
-    visible: "Waiting for signal\\. This is the last copy\\."
+    visible: "Waiting for signal; showing saved results\\."
     timeout: 15000

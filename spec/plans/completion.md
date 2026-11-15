@@ -31,19 +31,19 @@ Capture, recounted by the capture lead at the stop (2026-11-15, main at bc62e789
 
 No. Two independent checks on 2026-11-15 agree.
 
-`node scripts/realtime-proof.mjs` walks ten links using recorded inputs, replays search through Poshmark's configured public-page lane, and checks the real valuation input with live sites unset; today 1 of 10 works.
+`node scripts/realtime-proof.mjs` walks ten links using recorded inputs, replays search through Poshmark's configured public-page lane, and checks the real valuation input with live sites unset; today 2 of 10 works.
 
 | # | Link | State | Evidence |
 |---|---|---|---|
-| 1 | A valuation with a thin basis says so | wrong | the recorded answer has `n_eff` 1 and a 1900-cent point range; `check` drops comparables' `category` level and `too_few` state; the real input still uses the example item, with blocked sold searches when live sites are unset |
-| 2 | The thin answer raises a gather request | built, not called | `gather` has no product caller; the guard shows the thin value with a `too_few` note, but gather requires hidden, so it returns `nothing_to_gather` with no request |
-| 3 | The search widens over more sources | built, not called | a separate search reads 12 rows from recorded Poshmark HTML; five source rows are excluded with reasons; the shown thin probe records no steps; only a separate no-basis control records skipped step 6 |
+| 1 | A valuation with a thin basis says so | works | the recorded answer keeps `n_eff` 1, its 1900-cent middle, `basis_level: product` and `notes: [too_few]`; `check` shows the thin range |
+| 2 | The thin answer raises a gather request | built, not called | `valuate` returns a `GatherNeed`; `gather` now accepts shown `too_few` and `stale` notes, and the recorded thin probe receives a 120-second deadline; the route still has no gather caller |
+| 3 | The search widens over more sources | built, not called | a separate search reads 12 rows from recorded Poshmark HTML; five source rows are excluded with reasons; the shown thin probe and no-basis control each record only skipped step 6 |
 | 4 | Rows are matched to the same product | built, not called | all 12 rows remain visible with unresolved relations, `identity.by=default`, `model_ok=false` and `product=null`; no recorded identity judgement was supplied |
-| 5 | Kept rows become `observation` rows with evidence | not built | the store has no observation table and nothing writes one |
-| 6 | The basis is recomputed from the store | built, not called | direct sold comps raise Kish `n_eff` from 1 to 2.965857903694928; the recorded route repeat stays 1; gather sums age weights (2.458508544085739); no observation-store projection feeds `check` |
-| 7 | The same question gets a better-supported, cited answer | built, not called | the recorded route repeat is unchanged; hand-fed sold comps give 1100/1600/1900 cents, but all three citation basis ids lack observation rows |
+| 5 | Kept rows become `observation` rows with evidence | built, not called | `valuate` writes new source rows once through `ObservationPort`, deduped by `comp_id`; its tests read them back; the recorded route still has no observation table or writer |
+| 6 | The basis is recomputed from the store | built, not called | `valuate` reads stored comps; `basisOf` and `gather.measure` share valuation Kish weights; both give 2.965857903694928 on the wider sold control; the recorded route repeat stays 1 until it calls the entry point |
+| 7 | The same question gets a better-supported, cited answer | built, not called | `valuate.test.ts` proves source rows are reused and cited on the next call; the recorded route repeat is unchanged, and its hand-fed sold control still cites three ids absent from observations |
 | 8 | A weight that depends on the observations moves | built, not called | the learning function has no caller; called by hand it moves and forgets correctly |
-| 9 | The next answer reads the moved weight | built, not called | the diagnostic contribution mean moves from 0.5 to 0.4 at version 2; the recorded valuation stays unchanged at supplied version 1, which the real input port still hardcodes |
+| 9 | The next answer reads the moved weight | built, not called | `valuate.test.ts` proves promoted valuation parameters change the next answer and its cited versions; the recorded route does not supply that registry, so its citation names version-0 priors and no longer claims the supplied version 1 |
 | 10 | The same inputs give the same outputs | works | two fresh runs are byte-identical, with no network call attempted |
 
 The proof's tests assert each state and pin the input-port source; a separate no-basis control preserves the 120-second deadline and skipped-step checks, and the earlier scientific audit ([science-audit.md](sweep/science-audit.md)) records the missing joins.

@@ -6,7 +6,7 @@
 //   Delete account is refused while a sale is open (a claim, a return, a dispute), the same rule as deleting an item.
 import { useState } from 'react';
 import { inDays, day } from '@/demo';
-import { Approve, Guess, Line, List, Nav, Screen, Section, Sheet, Txt } from '@/ui';
+import { Approve, Guess, Line, List, Nav, Screen, Section, Sheet, Stack, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
 import { PageStatus } from './page-status';
@@ -15,7 +15,7 @@ import { changed, drawn, PAGES, plural, useGo, usePage } from './state';
 const OPEN_SALE = ['paid', 'pickup_booked', 'to_ship', 'shipped', 'delivered', 'claim_window', 'return_open', 'dispute_open'];
 const PROVIDER = { apple: 'Apple', google: 'Google', email: 'Email' } as const;
 
-export function Settings() {
+export function Settings({ embedded = false }: { embedded?: boolean } = {}) {
   const { w, asked } = usePage(), go = useGo();
   const [paused, setPaused] = useState(false);
   const [until, setUntil] = useState(day(inDays(14, w.now), w.now));
@@ -27,10 +27,8 @@ export function Settings() {
   const toggle = (id: string, set: (v: boolean) => void) => (next: boolean) => { set(next); changed('setting', id, next ? 'on' : 'off'); };
   const d = drawn(w, w.items.length, asked), state = d === 'empty' || d === 'one' ? 'typical' : d;
 
-  return (
-    <Screen name="you-settings" state={state} nav={<Nav back={() => go.back()} />}
-      skip="empty: every setting is there from the start, so the page is never empty; one: the page lists every setting, never one">
-      <Txt role="heading">{PAGES.settings.title}</Txt>
+  const content = (
+    <Stack gap="cards">
       <PageStatus asked={asked} what="your settings">
 
       <List>
@@ -43,7 +41,8 @@ export function Settings() {
       <List>
         <ListRow id="settings-notifications" lead={PAGES.notifications.icon} label={PAGES.notifications.title} onPress={() => go.to('/you/notifications')} />
         <ListRow id="settings-defaults" lead={PAGES.defaults.icon} label={PAGES.defaults.title} detail="What a new listing starts from" onPress={() => go.to('/you/defaults')} />
-        <ListRow id="settings-permissions" lead={PAGES.permissions.icon} label={PAGES.permissions.title} detail="On its own, asks first, or never, for each kind of step" onPress={() => go.to('/you/permissions')} />
+        <ListRow id="settings-records" lead={PAGES.records.icon} label={PAGES.records.title} detail="Every sale this year" onPress={() => go.to('/you/records')} />
+        <ListRow id="settings-permissions" lead={PAGES.permissions.icon} label={PAGES.permissions.title} onPress={() => go.to('/you/permissions')} />
       </List>
 
       <Section title="Account">
@@ -72,6 +71,13 @@ export function Settings() {
           </>
         )}
       </Sheet>
+    </Stack>
+  );
+  return embedded ? content : (
+    <Screen name="you-settings" state={state} nav={<Nav back={() => go.back()} />}
+      skip="empty: every setting is there from the start; one: every setting remains available">
+      <Txt role="heading">{PAGES.settings.title}</Txt>
+      {content}
     </Screen>
   );
 }

@@ -1,5 +1,6 @@
 // Hugeicons Stroke Rounded, by name (Art. 10.1): 1.5 stroke at 24, drawn at 1.9 below 20 so it stays near 1 px.
 // A name that is not in icons.generated.ts does not type-check; add it in scripts/icons-to-ts.mjs.
+import { Platform } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { ICONS, type IconName } from './icons.generated';
 import { useColors, useGround } from './theme';
@@ -27,7 +28,7 @@ export function Icon({ name, size = 24, tone = 'ink', filled = false, label }: {
   }[tone];
   const stroke = size < 20 ? 1.9 : 1.5;
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" accessibilityLabel={label} accessible={!!label}>
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" accessibilityLabel={label} {...(Platform.OS === 'web' ? { 'aria-hidden': !label, role: label ? 'img' as const : undefined } : { accessible: !!label })}>
       {(ICONS[name] as readonly (readonly [string, Readonly<Record<string, string>>])[]).map(([tag, a], i) => {
         // Filled: every closed shape fills with the ink and every line stays the ink, so an icon whose outline is not its
         // first path (search's handle, the person's shoulders) keeps its whole shape (the phone audit, 2026-11-15: Buy

@@ -8,13 +8,16 @@ import { linkedSearch, readSearchPage, type BrowserPage } from '../harness/sites
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createLog, consoleSink, type Log } from '../../../../log/index.js';
 import { store } from './store.ts';
+import { runtimePorts as searchRuntime } from '../intel/public/search.ts';
+import { createApify } from '../harness/sites/apify/adapter.ts';
 import { example } from './examples.ts';
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { fromEngine, pagination, object, integer, invalid } from './captures.ts';
 import { memoryVault, type Accounts, type LinkedAccount } from '../browser/auth.ts';
 import { createHarness, fail, isWrite, type Adapter, type Harness } from '../harness/protocol.ts';
 import { createSiteService } from '../harness/service.ts';
-import { depopAdapters, API, type Client } from '../harness/sites/depop/adapter.ts';
+import { composeSources } from '../harness/compose.ts';
+import { depopAdapters, type Client } from '../harness/sites/depop/adapter.ts';
 import { ebayAdapters, ebayPageAdapters, type PageClient } from '../harness/sites/ebay/adapter.ts';
 import { poshmarkAdapters } from '../harness/sites/poshmark/adapter.ts';
 import { mercariAdapters } from '../harness/sites/mercari/adapter.ts';
@@ -64,6 +67,7 @@ export function seedExamples(st: Store) {
 
 export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }), options: {
   adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number;
+  publicClients?: { ebay: PageClient; depop: Client; close(): Promise<void> }; apifyToken?: string;
 } = {}) {
   const now = options.now ?? Date.now;
   seedExamples(st);
@@ -83,42 +87,19 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   const personScope = new AsyncLocalStorage<string>();
   const scopedAccounts: Accounts = { ...accounts, byId: id => accounts.byId(id, personScope.getStore()) };
   // A route never receives system accounts.
-  const systemAccounts: Accounts = { linked: () => accounts.linked(), byId: async id => (await accounts.linked()).find(row => row.account_id === id) };
+  const systemAccounts: Accounts = { linked: () => accounts.linked(), byId: async (id, person_id) => (await accounts.linked(person_id)).find(row => row.account_id === id) };
   const liveSites = new Set((process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/));
-  const live = liveSites.has('depop');
-  const client: Client = {
-    signed_in: false,
-    async doc(url, signal) {
-      if (!live) throw new Error('offline Depop client cannot fetch');
-      const res = await fetch(url, { signal });
-      const html = await res.text();
-      return { status: res.status, html, challenge: /captcha|just a moment|are you a robot/i.test(html.slice(0, 20000)) };
-    },
-    async json(path, signal) {
-      if (!live) throw new Error('offline Depop client cannot fetch');
-      const res = await fetch(API + path, { signal });
-      return { status: res.status, body: res.ok ? await res.json() : null };
-    },
-  };
   const unavailable = async (): Promise<never> => { throw new Error('site session transport is not composed'); };
-  const ebayLive = liveSites.has('ebay');
-  const ebayPageClient: PageClient = ebayLive ? options.ebayPageClient ?? {
-    signed_in: false,
-    async page(url, signal) {
-      const res = await fetch(url, { signal });
-      return { status: res.status, html: await res.text() };
-    },
-  } : { signed_in: false, page: unavailable };
   // shortcut: waiting.md "The harness wired to itself": browser profiles and eBay credentials
   // have no runtime transport yet. Keep their real dry-write adapters and explicit offline reads.
   const offlineClient: Client = { signed_in: false, doc: unavailable, json: unavailable };
   const adapters = options.adapters ?? [
-    ...depopAdapters(client),
+    ...depopAdapters(options.publicClients?.depop ?? offlineClient),
     ...poshmarkAdapters(offlineClient),
     ...mercariAdapters({ signed_in: false, page: unavailable }),
     ...ebayAdapters({ env: 'production', app_token: async () => undefined, user_token: async () => ({ ok: false }), send: unavailable }),
-    ...ebayPageAdapters(ebayPageClient),
-  ].map(adapter => (adapter.manifest.site === 'depop' && live) || (adapter.manifest.site === 'ebay' && ebayLive) || isWrite(adapter.manifest.verb) ? adapter : {
+    ...ebayPageAdapters(options.publicClients?.ebay ?? { signed_in: false, page: unavailable }),
+  ].map(adapter => ((adapter.manifest.site === 'depop' || adapter.manifest.site === 'ebay') && !!options.publicClients) || isWrite(adapter.manifest.verb) ? adapter : {
     ...adapter, async run() { return fail('no_route', `${adapter.manifest.site} live reads are unavailable`, { do: 'handoff', url: '' }); },
   });
   const liveMercari = (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/).includes('mercari');
@@ -126,10 +107,10 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   const mercari = linkedSearch({ accounts: scopedAccounts, async read(account_id, url, signal) {
     if (!liveMercari) throw new Error('Mercari live reads are disabled');
     if (!mercariPool) {
-      const executablePath = process.env.SECONDHAND_CHROME_PATH;
-      if (!executablePath) throw new Error('Mercari needs SECONDHAND_CHROME_PATH for its linked browser');
+      const executablePath = process.env.SECONDHAND_CHROME;
+      if (!executablePath) throw new Error('Mercari needs SECONDHAND_CHROME for its linked browser');
       const profileRoot = join(process.env.SECONDHAND_DATA_DIR ?? tmpdir(), 'secondhand-linked-browsers');
-      const pw = createRequire(join(process.cwd(), 'app/package.json'))('playwright-core') as CdpPw;
+      const pw = createRequire(import.meta.url)('playwright-core') as CdpPw;
       const launcher = cdpLauncher(pw, localChrome({ executablePath, scratch: join(profileRoot, 'anonymous') })) as Launcher<BrowserPage>;
       mercariPool = createPool({ launcher, profileRoot, accounts: scopedAccounts, vault, leases: memoryLeases(), log });
     }
@@ -163,6 +144,12 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     });
     });
   } };
+  const routed: typeof searchRuntime.routed = site => site === 'depop' || site === 'ebay'
+    ? !!options.publicClients
+    : site === 'mercari' && liveMercari;
+  Object.assign(searchRuntime, { harness, accounts, routed, apify: options.apifyToken ? createApify({ token: options.apifyToken, log }) : undefined });
+  let closing: Promise<void> | undefined;
+  const close = () => closing ??= Promise.resolve().then(() => options.publicClients?.close());
   const leases = memoryLeases(now);
   const cadence: Record<string, number> = {};
   for (const site of SITES) for (const [state, seconds] of Object.entries({ hot: 90, live: 900, quiet: 3600 })) cadence[`watch_cadence_s@${site}/${state}`] = seconds;
@@ -289,7 +276,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       return result;
     },
   });
-  return { store: st, vault, accounts, harness, leases, params, watcher, pipeline: {
+  return { store: st, vault, accounts, harness, close, leases, params, watcher, pipeline: {
     async runOnce(limit: number) {
       const claimed = claimJobs(limit, worker, false);
       await Promise.all(claimed.map(job => running.run(job, () => pipeline.runOnce(1))));
@@ -298,7 +285,13 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   } };
 }
 
-export const runtime = createRuntime(store);
+// Apify is never in the path an answer waits on (Nate, product/words.md 2026-11-15 08:25): it is composed again only as a background fill.
+const log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink });
+const shared = globalThis as typeof globalThis & { __secondhandSources?: ReturnType<typeof composeSources> };
+const sources = shared.__secondhandSources ??= composeSources({ env: process.env, log, now: Date.now, store });
+export const runtime = createRuntime(store, log, { publicClients: sources.publicClients });
+let closing: Promise<void> | undefined;
+runtime.close = () => closing ??= Promise.resolve().then(() => sources.close());
 
 export function owned(table: Table, ctx: Ctx, id: string): Row {
   const row = runtime.store.get(table, ctx.user_id!, id);

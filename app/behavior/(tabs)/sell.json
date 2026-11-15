@@ -47,7 +47,7 @@
     {
       "state": "loading",
       "route": "/sell?state=loading",
-      "shows": "Sell"
+      "shows": "sell"
     },
     {
       "state": "failed",
@@ -95,14 +95,14 @@
       "on_tap": "shows only what needs the person",
       "id": "filter-needs_you",
       "does": "shows only what needs the person",
-      "at": "/sell?world=clearing"
+      "at": "/sell?world=flipper&filter=live"
     },
     {
       "control": "Live",
       "on_tap": "shows only live things",
       "id": "filter-live",
       "does": "shows only live things",
-      "at": "/sell?world=clearing"
+      "at": "/sell?world=flipper&filter=live"
     },
     {
       "control": "eBay logo in the filter row",
@@ -138,7 +138,7 @@
       "on_tap": "opens Pause selling",
       "id": "sell-pause",
       "does": "opens Pause selling",
-      "goes": "/you/pause",
+      "goes": "/you/settings",
       "at": "/sell?world=clearing"
     },
     {
@@ -150,7 +150,7 @@
       "at": "/sell?world=new"
     },
     {
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "loads the things again",
       "id": "sell-retry",
       "does": "loads the things again",
@@ -231,8 +231,8 @@
       "why": "The round 11 Sell Ben reacted to was two columns; at two the title and the money line fit, and the tag and site logos sit on a photo big enough to read them (Depop and Instagram grids, copy.md). Pinch density in sell/grid.ts is left for the phone build."
     },
     {
-      "decision": "One row of filters: sort, All, each shelf with its count, then each site as its logo",
-      "why": "Ben, round 11: \"you only needed one horizontal y value for the filtering\"; round 10: stage and marketplace are the same primitive. The row scrolls sideways under the gutter so its end shows it continues."
+      "decision": "One row of filters: sort, then each site as its logo; once one shelf is open alone (See all), All and each shelf with its count join it",
+      "why": "Ben, round 11: \"you only needed one horizontal y value for the filtering\". On the whole page the shelves already name themselves with their counts, so a chip per shelf said each one twice (U19, Ben 10:27: \"a lot of clutter\"); alone, a shelf has no header and the chips are the way back and across."
     },
     {
       "decision": "Sort is the first chip and says its pick (\"Latest\", \"Price, high\")",
@@ -267,8 +267,8 @@
       "why": "spec/edge-cases.md §2 (Ben and a mentor, 05:05). The dates and instant payout with its fee sit on the order, on the item page, never as a default."
     },
     {
-      "decision": "Select is a gray pill beside the heading; the change is picked in a sheet and waits for a button that says exactly what it does",
-      "why": "ways-out §6.10 \"200 items: select many, then one change for all\"; iOS Photos puts Select there. Ending listings is public, so it hands off with its count of listings on the button (ui-build hand-off rule)."
+      "decision": "Select is a gray pill in the title row, beside the inbox (TabNav action); Done takes its place while picking. The change is picked in a sheet and waits for a button that says exactly what it does",
+      "why": "ways-out §6.10 \"200 items: select many, then one change for all\"; iOS Photos puts Select in its title row, and a row of its own under the title was one more line before the first tile (U11, Art. 7.12). Ending listings is public, so it hands off with its count of listings on the button (ui-build hand-off rule)."
     },
     {
       "decision": "Keep, Donated and Sold elsewhere act with Undo; Delete has none and skips anything with an open order, saying so in the row",
@@ -283,11 +283,11 @@
       "why": "copy.md C11 and pages §6.10 (\"the ＋ is the only thing to point to\"); one display heading per view, so the page title gives way to it."
     },
     {
-      "decision": "Loading is four gray tiles under the heading, with no filters, counts or Select",
+      "decision": "Loading is four gray tiles under the title, with no filters, counts or Select",
       "why": "Art. 5, Loading: the skeleton mirrors the grid so nothing moves; a count shown before the things arrive would be a guess."
     },
     {
-      "decision": "Failed says the things didn’t load, with Try again; offline keeps the last copy and a change waits, its button saying Waiting for signal",
+      "decision": "Failed says the things didn’t load, with Retry; offline keeps the last copy and a change waits, its button saying Waiting for signal",
       "why": "ways-out, Everywhere: nothing is guessed, and a tap without signal is held, not lost (as Today holds it)."
     },
     {
@@ -305,6 +305,10 @@
     {
       "decision": "Sell carries the wash",
       "why": "Ben, 06:21: \"sometimes the gradient at the top of the screen is there or isnt there\" (product/words.md#2026-11-15-notes-on-the-first-gallery-today-must-explain-itself-you-is-a-dashboard-the-camera-frames-the-listing-photo). The wash sits on every main tab and on no pushed page or sheet."
+    },
+    {
+      "decision": "A tile is titled with the thing's short name, not the listing title",
+      "why": "Art. 7.15: a title is read whole; the photo already says which thing, and the listing's details are on the item page. Photos and eBay's selling grid show a name, never a description."
     }
   ]
 }

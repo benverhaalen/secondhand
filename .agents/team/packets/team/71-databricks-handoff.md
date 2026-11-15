@@ -1,46 +1,61 @@
-# 71: Databricks handoff at the stop
+# 71: Databricks handoff
 
-Updated: 2026-11-15, about 05:20 Central (system clock). Owner: Nate. Agent: the second Databricks lead (Claude Code), stopping as its context fills. Read with [packet 55](55-team-leads-and-mac-workers.md), [spec/databricks-build.md](../../../../spec/databricks-build.md) and [databricks/DEMO.md](../../../../databricks/DEMO.md). **Judging is at 1 PM Central today.**
+**The one timed action that must not be lost: after 19:00 UTC today (1 PM Central), the guard alert moves from hourly to daily at 4 AM Central, deployed without force, and its schedule is read back (`databricks alerts-v2 list-alerts --profile Nate` shows `0 0 4 * * ?`, America/Chicago). Nate ruled it; it needs no further yes. The change is commit 3f76e334 on Mac branch `w/dbx-alert-1`: cherry-pick it, never merge the branch (it predates the history rewrite).**
 
-## What changed in this session
+Updated: 2026-11-15, about 13:35 UTC, at the wrap-up Nate called. Owner: Nate. Agent: the fourth Databricks lead (Claude Code, Opus), started from the orchestrator's finalization brief. Read with [packet 55](55-team-leads-and-mac-workers.md), [spec/plans/finalization.md §5](../../../../spec/plans/finalization.md) (rows DB0 to DB21, with their state), [databricks/WORKS.md](../../../../databricks/WORKS.md) and [databricks/COVERAGE.md](../../../../databricks/COVERAGE.md). **Judging is at 19:00 UTC; nothing on the workspace changes before then.**
 
-- **The dashboard was rebuilt and deployed.** Nate rejected the first one ("So i hated the dashboard... Understand we are being judged"). The rebuild is one story page and a data page: a price opened to its sales; ours against the last sale and the 90-day median on the same sales (misses by sale price, ranges that held); prices held back; the weight that moved once; isolation; what is never automated. Every figure shows its count. It was rendered and read in a browser on a review copy (`/Shared/secondhand-review`, id `01f1e0dd560b1bfabf59977d292e05e1`) before deploy. Nate saw it: "thats a good test dashboard, but we will develop our dashboard to respond to realtime data from across sites and what we scan for our internal testing". He then said "Yes, deploy now", and, asked about the flag, "Yes, use --force". The deploy ran with `--force` and overwrote the UI edits on the old one (title "secondhand: Accuracy", `applyModeEnabled`).
-- **The metric view** `measures.valuation_metrics` ([13_metrics.sql](../../../../databricks/sql/13_metrics.sql)) holds the price measures, null under 30 shown, by who priced it, week, sale price band, kind and dataset. It was created through the Statements API.
-- **Setup chain run after the deploy.** `setup`, `erasure_setup` and `governance_setup` ran, the last twice. `parity` passed 125 of 125. `load_bench` and `load_logs` ran (559 lines, 481 decisions, 0 rejected).
-- **The guard.** The first break-glass run found 124,152 violations, every backtest number missing `basis_level`. Commit 6e798a6c backfills it with the writer's own rule. After the rerun, `measures.guard_status` shows **0 violations** (checked 10:49 UTC). 0 open break-glass windows, 0 wildcard mappings.
-- **Genie.** Run 1 got 6 of 10 right; it now answers all of them. The thin questions refuse with their count, including "too few: 0 sales" for a Yeezy on Depop. Five judge questions are the space's sample questions. Genie calls no unregistered table function and reads no view over system information schema. So the rows behind `why(id)` are the view `measures.price_basis`, and the policies are the snapshot table `measures.locks_in_force`, refreshed by `governance_setup`. Recorded answers: the side-session notes file `dbx-genie-judge-answers.md` (kept out of the repo because it holds development figures).
-- **Benchmark.** `bench_read`, cost columns on `bench_record`, and the views `bench_by_site` and `bench_cost` are live (worker dbx-bench-2). `bench_setup` migrates the columns first. The two runs loaded so far predate per-read fields, so the views fill when integration uploads today's run to `/Volumes/secondhand/raw/landing/bench/` and `load_bench` runs.
-- **DEMO.md** is the judge's walk in six steps plus a table of what Databricks gave us, what we built on it and how we worked around each limit.
-- **The build page** says free trial, not Free Edition, describes the new dashboard, and lists named fixes F1 to F7 (§10).
+## True on main, with proof
 
-## What is true on the workspace (`--profile Nate`)
+| Row | Commit | Proof, rerun by the lead (not the writer) |
+|---|---|---|
+| DB5 Python suites in the gate | db01c98e, 12b2e1e2, 40095e0c | `jobs/` 1182, `databricks/` 393, `deploy/` 48 pass on the Mac and on Windows; `node -e "import('./scripts/python-suites.mjs').then(m=>console.log(m.pythonSuites(process.cwd())))"` prints `[]` (3 min 36 s on Windows). The gate runs them in UTF-8 mode, always in CI, locally only when a change touches `jobs/ databricks/ deploy/ log/ spec/fixtures/ app/src/engines/` |
+| DB1 governed fit | e1fe59a2 | `jobs/valuation/test_fit.py`, `databricks/test_guard.py`. Reads `market.comp_for_product` (row and source rights); writes `core.param` by explicit columns. No source is product-cleared, so it skips: "no rows cleared for a shipped model" |
+| DB2 honest purge | 5296f08d, a9b2439f | `deploy/tasks/test_purge.py` 48. `principal_map.grant_id`; revoke and guard sweep by grant id; the purge confirms its grant before and after the counts |
+| DB3 public reads loader | 8105cdcf | `databricks/tasks/test_load_observations.py` 86. Job `load_observations`, no schedule. Line shape agreed with the server lead (SV7): duplicate uploads safe, a landed file is never rewritten |
+| DB7 market functions | 4d904366 | `databricks/test_market.mjs` 19. `databricks/sql/15_market.sql` (task `market` in governance_setup), seeded check `15_market_check.sql` generated by `databricks/market-sql.mjs` |
+| DB7 Genie summary rows | 7bb5ccc7 | `databricks/test_genie.mjs` 32. Not deployed |
+| DB21 Mercari columns | 40095e0c, 4cb07c1b | The freezer wrote `retail_cents` and `released_at` twice; fixed in `jobs/valuation/data/rows.py`, Mercari re-frozen (32 columns, same 1,481,661 rows, file on the Mac at `~/secondhand-data/sold-v2/mercari_kaggle/`). `databricks/test_bundle.mjs` 18 of 18 |
+| DB9 retail page | 48206a2e | [databricks/RETAIL.md](../../../../databricks/RETAIL.md), its live column from the read-back; the Open Retail Data Model views and the `ai_forecast` view drafted, not run, in [databricks/sql/16_retail.sql](../../../../databricks/sql/16_retail.sql) |
+| Workspace read-only proof | b9bb7f1f | [databricks/WORKS.md](../../../../databricks/WORKS.md): every resource present, every run job SUCCESS, all 12 dashboard datasets return rows, Genie 8 of 8 COMPLETED |
 
-Trial workspace, $392 of $400 credit at the morning read. Warehouse `a2d6ba8cc4538aca` is **Small** (not 2X-Small), serverless, auto-stop 10 minutes. Dashboard "secondhand: proof" `01f1e0d8d8a413f7a6bfae4c54d93c5a`; Genie space `01f1e0d8d8d3161fa9590e55702c1b46`. All merged safety fixes are deployed.
+## Open branches on the Mac
 
-**Two schedules spend credit:**
-- The hourly guard alert. Each run wakes the Small warehouse for at least its 10-minute auto-stop window, about 2 DBU, $1.40 at an assumed $0.70 per DBU, so about $34 a day (an estimate, not read from the bill). Recommendation: keep it hourly until judging, then daily. That is Nate's call.
-- The daily vacuum at 4 AM. It is small.
+- `w/dbx-alert-1` (3f76e334): DB0 and DB6, the alert daily at 4 AM, the deployer subscribed, fires on a guard that never ran or ran over 26 hours ago; the market model row of `14_engine.sql` read from the backtest table. Tests pass. **Held off main until 19:00 UTC.** Cut from main before Nate's history rewrite: cherry-pick its one commit, never merge the branch.
+- `w/dbx-export-1` (0e40f104, committed by the lead after the stop): DB4, finished by the worker, **not reviewed by the lead, not merged**. Its own checks pass (sale curve 8, export 11, export task 7) and a local run on the frozen NBER set wrote `/tmp/export-sample.json` on the Mac. One failure: `databricks/test_bundle.mjs` line 110 expects six statements in `00_layout.sql`, and the new `raw.export` volume makes seven; change that count to 7. Still to do: the time-split calibration (DB4 step below), then review, cherry-pick, and send the engines lead the sample (brief: `brief-dbx-export-1.txt` in the orchestrator's session notes folder, beside every other `brief-dbx-*` of this lead): `jobs/valuation/sale_curve.py`, `export.py`, `databricks/tasks/export_params.py`, volume `raw.export`, job `export_params`. File shape agreed with the engines lead: one envelope `{version, exported_at, run_id, code_version, params}` of row.json rows named `valuation_sale_curve`, `valuation_calibration`, later `brand_premium`; every value carries `fitted_on` and `use_scope: hackathon_demo`; written to `/Volumes/secondhand/raw/export/params/latest.json` plus a dated copy.
+- Every other `dbx-*` worktree is merged or obsolete.
 
-nightly-fits stays PAUSED.
+## Left, in order
 
-## Open, in order
+0. Before 19:00 if there is time, else first after: DB9's three views. Additive only, a new schema `secondhand.retail`, no deploy, nothing existing changed (the orchestrator's bound). Load `databricks:databricks-dbsql` and `databricks:databricks-ai-functions`, run each statement of `databricks/sql/16_retail.sql` alone with `node databricks/run-sql.mjs`, check the forecast is positive and inside the observed range, stop the warehouse, record the spend, and turn RETAIL.md's first row to live.
+1. After 19:00 UTC: Cherry-pick 3f76e334 onto main, then `node deploy/deploy.mjs validate --target dev --profile Nate`, then `databricks bundle plan` (or deploy's diff) read in full, then `node deploy/deploy.mjs deploy --target dev --profile Nate` without force. Read back `databricks alerts-v2 list-alerts --profile Nate`: `0 0 4 * * ?`, America/Chicago (DB0's proof).
+2. Schema on the live tables, in one warehouse session with `node databricks/run-sql.mjs`, before any break-glass job runs: `ALTER TABLE secondhand.governance.principal_map ADD COLUMNS (grant_id STRING ...)` (or run the setup job's `data` task, which does it first), then `11_sources.sql` (the two-field `comp_for_product`), `14_engine.sql`, `15_market.sql`, `15_market_check.sql` (must print nothing and drop its scratch schema). The `core.param`, observation and evidence columns are added by their jobs on first write.
+3. Rerun `node databricks/genie/ask.mjs` and read all eight answers (question 2 should give four contestant rows and name the market model).
+4. The six numbers that do not rebuild: `SELECT citation_id, metric, missing_ids FROM secondhand.measures.recompute_check WHERE NOT equal` (5 `asking_p50_cents`, 1 `sold_p50_cents`); a missing id means a comp row was dropped since the citation was written.
+5. Stop the warehouse; read the spend from `system.billing.usage` for the day; record it here and in WORKS.md.
+6. Ask Nate, with the cost of one run each: DB8 the nightly fits (they now do nothing for valuation until a source is product-cleared, so the question is mostly the other engines' folds, DB11); DB21 the Mercari reload (upload the corrected file, a pipeline full refresh of `sold_raw` and `comp`); landing NBER for the sale curve in the lakehouse; the alert's staleness rule means a daily email until the guard job runs daily (a schedule for governance_setup's guard task is a new daily spend).
+7. DB4: read `w/dbx-export-1`'s report and diff against its brief, rerun its four checks, merge (cherry-pick if it predates the rewrite); send the engines lead the sample file; run `export_params` once on the workspace. The served engine's held-out estimates arrived (engines lead, 13:40 UTC): `~/secondhand-data/measures/engine_all_on-2026-11-15.jsonl` on the Mac, outside the repo, 41,988 lines, sha256 starting 03acc610dfbd948b, run_id `ablate-2026-11-15-5d7f61f1`, contestant `engine_all_on`, in backtest_estimate's columns (kind `shoes`, site `stockx`, `dataset:stockx_2019`), ranges before any conformal step (raw coverage 77.0%). Pass it as `--estimates`. **Fit Q_g on 2018-11-01 to 2018-12-31 and report its coverage on 2019-01-01 to 2019-02-13, never on the same sales**; the export worker's brief computes Q_g on all rows, so send it that change as a follow-up (`AGAIN=1`). Expect Q_g near 0.07 to 0.08.
+8. DB3: once the server lead's writer lands lines, run `load_observations` once and record a count by `use_scope`.
+9. The DB7 EXECUTE grant: today the API runs as Nate's user, which owns the functions; a separate principal needs `GRANT EXECUTE` on the five functions and `market_min_n`.
+10. The engines lead's real-time market scores (valuation.md §9) want a `measures.market_score` row per {site, kind} for the dashboard and Genie: not designed yet.
+11. Rights: Nate now allows Apify rows in fits ("Yes, Apify too"); eBay rows, direct or through Apify, never fit (data-use.md:105). The writer sets `may_model` at write time and every reader reads only `may_model` (agreed with the engines lead; the server lead to set it the same way).
+12. Proposed rows DB11 to DB20 (coverage map), in order; DB15 is Nate's call. DB10 (the orchestrator's, after judging): Lakebase and a Delta share are Nate's alone.
 
-1. **The live page** (Nate, above). The workspace holds no `live:` or `captured` rows yet. The design is in spec §8. It needs the logs to land on a cadence, and the cadence spends credit, so it is Nate's call.
-2. **The benchmark on the dashboard** once integration's run lands: a section over `bench_by_site` and `bench_cost`.
-3. **MI4** (the product index on the lakehouse, `spec/engines/market-index.md`). It depends on MI1 (stored rows with rights) and MI3 (the attribute record), and neither has rows yet. Its Delta Sync index needs a **Vector Search endpoint, a paid resource: ask Nate first.** If it is not rendered and checked by noon, it is not shown and not listed.
-4. Named fixes F1 to F7 in spec §10. F1 now carries engines' four-column param contract and waits for their commit id.
-5. The design-critic pass on the deployed page never ran: Nate stopped the browser capture and saw the page himself.
+## Spent
 
-## Branches and worktrees on the Mac
+- 12:47 to 12:52 UTC: one warehouse session for the read-only proof (12 dashboard datasets, guard status, recompute check, eight Genie questions), stopped by hand. Estimated $0.60 to $1.54 (0.9 to 2.2 DBU at $0.70, the 11:00 UTC measurement); billed figure to read after judging.
+- The hourly guard alert keeps running until the DB0 deploy (Nate's ruling).
 
-dbx-bench-2 and dbx-guard-3 are merged into main, with nothing outstanding. The older `dbx-*` worktrees can go.
+## Decided, one line each
+
+- A fit that writes `core.param` reads only `comp_for_product` (row `may_model` and source `may_model_scope = 'product'`); demo-cleared fits are exported with `use_scope: hackathon_demo` and never written to `core.param`.
+- Public reads land with `user_id` null (a shared row under the row filter); no user or session key may be on a landed line.
+- The alert notifies `${workspace.current_user.userName}` (the deployer) so no address is written in the repo; `empty_result_state: TRIGGERED` (the schema advises against UNKNOWN).
+- Calibration is exported only from the served engine's estimates; the market model's ranges would calibrate the wrong engine.
 
 ## Learned the hard way
 
-- **AI/BI counters truncate a format template** ("122.51K of…"). A headline figure with its count is a small Vega-Lite widget over a `stats` dataset with `value_label` and `sub_label` (see the generator pattern in `proof.lvdash.json`).
-- **A chart scaled 0 to 100% hides a 98 against 97 difference.** Plot misses (1 minus the rate) so the axis still starts at zero.
-- **Genie runs only its attached sources.** An unregistered table function fails with `UNSUPPORTED_FUNC_NAME`, and a view over `system.information_schema` fails with `INSUFFICIENT_PERMISSIONS`. Give it views and snapshot tables.
-- **`bundle generate dashboard --resource` writes relative to the cwd** (it created `deploy/databricks/…`) and does not clear "modified remotely". Only `--force` does, and that is asked each time.
-- **Python on Windows writes CRLF** when it opens a file with plain `open()`. Use `newline=''`, or tests that match `\n` fail on the working copy.
-- **`LATERAL VIEW` must come after every join** in Spark SQL; explode in a subquery.
-- **The Databricks console shows "Automated browser control detected"** when driven from the browser pane. Read and scroll only; Nate took over.
+- `git status` showed two files modified with no diff: stale index stat entries. `git update-index --refresh` cleared them; nothing to decide.
+- Python on Windows reads files as cp1252: four `databricks/` tests fail there and pass on the Mac. `PYTHONUTF8=1` fixes it for the gate (the Databricks runtime is UTF-8 anyway).
+- `os.getloadavg` does not exist on Windows.
+- The dashboard's datasets name tables unqualified and carry their own catalog and schema; run them through the Statements API with `catalog` and `schema` set, not `aitools tools query`.
+- Earlier lessons (Git Bash path conversion, unthemed Vega tiles, Genie follows "Start the answer with", the CRLF trap, LATERAL VIEW order) stay true; see this packet's history.
