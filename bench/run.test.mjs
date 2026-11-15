@@ -4,7 +4,6 @@ import { readFile, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { createServer } from 'node:http';
 import { mapSearch, mapProduct, mapValue, run, makeAsk } from './run.mjs';
 const fixture = async name => JSON.parse(await readFile(new URL(`./fixtures/run/${name}.json`, import.meta.url)));
 const reply = (body, status = 200) => Response.json(body, { status });
@@ -30,14 +29,16 @@ test('429 retries once after the stated delay then records error', async () => {
   const records=await run({set:'owned',manifestPath:path,outRoot:dir,sleep:async ms=>waits.push(ms),ask:async endpoint=>{if(endpoint==='/v1/search'){calls++;return reply({code:'rate_limited',retry:{after_s:3}},429)} return reply({code:'unauthenticated'},401)}});
   assert.equal(calls,2); assert.deepEqual(waits,[3000]); assert.equal(records[0].error,'rate_limited');
 });
-test('in-process and HTTP use the same contract for a canned answer', async () => {
-  const { route }=await import('../app/src/edge/api/http.ts'); const handler=route('POST /v1/search',()=>({status:200,body:{results:[]}}),{auth:'visitor'});
-  const server=createServer(async (req,res)=>{const chunks=[]; for await(const c of req) chunks.push(c); const response=await handler(new Request('http://localhost'+req.url,{method:req.method,headers:req.headers,body:Buffer.concat(chunks)})); res.writeHead(response.status,Object.fromEntries(response.headers));res.end(await response.text())});
-  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-  try { const a=makeAsk({dispatch:handler}); const b=makeAsk({base:`http://127.0.0.1:${server.address().port}`}); const init={method:'POST',body:JSON.stringify({text:'coat'})}; assert.deepEqual(await (await a('/v1/search',init)).json(),await (await b('/v1/search',init)).json()); } finally { await new Promise(resolve=>server.close(resolve)); }
+test('transport invokes the public contract without starting a server', async () => {
+  const { route }=await import('../app/src/edge/api/http.ts');
+  const handler=route('POST /v1/search',()=>({status:200,body:{results:[]}}),{auth:'visitor'});
+  const ask=makeAsk({dispatch:handler});
+  assert.deepEqual(await (await ask('/v1/search',{method:'POST',body:JSON.stringify({text:'coat'})})).json(),{results:[]});
 });
 
-test('default transport invokes the public search and job routes', async () => {
+test('default transport invokes public search and job routes without outside reads', async t => {
+  const { ports }=await import('../app/src/edge/api/search.ts');
+  const sources=ports.sources; ports.sources=[]; t.after(()=>{ports.sources=sources;});
   const dir=await mkdtemp(join(tmpdir(),'bench-')); const path=join(dir,'manifest.json'); await writeFile(path,JSON.stringify({items:[{id:'one',query:'carhartt j97 xl'}]}));
   const records=await run({set:'owned',manifestPath:path,outRoot:dir,timeoutS:5});
   assert.equal(records[0].error,null); assert.equal(records.find(r=>r.question==='value').error,'needs_user');
@@ -50,4 +51,66 @@ test('runner selects owned items and rejects an unknown set', async () => {
   const records=await run({manifestPath:path,outRoot:dir,set:'owned',ask});
   assert.deepEqual(asked,['owned query']); assert.ok(records.every(r=>r.item_id==='owned'));
   await assert.rejects(run({manifestPath:path,outRoot:dir,set:'other',ask}),/invalid set/);
+});
+
+test('search reads retain lanes, count citations and go cold then warm without counting polls twice', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-reads-')); const path=join(dir,'manifest.json');
+  await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'},{id:'two',query:'shoes'}]}));
+  const result={searched:[{site:'poshmark',kind:'search',url:'https://poshmark.com/search',outcome:'hit',ms:120,count:2},{site:'mercari',kind:'search',url:null,outcome:'blocked',ms:60,count:0}],results:[{site:'poshmark',price_cents:100,url:'https://poshmark.com/listing/example'},{site:'poshmark',price_cents:200}]};
+  const records=await run({manifestPath:path,outRoot:dir,sleep:async()=>{},ask:async endpoint=>endpoint==='/v1/search'?reply({id:'job',kind:'search',state:'running',result}):endpoint.startsWith('/v1/jobs/')?reply({id:'job',kind:'search',state:'done',result}):reply({code:'unauthenticated'},401)});
+  const searches=records.filter(r=>r.question==='search');
+  assert.deepEqual(searches[0].reads,[{site:'poshmark',lane:'plain',ms:120,outcome:'hit',rows:2,warm:false},{site:'mercari',lane:'cloud_browser',ms:60,outcome:'blocked',rows:0,warm:false}]);
+  assert.ok(searches[1].reads.every(r=>r.warm));
+  assert.equal(searches[0].cited_facts,1);
+  assert.equal(searches[0].cost.browser_s,.06);
+  assert.equal(searches[0].cost.model_calls,null);
+  assert.equal(searches[0].cost.cents,null,'missing rates and usage must not become free');
+});
+
+test('baseline makes exactly one plain GET per item and only counts recorded cards', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-baseline-')); const path=join(dir,'manifest.json');
+  await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'},{id:'two',query:'shoes'}]}));
+  const html=await readFile(new URL('./fixtures/run/poshmark.html',import.meta.url),'utf8'); const calls=[];
+  const records=await run({tool:'baseline',manifestPath:path,outRoot:dir,ask:()=>assert.fail('baseline must not call harness'),fetch:async(url,init)=>{calls.push({url,init});return new Response(html);}});
+  assert.equal(calls.length,2); assert.equal(calls[0].url,'https://poshmark.com/search?query=coat');
+  assert.equal(calls[0].init.method,'GET');
+  assert.ok(records.every(r=>r.tool==='baseline' && r.question==='search' && r.lane==='plain'));
+  assert.equal(records[0].facts.find(f=>f.kind==='live_listings').count,12);
+  assert.deepEqual(records[0].numbers,[]);
+  assert.equal(records[0].reads[0].warm,false); assert.equal(records[1].reads[0].warm,true);
+  assert.equal(records[0].cost.cents,null);
+});
+
+test('baseline does not retry a refusal', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-baseline-error-')); const path=join(dir,'manifest.json');
+  await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'}]})); let calls=0;
+  const records=await run({tool:'baseline',manifestPath:path,outRoot:dir,ask:()=>assert.fail('baseline must not call harness'),fetch:async()=>{calls++; return new Response('blocked',{status:429});}});
+  assert.equal(calls,1); assert.equal(records[0].ok,false); assert.equal(records[0].error,'http_429');
+});
+
+test('job metadata without marketplace results is not a first answer', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-first-')); const path=join(dir,'manifest.json');
+  await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'}]}));
+  const records=await run({manifestPath:path,outRoot:dir,timeoutS:0,ask:async endpoint=>endpoint==='/v1/search'?reply({id:'job',kind:'search',state:'running',result:{results:[],sites_pending:['poshmark']}}):reply({code:'unauthenticated'},401)});
+  assert.equal(records[0].first_at,null,'metadata is not marketplace results');
+});
+
+test('costs never substitute an unknown rate with zero and cloud minutes round up', async () => {
+  const { answerCost, RATES }=await import('./costs.mjs');
+  assert.equal(RATES.plain,null); assert.equal(RATES.proxy_bytes,null); assert.equal(RATES.model_calls,null);
+  const read={lane:'cloud_browser',ms:61000};
+  assert.equal(answerCost([read],{proxy_bytes:0,model_calls:0}).cents,.2);
+  assert.equal(answerCost([read],{proxy_bytes:1,model_calls:0}).cents,null);
+  assert.equal(answerCost([read],{proxy_bytes:0,model_calls:1}).cents,null);
+  assert.equal(answerCost([{lane:'plain',ms:1}],{browser_s:0,proxy_bytes:0,model_calls:0}).cents,null);
+});
+
+test('an empty page completes without claiming first marketplace results', async () => {
+  for(const tool of ['baseline','secondhand']) {
+    const dir=await mkdtemp(join(tmpdir(),'bench-empty-')); const path=join(dir,'manifest.json');
+    await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'}]}));
+    const records=await run({tool,manifestPath:path,outRoot:dir,fetch:async()=>new Response('<html></html>'),ask:async()=>reply({results:[]})});
+    assert.equal(records[0].first_at,null,`${tool}: no marketplace results`);
+    assert.ok(records[0].full_at);
+  }
 });

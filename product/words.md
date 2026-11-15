@@ -1726,3 +1726,16 @@ Nate, build session (orchestrator), 2026-11-15 about 11:30 Central.
 > Ensure all answers that come in are corrected. assess that the engines and how things are determined and weighted, is written out in a spec that makes research proven and scientific sense, that the realtime gathering of this works
 
 Used in: `spec/plans/sweep/science-audit.md` and `scripts/realtime-proof.mjs` when they land.
+
+## 2026-11-15 five reasons answered, cleo's style in the app's family, and site images through codex
+Ben, project chat, 09:23 UTC, answering the five rules that had no stated reason (D2, W1, W8, W10, W13).
+> scrap 1/d2. 2 yea keep this. 3. yes. cleos style more than layout just adapted to how the app's ui looks. they all should look like the same family. 4. yes. 5. site images through codex cli
+
+Used in: [demo D2](constitutions/demo.md), [web W1, W8, W10, W13](constitutions/web.md), [intent ledger](../spec/intent-ledger.md#constitution-reasons-still-needed).
+## 2026-11-15 nate production ready, the auditors once more, organize the repo, and prepare on the mac for testflight
+Nate, build session (orchestrator), 2026-11-15 about 11:45 to 11:55 Central. Two messages.
+> Get everything fully production ready and prepared, run the professional auditors across the app once more, understand how to apply the correct lenses to everything, organize the repo
+
+> We will prepare, rigorously and accurately on mac test to prepare for testflight in hands development
+
+Used in: the second round of audits under `spec/plans/sweep/round-2/`; [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).

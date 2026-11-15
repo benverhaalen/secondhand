@@ -6,6 +6,7 @@ the weeks it covers. Releases enter here as an event term, never as part of D.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from demand.validation import number
 from datetime import date, timedelta
 
 
@@ -19,6 +20,16 @@ class Event:
 
 def season_terms(start: str, horizon_weeks: int, season_m: dict[int, float], events: list[Event]) -> list[float]:
     """One multiplier per forecast week starting at `start`."""
+    number(horizon_weeks, 'horizon_weeks', positive=True, integer=True)
+    for month, factor in season_m.items():
+        number(month, 'month', positive=True, integer=True)
+        if month > 12:
+            raise ValueError('month: outside calendar')
+        number(factor, 'season', positive=True)
+    for event in events:
+        number(event.weeks, 'event.weeks', positive=True, integer=True)
+        number(event.effect, 'event.effect', positive=True)
+        date.fromisoformat(event.start)
     d0 = date.fromisoformat(start)
     out = []
     for w in range(horizon_weeks):
