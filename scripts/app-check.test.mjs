@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { checkPage, slug } from './app-check.mjs';
+import { checkPage, slug, washRule } from './app-check.mjs';
 import { find } from '../app/e2e/web.mjs';
 import { playwright } from './brand-check.mjs';
 
@@ -69,4 +69,11 @@ test('app-check: --dark opens the page in the dark scheme, so ink written as a l
   const body = `<style>@media (prefers-color-scheme: dark){.scroll{background:var(--page)}}</style><p style="color:#0A0A0A;margin-top:40px">You keep $46.95</p>`;
   assert.doesNotMatch(await ids(body), /B6 .*You keep/);
   assert.match(await ids(body, { dark: true }), /B6 .*"You keep \$46\.95".*contrast/);
+});
+
+test('app-check U8: a main tab without the wash fails, a pushed page with it fails, the rest pass', () => {
+  assert.match(washRule('(tabs)/sell', false)?.msg ?? '', /main tab with no wash/);
+  assert.match(washRule('item/[id]/ship', true)?.msg ?? '', /pushed page with the wash/);
+  assert.equal(washRule('(tabs)/index', true), null);
+  assert.equal(washRule('messages/index', false), null);
 });
