@@ -27,7 +27,7 @@ function exec(argv) {
     const [cmd, ...rest] = argv;
     let output = '', finished = false;
     const end = (status, extra = '') => { if (!finished) { finished = true; clearTimeout(timer); done({ status, output: output + extra }); } };
-    const child = spawn(cmd === 'node' ? process.execPath : cmd, rest, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(cmd === 'node' ? process.execPath : cmd, rest, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, PROVE_RUNNING: '1' } });
     const timer = setTimeout(() => { child.kill(); end(null, '\ntimed out'); }, TIMEOUT_MS);
     child.stdout.on('data', d => { output += d; });
     child.stderr.on('data', d => { output += d; });
@@ -90,6 +90,9 @@ async function main() {
     return m.length ? 1 : 0;
   }
   if (!('wave' in flags || 'task' in flags || 'tune' in flags)) { console.error(USAGE); return 2; }
+  // A task's own check may call this script (the tuning tasks do). Run from inside a run, it would select itself and start
+  // again without end: that fork bomb took a machine down on 2026-11-14. A nested run refuses, and a run skips those tasks.
+  if (process.env.PROVE_RUNNING) { console.error('prove.mjs was started from inside a prove.mjs run: refused'); return 3; }
   const tasks = JSON.parse(readFileSync(planPath, 'utf8')).tasks;
   let list;
   if ('task' in flags) {
@@ -104,6 +107,7 @@ async function main() {
     // shortcut: the engine's proof set is the tasks naming it in id or owns; comparing with the engine's own numbers waits until engines publish them.
     list = [walkTask(), ...tasks.filter(t => t.id.includes(flags.tune) || (t.owns ?? []).some(p => p.includes(flags.tune)))];
   }
+  list = list.filter(t => !(t.check?.argv ?? []).some(x => /prove.mjs$/.test(String(x))) || (t.check.argv.includes('--note')));
   return report(await pool(list, prove));
 }
 process.exit(await main());
