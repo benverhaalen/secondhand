@@ -45,6 +45,8 @@ export const color = {
   scrim: "rgba(10, 10, 10, 0.4)",
   glow1: "rgba(129, 207, 252, 0.55)",
   glow2: "rgba(238, 243, 151, 0.7)",
+  hot1: "#FF4D2E",
+  hot2: "#FF9A3C",
   wash1: "rgba(165, 225, 254, 0.3)",
   wash2: "rgba(161, 234, 203, 0.25)",
   cardEdge: "rgba(10, 10, 10, 0.08)",
