@@ -306,3 +306,13 @@ test('a stream left open after done with no late fill is let go at the grace', a
   await client.jobFrames('job_x', { onFrame: () => {} });
   assert.ok(Date.now() - t0 < 1000);
 });
+
+
+test('a cancelled job stream ends without reconnecting', async () => {
+  const cancelled: SseFrame = { id: 1, event: 'job.state', data: { state: 'cancelled' } };
+  const transport = fakeFetch([stream([cancelled])]);
+  const frames: SseFrame[] = [];
+  await createClient({ graceMs: 0, origin: '', fetch: transport.fetch }).jobFrames('job_cancelled', { onFrame: frame => frames.push(frame) });
+  assert.deepEqual(frames, [cancelled]);
+  assert.equal(transport.requests.length, 1);
+});

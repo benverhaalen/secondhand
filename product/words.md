@@ -2558,3 +2558,14 @@ Nate, the orchestrator's session, 2026-11-15, about 15:15 UTC by the machine clo
 > lets get every off mac and focus now on bringing it all here completely and pushing it to main. assessing and delviering final code working and buildable on testflight /goal
 
 Used in: no new Mac or Codex work; each lead brings its finished branches to a Windows worktree and hands the orchestrator one `w/<area>-final` branch on GitHub; the orchestrator merges them to main. The iOS bundle and `expo-doctor` are checked on Windows; the native Release build is walked on the Mac simulator; EAS build and submit stay Nate's.
+## 2026-11-15 ben the Lens UI must work as implied
+
+Ben, Codex, 2026-11-15.
+
+> ensure theres an appropriate expert level ui that comes with the google lens feature and its appropriately integrated into the ui and actually works as the ui implied it should work and ensure its wired up to the ui
+
+After the agent reported the absent backend join and asked which result flow to preserve:
+
+> double check it should work if not, nate is working on it
+
+Used in: [Find UI and Lens integration status](../.agents/team/packets/team/20261115-lens-ui.md). Backend work stays with Nate; client integration is verified with controlled responses until his join lands.
