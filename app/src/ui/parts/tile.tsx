@@ -77,9 +77,9 @@ export function Tile({ id, title, photo, state, word, sites = [], fact, faded = 
               {sites.map(s => <SiteBadge key={s} site={s} />)}
             </View>
           ) : null}
-          {picked ? <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: radius.photo, borderWidth: 2, borderColor: c.ink }} /> : null}
+          {picked ? <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: radius.photo, borderCurve: 'continuous', borderWidth: 2, borderColor: c.ink }} /> : null}
           {picking ? (
-            <View pointerEvents="none" style={{ position: 'absolute', top: space.s2, right: space.s2, width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill,
+            <View pointerEvents="none" style={{ position: 'absolute', top: space.s2, right: space.s2, width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, borderCurve: 'continuous',
               backgroundColor: picked ? c.ink : c.surface, borderWidth: 2, borderColor: picked ? c.page : c.ink2, alignItems: 'center', justifyContent: 'center', ...FLAT }}>
               {picked ? <Icon name="tick-02" size={12} tone="page" /> : null}
             </View>
@@ -107,18 +107,18 @@ export function Tile({ id, title, photo, state, word, sites = [], fact, faded = 
 export function TileSkeleton() {
   const c = useColors();
   const line = (w: `${number}%`, h: number) => (
-    <View style={{ height: 20, justifyContent: 'center' }}><View style={{ width: w, height: h, borderRadius: radius.pill, backgroundColor: c.gray }} /></View>
+    <View style={{ height: 20, justifyContent: 'center' }}><View style={{ width: w, height: h, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} /></View>
   );
   return (
     <View {...mark('tile', { skeleton: 'true' })} accessibilityLabel="Loading" style={{ gap: space.s1 }}>
-      <View style={{ aspectRatio: 1, borderRadius: radius.photo, backgroundColor: c.gray, marginBottom: space.s1 }} />
+      <View style={{ aspectRatio: 1, borderRadius: radius.photo, borderCurve: 'continuous', backgroundColor: c.gray, marginBottom: space.s1 }} />
       {line('80%', 14)}
       {line('50%', 12)}
     </View>
   );
 }
 
-export function Shelf({ id, title, count, onAll, folded = false, onFold, onLess, children }: {
+export function Shelf({ id, title, count, onAll, folded = false, onFold, onLess, quiet = false, children }: {
   // The shelf's name in the data: needs_you, live, kept. It names the controls and data-shelf.
   id: string;
   title: string;
@@ -130,8 +130,12 @@ export function Shelf({ id, title, count, onAll, folded = false, onFold, onLess,
   onFold?: () => void;
   // Present when what it holds was fanned out and can fold back: "Show less", the chevron pointing up.
   onLess?: () => void;
+  // Over cards titled at 18 the header is a 15 label in the second ink, one step below what it heads; over tiles and rows
+  // titled at 15 it is 18 in ink (Art. 7.11, U10).
+  quiet?: boolean;
   children?: ReactNode;
 }) {
+  const head = quiet ? 'body' as const : 'headline' as const;
   // The chevron turns a quarter, right when folded and down when open, the way a section in Files or Reminders does. The
   // header is one size in both states, so folding moves nothing in it (U7); only what is under it comes and goes.
   const turn = useSharedValue(folded ? 1 : 0);
@@ -145,15 +149,15 @@ export function Shelf({ id, title, count, onAll, folded = false, onFold, onLess,
           {onFold ? (
             <Press id={`shelf-${id}-fold`} label={`${title}, ${count}`} expanded={!folded} onPress={onFold} round={false} hit={slop(size.controlMin, size.siteBadge)}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2, height: size.siteBadge }}>
-                <Txt role="headline">{title}</Txt>
-                <Txt role="headline" tone="ink-2">{String(count)}</Txt>
+                <Txt role={head} tone={quiet ? 'ink-2' : 'ink'}>{title}</Txt>
+                <Txt role={head} tone="ink-2">{String(count)}</Txt>
                 <Animated.View style={chevron}><Icon name="arrow-down-01" size={20} tone="ink-2" /></Animated.View>
               </View>
             </Press>
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2, height: size.siteBadge }}>
-              <Txt role="headline">{title}</Txt>
-              <Txt role="headline" tone="ink-2">{String(count)}</Txt>
+              <Txt role={head} tone={quiet ? 'ink-2' : 'ink'}>{title}</Txt>
+              <Txt role={head} tone="ink-2">{String(count)}</Txt>
             </View>
           )}
         </View>

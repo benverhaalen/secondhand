@@ -93,19 +93,19 @@ export function RangeSlider({ id, label, min, max, low, high, step = 1, dots = [
         style={{ height: PLOT + THUMB, ...(Platform.OS === 'web' ? ({ touchAction: 'pan-y', cursor: 'pointer', userSelect: 'none' } as object) : {}) }}>
         <View style={{ height: PLOT }}>
           {w ? [...bins].flatMap(([b, ds]) => Array.from({ length: tall(ds.length) }, () => ds[Math.floor(ds.length / 2)]).map((d, k) => (
-            <View key={`${b}-${k}`} style={{ position: 'absolute', left: b * BIN - DOT / 2, bottom: k * (DOT + 2), width: DOT, height: DOT, borderRadius: radius.pill,
+            <View key={`${b}-${k}`} style={{ position: 'absolute', left: b * BIN - DOT / 2, bottom: k * (DOT + 2), width: DOT, height: DOT, borderRadius: radius.pill, borderCurve: 'continuous',
               backgroundColor: d >= live[0] && d <= live[1] ? c.ink : c.ink2, opacity: d >= live[0] && d <= live[1] ? 1 : 0.35 }} />
           ))) : null}
         </View>
         <View style={{ height: THUMB, justifyContent: 'center' }}>
-          <View style={{ height: TRACK, borderRadius: radius.pill, backgroundColor: c.gray }} />
+          <View style={{ height: TRACK, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} />
           {w ? (
             <>
               <View style={{ position: 'absolute', left: xOf(live[0]), width: xOf(live[1]) - xOf(live[0]), height: TRACK, backgroundColor: c.ink }} />
               {([0, 1] as const).map(t => (
                 <View key={t} accessible accessibilityRole="adjustable" accessibilityLabel={t === 0 ? 'Lowest' : 'Most'} accessibilityValue={{ text: money(live[t]) }}
                   accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]} onAccessibilityAction={e => nudge(t, e.nativeEvent.actionName === 'increment' ? step : -step)}
-                  style={{ position: 'absolute', left: xOf(live[t]) - THUMB / 2, width: THUMB, height: THUMB, borderRadius: radius.pill, backgroundColor: c.ink, borderWidth: 2, borderColor: c.page }} />
+                  style={{ position: 'absolute', left: xOf(live[t]) - THUMB / 2, width: THUMB, height: THUMB, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink, borderWidth: 2, borderColor: c.page }} />
               ))}
             </>
           ) : null}

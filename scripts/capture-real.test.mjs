@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { loadInputs, mapRead, inchesToCm, recordItem, root, output } from './capture-real.mjs';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { loadInputs, mapRead, inchesToCm, recordItem, root, output, python } from './capture-real.mjs';
 import { plan } from '../app/src/engines/capture/plan.ts';
 import { memoryStore } from '../app/src/engines/param/param.ts';
 
@@ -71,11 +74,12 @@ test('missing or duplicate photo indices fail with their cause before scoring', 
   }
 });
 test('two real CLI runs produce identical records, captured header and one summary per item', () => {
+  const out=join(mkdtempSync(join(tmpdir(),'capture-real-')),'record.json');
   const run=()=>{
-    const r=spawnSync(process.execPath,['scripts/capture-real.mjs'],{cwd:root,encoding:'utf8',timeout:120000});
+    const r=spawnSync(process.execPath,['scripts/capture-real.mjs'],{cwd:root,encoding:'utf8',timeout:120000,env:{...process.env,CAPTURE_REAL_OUT:out}});
     assert.ifError(r.error);
     assert.equal(r.status,0,r.stderr);
-    return {bytes:readFileSync(output,'utf8'),summary:r.stdout.trim().split('\n')};
+    return {bytes:readFileSync(out,'utf8'),summary:r.stdout.trim().split('\n')};
   };
   const a=run(), b=run();
   assert.deepEqual(a,b);
@@ -99,7 +103,7 @@ test('two real CLI runs produce identical records, captured header and one summa
 test('Python entry really calls project score() on every original photo with the recorded role', () => {
   const record=JSON.parse(readFileSync(output,'utf8'));
   const photos=record.items.flatMap(item=>item.photos);
-  const result=spawnSync(`${root}/.venv/bin/python`,['-c',`
+  const result=spawnSync(python,['-c',`
 import json, sys
 import numpy as np
 from PIL import Image
@@ -112,5 +116,12 @@ print(json.dumps(out))
 `],{cwd:root,input:JSON.stringify(photos),encoding:'utf8',env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
   assert.ifError(result.error);
   assert.equal(result.status,0,result.stderr);
-  assert.deepEqual(photos.map(({score,parts})=>({score,parts})),JSON.parse(result.stdout));
+  // The record was scored on the Mac; another PIL build decodes the same JPEG a few levels apart, so parts agree to 1e-3 and the 0 to 100 score to 1.
+  const live=JSON.parse(result.stdout);
+  assert.equal(live.length,photos.length);
+  photos.forEach((photo,i)=>{
+    assert.ok(Math.abs(photo.score-live[i].score)<=1,`photo ${i} score ${photo.score} vs ${live[i].score}`);
+    assert.deepEqual(Object.keys(live[i].parts).sort(),Object.keys(photo.parts).sort(),`photo ${i} parts`);
+    for (const [part,value] of Object.entries(photo.parts)) assert.ok(Math.abs(value-live[i].parts[part])<=1e-3,`photo ${i} ${part} ${value} vs ${live[i].parts[part]}`);
+  });
 });

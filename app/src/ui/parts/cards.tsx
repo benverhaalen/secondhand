@@ -49,8 +49,8 @@ function FactLine({ fact }: { fact: Fact }) {
 }
 
 // The 72 row both cards share. The countdown ends 24 from the card's right edge, so it clears the 36 corner by 16 (--card-corner).
-function Body({ photo, title, site, tag, word, fact, due, now, faded }: {
-  photo?: PhotoSrc | null; title: string; site?: Site; tag: TagState; word?: string; fact: Fact; due?: number; now: number; faded?: boolean;
+function Body({ photo, title, site, tag, word, fact, due, now, faded, quiet }: {
+  photo?: PhotoSrc | null; title: string; site?: Site; tag: TagState; word?: string; fact: Fact; due?: number; now: number; faded?: boolean; quiet?: boolean;
 }) {
   return (
     <View style={{ flexDirection: 'row', height: size.photoCard, gap: space.s3 }}>
@@ -60,7 +60,7 @@ function Body({ photo, title, site, tag, word, fact, due, now, faded }: {
       </View>
       <View style={{ flex: 1, justifyContent: 'space-between' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: size.tagH }}>
-          <Tag state={tag} word={word} />
+          <Tag state={tag} word={word} quiet={quiet} />
           {due != null ? <View style={{ marginRight: size.cardCorner - size.cardPad }}><Countdown due={due} now={now} /></View> : null}
         </View>
         <Txt role="headline" lines={1}>{title}</Txt>
@@ -81,16 +81,18 @@ export type ItemCardProps = {
   fact: Fact;
   // When it is due, in ms since 1970. Only a deadline the data carries (frontend-standard §5, Honesty).
   due?: number;
+  // Under a header that names its group: the tag in gray (Tag quiet), so the group's color is not said twice (U13).
+  quiet?: boolean;
   onPress?: () => void;
 };
 
 // A thing, and the way into it. The whole card is the target.
-export function ItemCard({ id, title, photo, site, state, word, fact, due, onPress }: ItemCardProps) {
+export function ItemCard({ id, title, photo, site, state, word, fact, due, quiet, onPress }: ItemCardProps) {
   const now = useMinute();
   return (
     <Press id={id} label={title} onPress={onPress} round={false}>
       <Surface kind="card" part="card-item" box={{ height: size.cardItemH, padding: size.cardPad }}>
-        <Body {...{ photo, title, site, word, fact, due, now }} tag={state} faded={state === 'ended'} />
+        <Body {...{ photo, title, site, word, fact, due, now, quiet }} tag={state} faded={state === 'ended'} />
       </Surface>
     </Press>
   );
@@ -166,7 +168,7 @@ export function DecisionCard(p: DecisionCardProps) {
 function Queue({ layers, children }: { layers: number; children: ReactNode }) {
   const c = useColors(), scheme = useScheme();
   const layer = (i: number) => (
-    <View key={i} pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: space.s3 * (i + 1), height: size.cardDecisionH, borderRadius: radius.card,
+    <View key={i} pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: space.s3 * (i + 1), height: size.cardDecisionH, borderRadius: radius.card, borderCurve: 'continuous',
       backgroundColor: c.surface, opacity: i === 0 ? 0.75 : 0.4, transform: [{ scale: i === 0 ? 0.97 : 0.93 }],
       ...(scheme === 'dark' ? { borderWidth: 1, borderColor: c.cardEdge } : { boxShadow: `0 6px 14px ${c.stackShade}` }) }} />
   );
@@ -186,7 +188,7 @@ export function Notice({ id, icon, text, tone = 'plain', onPress }: { id: string
       {({ pressed }) => (
         <View
           {...mark('notice', { tone })}
-          style={{ height: size.noticeH, borderRadius: radius.pill, paddingLeft: space.s4, paddingRight: space.s3, flexDirection: 'row', alignItems: 'center', gap: space.s3,
+          style={{ height: size.noticeH, borderRadius: radius.pill, borderCurve: 'continuous', paddingLeft: space.s4, paddingRight: space.s3, flexDirection: 'row', alignItems: 'center', gap: space.s3,
             backgroundColor: tone === 'need' ? c.marigoldTint : pressed ? c.gray : c.surface, borderWidth: tone === 'need' ? 0 : 1, borderColor: c.cardEdge }}>
           <Icon name={icon} tone={tone === 'need' ? 'on-color' : 'ink'} />
           <View style={{ flex: 1 }}><Txt role="body" tone={tone === 'need' ? 'on-color' : 'ink'} lines={1}>{text}</Txt></View>
