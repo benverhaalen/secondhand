@@ -27,14 +27,16 @@ It does this with one pure function, `plan(state)`: the same state in gives the 
 | The routes | `app/src/edge/api/captures.ts` | Open, photos, PATCH (type, answer, refuse, generate), finish and GET each answer from `plan()`. Captures are kept per person in an in-memory map shaped like the Store row (section 6). `applyJobResult()` takes job results. |
 | Per-site condition values | `CONDITION` in `spec/sites.mjs` | Maps our condition scale to each site's values, with a mark per site. |
 | Superseded, kept | `jobs/capture/follow_ups.py`, `next_view.py` | Their headers say `plan.ts` replaces them. Tests pass; nothing calls them. |
-| Built, not called | `jobs/capture/suggest.py` (the type suggestion's arithmetic: a person's prior and card 7's preselect rule), `judge_type.py` (the swap rule on `capture_judge`'s scores), `learn.py` (Beta updates, fold, promote, rollback), `note.py` (the free note read into facts), `app/src/engines/capture/facts.ts` (`fact.found` frames) | Each passes its own tests. None has a caller. The routes take the phone's suggestion as given, and nothing learns yet. |
+| Built, not called | `jobs/capture/suggest.py` (the type suggestion's arithmetic: a person's prior and card 7's preselect rule), `judge_type.py` (the swap rule on `capture_judge`'s scores; only the fixture walk, `scripts/walk.mjs`, calls it), `learn.py` (Beta updates, fold, promote, rollback), `note.py` (the free note read into facts), `app/src/engines/capture/facts.ts` (`fact.found` frames) | Each passes its own tests. None has a caller. The routes take the phone's suggestion as given, and nothing learns yet. |
 | Not built | the Swift capture module (depth, scan, on-device reads and gates); `capture_judge`; the job runner's call to `applyJobResult` | Section 7 has the phone's contract; the runner call belongs to integration. |
 
-The record of what is built, joined, real and reviewed is capture's row in [completion](../plans/completion.md): 25 of 40 cells at the stop.
+The record of what is built, joined, real and reviewed is capture's row in [completion](../plans/completion.md): 26 of 40 cells at the stop.
 
 ## 2. The plan
 
-### Selection by type and size (`select.ts`)
+### Selection by type and size
+
+`select.ts`.
 
 1. **Family.** `capture.type` when the person picked it or a swap set it. Failing that, the phone's suggestion, when it passes card 7's margin ([asking-and-intent card 7](../determinations/asking-and-intent.md#7-which-option-is-preselected-and-when-none-is)): top at least `capture_preselect_floor`, lead at least `assist_preselect_margin`. The suggestion is used for the process only. Failing both, the family is `other` with `fallback: type_unsure`, and the type is the first question.
 2. **Dimension class.** Start from `family_class`, then apply size. A rigid item whose longest side is `capture_large_cm` or more is `large_bulky`. A `medium_hard` item under `capture_small_cm` is `small_hard`. For `other`:
@@ -58,7 +60,9 @@ The record of what is built, joined, real and reviewed is capture's row in [comp
 | `soft_goods` | other, when not rigid | width, height: asked | stains, holes, fading | under 1 lb |
 | `set_bundle` | any family, with two or more pieces | the family's, per piece | the family's | the family's |
 
-### A field row (`process.json` `fields`)
+### A field row
+
+`process.json` `fields`.
 
 | Column | Meaning |
 |---|---|
@@ -86,7 +90,9 @@ The item card shows the same six.
 
 **Site form** (`formValue`). An enum maps through the site's table (`CONDITION` for condition). Text is cut to the site's `max_length` on a word boundary. A value with no place on a site is `invalid` there, which counts as missing for that site.
 
-### Dimensions and close variants (`fields.ts`)
+### Dimensions and close variants
+
+`fields.ts`.
 
 A dimension is a field like any other. Its ladder order is `lookup`, then `measured`, then `asked`. Nate (2026-11-15): "Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify". No `derived` dimension rule exists: a guess is not a rule.
 
@@ -97,7 +103,9 @@ Identify can return close variants of one product, `state.variants.dimensions = 
 
 Until settled, the field is `waiting` while a step or lookup can still fill it, and `missing` after. Either way the reading shows as its value.
 
-### The questions (`plan.ts`)
+### The questions
+
+`plan.ts`.
 
 ```
 { id: "q_<capture_id>_<field or step>", field, fields?, kind, options: [{value, label?, proposed}], other,
@@ -133,7 +141,9 @@ While shots are pending, only `type`, `lot_count` and retakes of kept shots are 
 
 **Words.** Fixed per field in `ask.words`, and linted by `scripts/copy-lint.mjs` in `table.test.ts`. No model writes a question. If one ever rewords one, the field, kind and options stay as planned, and the result passes the same lint.
 
-### Studio asks (`plan.ts`, `select.ts`)
+### Studio asks
+
+`plan.ts` and `select.ts`.
 
 The studio's `manifest.json` `plan.asks` (from `jobs/studio/plan.py` `_ask()`) join this plan. They are not a list beside it ([packet 72](../../.agents/team/packets/studio/72-capture-asks-studio-once.md)):
 - They count only after the person taps Generate (`PATCH {generate: true}`). Retouch is off unless they ask ([Nate](../../product/words.md#2026-11-14-nate-the-best-way-to-take-every-photo-tags-delayed-retouch-chosen-by-the-person)).
@@ -143,7 +153,9 @@ The studio's `manifest.json` `plan.asks` (from `jobs/studio/plan.py` `_ask()`) j
 
 With Generate off, every walk's output is identical (`walk.test.ts`).
 
-### Ready per site (`complete.ts`)
+### Ready per site
+
+`complete.ts`.
 
 `completeness()` returns `{ready, missing: [{field, state}]}` for each linked site. A field is missing when it is not `known`, or its value fails `formValue` for that site. A recalled item is never ready.
 
@@ -161,7 +173,7 @@ A `lookup` value does not depend on which lane fetched the page ([where a read r
 
 ## 3. Thresholds
 
-Every bound is a `param` row read through `app/src/engines/param` with the prior below. The priors in the first block are declared in `table.ts` `PRIORS`; `capture_label_sharp_min` is declared in `captures.ts`.
+Every bound is a `param` row read through `app/src/engines/param` with the prior below. The priors are the `params` block of `jobs/capture/process.json`, read by `table.ts` `bound()` and by `jobs/capture/suggest.py`, so each number is written once; `capture_label_sharp_min` is declared in `captures.ts`.
 
 | Param | Prior | Where it comes from |
 |---|---|---|
@@ -169,13 +181,13 @@ Every bound is a `param` row read through `app/src/engines/param` with the prior
 | `capture_type_auto_floor`, `capture_type_auto_margin` | 0.9, 0.5 | `jobs/capture/suggest.py` auto-accept |
 | `capture_auto_accept` | 0.95 | *agent proposal*: the bar a non-type proposal must clear before it is accepted without a tap |
 | `capture_small_cm`, `capture_large_cm` | 10, 120 | [capture-shots card 1](../determinations/capture-shots.md#1-which-plan-an-item-gets): 10 cm; 120 cm is an *agent proposal* |
-| `capture_max_retakes` | 2 | [seeing-the-item card 17](../determinations/seeing-the-item.md#17-which-question-to-ask-next-and-when-to-stop) |
+| `capture_max_retakes` | 2 | [seeing-the-item card 3](../determinations/seeing-the-item.md#3-what-must-still-be-captured-and-when-it-is-enough) |
 | `capture_question_cap` | 3 | card 17 |
 | `capture_dims_match_cm`, `capture_dims_match_pct` | 2, 0.03 | *agent proposal*, from LiDAR's ±1 cm on objects over 10 cm ([adaptive-capture §1](../../research/capture/nate/adaptive-capture.md#1-depth-sensor-facts-arkit-scene-depth)) |
 | `capture_effort_yes_no`, `_pick_one`, `_pick_many`, `_number_with_unit`, `_text`, `_shot` | 1, 1, 2, 3, 3, 4 | card 17's effort tiebreak |
 | `capture_label_sharp_min` | 0.5 | *agent proposal*, on `score.py`'s 0 to 1 sharpness part |
 
-The confidence each ladder rung needs (`min_conf`) is a column of the versioned `requirement` row in `process.json`. Rows default to 0.9 for `label` and `lookup` and 0.8 for `seen` and `measured`; each row's own value is in the table. They are not yet `param` rows: see fix F1.
+The confidence each ladder rung needs (`min_conf`) is a column of the versioned `requirement` row in `process.json`. Rows default to 0.9 for `label` and `lookup` and 0.8 for `seen` and `measured`; each row's own value is in the table. Each is read as the param `capture_min_conf.<field>.<way>` (`table.ts` `minConf()`), with the row's value as its prior and the scope `{kind: <family>}`, or `{kind: <family>.<kind>}` for a kind's own row, so a promoted row moves the known rule for that family alone. Bundle pieces (`size_label.2`) read their base field's param.
 
 ## 4. What Ben's screen calls
 
@@ -203,7 +215,9 @@ The screen never decides what to ask or when to stop. Layout, motion and the wor
 
 **What ends the demo.** The first TestFlight build is the demo. The capture screen stops being the demo when it calls steps 1 to 5 against the live API instead of rendering `spec/examples/captures.json`. It also needs the phone to send real `device` flags and `reads[]` (section 7). Until then every capture in the build is the example capture.
 
-## 5. Results from the jobs (`captures.ts` `applyJobResult`)
+## 5. Results from the jobs
+
+`captures.ts` `applyJobResult`.
 
 `applyJobResult(user_id, capture_id, result)` validates a whole result before applying any of it. Results for another person's capture, or an unknown one, are `not_found`.
 
@@ -266,26 +280,27 @@ Fixed. Each was found by a fresh review and has a regression test:
 | Device flags assumed LiDAR and a working scan | `captures.test.ts`, defaults false |
 | Every capture shared one id, so one person could reach another's | `captures.test.ts`, two people cannot see or change each other's |
 | The engine did not type-check | `cd app && npx tsc --noEmit -p .` prints nothing for capture or listing |
+| A capture opened without `item_id` took the seeded user's item | `captures.test.ts`, a second person's open gets an item of its own |
+| F1: `min_conf` lived on table rows, not `param` rows | `fields.test.ts`, a promoted champion raises one field's bound and the fact is no longer known; with no rows every walk is unchanged (cap-param-1, b7413cc4) |
+| F2: `suggest.py` repeated card 7's bounds as defaults | `test_suggest.py`, a row for `capture_preselect_floor` moves the preselect (cap-param-1) |
+| F4: facts stayed on the capture | `captures.test.ts`: finish writes each known fact (not `type` or `lot_count`) to the person's item in one store transaction before the capture is judged, with evidence `ref` `<capture>/<step>`; a `you_said` or confirmed attribute is never overwritten; a missing item row is created with `data: captured`; a second person's item never changes (cap-route-2, 6870dc38) |
+| F13: job results wrote to a finished capture, and `photo_score` trusted an unkept key | `captures.test.ts`, both refused and the capture unchanged (6870dc38) |
+| F15: `state.change` lacked `was` and repeated | `captures.test.ts`, the captured log passes `spec/log.mjs` `checkLog`, every event has `was` (null on open), none repeats a state (6870dc38) |
 
 Open:
 
 | Fix | What is wrong | The test that will prove it |
 |---|---|---|
-| F1 | `min_conf` lives on table rows, not `param` rows, so it cannot be learned or rolled back like the other bounds | Each rung's `min_conf` is read as `capture_min_conf` scoped by {kind, field, rung}, with the row's value as its prior; a promoted row moves the known rule in `fields.test.ts` |
-| F2 | `suggest.py` repeats card 7's bounds as function defaults | `suggest.py` reads the same params; a test changes the param and the preselect moves |
 | F3 | The first real run asked 6 and 7 questions where constructed walks ask 3, because the recorded read has no confidences | With the phone's calibrated reads, the real tee asks no more than the constructed tee (`node scripts/capture-real.mjs`) |
-| F4 | Facts stay on the capture; nothing writes them to the item's `attribute` rows at finish | `POST .../finish` writes each known fact as an attribute with `data: captured` evidence; `GET /v1/items/:id` shows them |
 | F5 | The routes keep captures in memory only | Swapped onto the Store `capture` and `photo` tables (integration); a restart keeps an open capture |
 | F6 | No job runner calls `applyJobResult` | An identify job's result changes the next GET's plan |
-| F7 | `suggest.py`, `judge_type.py`, `learn.py` and `note.py` pass their tests but nothing calls them | Each has a caller, or the page retires it |
+| F7 | `suggest.py`, `judge_type.py`, `learn.py` and `note.py` pass their tests but no product path calls them (the fixture walk, `scripts/walk.mjs`, calls `judge_type.py`) | Each has a caller, or the page retires it |
 | F8 | `http.ts` request logs lack `req` and `route` (integration's file) | A full HTTP run passes `spec/log.mjs` |
-| F9 | A capture opened without `item_id` took the seeded user's item `it_7c2m` (the second fresh review's high finding, an isolation fault) | Being finished as cap-join-1 round 3: a second person's open gets an item of its own; their PATCH and finish return it |
 | F10 | The phone's `reads[]` are not checked against the field row: a read of colour 42 is stored, though PATCH would refuse it | A read that fails its row's type or values is dropped with a logged reason, and the plan is unchanged (`captures.test.ts`) |
 | F11 | Open ignores the size `{extent_cm, extent_conf, rigid}` from section 7, and drops a scan's `{scan_ok, extent_cm}` and `depth_ref` | Open with a 130 cm rigid lamp selects `large_bulky`; a scan's extent becomes a measured proposal under `min_conf` |
-| F12 | The colour maximum of 2 is written in the route, not in the table | A `max` column on list rows in `process.json`; the route reads it |
-| F13 | `applyJobResult` writes to a finished capture, and `photo_score` trusts a key that was never kept | Both refused like PATCH after finish; an unkept key is `invalid` |
+| F12 | The colour maximum of 2 is written in the route. The table side is done: list rows carry `max` and `table.ts` validates it (cap-param-1) | The route reads `row.max` and no longer names colour (cap-route-2 round 2) |
+| F16 | `GET /v1/items/:id` shows each captured attribute with its source and evidence, but `items.ts:29` reads every attribute's confidence as 0 and `items.ts:70` drops the field (integration's file, found by cap-route-2) | The item card shows the confidence the capture recorded |
 | F14 | Studio asks are checked loosely: a `measure` ask without its name, or a `flaw` without its zone, is accepted | Each ask type's required fields enforced at `applyJobResult` |
-| F15 | `state.change` events lack `was` (spec/events.json) and fire when the status did not move | The log contract test checks `was` and that no event repeats a state |
 
 The seeded example user's first open replaces the example row. That is by design, so the contract examples stay the engine's output, and `captures.test.ts` asserts it.
 
@@ -293,9 +308,9 @@ The seeded example user's first open replaces the example row. That is by design
 
 1. **Ben's screen on the routes** (section 4). Measure: one real item captured on a phone from the first photo to `done`, with the questions recorded beside the walk's counts.
 2. **The Swift module** (section 7), on a LiDAR iPhone. Measure: the fixed set's 30 items, the share of `label` reads correct at the confidence they claim, and the known-size box within 1 cm.
-3. **F4 and F5**: facts reach the item card, and captures survive a restart. Measure: the item card shows every captured fact with its evidence.
+3. **F5** (F4 is done): captures survive a restart. Measure: a reloaded store returns the same capture; then F16, the item card shows the confidence each captured fact carries.
 4. **F6**: identify feeds the plan. Measure: on the fixed set, how many questions identify removes per item (variants settled, brands and models proposed).
-5. **F1 and F2**: thresholds become learnable, and `learn.py` gets its caller (F7). Measure: a planted shift in answer rates promotes a challenger only past 30 items and the bootstrap, and the rollback restores the prior. This is the old proof 8, kept.
+5. **Learning on the params F1 and F2 made** (done: the bounds are param rows): `learn.py` gets its caller (F7). Measure: a planted shift in answer rates promotes a challenger only past 30 items and the bootstrap, and the rollback restores the prior. This is the old proof 8, kept.
 6. **The extra-shot bar** from the old design: a view outside the process asked when its worth in money over its cost in seconds passes a bar ([capture-shots cards 2 and 3](../determinations/capture-shots.md#2-what-a-shot-is-worth)). It is not built; today an extra view is asked only for a required field that asking cannot settle. Measure: each asked extra view changed a field on at least 25 of the fixed set's 30 items.
 
 ## 10. Proof today
@@ -304,11 +319,11 @@ Every command was rerun on the Mac on 2026-11-15.
 
 | What | Command | Result |
 |---|---|---|
-| The engine | `node --test --test-concurrency=1 app/src/engines/capture/<f>.test.ts`, for table, select, fields, complete, plan, walk and process | 121 tests pass |
+| The engine | `node --test --test-concurrency=1 app/src/engines/capture/<f>.test.ts`, for table, select, fields, complete, plan, walk and process | 135 tests pass (merge b600bd23, Mac, 2026-11-15; 121 before F1) |
 | Questions to done | `walk.test.ts` diagnostics, `capture.questions` | T-shirt 3 (2 with auto confirm), sneakers 4, handbag 5, phone 5, chair 2, bundle of three 9, close-variant table 1 with depth and 2 without |
 | Same input, same output | each walk run twice in `walk.test.ts` | identical |
 | Plan speed | `captures.test.ts`, "capture plan speed" | p50 0.097 ms, p95 0.282 ms over 52 states; budget 100 ms |
-| The routes | `node --test --test-concurrency=1 app/src/edge/api/captures.test.ts`, plus `spec/examples.test.mjs` and `routes.test.ts` | 89, 9 and 6 pass |
+| The routes | `node --test --test-concurrency=1 app/src/edge/api/captures.test.ts`, plus `spec/examples.test.mjs` and `routes.test.ts` | 108, 9 and 6 pass (b600bd23; 89 before F4, F13 and F15) |
 | One real run | `node scripts/capture-real.mjs` (`spec/items/capture-real/2026-11-15.json`) | Ben's three real garments: photos scored 69 to 77, tag photos 90 and 94; tee 6 questions, pants 7, hoodie waiting on a back photo. `data: captured`; one run on three items, not accuracy. |
 
 **Speed budgets.** These are from the old design and are not measured on a device:

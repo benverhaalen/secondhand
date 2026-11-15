@@ -25,28 +25,28 @@ An area's percent is its share of yes cells.
 
 Read across: three quarters of the pieces are built and pass their tests, about a third are joined into the running product, a fifth have touched real data, and an eighth have been freshly reviewed. The site harnesses are the orchestrator's and are not in the table: public reads are proved live on Depop, Poshmark, Mercari and eBay, Dupe's licensed search is built, and no signed-in read or write has run on a real account.
 
-Capture, recounted by the capture lead at the stop (2026-11-15, main at bc62e789): Built 9 (every piece but measure from depth, which needs the Swift module on a device). Joined 5: selection, field ladders and the question plan reach the person through the capture routes (fc43c5a0, bc62e789); the routes themselves; completeness through `listing/build.ts:86`. Not joined: close variants and studio asks (their inputs arrive only through `applyJobResult`, which no job runner calls yet), photo and identify (Python jobs with no runner). Real 5: selection, ladders, the plan and completeness on Ben's three real garments with a recorded vision read, and the photo score on their real pixels (`node scripts/capture-real.mjs`, `spec/items/capture-real/2026-11-15.json`, data captured, one run on three items, not accuracy). Reviewed 7: the six engine pieces and the routes (two fresh reviews; the second's isolation fault F9 fixed in 117d9311).
+Capture, recounted by the capture lead at the stop (2026-11-15, main at bc62e789): Built 9 (every piece but measure from depth, which needs the Swift module on a device). Joined 5: selection, field ladders and the question plan reach the person through the capture routes (fc43c5a0, bc62e789); the routes themselves; completeness through `listing/build.ts:86`. Not joined: close variants and studio asks (their inputs arrive only through `applyJobResult`, which no job runner calls yet), photo and identify (Python jobs with no runner). Real 5: selection, ladders, the plan and completeness on Ben's three real garments with a recorded vision read, and the photo score on their real pixels (`node scripts/capture-real.mjs`, `spec/items/capture-real/2026-11-15.json`, data captured, one run on three items, not accuracy). Reviewed 7: the six engine pieces and the routes (two fresh reviews; the second's isolation fault F9 fixed in 117d9311). Since (b600bd23): finish writes known facts to the person's item card (F4), the bounds and rung confidences are param rows (F1, F2), and finished captures refuse job results (F13); the counts do not move, since photo, identify and the variants still wait on the job runner (F6).
 
 ## Does the real-time loop run end to end?
 
 No. Two independent checks on 2026-11-15 agree.
 
-`node scripts/realtime-proof.mjs` walks the chain in ten links, calling the product's own functions on recorded pages, and marks each one. Today 1 of 10 works.
+`node scripts/realtime-proof.mjs` walks ten links using recorded inputs, replays search through Poshmark's configured public-page lane, and checks the real valuation input with live sites unset; today 1 of 10 works.
 
 | # | Link | State | Evidence |
 |---|---|---|---|
-| 1 | A valuation with a thin basis says so | wrong | the answer has `n_eff` 1 and a range of one point, and drops the level and the `too_few` note it computed |
-| 2 | The thin answer raises a gather request | built, not called | `gather` has no caller in the product; a shown thin fact answers "nothing to gather" |
-| 3 | The search widens over more sources | built, not called | search reads 24 rows from two recorded sites, but gathering is given no search to run |
-| 4 | Rows are matched to the same product | built, not called | all 24 relations stay unresolved, and match levels collapse to yes or no |
+| 1 | A valuation with a thin basis says so | wrong | the recorded answer has `n_eff` 1 and a 1900-cent point range; `check` drops comparables' `category` level and `too_few` state; the real input still uses the example item, with blocked sold searches when live sites are unset |
+| 2 | The thin answer raises a gather request | built, not called | `gather` has no product caller; the guard shows the thin value with a `too_few` note, but gather requires hidden, so it returns `nothing_to_gather` with no request |
+| 3 | The search widens over more sources | built, not called | a separate search reads 12 rows from recorded Poshmark HTML; five source rows are excluded with reasons; the shown thin probe records no steps; only a separate no-basis control records skipped step 6 |
+| 4 | Rows are matched to the same product | built, not called | all 12 rows remain visible with unresolved relations, `identity.by=default`, `model_ok=false` and `product=null`; no recorded identity judgement was supplied |
 | 5 | Kept rows become `observation` rows with evidence | not built | the store has no observation table and nothing writes one |
-| 6 | The basis is recomputed from the store | built, not called | called by hand, the effective sample goes from 1 to 2.97; in the product it stays 1; gathering and valuation compute it by different formulas |
-| 7 | The same question gets a better-supported, cited answer | built, not called | the repeat answer is unchanged; the citation's ids resolve to no stored row |
+| 6 | The basis is recomputed from the store | built, not called | direct sold comps raise Kish `n_eff` from 1 to 2.965857903694928; the recorded route repeat stays 1; gather sums age weights (2.458508544085739); no observation-store projection feeds `check` |
+| 7 | The same question gets a better-supported, cited answer | built, not called | the recorded route repeat is unchanged; hand-fed sold comps give 1100/1600/1900 cents, but all three citation basis ids lack observation rows |
 | 8 | A weight that depends on the observations moves | built, not called | the learning function has no caller; called by hand it moves and forgets correctly |
-| 9 | The next answer reads the moved weight | built, not called | valuation reads the defaults it was handed, not the registry |
+| 9 | The next answer reads the moved weight | built, not called | the diagnostic contribution mean moves from 0.5 to 0.4 at version 2; the recorded valuation stays unchanged at supplied version 1, which the real input port still hardcodes |
 | 10 | The same inputs give the same outputs | works | two fresh runs are byte-identical, with no network call attempted |
 
-The proof's test asserts each state, so the day a link is wired the test fails and the record is updated. The scientific audit ([science-audit.md](sweep/science-audit.md)) traced the same path in the code and reached the same result.
+The proof's tests assert each state and pin the input-port source; a separate no-basis control preserves the 120-second deadline and skipped-step checks, and the earlier scientific audit ([science-audit.md](sweep/science-audit.md)) records the missing joins.
 
 Also true today, from the engines lead's count: the valuation route prices a fixed example item, not the person's item; comparables are matched on all title words, so there is never a variant-level match; and the listing date stands in for the sale date.
 

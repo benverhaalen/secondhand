@@ -28,10 +28,10 @@ export function PriceRange({ low, high, at, words = 'Sold for' }: {
   return (
     <View {...mark('price-range', { dot: at == null ? 'none' : 'shown' })} style={{ gap: space.s1, height: DOT + space.s1 + type.t13.lineHeight, ...FLAT }}>
       <View style={{ height: DOT, justifyContent: 'center' }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <View style={{ height: TRACK, borderRadius: radius.pill, backgroundColor: c.gray }} />
-        <View style={{ position: 'absolute', left: pct(low), width: `${(share(high) - share(low)) * 100}%`, height: TRACK, borderRadius: radius.pill, backgroundColor: c.ink2, opacity: 0.5 }} />
+        <View style={{ height: TRACK, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} />
+        <View style={{ position: 'absolute', left: pct(low), width: `${(share(high) - share(low)) * 100}%`, height: TRACK, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink2, opacity: 0.5 }} />
         {at != null ? (
-          <View style={{ position: 'absolute', left: pct(at), marginLeft: -space.s2, width: DOT, height: DOT, borderRadius: radius.pill, backgroundColor: c.ink, borderWidth: 2, borderColor: c.page }} />
+          <View style={{ position: 'absolute', left: pct(at), marginLeft: -space.s2, width: DOT, height: DOT, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink, borderWidth: 2, borderColor: c.page }} />
         ) : null}
       </View>
       <Txt role="caption" lines={1}>{`${words} ${money(low)} to ${money(high)} lately`}</Txt>

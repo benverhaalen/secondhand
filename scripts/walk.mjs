@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createLog } from '../log/index.js';
@@ -52,7 +52,9 @@ function python(stage, input, log) {
     const result = spawnSync(PYTHON, ['-c',
       `import json, sys\ndata = json.load(sys.stdin)\n${pythonStages[stage]}\njson.dump(result, sys.stdout)`], {
       cwd: root, input: JSON.stringify(input), encoding: 'utf8', timeout: 5000, killSignal: 'SIGKILL',
-      env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' }, maxBuffer: 1024 * 1024,
+      // jobs/ on the path as jobs/conftest.py puts it: the engine packages import each other as identity.*
+      env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1',
+        PYTHONPATH: [join(root, 'jobs'), process.env.PYTHONPATH].filter(Boolean).join(delimiter) }, maxBuffer: 1024 * 1024,
     });
     if (result.error) throw result.error;
     if (result.status !== 0) throw new Error(`Python exited ${result.status ?? result.signal}: ${result.stderr.trim()}`);

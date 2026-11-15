@@ -85,3 +85,52 @@ def test_bad_input_fails_loudly():
         S.suggest({"shoes": 1.0}, temperature=0)
     with pytest.raises(ValueError):
         S.suggest({f: 0.0 for f in FAMILIES})
+
+
+def test_suggest_still_has_a_numeric_default_for_a_bound():
+    import inspect
+    for name in ("floor", "margin", "auto_top", "auto_margin"):
+        assert inspect.signature(S.suggest).parameters[name].default is None, name
+
+
+def test_a_prior_stated_in_two_files_suggestion_uses_process_params():
+    import json
+    from pathlib import Path
+    from param.registry import MemoryStore
+    priors = json.loads(Path(S.__file__).with_name("process.json").read_text())["params"]
+    store = MemoryStore()
+    S.suggest({"shoes": 1}, params=store)
+    for name in ("capture_preselect_floor", "assist_preselect_margin", "capture_type_auto_floor", "capture_type_auto_margin"):
+        assert store.read(name, {})["value"] == priors[name]
+
+
+def test_promoted_floor_moves_a_preselect_between_old_and_new_bounds():
+    from param.registry import MemoryStore
+    store = MemoryStore()
+    scores = {"shoes": .6, "bags": .3, "other": .1}
+    assert S.suggest(scores, params=store)["preselect"] == "shoes"
+    name = "capture_preselect_floor"
+    prior = store.read(name, {})["value"]
+    row = store.propose(dict(name=name, scope={}, family="scalar", prior=prior, value_or_hyperparams=.7,
+                             n_eff=40, fitted_on_ids_hash="floor-fixture", metric="precision", held_out_score=1,
+                             guard_lo=0, guard_hi=1), 0)
+    assert store.promote(name, {}, row["version"], 0, "2026-11-15T00:00:00Z")[0]
+    assert S.suggest(scores, params=store)["preselect"] is None
+    assert S.suggest(scores)["preselect"] == "shoes"
+
+
+@pytest.mark.parametrize("name,value,scores,key,expected", [
+    ("assist_preselect_margin", .4, {"shoes": .6, "bags": .3, "other": .1}, "preselect", None),
+    ("capture_type_auto_floor", .99, {"shoes": .95, "bags": .05}, "auto_accept", False),
+    ("capture_type_auto_margin", .95, {"shoes": .95, "bags": .05}, "auto_accept", False),
+])
+def test_other_suggestion_bounds_read_promoted_rows(name, value, scores, key, expected):
+    from param.registry import MemoryStore
+    store = MemoryStore()
+    assert S.suggest(scores, params=store)[key] != expected
+    prior = store.read(name, {})["value"]
+    row = store.propose(dict(name=name, scope={}, family="scalar", prior=prior, value_or_hyperparams=value,
+                             n_eff=40, fitted_on_ids_hash="bound-fixture", metric="precision", held_out_score=1,
+                             guard_lo=0, guard_hi=1), 0)
+    assert store.promote(name, {}, row["version"], 0, "2026-11-15T00:00:00Z")[0]
+    assert S.suggest(scores, params=store)[key] == expected

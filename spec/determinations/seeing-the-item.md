@@ -15,7 +15,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 ## 1. Item kind
 
-**Built:** the phone's suggestion as the family, and the `other` fallback with the type as the first question, are built in [capture engine §2](../engines/capture.md#selection-by-type-and-size-selectts) (`select.ts` `suggestionPasses` and `select`). It uses the phone's suggestion alone, with floor `capture_preselect_floor` 0.5 and margin `assist_preselect_margin` 0.2 ([capture engine §3](../engines/capture.md#3-thresholds)). The built floor is 0.5, not this card's 0.60, because the 0.60 applies to the weighted vote of steps 1 and 2, which no code computes; the 0.5 is right for a lone phone estimate until the vote exists. The code source, `capture_judge` and the cloud vote are not built; an identify result only fills a suggestion the phone did not give (`captures.ts` `applyJobResult`).
+**Built:** the phone's suggestion as the family, and the `other` fallback with the type as the first question, are built in [capture engine §2](../engines/capture.md#selection-by-type-and-size) (`select.ts` `suggestionPasses` and `select`). It uses the phone's suggestion, or identify's top result when the phone sent none, with the floor and margin params `capture_preselect_floor` and `assist_preselect_margin` ([capture engine §3](../engines/capture.md#3-thresholds) holds their values). The built floor is lower than this card's 0.60, because the 0.60 applies to the weighted vote of steps 1 and 2, which no code computes; the 0.5 is right for a lone phone estimate until the vote exists. The code source, `capture_judge` and the cloud vote are not built; an identify result only fills a suggestion the phone did not give (`captures.ts` `applyJobResult`).
 
 **Determines**: which family in [fields-by-kind](fields-by-kind.md#families-kinds-and-inheritance) the item is (`apparel`, `shoes`, `bags`, `jewellery_watches`, `furniture`, `lighting_home`, `electronics`, `appliances_tools`, `media`, `cards_collectibles`, `toys_lego`, `bikes_sports`, `baby_gear`, `other`), after [identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md). The family chooses the fields, views, condition scale and checks.
 
@@ -32,8 +32,8 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 1. Model step: each source returns `p_s(k)` over the families. A code source returns 1 for its mapped kind and 0 for the rest.
 2. Arithmetic: `S(k) = sum_s w_s * p_s(k) / sum_s w_s`, over the sources present.
-3. Accept the top kind when `S(top) >= 0.60` and `S(top) - S(second) >= 0.20` (start). Built only for the phone's suggestion, at 0.5 and 0.2: see the line under the heading.
-4. Otherwise the family is `other`, flagged `type_unsure`, and the type is the first question ([capture engine §2](../engines/capture.md#selection-by-type-and-size-selectts)). The `category_unsure` decision with 2 or 3 chips is not raised by the capture engine.
+3. Accept the top kind when `S(top) >= 0.60` and `S(top) - S(second) >= 0.20` (start). Built only for the phone's suggestion, at the lower built bounds: see the line under the heading.
+4. Otherwise the family is `other`, flagged `type_unsure`, and the type is the first question ([capture engine §2](../engines/capture.md#selection-by-type-and-size)). The `category_unsure` decision with 2 or 3 chips is not raised by the capture engine.
 5. The phone value drives framing and shot prompts only. It is replaced when step 3 runs in the cloud.
 
 **Why this method**: a weighted vote with a margin rule is a calibrated way to combine sources of unequal reliability, and the margin stops near-ties from being decided silently (inferred). Mercari's engineers left the category to the user after experiments showed it balanced simplicity and accuracy, and a toy car was listed as a real car (observed (excerpt), [clarifying-inputs §1](../../research/identify/nate/clarifying-inputs.md)). The alternative is a single classifier call. It is cheaper, but it hides the cases a margin rule catches.
@@ -47,6 +47,8 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 **Check later**: build a confusion matrix on 300 hand-labelled captures spread over the families. It is wrong if more than 1 in 50 accepted kinds is wrong, or if more than 1 in 5 items needs the question.
 
 ## 2. Whether a frame is a usable view
+
+**Built:** the usable-view test for a label photo is built: `applyJobResult` reads `capture_label_sharp_min` against the sharpness part that `jobs/photo/score.py` returns ([capture engine §5](../engines/capture.md#5-results-from-the-jobs), [photo engine §3 step 2](../engines/photo.md#3-the-calculation)). The percentile and coverage thresholds below are not built, and no runner sends a score.
 
 **Determines**: whether one frame counts as a usable view, and which view it is: front, back, label, sole, close-up and so on.
 
@@ -82,7 +84,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 ## 3. What must still be captured, and when it is enough
 
-**Built:** the met test, the shot-or-ask split, the retake count and the stop are built in [capture engine §2](../engines/capture.md#2-the-plan) (`fields.ts` `fieldState`, `plan.ts`, `complete.ts`). The order differs: the built order is by required fields unlocked, not by `requirement_fold` priority or pose bin, so those are not built. The code is right until `requirement_fold` has data. A row that is not met is `missing`, `waiting` or `unobtainable`, with a reason, not `value: null` at confidence 0.
+**Built:** the met test, the shot-or-ask split, the retake count and the stop are built in [capture engine §2](../engines/capture.md#2-the-plan) (`fields.ts` `fieldState`, `plan.ts`, `complete.ts`). The order differs: the built order is the one in [capture engine §2](../engines/capture.md#the-questions), not `requirement_fold` priority or pose bin, so those are not built. The code is right until `requirement_fold` has data. A row that is not met is `missing`, `waiting` or `unobtainable`, with a reason, not `value: null` at confidence 0.
 
 **Determines**: which views, labels and measurements are still missing, in what order to ask for them, and when the capture can stop.
 
@@ -97,10 +99,10 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 **Method**
 
-1. Built: a row is met by the `known` rule, and a row's ways split into shots and questions, in [capture engine §2](../engines/capture.md#a-field-row-processjson-fields). Asked rows go to [card 17](#17-which-question-to-ask-next-and-when-to-stop).
+1. Built: a row is met by the `known` rule, and a row's ways split into shots and questions, in [capture engine §2](../engines/capture.md#a-field-row). Asked rows go to [card 17](#17-which-question-to-ask-next-and-when-to-stop).
 3. Next prompt = the unmet shot row with the highest priority. Ties go to the view the person is closest to now, using the pose bin, to save movement.
 4. Built: 2 retakes, `capture_max_retakes` ([capture engine §3](../engines/capture.md#3-thresholds)); then the next way runs, and the row is unobtainable only when none is left. Only `not_read` triggers a retake; `not_visible` does not.
-5. Built: the capture is enough when every process step is kept and no question remains (`plan.status` `done`), or when the person taps Done ([capture engine §2](../engines/capture.md#the-questions-plants)). Required fields have no cap.
+5. Built: the capture is enough when every process step is kept and no question remains (`plan.status` `done`), or when the person taps Done ([capture engine §2](../engines/capture.md#the-questions)). Required fields have no cap.
 6. Unmet rows are written as `value: null`, confidence 0, with their reason. They never become a guess.
 
 **Why this method**: a requirement checklist ordered by measured value-of-information is the standard active-acquisition shape, and it keeps the stop rule explicit instead of a shot count (inferred). Photo count raised sale odds more than photo quality did (observed, [quality-and-value-classifiers §3](../../research/price/nate/quality-and-value-classifiers.md)). That argues against stopping early on a fixed count. The alternative is a fixed shot list per kind. It is simpler, but it asks for views already settled by a read label and misses the ones a flaw makes necessary.
@@ -516,7 +518,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 ## 17. Which question to ask next, and when to stop
 
-**Built:** the order, the cap of 3, the refusal rule and the effort tiebreak are built in [capture engine §2](../engines/capture.md#the-questions-plants) (`plan.ts` `orderQuestions`, `capQuestions`; `table.ts` `PRIORS`). Not built: the EIG over identity candidates, the 0.15 score floor and the singleton stop. The plan has no candidate-set entropy; the order is by required fields unlocked. Where this card differs, the code is right: a field a linked site requires is asked until known or refused, and only other questions stop at 3, because Nate wants every needed field to get its own select ([words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). The effort values built are `capture_effort_yes_no` 1, `_pick_one` 1, `_pick_many` 2, `_number_with_unit` 3, `_text` 3 and `_shot` 4, not this card's tap 1, chip 1, photo 2, type 3. The words are fixed per field, not written by a model (`ask.words`, linted).
+**Built:** the order, the cap of 3, the refusal rule and the effort tiebreak are built in [capture engine §2](../engines/capture.md#the-questions) (`plan.ts` `orderQuestions`, `capQuestions`; `table.ts` `PRIORS`). Not built: the EIG over identity candidates, the 0.15 score floor and the singleton stop. The plan has no candidate-set entropy; the order is the one in [capture engine §2](../engines/capture.md#the-questions). Where this card differs, the code is right: a field a linked site requires is asked until known or refused, and only other questions stop at 3, because Nate wants every needed field to get its own select ([words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). The effort values built are per input kind and differ from this card's tap 1, chip 1, photo 2, type 3 ([capture engine §3](../engines/capture.md#3-thresholds) holds them). The words are fixed per field, not written by a model (`ask.words`, linted).
 
 **Determines**: the next question for the person (which field, which input, which options), and when no more questions are asked. Each question goes out as one `clarify(slot, candidates[], value_of_information)` ([product §5](../product.md#decision-kinds-the-complete-list)), with this card's expected information gain as its value.
 
@@ -533,7 +535,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 1. Arithmetic, for identity aspects: `EIG(a) = H(C) - sum_v p(v) H(C | a = v)`, where `p(v)` is the share of the candidates' weight that has value v.
 2. For non-identity rows: `value(row) = reorder_weight(row)`, normalised to the same 0 to 1 scale as `EIG / log2(|C|)`.
-3. Ask the argmax. Ties go to the lowest effort. Built as a total sort in [capture engine §2](../engines/capture.md#the-questions-plants); the key is required fields unlocked, then effort, not EIG.
+3. Ask the argmax. Built as a total sort, not EIG; the sort key, with effort as a late tiebreak, is in [capture engine §2](../engines/capture.md#the-questions).
 4. Stop when any of these holds:
    - the set is a singleton and the variant is settled (not built);
    - the best normalised score is under 0.15 (start; *agent proposal*: below it a question removes under 15% of the open choices, too little to earn a tap; tune on the 200-item check). Not built;
@@ -552,6 +554,8 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 **Check later**: compare questions per item and confirmed accuracy, this rule against a model-chosen question, on 200 items. It is wrong if the model-chosen arm reaches the same accuracy with fewer questions.
 
 ## 18. Whether a fact may be stated as confirmed
+
+**Built:** the confirm rule for a capture's fields is the `known` test in `fields.ts`, described in [capture engine §2](../engines/capture.md#a-field-row).
 
 **Determines**: for every fact the item card or a listing states, whether it may be stated as confirmed. Otherwise the statement is held for the person, or reworded as not settled.
 
@@ -620,6 +624,8 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 ## 20. Recall or safety flag
 
+**Built:** the capture side of the rule is built: with `recall_flag` set, `complete.ts` returns not ready for every site ([capture engine §2](../engines/capture.md#ready-per-site)). Nothing matches a product to a recall.
+
 **Determines**: whether the item matches a product recall or a sale ban, which blocks `post`, and whether it can be cleared at all.
 
 **Sources and weights**
@@ -651,6 +657,8 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 ## 21. Which frames become listing photos, and in what order
 
+**Built:** the frame pool and the order per site are built in `jobs/photo/pool.py` and `order.py`; the rules and numbers are in [photo engine §3](../engines/photo.md#3-the-calculation). No runner calls them.
+
 **Determines**: which captured frames are proposed as listing photos, and their order. The [list](../features/list.md) feature owns the final order per site.
 
 **Sources and weights**
@@ -658,7 +666,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 | source | what it contributes | weight or rank | why that weight |
 |---|---|---|---|
 | accepted frames ([card 2](#2-whether-a-frame-is-a-usable-view)), grouped by pose bin | the pool | defines | only usable views |
-| per-bin pick: sharpness rank 0.5, exposure 0.2, coverage 0.2, photo score from [photo-score](../../research/studio/ben/photo-score.md) 0.1 (start) | best frame per bin | weighted sum of ranks | sharpness is the failure buyers see first (inferred) |
+| per-bin pick: sharpness, exposure, coverage and the photo score from [photo-score](../../research/studio/ben/photo-score.md), weighted (weights in [photo engine §3 step 1](../engines/photo.md#3-the-calculation)) | best frame per bin | weighted sum of ranks | sharpness is the failure buyers see first (inferred) |
 | studio renders that passed [card 22](#22-whether-a-touched-up-photo-is-faithful-to-its-original) | extra angles on rigid items only | after the real front | renders are never the only view |
 | site rules: eBay 1 to 24 own images; Etsy requires an unedited real photo | caps and musts | constraint | observed, [studio](../features/studio.md) |
 | photo count over photo quality | fill to the cap with distinct views | ordering principle | odds ratios for quality were only 1.17 to 1.25 ([quality-and-value-classifiers §3](../../research/price/nate/quality-and-value-classifiers.md)) |
@@ -687,6 +695,8 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 **Check later**: A/B the order on live listings through [list](../features/list.md). It is wrong if a render-first or aesthetic-first order wins on sale rate with no rise in returns.
 
 ## 22. Whether a touched-up photo is faithful to its original
+
+**Built:** part of the gates is built in `jobs/photo/gates.py` (flaw, tag text and protected boxes); what is missing is in [photo engine §3 step 6](../engines/photo.md#3-the-calculation).
 
 **Determines**: whether an edited photo (background swap, relight, render) still shows the same item truthfully, which decides whether it may be used.
 

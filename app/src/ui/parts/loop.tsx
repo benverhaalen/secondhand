@@ -136,7 +136,7 @@ function UndoLink({ id, onPress }: { id: string; onPress: () => void }) {
   return (
     <Press id={id} label="Undo" onPress={onPress}>
       {({ pressed }) => (
-        <View style={{ height: size.pillCardH, paddingHorizontal: size.pillCardPad, borderRadius: 999, backgroundColor: pressed ? c.grayPress : c.gray, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ height: size.pillCardH, paddingHorizontal: size.pillCardPad, borderRadius: 999, borderCurve: 'continuous', backgroundColor: pressed ? c.grayPress : c.gray, alignItems: 'center', justifyContent: 'center' }}>
           <Txt role="body">Undo</Txt>
         </View>
       )}
