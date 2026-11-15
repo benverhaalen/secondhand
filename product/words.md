@@ -517,3 +517,7 @@ Ben, on the round 7 picks page, saved 2026-11-15 00:09 UTC; he wrote "done" in t
 
 **Anything off on every board.**
 > do a quick pass after this about color and gradients and typefaces and the ambiguities of it all considering my prompts for all these things and what i want out of ui ux. do it without image gen real quick. i dont want the sans serif. dont worry about licenses if we win the hackathon we can get our license or have claude help us create our own font too. i need to see it for the feedback loops. ok also, with the fonts. i want to mirror qoves specific fonts and how they tweaked them exactly except for no mono font and then im trying to determine whether or not to have that other font, clofie be the main brand wordmark. deciding between no clofie, semibold, or regular. one of the three. help me pick out colors. you can use image gen to create the colors and the palettes and the nuances/edge cases/color changes in state and then after thats done you can just give me the colors options. the font options. as well as the different interpretations of my gradient type dilemma.
+
+## 2026-11-14 nate reverse analyse the others and build our own registries, adopt or outperform
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> reverse analyze / eng ThriftX dupe.com, and all other things, like instead of using treg, how can we build specialized registries to fit our needs using the same if not better methods than all of these did. Recreate so we either adopt everything or even outperform.
