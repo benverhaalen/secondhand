@@ -23,7 +23,7 @@ const RULES = [
   ["C11", /(?:\bnothing (?:here )?yet\s*!|\byour journey\b)/gi, "empty state as a cheer"],
   ["C12", /(?:©|\(c\))\s*20\d\d|\blorem ipsum\b/gi, "hard-coded year or placeholder text"],
   // secondhand additions (agent proposal, from product/copy.md)
-  ["S1", /[!！‼⁉](?=\s|$|["'<])/g, "exclamation mark in UI copy"],
+  ["S1", /[!！‼⁉](?=\s|$|["'<)\]])/g, "exclamation mark in UI copy"],
   ["S2", /\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F|[\u{1F1E6}-\u{1F1FF}]|[#*0-9]\uFE0F?\u20E3/gu, "emoji (\"ban all emojis\")"],
   ["S3", /(?!\p{Emoji_Presentation})(?![©®™])\p{Extended_Pictographic}(?!\uFE0F)/gu, "a symbol some phones draw as an emoji: use an icon from the set, or a word"],
 ];
