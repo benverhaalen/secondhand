@@ -1965,3 +1965,9 @@ Nate, orchestrator's session, 2026-11-15, about 06:50 Central.
 > we can parse and build things to be deterministicially or code driven no? would that be more optimized?
 
 Used in: `spec/engines/market-index.md` (the attribute extractor, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate we read everything; the Poshmark rule is only about share, like and repost
+Nate, adaptation lead's session, 2026-11-15, morning Central, correcting a reading limited to Poshmark.
+> no not just reading poshmark. I meant we only were to apply that one rule to make the poshmark specific things like sharing and liking user inputs the ai agent tells the user to do for best marketing insights. We read everything
+
+Used in: [spec/engines/market-index.md §1](../spec/engines/market-index.md#1-what-may-be-kept-per-source), [spec/engines/adaptation.md](../spec/engines/adaptation.md).
