@@ -2,6 +2,17 @@
 
 The open benchmark's runner and scorer ([spec/benchmark.md](../spec/benchmark.md)). Owner: the integration lead.
 
+## Where the benchmark's parts live
+
+| Part | Holds |
+|---|---|
+| [scripts/bench/](../scripts/bench/) | the backtest, gate, photo, seasons, cadence and roi benchmarks; its `out/` holds their results |
+| [spec/items/manifest.json](../spec/items/manifest.json) | the fixed item set the runner asks about |
+| [spec/benchmark.md](../spec/benchmark.md) | the open benchmark: rows, method and raw answers |
+| [spec/plans/backtest/](../spec/plans/backtest/) | the backtest plan: claims, datasets, how we price, the money statistic |
+| [databricks/parity/](../databricks/parity/) | one calculation in two languages, checked for equality |
+| [deploy/resources/bench.yml](../deploy/resources/bench.yml) | the bundle job that loads benchmark results into the workspace |
+
 | Command | Does |
 |---|---|
 | `node bench/run.mjs` | asks our `/v1` API (in process, through the same contract layer a phone hits) every question for every item in `spec/items/manifest.json`; writes `bench/out/<run_id>/records.jsonl` and the raw answers under `raw/` |
@@ -9,6 +20,7 @@ The open benchmark's runner and scorer ([spec/benchmark.md](../spec/benchmark.md
 | `node bench/run.mjs --base <url>` | the same over HTTP against a running edge, as a visitor |
 | `node bench/score.mjs bench/out/<run_id> --baseline bench/out/<baseline_run_id>` | score both runs together, tools alphabetical, with record paths relative to the primary run folder; both must use the same manifest bytes and item set |
 | `node bench/score.mjs bench/out/<run_id>` | rows 1, 2, 3, 8 and 10 into `bench/out/<run_id>/results.json`, each number with "n of N", a Wilson 95% interval where it is a share, nearest-rank p50 and p95 for times (never an average), and the record lines behind it |
+| `node bench/score.mjs bench/out/<run_id> --upload` | after writing `results.json`, copies `records.jsonl` and `results.json` to the Databricks benchmark landing volume; upload failures print `upload skipped: <reason>` and do not fail scoring |
 | `node --test --test-concurrency=1 bench/run.test.mjs` | runner checks, using injected reads without a server or browser |
 | `node --test --test-concurrency=1 bench/score.test.mjs` | scorer checks, including old records and a separate baseline run |
 

@@ -3,12 +3,13 @@
 // From the expert session (agent proposal, research/cross-cutting/nate/intelligence-api-expert-session.md): the hedge trigger
 // (route p95) and the give-up bound (target deadline) are two values; a hedge never sends a second call to the same host;
 // the single-flight key carries the freshness class; a failed shared call is never cached; a block is not an empty result.
+import { memoryStore } from '../../engines/param/param.ts';
 import { emptyFound, type Answer, type AnswerEvent, type Fact, type OnAnswer, type Outcome, type QuestionKind, type Searched } from './answer.ts';
 
 export type Priority = 'person' | 'gather' | 'refresh';
 export interface RouteOut { outcome: Outcome; rows: unknown[]; site?: string }
 export interface Route {
-  route_id: string; host: string; p95_ms: number;
+  route_id: string; host: string; p95_ms: number; cache?: boolean;
   run(query: string, ctx: { signal: AbortSignal; priority: Priority }): Promise<RouteOut>;
 }
 export interface PlanTarget { target_id: string; query: string; deadline_ms: number; routes: Route[]; freshness_s: number }
@@ -22,6 +23,14 @@ export interface Plan {
 
 export const normalize = (q: string) => q.toLowerCase().normalize('NFKC').replace(/\s+/g, ' ').trim();
 
+// int-search-1 priors; tunable through the shared param registry.
+export const searchParams = memoryStore();
+searchParams.declare({ name: 'search_cache_max', family: 'scalar', prior: 500, guard_lo: 0 });
+searchParams.declare({ name: 'search_frame_ttl_s', family: 'scalar', prior: 3600, guard_lo: 0 });
+
+// A cloud launch includes CDP's 30 s connection bound (browser/cdp.ts); this prior is tunable.
+searchParams.declare({ name: 'search_browser_start_ms', family: 'scalar', prior: 30000, guard_lo: 0 });
+
 // --- single flight and cache ---
 const inflight = new Map<string, Promise<RouteOut>>();
 const cache = new Map<string, { at: number; out: RouteOut }>();
@@ -34,14 +43,19 @@ const freshClass = (s: number) => (s <= 900 ? 'fast' : s <= 86400 ? 'day' : 'slo
 function callRoute(r: Route, t: PlanTarget, signal: AbortSignal, priority: Priority, now: () => number): Promise<RouteOut> {
   const key = `${r.route_id}|${normalize(t.query)}|${freshClass(t.freshness_s)}`;
   const hit = cache.get(key);
-  if (hit && now() - hit.at < t.freshness_s * 1000) return Promise.resolve(hit.out);
+  if (r.cache !== false && hit && now() - hit.at < t.freshness_s * 1000) return Promise.resolve(hit.out);
   const joined = inflight.get(key);
   if (joined) return joined;
   outsideCalls++;
   // The shared call is not tied to one caller's abort: a joined question must not lose the result when the first gives up.
   const shared = new AbortController();
-  const p = r.run(t.query, { signal: shared.signal, priority }).then(out => {
-    if (out.outcome === 'hit' || out.outcome === 'empty') cache.set(key, { at: now(), out });
+  const p = (async () => r.run(t.query, { signal: shared.signal, priority }))().then(out => {
+    if (r.cache !== false && (out.outcome === 'hit' || out.outcome === 'empty')) {
+      cache.delete(key);
+      cache.set(key, { at: now(), out });
+      const max = searchParams.read('search_cache_max', {}).value as number;
+      while (cache.size > max) cache.delete(cache.keys().next().value!);
+    }
     return out;
   }).finally(() => inflight.delete(key));
   inflight.set(key, p);

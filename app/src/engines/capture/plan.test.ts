@@ -78,20 +78,22 @@ test('unique measured match chooses published dimensions and explains the choice
   assert.ok(!p.questions.some(q=>q.field==='dimensions'));
 });
 test('ambiguous or unavailable readings ask once with labelled variants and typed other', () => {
-  for (const patch of [
+  const patches: Partial<State>[] = [
     {has_lidar:false,kept:['ring'],facts:{}},
     {facts:{dimensions:measured},variants:{dimensions:[variants[0],{...variants[1],value:{width:121,depth:76,height:75}}]}},
     {has_lidar:false,kept:['ring'],facts:{dimensions:measured}},
-  ]) {
+  ];
+  for (const patch of patches) {
     const s={...furniture,...patch};const p=run(s);
     const questions=p.questions.filter(q=>q.field==='dimensions');assert.equal(questions.length,1);
     const q=questions[0];assert.equal(q.kind,'pick_one');assert.equal(q.other,true);assert.equal(q.why,'required');
-    assert.deepEqual(q.options,s.variants.dimensions.map(v=>({value:v.value,label:v.label,proposed:false})));
+    assert.deepEqual(q.options,s.variants!.dimensions!.map(v=>({value:v.value,label:v.label,proposed:false})));
     assert.deepEqual(q.parts,['width','depth','height']);assert.deepEqual(q.units,['cm','in']);
   }
 });
 test('confident variant needs no question; confirmed answers override variants', () => {
-  for (const facts of [{},{dimensions:{value:variants[1].value,source:'you_said' as const,confidence:1}}]) {
+  const factsList: State['facts'][]=[{},{dimensions:{value:variants[1].value,source:'you_said',confidence:1}}];
+  for (const facts of factsList) {
     const p=run({...furniture,has_lidar:false,kept:['ring'],variants:{dimensions:[{...variants[0],p:.93},variants[1]]},facts});
     assert.ok(!p.questions.some(q=>q.field==='dimensions'));
     assert.deepEqual(p.fields.find(f=>f.field==='dimensions')!.value,'dimensions' in facts?variants[1].value:variants[0].value);
