@@ -467,6 +467,7 @@ test('a DELETE body reaches the handler', async () => {
   assert.deepEqual((await r.json()).got, { ids: ['cap_1'] });
   const empty = await call(h, '/v1/lookups', { method: 'DELETE' });
   assert.deepEqual((await empty.json()).got, {});
+});
 
 for (const reply of ['object', 'response', 'throw', 'auth'] as const) test(`raw ${reply} refusal without reading closes the connection`, async () => {
   let pulls = 0;

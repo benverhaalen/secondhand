@@ -484,9 +484,11 @@ test('17. The user stream replays only that person’s frames, even with a forge
   const { jobs } = await import('../app/src/edge/api/jobs.ts');
   for (const person of [one, two]) {
     const key = `user:${person.id}`;
-    c.check(() => assert.deepEqual(jobs.framesAfter(key, 0), [], 'new people have no contract stream frames'));
+    // A person's own writes already put resource.changed frames on their stream; none may be a contract example's.
+    const before = jobs.framesAfter(key, 0);
+    c.check(() => { for (const f of before) { assert.equal(f.event, 'resource.changed', 'only the person’s own write notices precede'); noExampleData(f.data, 'GET /v1/stream'); } });
     const frame = jobs.append(key, 'state.change', { entity: 'rule', id: person === one ? journeyItem : keptRule, to: 'updated' });
-    const reply = await request('GET', `/v1/stream?user_id=${person === one ? two.id : one.id}`, { ...bearer(person), 'Last-Event-ID': '0' });
+    const reply = await request('GET', `/v1/stream?user_id=${person === one ? two.id : one.id}`, { ...bearer(person), 'Last-Event-ID': String(before.at(-1)?.id ?? 0) });
     assert.equal(reply.status, 200); assert.match(reply.headers.get('Content-Type') ?? '', /text\/event-stream/);
     const reader = reply.body!.getReader();
     const timer = setTimeout(() => { void reader.cancel('journey stream deadline'); }, 8_000);
