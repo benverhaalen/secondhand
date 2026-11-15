@@ -32,6 +32,16 @@ def test_eight_week_old_data_counts_half():
     assert v.a < old.a and abs(v.a / old.a - 0.5) < 1e-6
 
 
+def test_a_capped_read_is_a_lower_bound():
+    v = velocity(weeks([3, 3]) + [Week(sold=240, exposure=1.0, capped=True)], PRIOR)
+    assert v.lower_bound and not velocity(weeks([3, 3]), PRIOR).lower_bound
+
+
+def test_zero_live_listings_and_an_adapter_down_are_censored():
+    # no listing live (exposure 0) for two weeks is not two weeks of zero demand
+    assert velocity(weeks([4, 4]) + [Week(sold=0, exposure=0.0)] * 2, PRIOR).mean > velocity(weeks([4, 4, 0, 0]), PRIOR).mean
+
+
 def test_no_history_is_the_prior():
     v = velocity([], PRIOR)
     assert v.a == PRIOR["a"] and v.b == PRIOR["b"] and abs(v.mean - 1.0) < 1e-9

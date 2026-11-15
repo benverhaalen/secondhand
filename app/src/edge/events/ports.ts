@@ -126,7 +126,7 @@ export function memoryStore(): Store & { claims: Map<string, string> } {
     raiseDecision(d) {
       const old = decisions.find(x => x.user_id === d.user_id && x.kind === d.kind && x.subject === d.subject && x.state === 'open');
       if (old) return { row: old, duplicate: true };
-      const row: DecisionRow = { ...d, id: uid('dc'), state: 'open' }; decisions.push(row); return { row, duplicate: false };
+      const row: DecisionRow = { ...d, id: uid('dec'), state: 'open' }; decisions.push(row); return { row, duplicate: false };
     },
     decisions: f => decisions.filter(match(f)),
     updateDecision(id, patch) {

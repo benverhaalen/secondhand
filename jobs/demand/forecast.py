@@ -35,6 +35,11 @@ def count_forecast(product: str, post: Velocity, *, weeks: list[float], D: float
             "model_version": MODEL_VERSION, "as_of": as_of}
 
 
+def price_comps(comps: list[dict]) -> list[int]:
+    """Sold prices that state what the item sold for: a Best Offer accept hides its price, a bundle splits it."""
+    return [c["price_cents"] for c in comps if not c.get("best_offer") and not c.get("bundle")]
+
+
 def price_forecast(product: str, comps_cents: list[int], *, age_step: float, decay: float, params: dict,
                    as_of: str, seed: int, horizon_weeks: int = 4) -> dict:
     rng = np.random.default_rng(seed)

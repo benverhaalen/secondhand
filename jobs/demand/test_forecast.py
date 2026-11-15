@@ -1,6 +1,6 @@
 """dt-3: count and price forecasts with event and season terms (demand-and-trend §3 steps 4-5)."""
 from demand.events import Event, season_terms
-from demand.forecast import count_forecast, price_forecast
+from demand.forecast import count_forecast, price_comps, price_forecast
 from demand.velocity import Velocity, velocity
 
 POST = velocity([], {"a": 8.0, "b": 4.0})  # 2 a week
@@ -42,6 +42,17 @@ def test_rising_D_and_k_cov_move_the_forecast():
     wide = count_forecast("p", POST, weeks=[1.0] * 4, D=0.0, params={**PARAMS, "k_cov": 2.0}, basis_count=24, as_of="t")
     assert up["p50"] > base["p50"]
     assert (wide["p90"] - wide["p10"]) > (base["p90"] - base["p10"])
+
+
+def test_best_offer_and_bundle_comps_leave_the_median():
+    comps = [{"price_cents": 4000}, {"price_cents": 9000, "best_offer": True}, {"price_cents": 12000, "bundle": True}]
+    assert price_comps(comps) == [4000]
+
+
+def test_moving_holiday_follows_its_date():
+    tg = lambda d: [Event(name="thanksgiving", start=d, weeks=1, effect=1.5)]
+    assert season_terms("2026-11-23", 1, FLAT, tg("2026-11-26")) == [1.5]
+    assert season_terms("2026-11-23", 1, FLAT, tg("2027-11-25")) == [1.0]
 
 
 def test_price_forecast_has_a_seeded_bootstrap_interval():
