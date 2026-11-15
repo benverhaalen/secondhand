@@ -107,3 +107,10 @@ test('D1: back-off adds a coarser level when effective count passes but recent s
   assert.equal(result.level, 'family');
   assert.equal(result.comps.length, 10);
 });
+
+test('PLANTED: with MAD 0, comps a few percent off the median are kept, a wild one still goes', () => {
+  const rows = [5000, 5000, 5000, 5000, 5100, 5200, 4900, 20000].map((p, i) => ({ ...comp(`m${i}`, p), adjusted_cents: p }));
+  const { kept, dropped } = trim(rows);
+  assert.deepEqual(kept.map(c => c.price_cents).sort(), [4900, 5000, 5000, 5000, 5000, 5100, 5200]);
+  assert.deepEqual(dropped.map(d => d.reason), ['outlier']);
+});

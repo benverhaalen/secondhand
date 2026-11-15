@@ -112,6 +112,8 @@ The tier and form are per kind and fixed, so the server sends them and web and p
 
 Each page: what it is for and whom, where it opens from, what it shows in order, what you can do, what splits off, what feeds it, and the empty or first-run state. "Specced" means the endpoint is in [product.md §7](product.md#7-contract-conventions); "new" means it is asked of Nate in §8.
 
+Each page's ways out (its own photos, no AI edits, by hand, not now, undo, without a site) are in [ways-out.md](ways-out.md), section by section.
+
 ### 6.1 First launch (onboarding)
 
 The order is Ben's: accounts first, then the sites you use, then pickups and notifications ([decision](../product/decisions.md#2026-11-14-first-launch-is-setup-first), [words](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)). Full behaviour, choices and failures are in [connect § Signing in to secondhand](features/connect.md#signing-in-to-secondhand).

@@ -55,6 +55,8 @@ const spread = xs => Math.max(...xs) - Math.min(...xs);
 const turn = (a, b) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
 
 // Color blindness, simulated (Machado, Oliveira and Fernandes 2009, severity 1.0), on linear RGB. Distances are in Oklab.
+export const RING = ['lilac', 'sky', 'aqua', 'mint', 'lime', 'marigold', 'peach', 'pink'];
+export const STATE_FIELDS = { need: 'marigold', sold: 'mint', live: 'sky', paid: 'lime' };
 export const STATE_FILLS = ['sky', 'mint', 'marigold', 'lime'];
 const CVD = { protan: [[.152286, 1.052583, -.204868], [.114503, .786281, .099216], [-.003882, -.048116, 1.051998]],
   deutan: [[.367322, .860646, -.227968], [.280085, .672501, .047413], [-.01182, .04294, .968881]] };
@@ -157,6 +159,26 @@ export const PICKS = {
     if (['card-decision-h', 'card-item-h', 'card-pad', 'photo-card', 'pill-card-h'].every(n => n in t.light)) {
       if (px('card-item-h') !== px('photo-card') + 2 * px('card-pad')) out.push(err(TOKENS, `--card-item-h is ${px('card-item-h')}: an item card is its photo and its padding twice (ledger L46)`));
       if (px('card-decision-h') !== px('card-item-h') + 12 + px('pill-card-h')) out.push(err(TOKENS, `--card-decision-h is ${px('card-decision-h')}: a decision card is an item card, 12 and a row of actions (ledger L46)`)); }
+    return out; },
+
+  // A card's gradient is its state's: the state's fill and its two neighbors on the ring (constitution Art. 5, State gradients).
+  L47: (root) => { const t = tokens(root); if (!t) return []; const out = [], v = x => (/^var\(--([\w-]+)\)$/.exec(x ?? '') ?? [])[1];
+    for (const [state, fill] of Object.entries(STATE_FIELDS)) {
+      const [a, b, c] = [1, 2, 3].map(i => v(t.light[`field-${state}-${i}`])); if (!a && !b && !c) continue;
+      const i = RING.indexOf(fill), near = new Set([RING[(i + 1) % RING.length], RING[(i + RING.length - 1) % RING.length]]);
+      if (a !== fill) out.push(err(TOKENS, `--field-${state}-1 is ${a ? `--${a}` : 'not a token'}: a state's gradient is led by its own fill, --${fill} (ledger L47)`));
+      if (!near.has(b) || !near.has(c) || b === c) out.push(err(TOKENS, `--field-${state}-2 and -3 are --${b} and --${c}: they are --${fill}'s two neighbors on the ring, --${[...near].join(' and --')} (ledger L47)`));
+      if (t.dark[`field-${state}-1`]) out.push(err(TOKENS, `--field-${state}-1 changes in dark mode: a state gradient stays light, because a deep yellow or lime is brown (ledger A13)`)); }
+    return out; },
+
+  // Hot is fire, light enough for black text and never as dark as failed; and nothing glows in a state's color.
+  L48: (root, { files = [] } = {}) => { const t = tokens(root), out = [];
+    if (t) for (const n of ['hot-1', 'hot-2'].filter(n => HEX.test(t.light[n] ?? ''))) {
+      if (contrast(t.light[n], '#0A0A0A') < 4.5) out.push(err(TOKENS, `--${n} gives black text ${contrast(t.light[n], '#0A0A0A').toFixed(1)}:1: the hot tag has black text at 4.5:1 or better (ledger L48)`));
+      if (HEX.test(t.light.brick ?? '') && oklch(t.light[n]).L - oklch(t.light.brick).L < .1) out.push(err(TOKENS, `--${n} is within .1 of --brick in lightness: hot must never read as failed (ledger L48)`)); }
+    for (const f of files.filter(APP)) { const text = withoutComments(f, read(root, f) ?? '');
+      for (const m of text.matchAll(/\b(?:shadowColor|boxShadow|textShadow|box-shadow|text-shadow)\b\s*[:=]\s*[^\n;]*?\b(sky|mint|lime|marigold|peach|pink|lilac|aqua|hot|brick)\b/g))
+        out.push(err(`${f}:${lineOf(text, m.index)}`, `a shadow in --${m[1]} is a glow: color is a fill or a gradient, never light leaking out of a thing (ledger L48)`)); }
     return out; },
 
   // A warning, not a failure (Ben: "dont weight to colorblindness too much"): two state fills closer than .05 in Oklab under simulated protan or deutan vision.

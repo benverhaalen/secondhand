@@ -111,3 +111,10 @@ test('D12: a second site joins only when its marginal gain beats the double-sale
   assert.deepEqual(bestSites([a, { site: 'mercari', E: 2800, P: 0.5, keep: 3300, cancel_cost: 2500 }]), ['ebay', 'mercari']);
   assert.deepEqual(bestSites([a, { site: 'mercari', E: 1, P: 0.0001, keep: 100, cancel_cost: 2500 }]), ['ebay']);
 });
+
+test('PLANTED: under a fee step a lower price keeps as much, and priceForKeep finds it', () => {
+  assert.ok(keep('ebay', 934).keep_cents > keep('ebay', 935).keep_cents);
+  const p = priceForKeep('ebay', keep('ebay', 934).keep_cents);
+  assert.ok(p <= 934, `${p}`);
+  assert.ok(keep('ebay', p).keep_cents >= keep('ebay', 934).keep_cents);
+});

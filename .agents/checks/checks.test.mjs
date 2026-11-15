@@ -333,6 +333,22 @@ test('picks L46: a photo corner that does not nest in its card fails', async () 
   assert.equal(await pick('L46', sizes(20)), '');
 });
 
+test('picks L47: a state gradient led by another color, or with colors that are not its neighbors, fails; its own trio passes', async () => {
+  const css = (a, b, c, dark = '') => ({ 'brand/tokens.css': `:root { --field-sold-1: var(--${a}); --field-sold-2: var(--${b}); --field-sold-3: var(--${c}); }${dark}` });
+  assert.equal(await pick('L47', css('mint', 'aqua', 'lime')), '');
+  assert.match(await pick('L47', css('sky', 'aqua', 'lime')), /led by its own fill, --mint/);
+  assert.match(await pick('L47', css('mint', 'sky', 'lime')), /two neighbors on the ring/);
+  assert.match(await pick('L47', css('mint', 'aqua', 'lime', ' :root[data-theme="dark"] { --field-sold-1: #03523B; }')), /stays light/);
+});
+
+test('picks L48: a hot red as dark as brick fails, a glow in a state color fails; the fire tokens and a plain shadow pass', async () => {
+  const hot = h => ({ 'brand/tokens.css': `:root { --brick: #C52B17; --hot-1: ${h}; --hot-2: #FF9A3C; }` });
+  assert.equal(await pick('L48', hot('#FF4D2E')), '');
+  assert.match(await pick('L48', hot('#B8321C')), /never read as failed|4\.5:1/);
+  assert.match(await pick('L48', screen('<View style={{ shadowColor: color.hot, shadowRadius: 12 }} />')), /is a glow/);
+  assert.equal(await pick('L48', screen('<View style={{ shadowColor: color.ink, shadowRadius: 12 }} />')), '');
+});
+
 test('picks A10: two state fills a color blind person cannot tell apart are warned about, not failed', async () => {
   const { PICKS } = await import('./picks.mjs'); const said = files => run(PICKS.A10, files).map(o => `${o.level} ${o.msg}`).join('\n');
   const fills = lime => ({ 'brand/tokens.css': `:root { --sky: #A5E1FE; --mint: #A1EACB; --marigold: #F5D297; --lime: ${lime}; }` });
@@ -492,4 +508,18 @@ test('vague: a word of degree with nothing to pin it down fails in a scoped arti
   // Part III, the media, is read too: Ben asked for a section per medium with little wiggle room.
   assert.match(errors(run(vague, { 'brand/constitution.md': '# C\n\n## Part III. Media\n\n### Each medium\n\nKeep a caption fairly short.\n\n## Part IV. Checks\n\nIt is usually fine.\n' })), /^[^\n]*"fairly"[^\n]*Part III[^\n]*$/);
   assert.equal(errors(run(vague, doc('The field drifts slowly: one pass takes 26 s.\nThe glow is faint, as `--pill-glow` sets it.\nBen: "a little more depth or a slight shadow".\nIt drifts slowly (C2).'))), '');
+});
+
+import { waysOut } from './waysout.mjs';
+test('waysOut: a page in pages.md §6 with no section in ways-out.md fails; a covered one and a range pass', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'waysout-'));
+  mkdirSync(join(dir, 'spec'));
+  writeFileSync(join(dir, 'spec/pages.md'), '## 6. The pages\n### 6.1 First launch\n### 6.2 Today\n### 6.3 Buy\n### 6.4 Search\n');
+  writeFileSync(join(dir, 'spec/ways-out.md'), '## §6.1 First launch\n## §6.3 to §6.4 Buy and Search\n');
+  const r = waysOut(dir);
+  assert.equal(r.length, 1);
+  assert.match(r[0].msg, /6\.2/);
+  writeFileSync(join(dir, 'spec/ways-out.md'), '## §6.1 First launch\n## §6.2 Today\n## §6.3 to §6.4 Buy and Search\n');
+  assert.equal(waysOut(dir).length, 0);
+  rmSync(dir, { recursive: true });
 });

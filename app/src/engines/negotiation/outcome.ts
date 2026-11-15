@@ -23,7 +23,7 @@ export function outcomeStore() {
     if (row.response !== null && row.response !== o.response) throw new Error(`round already ${row.response}, not ${o.response}`);
     row.response = o.response;
     row.counter = o.counter_cents ?? row.counter;
-    row.final_price = o.final_price_cents ?? (o.response === 'accepted' ? row.offer : row.final_price);
+    row.final_price = o.final_price_cents ?? (o.response === 'accepted' ? (row.counter ?? row.offer) : row.final_price) // a buyer taking our counter pays the counter;
     if (o.at !== undefined) row.ms_to_response = o.at - (offeredAt.get(k) ?? o.at);
     if (o.overruled !== undefined) row.overruled = o.overruled;
   }

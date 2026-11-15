@@ -64,7 +64,7 @@ export function keep(site: FeeSite, price_cents: number, sale: Sale = {}): Keep 
   return { keep_cents, fee_cents, base_cents, fee_row: row, fees_may_have_changed: age > STALE_DAYS };
 }
 
-// D9 step 7: the least whole-cent price whose keep reaches the target. Keep rises with price, so bisect.
+// D9 step 7: the least whole-cent price whose keep reaches the target. Keep mostly rises with price, so bisect, then look under the fee steps.
 export function priceForKeep(site: FeeSite, target_cents: number, sale: Sale = {}): number {
   let lo = 0, hi = Math.max(100, target_cents * 4);
   while (keep(site, hi, sale).keep_cents < target_cents) hi *= 2;
@@ -72,5 +72,7 @@ export function priceForKeep(site: FeeSite, target_cents: number, sale: Sale = {
     const mid = Math.floor((lo + hi) / 2);
     if (keep(site, mid, sale).keep_cents >= target_cents) hi = mid; else lo = mid + 1;
   }
+  // A fixed-fee step (eBay at $10, Poshmark at $15) can make keep fall, so a lower price may reach the target too.
+  for (let p = Math.max(0, lo - 2000); p < lo; p++) if (keep(site, p, sale).keep_cents >= target_cents) return p;
   return lo;
 }

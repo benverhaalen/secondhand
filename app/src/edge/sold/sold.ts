@@ -25,7 +25,8 @@ const LIVE = /^(?:https?:\/\/schema\.org\/)?(InStock|LimitedAvailability|InStore
 
 // Pure: read a public listing page's HTML. Order: JSON-LD offer availability, the meta tag, the sold banner.
 export function readPublicPage(html: string, status = 200): PublicState {
-  if (status === 403 || status === 429 || /cf-chl|challenge-platform|captcha/i.test(html)) return { state: 'unknown', why: 'bot_wall' };
+  // a real page can load a captcha script for its login form, so only a challenge page itself counts (observed on Poshmark)
+  if (status === 403 || status === 429 || status === 503 || /cf-chl|challenge-platform|<title>Just a moment/i.test(html)) return { state: 'unknown', why: 'bot_wall' };
   if (status === 404 || status === 410) return { state: 'unknown', why: 'gone' }; // gone is not sold: the signed-in read decides
   if (status !== 200) return { state: 'unknown', why: `http_${status}` };
   for (const m of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {

@@ -92,12 +92,13 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 - Deck: bottom left of every slide at 32, and alone at the heading size on the closing slide. No slide sets the wordmark and a heading at one size, because both are Clofie and the wordmark would read as a heading (agent proposal, R26).
 - Video: the end card only, centered, held for at least 1.5 s.
 - Boundary: never in a sentence, never capitalized, never with the line (Article 12.3) or any other line attached, never smaller than 14 px (app) or 3% of frame height (video), never recolored except black or white.
-- The kit (agent proposal, round 10, from [brand-systems-from-studios.md](../research/cross-cutting/ben/brand-systems-from-studios.md); open in the [ledger](ledger.md) as R26). One unit is half the wordmark's type size. Nothing but its ground sits within one unit of it on any side. It is live text in the display face, never an image and never redrawn. It is never transformed, shadowed, outlined, stroked, filtered or faded, has no fill or box of its own, never moves, never sits on a photo, and appears once per view. The hands are the one thing allowed inside that space and the one part that moves: in the app a left hand and a right hand sit on either side of the wordmark, as a charm (Ben, [round 11](../product/words.md#2026-11-15-round-11-picks): "a left and right hand on either side of it carefully sized and placed", "i like it as a little charm thing"; ledger L49). Their drawing, size and motion are open as R35.
+- The kit (agent proposal, round 10, from [brand-systems-from-studios.md](../research/cross-cutting/ben/brand-systems-from-studios.md); open in the [ledger](ledger.md) as R26). One unit is half the wordmark's type size. Nothing but its ground sits within one unit of it on any side. It is live text in the display face, never an image and never redrawn. It is never transformed, shadowed, outlined, stroked, filtered or faded, has no fill or box of its own, never moves, never sits on a photo, and appears once per view. The hands are the one thing allowed inside that space and the one part that moves: in the app a left hand and a right hand sit on either side of the wordmark, as a charm (Ben, [round 11](../product/words.md#2026-11-15-round-11-picks): "a left and right hand on either side of it carefully sized and placed", "i like it as a little charm thing"; ledger L52). Their drawing, size and motion are open as R35.
 
 **C2. The field.** A soft mesh of three colors from the ring (Article 5) that sit near each other. Home is sky, mint and lime, the heart of the brand. It is the brand's one color event. What Ben likes is its pattern and feel more than its exact colors ("the lighter ones", [round 7](../product/words.md#2026-11-15-round-7-picks)).
 - A set, by rule (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): "A set but a larger set"). Three colors from the ring make a field when no two of them are near opposite each other (agent proposal: at most 140 degrees apart on the wheel, which allows 24 fields). Nothing else does: never dark or saturated, never opposites (they meet in mud), never hard stops, never two flat stops, never more than three colors.
 - One field changes into the next by one step along the ring: one of its three colors is swapped for that color's neighbor (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): "a gradient changing into another gradient into another"). Fields are written in code from the tokens, never as images. Which fields get a name and a job is open in the [ledger](ledger.md).
 - One field per view: one card, one band, one panel, one frame.
+- In the app, a field on a card is that card's state gradient, and its strength follows the card's deadline (Article 5, State gradients; L47, L49). The home field is the brand's own: the wash, the website, posts.
 - It is soft: several blurred points of color, with no lines and no grain (Ben, rounds 6 and 7).
 - It drifts and is never static: one pass takes `--drift` (26 s, open as R17), eased, and it runs there and back, so no frame repeats within 52 s (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "super ambient but not static").
 - It sits behind the most important thing (the decision that needs you, the hero of a web page, the one stat in a post), never behind long text.
@@ -109,7 +110,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 **C3. The item leads.** Every item is shown by its photo, and the photo is the largest image in its group. A real photo of the real thing, in daylight, on a plain ground. Ben, 20:17: "for a carhartt jacket, you should probably have a picture of it."
 - Boundary: no item without a photo (use a neutral tile with the category icon only while the photo loads); no illustration of an item; generated photos only in demos, marked as such.
 
-**C4. The black pill is the act.** The one action that moves things forward is a black pill with white text. One per decision, and on the app at most one per card. It is never flat pure black: it has a little depth (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "slight variations to black", "a little more depth or a slight shadow"). The depth is a faint glow of sky and lime under the pill, `--pill-glow` (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks)). Ben, [round 10](../product/words.md#2026-11-15-round-10-picks), asked whether the black is too heavy and why the outline is the only black line. In [round 11](../product/words.md#2026-11-15-round-11-picks) he picked both answers. The second button is a light fill with no line: `--gray` in a white card, `--sec-on-field` on the field (L5). And a view has one black pill, with his note "maybe not limited to one but have a rule for when it should be" (L47). The rule for when (agent proposal):
+**C4. The black pill is the act.** The one action that moves things forward is a black pill with white text. One per decision, and on the app at most one per card. It is never flat pure black: it has a little depth (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "slight variations to black", "a little more depth or a slight shadow"). The depth is a faint glow of sky and lime under the pill, `--pill-glow` (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks)). Ben, [round 10](../product/words.md#2026-11-15-round-10-picks), asked whether the black is too heavy and why the outline is the only black line. In [round 11](../product/words.md#2026-11-15-round-11-picks) he picked both answers. The second button is a light fill with no line: `--gray` in a white card, `--sec-on-field` on the field (L5). And a view has one black pill, with his note "maybe not limited to one but have a rule for when it should be" (L50). The rule for when (agent proposal):
 1. A black pill appears only on a thing that needs the person, for the act the app recommends.
 2. The first decision in a view, the one due soonest, sits on the field and has the black pill.
 3. Every other decision in the view leads with the light fill. It gets a black pill in two cases: its clock is under 60 minutes, or the first decision is answered and it moves up to the field.
@@ -143,7 +144,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 Rules:
 1. **Color is a ground, never ink.** Every state and category color is a fill behind black text (each passes 13:1). On the field, text is `--on-field`, the ink of its mode, and a second line may be `--on-field-2` (5.3:1 on sky in light, 6.1:1 on the deep field in dark). White text only on the black pill (C4) and brick. No colored text, colored lines or colored icons on white, except platform logos (C5), the alert brick and the unread dot. Text over a photo or footage sits on the field or a white bar, in black; never white with a shadow.
 2. **Color covers at most a third of any view.** Measured as the share of pixels that are not white, black, gray or photo. The references sit at 12% (ref-12), 25% (Sana) and up to 50% (Docket); a third is the ceiling. A view the field fills is exempt: the sale in the app (C2), one view in any other output, and two in a deck (agent proposal, R26). The wash is not counted either: it has its own ceiling, its height (B4), and Ben asked for it stronger ([the wash as an accent](../product/words.md#2026-11-15-faded-stacks-with-depth-connect-every-site-the-tab-you-are-on-the-wash-as-an-accent-above-the-first-card)).
-3. **A color means one thing everywhere.** Sky is live. Mint is sold. Marigold needs you (Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "sold mint, live as in blue like twitch kinda, needs you yellow or lime as in like a warning"). Lime is paid. Brick failed. Gray ended. Shipping has no color of its own: a sold item waiting to ship is mint with the parcel icon (Ben, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "im color blind so i want to make sure that the ship the nike dunks thing is green not brown"; L45). A tag on a card takes the color of the state it names, and "needs you" is a state: an offer on an unsold item is marigold, and the same item once sold is mint. The full set, with every interaction state, is the table below.
+3. **A color means one thing everywhere.** Sky is live. Mint is sold. Marigold needs you (Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "sold mint, live as in blue like twitch kinda, needs you yellow or lime as in like a warning"). Lime is paid. Fire, red to orange, is hot (L48). Brick failed. Gray ended. Shipping has no color of its own: a sold item waiting to ship is mint with the parcel icon (Ben, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "im color blind so i want to make sure that the ship the nike dunks thing is green not brown"; L45). A tag on a card takes the color of the state it names, and "needs you" is a state: an offer on an unsold item is marigold, and the same item once sold is mint. The full set, with every interaction state, is the table below.
 4. **Photos bring their own color.** When a view has item photos, the field shrinks or moves away from them. The one exception is the thing the field is there for: the photo of the item in the field's own card, or in the sale that fills the screen, sits on the field with its own corner and edge, as in every offer card Ben has picked since round 7. The field never shows through a photo, never tints one, and never sits behind a grid of photos (agent proposal, R26).
 
 #### States
@@ -154,6 +155,8 @@ Every state a screen can show, decided once so no worker invents one (agent deci
 |---|---|---|---|
 | Draft | White pill, hairline outline, gray text | `--rule`, `--ink-2` | 6.1:1 |
 | Live | Sky fill | `--sky` | 13.9:1 |
+| Hot (a live listing ahead of its plan) | Fire gradient, red to orange, with the flame, and the fact that earned it under the photo ("14 watching") (L48) | `--hot-1` to `--hot-2` | 6.0:1 to 9.4:1 |
+| Stuck (a live listing where nothing is happening) | Gray fill, hourglass, ink text; the photo keeps its color, so it never looks ended (A11) | `--gray` | 17.5:1 |
 | Needs you (an offer, a question, a deadline) | Marigold fill | `--marigold` | 13.7:1 |
 | Sold | Mint fill | `--mint` | 14.3:1 |
 | Sold, to ship or shipped | Mint fill with the parcel icon | `--mint` | 14.3:1 |
@@ -177,7 +180,22 @@ Destructive: the confirm in a destructive sheet is a brick pill with white text 
 Tab badge: a marigold dot. No numbers.
 State on a photo: a corner tag in a soft gradient of the state's color, tint to fill, with the icon and the word in black (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)).
 Notice card: gray, or marigold tint when it needs the person, with an x to dismiss (agent decision; Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "your choice"). Sky tint is not used, because sky means live.
-Every state carries its icon as well as its color (Ben, [round 6](../product/words.md#2026-11-14-round-6-picks)): live a broadcast signal, needs you a raised hand, sold a banknote, shipping a parcel, paid a check, failed an alert, draft a pencil, ended a clock. Color is never the only sign.
+Every state carries its icon as well as its color (Ben, [round 6](../product/words.md#2026-11-14-round-6-picks)): live a broadcast signal, hot a flame, stuck an hourglass, needs you a raised hand, sold a banknote, shipping a parcel, paid a check, failed an alert, draft a pencil, ended a clock. Color is never the only sign.
+
+**State gradients** (Ben, [hot is fire](../product/words.md#2026-11-15-hot-is-red-like-fire-no-glow-state-gradients-with-the-multicolor-intensity-as-deadlines-arise-a-brand-motion-constitution): "i like the same rule", "i liked the multicolor", "intensity changes as deadlines arise"; L47 to L49, A12, A13). The one card on a screen that needs the person carries a gradient, and its state picks the colors: the state's fill and its two neighbors on the ring, three colors as C2 asks. The tokens are `--field-<state>-1` to `-3` in [tokens.css](tokens.css).
+
+| State | Gradient |
+|---|---|
+| Needs you | marigold, with lime and peach |
+| Sold, to ship | mint, with aqua and lime |
+| Live | sky, with lilac and aqua |
+| Paid | lime, with mint and marigold |
+
+1. **Strength follows the deadline.** With `t` hours left, `u = ln(48 / t) / ln(96)`, held between 0 and 1, and each color is mixed toward white by `(1 − u) × 58%`: palest two days out, full color in the last half hour, and full color when there is no deadline. It repaints at most once a minute, so nobody sees it move. It never pulses, and the countdown words still say the time.
+2. **Which card gets it,** first match wins: a decision with a clock (an offer, a pickup, a ship-by date), nearest deadline first and, on a tie, the most money kept; then a decision without a clock (a question, a price move for a stuck listing). Failed takes its brick tag and never the gradient; news (hot, sold, paid) is shown, never given the gradient.
+3. **Dark mode keeps it light,** with black text, as tags do (A13): a deep yellow or lime is brown.
+4. **No glow.** Color is a fill or a gradient, never light leaking out of a thing: no colored shadow under a photo, a tag or a card (L48: "too ai slop like"). The black pill's own glow is C4's.
+5. **Hot never reads as failed.** Hot is a light, warm gradient with black text; failed is one flat dark brick with white text. Their lightness stays .1 apart in OKLCH.
 
 **The family.** Eight light hues make a ring, in this order: lilac, sky, aqua, mint, lime, marigold, peach, pink, and back to lilac (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): the wider set under one rule). Each hue, and brick, has three steps and no others: a tint, the fill and a deep. They are built the same way in OKLCH with the hue kept: the tint at lightness .955 and chroma .045, the fill at .88 and .085, the deep at .42. Lime's fill is .93 and .12, because a yellow that dark reads as olive. Tints and fills take black text; deeps take white. A new color is a new hue run through the same steps, never a hand-picked hex. Whether the family gets a deeper step that is used is open in the [ledger](ledger.md) (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): "the palette could be lacking deeper colors?").
 
@@ -318,12 +336,38 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 
 ### Article 11. Motion, sound and time
 
-App motion is governed by [frontend-standard.md §3](../product/frontend-standard.md). For every other medium:
-1. **Motion shows cause and effect** (an item photo becomes a listing on five sites; a tile moves to Sold). Nothing moves for decoration.
-2. **Cuts, not swooshes.** Hard cuts on the beat; a 200 to 300 ms ease-out where something must travel. No spins, bounces, zoom blurs or glitch effects.
-3. **On-screen text holds long enough to read:** 0.3 s per word (per 2 characters in Chinese, Japanese and Korean) plus 1 s, minimum 1.5 s.
-4. **Sound:** real room sound and UI sounds from the app; music without vocals under speech; no whooshes or risers.
-5. **No loops of the field.** The gradient may drift once across a whole video, never pulse.
+How secondhand moves in any medium (Ben, [hot is fire](../product/words.md#2026-11-15-hot-is-red-like-fire-no-glow-state-gradients-with-the-multicolor-intensity-as-deadlines-arise-a-brand-motion-constitution): "what happens when a button is pressed and how everything feels and the brand animation consitution"). The app's durations, moments and Reduce Motion fallbacks are in [frontend-standard.md §3](../product/frontend-standard.md#3-motion), which follows this article.
+
+**How it feels.**
+1. **Calm and fast** (E2). Something moves because something happened, and it is done before anyone waits for it. Nothing in the app reaches 500 ms.
+2. **Physical, not magic.** A pressed thing gives way and springs back; a thing that arrives comes from where it was; a thing that leaves goes where it went. No bounce, ripple, shine, glow, sparkle or confetti (L48).
+3. **Color moves slowly and only with meaning.** The field drifts, one pass in `--drift`, there and back (C2). A state change turns one gradient into the next. A deadline's strength changes by the minute (Article 5, State gradients). Color never pulses or flashes.
+4. **One loud moment: the sale.** The field fills the screen once, with a haptic and a sound (C2). Everything else is quiet.
+5. **Never the only sign.** Under Reduce Motion a move becomes a crossfade or an instant change, and the end state, a word and a haptic still say what happened.
+
+**The moves.** Every motion is one of these.
+
+| Move | Feels like | How |
+|---|---|---|
+| Press | it gives way under the finger | scale 0.97 in `--t-feedback`, ease-out, springs back on release; a light haptic only when the press commits something |
+| Arrive | it comes from what you touched | from 0.95 to 0.97 with opacity, in `--t-select`, out of its trigger |
+| Change state | the tag and the gradient turn | the tag crossfades; the gradient swaps one color at a time for its neighbor, in `--t-panel` |
+| Deadline | it gets warmer while you are away | strength by the formula in Article 5, repainted at most once a minute |
+| Work | you watch it fill in | real progress: fields fill as they resolve; no spinner after the first second |
+| Fail | it stops, once | the brick tag fades in once with a warning haptic; no shake, no loop |
+| Sale | the one celebration | the field fills the screen once; success haptic and sound |
+
+**By medium.** A rule holds only where the medium can carry it. The last column is the research a surface still needs before it is built, done the way that has worked here: the rawest sources with a job for each reference (the `research-note` skill), then variants led by a persona (`product/ui-constitution.md`), then Ben reacts.
+
+| Medium | What moves | What never moves | Research next |
+|---|---|---|---|
+| App | every move above ([frontend-standard §3](../product/frontend-standard.md#3-motion)) | text, the wordmark, the tab bar | haptic weights per move (R36); how often to repaint deadline strength |
+| Website | the field drifts; sections reveal once; press and hover as in the app; deadline strength only inside a product demo | body text | which state gradient tells the hero's story best |
+| Post | nothing: one frozen frame of the field; a state gradient at full strength | | whether a state reads at feed size; whether the flame reads as "trending" everywhere the post goes |
+| Story, Reel, video | hard cuts on the beat; a 200 to 300 ms ease-out where something must travel; the field drifts once across a whole video | the field never loops or pulses; no spins, zoom blurs or glitches | drift speed against cuts |
+| Deck | builds, as cuts | everything else | |
+
+On screen in video, text holds 0.3 s per word (per 2 characters in Chinese, Japanese and Korean) plus 1 s, at least 1.5 s. Sound is real room sound and the app's own UI sounds; music has no vocals under speech; no whooshes or risers.
 
 ### Article 12. Voice
 
@@ -331,7 +375,7 @@ How secondhand sounds, in every medium and language. The rules for app strings a
 
 1. **Plain words a person would say across a table.** If a stranger could not say what a line means back to you, rewrite it (E3).
 2. **Numbers mean something.** "Similar ones sold for $36 to $52", not "n=41". "You keep $46.95", not "Net: 46.95".
-3. **No chatter.** No greetings, motivational lines, "AI-powered", "seamless", "unlock". A feeling is carried by the design, never stated (copy.md C7). The brand has one line, and no other tagline: "Your second hand, for everything secondhand." (Ben, [round 11](../product/words.md#2026-11-15-round-11-picks); L48). It stands alone as a sentence, never beside the wordmark (C1). Where it goes is an agent proposal: the website's first screen, a store listing, a deck's opening slide, a post, and the first screen a new person sees in the app. It is on no other app screen.
+3. **No chatter.** No greetings, motivational lines, "AI-powered", "seamless", "unlock". A feeling is carried by the design, never stated (copy.md C7). The brand has one line, and no other tagline: "Your second hand, for everything secondhand." (Ben, [round 11](../product/words.md#2026-11-15-round-11-picks); L51). It stands alone as a sentence, never beside the wordmark (C1). Where it goes is an agent proposal: the website's first screen, a store listing, a deck's opening slide, a post, and the first screen a new person sees in the app. It is on no other app screen.
 4. **Short.** Headlines under 8 words, captions under 2 sentences, buttons a verb and an object.
 5. **No exclamation marks, no em dashes and no emoji**, in any language. Ben: "ban all emojis" ([words](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis)).
 6. **Never invent** a number, a customer, a quote or a result. A slot without a source stays visibly empty.
@@ -364,10 +408,11 @@ Each AI tell is paired with what to reach for, because banning one default moves
 
 1. **Name the end.** Which of E1 to E6 does this output serve most? (A sale screen serves E1 and E2; a launch post serves E4.)
 2. **Pick the codes the medium can carry** (Part III table). Every output uses C1 and at least one of C2 or C3.
-3. **Map the values** with the medium table (sizes, margins, safe areas).
-4. **Make three cheap variants** that differ on one named axis (for example: where the field sits). Ben directs by reacting (thesis §0.3), so show him variants, not a single answer.
-5. **Run the checks.** Write anything that is not the app as HTML that reads `tokens.css`, one `data-view` per slide, panel or frame, then run `node scripts/brand-check.mjs <file> --medium <app, web, post, story or deck>`. Hand the render and `node scripts/ui-rules.mjs judge <medium>` to a fresh agent, and write the reason ledger (Article 1).
-6. **Show it at true size** in its real context: a phone screen at 390 pt, a post in an Instagram grid, a video on a phone.
+3. **Check what holds there and what is unknown.** Read the surface's row in Article 11, By medium. If its research cell is not empty, do that research first.
+4. **Map the values** with the medium table (sizes, margins, safe areas).
+5. **Make three cheap variants** that differ on one named axis (for example: where the field sits). Ben directs by reacting (thesis §0.3), so show him variants, not a single answer.
+6. **Run the checks.** Write anything that is not the app as HTML that reads `tokens.css`, one `data-view` per slide, panel or frame, then run `node scripts/brand-check.mjs <file> --medium <app, web, post, story or deck>`. Hand the render and `node scripts/ui-rules.mjs judge <medium>` to a fresh agent, and write the reason ledger (Article 1).
+7. **Show it at true size** in its real context: a phone screen at 390 pt, a post in an Instagram grid, a video on a phone.
 
 ---
 
@@ -481,7 +526,7 @@ Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-c
 | B10 | One black pill per decision (C4) | At most one black pill in a box and in a card (a `data-part`); none in a medium that has no buttons | Script |
 | B11 | Logos not names (C5) | No marketplace name as visible text where a logo slot exists; logo `aria-label` present | Not built |
 | B12 | Money says what it is, with no highlight (C6) | Each amount has words in its row or block that say what it is, and no band of color behind it | Script |
-| B13 | Weights (Art. 6.1) | Computed `font-weight` values ⊆ {400, 500, 600}; 600 only in the display face; 500 only inside a button or a link styled as one | Script |
+| B13 | Weights (Art. 6.1) | Computed `font-weight` values ⊆ {500, 600}. Text is `--w-text`, 500, in every medium (Ben: "ensure font goes 500"), and the display face is 600. No other weight, no italic, no stroke | Script |
 | B14 | Size steps only (Art. 6.2) | At the default text size, computed sizes ⊆ the medium's set. Web: at 390 and 1440 wide each display size equals its endpoint, and text sizes ⊆ {15, 18}. The wordmark is exempt (its size is in Part III) Off the app, a size of 32 and up is set at leading 1.1 and tracking `-0.02em`, and the wordmark at `-0.01em` (Art. 6.12) | Script |
 | B15 | No banned faces (Art. 6) | Computed `font-family` contains no Inter; loaded fonts match the picks | Script |
 | B16 | Sentence case (Art. 6.5) | No phrase is all caps. One word in capitals and title case are warnings, because a name may be written that way | Script |

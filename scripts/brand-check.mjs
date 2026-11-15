@@ -138,7 +138,7 @@ async function under({ png, boxes }) {
 
 export async function collect(file, { medium, sheet, tokensCss, browser, cases = [], kinds = [] }) {
   const names = [...tokensCss.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].filter(m => COLOR.test(m[2].trim()) || /^var\(--/.test(m[2].trim())).map(m => m[1]);
-  const views = [], stressed = [], outside = []; let colors, lengths = [], named = {}, grads = {}, fontsLoaded = true, screens = 0, scaled = false;
+  const views = [], stressed = [], outside = []; let colors, lengths = [], named = {}, grads = {}, textWeight = 400, fontsLoaded = true, screens = 0, scaled = false;
   for (const canvas of sheet.canvas) {
     const page = await browser.newPage({ viewport: { width: canvas[0], height: canvas[1] }, deviceScaleFactor: 1 });
     await page.goto(pathToFileURL(resolve(file)).href); await page.evaluate(() => document.fonts.ready);
@@ -150,8 +150,9 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
       for (const n of grads) { p.style.background = `var(--${n})`; if (/gradient\(/.test(cs.backgroundImage)) out.grads[n] = { raw: cs.backgroundImage, base: cs.backgroundColor }; p.style.background = ''; }
       for (const [k, v] of lengths) { p.style.width = `var(--${k})`; out.lengths.push(parseFloat(cs.width) || v); out.named[k] = parseFloat(cs.width) || v; }
       for (const f of ['text', 'display']) { p.style.fontFamily = `var(--font-${f})`; out.faces[f] = cs.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase(); }
+      out.textWeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--w-text')) || 400;
       return out; }, { names, grads: [...new Set([...tokensCss.matchAll(/--([\w-]+)\s*:/g)].map(m => m[1]))], lengths: [...tokensCss.matchAll(/--((?!s-|t-|r-|lh-|tr-)[\w-]+)\s*:\s*(\d+(?:\.\d+)?)px\s*;/g)].map(m => [m[1], Number(m[2])]) });
-    await probe.close(); colors = got.colors; lengths = got.lengths; named = got.named; grads = got.grads;
+    await probe.close(); colors = got.colors; lengths = got.lengths; named = got.named; grads = got.grads; textWeight = got.textWeight;
     // A face is here when text set in it measures differently from the same text in two generic fallbacks. document.fonts.check() says yes to a face it has never heard of.
     fontsLoaded &&= await page.evaluate(f => { const g = document.createElement('canvas').getContext('2d'), w = font => { g.font = font; return g.measureText('secondhand $46.95 Wag').width; };
       return [f.text, f.display].every(face => ['monospace', 'serif'].some(fb => w(`40px "${face}", ${fb}`) !== w(`40px ${fb}`)) && ['monospace', 'serif'].every(fb => w(`40px "${face}", ${fb}`) === w(`40px "${face}", ${fb === 'serif' ? 'monospace' : 'serif'}`))); }, got.faces);
@@ -201,7 +202,7 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
     }
     await page.close();
   }
-  return { views, stressed, colors, lengths, named, grads, fontsLoaded, outside: [...new Set(outside)], screens, scaled };
+  return { views, stressed, colors, lengths, named, grads, textWeight, fontsLoaded, outside: [...new Set(outside)], screens, scaled };
 }
 
 export async function check(file, medium, { browser } = {}) {

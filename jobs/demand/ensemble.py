@@ -15,6 +15,7 @@ from typing import Callable
 CALLS = 5
 CLIP = 1e-4
 BASELINE_BRIER = 0.25  # always saying 0.5
+MIN_RECORD = 20  # a record on fewer resolved questions is not shown
 
 
 def brier(ps: list[float], ys: list[int]) -> float:
@@ -26,12 +27,14 @@ class Record:
     ps: list[float] = field(default_factory=list)
     ys: list[int] = field(default_factory=list)
 
-    def resolve(self, p: float, y: int) -> None:
+    def resolve(self, p: float, y: int, created: str = "9999", model_cutoff: str = "0000") -> None:
+        if created <= model_cutoff:
+            return  # the model may have seen the answer: it does not count toward the record
         self.ps.append(p)
         self.ys.append(y)
 
     def summary(self) -> dict:
-        return {"brier": brier(self.ps, self.ys) if self.ps else None, "resolved": len(self.ps)}
+        return {"brier": brier(self.ps, self.ys) if len(self.ps) >= MIN_RECORD else None, "resolved": len(self.ps)}
 
     def weight(self) -> float:
         """Shown weight: 1 at a perfect record, 0 at or worse than coin-flip; unproven starts at 0.5."""

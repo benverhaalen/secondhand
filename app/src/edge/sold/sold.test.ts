@@ -27,6 +27,8 @@ test('a bot wall is unknown, never sold or live', () => {
   assert.deepEqual(readPublicPage('Just a moment...', 403), { state: 'unknown', why: 'bot_wall' });
   assert.equal(readPublicPage('<div id="cf-chl-widget"></div>' + jsonld('SoldOut')).state, 'unknown');
   assert.equal(readPublicPage('', 404).state, 'unknown');
+  // a real Poshmark sold page loads a captcha script and is still read (observed 2026-11-14)
+  assert.equal(readPublicPage('<script src="/recaptcha.js"></script>' + jsonld('OutOfStock')).state, 'sold');
 });
 
 test('a public sold mark writes one listing.sold event and one poll_orders job, twice read', async () => {

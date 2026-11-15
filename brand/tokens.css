@@ -51,6 +51,14 @@
   --field-1: var(--sky); --field-2: var(--mint); --field-3: var(--lime);
   --field-mesh: radial-gradient(at 30% 100%, var(--field-2), transparent 60%), radial-gradient(at 100% 100%, var(--field-3), transparent 65%);
   --field: var(--field-mesh), var(--field-1);
+  /* state gradients (Art. 5, State gradients; L47): a state's fill and its two ring neighbors. Not overridden in dark: they stay light (A13) */
+  --field-need-1: var(--marigold); --field-need-2: var(--lime);  --field-need-3: var(--peach);
+  --field-sold-1: var(--mint);     --field-sold-2: var(--aqua);  --field-sold-3: var(--lime);
+  --field-live-1: var(--sky);      --field-live-2: var(--lilac); --field-live-3: var(--aqua);
+  --field-paid-1: var(--lime);     --field-paid-2: var(--mint);  --field-paid-3: var(--marigold);
+  --field-calm-max: 58%;           /* how far toward white a gradient is mixed two days before its deadline (L49) */
+  /* hot is fire (L48): a light gradient with black text, kept .1 lighter than brick so it never reads as failed */
+  --hot-1: #FF4D2E; --hot-2: #FF9A3C;
   /* the wash: sky to mint at full strength under a fade to the page, behind the header of a screen and nowhere else. It ends where the first card starts
      (Ben, 2026-11-15 03:22: "it bleeds vertically no lower than the top card ... more intense than shown now ... more of an accent") */
   --wash-1: var(--sky); --wash-2: var(--mint);

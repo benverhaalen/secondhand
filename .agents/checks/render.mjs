@@ -89,10 +89,7 @@ function checkView(view, ctx) {
     // B15 faces, B13 weights
     if (/(?:^|,)\s*["']?inter(?: [\w ]+)?["']?\s*(?:,|$)/i.test(t.family)) E('B15', q, 'names Inter in its font list: Inter is banned, even as a fallback (Art. 6)');
     if (!t.display && !t.textFace) E('B15', q, `is set in ${t.family.split(',')[0]}: the faces are the text face and the display face from tokens.css (Art. 6)`);
-    if (!scales.weight.has(t.weight)) E('B13', q, `is weight ${t.weight}: the weights are ${[...scales.weight].join(', ')} (Art. 6.1)`);
-    else if (t.display !== (t.weight === 600)) E('B13', q, `is ${t.display ? 'the display face' : 'the text face'} at ${t.weight}: 600 is the display face's one weight and no other face uses it (Art. 6.1)`);
-    else if (t.weight === 500 && !sheet.act) E('B13', q, `is weight 500: medium is for button labels and the selected tab, and a ${medium} has neither (Art. 6.1)`);
-    else if (t.weight === 500 && !t.control) E('B13', q, 'is weight 500 and is not a button label: everything else is 400, and stands out by size or ink (Art. 6.1)');
+    if (t.weight !== (t.display ? 600 : ctx.textWeight)) E('B13', q, `is ${t.display ? 'the display face' : 'the text face'} at weight ${t.weight}: text is ${ctx.textWeight} everywhere and the display face is 600, so nothing stands out by weight (Art. 6.1)`);
     if (t.italic) E('B13', q, 'is italic: the faces have no italic, so this is a slanted fake (Art. 6)');
     if (t.stroked && !isMark(t)) E('B13', q, 'has a stroke on its letters: that is a fake bold (Art. 6)');
     // B14 sizes
@@ -322,7 +319,7 @@ function underStress(view, base, baseOut, ctx) {
 
 // facts: { views: [...], stressed: [...], fontsLoaded }, as scripts/brand-check.mjs collects them. Returns the findings.
 export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
-  const pal = palette(colors, facts.grads ?? {}), ctx = { medium, sheet, scales, pal, lengths: facts.lengths ?? [], named: facts.named ?? {} }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
+  const pal = palette(colors, facts.grads ?? {}), ctx = { medium, sheet, scales, pal, lengths: facts.lengths ?? [], named: facts.named ?? {}, textWeight: facts.textWeight ?? 400 }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
   const byIndex = new Map(facts.views.map((v, i) => [v.index, i])), stress = (facts.stressed ?? []).flatMap(v => underStress(v, facts.views[byIndex.get(v.index)], per[byIndex.get(v.index)], ctx));
   const once = new Set(); for (const o of stress) { const k = `${o.where} ${o.msg}`; if (!once.has(k)) { once.add(k); out.push(o); } }
   // B28 everything that shows was measured
