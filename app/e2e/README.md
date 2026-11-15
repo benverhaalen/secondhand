@@ -24,6 +24,7 @@ The tests are written from the table before the behavior exists, and fail until 
 [maestro/](maestro/) holds one flow per screen, the same states as the web test. They run on Ben's Mac with a simulator or a phone, not in the cloud: start the app with `npx expo start`, then `maestro test app/e2e/maestro/index.yaml`. A development build takes `-e APP_ID=<bundle id> -e URL=secondhand://`.
 
 - A test that taps everything and asserts no unlisted tap counts only taps whose `screen` is the page's own path: once Back or a link leaves the page, later taps belong to another table.
+
 ## A demo video
 
 `node scripts/app-demo.mjs <flow> [--dark] [--captions] [--frame] [--out file]` records a flow as a short clip, the kind a launch post on X shows: the web build at 390 x 844 driven by the demo worlds, no phone. It writes `features/app/demos/<flow>.mp4` (H.264, 2x; the raw webm when ffmpeg is missing) and `<flow>.png`, the last frame, for a poster. `--dark` and `--frame` add `-dark` and `-framed` to the name.
