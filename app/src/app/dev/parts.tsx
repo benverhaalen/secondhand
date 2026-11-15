@@ -10,6 +10,7 @@ import {
   Feed, QueueView, MoneyNews, Pile, type SoldThing,
 } from '@/ui';
 import { ChoiceChips, ColourSwatches, Gallery, MatchCard, OfferSheet, PriceChart, PriceRange, RangeSlider, SearchField, SiteStrip, SizePicker } from '@/ui';
+import { ConvoRow } from '@/ui/parts/convo-row';
 import { GoalBar } from '@/ui/parts/goal-bar';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
@@ -264,6 +265,12 @@ function Sheetful() {
         <List>
           <ThreadRow id="tr-need" who="canvasfan" photo="carhartt-jacket" title="Carhartt Detroit jacket" site="depop" need={{ state: 'need', word: 'Offer' }} last="Would you take $85?" time="5m ago" unread={2} />
           <ThreadRow id="tr-did" who="vintage_workwear_collector_and_reseller_since_2009" photo="nike-dunks" title="Nike Dunk Low, 10.5" site="ebay" did="Sent for you" last="Yes, it’s still available. It ships tomorrow." mine time="Yesterday" unread={0} />
+        </List>
+        <List>
+          <ConvoRow id="cr-draft" who="canvasfan" photo="carhartt-jacket" name="Carhartt Detroit jacket" site="depop" note="draft" last="Is the inseam really 36?" time="9h ago" unread={1} />
+          <ConvoRow id="cr-scam" who="Alex" photo="nike-dunks" name="Nike Dunk Low" site="facebook" note="scam" last="Can you text me? I’ll pay by Zelle" time="10h ago" unread={1} />
+          <ConvoRow id="cr-read" who="vintage_workwear_collector_and_reseller_since_2009" photo={null} name="Nike Dunk Low" site="ebay" last="Yes, it’s still available." time="Yesterday" unread={0} />
+          <ConvoRow id="cr-auto" who="workwear_co" photo="carhartt-jacket" name="Carhartt Detroit jacket" site="ebay" note="auto" last="It ships tomorrow." time="5h ago" unread={0} />
         </List>
         <Message side="theirs" meta={<Meta text="canvasfan, 5m ago" />}>What’s the inseam?</Message>
         <Message side="mine" meta={<Meta text="Sent for you, 4m ago" info />}>It’s 32 inches.</Message>
