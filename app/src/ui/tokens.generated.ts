@@ -2,8 +2,12 @@
 
 export const color = {
   page: "#FFFFFF",
+  surface: "#FFFFFF",
   ink: "#0A0A0A",
   onColor: "#0A0A0A",
+  onField: "#0A0A0A",
+  onField2: "rgba(10, 10, 10, 0.65)",
+  secOnField: "rgba(255, 255, 255, 0.72)",
   ink2: "rgba(10, 10, 10, 0.65)",
   gray: "#EFF1F2",
   rule: "rgba(10, 10, 10, 0.08)",
@@ -39,19 +43,37 @@ export const color = {
   grayPress: "#E2E5E7",
   inkDisabled: "rgba(10, 10, 10, 0.3)",
   scrim: "rgba(10, 10, 10, 0.4)",
+  glow1: "rgba(129, 207, 252, 0.55)",
+  glow2: "rgba(238, 243, 151, 0.7)",
+  wash1: "rgba(165, 225, 254, 0.55)",
+  wash2: "rgba(161, 234, 203, 0.45)",
+  cardEdge: "rgba(10, 10, 10, 0.05)",
+  cardShade: "rgba(10, 10, 10, 0.06)",
+  photoVeil: "rgba(0, 0, 0, 0)",
 } as const;
 
 export const colorDark = {
-  page: "#0E0F10",
-  gray: "#26292B",
-  grayPress: "#32363A",
-  ink: "#FFFFFF",
-  ink2: "rgba(255, 255, 255, 0.65)",
-  inkDisabled: "rgba(255, 255, 255, 0.3)",
+  page: "#101315",
+  surface: "#1A1D20",
+  gray: "#2A2F32",
+  grayPress: "#363B3F",
+  ink: "#ECEFF1",
+  ink2: "#B4BABD",
+  inkDisabled: "rgba(236, 239, 241, 0.3)",
   rule: "rgba(255, 255, 255, 0.12)",
-  inkPress: "#E2E5E7",
+  inkPress: "#CDD2D4",
   scrim: "rgba(0, 0, 0, 0.6)",
   onColor: "#0A0A0A",
+  onField: "#ECEFF1",
+  onField2: "#CDD2D4",
+  secOnField: "rgba(255, 255, 255, 0.14)",
+  field1: "#0A4C65",
+  field2: "#03523B",
+  field3: "#025050",
+  wash1: "rgba(10, 76, 101, 0.55)",
+  wash2: "rgba(3, 82, 59, 0.45)",
+  cardEdge: "rgba(255, 255, 255, 0.08)",
+  photoVeil: "rgba(0, 0, 0, 0.08)",
 } as const;
 
 export const space = {
@@ -68,8 +90,8 @@ export const space = {
 } as const;
 
 export const radius = {
-  photo: 8,
-  card: 14,
+  photo: 20,
+  card: 36,
   sheet: 20,
   pill: 999,
 } as const;

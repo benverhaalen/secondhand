@@ -131,7 +131,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 | State | Mint | `#A1EACB` | The state "sold"; C2 | Same |
 | State | Lime | `#EBF08F` | The state "paid"; C2 | Same |
 | State | Marigold | `#F5D297` | The state "needs you"; C2 | Category; decoration |
-| State (open, R28) | Lilac | `#DDCEFE` | The state "shipping", until Ben picks; C2 | Same |
+| Held back | Lilac | `#DDCEFE` | No meaning yet. It cannot be a state: under simulated deutan vision it is .004 from sky (States, rule below) | Same |
 | Category | Pink | `#FEC6D2` | Telling one kind of thing apart from the rest (a collection, a post series); C2 | State |
 | Field only | Aqua, peach | `#91EAE9`, `#FECCAA` | C2 and nothing else: each sits too close to a color that means something (What separates, rule 5) | State; category |
 | Alert | Brick | `#C52B17` (sampled, Amigo and Home_X) | Failed; the confirm in a destructive sheet | Other buttons, headlines, decoration (white on it 5.6:1; black on it fails) |
@@ -139,7 +139,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 Rules:
 1. **Color is a ground, never ink.** Every state and category color is a fill behind black text (each passes 13:1). White text only on the black pill (C4) and brick. No colored text, colored lines or colored icons on white, except platform logos (C5), the alert brick and the unread dot. Text over a photo or footage sits on the field or a white bar, in black; never white with a shadow.
 2. **Color covers at most a third of any view.** Measured as the share of pixels that are not white, black, gray or photo. The references sit at 12% (ref-12), 25% (Sana) and up to 50% (Docket); a third is the ceiling. A view the field fills is exempt: the sale in the app (C2), one view in any other output, and two in a deck (agent proposal, R26).
-3. **A color means one thing everywhere.** Sky is live. Mint is sold. Marigold needs you (Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "sold mint, live as in blue like twitch kinda, needs you yellow or lime as in like a warning"). Lime is paid. Brick failed. Gray ended. Shipping is lilac until Ben picks (R28). The full set, with every interaction state, is the table below.
+3. **A color means one thing everywhere.** Sky is live. Mint is sold. Marigold needs you (Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "sold mint, live as in blue like twitch kinda, needs you yellow or lime as in like a warning"). Lime is paid. Brick failed. Gray ended. Shipping has no color of its own: a sold item waiting to ship is mint with the parcel icon (Ben, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "im color blind so i want to make sure that the ship the nike dunks thing is green not brown"; L45). The full set, with every interaction state, is the table below.
 4. **Photos bring their own color.** When a view has item photos, the field shrinks or moves away from them. The one exception is the thing the field is there for: the photo of the item in the field's own card, or in the sale that fills the screen, sits on the field with its own corner and edge, as in every offer card Ben has picked since round 7. The field never shows through a photo, never tints one, and never sits behind a grid of photos (agent proposal, R26).
 
 #### States
@@ -152,7 +152,7 @@ Every state a screen can show, decided once so no worker invents one (agent deci
 | Live | Sky fill | `--sky` | 13.9:1 |
 | Needs you (an offer, a question, a deadline) | Marigold fill | `--marigold` | 13.7:1 |
 | Sold | Mint fill | `--mint` | 14.3:1 |
-| Shipping (open, R28) | Lilac fill | `--lilac` | 13.5:1 |
+| Sold, to ship or shipped | Mint fill with the parcel icon | `--mint` | 14.3:1 |
 | Paid | Lime fill with a check icon | `--lime` | 16.4:1 |
 | Failed | Pale brick fill, brick icon. Ben, round 10: it blends in. A brick fill with white text is open as R30 | `--brick-tint`, `--brick` | 17.2:1; icon 4.9:1 |
 | Ended, expired, unsold | Gray fill, gray text. Ben, round 10: it blends in. A darker gray with ink text, and the photo washed to 55%, is open as R30 | `--gray`, `--ink-2` | 5.4:1 |
@@ -177,7 +177,17 @@ Every state carries its icon as well as its color (Ben, [round 6](../product/wor
 
 **The family.** Eight light hues make a ring, in this order: lilac, sky, aqua, mint, lime, marigold, peach, pink, and back to lilac (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): the wider set under one rule). Each hue, and brick, has three steps and no others: a tint, the fill and a deep. They are built the same way in OKLCH with the hue kept: the tint at lightness .955 and chroma .045, the fill at .88 and .085, the deep at .42. Lime's fill is .93 and .12, because a yellow that dark reads as olive. Tints and fills take black text; deeps take white. A new color is a new hue run through the same steps, never a hand-picked hex. Whether the family gets a deeper step that is used is open in the [ledger](ledger.md) (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): "the palette could be lacking deeper colors?").
 
-**Dark mode** comes later (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "plan dark mode for later", and "light vs dark should be exclusively color changes"). Light is standard. When it is built, nothing but color changes: only the page, the surfaces and the ink flip. The field, the fills and black text on color are the same in both modes, so the brand reads the same. Values are in `tokens.css`.
+**Four states by color, and no fifth** (agent decision A10; Ben is color blind, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks)). The four state fills, sky, mint, marigold and lime, are each at least .05 apart in Oklab under simulated protan and deutan vision (the closest pair is marigold and lime at .056; mint and marigold are .069). No other hue on the ring clears .05 from all four: lilac is .004 from sky, pink .005 from mint, peach .022 from marigold, aqua .011 from mint. So a fifth state takes one of the four fills with its own icon and word, never a new color. `node .agents/check.mjs` fails when two state fills are closer than .05 ([brand-round-11.md](../research/cross-cutting/ben/brand-round-11.md), Color blindness).
+
+**Dark mode** (Ben, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "i like that dark mode a lot"; [round 7](../product/words.md#2026-11-15-round-7-picks): "light vs dark should be exclusively color changes"; L44). Light is standard. Dark changes color and nothing else, by these seven lines. The values are in `tokens.css`.
+
+1. The page is `#101315`, a card `#1A1D20` (1.10:1 on the page, the same step as light), a control on a card `#2A2F32`.
+2. Text is `#ECEFF1`, never pure white. Secondary text is `#B4BABD`, and `#CDD2D4` on the field (6.1:1).
+3. The field goes deep: `#0A4C65`, `#03523B` and `#025050` in place of sky, mint and lime. Text on it is the ink of its mode, so it is light in dark and black in light.
+4. A state tag keeps its light fill and its black text in both modes.
+5. Lime and marigold are never a dark ground, because a dark yellow is brown.
+6. A card has no shadow and the black pill no glow. A card's edge is 1 px of white at 8%.
+7. The act is a light pill, `#ECEFF1` with `#101315` text. A photo carries a veil of black at 8%.
 
 The unread dot is the one colored mark allowed on white besides logos and brick, because the blue unread dot is what people already know from Mail and Messages ([words.md: familiar](../product/words.md)).
 
@@ -259,8 +269,23 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 4. **One focal point per view** (E1), then the next action.
 5. **Alignment is on one start edge** per column (left in left-to-right scripts, right in right-to-left; use logical properties). Centered text only for the wordmark (C1), single-line headings on posts and end cards.
 6. **True scale.** App mockups are 390 × 844 pt and are judged at that size on Ben's MacBook (1512 × 982 pt, Retina). Generated UI at 1.5× scale is the most common image-model failure; attach a true-scale render as the anchor.
-7. **A pill is balanced at its icon** (agent decision A9; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "the padding for the live little sticker over the patagonia vest feels a little off"). At an icon end the padding is one step less than at a text end: `--s-3` and `--s-4` in a button, `--s-1` and `--s-2` in a tag. A tag is 24 tall with a 16 icon, so the icon is 4 from the top, the bottom and the near end.
-8. **One kind, one size** (L37). An item in a feed is 96 tall: a 72 photo with 12 above and below. A thing that needs the person is 152: the same row, 12, then a 44 row of actions. A tile in the grid is a square photo the width of its column, 8, a 20 line, 4, a 20 line.
+7. **A pill is balanced at its icon** (agent decision A9; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "the padding for the live little sticker over the patagonia vest feels a little off"). At an icon end the padding is one step less than at a text end: `--s-3` and `--s-4` in a button, `--s-1` and `--s-2` in a tag. A tag is 20 tall with a 12 icon, so the icon is 4 from the top, the bottom and the near end, and its word ends 8 from the far end.
+8. **One kind, one size** (L37; Ben, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "the spacing i like", "i want you to ensure that there are primitives of it all"; L46). Every part below has one size on a 390 screen, whatever is in it. Sizes are in `tokens.css`. A tile in the grid is a square photo the width of its column, 8, a 20 line, 4, a 20 line.
+
+   | Part | Size | Corner | Inside |
+   |---|---|---|---|
+   | A card that asks for a decision | 350 by 156 | 36 | 16 padding; a 72 row; 12; a 40 row of actions |
+   | A card for an item | 350 by 104 | 36 | 16 padding; a 72 row |
+   | A photo in a card | 72 by 72 | 20, the card's 36 less its 16 | |
+   | A site's logo on a photo | 24: a 20 logo and a 2 ring in the card's color | 12 | on the photo's bottom right corner, 4 outside it |
+   | A tag | 20 tall | 10 | a 12 icon 4 from the near end, text at 13, 8 at the far end |
+   | A notice | 350 by 56 | 28 | 16 left, 12 right; a 24 icon, text at 15, a 20 chevron |
+   | A button in a card | 40 tall, in a 44 touch area | 20 | 20 at each text end |
+   | An icon button in a card | 40 by 40, in a 44 touch area | 20 | |
+   | The nav | 350 by 44 | | the wordmark left, the inbox right in a 44 target |
+   | A count | at least 20 by 20 | 10 | text at 13, a 2 ring in the page color |
+
+   Gaps: 12 inside a card, 16 between cards, 32 between sections, 8 from the nav to what follows it.
 9. **The foot of a page** (agent proposal, R31; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "you need consider footers too. and spacing. and all the sub options that might need to be at the bottom of pages"). A page that scrolls ends with 32 and then the 34 of the home indicator. A bar pinned to the foot holds the page's one act and nothing else, in buttons of `--button-h`, 16 above the safe area, and a page has one only when its act is not in its first 844. What a person can do to the page's subject that is not today's decision sits in plain ruled rows at the end of the page, with the one that cannot be undone last.
 10. **One number first** (agent proposal, R31; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "minimizing the amount of info and allowing the user to see more info if needed truly"). Where a sum stands behind an amount, the page shows the amount and one line that opens the sum. The sum is never open on arrival, except on a sale.
 
@@ -274,8 +299,8 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 
 ### Article 9. Shape, depth and texture
 
-1. **Radius scale:** 8 (photos inside cards), 14 (cards), 20 (sheets), pill (buttons, chips).
-2. **Depth:** one of two, chosen per medium and kept: hairline rules (1 px black at 8%) or one soft shadow (`0 1px 2px` plus a wide faint blur). Never both on one surface, no colored glow on white except the one under the black pill (C4), never glass. The app uses hairlines. Whether the receipt (L41) may be the one thing with the shadow is open as R31.
+1. **Radius scale:** 20 (photos, sheets), 36 (cards), pill (buttons, chips, tags, notices). A photo in a card takes the card's corner less the card's padding, 36 less 16, so the two corners share a center.
+2. **Depth:** one of two, chosen per medium and kept: hairline rules (1 px black at 8%) or one soft shadow (`0 1px 2px` plus a wide faint blur). Never both on one surface, no colored glow on white except the one under the black pill (C4), never glass. The app uses hairlines between the rows of a list, and `--shadow-card` under a card that lies on the page: a 1 px edge at 5% and two blurs at 6%, in light only (Art. 5, Dark mode, line 6). A card never has a border as well. The receipt (L41) is a card of paper and takes the same shadow.
 3. **No texture.** No grain and no lines, on the field or anywhere else (Ben, rounds 6 and 7).
 
 ### Article 10. Icons and logos
@@ -389,7 +414,7 @@ Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-c
 | B17 | Spacing scale (Art. 7.1) | Every gap inside a component ∈ {0, 4, 8, 12, 16, 20, 24, 32, 48, 64}; canvas margins and safe areas come from Part III. Text stays inside the margins; a photo stays inside them or runs to the edge; web text is no wider than the content width | Script |
 | B18 | Inside tighter than between (Art. 7.2) | For each card, max internal gap < gap to its sibling | Not built |
 | B19 | No box in a box (Art. 7.3) | No bordered or filled element inside another bordered or filled element, except photos, buttons and state pills | Not built |
-| B20 | Radius scale (Art. 9.1) | Border radii ⊆ {0, 8, 14, 20, 999} | Script |
+| B20 | Radius scale (Art. 9.1) | Border radii ⊆ {0, 20, 36, 999} | Script |
 | B21 | One depth system (Art. 9.2) | Not both borders and shadows on cards in one view | Script |
 | B22 | One icon set (Art. 10) | All icons from Hugeicons Stroke Rounded | Not built |
 | B23 | Words (Art. 12; copy.md) | `node scripts/copy-lint.mjs` clean or each hit justified; no `!`, `—` or emoji | Script |

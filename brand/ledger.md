@@ -49,6 +49,9 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L41 | The sum of what you keep is a receipt | [round 10](../product/words.md#2026-11-15-round-10-picks) |
 | L42 | The sale is a snap: its sound is a finger snap | [round 10](../product/words.md#2026-11-15-round-10-picks) |
 | L43 | Where Apple or an expert designer has a settled answer, use it without asking | [round 10](../product/words.md#2026-11-15-round-10-picks) |
+| L44 | Dark mode as Ben saw it: the seven lines in constitution Art. 5, Dark mode. Replaces A5 | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) |
+| L45 | Anything about shipping a sold item is green (mint, with the parcel icon), never brown or yellow. Closes R28 | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) |
+| L46 | The parts and their sizes: the table in constitution Art. 7.8. Corners nest, 36 less 16 is 20. Closes R19 | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) |
 
 ## Decided by agents (means; Ben can veto)
 
@@ -58,11 +61,11 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | A2 | Every color takes black text; white text only on brick, ink and the deep step | constitution Art. 5 |
 | A3 | Two weights per face, sizes by role (13, 15, 18, then Ben's 21, 36, 50), the 4-based space scale | constitution Art. 6 and 7 |
 | A4 | The family: every hue has a tint, a fill and a deep, built the same way | constitution Art. 5, The family |
-| A5 | Dark mode flips only the page, the surfaces and the ink | constitution Art. 5, Dark mode |
 | A6 | The notice card is gray, or marigold tint when it needs the person. Ben left it to the agent in [round 7](../product/words.md#2026-11-15-round-7-picks) | constitution Art. 5, States |
 | A7 | Where Clofie goes: the wordmark, the screen title, the headline of a moment, web and post headlines. Never a number, never words a person wrote. Ben asked for the classing in [round 8](../product/words.md#2026-11-15-round-8-picks) | constitution Art. 6, [the reasons](explore/round-9/clofie-use.md) |
 | A8 | Type is centered by its ink: a label is trimmed to its cap height and baseline, and Clofie moves down .12 em where text cannot be trimmed. Ben asked for the tailoring in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 6.10, [the numbers](../research/cross-cutting/ben/brand-round-11.md) |
-| A9 | A pill is balanced at its icon: one step less padding at an icon end, and a tag is 24 with a 16 icon. Ben saw the imbalance in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 7.7 |
+| A9 | A pill is balanced at its icon: one step less padding at an icon end, and a tag is 20 with a 12 icon. Ben saw the imbalance in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 7.7 |
+| A10 | Four states by color and no fifth: state fills stay .05 apart in Oklab under simulated protan and deutan vision. Ben is color blind ([dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks)) | constitution Art. 5, Four states by color |
 
 ## Open (Ben picks; round 11)
 
@@ -72,11 +75,9 @@ Round 10 picks and notes are in [words.md](../product/words.md#2026-11-15-round-
 |---|---|---|---|
 | R17 | Which gradients are in the set, and how soft, how fast and how deep they are | Nine named fields in a loop, and any three ring colors with no two near opposite. Ben left the lab at Home, depth 50, softness 55, drift 26 s | As Ben left the lab, in the mocks |
 | R18 | Deeper colors | A: none. B: one stronger point in each gradient and the deep step for the icon in a state tag. C: deep fills with white text | B (agent), in the mocks |
-| R19 | Spacing by relationship, and radii that nest (boxes at 20) | Yes or no | yes (agent), in the mocks |
 | R20 | Paper tags | Keep, drop, or only on photos | only on photos (agent) |
 | R23 | Which color goes where | The order of seven questions in constitution Art. 5, yes or no. Its line 5 follows R33 | yes (agent) |
 | R26 | Wording that came from building the mocks and from the thread "Build the brand system for everything": the wordmark's clear space, misuse list and deck line (C1), a frozen frame of the field (C2), logos in a row and on white (C5), a view the field fills is exempt from the one-third rule (Art. 5.2), a photo may sit on the field in the field's own card (Art. 5.4), leading and tracking off the app (Art. 6.12) | Each is marked as a proposal where it sits in the constitution. Yes, or reword | yes (agent) |
-| R28 | The color of "shipping", now that sky is live | A: lilac. B: pink. C: peach, which reads as cardboard and breaks L40: it sits .036 from needs you | A (agent) |
 | R29 | An item in a feed. Ben: the gray box "doesn't feel as separate". Replaces R16 | A: a row on white with a hairline between rows, so a box means "this needs you" (and L16 holds). B: the gray box. C: a darker gray box | A (agent) |
 | R30 | Failed and ended, which "kinda blend in a bit" | Failed is a brick fill with white text, the one loud tag. Ended is a darker gray with ink text, and its photo is washed to 55%. Yes or no | yes (agent) |
 | R31 | The item page: the receipt is white paper with the one shadow; the page shows what you keep and the receipt opens on a tap; the things you can do to a listing are plain rows at the foot | Yes, or reword | yes (agent) |
