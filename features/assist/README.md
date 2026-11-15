@@ -24,13 +24,23 @@ The buying side is a conversation over the search and the engines: words or a ph
 | `market_store {function, args}` | governed SQL functions on the Databricks workspace through the Statement Execution API; Genie (`app/src/edge/genie/genie.ts`) for a question no function covers | rows, the SQL, the tables read, `row_count`, `as_of` | the corpus of listings (MI4): until it lands, the functions answer what the workspace holds and say what it does not |
 | `web_search` | Anthropic's server tool `web_search_20260209`, `max_uses` 3 | results with URL, title and date, cited | |
 
+What the tools can reach today, from a fresh review of the code (2026-11-15, side-session note `buy-spec-review-1.md`), and so what an answer says:
+- A visitor's search reaches Poshmark and Dupe only. Depop, Mercari and eBay need the cloud browser (the Harness) or a linked account, and each says so in the basis instead of reading as empty. Dupe rows are retail, commercial links, shown and never stored.
+- `search_market` computes, in code, per site: count, median ask and likes per listing (likes only where the site shows them, Poshmark today). So the model never computes a median.
+- `value_item` needs the sold reads switched on (`SECONDHAND_LIVE_SITES`); when they are off it says not connected. Its product id is a slug of the query.
+- `where_to_list` has no sale curve anywhere, so chance and time to sell are empty and the answer says "fees only". The keep per site after fees is real.
+- `price_trend` needs a noise band nobody supplies yet, so its direction reads "noise" and it says so. Poshmark's sold rows carry the listing date, not the sale date.
+- Genie answers signed-in people only, within 30 s.
+
+The gate's matching is by equal value, so numbers are rewritten to one unit-tagged token on both sides before it runs (`$1,299` and 129900 cents become `usd1299`, `12%` and 0.12 become `pct12`), and each number is its own claim. That way "12%" is never backed by an unrelated 12, and "not enough data: 3 listings" keeps its 3. The log records the input's length, a hash, whether a photo was attached and every tool input; never the raw text or the photo.
+
 A photo goes to the model as an image block only when the person sends it with their own ask. The model's reading of it (kind, brand, model, material) is labelled "read from your photo" and is never a measured fact; `search_market` then confirms it with matching rows, and the count of matches is the evidence. Capture's identify job (identity F6) replaces the reading when it lands. Nothing personal is logged: the log records tool names, counts, ms, tokens and cost, never the photo or the text.
 
 **What the answer must do.**
 - It says which parts we measured and which come from the web, each with its source: our tool results by their citation id or site and read time, web results by URL.
 - A number appears only if a tool returned it this turn, with what it rests on (count, sites, dates, asking or sold). When the basis is thin it says so and names the count.
 - Where a platform's audience stands in for a generation, it says so and cites the source for the audience claim.
-- Before it is sent, the draft runs through the claim gate (`app/src/edge/gate/gate.ts`): every number in the text is its own claim, and the facts are the numbers the tools returned plus the person's own words. A sentence with an unbacked number is cut, and the count of cuts is returned with the answer.
+- Before it is sent, the draft runs through the claim gate (`app/src/edge/gate/gate.ts`): every number in the text is its own claim, and the facts are the numbers the tools returned plus the person's own words. A sentence with an unbacked number is cut, and the count of cuts is returned with the answer (how numbers are matched: below the tool table).
 
 **Widgets in the answer.** The model writes a tag in its text, `[widget:result_id]`, for example "The asks run [price_range:r2] and have eased [price_trend:r3]." Code draws the widget from that result's rows, so the model never types the numbers a chart shows. This is a deliberate change from Nate's example (`[price graph:iphone16-678 iphone17-999]`): there the numbers live in the model's text, and nothing checks them.
 

@@ -61,6 +61,21 @@ What it says:
 - Building the rows inside the page at the first card and returning them takes 0.1 to 0.4 s and moves 12 to 50 KB, about a hundredth of the HTML. A read then costs about 2.0 to 3.0 s (*computed* from the columns: first card plus rows built in the page), against 5.0 s today.
 - 240 a page costs about half a second more than 60 at the first card.
 
+## After the in-page parser landed, about 11:15 to 11:25 UTC
+
+Main at 64121ba4. The eBay read now builds its rows inside the page (`parsed: "page"` in the module's own log line). Observed:
+
+| Run | Reads | Rows a read | Seconds | Bytes out of the page | `waited_ms` |
+|---|---|---|---|---|---|
+| Three generic queries | 3 | 240 | 5.38, 5.15, 4.96 | not captured | not captured |
+| Three of the slice's long queries | 3 | 240 | 4.65, 4.87, 4.79 | 124,081; 123,675; 120,878 | 881; 1,500; 1,281 |
+| The slice's 32 queries again, one read every 10.5 s | 31 of 32 answered | 6,066 in all | p50 10.35, p95 12.63 | not captured | not captured |
+
+What it says, plainly:
+- The saving in bytes is real: about 124 KB leaves the page where 4.3 to 4.5 MB of HTML did, about a thirty-fifth.
+- The saving in seconds is not there yet. Six direct reads took 4.7 to 5.4 s, against a 5.03 s median before the change. The read still waits for DOM ready and then spends 0.9 to 1.5 s waiting for a card that the phase timings above show is already in the page: that wait is the fault to find, and with navigation ending at the first byte the read should cost about 2.0 to 3.0 s.
+- One 32-read run measured a 10.35 s median, double the six direct reads taken minutes apart with the same code. It is unexplained (*not-found*: no log lines were kept for that run). It has to be rerun with the log kept before anyone quotes a median for the in-page lane.
+
 ## Not shown
 
 No distribution (20 reads a site at the product's pace is the benchmark's job), no cost per read (browser minutes were not read back from the vendor), no sold search, no Facebook, no Mercari.
