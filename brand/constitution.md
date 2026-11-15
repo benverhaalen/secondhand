@@ -477,7 +477,7 @@ Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-c
 | B10 | One black pill per decision (C4) | At most one black pill in a box and in a card (a `data-part`); none in a medium that has no buttons | Script |
 | B11 | Logos not names (C5) | No marketplace name as visible text where a logo slot exists; logo `aria-label` present | Not built |
 | B12 | Money says what it is, with no highlight (C6) | Each amount has words in its row or block that say what it is, and no band of color behind it | Script |
-| B13 | Weights (Art. 6.1) | Text is `--w-text`, 500, in every medium (Ben: "ensure font goes 500"), and the display face is 600. No other weight, no italic, no stroke | Script |
+| B13 | Weights (Art. 6.1) | Computed `font-weight` values ⊆ {500, 600}. Text is `--w-text`, 500, in every medium (Ben: "ensure font goes 500"), and the display face is 600. No other weight, no italic, no stroke | Script |
 | B14 | Size steps only (Art. 6.2) | At the default text size, computed sizes ⊆ the medium's set. Web: at 390 and 1440 wide each display size equals its endpoint, and text sizes ⊆ {15, 18}. The wordmark is exempt (its size is in Part III) Off the app, a size of 32 and up is set at leading 1.1 and tracking `-0.02em`, and the wordmark at `-0.01em` (Art. 6.12) | Script |
 | B15 | No banned faces (Art. 6) | Computed `font-family` contains no Inter; loaded fonts match the picks | Script |
 | B16 | Sentence case (Art. 6.5) | No phrase is all caps. One word in capitals and title case are warnings, because a name may be written that way | Script |
