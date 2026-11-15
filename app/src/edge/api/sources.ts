@@ -24,8 +24,7 @@ export const handlers: Record<string, Handler> = {
       const pause = readLedger.paused(row.site);
       return { ...row, paused_until: pause ? new Date(pause.until_ms).toISOString() : null };
     });
-    // sources.health in spec/examples/buy.json fixes the empty-ledger body to { routes }; add reads there before making it unconditional.
-    return { ...seed, body: { routes, ...(reads.length ? { reads } : {}) } };
+    return { ...seed, body: { routes, reads } };
   })),
 };
 export const manifest = manifestFor(handlers);

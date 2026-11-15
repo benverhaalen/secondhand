@@ -39,7 +39,7 @@ async function search(text: string, visitor: string) {
   return { saved, frames };
 }
 
-function reads(ebayRouted: boolean, completions: number[], ebayStarts: number[]) {
+function reads(ebayRouted: boolean, completions: number[], ebayStarts: number[], ebayEnds: number[]) {
   ports.dupe = { search: async () => {
     await sleep(300); completions.push(performance.now());
     return { ok: true, data: { rows: [{ id: 'dupe-demo', title: 'levi 501', price_cents: 1200, currency: 'USD', url: 'https://dupe.com/demo',
@@ -57,8 +57,9 @@ function reads(ebayRouted: boolean, completions: number[], ebayStarts: number[])
   // This fake has a Facebook route only; eBay fallback immediately answers no_route.
   ports.apify = apify;
   if (ebayRouted) {
+    ports.deadline_ms = 12500;
     ports.harness = createHarness({ adapters: ebayPageAdapters({ signed_in: false, page: async () => {
-      ebayStarts.push(performance.now()); await sleep(400); completions.push(performance.now());
+      ebayStarts.push(performance.now()); await sleep(400); ebayEnds.push(performance.now()); completions.push(performance.now());
       return { status: 200, html: fixture('../harness/sites/ebay/fixtures/page-search.html') };
     } }) });
     ports.routed = site => site === 'ebay';
@@ -66,9 +67,9 @@ function reads(ebayRouted: boolean, completions: number[], ebayStarts: number[])
   }
 }
 
-for (const ebayRouted of [false, true]) test(`three unsigned searches settle at their slowest runnable read; eBay routed=${ebayRouted}`, async () => {
-  const completions: number[] = [], ebayStarts: number[] = [];
-  reads(ebayRouted, completions, ebayStarts);
+for (const ebayRouted of [false, true]) test(`three unsigned searches omit Facebook and settle at their slowest runnable read; eBay routed=${ebayRouted}`, async () => {
+  const completions: number[] = [], ebayStarts: number[] = [], ebayEnds: number[] = [];
+  reads(ebayRouted, completions, ebayStarts, ebayEnds);
   for (let i = 0; i < 3; i++) {
     completions.length = 0;
     const at = performance.now();
@@ -79,15 +80,19 @@ for (const ebayRouted of [false, true]) test(`three unsigned searches settle at 
     }
     const settled = frames.find(f => f.event === 'answer.settled')!.data.answer as { ms: { first: number; settled: number } };
     assert.ok(performance.now() - Math.max(...completions) < 150, 'answer.settled waited after the slowest routed stub');
-    assert.ok(settled.ms.first >= 290 && settled.ms.first <= 450, `first useful answer did not follow the 300 ms read: ${settled.ms.first}`);
-    assert.ok(settled.ms.settled >= 1490);
-    if (!ebayRouted) assert.ok(performance.now() - at < 1650, 'a not-routed source delayed answer.settled');
+    assert.ok(settled.ms.first < 100, 'unrouted stages should report immediately');
+    const dupe = frames.find(f => f.event === 'answer.partial' && f.data.site === 'dupe')!;
+    const read = (dupe.data.answer as { searched: { site: string; ms: number }[] }).searched.find(s => s.site === 'dupe')!;
+    assert.ok(read.ms >= 290 && read.ms <= 450, `Dupe read did not take its own 300 ms: ${read.ms}`);
+    assert.ok(!saved.stages.some(s => s.name === 'site:facebook'), 'a visitor started a person-only read');
+    assert.ok(settled.ms.settled >= 590);
+    if (!ebayRouted) assert.ok(performance.now() - at < 750, 'a not-routed source delayed answer.settled');
   }
   if (ebayRouted) {
     const pace = SOURCES.find(s => s.id === 'ebay')!.pace;
     const gap = Math.max(pace.min_gap_ms, 60000 / pace.per_minute);
     assert.equal(ebayStarts.length, 3);
-    for (let i = 1; i < 3; i++) assert.ok(ebayStarts[i] - ebayStarts[i - 1] <= gap + 150, 'eBay waited on a slot belonging to a read that did not run');
+    for (let i = 1; i < 3; i++) assert.ok(ebayStarts[i] - ebayEnds[i - 1] >= gap - 10 && ebayStarts[i] - ebayEnds[i - 1] <= gap + 150, 'eBay waited on more than its own end-to-start pace gap');
   }
 });
 
@@ -111,7 +116,7 @@ test('browser-start allowance extends a read deadline without adding a wait befo
   assert.ok(performance.now() - endedAt < 50, 'browser-start allowance waited after its own read answered');
 });
 
-test('cached-then-live refresh waits only for its own pace slot and its own second read', async () => {
+test('SR5 a fresh shared public read serves the second search without another read or pace slot', async () => {
   ports.sources = ports.sources.filter(s => s.id === 'poshmark').map(s => ({ ...s, pace: { per_minute: 120, min_gap_ms: 500 } }));
   const starts: number[] = [], ends: number[] = [];
   ports.fetchPage = async () => {
@@ -119,9 +124,11 @@ test('cached-then-live refresh waits only for its own pace slot and its own seco
     return { ok: true, status: 200, html: fixture('../../../../spec/fixtures/pages/poshmark.html'), final_url: '', rung: 'plain', ms: 80, searched: [] };
   };
   await search('cached query', 'vis_cached');
-  const { frames } = await search('cached query', 'vis_cached');
-  assert.equal(starts.length, 2, 'cached-then-live made an extra read');
-  assert.ok(starts[1] - starts[0] >= 490 && starts[1] - starts[0] < 650, 'refresh waited on more than its own pace gap');
-  assert.equal(frames.filter(f => f.event === 'answer.partial').length, 2, 'cached batch and live delta must both land');
-  assert.ok(performance.now() - ends[1] < 150, 'settled waited after the live refresh answered');
+  const secondAt = performance.now();
+  const { saved, frames } = await search('cached query', 'vis_cached_second');
+  assert.equal(starts.length, 1, 'a fresh public read was fetched again instead of shared');
+  assert.ok((saved.result as { searched: { cached?: boolean }[] }).searched[0].cached);
+  assert.equal(frames.filter(f => f.event === 'answer.partial').length, 1, 'the shared batch must land once');
+  assert.ok(performance.now() - secondAt < 150, 'a cache hit waited for a pace slot');
+  assert.ok(performance.now() - ends[0] < 150, 'settled waited after the shared read was available');
 });

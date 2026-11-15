@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { searchAll, searchSite, searchSource, memoryApifyRuns } from './search.ts';
 import { SOURCES } from './sources.ts';
+import { createHarness, fakeAdapter } from '../../harness/protocol.ts';
 import type { PageResult } from '../fetch.ts';
 import { _reset, runPlan, searchParams } from '../run.ts';
 
@@ -48,7 +49,7 @@ test('eBay active page source is on without approval; sold needs a person and th
   const source = SOURCES.find(s => s.site === 'ebay')!;
   assert.equal(source.on, true); assert.equal(source.lane, 'harness'); assert.equal(source.needs_ask, false);
   assert.ok(source.pace); assert.equal(source.pace.per_minute, 6);
-  const result = await searchSource(source, 'x', 'sold', { caller: 'background' });
+  const result = await searchSource(source, 'x', 'sold', { caller: 'background', harness: createHarness({ adapters: [fakeAdapter('ebay', 'search')] }) });
   assert.equal(result.searched.outcome, 'needs_account');
 });
 
@@ -139,7 +140,7 @@ test('Dupe is the first MCP source; Depop uses its harness and Facebook uses per
   assert.equal(SOURCES.find(s => s.id === 'depop')!.lane, 'harness');
   assert.equal(SOURCES.find(s => s.id === 'facebook')!.on, true);
   assert.equal(SOURCES.find(s => s.id === 'facebook')!.lane, 'apify');
-  const mercari = await searchSource(SOURCES.find(s => s.id === 'mercari')!, 'jeans', 'search', { caller: 'person' });
+  const mercari = await searchSource(SOURCES.find(s => s.id === 'mercari')!, 'jeans', 'search', { caller: 'person', harness: createHarness({ adapters: [fakeAdapter('mercari', 'search')] }) });
   assert.equal(mercari.searched.outcome, 'needs_account');
   assert.equal(mercari.searched.reason, 'needs your account');
 });
