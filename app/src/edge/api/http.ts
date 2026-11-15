@@ -37,6 +37,8 @@ export type Deps = {
   log: Log;
   now: () => number;
   kv: ReturnType<typeof kv>;
+  // shortcut: reset seams kept so the 17 existing route tests need no edit; new tests call resetRequestState().
+  idem: { clear(): void }; visits: { clear(): void };
   visitorPerMinute: number;
   connectingAddress: (req: Request) => string | null;
   started: boolean;
@@ -49,6 +51,8 @@ export const deps: Deps = {
   log: createLog({ src: 'edge.api', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }),
   now: () => Date.now(),
   kv: kv(db()),
+  idem: { clear: () => deps.kv.clear('idem') },
+  visits: { clear: () => deps.kv.clear('visit') },
   visitorPerMinute: 30,
   // Deployment must name a client-address header that the host overwrites.
   connectingAddress: (req) => peerHeader ? req.headers.get(peerHeader)?.trim() || null : null,
