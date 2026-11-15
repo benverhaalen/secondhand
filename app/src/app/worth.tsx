@@ -161,7 +161,7 @@ export default function Worth() {
         {glance ? null : <Choice id="worth-sources" icon="search-01" label="Check the sales" line={aside.length ? `${aside.length} left out` : 'Leave out any that aren’t the same'} leads onPress={() => setSources(true)} />}
       </Stack>
 
-      <Section title="You keep">
+      <Section title="You get">
         <List>
           {rows.map(r => (
             <KeepRow key={r.site} site={r.site}

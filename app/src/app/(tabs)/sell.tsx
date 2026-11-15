@@ -55,7 +55,7 @@ function tileOf(w: World, it: Item): { state: TagState; word?: string; fact: Til
     : { label: 'Not listed' };
   const worth: TileFact = it.valuation?.state === 'shown' ? { label: 'Worth', amount: wholeRange(it.valuation.range) } : { label: 'Pricing' };
   const order = w.orders.find(o => o.item_id === it.id && o.kind === 'sale');
-  const kept: TileFact | null = order ? { label: 'You keep', amount: usd(order.price_cents - order.fees_cents - order.shipping_cents) } : null;
+  const kept: TileFact | null = order ? { label: 'You get', amount: usd(order.price_cents - order.fees_cents - order.shipping_cents) } : null;
   if (it.state === 'kept') return { state: 'ended', word: 'Kept', fact: worth };
   if (it.state === 'unsold') return { state: 'ended', word: 'Unsold', fact: listed, faded: true };
   const p = pill(w, it);
@@ -78,7 +78,7 @@ function tileOf(w: World, it: Item): { state: TagState; word?: string; fact: Til
       // bank. The tile carries the word and what lands; the dates and instant payout sit on the order, on the item page.
       if (!order || !kept) return { state: 'sold', fact: listed };
       const ready = order.clocks.release_at && order.clocks.release_at <= w.now;
-      const word = order.state === 'released' ? 'In your bank' : ready ? 'Ready on the site' : ['shipped', 'delivered', 'claim_window', 'handed_over'].includes(order.state) ? 'On its way' : 'You keep';
+      const word = order.state === 'released' ? 'In your bank' : ready ? 'Ready on the site' : ['shipped', 'delivered', 'claim_window', 'handed_over'].includes(order.state) ? 'On its way' : 'You get';
       return { state: order.state === 'released' ? 'paid' : 'sold', word: order.state === 'released' ? 'Paid' : undefined, fact: { label: word, amount: kept.amount } };
     }
     case 'Slow': return { state: 'stuck', word: 'Slow', fact: listed };

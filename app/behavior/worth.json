@@ -17,7 +17,7 @@
     {
       "state": "check",
       "route": "/worth",
-      "shows": "You keep"
+      "shows": "You get"
     },
     {
       "state": "unsure",
@@ -121,13 +121,6 @@
       "id": "worth-retry",
       "does": "checks the sales again",
       "at": "/worth?state=failed"
-    },
-    {
-      "control": "A site’s sales, in the sheet",
-      "on_tap": "leaves that site’s sales out, or puts them back; the range is worked out again",
-      "id": "worth-sale-mercari",
-      "does": "leaves that site’s sales out, or puts them back",
-      "at": "/worth?world=clearing&product=pr_dunk"
     }
   ],
   "flows": [
@@ -146,7 +139,7 @@
         "type HEG-001",
         "enter"
       ],
-      "then": "the range and You keep appear"
+      "then": "the range and You get appear"
     },
     {
       "flow": "sources",
@@ -195,7 +188,7 @@
       "why": "Ben, 06:19: \"you should be able to obviously investigate. Like human in the loop is very important\" (product/words.md#2026-11-15-notes-on-the-first-gallery-today-must-explain-itself-you-is-a-dashboard-the-camera-frames-the-listing-photo). The person knows their thing better than a match does; a site whose sales are not the same thing is left out and the range follows."
     },
     {
-      "decision": "You keep: one row per site, best first, logo, how long it takes there, and the keep range at the right edge",
+      "decision": "You get: one row per site, best first, logo, how long it takes there, and the keep range at the right edge",
       "why": "pages §6.11 \"for an owner: what you'd keep per site\"; money.md D9 via youKeep; the amount sits where every marketplace row puts it."
     },
     {
@@ -239,7 +232,7 @@
       "why": "Worth is always one thing on one page, so it has no list to be empty, single or crowded (Screen skip)."
     },
     {
-      "decision": "With sales left out, the range is the lowest to the highest of the sales kept, and says \"From the sales you kept\"; a left-out site keeps nothing in You keep",
+      "decision": "With sales left out, the range is the lowest to the highest of the sales kept, and says \"From the sales you kept\"; a left-out site keeps nothing in You get",
       "why": "appraise: every number from sold comparables. A number the person set aside never feeds the value."
     },
     {

@@ -71,7 +71,8 @@ test('sell: every shelf folds and opens from its header, the count still showing
   const before = await head();
   await screen.tap('shelf-needs_you-fold');
   await screen.page.waitForFunction(() => document.querySelector('[data-shelf="needs_you"]')?.getAttribute('data-folded') === 'true');
-  assert.equal(await screen.page.locator('[data-shelf="needs_you"] [data-part="tile"]').count(), 0, 'folded: no tiles');
+  // The tiles fade out in the feedback time, then leave.
+  await screen.page.waitForFunction(() => document.querySelectorAll('[data-shelf="needs_you"] [data-part="tile"]').length === 0, null, { timeout: 2000 });
   assert.match(await screen.page.locator('[data-shelf="needs_you"] [data-part="shelf-head"]').innerText(), /Needs you\s*\d+/);
   assert.deepEqual(await head(), before, 'the header stays where it was');
   await screen.tap('shelf-needs_you-fold');

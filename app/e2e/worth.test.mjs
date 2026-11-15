@@ -50,7 +50,7 @@ test('worth: the person can leave out sales that aren’t the same, and the rang
   assert.ok(before, 'there was a range before');
 });
 
-test('worth: a left-out site keeps nothing in You keep', async () => {
+test('worth: a left-out site keeps nothing in You get', async () => {
   const screen = await app.open('/worth?world=clearing&product=pr_dunk');
   await screen.tap('worth-sources');
   await screen.tap('worth-sale-ebay');
@@ -63,7 +63,7 @@ test('worth: a left-out site keeps nothing in You keep', async () => {
 test('worth: a site with too few sales shows no number', async () => {
   // The Dunk Low has no sold range on Poshmark or Facebook in the market data.
   const screen = await app.open('/worth?world=new&product=pr_dunk');
-  await screen.shows('You keep');
+  await screen.shows('You get');
   const row = screen.page.locator('[data-site="poshmark"]');
   await row.waitFor({ state: 'visible' });
   assert.doesNotMatch(await row.innerText(), /\$/);
@@ -71,7 +71,7 @@ test('worth: a site with too few sales shows no number', async () => {
 
 test('worth: each site row says what the person keeps there, after fees, never more than it sold for', async () => {
   const screen = await app.open('/worth?world=clearing&product=pr_dunk');
-  await screen.shows('You keep');
+  await screen.shows('You get');
   const rows = await screen.page.locator('[data-part="keep-row"]').evaluateAll(els => els.map(e => ({ site: e.getAttribute('data-site'), text: e.innerText })));
   assert.ok(rows.length >= 3, `expected a row per site, got ${rows.length}`);
 });
@@ -98,7 +98,7 @@ test('worth: a typed model number gives the value when the photo was not enough'
   const input = screen.page.getByTestId('worth-model-field-input');
   await input.fill('HEG-001');
   await input.press('Enter');
-  await screen.shows('You keep');
+  await screen.shows('You get');
 });
 
 // edge-cases §4: "I don't know" is an answer. No number, and selling still works from the photos.
@@ -130,7 +130,7 @@ test('worth: a typed price far from the sales asks once', async () => {
 test('worth: the break content holds: a huge range and a long title stay on the screen', async () => {
   for (const id of ['it_huge', 'it_long']) {
     const screen = await app.open(`/worth?world=edge&item=${id}`);
-    await screen.shows('You keep');
+    await screen.shows('You get');
     const over = await screen.page.evaluate(() => [...document.querySelectorAll('[data-screen="worth"] *')].filter(e => e.getBoundingClientRect().right > innerWidth + 1).length);
     assert.equal(over, 0, `${id}: something runs off the screen`);
   }

@@ -33,7 +33,7 @@ import { Tag } from './tag';
 const SHELF_MS = typeof MOTIONS.shelfFold.ms === 'number' ? MOTIONS.shelfFold.ms : motion.select;
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 
-// The second line: what the number is, in secondary ink, then the number in ink ("Listed at $95", "You keep $62").
+// The second line: what the number is, in secondary ink, then the number in ink ("Listed at $95", "You get $62").
 export type TileFact = { label: string; amount?: string };
 
 export function Tile({ id, title, photo, state, word, sites = [], fact, faded = false, select, price, onPress }: {
