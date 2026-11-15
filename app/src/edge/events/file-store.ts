@@ -17,7 +17,7 @@ function validState(value: unknown): value is StoreState {
     && arrayOf(value.jobs, row => strings(row, ['id', 'user_id', 'event_id', 'idempotency_key', 'trace_id', 'created_at']) && typeof row.kind === 'string' && row.kind.length > 0
       && oneOf(row.state, ['queued', 'running', 'done', 'failed']) && record(row.args)
       && Number.isInteger(row.attempts) && (row.attempts as number) >= 0
-      && arrayOf(row.stages, stage => strings(stage, ['name']) && oneOf(stage.state, ['started', 'running', 'arrived', 'failed'])))
+      && arrayOf(row.stages, stage => strings(stage, ['name']) && oneOf(stage.state, ['started', 'running', 'arrived', 'planned', 'failed'])))
     && arrayOf(value.decisions, row => strings(row, ['id', 'user_id', 'kind', 'subject', 'why'])
       && oneOf(row.state, ['open', 'acting', 'answered', 'failed', 'expired', 'superseded'])
       && arrayOf(row.options, option => strings(option, ['id', 'label'])))
