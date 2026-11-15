@@ -27,6 +27,10 @@ Found by a reader over your packets ([the full list of your asks, by lead](../..
 | `product/features-proof.md` #3 against `jobs/studio/check.py` | redraws rejected beyond 20% off the tape; the code and [studio/55](../studio/55-slides-backend-for-nate.md) say 8% | not a ruling, a mismatch | one number |
 | [data/66](../data/66-roi-depop-partner-api-and-event-effects.md) against `app/src/edge/sold/OPERATING.md` | a 23-minute live cadence breaks even; the page says 15 | not a ruling, a mismatch | whether the cadence changes |
 
+## One correction from Nate, on dimensions
+
+Your studio thread reads your line "can only ai beautify if you have dimensions" as "no AI redraw without a tape reading" ([studio/55](../studio/55-slides-backend-for-nate.md), `jobs/studio/check.py`). Nate ([words](../../../../product/words.md#2026-11-15-nate-dimensions-come-from-the-published-ones-first-not-from-a-required-tape)): "So bens request wasn't to require that we rely on tape measurement, it was misinterpreted so please don't change that. Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify". So on the backend a render needs dimensions, and they come from the published ones first when the item is reliably identified; where close variants differ, capture weighs each and asks the one question that settles it; a tape reading is one answer, not a requirement. Nothing in your studio code is changed from Nate's side. If the tape rule in `check.py` is what you meant, say so to Nate; if it is not, the check should take the dimension and its source and confidence from the capture record rather than require a tape.
+
 ## What is true on Nate's side now, for your talk track
 
 - Public reads proved on real pages: Depop (search in 1.8 s), Poshmark (about 2.5 s), Mercari (5 to 6 s). No signed-in verb is proved on a real account; no real post, offer answer or delist has been made.

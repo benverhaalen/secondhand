@@ -1604,3 +1604,9 @@ Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages
 > read ebay pages anyway
 
 Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
+
+## 2026-11-15 nate dimensions come from the published ones first, not from a required tape
+Nate, build session (orchestrator), 2026-11-15 about 06:30 Central, after the orchestrator relayed Ben's studio rule as "no AI redraw without a tape measurement".
+> So bens request wasn't to require that we rely on tape measurement, it was misinterpreted so please don't change that. Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 67](../.agents/team/packets/team/67-nates-rulings-and-where-they-meet-bens-plans.md).
