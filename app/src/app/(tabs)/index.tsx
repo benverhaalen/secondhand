@@ -13,7 +13,8 @@ import {
   DecisionCard, EmptyState, Feed, FootButton, List, Nav, Notice, Pill, Photo, QueueView, Row, Screen, Section, Sheet, SiteBadge, Skeleton,
   Stack, TopSlot, Txt, UndoToast, Approve, Guess, type PhotoSrc, type QueueEntry,
 } from '@/ui';
-import { JOB_MS, backAt, cards as derive, entries as queueEntries, group, handledLine, log as autoLog, notices as deriveNotices, top as deriveTop, inbox, fit, single, type Action, type Card } from '@/today/cards';
+import { stopsWorld } from '@/today/stops';
+import { JOB_MS, backAt, cards as derive, entries as queueEntries, group, handledLine, log as autoLog, notices as deriveNotices, top as deriveTop, inbox, fit, sales as twoSales, single, type Action, type Card } from '@/today/cards';
 
 type Status = { s: 'working' | 'failed'; step?: string; option?: string };
 type Toast = { id: string; text: string; undo: () => void };
@@ -25,8 +26,9 @@ const cents = (s: string) => Math.round(Number(s.replace(/[^0-9.]/g, '')) * 100)
 export default function Today() {
   const params = useLocalSearchParams<{ world?: string; fail?: string; state?: string }>();
   const offline = params.state === 'offline';
-  const name = (WORLD_NAMES as string[]).includes(params.world ?? '') ? (params.world as AnyWorld) : 'clearing';
-  const w = useMemo(() => world(name), [name]);
+  // stops: the clearing world on a day things went wrong (app/src/today/stops.ts, spec/edge-cases.md §1 and §7).
+  const name = params.world === 'stops' ? 'stops' : (WORLD_NAMES as string[]).includes(params.world ?? '') ? (params.world as AnyWorld) : 'clearing';
+  const w = useMemo(() => (name === 'stops' ? stopsWorld : world(name)), [name]);
   // Deadlines are in the world's time; the countdown runs on the real clock from the moment the page opened.
   const [shift] = useState(() => Date.now() - ms(w.now));
   const failOnce = useRef(new Set((params.fail ?? '').split(',').filter(Boolean)));
@@ -37,11 +39,12 @@ export default function Today() {
   const [status, setStatus] = useState<Record<string, Status>>({});
   const [toast, setToast] = useState<Toast | null>(null);
   const [more, setMore] = useState<Card | null>(null);
-  const [amount, setAmount] = useState<{ card: Card; action: Extract<Action, { do: 'amount' }>; value: string; changed: boolean } | null>(null);
+  const [amount, setAmount] = useState<{ card: Card; action: Extract<Action, { do: 'amount' }>; value: string; changed: boolean; warned?: boolean } | null>(null);
   const [queue, setQueue] = useState<{ card: Card; total: number } | null>(null);
   const [queueStatus, setQueueStatus] = useState<{ s: 'ready' | 'working' | 'failed'; failed?: string }>({ s: 'ready' });
   const [prices, setPrices] = useState<Record<string, string>>({});
   const [logOpen, setLogOpen] = useState(false);
+  const [compare, setCompare] = useState<Card | null>(null);
   const [undone, setUndone] = useState<Set<string>>(new Set());
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
@@ -77,6 +80,7 @@ export default function Today() {
   function act(c: Card, a: Action, value?: number) {
     if (a.do === 'open') return go(a.to);
     if (a.do === 'queue') { setQueue({ card: c, total: c.ids.length }); setQueueStatus({ s: 'ready' }); return; }
+    if (a.do === 'compare') { setCompare(c); return; }
     if (a.do === 'split') { setSplit(s => new Set(s).add(c.key)); return; }
     if (a.do === 'later') { leave(c, backAt(w, c.due), () => {}); return; }
     if (a.do === 'amount' && value == null) { setAmount({ card: c, action: a, value: usd(a.cents), changed: false }); return; }
@@ -137,7 +141,7 @@ export default function Today() {
   // The state, in the names every screen is checked in (.agents/ui-states.json): a world is a state of the page.
   const failing = Object.values(status).some(s => s.s === 'failed') || feed.some(c => c.status === 'failed');
   const state = params.state === 'loading' ? 'loading' : offline ? 'offline' : name === 'new' ? 'new' : !feed.length ? 'empty' : failing ? 'failed'
-    : name === 'flipper' ? 'dense' : name === 'one' ? 'one' : 'typical';
+    : name === 'flipper' ? 'dense' : name === 'one' ? 'one' : name === 'stops' ? 'failed' : 'typical';
   const toastEl = toast ? <UndoToast key={toast.id} id={toast.id} text={toast.text} onUndo={toast.undo} onGone={() => setToast(null)} /> : null;
 
   return (
@@ -193,10 +197,38 @@ export default function Today() {
           <Stack>
             <Txt role="caption" tone="ink-2">{amount.action.name}</Txt>
             <Guess id="amount-value" name={amount.action.name} value={amount.value} numeric changed={amount.changed}
-              onChange={v => setAmount({ ...amount, value: usd(cents(v)), changed: true })} />
-            <Approve id="amount-send" does={`${amount.action.verb} ${amount.value}`} onApprove={() => { const a = amount; setAmount(null); act(a.card, a.action, cents(a.value)); }} />
+              onChange={v => setAmount({ ...amount, value: usd(cents(v)), changed: true, warned: false })} />
+            {/* Under the lowest the person set, it asks once (edge-cases §3): the line says so and a second tap sends it. */}
+            {amount.warned && amount.action.floor ? <Txt role="caption" tone="ink-2">{`Under your lowest, ${usd(amount.action.floor)}. Tap again to send it.`}</Txt> : null}
+            <Approve id="amount-send" does={`${amount.action.verb} ${amount.value}`} onApprove={() => {
+              const a = amount, v = cents(a.value);
+              if (a.action.floor && v < a.action.floor && !a.warned) { setAmount({ ...a, warned: true }); return; }
+              setAmount(null); act(a.card, a.action, v);
+            }} />
           </Stack>
         ) : null}
+      </Sheet>
+
+      {/* A double sale, side by side: each site, the buyer's price, what it keeps and what cancelling it costs (edge-cases §1). */}
+      <Sheet open={!!compare} title="Sold twice" onClose={() => setCompare(null)}>
+        {compare ? (() => {
+          const d = w.decisions.find(x => x.id === compare.ids[0]), two = d ? twoSales(w, d) : [];
+          return (
+            <Stack>
+              <List>
+                {two.map((o, i) => (
+                  <Row key={o.id} lead={<SiteBadge site={o.site} />}
+                    trail={i ? <Pill id={`${compare.key}-keep-second`} kind="second" label="Keep this" onPress={() => { const c = compare; setCompare(null); const a = c.more.find(m => m.id.endsWith('-second')); if (a) act(c, a); }} /> : null}>
+                    <Txt role="body" lines={1}>{`${o.buyer} paid ${usd(o.price)}${i ? '' : ', first'}`}</Txt>
+                    <Txt role="caption" tone="ink-2">{`You keep ${usd(o.keep)}. ${o.cancel}.`}</Txt>
+                  </Row>
+                ))}
+              </List>
+              <Approve id={`${compare.key}-keep-first`} does={two[0] && two[1] ? `Keep ${two[0].buyer}’s, cancel ${two[1].buyer}’s` : 'Keep the first'}
+                onApprove={() => { const c = compare; setCompare(null); act(c, c.primary); }} />
+            </Stack>
+          );
+        })() : null}
       </Sheet>
 
       <Sheet open={logOpen} title="Done for you" onClose={() => setLogOpen(false)}>

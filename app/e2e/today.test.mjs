@@ -10,7 +10,7 @@ let app;
 before(async () => { app = await start(); });
 after(async () => { await app?.stop(); });
 
-const ROUTE = { clearing: '/?world=clearing', new: '/?world=new', flipper: '/?world=flipper' };
+const ROUTE = { clearing: '/?world=clearing', new: '/?world=new', flipper: '/?world=flipper', stops: '/?world=stops' };
 const open = (route = ROUTE.clearing) => app.open(route);
 const count = (s, sel) => s.page.locator(sel).count();
 const text = s => s.page.locator('body').innerText();
@@ -25,7 +25,7 @@ const STATES = {
   working: async () => { const s = await open(); await s.tap('dec_jacket-acc'); await s.shows('Accepting'); },
   done: async () => {
     const s = await open(); await s.tap('dec_jacket-acc'); await s.shows('Accepted $85', { timeout: 4000 });
-    assert.equal(await s.page.getByTestId('dec_jacket-open').count(), 0, 'the answered card left');
+    await s.page.getByTestId('dec_jacket-open').waitFor({ state: 'detached', timeout: 2000 }); // the answered card left, after its fade
     await s.tap('dec_jacket-undo'); await s.page.getByTestId('dec_jacket-open').waitFor({ state: 'visible', timeout: 3000 });
   },
   failed: async () => { const s = await open('/?world=clearing&fail=dec_jacket'); await s.tap('dec_jacket-acc'); await s.shows('The site did not answer', { timeout: 4000 }); await s.shows('Retry'); },
@@ -38,6 +38,10 @@ const STATES = {
     await s.tap('queue-approve'); await s.shows('2 of 40', { timeout: 4000 });
   },
   offline: async () => { const s = await open('/?state=offline'); await s.tap('dec_jacket-acc'); await s.shows('Waiting for signal'); },
+  stops: async () => {
+    const s = await open(ROUTE.stops); for (const t of ['Sold twice', 'Both paid, $42 and $40', '3 sold, after fees', 'Do the Joy-Cons drift?', 'The tag photo is blurry', 'The site shows $44, not your $48']) await s.shows(t);
+    await s.tap('dec_double-compare'); await s.shows(/workpants_jo paid \$42, first/); await s.shows(/Cancelling here marks your seller record/);
+  },
   break: async () => { const s = await open('/?world=edge'); await s.shows('99+'); await s.shows('Accept $10,999.99'); await s.shows('Counter'); assert.equal(await count(s, '[data-part="card-decision"]') > 10, true); },
 };
 
@@ -55,12 +59,20 @@ for (const w of ['new', 'clearing', 'flipper', 'one', 'edge']) test(`today: ${w}
 // The steps that put a control on screen: a sheet or the queue opens first.
 const BEFORE = {
   'dec_jacket-amount': ['dec_jacket-more'], 'dec_jacket-later': ['dec_jacket-more'], 'dec_jacket-go-chat': ['dec_jacket-more'],
-  'log-all': ['handled'], 'queue-approve': ['queue-first_post-review'], 'queue-skip': ['queue-first_post-review'], 'nav-back': ['queue-first_post-review'],
+  'log-all': ['handled'], 'dec_double-keep-first': ['dec_double-compare'], 'dec_jacket-elsewhere': ['dec_jacket-more'], 'queue-approve': ['queue-first_post-review'], 'queue-skip': ['queue-first_post-review'], 'nav-back': ['queue-first_post-review'],
 };
-for (const c of table.controls) test(`today: ${c.id} ${c.does}`, async () => {
+for (const c of table.controls) test(`today: ${c.id} ${c.on_tap}`, async () => {
   const s = await open(ROUTE[c.world ?? 'clearing']);
   for (const id of BEFORE[c.id] ?? []) await s.tap(id);
   await s.tap(c.id);
   await s.saw({ type: 'tap', id: c.id });
   if (c.goes) await s.page.waitForURL(u => new URL(u).pathname === c.goes, { timeout: 3000 });
+});
+
+// An amount under the person's lowest asks once before it goes (edge-cases §3).
+test('today: a counter under the lowest asks once', async () => {
+  const s = await open(); await s.tap('dec_jacket-more'); await s.tap('dec_jacket-amount'); await s.tap('amount-value');
+  await s.page.getByTestId('amount-value-input').fill('60'); await s.page.getByTestId('amount-value-input').press('Enter');
+  await s.tap('amount-send'); await s.shows('Under your lowest, $70. Tap again to send it.');
+  await s.tap('amount-send'); await s.shows('Sending');
 });

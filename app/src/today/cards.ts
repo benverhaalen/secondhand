@@ -19,9 +19,10 @@ export type Act =
   | { do: 'act'; option: string; step: string; done: string }
   | { do: 'open'; to: string }
   | { do: 'queue' }
-  | { do: 'amount'; option: string; name: string; cents: number; verb: string; done: string }
+  | { do: 'amount'; option: string; name: string; cents: number; verb: string; done: string; floor?: number }
   | { do: 'later' }
-  | { do: 'split' };
+  | { do: 'split' }
+  | { do: 'compare' };
 export type Action = { id: string; label: string } & Act;
 
 export type Card = {
@@ -77,6 +78,15 @@ const act = (d: Decision, option: string, label: string, step: string, done: str
 const later = (key: string): Action => ({ id: `${key}-later`, label: 'Later', do: 'later' });
 const open = (key: string, label: string, to: string): Action => ({ id: `${key}-go-${label === 'Open the chat' ? 'chat' : 'item'}`, label, do: 'open', to });
 
+// What cancelling costs on each site: an eBay out-of-stock cancel adds a transaction defect
+// (research/sold/nate/trust-returns-disputes.md §3). Where nothing is known, the line says only what it does.
+export const CANCEL_COST: Partial<Record<Site, string>> = { ebay: 'Cancelling here marks your seller record', depop: 'Cancelling here refunds them' };
+// The sales behind a double sale, first paid first: each site, buyer, price, what it keeps, and what cancelling it costs.
+export function sales(w: World, d: Decision) {
+  return w.orders.filter(o => o.item_id === d.item_id && o.kind === 'sale' && ['paid', 'to_ship'].includes(o.state)).sort((a, b) => ms(a.created_at) - ms(b.created_at))
+    .map(o => ({ id: o.id, site: o.site, buyer: o.buyer, price: o.price_cents, keep: o.price_cents - o.fees_cents - o.shipping_cents, cancel: CANCEL_COST[o.site] ?? 'Cancelling here refunds them' }));
+}
+
 // One card for one decision. Every kind the demo worlds carry has its words here; any other kind falls back to its data.
 export function single(w: World, d: Decision): Card {
   const it = itemById(w, d.item_id);
@@ -87,7 +97,12 @@ export function single(w: World, d: Decision): Card {
     failed: d.error ? asLabel(d.why) : undefined,
   };
   const chat = chatPath(d);
-  const ways = [chat ? open(d.id, 'Open the chat', chat) : null, d.item_id ? open(d.id, 'Open the item', itemPath(d)) : null].filter((a): a is Action => !!a);
+  // Every card's More ends with the ways around it (ways-out, Today): I did this already (it closes and the site is read to
+  // confirm), and the way to its chat and its item.
+  const ways = [
+    act(d, 'elsewhere', 'I did this already', 'Checking the site', 'Closed, checking the site'),
+    chat ? open(d.id, 'Open the chat', chat) : null, d.item_id ? open(d.id, 'Open the item', itemPath(d)) : null,
+  ].filter((a): a is Action => !!a);
 
   switch (d.kind) {
     case 'accept_offer':
@@ -105,9 +120,9 @@ export function single(w: World, d: Decision): Card {
         primary: act(d, 'acc', `Accept ${usd(offer)}`, 'Accepting', `Accepted ${usd(offer)}`),
         second: counter
           ? { id: `${d.id}-ctr`, label: `Counter ${usd(counterCents)}`, do: 'act', option: 'ctr', step: 'Sending', done: `Countered at ${usd(counterCents)}` }
-          : { id: `${d.id}-ctr`, label: 'Counter', do: 'amount', option: 'ctr', name: 'Counter', cents: counterCents, verb: 'Counter', done: 'Countered at' },
+          : { id: `${d.id}-ctr`, label: 'Counter', do: 'amount', option: 'ctr', name: 'Counter', cents: counterCents, verb: 'Counter', done: 'Countered at', floor: it?.limits?.floor_cents },
         more: [
-          ...(counter ? [{ id: `${d.id}-amount`, label: 'Counter another amount', do: 'amount', option: 'ctr', name: 'Counter', cents: counterCents, verb: 'Counter', done: 'Countered at' } as Action] : []),
+          ...(counter ? [{ id: `${d.id}-amount`, label: 'Counter another amount', do: 'amount', option: 'ctr', name: 'Counter', cents: counterCents, verb: 'Counter', done: 'Countered at', floor: it?.limits?.floor_cents } as Action] : []),
           ...(opt(d, 'dec') ? [act(d, 'dec', many ? 'Decline both' : 'Decline', 'Declining', many ? 'Declined both offers' : 'Declined')] : []),
           later(d.id), ...ways,
         ],
@@ -160,7 +175,7 @@ export function single(w: World, d: Decision): Card {
         ...base, tag: 'live', word: 'Price', fact: fix ? { label: fix.consequence } : keeps(d.money?.you_keep_cents, asLabel(d.why)),
         primary: act(d, 'lower', `Lower to ${usd(price)}`, 'Changing', `Lowered to ${usd(price)}`),
         second: now ? act(d, 'keep', `Keep ${usd(now)}`, 'Saving', `Kept at ${usd(now)}`) : undefined,
-        more: [{ id: `${d.id}-amount`, label: 'Another price', do: 'amount', option: 'lower', name: 'Price', cents: price, verb: 'Lower to', done: 'Lowered to' }, later(d.id), ...ways],
+        more: [{ id: `${d.id}-amount`, label: 'Another price', do: 'amount', option: 'lower', name: 'Price', cents: price, verb: 'Lower to', done: 'Lowered to', floor: d.money?.floor_cents }, later(d.id), ...ways],
       };
     }
     case 'first_post': {
@@ -196,6 +211,34 @@ export function single(w: World, d: Decision): Card {
         second: d.options[1] ? { id: `${d.id}-self`, label: 'Do it myself', do: 'open', to: itemPath(d) } : undefined,
         more: ways,
       };
+    case 'double_sale': {
+      // Sold on two sites at once (edge-cases §1): never silent. Keeping the first paid is the one tap; Compare shows both
+      // sites, each buyer's price, what each keeps and what cancelling each costs.
+      const two = sales(w, d);
+      return {
+        ...base, tag: 'need', word: 'Sold twice', fact: { label: two.length === 2 ? `Both paid, ${usd(two[0].price)} and ${usd(two[1].price)}` : asLabel(d.why) },
+        primary: act(d, 'first', 'Keep the first', 'Cancelling the other', 'Kept the first sale'),
+        second: { id: `${d.id}-compare`, label: 'Compare', do: 'compare' },
+        more: [act(d, 'second', 'Keep the second', 'Cancelling the other', 'Kept the second sale'), ...ways],
+      };
+    }
+    case 'retake': case 'missing_shot': case 'clarify': case 'unbacked_claim': case 'site_changed_listing': case 'measure_review': case 'confirm_flaw': {
+      // A stop on the auto-list tree (edge-cases §7): one card, one question, the agent's likely answer as the black pill;
+      // the tree carries on from here, never from the start.
+      const s1 = d.options.find(o => o.id === d.suggested) ?? d.options[0], s2 = d.options.find(o => o !== s1);
+      const WORD: Record<string, string> = { retake: 'Photo', missing_shot: 'Photo', clarify: 'Question', unbacked_claim: 'Check', site_changed_listing: 'Changed', measure_review: 'Measure', confirm_flaw: 'Flaw' };
+      // A shot is retaken in the camera; any other answer is saved and the tree moves on, said in the toast.
+      const answer = (o: (typeof d.options)[number]): Action => d.kind.match(/retake|missing_shot/) && o.id === 'take'
+        ? { id: `${d.id}-${o.id}`, label: o.label, do: 'open', to: '/camera' }
+        : act(d, o.id, o.label, 'Saving', d.kind === 'clarify' ? `Saved: ${o.label}` : o.does.replace(/\.$/, ''));
+      return {
+        ...base, tag: 'need', word: WORD[d.kind], fact: { label: asLabel(d.why) },
+        primary: answer(s1),
+        second: s2 ? answer(s2) : undefined,
+        more: [...d.options.filter(o => o !== s1 && o !== s2).map(answer), later(d.id), ...ways],
+        open: d.kind === 'retake' || d.kind === 'missing_shot' ? '/camera' : base.open,
+      };
+    }
     case 'approve_groups': {
       const drop = w.items.find(i => i.group_id);
       return {
@@ -293,7 +336,14 @@ export function tiers(list: Card[]): { tier: Feed; label: string | null; cards: 
 export function top(w: World) {
   const h = headline(w);
   if (!h) return null;
-  if (h.kind === 'kept_since_last_open') return { kind: 'news' as const, since: h.label, cents: h.value, line: h.sub };
+  if (h.kind === 'kept_since_last_open') {
+    // A thing sold twice is one sale until the person picks: the later sale of an open double_sale is not news yet (edge-cases §1).
+    const since = w.user.last_open_at ? ms(w.user.last_open_at) : 0;
+    const later = w.decisions.filter(d => d.kind === 'double_sale' && d.state === 'open').flatMap(d => sales(w, d).slice(1))
+      .filter(o => ms(w.orders.find(x => x.id === o.id)?.created_at ?? w.now) > since);
+    const cents = h.value - sum(later.map(o => o.keep)), n = Number(h.sub.split(' ')[0]) - later.length;
+    return cents > 0 ? { kind: 'news' as const, since: h.label, cents, line: later.length ? `${n} sold, after fees` : h.sub } : null;
+  }
   return { kind: 'setup' as const, step: h.label, to: '/onboarding' };
 }
 
