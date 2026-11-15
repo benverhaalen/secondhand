@@ -47,7 +47,7 @@ type ItemIn = {
   id: string; title: string; key: PhotoKey; state: ItemState; category: KindFamily; days: number; where?: string;
   attrs?: [string, string | number | null, Attribute['source']?, boolean?][]; floor?: Cents; always?: Cents | null;
   plan?: NonNullable<Item['limits']>['plan_choice']; value?: Valuation; sell?: ListingIn[]; cost?: Cents; note?: string;
-  origin?: Item['origin']; group?: string; kept?: string;
+  origin?: Item['origin']; group?: string; kept?: string; spread?: NonNullable<Item['limits']>['spread'];
 };
 // One item. `days` is how long ago it came in.
 export function item(i: ItemIn): Item {
@@ -60,7 +60,10 @@ export function item(i: ItemIn): Item {
       id: `att_${i.id}_${n}`, name, value, source, confirmed: value === null ? false : confirmed, unknown_reason: value === null ? 'not_visible' : undefined,
     })),
     valuation: i.value,
-    limits: i.floor === undefined ? undefined : { floor_cents: i.floor, always_accept_cents: i.always ?? null, plan_choice: i.plan ?? 'sell', gone_by: null, fallback: 'ask', markdown_on: i.plan !== 'reserve' },
+    // An item already posted in a demo world went up at one price on every site, before the rule was a choice (decisions.md,
+    // 2026-11-15, cross-listing starts on same take-home), so it carries Same price as its own; a draft takes the account's.
+    limits: i.floor === undefined ? undefined : { floor_cents: i.floor, always_accept_cents: i.always ?? null, plan_choice: i.plan ?? 'sell', gone_by: null, fallback: 'ask', markdown_on: i.plan !== 'reserve',
+      spread: i.spread ?? ((i.sell ?? []).some(r => (r.state ?? 'live') !== 'none') ? 'same_price' : undefined) },
     listings: listings(i.id, i.sell ?? []), created_at: inDays(-i.days), updated_at: inHours(-2),
   };
 }

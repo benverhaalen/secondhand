@@ -32,7 +32,11 @@ export type Listing = { id: string; item_id: string; site: Site; state: ListingS
   interest_new?: { views?: number; watchers?: number; likes?: number }; posted_at: Iso | null; market_standing?: MarketStanding; error?: string };
 
 export type PlanChoice = 'sell' | 'fast' | 'best' | 'reserve' | 'check';
-export type ItemLimits = { floor_cents: Cents; always_accept_cents: Cents | null; plan_choice: PlanChoice; gone_by: Iso | null; fallback: 'ask' | 'donate' | 'keep' | 'trade_in' | 'relist'; markdown_on: boolean };
+// spread: this item's own cross-listing price rule, when it is not the account's (app/src/engines/listing/spreads.ts).
+// accept_mode: ask means every offer waits for the person, under any choice (ways-out §6.7, "Ask me before every offer").
+export type Spread = 'same_keep' | 'same_price' | 'site_market' | 'home_first';
+export type ItemLimits = { floor_cents: Cents; always_accept_cents: Cents | null; plan_choice: PlanChoice; gone_by: Iso | null; fallback: 'ask' | 'donate' | 'keep' | 'trade_in' | 'relist'; markdown_on: boolean;
+  spread?: Spread; accept_mode?: 'ask' | 'rules' };
 
 export type Valuation = Guard & { range: Range; per_site: { site: Site; low: Cents | null; high: Cents | null; basis_count: number }[]; level: 1 | 2 | 3 };
 

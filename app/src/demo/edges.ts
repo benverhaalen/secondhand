@@ -37,6 +37,13 @@ const failedItem: Item = {
   listings: listings('it_fail', [{ site: 'depop', price: 6800, days: 1, likes: 2 }, { site: 'mercari', price: 7000, state: 'postFailed', error: 'The site asked for a size before it would post' }]),
 };
 
+// Done, unsold (pages.md §6.6): up 45 days on two sites with no sale, both listings ended. Its page offers Sell again.
+const unsoldItem = item({
+  id: 'it_505', title: 'Levi’s 505, 34x32, medium wash', key: 'levis-501', state: 'unsold', category: 'apparel', days: 50, where: 'Bin 2',
+  floor: 2500, value: valuation(2800, 4200, 19, ['ebay', 'depop'], 'ci_505'),
+  sell: [{ site: 'ebay', price: 3800, state: 'delisted', days: 45, views: 96 }, { site: 'depop', price: 3600, state: 'delisted', days: 45, likes: 4 }],
+});
+
 const expired = offerIn('of_exp', 'cv_jd', clearing.items[0].listings[1], 7600, 30, -6, 'expired');
 const deadSoon = offerIn('of_soon', 'cv_long', longItem.listings[0], 9000, 1, 0.1);
 
@@ -71,7 +78,7 @@ const longMessage: Message = {
 export const edge: World = {
   ...clearing, name: 'edge',
   // The camera's draft, waiting on review (capture.ts, draft).
-  items: [longItem, hugeItem, freeItem, failedItem, draft(), ...clearing.items],
+  items: [longItem, hugeItem, freeItem, failedItem, unsoldItem, draft(), ...clearing.items],
   offers: [...clearing.offers, expired, deadSoon],
   messages: [...clearing.messages, longMessage],
   conversations: clearing.conversations.map(c => c.id === 'cv_jd' ? { ...c, buyer: NAMES.longBuyer, unread: 128 } : c),
