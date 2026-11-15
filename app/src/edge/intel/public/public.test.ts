@@ -15,6 +15,98 @@ const searchAll = (query: string, opts: SearchOpts = {}) => runSearchAll(query, 
 const FX = new URL('../../../../../spec/fixtures/pages/', import.meta.url);
 const fx = (n: string) => readFileSync(new URL(n, FX), 'utf8');
 const page = (html: string, status = 200): PageResult => ({ ok: true, html, status, final_url: '', rung: 'plain', ms: 1, searched: [] });
+const poshFixture = (name: string) => readFileSync(new URL(`../../harness/sites/poshmark/fixtures/${name}`, import.meta.url), 'utf8');
+
+for (const [name, expected] of [
+  ['search.html', { rows: 3, dropped: 0, facts: 39 }],
+  ['search-sold.html', { rows: 3, dropped: 0, facts: 41 }],
+  ['search-empty.html', { rows: 0, dropped: 0, facts: 0 }],
+] as const) test(`Poshmark ${name} keeps every state listing and pins its yield`, () => {
+  const r = readPage('poshmark', poshFixture(name));
+  assert.ok(r.ok, JSON.stringify(r));
+  assert.deepEqual(Reflect.get(r, 'yield'), expected);
+  if (r.data.length) {
+    assert.equal(r.data[0]!.brand, name === 'search.html' ? "Levi's" : "Levi's 501 Original Fit Jeans");
+    assert.equal(r.data[0]!.likes, name === 'search.html' ? 5 : 6);
+    assert.equal(r.data[0]!.original_price_cents, 0);
+    assert.ok(r.data.every(row => !Object.keys(row).some(k => /seller|creator/.test(k))));
+  }
+});
+
+test('Poshmark markup fixture keeps all twelve cards and reports its yield', () => {
+  const r = readPage('poshmark', fx('poshmark.html'));
+  assert.ok(r.ok);
+  assert.deepEqual(Reflect.get(r, 'yield'), { rows: 12, dropped: 0, facts: 60 });
+});
+
+test('Poshmark listing state keeps original price and counts without keeping comments or handles', () => {
+  const r = readPage('poshmark', poshFixture('listing.html'));
+  assert.ok(r.ok);
+  assert.equal(r.data.length, 1);
+  assert.equal(r.data[0]!.original_price_cents, 27600);
+  assert.equal(r.data[0]!.comments, 11);
+  assert.equal(r.data[0]!.shares, 16);
+  assert.deepEqual(Reflect.get(r, 'yield'), { rows: 1, dropped: 0, facts: 13 });
+});
+
+test('Poshmark keeps incomplete cards counted and never rounds unsafe or fractional cents into a price', () => {
+  const input = poshFixture('search.html').replace('"val":"34.0"', `"val":"${'9'.repeat(40)}"`).replace('"val":"37.0"', '"val":"37.001"');
+  const r = readPage('poshmark', input);
+  assert.ok(r.ok, JSON.stringify(r));
+  assert.deepEqual(r.data.map(row => row.price_cents), [3000]);
+  assert.equal(r.dropped, 2);
+  assert.deepEqual(Reflect.get(r, 'yield'), { rows: 1, dropped: 2, facts: 13 });
+  const broken = readPage('poshmark', poshFixture('search.html').replaceAll(/"val":"[^"]+"/g, '"val":"invalid"'));
+  assert.ok(!broken.ok && broken.error.code === 'page_changed');
+  assert.deepEqual(Reflect.get(broken, 'yield'), { rows: 0, dropped: 3, facts: 0 });
+});
+
+test('Poshmark decimal conversion preserves every cent below the safe integer bound', () => {
+  const r = readPage('poshmark', poshFixture('search.html').replace('"val":"34.0"', '"val":"70368744177664.01"'));
+  assert.ok(r.ok);
+  assert.equal(r.data[0]!.price_cents, 7036874417766401);
+});
+
+test('Poshmark unions distinct state and markup listings and merges duplicate cards once', () => {
+  const markup = fx('poshmark.html');
+  const r = readPage('poshmark', poshFixture('search.html') + markup + markup);
+  assert.ok(r.ok);
+  assert.equal(r.data.length, 15);
+  assert.deepEqual(Reflect.get(r, 'yield'), { rows: 15, dropped: 0, facts: 99 });
+});
+
+test('Poshmark reads structured sizes and catalog names when present, without deriving facts from titles', () => {
+  // Synthetic field-shape variant of recorded state; catalog and size_obj paths are recorded in scripts/demo/want.mjs.
+  const input = poshFixture('search.html').replace('"size":"36"', '"inventory_sizes_unused":[],"size_obj":{"display":"L"},"catalog":{"category_obj":{"display":"Jeans"}}');
+  const r = readPage('poshmark', input);
+  assert.ok(r.ok);
+  assert.equal(r.data[0]!.size, 'L');
+  assert.equal(r.data[0]!.category, 'Jeans');
+  assert.equal(r.data[1]!.category, undefined);
+});
+
+test('Poshmark keeps markup fields bounded to their card and merges state with the same listing', () => {
+  const card = fx('poshmark.html').split('\n')[1]!;
+  const enriched = card.replace('</a>', `<span class="tile-grid-redesign__size">25</span><span class="tile-grid-redesign__brand">Levi's</span>
+    <span class="tile-grid-redesign__condition">Used</span><span class="tile-grid-redesign__category">Jeans</span>
+    <span class="tile-grid-redesign__price-original">$80</span><span class="tile-grid-redesign__listed-date">Nov 14, 2026</span>
+    <span data-like-count="0"></span></a>`);
+  const input = enriched + '<span class="tile-grid-redesign__brand">Outside card</span>';
+  const r = readPage('poshmark', input);
+  assert.ok(r.ok);
+  const row = r.data[0]!;
+  assert.deepEqual([row.size, row.brand, row.condition, row.category, row.original_price_cents, row.likes, row.listed_at],
+    ['25', "Levi's", 'Used', 'Jeans', 8000, 0, 'Nov 14, 2026']);
+  const outside = readPage('poshmark', card + '<span class="tile-grid-redesign__brand">Outside card</span>');
+  assert.ok(outside.ok);
+  assert.equal(outside.data[0]!.brand, undefined);
+  const stateId = '6af585a12800acd3211cf7ba';
+  const merged = readPage('poshmark', poshFixture('search.html') + enriched.replace(/6af924447625b11bb42ec837/g, stateId));
+  assert.ok(merged.ok);
+  assert.equal(merged.data.length, 3);
+  assert.equal(merged.data.find(row => row.id === stateId)!.price_cents, 3400);
+  assert.equal(merged.data.find(row => row.id === stateId)!.category, 'Jeans');
+});
 
 for (const site of ['ebay', 'poshmark', 'mercari', 'depop', 'facebook'] as const) {
   test(`${site} reader matches its fixture`, () => {
