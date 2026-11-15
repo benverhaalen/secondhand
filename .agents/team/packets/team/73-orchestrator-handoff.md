@@ -29,6 +29,7 @@ Main's check is red at this writing (`node .agents/check.mjs`): the real-time pr
 | Mercari's fixed 4 s wait | `app/src/edge/harness/sites/mercari/live.ts:48` | not started | wait for the page's own query response; 20 reads, p50 and p95 |
 | `harness.call` using route health, the lease and the pace bucket; a timeout counted as a timeout | `app/src/edge/harness/` | not started | [ai-engineering sweep](../../../../spec/plans/sweep/ai-engineering.md) item 4 |
 | `byId(id, person_id)` in the harness and browser callers | `protocol.ts`, `pool.ts`, `browser/auth.ts`, `signin.ts`, `post.ts` | the integration lead sends its half as a diff | a test that one person's account id under another person is refused in every caller |
+| The bundle check's one real finding | `app/src/edge/browser/cdp.ts:87` reads Chrome's DevToolsActivePort temp file | open | a `bundle-safe:` comment saying why (a local Chrome launch only, never in a route's bundle), added on `w/orc-session-1` so it lands with that branch |
 | Small ones | | Poshmark `offer.seller.expires_h` (24) into `spec/sites.mjs`; remove the Poshmark live script's old cdp workaround; classify the Poshmark no-card page once search saves the bytes it read at miss time; Facebook's reader last | |
 
 ## 3. Cross-area items a lead will not pick up alone
@@ -45,7 +46,8 @@ Main's check is red at this writing (`node .agents/check.mjs`): the real-time pr
 - Whether the Depop adapter's page-context calls to `webapi.depop.com` count as a private endpoint.
 - The host for the server (the audit recommends one Node container with a disk) and the sender for sign-in emails.
 - Whether the posture line's counter-instead-of-accept behaviour stays.
-- Which workspace the judges see; whether the `sh-probe` Lakebase and App are deleted; whether the Mercari competition data stays for the demo.
+- Yes or no to `databricks bundle deploy --force` over the dashboard he rejected, or the rebuilt one first ([packet 71](71-databricks-handoff.md)). Until one of them, the erasure, guard and governance fixes on main are not on the workspace.
+- Whether the `sh-probe` Lakebase and App are deleted; whether the Mercari competition data stays for the demo. Answered, as the Databricks lead relayed it: the judges see the trial workspace (a Databricks free trial, not Free Edition; every run spends its credits).
 - Real items photographed and measured (eight to ten for the stopwatch, twenty for the benchmark).
 - The issuer id and team id for his build command; rotating the two keys pasted into chat earlier.
 

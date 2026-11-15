@@ -1862,3 +1862,9 @@ Nate, orchestrator's session, 2026-11-15, about 04:30 Central.
 > get all new leads in replacing old ones with very heavy context windows
 
 Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills).
+
+## 2026-11-15 nate the trial workspace is the one the judges see
+Nate, the Databricks lead's session, 2026-11-15, about 04:00 Central, as that lead relayed it to the orchestrator (not heard first hand).
+> thats what we have, yeah lets do the trial
+
+Used in: [packet 71](../.agents/team/packets/team/71-databricks-handoff.md), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
