@@ -34,7 +34,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L26 | The gradient sits on one card at rest. On a sale it fills the whole screen as an animation, with a haptic and a sound | [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L27 | The gradient drifts slowly. It is never static | [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L28 | No lime band. A kind of amount looks the same everywhere | [round 7](../product/words.md#2026-11-15-round-7-picks) |
-| L29 | The selected tab is the filled icon, and nothing under it. Its label keeps its weight: weight never changes with state | [round 7](../product/words.md#2026-11-15-round-7-picks), [round 8](../product/words.md#2026-11-15-round-8-picks), [round 10](../product/words.md#2026-11-15-round-10-picks) |
+| L29 | The tab you are on is the filled icon on a pill, 56 by 32, ink at 8% in light and white at 14% in dark. Its label is ink at the same weight: weight never changes with state. Closes R43 | [a pill behind the current tab](../product/words.md#2026-11-15-text-at-500-and-a-pill-behind-the-current-tab), [round 10](../product/words.md#2026-11-15-round-10-picks) |
 | L30 | Motion carries continuity: the photo you tap grows into its page, and buttons feel alive and pressable | [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L31 | The brand says which gradients are allowed and which are not | [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L32 | The wordmark is Clofie SemiBold. Some bigger things in the app can be Clofie too | [round 8](../product/words.md#2026-11-15-round-8-picks) |
@@ -43,7 +43,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L35 | The black button's depth is a faint glow | [round 8](../product/words.md#2026-11-15-round-8-picks) |
 | L36 | No emoji, anywhere | [ban all emojis](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
 | L37 | Things of a relatively similar size are one standard width and height, whatever is in them | [standard sizes](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
-| L38 | The text face is PP Neue Montreal 2.6. In the app it has one weight, Medium (500), at every size, tailored to how it sits. Closes R42 | [round 10](../product/words.md#2026-11-15-round-10-picks), [the text weight is 500](../product/words.md#2026-11-15-the-text-weight-is-500), [round 11](../product/words.md#2026-11-15-round-11-picks) |
+| L38 | The text face is PP Neue Montreal 2.6. In the app it has one weight, Medium (500), at every size, tailored to how it sits. Closes R42 | [round 10](../product/words.md#2026-11-15-round-10-picks), [the text weight is 500](../product/words.md#2026-11-15-the-text-weight-is-500), [text at 500](../product/words.md#2026-11-15-text-at-500-and-a-pill-behind-the-current-tab), [round 11](../product/words.md#2026-11-15-round-11-picks) |
 | L39 | Live is blue, sold is mint, and needs you is yellow | [round 10](../product/words.md#2026-11-15-round-10-picks) |
 | L40 | What separates: the six rules in constitution Art. 5. A box that holds content is open again as R29 | [round 10](../product/words.md#2026-11-15-round-10-picks), [the gray box](../product/words.md#2026-11-15-a-constitution-with-little-wiggle-room-the-heavy-black-the-black-outline-and-the-gray-box) |
 | L41 | The sum of what you keep is a receipt | [round 10](../product/words.md#2026-11-15-round-10-picks) |
@@ -90,7 +90,6 @@ Round 11 picks and notes are in [words.md](../product/words.md#2026-11-15-round-
 | R38 | A main color. Now with the thread "Make gradients and colors carry meaning" | A: none; the sky to lime field is the color (L1). B: sky alone. C: lime alone | A (agent) |
 | R39 | A device beyond the drifting gradient. Ben: "a drifting gradient is a bit standard as a device". Now with the thread "Make gradients and colors carry meaning" | Four on the picks page | Ben picks |
 | R40 | What the app optimizes for. Ben, [round 11](../product/words.md#2026-11-15-round-11-picks): "different parts of the app should serve different ones of these purposes i dont think things are mutually exclusive" | One purpose per screen (agent proposal): Today is decisions answered, the camera and Sell are time from photo to paid, an item page and You are money kept. For Ben and Nate | Per screen (agent) |
-| R43 | The tab you are on. Ben, 03:22: "a less subtle way to show what section you are on". Changes L29 | A: a pill behind the icon (`--tab-on`). B: L29 as it is, with the other tabs dimmer. C: the filled icon with a dot. Ben has the card in the thread "Roll the UI system out everywhere" | A (agent) |
 
 Small calls the mocks forced, each one line in [screens.css](explore/round-11/mock/screens.css): a filter chip is 36 tall, which is in no scale; buttons in a box are 44 and the bar at the foot of a sale is 48; the + in the tab bar is a gray circle with no label. The mocks run through the brand checker with `node scripts/brand-check.mjs brand/explore/round-11/mock/check.html --medium app`.
 

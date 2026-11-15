@@ -167,7 +167,7 @@ Every state a screen can show, decided once so no worker invents one (agent deci
 | Pressed | `--ink-press` | `--gray-press` | Scale 0.97, `--t-feedback`, as in [frontend-standard.md §3](../product/frontend-standard.md) |
 | Hover (web) | `--ink-press` | `--gray-press` | |
 | Focus | 2 px ink ring, 2 px white gap | same | Every control; never removed |
-| Selected | | | Chips and segments: ink fill, white text (19.8:1). Tabs: the filled icon in ink, and the label in ink at the same weight (L29). Ben asked for "a less subtle way to show what section you are on" ([the wash as an accent](../product/words.md#2026-11-15-faded-stacks-with-depth-connect-every-site-the-tab-you-are-on-the-wash-as-an-accent-above-the-first-card)); a pill of `--tab-on` behind the icon is one of three options he is picking from (ledger R43). Grid photos: 2 px ink ring and a check |
+| Selected | | | Chips and segments: ink fill, white text (19.8:1). Tabs: the filled icon in ink on a pill of `--tab-on`, 56 by 32 (ink at 8%, white at 14% in dark), and the label in ink at the same weight (L29; Ben picked the pill, [a pill behind the current tab](../product/words.md#2026-11-15-text-at-500-and-a-pill-behind-the-current-tab)). Grid photos: 2 px ink ring and a check |
 | Disabled | `--gray` fill, `--ink-disabled` text | same | Never the only sign; say why nearby |
 | Loading | Spinner in place of the label, width kept | | Skeletons are `--gray` |
 
