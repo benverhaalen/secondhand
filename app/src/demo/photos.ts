@@ -34,8 +34,7 @@ export const photo = (key: PhotoKey): ImageSourcePropType => PHOTOS[key];
 // preview can show the difference live (Ben, 08:12: "photos before after done already ... quickly toggle on off the
 // beautification (both the non ai and the ai one)"). Cleaned up is jobs/studio/slides_run.py level0: one exposure gain on
 // all three channels, so no color moves. Redrawn is that run's cover, which passed the photo check and the tape
-// (research/studio/ben/slides/runs/20261115-0652-43687372523); it was drawn by Nano Banana and is swapped for a Seedream 5.5
-// render once one passes the same check.
+// (research/studio/ben/slides/runs/20261115-0652-43687372523), drawn by Nano Banana, the model Ben kept.
 export type Look = 'original' | 'clean' | 'ai';
 const STUDIO: Partial<Record<PhotoKey, Record<Look, ImageSourcePropType>>> = {
   'marquette-tee': {
