@@ -490,14 +490,19 @@ export function CameraAct({ id, label, onPress }: { id: string; label: string; o
 
 export type BarAct = { id: string; label: string; onPress?: () => void };
 // No camera: what to do instead, on the bar's ground, in the middle of the screen; the first act filled, the rest outlined.
+// One bordered card in the middle of the frame, so the one thing to do reads first (Nate, words.md 2026-11-15: "be
+// bordered and focused more"): the camera's mark, the title, one line, then the first act full width and the rest under it.
 export function CameraOff({ title, line, acts }: { title: string; line: string; acts: readonly BarAct[] }) {
-  const b = useBar();
+  const b = useBar(), c = useColors();
   return (
-    <View style={[fill, { justifyContent: 'center', paddingHorizontal: space.gutter, gap: space.s3 }]}>
-      <Txt role="title" tone={b.tone}>{title}</Txt>
-      <Txt role="body" tone={b.tone}>{line}</Txt>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, paddingTop: space.s2 }}>
-        {acts.map((a, i) => <BarButton key={a.id} id={a.id} label={a.label} first={i === 0} onPress={a.onPress} />)}
+    <View style={[fill, { justifyContent: 'center', alignItems: 'center', paddingHorizontal: space.gutter }]}>
+      <View {...mark('camera-off')} style={{ width: '100%', maxWidth: 360, padding: space.s5, gap: space.s3, borderRadius: radius.card, borderCurve: 'continuous', borderWidth: 1, borderColor: c.ink2, backgroundColor: b.bar }}>
+        <Icon name="camera-01" tone={b.icon} />
+        <Txt role="title" tone={b.tone}>{title}</Txt>
+        <Txt role="body" tone={b.tone}>{line}</Txt>
+        <View style={{ gap: space.s2, paddingTop: space.s2 }}>
+          {acts.map((a, i) => <BarButton key={a.id} id={a.id} label={a.label} first={i === 0} onPress={a.onPress} />)}
+        </View>
       </View>
     </View>
   );

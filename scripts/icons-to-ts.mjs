@@ -22,6 +22,9 @@ const NAMES = [
   'notification-01', 'information-circle', 'checkmark-circle-02', 'link-01', 'star',
   // New's four jobs: Track watches for one (binoculars), Find says what a thing is (search by sight)
   'binoculars', 'search-visual',
+  // the camera's first question, what the item is: one per family (engines/capture/process.ts FAMILIES; Nate, 2026-11-15)
+  't-shirt', 'running-shoes', 'handbag', 'watch-01', 'sofa-01', 'lamp', 'laptop', 'wrench-01', 'book-02', 'cards-01',
+  'toy-brick', 'bicycle-01', 'baby-bottle', 'help-circle',
 ];
 const pascal = n => n.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join('') + 'Icon';
 const KEEP = new Set(['d', 'cx', 'cy', 'r', 'rx', 'ry', 'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'points', 'fill', 'fillRule', 'clipRule']);
