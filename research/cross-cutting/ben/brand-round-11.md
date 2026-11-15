@@ -140,3 +140,26 @@ Ben: "there could be hand models out there or different animations or sprites or
 What follows (*inferred*):
 - Nothing found is a snap, and nothing found is ours. The quickest honest start is the hands in the icon set we already ship, used as a sketch for Ben's own drawing.
 - "Moldable" has a known shape: a hand as 21 points. A pose is then a small list of numbers, and moving between two poses is an animation. The snap, the hand-off and a resting hand are three poses of one hand.
+
+## Color blindness
+
+Ben is color blind ([his words](../../../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "im color blind so i want to make sure that the ship the nike dunks thing is green not brown"). He did not say which kind. Red-green kinds (protan and deutan) are the common ones, so the rule is built on those two (asserted, from memory of the usual figures; not read today).
+
+Method (observed, computed here on 2026-11-15): each fill in `brand/tokens.css` was converted to linear RGB, passed through the Machado, Oliveira and Fernandes 2009 matrices at severity 1.0, and the distance between two results was taken in Oklab. The matrices are written from memory of the published table and were not re-read today (asserted); the dark mode thread ran its own simulation and got .068 to .071 for mint against marigold, where this one gets .069 and .072.
+
+| Pair | Full color | Protan | Deutan | Tritan |
+|---|---|---|---|---|
+| sky, mint | .083 | .078 | .075 | .016 |
+| sky, marigold | .152 | .136 | .146 | .158 |
+| sky, lime | .175 | .168 | .181 | .128 |
+| mint, marigold | .116 | .069 | .072 | .151 |
+| mint, lime | .112 | .091 | .111 | .119 |
+| marigold, lime | .082 | .077 | .056 | .071 |
+
+What follows (inferred):
+
+- The four state fills hold. The closest pair under red-green vision is marigold and lime at .056.
+- No fifth hue on the ring holds. Under deutan vision lilac is .004 from sky and pink .005 from mint. Peach is .022 to .036 from marigold and aqua .011 to .042 from mint or sky.
+- Sky and mint are .016 apart under tritan vision, the rare kind. They are told apart by icon and word, which every state already has.
+- So shipping takes no color of its own. Ben's word is that it is green, so it is mint with the parcel icon (ledger L45), and the check `picks:A10` fails when two state fills come closer than .05 under protan or deutan vision.
+- A dark yellow reads as brown. That is why lime and marigold are never a dark ground (constitution Art. 5, Dark mode, line 5).

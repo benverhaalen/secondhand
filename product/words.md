@@ -785,3 +785,15 @@ Ben, thread "Critique the design system and plan dark mode" (renamed "Roll the U
 ## 2026-11-14 nate the system runs the storefront, learns the person, and scores every listing with one success score
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, while the handoff was being finished.
 > We are effectively creating a system already built robust enough to give general insights to how a person should organize and mangage their second hand retail store front across all platforms they link to us. Driven by similar listings, official retailers, sales and industry data compared with the state of their secondhand good, we have a powerful credible seo like engine to handle the optimal marketing, a pricing and appraisal system to accurately determine the price that item should be, and systems ai driven to monitor and optimize the store front across time, gather analytics and valuable insights to drive and reinforce the agents behaviors, effectively making it better at running the users secondhand store front. It learns the users preferences, their way of selling/buying, and effeectively trains to be the best sales agents for users. The system scores each listing a user has, which our UI is planned to use color indication as a helpful way of showing its projected performance, combing all engines and calculations we perform into a unified success score
+
+## 2026-11-14 nate the signed-in harness where the account adds capability, faster public paths elsewhere
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after reading the assessment of Ben's sale-detection and levers packets.
+> well heres what I think, if a user has linked their platform, then auth is stored for even background tasks happening overnight on the user behalf. So for unauthenticated users and broad searches on sales data, I see faster paths working. For the things we can leverage with user auth, like tracking things that the platfrom already considers the user profile for, i feel its better to adhere to that harness. Of course faster and cheaper for when better, but not when we are limitting capability.
+
+## 2026-11-14 nate hooks for every app event: what we poll, what the platform triggers, sign-in by oauth where possible
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Figure out the best way to develop and establish hooks for each app event to be caught by the system. For the platforms being targetted, are there things we can build to poll, things that are triggered by the platform itself, ideally they just auth in to each site, using oauth
+
+## 2026-11-14 nate no depop partner access, so build an ai-driven workaround
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> We are not getting depop partner access, so I want you to create a workaround ,utilizing ai driven technology, take into account the frameworks and harnesses i showed you

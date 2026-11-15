@@ -116,6 +116,16 @@ The fixture is never loosened to pass. When the site itself changed shape, a fre
 
 ### 3.5 Starting routes, site by verb
 
+**Signed-in or public, by what the read needs** ([Nate](../../product/words.md#2026-11-14-nate-the-signed-in-harness-where-the-account-adds-capability-faster-public-paths-elsewhere): "For the things we can leverage with user auth ... its better to adhere to that harness. Of course faster and cheaper for when better, but not when we are limitting capability."). A linked account's session is stored and leased to background jobs, overnight included, so a job acting for the person never waits for them.
+
+| The read or action | Route | Why |
+|---|---|---|
+| Anything the site ties to the person's account: their listings, orders, offers, messages, their own stats and watcher counts, what the site shows or ranks for them, every write | the signed-in harness, always | the public page does not carry it, or carries less |
+| Broad market reads: sold prices, top listings, a product's page, a seller's public shop, reviews | the fastest public path (a server fetch, embedded page data, our fetch engine) | no account is needed, and it works for a person with nothing linked |
+| A read that both can serve, such as "did my listing sell" | the public path as the cheap, frequent check; the signed-in read to confirm and for the detail only it has (the paid order, the buyer, the amount) | faster and cheaper where it loses nothing; never chosen where it would limit what we can do |
+
+The route table holds this as `needs_session` per verb and field. A public route is never promoted over a signed-in one for a field it cannot return, whatever its speed.
+
 Each cell is the first route recon targets (*inferred* from the canon site table at [product.md](../product.md#the-harness-protocol), which puts our own adapter first everywhere). An API named in a cell is the last fallback and a fact on record. "page" means a page-driving recipe; "endpoint" means recon expects an internal endpoint.
 
 | Verb | eBay | Facebook | Depop | Poshmark | Mercari | OfferUp | Grailed |
@@ -136,6 +146,54 @@ Each cell is the first route recon targets (*inferred* from the canon site table
 | `save` | adapter, endpoint (watch) | adapter, page | adapter, endpoint (like) | adapter, page; runs on the person's tap (likes are named in the guidelines) | adapter, page | adapter, page | adapter, page |
 
 The site terms behind each column are facts on record in the canon table and become `rights` tags. They are not limits on this design ([licences](../product.md#licences-terms-and-the-rules-that-protect-people)).
+
+### 3.6 How every event reaches the system (agent proposal)
+
+Asked by [Nate](../../product/words.md#2026-11-14-nate-hooks-for-every-app-event-what-we-poll-what-the-platform-triggers-sign-in-by-oauth-where-possible). Every source below writes one row to `event` (id, source, site, account, kind, payload ref, dedupe key), and each row starts exactly one job ([product.md](../product.md#6-systems)). A source never acts; it only reports. The harness confirms a site event by a signed-in read before anything is done about it.
+
+| Source | How it is caught | Delay |
+|---|---|---|
+| The app | each `/v1` route writes its event in the same transaction as its change (an outbox), so no event is lost if the job runner is down | none |
+| A site's own push | a signed webhook to the edge: eBay notifications (order, offer, message, listing ended), Depop order webhooks where partner access is granted. Verified by signature, answered in under 1 s, used as a trigger only | seconds |
+| The site's live channel | where a site's own web client receives messages and offers over a held connection, a leased session keeps that connection open for an account during a hot window (an open negotiation, the hour after posting) and turns each frame into an event | seconds |
+| Our watchers, signed in | one sweep per linked account reads the pages the site already builds for the person: the notification feed, the inbox, offers, orders, the listings list with its counts. The sweep keeps the last normalised snapshot and emits an event per difference (`offer.received`, `message.received`, `listing.sold`, `listing.ended`, `like.added`, `price.changed`) | by tier: 1 to 2 min while hot, 15 min live, hourly quiet, through the night |
+| Our watchers, public | a server fetch of the public listing page for the cheap "is it still up" check ([Ben's prototype](../../research/sold/ben/cheap-sale-detection.md)); a hit triggers the signed-in read | 1 to 2 min |
+| The market | the intelligence engine's scheduled gathers per product family write `observation` rows; a change past its threshold is an event (`value_moved`, `demand_rose`) | hourly to daily |
+| Databricks | a table change (change data feed), a file arriving in a volume, a job ending, a schedule | seconds to minutes |
+
+**Reading the notification feed first** is what makes a sweep cheap: one page holds everything the site thought worth telling the person, so most sweeps are one read. Each watcher cadence is a `param` per site and state, learned from how often a sweep finds something.
+
+**Signing in.**
+
+| Site | How the person links it | Platform push |
+|---|---|---|
+| eBay | OAuth in a sheet (refresh token 18 months), which also subscribes us to its notifications; a harness session for what the token cannot do | yes, signed |
+| Depop | a harness session: the person signs in once on Depop's real login. No partner access ([Nate](../../product/words.md#2026-11-14-nate-no-depop-partner-access-so-build-an-ai-driven-workaround)), so no OAuth and no webhooks; see [3.7](#37-depop-without-partner-access-agent-proposal) | none; watchers and the live channel |
+| Facebook, Poshmark, Mercari, OfferUp, Grailed | no OAuth is offered to sellers ([platform access](../../research/connect/nate/platform-access.md)). The person signs in once on the site's real login, inside a page we host; we never see the password, they complete any second factor, and the session is stored and kept alive | none; watchers and the live channel |
+
+Either way the person does one sign-in per site and nothing after it. A session that expires raises one `account_stale` decision with a one-tap re-link; jobs for that account pause and resume, none are dropped.
+
+### 3.7 Depop without partner access (agent proposal)
+
+Nate: "We are not getting depop partner access, so I want you to create a workaround, utilizing ai driven technology, take into account the frameworks and harnesses i showed you." The same design is the template for every site with no API: Poshmark, Mercari, Facebook, OfferUp, Grailed.
+
+**The idea, from opencli:** the person's own signed-in browser session is the API. Depop's site is a client over its own JSON endpoints, and whatever the person can do on the site, a command running inside their session can do the same way. Agents write and repair the commands; running them is deterministic code with no model in the loop.
+
+| Layer | What it does | Built from |
+|---|---|---|
+| 1. Link | the person signs in on Depop's real login, in a page we host and, on the phone, in an in-app web view. We never see the password. Two routes result: a cloud session for background and overnight work, and the person's own device while the app is open | the session lease (3.1) |
+| 2. Recon agent | drives the signed-in site once per verb with browser-use style control while recording network traffic, embedded page state and the DOM. It finds how the site itself does each thing: the endpoint its web client calls to create a listing, edit a price, read offers, send an offer to likers, read and send messages, read orders and stats, mark sold, delete | browser-use for control, the authoring pipeline (3.3) |
+| 3. Adapter author | turns each finding into a command in the opencli shape: typed args in, the one JSON envelope out, strategy `COOKIE` (a fetch made inside the session, so the site's own cookies and tokens ride along) with a page-driving recipe as the second strategy. It writes the fixture and field gate with it | the manifest and release gate |
+| 4. Run | deterministic: `harness.call('depop', verb, args)` runs the command in the leased session at a person's pace. No model call on the normal path, so a verb costs one or two requests and runs in under a second | the primitives (3.2) |
+| 5. Fallback agent | when a command fails its field gate, a fast decision model (Jev) matches the changed element or field; if that is not enough, an agent drives the page as a person would to finish the action, and the repair loop (3.4) rewrites the command from what it saw | Jev, browser-use, the repair loop |
+| 6. Events | no webhooks, so the watchers (3.6): the notification feed and inbox in the session for offers, messages and sales; the public product page for the cheap sold check; the live channel during a negotiation | 3.6 |
+| 7. Reading | a language model reads only what is text: a buyer's message, a policy notice, a changed error | the trust and negotiation engines |
+
+**The verbs covered:** `link`, `list`, `edit`, `reprice`, `read_listings`, `read_offers`, `respond_offer`, `send_offer` (to likers), `read_messages`, `send_message`, `read_orders`, `read_stats`, `mark_sold`, `delist`, `relist`. Partner access would have added only webhooks; the watchers replace them at a delay of 1 to 2 minutes while a listing is hot.
+
+**What it will not do.** It acts only as the person, in their own session, at a pace a person could keep. It does not solve or route around a bot check: if Depop shows a challenge, the job pauses and the person is asked to clear it in their session, once. It keeps no password. It reads no other seller's private data. Depop's terms forbid automated access ([connect](../features/connect.md)); by the joint decision that is a fact on record and a risk shown to the person per site, with Nate's go needed before any live run and before it is shown on stage.
+
+**Proof.** Each verb passes on a recorded fixture, then on a test account's live session with the result read back; the mutation drill breaks ten page details and the repair loop restores at least nine; the pace bench records the challenge rate per hundred actions, and the pace is lowered until it is zero.
 
 ## 4. Learning
 

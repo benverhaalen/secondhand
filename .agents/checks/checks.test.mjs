@@ -309,6 +309,34 @@ test('picks L38: the text face is PP Neue Montreal, named first', async () => {
   assert.equal(await pick('L38', { 'brand/tokens.css': ':root { --font-text: "PP Neue Montreal", "Noto Sans", sans-serif; }' }), '');
 });
 
+test('picks L44: a dark card too close to the page, pure white text, a yellow field and a glow all fail', async () => {
+  const light = ':root { --glow-1: rgb(1 2 3 / .5); --glow-2: rgb(1 2 3 / .5); --card-shade: rgb(1 2 3 / .5); }\n';
+  const dark = v => `${light}:root[data-theme="dark"] { ${v} }\n`;
+  const good = '--page: #101315; --surface: #1A1D20; --ink: #ECEFF1; --field-1: #0A4C65; --field-2: #03523B; --field-3: #025050; --glow-1: transparent; --glow-2: transparent; --card-shade: transparent;';
+  assert.equal(await pick('L44', { 'brand/tokens.css': dark(good) }), '');
+  assert.match(await pick('L44', { 'brand/tokens.css': dark(good.replace('#1A1D20', '#121517')) }), /from the page in lightness/);
+  assert.match(await pick('L44', { 'brand/tokens.css': dark(good.replace('#ECEFF1', '#FFFFFF')) }), /pure white/);
+  assert.match(await pick('L44', { 'brand/tokens.css': dark(good.replace('#025050', '#4D4A00')) }), /never yellow/);
+  assert.match(await pick('L44', { 'brand/tokens.css': dark(good.replace('--glow-1: transparent', '--glow-1: rgb(1 2 3 / .5)')) }), /no shadow and no glow/);
+});
+
+test('picks L45: a shipping pill in any fill but mint fails', async () => {
+  assert.match(await pick('L45', { 'app/src/ui/states.ts': "export const STATES = {\n  'Ship by': { fill: 'marigold', icon: 'package' },\n};" }), /"Ship by" is not mint/);
+  assert.equal(await pick('L45', { 'app/src/ui/states.ts': "export const STATES = {\n  'Ship by': { fill: 'mint', icon: 'package' },\n  Sold: { fill: 'mint', icon: 'money-01' },\n};" }), '');
+});
+
+test('picks L46: a photo corner that does not nest in its card fails', async () => {
+  const sizes = r => ({ 'brand/tokens.css': `:root { --r-card: 36px; --card-pad: 16px; --r-photo: ${r}px; --tag-h: 20px; --tag-icon: 12px; --photo-card: 72px; --card-item-h: 104px; --card-decision-h: 156px; --pill-card-h: 40px; }` });
+  assert.match(await pick('L46', sizes(8)), /--r-photo is 8/);
+  assert.equal(await pick('L46', sizes(20)), '');
+});
+
+test('picks A10: two state fills a color blind person cannot tell apart fail', async () => {
+  const fills = lime => ({ 'brand/tokens.css': `:root { --sky: #A5E1FE; --mint: #A1EACB; --marigold: #F5D297; --lime: ${lime}; }` });
+  assert.equal(await pick('A10', fills('#EBF08F')), '');
+  assert.match(await pick('A10', fills('#DDCEFE')), /--sky and --lime are 0\.0\d\d apart with deutan vision/);
+});
+
 test('picks L8: statistics notation on a screen fails; the same fact in plain words passes', async () => {
   assert.match(await pick('L8', screen('<Txt>Median $38 (n=41)</Txt>')), /"n=41" is statistics notation/);
   assert.equal(await pick('L8', screen('<Txt>From 41 sales</Txt>')), '');
