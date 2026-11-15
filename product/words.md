@@ -989,3 +989,11 @@ Nate, build session (orchestrator), 2026-11-14 about 22:35 Central.
 ## 2026-11-15 human in the loop is a decision, not a line
 Ben, thread "Set the secondhand brand identity", 2026-11-15 04:12 UTC, after the brand thread planned to add "a human always decides" to the brand's idea and voice. Before it, at 04:04 in the project chat: "also we should ensure to design around human in the loop to show it off as central to our product in the end".
 > dont use the quote a human always decides use it as a decision when navigating when to hand off to human vs agent.
+
+## 2026-11-14 nate the harness runs on browser-use with stored auth, not the app's built-in browser
+Nate, build session (orchestrator), 2026-11-14 about 22:50 Central, with a screenshot of the kernel session loading the built-in browser skill.
+> This agent is using the wrong skill, looking at anthropic built in browser, unless it hopefully plans to account for the specced out utilization of browser use. at least inspired by the technology to utilize for ourself. Store authentication, run the stealth browser jev ultrafast sessions, optimize for efficient and accurate operations for every feature
+
+## 2026-11-14 nate browser-use on cloud, tested the way production runs, with milestones that are finalised as they are hit
+Nate, build session (orchestrator), 2026-11-14 about 23:00 Central.
+> Run browser use on cloud, testing everything the way the app will be production built so we can validate as we build. Build everything in a way that establishes and finalizes milestones being hit and our app, system, everything being fully realized
