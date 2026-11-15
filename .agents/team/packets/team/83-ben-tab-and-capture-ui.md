@@ -16,7 +16,7 @@ Acceptance: typecheck and rendered main-tab/+ journey, with external capabilitie
 
 Commits 8cfd7c23 (tabs and shared parts) and edbf3f64 (capture/tracking clients), integrated with UI core and copy cleanup through 9668e8ef in 71e5b987. Existing fixed parts are retained. Header is always pinned, page titles removed, Buy uses money icon, segments share one native component, Today cards shift left after removal. You embeds existing charts/settings. Messages combines decisions, notices, tracked matches and conversations; notification settings directs there.
 
-Browser proof on the merged source: tab switches and filters render, Today removal moves next card from x370 to x20 (also with reduced motion), header stays y0 while Other scrolls into view, Pause selling lives in Settings. Track switches jersey size/fit fields to couch dimensions; submit calls the real endpoint and shows its 401. Camera calls the real capture endpoint and shows its 401. Shared nested button and SVG accessibility warnings were fixed. No new tests added. Scoped UI/parts/screens/copy checks pass. Full gate remains red on existing repo findings; the installed Anthropic SDK does not match engine types. Ben explicitly permits landing without CI.
+Browser proof on the merged source: tab switches and filters render, Today removal moves next card from x370 to x20 (also with reduced motion), header stays y0 while Other scrolls into view, Pause selling lives in Settings. Track switches jersey size/fit fields to couch dimensions; submit calls the real endpoint and shows its 401. Camera calls the real capture endpoint and shows its 401. Shared nested button and SVG accessibility warnings were fixed. No new tests added. Scoped UI/parts/screens/copy checks pass. Full gate remains red on existing repo findings; the initial installed Anthropic SDK did not match engine types; installing the declared dependencies resolved it, and final typecheck passes. Ben explicitly permits landing without CI.
 
 ## Backend dependencies still outstanding
 
@@ -31,3 +31,8 @@ Browser proof on the merged source: tab switches and filters render, Today remov
 - Account authentication has no configured email sender and frontend session integration is AP1. Health returned 503 NOT_CONFIGURED locally. Anonymous search start did return 202 and its job could be read under the assigned visitor; multiple source stages failed. No account or marketplace connection is claimed verified.
 
 Video capture is future work; default capture is manual only. Preserve explicit demo query paths for review, and wire the default live path instead of the old scripted camera.
+
+
+## Latest UI core integration
+
+Ben asked to build on what just pushed. Integrated a98c8861 and b55df456: Buy retains the new search-to-chat takeover under its three-way toggle, including streamed source lanes, device-saved chats and external listing links. The latest server entrypoint 2999bc70 is included. Kept current Retry wording and clearer card error copy. Installed declared packages; expo-sqlite's side-effect entry has no shipped TypeScript declaration, so a module declaration names that existing import. Final `tsc --noEmit` passes. Video is parked in ideas/video-capture.md. Native camera, signed-in accounts and actual Lens/studio completions remain unverified.
