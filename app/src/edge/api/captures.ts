@@ -2,6 +2,7 @@
 // Upload signing and realtime credentials remain contract examples.
 // The shared example boundary stays here until the contract layer's owner can move it to http.ts.
 import { ApiError, deps, paramsOf, served, type Ctx, type Handler, type Reply } from './http.ts';
+import { photos as photoStore } from './uploads.ts';
 import { EXAMPLES, example, type Example } from './examples.ts';
 import { FAMILIES, type Family } from '../../engines/capture/process.ts';
 import { plan, type State, type Fact } from '../../engines/capture/plan.ts';
@@ -188,7 +189,7 @@ function validValue(row: FieldRow, value: unknown): boolean {
 }
 type PhotoRead = {field: string; value: unknown; source?: 'seen'|'label'|'measured'; confidence?: number; unknown_reason?: 'not_read'};
 type Scan = {scan_ok: boolean; extent_cm: {width:number;depth:number;height:number}; extent_conf:number; frames:number};
-type Photo = {role: string; step: string; key?: string; reads?: PhotoRead[]; scan?:Scan};
+type Photo = {role: string; step: string; content_type: 'image/heic' | 'image/jpeg' | 'image/png'; bytes: number; key?: string; reads?: PhotoRead[]; scan?:Scan};
 const positive = (v: unknown): v is number => number(v) && v>0;
 function validScan(v:unknown): boolean {
   if (!object(v) || !object(v.extent_cm)) return false;
@@ -371,7 +372,10 @@ export const handlers: Record<string, Handler> = {
         }
       }
       const id=`ph_a${++row.photos}`;
-      return {id,role:photo.role,step:photo.step,upload:{url:`https://uploads.example/v/${id}?sig=example`,method:'PUT',expires_at:uploads[0].upload.expires_at}};
+      // A captured row gets a real single-use target in the photo store; an example row keeps the contract's address.
+      const upload=row.data==='example' ? {url:`https://uploads.example/v/${id}?sig=example`,method:'PUT' as const,expires_at:uploads[0].upload.expires_at}
+        : photoStore().target({user_id:row.user_id,capture_id:row.id,photo_id:`${row.id}-${id}`,content_type:photo.content_type,max_bytes:photo.bytes});
+      return {id,role:photo.role,step:photo.step,upload};
     });
     write(ctx,row,'uploading');
     return {status:201,body:{photos,capture:view(row)}};
