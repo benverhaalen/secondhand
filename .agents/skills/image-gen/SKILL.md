@@ -19,7 +19,8 @@ Ben's words this comes from: [Codex with Astra, the loop and how to judge](../..
    |---|---|---|
    | Base | The job in one line. The decision and this option, a line each. The exact words and numbers. The fail lines for this board | A rule doc, the ledger, the brief, another option |
    | Option | The base image and the one thing that changes | |
-   | Steered design | What an open design gets, plus one lever line from [frontend-standard §2](../../../product/frontend-standard.md#levers-for-the-steered-designs) | A second lever, a layout |
+   | Persona design (round one) | What any design call gets, plus one person's line from [personas.md](../../../product/personas.md) | A second person, a lever, a layout |
+   | Steered design | What an open design gets, plus one lever line from [frontend-standard §2](../../../product/frontend-standard.md#levers-for-the-later-rounds) | A second lever, a layout |
    | Fix | The failed image and the failures for that image | The whole critique, earlier rounds |
    | Critic | The option images, the color sheet, the fail list | The brief, the prompts, who made what |
 
