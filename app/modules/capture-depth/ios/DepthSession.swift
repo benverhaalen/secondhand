@@ -66,9 +66,12 @@ final class DepthSession: NSObject, ARSessionDelegate {
             emit("onError", ["code": "invalid_depth_buffer"])
             return
         }
+        let distance = distanceMeters(samples: input.samples, width: input.width, height: input.height)
+        let distancePayload: Any = distance.map { $0 as Any } ?? NSNull()
         let measuredGeneration = generation, measuredFrames = frames
         measurements.submit(copy: { input }) { [weak self] result in
             guard let self, let result, self.running, !self.interrupted, self.generation == measuredGeneration else { return }
+            self.emit("onStatus", ["state": "distance", "distance_m": distancePayload])
             switch result {
             case .insufficientGeometry:
                 self.emit("onStatus", ["state": "insufficient_geometry"])
@@ -78,7 +81,7 @@ final class DepthSession: NSObject, ARSessionDelegate {
                 self.emit("onStatus", ["state": "running"])
                 self.emit("onExtent", [
                     "extent_cm": ["width": extent.width, "depth": extent.depth, "height": extent.height],
-                    "extent_conf": 0, "rigid": true, "frames": measuredFrames
+                    "extent_conf": 0, "rigid": true, "frames": measuredFrames, "distance_m": distancePayload
                 ])
             }
         }

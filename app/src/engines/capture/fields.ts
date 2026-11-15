@@ -23,13 +23,23 @@ export function fieldState(row: FieldRow,state: State,processKeys: string[],para
   const family=state.type ?? (suggestionPasses(state,params) ? state.suggestion!.family : 'other');
   const kind=`${family}.${state.kind}`;
   const field=row.field.replace(/\.\d+$/, '');
-  const scope={kind:table.fields[kind]?.some(candidate=>candidate.field===field) ? kind : family};
+  const component=table.components[kind];
+  const isPart=component?.parts.some(candidate=>`part.${candidate.field}`===field) ?? false;
+  const scope={kind:table.fields[kind]?.some(candidate=>candidate.field===field) || isPart ? kind : family};
   let fact=state.facts[row.field];
   if(row.field==='type') {
     if(state.type)fact={value:state.type,source:'you_said',confidence:1};
     else if(suggestionPasses(state,params))fact={value:state.suggestion!.family,source:'seen',confidence:state.suggestion!.p};
   }
   if(state.refused.includes(row.field))return {state:'refused',reason:'refused',fact};
+  for(const way of row.ways) if(way.way==='derived' && way.when) {
+    const dependency=select(state,params).rows.find(candidate=>candidate.field===way.when)!;
+    const resolution=fieldState(dependency,state,processKeys,params);
+    if(resolution.state==='known' && resolution.fact?.value===true) {
+      fact={value:way.value,source:'derived',confidence:minConf(params,row,way,scope) ?? 0};
+      break;
+    }
+  }
   if(!fact || fact.value===null || fact.value===undefined) for(const w of row.ways) if(w.way==='derived') {
     let value: unknown;
     if(w.from==='profile.handover')value=state.profile?.handover;
@@ -58,13 +68,23 @@ export function fieldState(row: FieldRow,state: State,processKeys: string[],para
   const availableWays = row.ways.filter(way => way.way !== 'measured' || state.has_lidar);
   const k=known({...row,ways:availableWays},fact,state.confirm_mode,params,state.suggestion,scope);
   if(!unresolvedVariants && k.known)return {state:'known',reason:'accepted',fact,...(k.auto_accepted ? {auto_accepted:true as const} : {})};
+  if(isPart && component.after) {
+    const rows=select(state,params).rows;
+    const settled=component.after.every(field=>['known','refused'].includes(fieldState(rows.find(candidate=>candidate.field===field)!,state,processKeys,params).state));
+    if(!settled)return {state:'waiting',reason:'after',fact};
+    if(state.lookups==='running')return {state:'waiting',reason:'lookup',fact};
+    if(component.read && !state.kept.includes(component.read.step) && !state.refused.includes(component.read.step))
+      return {state:'waiting',reason:'read',fact};
+  }
   const hasAsked=row.ways.some(w=>w.way==='asked');
   for(const w of row.ways) {
     if(w.way==='measured' && !state.has_lidar)continue;
     if(['seen','label','measured'].includes(w.way) && w.view && w.view!=='first_frame') {
       const views=viewsFor(w.view,processKeys);
       for(const view of views) {
-        if(!processKeys.includes(view)) {
+        const partRead=isPart && view===component.read?.step;
+        if(partRead && state.refused.includes(view))continue;
+        if(!processKeys.includes(view) && !partRead) {
           if(linked(targets(state),row.required).length && !hasAsked)return {state:'missing',reason:'add',fact,shot:{step:view,reason:'add'}};
           continue;
         }

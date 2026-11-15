@@ -13,7 +13,7 @@ test('bag without lidar keeps ring and label',()=>assert.deepEqual(run({type:'ba
 test('bundle keys piece by piece and expands per piece fields and views',()=>{const s=run({type:'apparel',pieces:3});assert.equal(s.inner_class,'flat_garment');assert.deepEqual(s.process.map(s=>s.key),['group','front.1','back.1','tag.1','front.2','back.2','tag.2','front.3','back.3','tag.3']);assert.equal(s.rows.find(r=>r.field==='brand.2')?.ways[0].view,'tag.2');assert.ok(s.rows.some(r=>r.field==='dimensions.3'));assert.ok(!s.rows.some(r=>r.field==='brand'));});
 test('other rigid size boundaries and soft goods',()=>{for(const [extent,expected] of [[9,'small_hard'],[10,'medium_hard'],[120,'large_bulky']] as const)assert.equal(run({type:'other',rigid:true,extent_cm:extent}).dimension_class,expected);assert.equal(run({type:'other'}).dimension_class,'soft_goods');});
 test('unknown linked site names the rejected site',()=>assert.throws(()=>run({sites:['etsy' as State['sites'][number]]}),/etsy/));
-test('kind overrides model plate and inherits function',()=>{const s=run({type:'electronics',kind:'phones_laptops'});assert.equal(s.dimension_class,'small_hard');assert.equal(s.rows.find(r=>r.field==='model')!.ways[0].view,'about_screenshot');assert.ok(s.rows.some(r=>r.field==='function'));});
+test('kind overrides model plate and inherits function',()=>{const s=run({type:'electronics',kind:'phones'});assert.equal(s.dimension_class,'small_hard');assert.equal(s.rows.find(r=>r.field==='model')!.ways[0].view,'about_screenshot');assert.ok(s.rows.some(r=>r.field==='function'));});
 test('all four selection bounds read champion values from ParamStore',()=>{const base=memoryStore();const values:Record<string,number>={capture_preselect_floor:.9,assist_preselect_margin:.8,capture_large_cm:150,capture_small_cm:5};const params={...base,read:(name:string,scope:Parameters<typeof base.read>[1])=>({...base.read(name,scope),value:values[name]??base.read(name,scope).value})};assert.equal(select(state({suggestion:{family:'apparel',p:.85,second_p:0}}),params).fallback,'type_unsure');assert.equal(select(state({type:'lighting_home',rigid:true,extent_cm:130}),params).dimension_class,'medium_hard');assert.equal(select(state({type:'electronics',extent_cm:6}),params).dimension_class,'medium_hard');});
 test('soft goods keep an existing front exactly once',()=>assert.deepEqual(run({type:'other',rigid:true,extent_cm:6}).process.map(s=>s.key),['front']));
 test('inclusive margin accepts exact decimal boundary .7 versus .5',()=>assert.equal(run({suggestion:{family:'apparel',p:.7,second_p:.5}}).family,'apparel'));
@@ -49,4 +49,24 @@ test('bundle group and replacement front read their step definitions from the ta
 });
 test('zone-less graphic and flaw studio steps use the type alone', () => {
  for(const type of ['graphic','flaw'] as const)assert.equal(studioStep({type,text:'Take a close photo.'}),type);
+});
+
+test('desktop parts keep their row ranks without becoming bundle pieces or adding a read shot',()=>{
+  const selected=run({type:'electronics',kind:'desktops',pieces:2});
+  assert.deepEqual(selected.rows.filter(r=>r.field.startsWith('part.')).sort((a,b)=>a.rank!-b.rank!).map(r=>[r.field,r.rank,r.per_piece]),
+    ['graphics','processor','memory','storage','power_supply','board','case'].map((name,i)=>[`part.${name}`,i+1,undefined]));
+  assert.ok(!selected.process.some(s=>s.step==='system_info'));
+  assert.equal(selected.read!.step,'system_info');assert.deepEqual(selected.after,['custom_build']);
+});
+test('a kind is used only when its key exists for the selected family',()=>{
+  const base=run({type:'electronics'});
+  assert.deepEqual(run({type:'electronics',kind:'unknown'}),base);
+  assert.deepEqual(run({type:'apparel',kind:'desktops'}),run({type:'apparel'}));
+});
+test('laptops have their own small hard process and rows without carrier lock',()=>{
+  const selected=run({type:'electronics',kind:'laptops'});
+  assert.equal(selected.dimension_class,'small_hard');
+  assert.deepEqual(selected.process.map(s=>s.key),['about_screenshot','front_screen_on','back']);
+  assert.ok(!selected.rows.some(r=>r.field==='carrier_lock'));
+  assert.deepEqual(selected.rows.filter(r=>r.field.startsWith('part.')).map(r=>r.field),['part.memory','part.storage']);
 });

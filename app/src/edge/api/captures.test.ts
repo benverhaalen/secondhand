@@ -10,11 +10,26 @@ import type { Attribute } from '../card/card.ts';
 import { table } from '../../engines/capture/table.ts';
 import type { Store } from '../events/ports.ts';
 
+// Finish refuses a kept photo whose bytes never arrived (d1006a17). Tests about something else stand on a store
+// whose read finds every kept photo; tests about photos install a real one with captureBlobs(t).
+const { DatabaseSync: KeptDatabase } = await import('node:sqlite');
+const { kv: keptKv } = await import('../store/kv.ts');
+const { createBlobs: keptBlobs } = await import('../store/blobs.ts');
+const { setBlobs: keptSetBlobs } = await import('./uploads.ts');
+const { mkdtempSync } = await import('node:fs');
+const { tmpdir } = await import('node:os');
+const { join } = await import('node:path');
+const keptReal = keptBlobs({ kv: keptKv(new KeptDatabase(':memory:')), dir: mkdtempSync(join(tmpdir(), 'capture-kept-')), origin: 'http://capture.test', log: createLog({ src: 'test', build: 'test', sink: memorySink() }) });
+const keptStore: typeof keptReal = { ...keptReal,
+  read: async (user_id, photo_id) => await keptReal.read(user_id, photo_id) ?? { bytes: new Uint8Array([0xff, 0xd8, 0xff, 0xd9]), content_type: 'image/jpeg', capture_id: photo_id.split('-')[0] } };
+const keptShared = globalThis as typeof globalThis & { __secondhandPhotos?: typeof keptReal };
+
 const prefixes = ["captures"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
 const exampleCreatedAt = (examples.find(e => e.name === 'captures.open')!.response as {created_at:string}).created_at;
 beforeEach(async t => {
   resetCaptures();
+  keptShared.__secondhandPhotos = keptStore; keptSetBlobs(keptStore);
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.parse(exampleCreatedAt);
@@ -242,6 +257,12 @@ const requestCapture = async (endpoint: string, body?: unknown, token = 'good') 
 }));
 let requestNumber = 0;
 const photo = (step: string, reads: unknown[] = []) => ({role: step, step, content_type: 'image/jpeg', bytes: 1000, reads});
+// One kept front photo, for tests about finish that are not about photos (finish refuses a capture with none, d1006a17).
+function keepFront(id: string, rows: typeof capturesApi.captureRows = capturesApi.captureRows) {
+  const row = rows.get(id)!;
+  row.photo_rows = [...(row.photo_rows ?? []), {id: `${id}-ph_kept`, key: 'front', role: 'front'}];
+  if (!row.state.kept.includes('front')) row.state.kept.push('front');
+}
 const patchEndpoint = 'PATCH /v1/captures/:id';
 const photosEndpoint = 'POST /v1/captures/:id/photos';
 const openInput = {mode:'shots',purpose:'sell',suggestion:{family:'apparel',p:.86,second_p:.05},device:{has_lidar:true,object_capture:true}};
@@ -360,6 +381,7 @@ test('separate capture modules preserve an open capture through read, PATCH, fin
   assert.equal(c.id,opened.id,'importing another route module must preserve the open capture');
   c=await bodyOf(await throughCopy(b,patchEndpoint,c.id,{version:c.version,type:'apparel'}));
   assert.equal(c.version,opened.version+1,'another route module must update the same capture');
+  keepFront(c.id,b.captureRows);
   const finished=await throughCopy(b,finishEndpoint,c.id,{version:c.version});
   assert.equal(finished.status,202,'another route module must finish the open capture');
   await a.pendingIdentify('usr_other',c.id);
@@ -440,7 +462,8 @@ test('F18: finish returns the elapsed plan while stored lookups remain running',
   const c=await lookupCapture();now+=15_000;
   const after=await bodyOf(await at('POST /v1/captures/:id/finish',c.id,{version:c.version}));
   for(const field of ['brand','dimensions']) assert.ok(after.plan.questions.some(q=>q.field===field),`finish must use elapsed ${field}`);
-  assert.equal(capturesApi.captureRows.get(c.id)!.state.lookups,'running');
+  // Finish now waits for a running identify before it writes the item (d1006a17), so the lookups have ended.
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.lookups,'done');
 });
 test('F18: identify inside the wait settles brand and dimensions without a question', async () => {
   let now=Date.parse(exampleCreatedAt);deps.now=()=>now;
@@ -662,6 +685,7 @@ test('PATCH returns the other user capture own item id', async () => {
 });
 test('finish returns the other user capture own item id', async () => {
   const c=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
+  keepFront(c.id);
   const response=await at('POST /v1/captures/:id/finish',c.id,{version:c.version},'other');
   assert.equal(response.status,202);
   const finished=await response.json();
@@ -929,7 +953,9 @@ test('F4: a you_said value on the item is overwritten by a capture\'s seen value
 });
 
 test('F4: a failed item write leaves the capture judged', async t => {
-  const c=await askingCapture();
+  let c=await askingCapture();
+  // Finish waits for identify first, so the snapshot is taken once identify has settled.
+  await capturesApi.pendingIdentify('usr_8f2k',c.id);c=await joinedCapture(c.id);
   const before=structuredClone(capturesApi.captureRows.get(c.id));
   const {runtime}=await import('./runtime.ts');
   const itemBefore=structuredClone(runtime.store.get('item','usr_8f2k',c.item_id));
@@ -1001,11 +1027,13 @@ test('F4: new bundle item keeps per-piece names and lookup and derived resolutio
   state.facts['size_label.2']={value:'L',source:'you_said',confidence:1};
   state.facts['brand.1']={value:'Lookup brand',source:'lookup',confidence:.94,confirmed:true};
   state.facts.lot_count={value:2,source:'you_said',confidence:1};
+  keepFront(c.id);
   assert.equal((await at(finishEndpoint,c.id,{version:c.version},'other')).status,202);
   const {runtime}=await import('./runtime.ts');
   const row=runtime.store.get('item','usr_other',c.item_id)!;
   assert.equal(row.origin,'capture');assert.equal(row.data,'captured');assert.equal(row.quantity,2);
-  assert.equal(row.title,'');assert.equal(row.state,'researching');assert.deepEqual(row.photos,[]);
+  assert.equal(typeof row.title,'string');assert.equal(row.state,'review','a captured item opens for review (d1006a17)');
+  assert.deepEqual((row.photos as {id:string}[]).map(p=>p.id),[`${c.id}-ph_kept`],'the item keeps the uploaded photo');
   assert.equal(row.created_at,exampleCreatedAt);assert.equal(row.updated_at,exampleCreatedAt);
   const attrs=await storedAttributes('usr_other',c.item_id);
   assert.equal(attrs.find(a=>a.name==='size_label.1')?.value,'M');assert.equal(attrs.find(a=>a.name==='size_label.2')?.value,'L');
@@ -1054,6 +1082,9 @@ test('F4: finish uses resolved variant and profile facts rather than only stored
   c=job(identify([{...product,c:.98},{...product,product_id:'pr_other',c:.4,dimensions:{width:90,depth:55,height:45}}],'pick'));
   const state=capturesApi.captureRows.get(c.id)!.state;state.profile={handover:'pickup'};
   assert.equal(state.facts.dimensions,undefined);
+  keepFront(c.id);
+  // The identify result above came in directly, so mark identify as run: finish starts one only when none has.
+  capturesApi.captureRows.get(c.id)!.identify_job_id='job_applied_above';
   assert.equal((await requestCapture(finishEndpoint,{version:c.version})).status,202);
   const attributes=await storedAttributes('usr_8f2k',c.item_id);
   const dimensions=attributes.find(a=>a.name==='dimensions')!;
@@ -1364,6 +1395,7 @@ test('capture intent: defaults to sell, keeps a named job on read, and refuses a
 });
 
 test('a captured photo gets a single-use upload target in the process photo store, an example row keeps the example address', async () => {
+  keptShared.__secondhandPhotos=undefined;keptSetBlobs(undefined);
   const c=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
   const response=await at('POST /v1/captures/:id/photos',c.id,{photos:[photo('front')]},'other');
   assert.equal(response.status,201,JSON.stringify(await response.clone().json()));
@@ -1381,7 +1413,7 @@ async function captureBlobs(t:import('node:test').TestContext) {
   const {createBlobs}=await import('../store/blobs.ts');
   const {setBlobs}=await import('./uploads.ts');
   const {mkdtemp,rm}=await import('node:fs/promises');
-  const dir=await mkdtemp('/tmp/capture-test-');
+  const dir=await mkdtemp(join(tmpdir(),'capture-test-'));
   const database=new DatabaseSync(':memory:');
   const blobs=createBlobs({kv:kv(database),dir,origin:'http://capture.test',log:deps.log});
   const shared=globalThis as typeof globalThis & {__secondhandPhotos?:typeof blobs};
@@ -1395,17 +1427,31 @@ async function openedIntent(intent:string,extra:Record<string,unknown>={}) {
 }
 async function joinedCapture(id:string) {return bodyOf(await at('GET /v1/captures/:id',id));}
 
-test('finish starts one identify job even with no shots and refuses its late result',async()=>{
+test('finish starts one identify job even with no shots and waits for it',async()=>{
   const c=await openedIntent('sell');
   const response=await at(finishEndpoint,c.id,{version:c.version});assert.equal(response.status,202);
   const body=await response.json();const id=body.jobs.find((j:{kind:string})=>j.kind==='identify').id;
   const before=structuredClone(capturesApi.captureRows.get(c.id));
   await capturesApi.pendingIdentify('usr_8f2k',c.id);
+  // Finish waits for identify before it writes the item (d1006a17): the job is done, and nothing moves afterwards.
   const {jobs}=await import('./jobs.ts');const job=jobs.get(id,'usr_8f2k')!;
-  assert.equal(job.state,'failed');assert.equal(job.reason,'stale');
+  assert.equal(job.state,'done');
   assert.deepEqual(capturesApi.captureRows.get(c.id),before);
   assert.equal((await at(finishEndpoint,c.id,{version:c.version})).status,409);
   assert.equal(capturesApi.captureRows.get(c.id)!.identify_job_id,id);
+});
+
+test('finish refuses a kept photo whose bytes were never uploaded, and a capture with no photo',async t=>{
+  await captureBlobs(t);
+  deps.verify=async token=>token==='other'?'usr_other':null;
+  let c=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
+  const none=await at(finishEndpoint,c.id,{version:c.version},'other');
+  assert.equal(none.status,400);assert.equal((await none.json()).message,'Add a photo before saving the item');
+  await at(photosEndpoint,c.id,{photos:[photo('front')]},'other');
+  c=await bodyOf(await at('GET /v1/captures/:id',c.id,undefined,'other'));
+  const missing=await at(finishEndpoint,c.id,{version:c.version},'other');
+  assert.equal(missing.status,400);assert.equal((await missing.json()).message,'Upload each photo before saving the item');
+  assert.notEqual(capturesApi.captureRows.get(c.id)!.status,'judged','a refused finish leaves the capture open');
 });
 
 test('intent alone derives purpose and rejects disagreement',async()=>{
@@ -1545,7 +1591,7 @@ test('two people own separate identify jobs and a foreign result cannot write',a
   assert.throws(()=>capturesApi.applyJobResult('usr_other',a.id,{kind:'identify',action:'ask',set:[]}));assert.deepEqual(capturesApi.captureRows.get(a.id),before);
 });
 
-test('identify ending after finish cannot change the capture and records stale',async t=>{
+test('finish waits for a running identify, and nothing changes the capture after it',async t=>{
   let release:()=>void=()=>{};let entered:()=>void=()=>{};
   const running=new Promise<void>(resolve=>{entered=resolve;});
   const gate=new Promise<void>(resolve=>{release=resolve;});
@@ -1553,11 +1599,19 @@ test('identify ending after finish cannot change the capture and records stale',
   t.after(()=>{capturesApi.deps.identifyPorts=undefined;release();});
   let c=await openedIntent('sell');await at(photosEndpoint,c.id,{photos:[photo('front'),photo('back'),photo('tag')]});
   await running;c=await joinedCapture(c.id);
-  assert.equal((await at(finishEndpoint,c.id,{version:c.version})).status,202);
-  const before=structuredClone(capturesApi.captureRows.get(c.id));release();await capturesApi.pendingIdentify('usr_8f2k',c.id);
-  assert.deepEqual(capturesApi.captureRows.get(c.id),before);
-  const {jobs}=await import('./jobs.ts');const job=jobs.get(before!.identify_job_id!,'usr_8f2k')!;
-  assert.equal(job.state,'failed');assert.equal(job.reason,'stale');
+  // Finish waits for identify before it writes the item (d1006a17), so it cannot answer while identify runs.
+  let answered=false;
+  const finishing=at(finishEndpoint,c.id,{version:c.version}).then(response=>{answered=true;return response;});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(answered,false,'finish must wait for the running identify');
+  release();
+  assert.equal((await finishing).status,202);
+  await capturesApi.pendingIdentify('usr_8f2k',c.id);
+  const after=structuredClone(capturesApi.captureRows.get(c.id))!;
+  assert.equal(after.status,'judged');
+  const {jobs}=await import('./jobs.ts');assert.equal(jobs.get(after.identify_job_id!,'usr_8f2k')!.state,'done');
+  assert.throws(()=>job(identify([product]),'usr_8f2k',c.id),ApiError,'a result after finish is refused');
+  assert.deepEqual(capturesApi.captureRows.get(c.id),after);
 });
 
 test('a partial shoot starts no identify job; completing it starts one; only a label retake starts another',async()=>{

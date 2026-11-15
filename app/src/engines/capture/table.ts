@@ -5,20 +5,22 @@ import type { ParamStore, Scope } from '../param/param.ts';
 
 export type Site = 'ebay' | 'facebook' | 'depop' | 'poshmark' | 'mercari';
 export type Target = Site|'studio';
-export type Way = {way: 'seen'|'label'|'measured'|'derived'|'lookup'|'asked'; view?: string; from?: string; min_conf?: number};
+export type Way = {way: 'seen'|'label'|'measured'|'derived'|'lookup'|'asked'; view?: string; from?: string; when?: string; value?: unknown; min_conf?: number};
 export type AskKind = 'pick_one'|'pick_many'|'number_with_unit'|'yes_no'|'text';
 export type FieldRow = {
   field: string; type: 'text'|'enum'|'number'|'bool'|'list'|'dimensions'; values?: (string|number)[]; unit?: string; max?: number;
   ways: Way[]; confirm: 'auto'|'tap'|'always'; required: Target[]|'all'; recommended: Target[]|'all';
   ask?: {kind: AskKind; words: string; units?: string[]; parts?: string[]}; per_piece?: boolean; note?: string;
+  labels?: string[]; shapes?: boolean; rank?: number;
   site_names?: Partial<Record<Site, {name?: string; max_length: number|null}>>;
 };
 export type DimensionClass = 'flat_garment'|'footwear'|'bag'|'small_hard'|'medium_hard'|'large_bulky'|'soft_goods'|'set_bundle';
 export type ClassRow = {checks: string[]; weight: string; dimensions?: FieldRow};
+export type Components = {read?: Step & {words:string}; after?: string[]; parts: FieldRow[]};
 export type Table = { version: number; params: typeof data.params; steps: Record<'group'|'front_still',Step>; types: Record<string, Step[]>; no_lidar: Record<string, unknown>;
   family_class: Record<string, Exclude<DimensionClass,'set_bundle'>|null>;
   classes: Record<Exclude<DimensionClass,'set_bundle'>,ClassRow> & {set_bundle: {wraps: string; lot_count: FieldRow}};
-  fields: Record<string, FieldRow[]> };
+  fields: Record<string, FieldRow[]>; components: Record<string, Components> };
 export function validateTable(input: unknown): Table {
   const t = input as Table;
   if (t.version !== 2) throw new Error('process table version must be 2');
@@ -37,13 +39,28 @@ export function validateTable(input: unknown): Table {
       throw new Error(`missing view ${w.view} for ${row.field}`);
   }
   for (const [key, rows] of Object.entries(t.fields)) {
-    const processes = key === 'root' ? Object.values(t.types) : [t.types[key]];
+    const processes = key === 'root' ? Object.values(t.types) : [t.types[key] ?? t.types[key.split('.')[0]]];
     for (const steps of processes) for (const row of rows) check(row, steps.map(s => s.step));
   }
   for (const [key, c] of Object.entries(t.classes)) if ('dimensions' in c && c.dimensions) {
     check(c.dimensions);
     for (const [family, cls] of Object.entries(t.family_class)) if (cls === key)
-      check(c.dimensions, t.types[family].map(s => s.step));
+      check(c.dimensions, (t.types[family] ?? t.types[family.split('.')[0]]).map(s => s.step));
+  }
+  for (const [key, component] of Object.entries(t.components)) {
+    const [family, kind, extra] = key.split('.');
+    if (!FAMILIES.includes(family as typeof FAMILIES[number]) || !kind || extra !== undefined)
+      throw new Error(`components key is not a kind: ${key}`);
+    const views = (t.types[key] ?? t.types[family]).map(s => s.step);
+    if (component.read) views.push(component.read.step);
+    for (const row of component.parts) {
+      for (const way of row.ways) if (way.way === 'label' && (!way.view || !views.includes(way.view)))
+        throw new Error(`component label view ${way.view} for ${key}.${row.field}`);
+      check(row, views);
+    }
+    const fields = [...t.fields.root,...t.fields[family],...(t.fields[key] ?? [])];
+    for (const field of component.after ?? []) if (!fields.some(row => row.field === field))
+      throw new Error(`component after unknown field ${field} for ${key}`);
   }
   check(t.classes.set_bundle.lot_count);
   return t;

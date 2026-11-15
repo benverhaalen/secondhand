@@ -67,7 +67,7 @@ test('identify must finish and retain all four stages in their route order', () 
 
 test('finish must name the same identify job and the judged capture', () => {
   const finished = { capture: { ...capture, state: 'judged' },
-    item: { id: capture.item_id, state: 'researching' }, jobs: [job] };
+    item: { id: capture.item_id, state: 'review' }, jobs: [job] };
   assert.equal(hasFinishedJobs(finished, context), true);
   for (const patch of [{ jobs: [] }, { jobs: [{ ...job, id: 'job_wrong' }] },
     { capture: { ...capture, id: 'cap_other', state: 'judged' } },
@@ -124,7 +124,7 @@ test('recorded successful responses pass the same checks the runner calls', () =
     'front.put': null, 'front.replay': { code: 'not_found' },
     identify: job, brand: capture,
     answer: { ...capture, version: 5, plan: { process: capture.plan.process, questions: [] } },
-    finish: { capture: { ...capture, state: 'judged' }, item: { id: 'it_1', state: 'researching' }, jobs: [job] },
+    finish: { capture: { ...capture, state: 'judged' }, item: { id: 'it_1', state: 'review' }, jobs: [job] },
     'b.capture': { code: 'not_found' }, 'b.job': { code: 'not_found' },
     'b.upload': { code: 'not_found' }, 'b.patch': { code: 'not_found' }, 'b.list': { code: 'invalid' },
   };

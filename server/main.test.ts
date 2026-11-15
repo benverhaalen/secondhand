@@ -58,7 +58,7 @@ test('one Node server shares sign-in state, rows and streams across route wrappe
   t.after(async () => {
     globalThis.fetch = originalFetch;
     if (previous === undefined) delete process.env.SECONDHAND_DATA_DIR; else process.env.SECONDHAND_DATA_DIR = previous;
-    await rm(folder, { recursive: true, force: true });
+    await rm(folder, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
   const { start } = await import('./main.ts');
   const { store } = await import('../app/src/edge/auth.ts');
