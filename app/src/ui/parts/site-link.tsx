@@ -56,7 +56,7 @@ export function SiteCopy({ id, open, site, shot, saved, onOpen, onClose }: {
             <Photo src={shot} label="The site’s screenshot" fit="fill" />
             {saved ? <Txt role="caption">{saved}</Txt> : null}
           </Stack>
-        ) : <Txt role="body">The next time the agent reads it there, it saves the site’s own picture here, with the time.</Txt>}
+        ) : <Txt role="body">No screenshot saved</Txt>}
         <Line><SiteLink id={`${id}-site`} site={site} onPress={onOpen} /></Line>
       </Stack>
     </Sheet>

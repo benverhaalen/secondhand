@@ -30,3 +30,12 @@ test('standards N5: two labels for one intent fail across files; a chip value an
   assert.match(run({ 'app/src/app/a.tsx': "<DecisionCard primary={{ id: 'p', label: 'Cash out' }} second={{ id: 's', label: 'Later' }} />\n<Pill id=\"b\" label=\"Not now\" />\n" }), /N5/);
   assert.equal(run({ 'app/src/app/a.tsx': '<Pill id="a" label="Not now" />\n<Chips id="when" other={{ label: \'Later\' }} />\n<Pill id="k" label="Keep this" />\n<Pill id="j" label="Keep it" />\n' }), '');
 });
+
+// The recovery label read "Try again" on most screens and "Retry" on a failed card; the app says Retry. Most of them sit
+// in an empty state's action or one side of a failed/idle label, so both forms count as a control's label.
+test('standards N5: Retry and Try again are one intent, in a Pill, an empty state action or a failed label', () => {
+  assert.match(run({ 'app/src/app/a.tsx': '<Pill id="a" label="Retry" />\n', 'app/src/app/b.tsx': '<Pill id="b" label="Try again" />\n' }), /b\.tsx:1 N5 "Try again" and "Retry"/);
+  assert.match(run({ 'app/src/app/a.tsx': '<Pill id="a" label="Retry" />\n', 'app/src/app/b.tsx': "<EmptyState title=\"x\" action={{ id: 'r', label: 'Try again', onPress: go }} />\n" }), /b\.tsx:1 N5 "Try again" and "Retry"/);
+  assert.match(run({ 'app/src/ui/parts/a.tsx': "<Pill id={id} label={failed ? 'Retry' : p.label} />\n", 'app/src/ui/parts/b.tsx': "<FootButton id={id} label={status === 'failed' ? 'Try again' : does} />\n" }), /b\.tsx:1 N5 "Try again" and "Retry"/);
+  assert.equal(run({ 'app/src/app/a.tsx': "<Pill id=\"a\" label=\"Retry\" />\n<EmptyState title=\"x\" action={{ id: 'r', label: 'Retry', onPress: go }} />\n<Pill id={id} label={failed ? 'Retry' : 'Send'} />\n" }), '');
+});

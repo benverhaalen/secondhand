@@ -39,7 +39,7 @@
     {
       "state": "failed",
       "path": "/you?state=failed",
-      "shows": "Couldn’t load your numbers, that nothing changed, and Try again"
+      "shows": "Couldn’t load your numbers, that nothing changed, and Retry"
     },
     {
       "state": "offline",
@@ -111,7 +111,7 @@
     "One purpose (Ben, 10:27: \"each page should have one purpose ... profile shouldnt have analytics, linking services, tracking things, settings ... it should have simple ways to visualize and understand intutitively and go to each thing\"): see at a glance how it is going, and get to each thing. Read as iOS Settings reads: the account on top, then rows.",
     "The glance is the amount that came after fees with its count of sales (Art. 7.10, one number first), and at most two numbers under it: what is on its way, and how many things are live. Why: the money is why a person opens You; on its way is money not yet theirs, so it is never added in; live is what is still working for them. Everything else is a page.",
     "Rows are one line each, an icon, the page's own title and a chevron, in two groups: the numbers (Insights, Payouts), then how it runs (Your sites, Rules and limits, Notifications, Settings). A row's label is its page's title, as iOS Settings rows are, so the person lands where the row said.",
-    "A row says more than its name only when it needs the person: Your sites carries a quiet Signed out tag when a site signed them out. Why: the fix is on Your sites (Try again on that site's row), and Today carries the sign-in card; a gray tag keeps the color for the one thing first (Art. 7.14).",
+    "A row says more than its name only when it needs the person: Your sites carries a quiet Signed out tag when a site signed them out. Why: the fix is on Your sites (Retry on that site's row), and Today carries the sign-in card; a gray tag keeps the color for the one thing first (Art. 7.14).",
     "Moved, not deleted: the week chart, Your things and How they're doing open at the top of Insights (app/src/you/trends.tsx); paid out and on its way, on Payouts; Activity, under Rules and limits; Records, under Settings; App defaults (pickup spot, ship or pickup), under Settings, as before.",
     "No Pickups row yet: no page holds pickups alone, and a row named Pickups that opened App defaults would land the person somewhere it did not name. Pickup defaults stay under Settings, App defaults, until a Pickups page exists.",
     "Insights waits for a thing to sell or to list; Payouts waits for a sale.",
