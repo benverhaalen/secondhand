@@ -629,6 +629,10 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after seeing the app mock.
 > Dont consider ben's design to be finished or decided. It's not. I wanted to more so understand how we build the system to drive all the features
 
+## 2026-11-14 nate build the backend together, not low, then a fresh session builds every feature without ui
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> lets just build together the backedn system, which I will correct the design of if I identify that its lackluster, of course you as the expert who also has a great handle on the up to date state of technologies, how ai can search, find, and determine anything, Lets not build so low. Lets go one by one. Prepare next session after fully finalizing this, then Ill wrap up and properly prepare for a fresh new session to follow the specs and parallel build out every feature ready and working and testable without ui
+
 ## 2026-11-15 the code understands each app
 Ben, project chat, 01:11 UTC, inside a longer message.
 > also with the brand specific things ensure somewhere in the instruction we end up being able to have the code understand each app. like if depop offers only last 24 hours, whatever depends on that fact should actually depend on that. deeply thought through software intention. finding where things could go wrong and why.
