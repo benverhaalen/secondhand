@@ -2198,3 +2198,9 @@ Nate, the app-wiring lead's session, 2026-11-15, about 06:20 Central (machine cl
 > Dont go by my choice then, he has some select
 
 Used in: the app-wiring lead's search takeover (packet 81): the ＋ keeps New's own choices (app/src/ui/parts/takeover.tsx).
+
+## 2026-11-15 nate the history rewrite runs after judging
+Nate, orchestrator's session, 2026-11-15, about 07:40 Central, answering "Run the history rewrite right after judging with Ben stopped, or now?"
+> After judging
+
+Used in: [the finalization spec](../spec/plans/finalization.md#11-the-history-rewrite-after-judging).

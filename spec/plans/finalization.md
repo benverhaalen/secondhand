@@ -112,3 +112,20 @@ The gate and the type check on every merge; the Python suites (after DB5); the p
 ## 10. Done, as one condition
 
 On the Mac at main: `node .agents/check.mjs` exits 0 with the Python suites in it; `node scripts/realtime-proof.mjs` prints 10 of 10; the benchmark run twice shows four sources an answer for a person who is not signed in, with the full answer at a 5 s median or better; on the dev server a person signs in by email and `POST /v1/valuations` returns a checked range for their own item that cites stored rows; the app's search screen shows a live job on a simulator.
+
+## 11. The history rewrite, after judging
+
+Nate ordered it ("Rewrite it", then "After judging": [words](../../product/words.md#2026-11-15-nate-the-history-rewrite-runs-after-judging)). It removes recorded Dupe results and one phrase he asked removed from every commit. Rehearsed on a scratch copy on 2026-11-15: about 10 seconds, and afterwards no commit holds either. It runs once, by the orchestrator, after 19:00 UTC.
+
+**What it changes.** Every commit id (2,348 on main): the commits are signed and a rewrite strips the signatures. Four files ever held Dupe results: `app/src/buy/fixtures/search-live-levi.json`, `app/src/edge/assist/fixtures/tools/search.json`, `app/src/edge/harness/sites/dupe/fixtures/search.sse` and `spec/examples/jobs.json`. The first three are hand-written on main now and are dropped from history and re-added clean; the fourth is cleaned on main first by the server lead, then its old links are blanked in history.
+
+**What it needs, in order.**
+1. `spec/examples/jobs.json` hand-written on main (the last file still holding three recorded links).
+2. Ben stopped: his machines, his agents and his 28 remote branches. Any old clone that pulls and then pushes merges the whole old history back, so every clone is thrown away and cloned again, never pulled. [Packet 82](../../.agents/team/packets/team/82-history-rewrite-for-ben.md) has his steps.
+3. A freeze of Nate's side: every lead commits and pushes, then makes no commit; the Mac's workers are stopped or finished.
+4. The rewrite on a fresh mirror clone, checked (no commit holds a full Dupe link or the phrase; the tree at the new main equals the tree at the old main except the dropped fixtures), then a force-push of every branch.
+5. The same rewrite, with the same rules, on the Mac's repository, so parked worker branches keep their work; then the Windows checkout is replaced by a fresh clone. Each lead is told when to resume.
+
+**What it cannot do.** GitHub keeps the old commits reachable through the references of 24 pull requests and by commit id. Only GitHub Support can purge them, on a request from Ben as the repository's owner. Until then the old content is not in any branch and is still fetchable by someone who has an old id.
+
+**Not in scope unless Nate says so:** the page-reading scripts and notes named "recon", and one line about studying animations in a vendored design skill that is kept as an unchanged copy.
