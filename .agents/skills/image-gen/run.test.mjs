@@ -125,7 +125,7 @@ test('a call is not fresh in a folder that holds files or sits in a repo, so nei
   assert.match(done.jobs[0].why, /already holds files/);
 
   const repo = mkdtempSync(join(tmpdir(), 'image-repo-'));
-  writeFileSync(join(repo, 'AGENTS.md'), 'rules');
+  writeFileSync(join(repo, 'AGENTS.md'), 'rules'); mkdirSync(join(repo, '.git'));
   await assert.rejects(go({ out: join(repo, 'runs'), jobs: [job('a')] }, f), /inside .*AGENTS\.md/s);
 });
 
