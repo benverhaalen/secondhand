@@ -52,5 +52,15 @@
   { "id": "P9", "rule": "Tests come from the behavior table, from an agent that is not the builder, and fail before the code exists.", "kind": "judge", "fail": "Fail if a control's behavior was built before a test for its row failed, or the builder edited the table or the test." },
   { "id": "P10", "rule": "At most three image rounds, and stop when a round brings no new accepted finding.", "kind": "judge", "fail": "Fail if a fourth image round ran, or the latest design was carried forward in place of the best so far." },
   { "id": "P11", "rule": "The same job looks and moves the same on every screen.", "kind": "judge", "fail": "Fail if this screen does a job another screen already does, with a different part, look or motion." },
-  { "id": "P12", "rule": "Space says what belongs together, and every gap has a reason.", "kind": "judge", "fail": "Fail if two gaps are equal where one separates parts of a thing and the other separates things, or you can't say why a gap is the size it is." }
+  { "id": "P12", "rule": "Space says what belongs together, and every gap has a reason.", "kind": "judge", "fail": "Fail if two gaps are equal where one separates parts of a thing and the other separates things, or you can't say why a gap is the size it is." },
+  { "id": "P13", "rule": "Ideation makes 2 to 4 designs: two open, the others each pushed on one lever.", "kind": "judge", "fail": "Fail if a steered design was given two levers, or fewer than two designs in the round were left open." },
+  { "id": "Q1", "rule": "A large screen or a section of the signed-out site makes one bold move.", "kind": "judge", "fail": "Fail if you cannot name in one sentence the one way a large screen, or a section of the signed-out site, departs from how apps of this kind do it." },
+  { "id": "Q2", "rule": "A bold move or a motion names its purpose.", "kind": "judge", "fail": "Fail if a bold move or a motion cannot name what it is for: what to look at first, the story, feedback, a change of state, or recognition. It looked good is not a purpose." },
+  { "id": "Q3", "rule": "The bold move is ownable.", "kind": "judge", "fail": "Fail if the screen or page could belong to another product once the wordmark is covered." },
+  { "id": "Q4", "rule": "One bold move per view.", "kind": "judge", "fail": "Fail if an app view makes more than one bold move, a site section more than one, or a page has more than one signature motion." },
+  { "id": "Q5", "rule": "A bold move never breaks the basics.", "kind": "judge", "fail": "Fail if a bold move hurts legibility, changes the size, place or behavior of a familiar control, or takes first place from the item photo." },
+  { "id": "M1", "rule": "Reduce Motion is never overridden.", "kind": "check", "by": "picks:M1" },
+  { "id": "M2", "rule": "A screen never sets a raw duration.", "kind": "check", "by": "picks:M2" },
+  { "id": "M3", "rule": "No scroll listeners and no transition: all.", "kind": "check", "by": "picks:M3" },
+  { "id": "M4", "rule": "Every named motion has a reason.", "kind": "check", "by": "picks:M4" }
 ]
