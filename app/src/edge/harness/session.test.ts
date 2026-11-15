@@ -125,3 +125,17 @@ test('pickRoute: a public route is never ranked over a signed-in one for a field
   assert.equal(pickRoute([pub], ['id', 'watchers']), undefined);                       // no signed-in route: none, not the public one
   assert.equal(pickRoute([pub, signed], ['id', 'nope']), undefined);                   // nobody lists it
 });
+
+test('review: a write that runs past its lease TTL keeps the lease through its read-back; a second job gets 409', async () => {
+  const store = memoryLeaseStore();
+  const s = createSessions({ store, now: () => Date.now() });
+  let second: unknown;
+  const out = await s.withLease('acct', 'write-1', 30, async () => {
+    await new Promise(r => setTimeout(r, 80)); // the write and its read-back outlast the 30 ms TTL
+    second = s.lease('acct', 'job-2', 30);
+    return 'written';
+  });
+  assert.equal(out, 'written');
+  assert.deepEqual(second, { ok: false, status: 409 });
+  assert.ok(s.lease('acct', 'job-2', 30).ok, 'released once the write is done');
+});

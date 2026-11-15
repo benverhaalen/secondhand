@@ -59,7 +59,9 @@ export function createSessions({ store, now, rand = Math.random, decide = () => 
   async function withLease<T>(account_id: string, job_id: string, ttl_ms: number, fn: () => Promise<T>): Promise<T | { ok: false; status: 409 | 423 }> {
     const r = lease(account_id, job_id, ttl_ms);
     if (!r.ok) return { ok: false, status: r.status };
-    try { return await fn(); } finally { release(account_id, job_id); }
+    // Renewed at a third of its TTL while fn runs, so a slow write and its read-back never outlive the lease.
+    const renew = setInterval(() => { store.take(account_id, job_id, ttl_ms, now()); }, Math.max(1, Math.floor(ttl_ms / 3)));
+    try { return await fn(); } finally { clearInterval(renew); release(account_id, job_id); }
   }
 
   // The session expired (a login wall, a 401): the account goes stale, its jobs pause, the hint relinks.

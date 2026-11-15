@@ -248,3 +248,32 @@ test('a site whose profile says headed gets a real window, for accounts and publ
   await pool.dispatch({ site: 'mercari', job_id: 'm2', run: async () => 0 });
   assert.deepEqual(f.launched.filter(l => l.kind === 'anonymous').map(l => l.opts.headless), [false, true], 'the headed public slot is reused for the second Mercari read');
 });
+
+test('review: two tasks of one job on one account: the second gets 409 and the first never frees the lease early', async () => {
+  const f = fakeLauncher(1);
+  const pool = createPool({ launcher: f.launcher, profileRoot: '/profiles', accounts: allLinked });
+  const slow = { account_id: 'a', job_id: 'same', run: async () => { await sleep(20); return 1; } };
+  const [a, b] = await pool.dispatchAll([slow, slow]);
+  assert.ok(a.ok && !b.ok && b.status === 409);
+});
+
+test('review: a failed load, a failed run, or a logged-out export never overwrites the stored sign-in', async () => {
+  const good: StorageState = { cookies: [{ name: 'sid', value: 'good', domain: '.depop.com', path: '/', expires: -1, httpOnly: true, secure: true, sameSite: 'Lax' }], origins: [] };
+  const vault = memoryVault();
+  await vault.put('ref-a', good);
+  const accounts = memoryAccounts([{ account_id: 'a', person_id: 'p1', site: 'ebay', token_ref: 'ref-a' }], vault);
+  let failLoad = true, exported: StorageState = { cookies: [], origins: [] };
+  const launcher: Launcher = {
+    async persistent() { return { newPage: async () => ({ close: async () => {} }), close: async () => {}, onClose() {},
+      loadState: async () => { if (failLoad) throw new Error('load failed'); }, exportState: async () => exported }; },
+    async anonymous() { throw new Error('unused'); },
+  };
+  const pool = createPool({ launcher, profileRoot: '/profiles', accounts, vault });
+  assert.ok(!(await pool.dispatch({ account_id: 'a', job_id: 'j1', run: async () => 1 })).ok);
+  assert.deepEqual(await vault.get('ref-a'), good, 'a failed load keeps the stored state');
+  failLoad = false;
+  assert.ok(!(await pool.dispatch({ account_id: 'a', job_id: 'j2', run: async () => { throw new Error('boom'); } })).ok);
+  assert.deepEqual(await vault.get('ref-a'), good, 'a failed run keeps the stored state');
+  assert.ok((await pool.dispatch({ account_id: 'a', job_id: 'j3', run: async () => 1 })).ok);
+  assert.deepEqual(await vault.get('ref-a'), good, 'an export with no cookies (logged out) keeps the stored state');
+});
