@@ -1,45 +1,132 @@
 {
   "screen": "new",
-  "what": "New, the ＋: the one way a thing gets in. The ink button grows into a circle of the brand's field that covers the screen, and its three jobs rise out of it, centered. spec/pages.md §6.4, spec/ways-out.md §6.4.",
+  "what": "New, the ＋: the one way a thing gets in. The ink button grows into a circle of the brand's field that covers the screen, and its four jobs rise out of it, centered. spec/pages.md §6.4, spec/ways-out.md §6.4.",
   "frame": {
-    "who": "Every seller, many times a week; Clearing out most (a pile, fast), Testing the water (What's it worth), the hunter (Find or buy it).",
-    "came_to": "Say which job this thing is for in one tap, then point the camera at it, or type it when it is not at hand.",
-    "costly_mistake": "Picking the wrong job and losing the shots: the camera switches between Sell, Worth and Find without losing them, and × always returns the way it came.",
-    "ways_out": "Every job can start from words or a pasted link instead of the camera, from the pencil at its end; photos already taken come in from the camera's library button.",
+    "who": "Every seller and buyer, many times a week: Clearing out most (Sell an item), Testing the water (Appraise an item), the hunter after one thing secondhand (Track an item), anyone holding a thing they cannot name (Find an item).",
+    "came_to": "Say which job this thing is for in one tap, then point the camera at it.",
+    "costly_mistake": "Picking the wrong job and losing the shots: the camera switches between Sell, Worth, Track and Find without losing them, and × always returns the way it came.",
+    "ways_out": "Words or a pasted link come in through Buy's search field, and a link shared into the app opens its job's sheet here; photos already taken come in from the camera's library button.",
     "in_the_loop": "Nothing here acts for the person: every choice is theirs; words or a link become a draft they review, never a post."
   },
   "decisions": [
     "The circle grows in the brand's field, sky, mint and lime, which flows over the whole screen as it grows (Ben, 06:19: \"the background might be good to have that be the gradient so it can kind of almost like flow over the whole thing\"). It is the field and not the wash: the wash marks the top of a main tab (U8), and the field is the one full ground a view may have (C2). In dark it is deep sky, mint and aqua, the quiet ground of the dark Today, so no light circle flashes at night.",
-    "The three jobs stand centered between the top of the screen and the × (Ben, 06:19: \"center the main action buttons\"), each name centered in its capsule. The last used sits lowest, nearest the ×, so the thumb's shortest reach is the likeliest job; it rises first and its icon well is the one ink circle (one emphasis per view).",
-    "＋ holds three jobs, in Ben's words: Sell it, What's it worth, Find or buy it (06:19). Everything else ＋ could start is a branch of one of them, so it is not a door of its own: cross-listing a listing already on Depop is Sell it with that listing's link pasted (Ben, 05:47); watching for a thing nobody sells yet is where Find or buy it ends when nothing matches (the want); a pile is one Sell it session per thing; linking a site lives in You.",
-    "A link or words are a way into each job, not a job (Ben, 06:19: \"I don't know really what paste a link or describe it are ... They should kind of be integrated in other things\"). The pencil at each job's end opens that job with one field that takes either; a link is told from words by its shape, so the person never picks which.",
-    "Each way into a job ends where the camera's way ends: Sell it at the draft's review, What's it worth on the value page for the product the words name, Find or buy it on the matches.",
-    "Capsules are 88 tall with a 56 icon well: 88 less 2 × 16 padding is 56, so the well's corner nests in the capsule's (Art. 9.1). The pencil is the kit's 40 circle with a 44 reach, in the wells' quiet gray.",
+    "The four jobs stand centered between the top of the screen and the × (Ben, 06:19: \"center the main action buttons\"), each name centered in its capsule. The last used sits lowest, nearest the ×, so the thumb's shortest reach is the likeliest job; it rises first and its icon well is the one ink circle (one emphasis per view).",
+    "＋ holds four jobs, in Ben's words and order (11:29: \"appraise an item. sell an item. track an item. and find an item\"; 11:32: Track is \"tracking a brewers jersey secondhand\", Find is \"finding out what an item is\", What's it worth \"appraises an item based on what the secondhand market prices it at now\"). Before any is used they stand in that order; after, the last used comes first. Where each result lives afterward: spec/redesign/new-results.md.",
+    "Each way into a job ends where the camera's way ends: Sell at the draft's review, Appraise on the value page for the product, Track on a new want for it (the most to pay, then Buy's Watching shelf), Find on its product page.",
+    "Capsules are 88 tall with a 56 icon well: 88 less 2 × 16 padding is 56, so the well's corner nests in the capsule's (Art. 9.1). No pencil and no gradient on a capsule (Ben, 11:29 and 11:32): four capsules alike, told apart by icon and name.",
     "Choosing a job opens the camera out of the touched capsule's icon well, on the camera's black, so the camera comes from what the finger touched (E24), in 300 ms.",
     "A link or words can arrive from outside (a share sheet): ?link= opens Sell it with the link in its field, ?what= prefills the field of the job ?sheet= names.",
     "Words are read with spelling tolerance, and the product they name shows under them, spelled the catalog's way (\"carhart detroit\" reads Carhartt Detroit Jacket J97), so a typo never reaches a title or a search (edge-cases §3).",
     "In Sell it, a typed price more than 3 times the top of the sold range, or under a third of the bottom, asks once with the range on the sheet, and the button says the price it will use; the next tap makes the draft. A price inside the range asks nothing (edge-cases §3)."
   ],
   "states": [
-    { "state": "typical", "shows": "the field over the screen, the × where the ＋ was, and Sell it, What’s it worth and Find or buy it as large capsules centered on the screen, each with a pencil at its end" },
-    { "state": "sell", "shows": "a sheet titled Sell it with a What it is, or a link blank, a Your price blank and Make a draft" },
-    { "state": "worth", "shows": "a sheet titled What’s it worth with a What it is, or a link blank and See what it’s worth" },
-    { "state": "find", "shows": "a sheet titled Find or buy it with a What it is, or a link blank and Find it" },
-    { "state": "ask", "shows": "the Sell it sheet with a price far outside the sold range: Similar ones sold for $85 to $115. List at $500? and the button List at $500" }
+    {
+      "state": "typical",
+      "shows": "the field over the screen, the × where the ＋ was, and Appraise an item, Sell an item, Track an item and Find an item as large capsules centered on the screen, each with its icon"
+    },
+    {
+      "state": "sell",
+      "shows": "a sheet titled Sell an item with a What it is, or a link blank, a Your price blank and Make a draft"
+    },
+    {
+      "state": "worth",
+      "shows": "a sheet titled Appraise an item with a What it is, or a link blank and See what it’s worth"
+    },
+    {
+      "state": "track",
+      "shows": "a sheet titled Track an item with a What it is, or a link blank and Watch for it"
+    },
+    {
+      "state": "find",
+      "shows": "a sheet titled Find an item with a What it is, or a link blank and See what it is"
+    },
+    {
+      "state": "ask",
+      "shows": "the Sell an item sheet with a price far outside the sold range: Similar ones sold for $85 to $115. List at $500? and the button List at $500"
+    }
   ],
   "controls": [
-    { "control": "×", "id": "new-close", "on_tap": "the jobs sink, the circle shrinks back into the ＋, and the screen behind returns", "does": "closes New", "goes": "/" },
-    { "control": "Sell it", "id": "new-sell", "on_tap": "the camera opens out of the capsule in Sell mode", "does": "opens the camera to sell", "goes": "/camera" },
-    { "control": "What’s it worth", "id": "new-worth", "on_tap": "the camera opens out of the capsule in Worth mode", "does": "opens the camera to value", "goes": "/camera" },
-    { "control": "Find or buy it", "id": "new-find", "on_tap": "the camera opens out of the capsule in Find mode", "does": "opens the camera to search", "goes": "/camera" },
-    { "control": "Sell it: type it or paste a link", "id": "new-sell-type", "on_tap": "opens the Sell it sheet", "does": "starts selling from words or a link" },
-    { "control": "What’s it worth: type it or paste a link", "id": "new-worth-type", "on_tap": "opens the What’s it worth sheet", "does": "starts valuing from words or a link" },
-    { "control": "Find or buy it: type it or paste a link", "id": "new-find-type", "on_tap": "opens the Find or buy it sheet", "does": "starts a search from words or a link" },
-    { "control": "What it is, or a link", "id": "type-field", "on_tap": "edits the words or the link in place", "does": "edits what it is", "sheet": "sell" },
-    { "control": "Your price", "id": "type-price", "on_tap": "edits the price in place; blank means priced from sold data", "does": "edits the price", "sheet": "sell" },
-    { "control": "Make a draft", "id": "sell-go", "on_tap": "the words or the listing become a draft, opened at its review, priced from sold data or at the typed price; a typed price far outside the sold range asks once first. With a link the button says Bring it in", "does": "makes a draft", "goes": "/item/it_draft", "sheet": "sell" },
-    { "control": "See what it’s worth", "id": "worth-go", "on_tap": "the value page opens for the product the words name", "does": "values it", "goes": "/worth", "sheet": "worth" },
-    { "control": "Find it", "id": "find-go", "on_tap": "the matches open for the product the words name, or the words as typed", "does": "searches", "goes": "/search", "sheet": "find" }
+    {
+      "control": "×",
+      "id": "new-close",
+      "on_tap": "the jobs sink, the circle shrinks back into the ＋, and the screen behind returns",
+      "does": "closes New",
+      "goes": "/"
+    },
+    {
+      "control": "Sell an item",
+      "id": "new-sell",
+      "on_tap": "the camera opens out of the capsule in Sell mode",
+      "does": "opens the camera to sell",
+      "goes": "/camera"
+    },
+    {
+      "control": "Appraise an item",
+      "id": "new-worth",
+      "on_tap": "the camera opens out of the capsule in Worth mode",
+      "does": "opens the camera to value",
+      "goes": "/camera"
+    },
+    {
+      "control": "Track an item",
+      "id": "new-track",
+      "on_tap": "the camera opens out of the capsule in Track mode",
+      "does": "opens the camera to watch for one secondhand",
+      "goes": "/camera"
+    },
+    {
+      "control": "Find an item",
+      "id": "new-find",
+      "on_tap": "the camera opens out of the capsule in Find mode",
+      "does": "opens the camera to say what a thing is",
+      "goes": "/camera"
+    },
+    {
+      "control": "What it is, or a link",
+      "id": "type-field",
+      "on_tap": "edits the words or the link in place",
+      "does": "edits what it is",
+      "sheet": "sell"
+    },
+    {
+      "control": "Your price",
+      "id": "type-price",
+      "on_tap": "edits the price in place; blank means priced from sold data",
+      "does": "edits the price",
+      "sheet": "sell"
+    },
+    {
+      "control": "Make a draft",
+      "id": "sell-go",
+      "on_tap": "the words or the listing become a draft, opened at its review, priced from sold data or at the typed price; a typed price far outside the sold range asks once first. With a link the button says Bring it in",
+      "does": "makes a draft",
+      "goes": "/item/it_draft",
+      "sheet": "sell"
+    },
+    {
+      "control": "See what it’s worth",
+      "id": "worth-go",
+      "on_tap": "the value page opens for the product the words name",
+      "does": "values it",
+      "goes": "/worth",
+      "sheet": "worth"
+    },
+    {
+      "control": "Watch for it",
+      "id": "track-go",
+      "on_tap": "a new want opens for the product the words name, where the most to pay is set; it then lives on Buy's Watching shelf",
+      "does": "starts tracking it",
+      "goes": "/want",
+      "sheet": "track"
+    },
+    {
+      "control": "See what it is",
+      "id": "find-go",
+      "on_tap": "the product page opens for the product the words name; words that name no product open the search for them as typed",
+      "does": "says what it is",
+      "goes": "/search",
+      "sheet": "find"
+    }
   ],
   "back": "× or the system back: the circle shrinks into the ＋ and the screen behind returns"
 }

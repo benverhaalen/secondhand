@@ -7,7 +7,7 @@ import { PRODUCTS } from './market.ts';
 import type { Attribute, Item } from './types.ts';
 import type { World } from './world.ts';
 
-export type Mode = 'sell' | 'worth' | 'find';
+export type Mode = 'sell' | 'worth' | 'track' | 'find';
 export type Stage = 'Kind' | 'Photos' | 'Label' | 'Measure' | 'Condition';
 export type FeedKey = 'front' | 'turn' | 'tag' | 'back';
 // A fact the listing needs. Until the camera finds it, the screen shows its name as a Blank. The camera reads the union
@@ -91,11 +91,12 @@ export const STEPS: readonly Step[] = [
   },
 ];
 
-// What each choice on New asks of the camera (pages §6.4): Sell it walks every stage, What's it worth needs what sets a
-// price, Find or buy it needs what it is.
+// What each choice on New asks of the camera (pages §6.4): Sell walks every stage, What's it worth needs what sets a
+// price, and Track and Find need only what it is (Ben, 11:32: track "a brewers jersey secondhand", find "what an item is").
 export const STAGES: Record<Mode, readonly Stage[]> = {
   sell: ['Kind', 'Photos', 'Label', 'Measure', 'Condition'],
   worth: ['Kind', 'Label', 'Condition'],
+  track: ['Kind', 'Label'],
   find: ['Kind', 'Label'],
 };
 export const stepsFor = (mode: Mode) => STEPS.filter(s => STAGES[mode].includes(s.stage));
@@ -133,7 +134,10 @@ export const ENDS: Record<Mode, { label: string; to: string }> = {
   sell: { label: 'Review the draft', to: `/item/${DRAFT_ID}` },
   // What's it worth values the product the camera read, so the page shows the jacket that was shot.
   worth: { label: 'See what it’s worth', to: `/worth?product=${PRODUCT.id}` },
-  find: { label: 'See matches', to: '/search' },
+  // Track ends on a new want for what the camera read, where the person says the most they would pay; it then lives on
+  // Buy's Watching shelf. Find ends on the product page: what it is, new and used.
+  track: { label: 'Watch for it', to: `/want?q=${encodeURIComponent(`${PRODUCT.brand} ${PRODUCT.model}`)}` },
+  find: { label: 'See what it is', to: `/product/${PRODUCT.id}` },
 };
 
 // "I scanned that one already" (ways-out §6.5): an item the person already holds that the first still matches.
@@ -142,12 +146,16 @@ export function sameAs(w: World) {
 }
 
 // The order New shows its three choices in: the last one used comes first (pages §6.4). Kept for the session.
+// Ben's four, in his words and order (11:29: "appraise an item. sell an item. track an item. and find an item"; 11:32: what's
+// it worth "appraises an item based on what the secondhand market prices it at now").
 export const CHOICES: readonly { mode: Mode; label: string }[] = [
-  { mode: 'sell', label: 'Sell it' },
-  { mode: 'worth', label: 'What’s it worth' },
-  { mode: 'find', label: 'Find or buy it' },
+  { mode: 'worth', label: 'Appraise an item' },
+  { mode: 'sell', label: 'Sell an item' },
+  { mode: 'track', label: 'Track an item' },
+  { mode: 'find', label: 'Find an item' },
 ];
-let last: Mode = 'sell';
-export const lastMode = () => last;
+// Nothing used yet keeps Ben's order; after that, the last one used comes first.
+let last: Mode | null = null;
+export const lastMode = (): Mode => last ?? 'sell';
 export const rememberMode = (m: Mode) => { last = m; };
 export const ordered = () => [...CHOICES].sort((a, b) => (a.mode === last ? -1 : b.mode === last ? 1 : 0));

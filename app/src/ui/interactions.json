@@ -632,7 +632,7 @@
       "result": {
         "kind": "replace",
         "to": "/camera?mode={c.mode}",
-        "back": "Remember the selected sell, worth or find mode and replace New with fullScreenModal /camera?mode={c.mode} over the original tab presenter; preserve the presenter beneath it, remove New so Back never reopens the completed menu. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
+        "back": "Remember the selected sell, worth, track or find mode and replace New with fullScreenModal /camera?mode={c.mode} over the original tab presenter; preserve the presenter beneath it, remove New so Back never reopens the completed menu. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
       },
       "press": {
         "feedback": "scale",
@@ -656,37 +656,6 @@
       },
       "always": true,
       "log": "user.input(screen, control=new-{c.mode}, value=tap); ui.show for the resulting visible state."
-    },
-    "new-{c.mode}-type": {
-      "screen": "/new",
-      "intent": "Open these actions",
-      "result": {
-        "kind": "sheet",
-        "to": null,
-        "back": "Open a form for this same sell/worth/find job from words or a pasted link, leaving the New menu behind it. formSheet; detents medium and large, initially medium; expand to large for keyboard or overflowing content. Back, scrim or downward dismissal closes the sheet and restores its trigger and scroll position. Unsaved modal work asks Discard or Keep editing. Edge swipe never pops the page behind the sheet."
-      },
-      "press": {
-        "feedback": "opacity",
-        "ms": 150
-      },
-      "motion": {
-        "name": "sheet",
-        "ms": 300,
-        "curve": "cubic-bezier(0,0,0.2,1); next touch cancels or retargets from current value; never wait.",
-        "reduce": "Instant final state, 0 ms; retain words, selection and focus."
-      },
-      "haptic": {
-        "type": "none",
-        "when": "Never fires. Never on press-in or scroll."
-      },
-      "freq": "occasional",
-      "states": {
-        "disabled": "Never while present.",
-        "loading": "No asynchronous local work. Ignore a repeated navigation tap until its route mounts; never stack duplicate routes.",
-        "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
-      },
-      "always": false,
-      "log": "user.input(screen, control=new-{c.mode}-type, value=tap); ui.show for the resulting visible state."
     },
     "type-field": {
       "screen": "/new",

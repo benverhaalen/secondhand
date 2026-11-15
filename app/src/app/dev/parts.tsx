@@ -288,8 +288,8 @@ function Sheetful() {
       <BuySide />
       <Section title="New and the camera (on the bar)">
         <FeedSwatch>
-          <ChoiceCapsule id="nc-sell" label="Sell it" icon="tag-01" lead index={0} shown onType={() => {}} />
-          <ChoiceCapsule id="nc-worth" label="What’s it worth" icon="money-03" index={1} shown onType={() => {}} />
+          <ChoiceCapsule id="nc-sell" label="Sell an item" icon="tag-01" lead index={0} shown />
+          <ChoiceCapsule id="nc-worth" label="Appraise an item" icon="money-03" index={1} shown />
           <CaptureFrame sample band={<Chips><FactChip id="nc-frame-brand" name="Brand" value="Carhartt" /><FactChip id="nc-frame-size" name="Size" /></Chips>} />
           <StageBubbles stages={[{ name: 'Kind', state: 'done' }, { name: 'Photos', state: 'now' }, { name: 'Label', state: 'skipped' }, { name: 'Measure', state: 'later' }, { name: 'Condition', state: 'later' }]} />
           <Instruction text="Closer on the tag" />
