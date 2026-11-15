@@ -1764,3 +1764,29 @@ Nate, build session (orchestrator), 2026-11-15 about 12:30 Central, answering wh
 > we own backtests and such
 
 Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 nate backtest as we build, and the steps for testflight
+Nate, build session (orchestrator), 2026-11-15 about 13:10 Central. Two messages.
+> Please also give me the steps to set up the bundler id and everything for expo to get testflight builds and everything set up
+
+> well lets backtest as we build to evaluate and improve, but keep building to fully optimized production
+
+Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 nate ben has given me the backend
+Nate, build session (orchestrator), 2026-11-15 about 13:20 Central.
+> Ben has given full reign for me to handle backend
+
+Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 nate mercari in real time, fix the search, and work every percent to perfection
+Nate, build session (orchestrator), 2026-11-15 about 14:40 Central.
+> Can we get mercari data in realtime? and can we fix the search. Identify what we need to fix.  All the perecents need to be addresseed and expertly worked on to perfection
+
+Used in: [state of completion](../spec/plans/completion.md).
+
+## 2026-11-15 nate the apple account is his, and the first testflight build is the demo we improve
+Nate, build session (orchestrator), 2026-11-15 about 14:55 Central. His name is left out of this public file.
+> its [his own name] my apple account, the testflight build is the demo for us to test and improve continously before we finalize. I expect we can continously improve the ui/ux and strive to fit the perfect presentation to ensure us winning the compeition
+
+Used in: [production readiness](../spec/plans/sweep/round-2/production-readiness.md), decisions 1 and 5.

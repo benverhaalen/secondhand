@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { usd } from '../demo/index.ts';
-import { autoList, counters, deleteBlocked, drops, fields, find, headline, momentOf, photoCount, planSites, postWords, priceFor, priceModes, scanned, siteRows } from './model.ts';
+import { youKeep } from '../demo/index.ts';
+import { autoList, clocks, counters, deleteBlocked, drops, fields, find, headline, momentOf, photoCount, planSites, postWords, priceFor, priceModes, scanned, siteRows, soldTicks, spreadOf, why } from './model.ts';
 
 const get = (id: string, world?: string) => { const f = find(id, world); assert.ok(f, id); return f; };
 
@@ -143,6 +144,41 @@ test('each site gets its own title in the listing, written for its buyers', () =
   const rows = siteRows(w, item);
   assert.ok(rows.find(r => r.site === 'ebay')!.title.includes('HEG-001'));
   assert.ok(!rows.find(r => r.site === 'facebook')!.title.includes('HEG-001'));
+});
+
+// Ben, 06:51 to 07:00 (product/words.md): cross-listing prices are a choice, Same take-home for a new seller.
+test('a draft takes Same take-home: the set price on the site that takes least, the others priced to pay about the same', () => {
+  const { w, item } = get('it_switch');
+  assert.equal(spreadOf(item), 'same_keep');
+  const on = planSites(w, item, 23500).filter(s => s.on);
+  const fb = on.find(s => s.site === 'facebook')!, eb = on.find(s => s.site === 'ebay')!;
+  assert.equal(fb.price, 23500);
+  assert.ok(eb.price > fb.price && eb.price % 100 === 0, `eBay at ${eb.price}`);
+  assert.ok(eb.keep! >= fb.keep! && eb.keep! - fb.keep! < 100, `${eb.keep} vs ${fb.keep}`);
+  assert.ok(planSites(w, item, 23500, [], 'same_price').filter(s => s.on).every(s => s.price === 23500));
+});
+
+test('an item posted before the rule was a choice keeps one price on every site', () => {
+  const { w, item } = get('it_jacket');
+  assert.equal(spreadOf(item), 'same_price');
+  assert.deepEqual(planSites(w, item, 9500).filter(s => s.on).map(s => s.keep), [youKeep('ebay', 9500), youKeep('depop', 9500)]);
+});
+
+test('Why gives the reason in words, then the sales and each fee behind it', () => {
+  const { w, item } = get('it_jacket');
+  const y = why(w, item)!;
+  assert.match(y.says, /^41 like it sold lately on 2 sites/);
+  assert.equal(y.fees.find(f => f.site === 'depop')!.get, youKeep('depop', 9500));
+  assert.ok(y.sales.length === 2 && y.events.length === 1);
+  assert.equal(soldTicks(item).length, 42);
+});
+
+test('a sold item that ships says when the money arrives, without a date nobody gave', () => {
+  const { w, item } = get('it_kindle');
+  const paid = clocks(w, item).find(c => c.id === 'paid')!;
+  assert.deepEqual([paid.label, paid.at], ['Money arrives', 'When the site pays out']);
+  assert.equal(get('it_505').item.state, 'unsold');
+  assert.equal(momentOf(get('it_505').w, get('it_505').item), 'unsold');
 });
 
 test('only a LiDAR measurement lets the AI redraw run: a typed or published size does not', () => {
