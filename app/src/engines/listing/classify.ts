@@ -11,16 +11,16 @@ type Attribute = {value: unknown; source: Fact['source']|'spec'|'marketplace'|'i
 type Item = {kind: string; family: string; department?: string; attrs: Record<string,Attribute>; title_words?: string[]};
 type Status = 'known'|'proposed'|'missing';
 type CategoryRow = {kind?: string; family?: string; department?: string; site: string; category: unknown; source: string; mark: string};
-export type Classification = Record<Site,{
+export type Classification = Partial<Record<Site,{
   category: {value?: unknown; status: Status; rests_on: string[]};
   fields: {field: string; site_name: string; required: boolean; status: Status; value?: unknown; source?: Attribute['source'];
     allowed?: string[]; max_length?: number; recommended?: boolean; capture_row?: boolean}[];
-}>;
+}>>;
 type Options = {params: ParamStore; aspects?: Partial<Record<Site,AspectsReply>>;
   suggested?: Partial<Record<Site,{category_id: string; name: string}>>};
 const hasValue = (value: unknown) => value!==undefined && value!==null;
 
-function categoryFor(item: Item, site: Site, suggested: Options['suggested']): Classification[Site]['category'] {
+function categoryFor(item: Item, site: Site, suggested: Options['suggested']): NonNullable<Classification[Site]>['category'] {
   const confirmed=item.attrs[`category:${site}`];
   if(confirmed?.confirmed && hasValue(confirmed.value))return {value:confirmed.value,status:'known',rests_on:['You confirmed the category']};
   if(site==='ebay' && suggested?.[site])return {value:suggested[site],status:'proposed',rests_on:["eBay's category suggestion"]};
@@ -34,23 +34,31 @@ function categoryFor(item: Item, site: Site, suggested: Options['suggested']): C
 
 export function classify(item: Item, sites: Site[], opts: Options): Classification {
   if(!(FAMILIES as readonly string[]).includes(item.family))throw new Error(`unknown family ${item.family}`);
-  const sources={spec:'lookup',marketplace:'lookup',inferred:'seen'} as const;
-  const facts: State['facts']=Object.fromEntries(Object.entries(item.attrs).map(([field,attr])=>[field,{
-    ...attr,source:attr.source in sources ? sources[attr.source as keyof typeof sources] : attr.source as Fact['source'],
-  }]));
+  const sources: Fact['source'][]=['seen','label','measured','derived','lookup','you_said'];
+  const facts: State['facts']={};
+  const attrs: Item['attrs']={};
+  for(const [field,attr] of Object.entries(item.attrs)) {
+    const source=attr.source==='spec' || attr.source==='marketplace' ? 'lookup' : attr.source==='inferred' ? 'seen' :
+      sources.find(source=>source===attr.source);
+    if(!source)continue;
+    facts[field]={...attr,source};
+    attrs[field]=attr;
+  }
+  item={...item,attrs};
   const kind=item.kind.startsWith(`${item.family}.`) ? item.kind.slice(item.family.length+1) : item.kind;
   const state: State={capture_id:'',item_id:'',purpose:'sell',confirm_mode:'tap',has_lidar:true,sites,type:item.family as Family,kind,
     kept:[],retakes:{},facts,lookups:'done',refused:[]};
   const selected=select(state,opts.params);
   state.kept=selected.process.map(step=>step.key);
   const complete=completeness(selected.rows,state,opts.params);
-  return Object.fromEntries(sites.map(site=> {
+  const result: Classification={};
+  for(const site of sites) {
     const aspectReply=site==='ebay' ? opts.aspects?.ebay : undefined;
     const captureFields=selected.rows.filter(row=>linked([site],row.required).length || linked([site],row.recommended).length).map(row=>({
       field:row.field,site_name:row.site_names?.[site]?.name ?? row.field,
       required:!!linked([site],row.required).length,recommended:!!linked([site],row.recommended).length,
     }));
-    const rows: Omit<Classification[Site]['fields'][number],'status'>[]=aspectReply ? aspectRows(item.kind,aspectReply).map(row=>({field:row.field,site_name:row.site_names.ebay.name,
+    const rows: Omit<NonNullable<Classification[Site]>['fields'][number],'status'>[]=aspectReply ? aspectRows(item.kind,aspectReply).map(row=>({field:row.field,site_name:row.site_names.ebay.name,
       required:row.usage==='required',recommended:row.usage==='recommended',
       ...(row.allowed ? {allowed:row.allowed}:{}),
       ...(row.site_names.ebay.max_length!==null ? {max_length:row.site_names.ebay.max_length}:{}),
@@ -70,13 +78,15 @@ export function classify(item: Item, sites: Site[], opts: Options): Classificati
       return {...row,status,capture_row:!!captureRow,...(hasValue(fact?.value) ? {value:fact!.value,
         source:item.attrs[row.field]?.source ?? fact!.source}:{} )};
     });
-    return [site,{category:categoryFor({...item,kind},site,opts.suggested),fields}];
-  })) as Classification;
+    result[site]={category:categoryFor({...item,kind},site,opts.suggested),fields};
+  }
+  return result;
 }
 
 export function siteRows(result: Classification): NonNullable<State['site_rows']> {
   return Object.entries(result).flatMap(([site,listing])=>listing.fields.filter(row=>!row.capture_row && (row.required || row.recommended)).map(row=>({
     site:site as Site,field:row.field,name:row.site_name,required:row.required,
+    ...(typeof row.value==='string' ? {value:row.value}:{}),
     ...(row.allowed ? {allowed:[...row.allowed]}:{}),...(row.max_length!==undefined ? {max_length:row.max_length}:{}),
   })));
 }

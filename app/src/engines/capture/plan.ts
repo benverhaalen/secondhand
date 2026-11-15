@@ -13,6 +13,7 @@ export type Question = {
   kind: AskKind|'shot';
   options: {value: unknown; proposed: boolean; label?: string; rests_on?: string[]}[];
   other: boolean;
+  max_length?: number;
   unit?: string;
   units?: string[];
   parts?: string[];
@@ -66,7 +67,9 @@ function fieldQuestions(resolved: Resolved[], state: State, complete: Completene
     const choices = candidatesForField?.length ? candidatesForField : row.values ?? [];
     const values: unknown[] = [...choices];
     const askedOnly = row.ways.every(way => way.way === 'asked');
-    const proposed = !invalidKnown && resolution.state === 'proposed' && !askedOnly ? resolution.fact?.value : undefined;
+    const siteRow = siteRows.includes(row) ? state.site_rows?.find(candidate=>candidate.field===row.field && state.sites.includes(candidate.site)) : undefined;
+    let proposed = !invalidKnown && resolution.state === 'proposed' && !askedOnly ? resolution.fact?.value : undefined;
+    if(siteRow)proposed=siteRow.value!==undefined && (!siteRow.allowed || siteRow.allowed.includes(siteRow.value)) ? siteRow.value : undefined;
     if (row.field === 'type' && proposed !== undefined) {
       const index = values.indexOf(proposed);
       if (index >= 0) values.splice(index,1);
@@ -90,6 +93,7 @@ function fieldQuestions(resolved: Resolved[], state: State, complete: Completene
       field:row.field,
       kind,
       options,
+      ...(siteRow?.max_length!==undefined ? {max_length:siteRow.max_length} : {}),
       other:!!variants || row.type === 'text' || row.field === 'type',
       ...(row.unit ? {unit:row.unit} : {}),
       ...(row.ask.units ? {units:[...row.ask.units]} : {}),
@@ -164,12 +168,12 @@ function addUnlocks(candidates: Candidate[], resolved: Resolved[], rows: FieldRo
 }
 
 function orderQuestions(candidates: Candidate[], state: State, params: ParamStore): void {
-  const first = (candidate: Candidate) => candidate.question.field === 'type' ? 0 : candidate.question.field === 'lot_count' ? 1 :
-    candidate.rows.some(row=>'shapes' in row && row.shapes===true) ? 2 : 3;
+  const first = (candidate: Candidate) => candidate.question.field === 'type' ? 0 : candidate.question.field === 'lot_count' ? 1 : 2;
   const entropy = (field: string) => {
     const scores=Object.values(state.candidate_detail?.[field] ?? {}).map(option=>option.c).filter(score=>score>0);
     const sum=scores.reduce((total,score)=>total+score,0);
-    return scores.reduce((bits,score)=>{const p=score/sum;return bits-p*Math.log2(p);},0);
+    const bits=scores.reduce((bits,score)=>{const p=score/sum;return bits-p*Math.log2(p);},0);
+    return Math.round(bits*1e9)/1e9;
   };
   const recommended = (rows: FieldRow[]) => rows.reduce((count,row) => count + linked(targets(state),row.recommended).length,0);
   const effort = (question: Question) => bound(params,`capture_effort_${question.kind}`);
@@ -237,8 +241,11 @@ export function plan(state: State, params: ParamStore) {
   }
   addUnlocks(candidates,resolved,rows,state,complete,selected.family,params);
   for(const {question} of candidates)for(const option of question.options) {
-    const detail=state.candidate_detail?.[question.field]?.[String(option.value)];
-    if(detail?.rests_on.length)option.rests_on=[...detail.rests_on];
+    const details=state.candidate_detail;
+    const field=details && Object.hasOwn(details,question.field) ? details[question.field] : undefined;
+    const key=String(option.value);
+    const detail=field && Object.hasOwn(field,key) ? field[key] : undefined;
+    if(Array.isArray(detail?.rests_on) && detail.rests_on.length)option.rests_on=[...detail.rests_on];
   }
   orderQuestions(candidates,state,params);
   const questions = capQuestions(candidates,rows,state,params);

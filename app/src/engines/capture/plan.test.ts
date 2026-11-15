@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
 import { plan } from './plan.ts';
 import type { State } from './select.ts';
 import { SITES } from '../../../../spec/sites.mjs';
@@ -26,15 +27,26 @@ test('one scored option and zero scores have no entropy and type keeps first pri
  const p=run({...base,type:null,candidate_detail:{brand:{Carhartt:{c:.5,rests_on:[]},Dickies:{c:.5,rests_on:[]}}}});
  assert.equal(p.questions[0].field,'type');
 });
-test('without candidate detail every walk keeps its pinned question values and order without evidence keys', () => {
+// Full plan sequences recorded at 9825058 before round 2.
+const walkHashes: Record<string,string> = {
+  "A T-shirt tap": "7684937dcdbe7461a881af1972ec7c9e5bf430244fb758b470d7b0c0616764f0",
+  "A T-shirt auto": "b78f6182ddfe0330d706e260b43a8a0b296c81b5b34c312b42bc88babc7bebc6",
+  "B Sneakers": "4c0652b924b124a542da662eb3f660dfedc6e9888dd3c4e0a47061b203f4d36f",
+  "C Handbag": "5d4c37bbd350937c2e5cacc813660d7127df05ec49a6431bfc49e4d45c1cf423",
+  "D Phone": "0d56b158e9f9c022398b7d66742169ee46a3cedf18265fa60f4a261b13752979",
+  "E Chair": "fb3743b7e885a904d2e481b192c634259739ef6fb4dd502958796190cc5e38d6",
+  "F Three T-shirts": "68c07c16d84f061b86821c914574dc5d5e8de4d8f57ebf95382c4a34d52eb7e1",
+  "G1 Close table variants": "b03ecbb39c9cf59d9a2a35f3aba202bb52f73172f718831344e487e3ae4d3724",
+  "G2 Close table variants": "8499c52ce6cf93b99e84ab12bed322666b6271969b06703da7e7ced12124b496"
+};
+test('without candidate detail every walk preserves its entire pinned plan sequence', () => {
  for(const fixture of walks) {
-  const s=structuredClone(fixture.initial),params=memoryStore();
+  const s=structuredClone(fixture.initial),params=memoryStore(),plans:ReturnType<typeof plan>[]=[];
   for(const event of fixture.events) {
    const facts=s.facts;Object.assign(s,event.patch);s.facts={...facts,...event.patch.facts};
-   const p=plan(s,params);
-   assert.deepEqual(p.questions.map(q=>[q.shot?.step??q.field,q.kind,q.options.find(o=>o.proposed)?.value??null]),event.questions,fixture.name);
-   assert.ok(p.questions.every(q=>q.options.every(o=>!('rests_on' in o))));
+   plans.push(plan(s,params));
   }
+  assert.equal(createHash('sha256').update(JSON.stringify(plans)).digest('hex'),walkHashes[fixture.name],fixture.name);
  }
 });
 test('required site rows bypass a zero cap while optional, unlinked and capture-table rows do not', () => {
@@ -358,4 +370,57 @@ test('zone-less graphic and flaw asks each collapse into one shot by type', () =
 test('F19: a linked ebay plan stays deep-equal to the recorded old plan', () => {
   const before = {"family":"other","kind":null,"dimension_class":"soft_goods","inner_class":null,"fallback":null,"process":[{"step":"front","kind":"instant","role":"front","needs_lidar":false,"seconds":5,"key":"front","state":"kept"},{"step":"back","kind":"series","role":"back","needs_lidar":false,"seconds":5,"key":"back","state":"kept"}],"checks":["stains","holes","fading"],"fields":[{"field":"brand","state":"missing","value":null,"source":null,"required_by":[],"recommended_by":["ebay"]},{"field":"colour","state":"missing","value":null,"source":null,"required_by":[],"recommended_by":["ebay"]},{"field":"condition","state":"known","value":"good","source":"you_said","required_by":["ebay"],"recommended_by":[]},{"field":"dimensions","state":"missing","value":null,"source":null,"required_by":[],"recommended_by":["ebay"]},{"field":"type","state":"known","value":"other","source":"you_said","required_by":["ebay"],"recommended_by":[]}],"questions":[{"id":"q_c_colour","field":"colour","kind":"pick_many","options":[{"value":"black","proposed":false},{"value":"white","proposed":false},{"value":"grey","proposed":false},{"value":"blue","proposed":false},{"value":"red","proposed":false},{"value":"green","proposed":false},{"value":"yellow","proposed":false},{"value":"orange","proposed":false},{"value":"pink","proposed":false},{"value":"purple","proposed":false},{"value":"brown","proposed":false},{"value":"beige","proposed":false},{"value":"multi","proposed":false},{"value":"silver","proposed":false},{"value":"gold","proposed":false}],"other":false,"why":"value","required_by":[],"unlocks":{"required":0,"ready_after":[]},"words":"Colour?","answer":{"method":"PATCH","path":"/v1/captures/c"}},{"id":"q_c_brand","field":"brand","kind":"text","options":[],"other":true,"why":"value","required_by":[],"unlocks":{"required":0,"ready_after":[]},"words":"Brand?","answer":{"method":"PATCH","path":"/v1/captures/c"}},{"id":"q_c_dimensions","field":"dimensions","kind":"number_with_unit","options":[],"other":false,"unit":"cm","units":["cm","in"],"parts":["width","height"],"why":"only_you_know","required_by":[],"unlocks":{"required":0,"ready_after":[]},"words":"Dimensions?","answer":{"method":"PATCH","path":"/v1/captures/c"}}],"complete":{"ebay":{"ready":true,"missing":[]}},"status":"asking"};
   assert.deepEqual(run({type:'other',kept:['front','back'],lookups:'done',facts:{condition:{value:'good',source:'you_said',confidence:1}}}),before);
+});
+
+const malformedDetails: [string,NonNullable<State['candidate_detail']>][] = [
+ ['missing rests_on',JSON.parse('{"brand":{"Acme":{"c":1}}}')],
+ ['non-array rests_on',JSON.parse('{"brand":{"Acme":{"c":1,"rests_on":"tag"}}}')],
+ ['ordinary prototype names',{brand:{}}],
+ ['inherited option evidence',{brand:Object.create({constructor:{c:1,rests_on:['inherited evidence']}})}],
+ ['inherited field evidence',Object.create({brand:{Acme:{c:1,rests_on:['inherited evidence']}}})],
+];
+for(const [cause,candidate_detail] of malformedDetails)test(`${cause} leaves options without rests_on`, () => {
+ const p=run({type:'apparel',sites:['depop'],kept:['front','back','tag'],lookups:'done',
+  candidates:{brand:['Acme','constructor','__proto__','toString']},candidate_detail});
+ const q=p.questions.find(q=>q.field==='brand');assert.ok(q);
+ assert.ok(q.options.every(option=>!('rests_on' in option)));
+});
+test('equal distributions in different order fall through entropy noise to required unlocks', () => {
+ const base:Partial<State>={type:'apparel',sites:['ebay','depop'],kept:['front','back','tag'],lookups:'done'};
+ const scores=(values:number[])=>Object.fromEntries(values.map((c,i)=>[String(i),{c,rests_on:[]}]));
+ const p=run({...base,candidate_detail:{brand:scores([.01,.02,.97]),condition:scores([.97,.02,.01])}});
+ const pair=(p:ReturnType<typeof plan>)=>p.questions.filter(q=>['brand','condition'].includes(q.field)).map(q=>q.field);
+ assert.deepEqual(pair(p),pair(run(base)));
+ assert.ok(p.questions.findIndex(q=>q.field==='condition')<p.questions.findIndex(q=>q.field==='brand'));
+});
+test('negative and NaN candidate scores carry no entropy', () => {
+ const base:Partial<State>={type:'apparel',sites:['depop'],kept:['front','back','tag'],lookups:'done'};
+ assert.deepEqual(run({...base,candidate_detail:{brand:{bad:{c:NaN,rests_on:[]},negative:{c:-1,rests_on:[]}}}}),run(base));
+});
+test('held site values are proposed only when allowed, with free text first', () => {
+ for(const [allowed,value,expected] of [
+  [undefined,'36',[{value:'36',proposed:true}]],
+  [['High','Low'],'Low',[{value:'High',proposed:false},{value:'Low',proposed:true}]],
+  [['High','Low'],'Mid',[{value:'High',proposed:false},{value:'Low',proposed:false}]],
+ ] as const) {
+  const p=run({type:'apparel',kept:['front','back','tag'],lookups:'done',site_rows:[
+   {site:'ebay',field:'ebay:Inseam',name:'Inseam',required:true,value,...(allowed?{allowed:[...allowed]}:{})},
+  ]});
+  const q=p.questions.find(q=>q.field==='ebay:Inseam');assert.ok(q);
+  assert.deepEqual(q.options,expected);
+ }
+});
+test('one site field required by two sites asks once with both required_by targets', () => {
+ const p=run({type:'other',sites:['ebay','poshmark'],kept:['front','back'],lookups:'done',site_rows:[
+  {site:'ebay',field:'style',name:'Style',required:true},
+  {site:'poshmark',field:'style',name:'Style',required:true},
+ ]});
+ const questions=p.questions.filter(q=>q.field==='style');assert.equal(questions.length,1);
+ assert.deepEqual(questions[0].required_by,['ebay','poshmark']);assert.equal(questions[0].unlocks.required,2);
+});
+test('site text question carries max_length for the answer route without truncating the value', () => {
+ const q=run({type:'apparel',kept:['front','back','tag'],lookups:'done',site_rows:[
+  {site:'ebay',field:'ebay:Inseam',name:'Inseam',required:true,max_length:65},
+ ]}).questions.find(q=>q.field==='ebay:Inseam');assert.ok(q);
+ assert.equal(q.max_length,65);
 });
