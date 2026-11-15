@@ -17,6 +17,12 @@ Finalization section 6, as marked there: AP1 done but the simulator run (61abd59
 
 Nate's words for all of it are the 2026-11-15 entries in `product/words.md` from "search is the black bar" onward. Ben's part of it is [packet 81](81-search-reach-for-ben.md).
 
+## Since then (about 08:20 Central)
+
+- `/shop` now floats its sources as logos that burst into the site's own results, leads with what the listings say (spread, each site's middle ask, words listed most), and asks the buying conversation what is selling and why once BC3 answers visitors (d921b15f; e2e 3 of 3 on the Mac). Spacing follows the kit (16 within a turn, 32 between).
+- What each harness does today, site by site: [spec/plans/harness-check-2026-11-15.md](../../../../spec/plans/harness-check-2026-11-15.md). Search works for Dupe, Depop, Poshmark and eBay signed out. Sold comps (the engine's input) are live for no site yet. Monitor and manage are built but run only against fixtures, because there is no linked account (SV9). Analytics is a synthetic snapshot (`app/src/edge/api/insights.ts:9-15`).
+- Nate said yes to wiring the signed-in screens next: the map's order after sign-in, starting with Today and decisions.
+
 ## Open, in the order to do it
 
 1. **The chat's follow-ups need the server.** The engines lead builds `POST /v1/assist` for visitors as BC3, to the shape the client already sends (`history[]`, `search_job_id`; 429 `cap: 'daily'` shows its own line). Run the chat against it on the dev server when BC3 lands. Until then a follow-up says it couldn't answer. The client fold (`app/src/buy/chat/assist.ts`) is tested against a hand-written fixture.
