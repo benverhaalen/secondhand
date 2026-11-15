@@ -5,6 +5,7 @@
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Approve, EmptyState, FootButton, Grid, List, log, Nav, Pill, Row, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';
+import { TabNav } from '@/ui/parts/tab-nav';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
 import { Shelf, Tile, TileSkeleton, type TileFact } from '@/ui/parts/tile';
 import { day, feed, pill, sellItem, shelves, unread, usd, type Item, type World } from '@/demo';
@@ -147,7 +148,7 @@ export default function Sell() {
     );
   };
 
-  const nav = <Nav inbox={{ count: unread(w) }} />;
+  const nav = <TabNav title="Sell" inbox={{ count: unread(w) }} />;
   if (!selling.length) {
     // A new person and someone whose things have all gone see the same page: the camera is the one thing to point to.
     return (
@@ -207,7 +208,7 @@ export default function Sell() {
         <Row trail={loading ? undefined : picking
           ? <Pill id="select-done" kind="second" label="Done" onPress={() => { setPicking(false); setPicked([]); }} />
           : <Pill id="sell-select" kind="second" label="Select" onPress={() => setPicking(true)} />}>
-          <Txt role="heading">Sell</Txt>
+          {null}
         </Row>
         {loading ? null : <FilterRow>
           <Chip id="filter-sort" icon="sorting-01" label={sortChip} onPress={() => setSorting(true)} />

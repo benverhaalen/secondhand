@@ -54,13 +54,9 @@ export function screens(root, { files }) {
       if (seen.has(id)) out.push(err(`${f}:${lineOf(text, m.index)}`, `S2 id "${id}" is on two controls (also line ${seen.get(id)}): one id per control on a screen, or list it in "// one at a time: ${id}" if only one is ever drawn`));
       else seen.set(id, lineOf(text, m.index));
     }
-    // S3: the wash is on the main tabs and nowhere else (U8).
-    const tags = openingTags(text, 'Screen');
-    for (const t of tags) {
-      const wash = /\bwash\b/.test(t.props), tab = TAB.test(f);
-      if (wash && !tab) out.push(err(`${f}:${lineOf(text, t.index)}`, 'S3 <Screen wash> outside (tabs)/: the wash marks a main tab only (U8)'));
-      if (!wash && tab) out.push(err(`${f}:${lineOf(text, t.index)}`, 'S3 a main tab\'s <Screen> has no wash: every main tab carries it (U8)'));
-    }
+    // S3: Screen draws the wash under every nav (U8), so a screen never turns it off.
+    const src = read(root, f) ?? '';
+    for (const m of src.matchAll(/<Screen\b[^>]*\bwash=\{\s*false\s*\}/g)) out.push(err(`${f}:${lineOf(src, m.index)}`, 'S3 <Screen wash={false}>: every page with a nav carries the wash, so no page looks unlike the next (U8)'));
     // S4: all eight states, from useScreen() (or usePage(), which calls it) or <Screen skip="state: why"> (B35).
     const reexport = /^\s*export\s*\{[^}]*\bas\s+default\b[^}]*\}\s*from\b/m.test(text);
     const states = /\b(?:useScreen|usePage)\(/.test(text) || /\bskip=/.test(text);
@@ -72,7 +68,7 @@ export function screens(root, { files }) {
     for (const m of text.matchAll(/<[A-Z]\w*[^<>]*?(?:testID|id)=["'][^"']*(?:scrim|backdrop)[^"']*["']/gi)) {
       const tag = openingTags(text.slice(m.index), m[0].match(/<(\w+)/)[1])[0];
       const at = (tag?.raw ?? '').search(/\b(?:onPress|onResponderRelease)=/), handler = at < 0 ? '' : tag.raw.slice(at);
-      if (handler && !/\blog\./.test(handler)) out.push(err(`${f}:${lineOf(text, m.index)}`, 'S5 a scrim tap does not log: call log.event(\'user.input\', ...) in its handler (or use the kit\'s Sheet, which does)'));
+      if (handler && !/\blog\.|\btap\(/.test(handler)) out.push(err(`${f}:${lineOf(text, m.index)}`, 'S5 a scrim tap does not log: call log.event(\'user.input\', ...) in its handler (or use the kit\'s Sheet, which does)'));
     }
   }
   return out;
