@@ -63,73 +63,188 @@ def push_color(src, ms, ren, mr) -> np.ndarray:
     return cv2.cvtColor(out, cv2.COLOR_LAB2RGB)
 
 
-def find_print(ref: np.ndarray, ren: np.ndarray) -> dict:
-    """Where the print close-up `ref` sits in the render, and how alike the two look there."""
+def _match(ref: np.ndarray, ren: np.ndarray):
+    """SIFT matches from a real print to the render, and one homography. Returns (H, inlier points on ref, n, ref gray)."""
     sift = cv2.SIFT_create(3000)
-    g1 = cv2.cvtColor(fit(ref, 900), cv2.COLOR_RGB2GRAY)
-    g2 = cv2.cvtColor(ren, cv2.COLOR_RGB2GRAY)
+    r = fit(ref, 900)
+    g1, g2 = cv2.cvtColor(r, cv2.COLOR_RGB2GRAY), cv2.cvtColor(ren, cv2.COLOR_RGB2GRAY)
     k1, d1 = sift.detectAndCompute(g1, None)
     k2, d2 = sift.detectAndCompute(g2, None)
     if d1 is None or d2 is None or len(k1) < 8 or len(k2) < 8:
-        return {"found": False, "inliers": 0}
+        return None, None, 0, r
     pairs = cv2.BFMatcher().knnMatch(d1, d2, k=2)
     good = [a for a, b in (p for p in pairs if len(p) == 2) if a.distance < 0.8 * b.distance]
     if len(good) < 8:
-        return {"found": False, "inliers": len(good)}
+        return None, None, len(good), r
     p1 = np.float32([k1[g.queryIdx].pt for g in good])
     p2 = np.float32([k2[g.trainIdx].pt for g in good])
     H, inl = cv2.findHomography(p1, p2, cv2.RANSAC, 6.0)
     n = int(inl.sum()) if inl is not None else 0
+    return H, (p1[inl.ravel().astype(bool)] if n else None), n, r
+
+
+def find_print(ref: np.ndarray, ren: np.ndarray) -> dict:
+    """Where the real print sits in the render, and how alike the two look there (before anything is pasted)."""
+    H, pts, n, r = _match(ref, ren)
     if H is None or n < PRINT_MIN_INLIERS:
         return {"found": False, "inliers": n}
-    # compare the matched region: the render pulled back into the close-up's frame, inside the matched points' hull
-    back = cv2.warpPerspective(g2, np.linalg.inv(H), (g1.shape[1], g1.shape[0]))
-    hull = cv2.convexHull(p1[inl.ravel().astype(bool)].astype(np.int32))
+    g1 = cv2.cvtColor(r, cv2.COLOR_RGB2GRAY)
+    back = cv2.warpPerspective(cv2.cvtColor(ren, cv2.COLOR_RGB2GRAY), np.linalg.inv(H), (g1.shape[1], g1.shape[0]))
     m = np.zeros_like(g1)
-    cv2.fillConvexPoly(m, hull, 1)
+    cv2.fillConvexPoly(m, cv2.convexHull(pts.astype(np.int32)), 1)
     a, b = g1[m > 0].astype(np.float32), back[m > 0].astype(np.float32)
     ncc = float(((a - a.mean()) * (b - b.mean())).mean() / (a.std() * b.std() + 1e-6)) if a.size > 100 else 0.0
-    return {"found": ncc >= PRINT_NCC, "inliers": n, "ncc": round(ncc, 3)}
+    return {"found": ncc >= PRINT_NCC, "inliers": n, "ncc": round(ncc, 3), "H": H, "pts": pts, "ref": r}
+
+
+def ink(ref: np.ndarray, pts: np.ndarray) -> np.ndarray:
+    """Where to paste: the hull of the densest cluster of matched points. A print is where the matches crowd; a collar,
+    a tag or a fold at the edge of the close-up gets a few stray matches and stays out."""
+    h, w = ref.shape[:2]
+    m = np.zeros((h, w), np.uint8)
+    if pts is None or len(pts) < 4:
+        return m
+    r = 0.12 * max(h, w)
+    d = np.linalg.norm(pts[:, None, :] - pts[None, :, :], axis=2)
+    near = (d < r).sum(axis=1)
+    core = pts[near >= 0.4 * near.max()]
+    cv2.fillConvexPoly(m, cv2.convexHull(core.astype(np.int32)), 255)
+    return cv2.dilate(m, np.ones((13, 13), np.uint8))
+
+
+def box_mask(ref: np.ndarray, box) -> np.ndarray:
+    """The print's box on the close-up (fractions), as a mask at the size find_print matched at."""
+    h, w = ref.shape[:2]
+    m = np.zeros((h, w), np.uint8)
+    x0, y0, x1, y1 = box
+    m[int(y0 * h):int(y1 * h), int(x0 * w):int(x1 * w)] = 255
+    return m
+
+
+def paste_print(ren: np.ndarray, hit: dict, box=None) -> np.ndarray:
+    """The real print's pixels, warped onto where the model drew it, matched to the render's light, feathered in.
+    The model's own letters are gone; the ones the buyer reads are the real ones."""
+    ref, H = hit["ref"], hit["H"]
+    m = box_mask(ref, box) if box else ink(ref, hit["pts"])
+    h, w = ren.shape[:2]
+    warped = cv2.warpPerspective(ref, H, (w, h), flags=cv2.INTER_AREA)
+    wm = cv2.warpPerspective(m, H, (w, h)) > 0
+    if wm.sum() < 50:
+        return ren
+    lw = cv2.cvtColor(warped, cv2.COLOR_RGB2LAB).astype(np.float32)
+    lr = cv2.cvtColor(ren, cv2.COLOR_RGB2LAB).astype(np.float32)
+    lw[wm] += (np.median(lr[wm], axis=0) - np.median(lw[wm], axis=0))  # one shift for the whole patch: contrast stays real
+    warped = cv2.cvtColor(np.clip(lw, 0, 255).astype(np.uint8), cv2.COLOR_LAB2RGB)
+    f = cv2.GaussianBlur(wm.astype(np.float32), (0, 0), 4)
+    f = np.minimum(f * 1.6, 1.0)[..., None] * wm[..., None]
+    return (warped * f + ren * (1 - f)).astype(np.uint8)
+
+
+def _scale_once(ren, mr, s):
+    """Wider by s about the centre, if the item still fits the frame; else shorter by 1/s with the floor mirrored into
+    the gap, only when the rows mirrored are bare floor. None when neither is possible."""
+    h, w = ren.shape[:2]
+    xs = np.nonzero(mr.any(axis=0))[0]
+    ys = np.nonzero(mr.any(axis=1))[0]
+    if s >= 1 and (xs.max() - xs.min()) * s < 0.96 * w:
+        wide = cv2.resize(ren, (round(w * s), h), interpolation=cv2.INTER_CUBIC)
+        x = (wide.shape[1] - w) // 2
+        return wide[:, x:x + w]
+    nh = round(h / s)
+    if nh >= h:
+        img = cv2.resize(ren, (w, nh), interpolation=cv2.INTER_CUBIC)
+        y = (nh - h) // 2
+        top, bottom = ys.min() * nh / h - y, ys.max() * nh / h - y
+        return img[y:y + h] if top > 0 and bottom < h else None
+    img = cv2.resize(ren, (w, nh), interpolation=cv2.INTER_AREA)
+    t = (h - nh) // 2
+    gap = max(t, h - nh - t) + 2
+    if ys.min() * nh / h < gap or (h - ys.max()) * nh / h < gap:
+        return None
+    return cv2.copyMakeBorder(img, t, h - nh - t, 0, 0, cv2.BORDER_REFLECT)
+
+
+def set_shape(ren: np.ndarray, mr: np.ndarray, kind: str, truth: float) -> tuple[np.ndarray, float]:
+    """Scale the render so the garment's width over length is the tape's. The model decides how long a shirt is, and
+    decided it differently every time (8% spread in the build plan); the tape does not. Two passes, since the outline
+    is measured again after each. Returns (image, total scale)."""
+    total = 1.0
+    for _ in range(2):
+        s = truth / proportions(mr, kind)["ratio"]
+        if abs(s - 1) < 0.015:
+            break
+        nxt = _scale_once(ren, mr, s)
+        if nxt is None:
+            break
+        ren, mr = nxt, mask_of(nxt)
+        total *= s
+    return ren, total
 
 
 def check(src: np.ndarray, ren: np.ndarray, template: str | None, prints: list[np.ndarray],
-          tape_ratio: float | None = None) -> dict:
+          tape_ratio: float | None = None, laid_well: bool = True, repair: bool = True) -> dict:
     """src: the real whole-item photo. ren: one candidate. prints: real close-ups (or cuts) of each print on this side.
-    Returns {ok, reasons, numbers, image}; image is the render after the color push-back."""
+    Order: drift test, shape to the tape, find each print, paste the real print back, color back to the real item, shape test.
+    Returns {ok, reasons, numbers, image}."""
     src, ren = fit(src), fit(ren)
     ms, mr = mask_of(src), mask_of(ren)
-    out = {"numbers": {}, "reasons": []}
+    out = {"numbers": {}, "reasons": [], "repairs": []}
     if mr.mean() < 0.05:
         return {**out, "ok": False, "reasons": ["no item found in the render"], "image": ren}
     # the push-back makes the color right; it is never what proves the color was right, so the drift before it is the test
     drawn = color_delta(src, ms, ren, mr)
     out["numbers"]["color_before"] = round(drawn, 2)
-    ren2 = push_color(src, ms, ren, mr)
-    out["numbers"]["color"] = round(color_delta(src, ms, ren2, mr), 2)
     if drawn > COLOR_DRAWN:
         out["reasons"].append(f"the model drew the item {drawn:.0f} color units away from the real one")
-    for i, ref in enumerate(prints):
-        r = find_print(ref, ren2)
-        out["numbers"][f"print_{i}"] = r
+    kind = template or "shirt"
+    if template and tape_ratio and repair:
+        first = proportions(mr, kind)["ratio"]
+        out["numbers"]["shape_drawn"] = {"render": first, "tape": round(tape_ratio, 3), "off": round(first / tape_ratio - 1, 3)}
+        if abs(first / tape_ratio - 1) > 0.2:
+            out["reasons"].append(f"drawn {first / tape_ratio - 1:+.0%} off the tape, too far to set right")
+        else:
+            ren, sc = set_shape(ren, mr, kind, tape_ratio)
+            mr = mask_of(ren)
+            out["repairs"].append(f"width set to the tape (x{sc:.2f})")
+    for i, pr in enumerate(prints):
+        ref, box = (pr["img"], pr.get("box")) if isinstance(pr, dict) else (pr, None)
+        if min(ref.shape[:2]) < 96:
+            out["numbers"][f"print_{i}"] = {"skipped": "too small to match; the judge reads it"}
+            continue
+        r = find_print(ref, ren)
+        out["numbers"][f"print_{i}"] = {k: v for k, v in r.items() if k in ("found", "inliers", "ncc")}
         if not r["found"]:
             out["reasons"].append(f"print {i} not found as it is in the real photo")
-    kind = template or "shirt"
+        elif repair:
+            ren = paste_print(ren, r, box)
+            out["repairs"].append(f"print {i} is the real pixels")
+    ren = push_color(src, ms, ren, mr)
+    out["numbers"]["color"] = round(color_delta(src, ms, ren, mr), 2)
     if template:
-        truth, band = (tape_ratio, BAND["tape"]) if tape_ratio else (proportions(ms, kind)["ratio"], BAND["photo"])
         got = proportions(mr, kind)["ratio"]
-        off = got / truth - 1
-        out["numbers"]["shape"] = {"render": got, "truth": round(truth, 3), "against": "tape" if tape_ratio else "photo", "off": round(off, 3)}
-        if abs(off) > band:
-            out["reasons"].append(f"proportions moved {off:+.0%} against the {'tape' if tape_ratio else 'photo'}")
+        if tape_ratio:
+            off = got / tape_ratio - 1
+            out["numbers"]["shape"] = {"render": got, "truth": round(tape_ratio, 3), "against": "tape", "off": round(off, 3)}
+            if abs(off) > BAND["tape"]:
+                out["reasons"].append(f"proportions {off:+.0%} against the tape")
+        elif laid_well:
+            truth = proportions(ms, kind)["ratio"]
+            off = got / truth - 1
+            out["numbers"]["shape"] = {"render": got, "truth": round(truth, 3), "against": "photo", "off": round(off, 3)}
+            if abs(off) > BAND["photo"]:
+                out["reasons"].append(f"proportions moved {off:+.0%} against the photo")
+        else:
+            out["numbers"]["shape"] = {"against": None, "note": "not checked: no tape, and the real photo is not laid flat enough to measure"}
         lay = layout(mr)
         out["numbers"]["layout"] = {"template": lay["template"], "overlap": lay["overlap"], "tilt": lay["tilt_deg"]}
     out["ok"] = not out["reasons"]
-    out["image"] = ren2
+    out["image"] = ren
     return out
 
 
 JUDGE = """Image 1 is a real photo of a second-hand {name}. {refs}The last image is a redrawn listing photo of it, meant to show
-the same item laid out flatter and neater, nothing else.
+the same item laid out flatter and neater, nothing else. Smoothed wrinkles, a straighter lay and a neck tag tucked out
+of sight are intended and are not differences; judge only the item itself.
 
 Compare the last image with the real photos and answer one JSON object:
 {{

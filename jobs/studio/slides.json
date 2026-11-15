@@ -25,7 +25,8 @@
                 "ask": "Get close to the {kind} on the {zone} so it fills the middle of the screen."},
     "fabric":  {"shows": "the fabric and its real wear: fading, pilling, softness", "fill": ["fabric", "detail"], "derive": "crop_plain", "route": "level0"},
     "detail":  {"shows": "a part buyers check for this kind", "fill": ["detail"], "route": "level0"},
-    "measure": {"shows": "a tape across one measurement, numbers readable", "fill": ["measure"], "route": "level0", "per": "photo"},
+    "measure": {"shows": "a tape across one measurement, numbers readable", "fill": ["measure"], "route": "level0", "per": "photo",
+                "ask": "Lay a tape straight across the {name} and take a photo where the numbers are readable."},
     "care":    {"shows": "care and fibre label", "fill": ["care"], "route": "level0"}
   },
 
@@ -136,7 +137,6 @@
     "rise": "from the crotch seam up to the top of the waistband at the front",
     "leg_opening": "straight across the hem, doubled",
     "insole_length": "heel to toe inside the shoe",
-    "width": "widest side to side", "height": "base to top, without the handle", "depth": "front to back at the base",
-    "length_any": "end to end"
+    "width": "widest side to side", "height": "base to top, without the handle", "depth": "front to back at the base"
   }
 }

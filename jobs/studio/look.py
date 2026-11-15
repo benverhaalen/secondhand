@@ -33,7 +33,7 @@ Answer one JSON object:
    "side": "front", "back" or null,
    "zone": for close-ups, where on the item, e.g. chest_centre, left_chest, full_back, back_pocket, cuff, hem, hood; else null,
    "item_box": [ymin, xmin, ymax, xmax] of the whole item on 0..1000, for front, back and angle photos; else null,
-   "graphics": for front, back and angle photos, each print, logo or patch: {{"zone": str, "box": [ymin, xmin, ymax, xmax], "text": exact letters or ""}},
+   "graphics": for front, back, angle and graphic photos, each print, logo or patch (on a graphic close-up, box the whole print tightly): {{"zone": str, "box": [ymin, xmin, ymax, xmax], "text": exact letters or ""}},
    "flaws": every stain, hole, crack in a print, pull, pilling patch, missing button or tear you can actually see:
             {{"kind": str, "zone": str, "box": [ymin, xmin, ymax, xmax], "severity": "minor" or "major", "sure": true or false}},
    "measure": for measure photos, {{"name": "pit_to_pit", "length", "sleeve", "waist" or "inseam", "value_in": number or null}}; else null,

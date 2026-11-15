@@ -99,10 +99,10 @@ def main(run_dir, out=None):
             if not refs:
                 continue
             tpl = R.P.SPEC["kinds"][man["kind"]]["template"]
-            box = print_hull(refs[0], ren)
+            box = print_hull(refs[0]["img"], ren)
             for truth, cs in cases(ren, box, other).items():
                 for name, img in cs.items():
-                    r = C.check(src, img, tpl, refs, None)
+                    r = C.check(src, img, tpl, refs, None, laid_well=True, repair=False)
                     rows.append({"item": item, "slide": s["type"], "case": name, "truth": truth, "dropped": not r["ok"], "reasons": r["reasons"]})
                     print(json.dumps(rows[-1]), flush=True)
     honest = [r for r in rows if r["truth"] == "honest"]; lies = [r for r in rows if r["truth"] == "lie"]

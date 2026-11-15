@@ -96,19 +96,24 @@ def square(img: np.ndarray, crop=None, side: int = SIDE) -> np.ndarray:
     return cv2.resize(img, (side, side), interpolation=cv2.INTER_AREA if s >= side else cv2.INTER_CUBIC)
 
 
-def print_refs(look: dict, side: str, photos_by_id: dict) -> list[np.ndarray]:
-    """Real close-ups of each print on this side: its own close-up photo, else a cut from the whole photo."""
+def print_refs(look: dict, side: str, photos_by_id: dict) -> list[dict]:
+    """Real close-ups of each print on this side, with the print's box on them: its own close-up photo, else a cut
+    from the whole photo (whose box is the cut minus its padding)."""
     whole = next((p for p in look["photos"] if p["role"] == side), None)
     out = []
     for g in (whole or {}).get("graphics", []):
         close = next((p for p in look["photos"] if p["role"] == "graphic" and p.get("zone") == g["zone"]), None)
         if close:
-            out.append(photos_by_id[close["id"]])
+            boxes = sorted(close.get("graphics", []), key=lambda q: -(q["box"][2] - q["box"][0]) * (q["box"][3] - q["box"][1]))
+            out.append({"img": photos_by_id[close["id"]], "box": boxes[0]["box"] if boxes else None})
         else:
             img = photos_by_id[whole["id"]]
-            box, _ = P._square(g["box"], [img.shape[1], img.shape[0]], pad=1.3)
+            pad = 1.3
+            box, _ = P._square(g["box"], [img.shape[1], img.shape[0]], pad=pad)
             h, w = img.shape[:2]
-            out.append(img[int(box[1] * h):int(box[3] * h), int(box[0] * w):int(box[2] * w)])
+            inner = (1 - 1 / pad) / 2
+            out.append({"img": img[int(box[1] * h):int(box[3] * h), int(box[0] * w):int(box[2] * w)],
+                        "box": [inner, inner, 1 - inner, 1 - inner]})
     return out
 
 
@@ -123,10 +128,10 @@ def make_whole(slide: dict, look: dict, ks: dict, photos_by_id: dict, log: list)
         prompt = RELAY.format(
             name=name, template=ks["template"], look=ks["whole_look"], ironed=IRONED, tuck=ks.get("tuck", ""),
             limbs="legs and waist" if ks["template"] == "pants" else "sleeves and collar",
-            refs=(f"Images 3 to {2 + len(refs)} are real close-ups of the same item, only to show its true prints, letters and color."
+            refs=(f"Images 3 to {2 + min(len(refs), 2)} are real close-ups of the same item, only to show its true prints, letters and color."
                   if refs else ""),
             flaws=("; and these flaws stay exactly where they are: " + "; ".join(flaws)) if flaws else "")
-        inputs = [jpeg(C.fit(src, 1280)), jpeg(tpl)] + [jpeg(C.fit(r, 1024)) for r in refs[:2]]
+        inputs = [jpeg(C.fit(src, 1280)), jpeg(tpl)] + [jpeg(C.fit(r["img"], 1024)) for r in refs[:2]]
     else:
         prompt = LIGHT.format(name=name)
         inputs = [jpeg(C.fit(src, 1280))]
@@ -139,14 +144,15 @@ def make_whole(slide: dict, look: dict, ks: dict, photos_by_id: dict, log: list)
 
     with ThreadPoolExecutor(4) as ex:
         cands = list(ex.map(one, CANDIDATES))
-    real_bytes = [jpeg(C.fit(src, 1024))] + [jpeg(C.fit(r, 768)) for r in refs[:2]]
+    real_bytes = [jpeg(C.fit(src, 1024))] + [jpeg(C.fit(r["img"], 768)) for r in refs[:2]]
     for c in cands:
         if not c["raw"]:
             c.update(ok=False, reasons=["no image came back: " + json.dumps(c["info"])[:160]])
             continue
         ren = rgb(c["raw"])
         if slide["route"] == "relay":
-            r = C.check(src, ren, ks["template"], refs, look.get("tape_ratio"))
+            laid = next((p.get("laid_well") for p in look["photos"] if p["id"] == slide["photo"]), True)
+            r = C.check(src, ren, ks["template"], refs, look.get("tape_ratio"), laid_well=bool(laid))
         else:  # in place: the original gate, which aligns the render onto the photo and keeps the background
             r = in_place_check(src, ren)
         j, jinfo = (None, {})
@@ -157,13 +163,14 @@ def make_whole(slide: dict, look: dict, ks: dict, photos_by_id: dict, log: list)
         c["judge"] = j
         c["reasons"] = r["reasons"] + C.judge_blocks(j)
         c["numbers"] = r["numbers"]
+        c["repairs"] = r.get("repairs", [])
         c["ok"] = not c["reasons"]
         c["image"] = r["image"]
     passed = [c for c in cands if c.get("ok")]
     passed.sort(key=lambda c: (-(c["judge"] or {}).get("flat", 0) - (c["judge"] or {}).get("laid", 0), c["numbers"].get("color", 9)))
     for c in cands:
         log.append({"slide": slide["type"], "model": c["model"], "seed": c["seed"], "ok": c.get("ok"), "reasons": c.get("reasons"),
-                    "numbers": c.get("numbers"), "judge": c.get("judge"), "cost": c.get("cost"), "seconds": c["info"].get("seconds")})
+                    "numbers": c.get("numbers"), "repairs": c.get("repairs"), "judge": c.get("judge"), "cost": c.get("cost"), "seconds": c["info"].get("seconds")})
     if passed:
         win = passed[0]
         return {"image": square(win["image"]), "how": slide["route"], "ai_marked": True, "model": win["model"], "seed": win["seed"],

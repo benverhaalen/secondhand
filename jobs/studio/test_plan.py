@@ -24,7 +24,7 @@ def test_tee_from_casual_photos_is_ordered_cover_back_print_tag_measure():
 def test_no_back_photo_means_no_back_slide_and_an_ask():
     p = P.plan({"kind": "hoodie", "photos": [ph("f", "front"), ph("t", "tag")]})
     assert "back" not in types(p)
-    assert [a["type"] for a in p["asks"]] == ["back"]
+    assert [a["type"] for a in p["asks"]] == ["back", "measure"]
 
 
 def test_a_small_print_in_a_small_photo_is_asked_for_not_upscaled():

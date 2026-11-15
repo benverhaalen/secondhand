@@ -170,7 +170,9 @@ def plan(look: dict) -> dict:
     for i, s in enumerate(slides, 1):
         s["slot"] = i
     if ks["measurements"] and not any(s["type"] == "measure" for s in slides):
-        notes.append("no tape photo: measurements for " + ", ".join(ks["measurements"]) + " come from capture, and the redraw's proportions are checked against the real photo with a wider band")
+        notes.append("no tape photo: measurements for " + ", ".join(ks["measurements"]) + " come from capture; the redraw's shape is checked against the real photo only when that photo is laid flat")
+        if ks["whole_route"] == "relay":
+            asks.append(_ask("measure", name=ks["measurements"][0]))
     return {"kind": kind, "whole_route": ks["whole_route"], "slides": slides, "asks": asks, "notes": notes}
 
 
