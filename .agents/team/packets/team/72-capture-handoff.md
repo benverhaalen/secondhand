@@ -1,35 +1,34 @@
 # 72: capture handoff
 
-Updated: November 15, 2026, afternoon, by the fifth capture lead (section 000); before that by the fourth (section 00); before that, night Central. Owner: Nate. Agent: Claude Code, the third capture team lead (Opus 5.5), ending at about half its context ([packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills)). Status: row 7's spec (the parts of one item, F17) is reviewed and on main (c7ea4676); its engine half is building on the Mac in worker `cap-parts-1`; its routes brief is written; the LiDAR module (row 5) leads next, by Nate's choice, and is not started; Nate called the wrap-up, so section 0 is the place to start.
+Updated: November 15, 2026, afternoon, by the fifth capture lead, halted (section 000); before that by the fourth (section 00); before that, night Central. Owner: Nate. Agent: Claude Code, the third capture team lead (Opus 5.5), ending at about half its context ([packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills)). Status: row 7's spec (the parts of one item, F17) is reviewed and on main (c7ea4676); its engine half is building on the Mac in worker `cap-parts-1`; its routes brief is written; the LiDAR module (row 5) leads next, by Nate's choice, and is not started; Nate called the wrap-up, so section 0 is the place to start.
 
 The design is [spec/engines/capture.md](../../../../spec/engines/capture.md). Read it first: section 1 says what exists, section 8 lists the fixed and open fixes, and section 9 is the order to build in.
 
-## 000. The fifth capture lead, 2026-11-15 afternoon (read first)
+## 000. The fifth capture lead, halted 2026-11-15 by Nate's word (read first)
 
-Owner: Nate. Agent: Claude Code, the fifth capture lead (Opus 5.5). Briefs and reviews are in the session notes folder (`side-session-notes/local_4b3a0b4d-.../`). Sections 00 and below still hold where this one does not replace them.
+Owner: Nate. Agent: Claude Code, the fifth capture lead (Opus 5.5). Halted on Nate's "we need to stop agents from merging and working on top of eachother" (relayed by the orchestrator): from now the orchestrator alone merges to main, one change at a time. Briefs and reviews are in the session notes folder (`side-session-notes/local_4b3a0b4d-.../`).
 
 **On main**
-- Photo uploads: `store/blobs.ts`, signed single-use `PUT /v1/uploads/:id`, 25 MB, JPEG or PNG by their bytes, every metadata but orientation stripped, body read only after the token is known (merge 8531048a; reviews `cap-blobs-review-1.md`). The server lead joined it to `captures.ts` (eaec5743): a captured photo gets a real target. `captures.ts` is capture's from here (agreed with the server lead).
-- The LiDAR module, round 2 (merge 0031af5a): measured off the ARKit queue, plane refit, noise tests, nearest cluster, `item_clipped`. Mac: swift test 27, index 3, unsigned iOS build succeeded. Second review `cap-depth-review-2.md`: merge, should-fix S1 to S5.
-- Spec: the shot guide (capture.md §7a, Nate's words, packet 90 for Ben); the shared question block `Ask` agreed with the engines lead and the answer to packet 92 (questions read `intent`; capture.md §4); packet 89 for Ben (his client stays the only one, the prefill line, one shared question part, HEIC and location in picked photos).
-- The server is hosted: https://secondhand-api.fly.dev (packet 86's last section).
+- The identify engine, round 6 (b56afe79): tag parser by whole-line grammar, the ladder twin, ports, tables. Mac after merging main: parse 557, identify 80, ladder 10, plan 62, captures 141, test_twins 4, tsc clean. Review 4 found 12 wrong of 311 facts, all brand; round 6 fixed brand (must start its line). Review 5 is running (`cap-identify-review-5.md` when done); what it finds is a follow-up round.
+- Photo uploads (8531048a), joined to `captures.ts` by the server lead (eaec5743). The LiDAR module round 2 (0031af5a). The shared `Ask` type in `plan.ts` (d88c8706).
+- Spec and packets: capture.md section 4 (Ask block agreed with the engines lead; questions read `intent`), section 7a (the shot guide); packets 87, 89, 90 for Ben; packet 86's hosting section. The server is on Fly at https://secondhand-api.fly.dev.
 
-**On Mac branches**
-- `w/cap-identify-1`: rounds 3 (f5f1206a) and 4 (e2974ed3) committed; round 5 uncommitted, round 6 running (`brief-cap-identify-1f.txt`: brand must start its line). Review 4 (`cap-identify-review-4.md`): 12 wrong of 311 facts, all brand. After round 6: rerun parse, identify, ladder, test_twins, tsc; commit; a fifth fresh review that runs 100+ new tags (brief it like review 4); merge only at no must-fix.
-- `w/cap-lens-1` (8ab8f765, cut from cap-identify-1 at f5f1206a): the Lens port, spend port, single-use address route. Spend 6, lens 18, address 3. Not reviewed yet. Before merging: merge identify's final state and origin/main into it, a fresh review, and declare `jimp-compact` (0.16.1, already installed via Expo) in `app/package.json` so the Docker image keeps it. Composition (TREG_TOKEN present and `SECONDHAND_PUBLIC_ORIGIN`) belongs to the route join. The fixture is an example, not a recording: the first live call is Nate's yes, one call, logged, and replaces it.
-- `w/cap-parts-1` (9ac1f14b, main merged in at d1c3b03f): engine half green (parts 25, plan 71, walk 15, and the rest). Needs a fresh review, then `brief-cap-parts-2.txt` (routes) and the canon rows in one merge.
-- `w/cap-depth-2`: round 3 running (`brief-cap-depth-3.txt`): S1, S4, S5 and `distance_m` for the shot guide.
+**On Mac branches (`~/dev/projects/secondhand-wt/<name>`, branch `w/<name>`)**
+- `w/cap-lens-1` at cd311209: Lens port, spend port, single-use address route, `jimp-compact` declared, the route in `routes.ts` and `spec/examples/routes.json`. Main merged in before the halt: routes 6, lens 3, identify/lens 18, spend 6, captures 141, server main 8, examples 9, tsc clean. Not composed anywhere (off without `TREG_TOKEN`). A fresh review is running (`cap-lens-review-1.md`). Not merged, by the orchestrator's word.
+- `w/cap-join-2`: the route join, running (`brief-cap-identify-2.txt`), cut from main after identify. Its done: one capture end to end (photos, real upload targets, PUT, finish, identify job, brand question with Carhartt proposed, answer) and a second person who reads none of it. When it reports: rerun captures, identify, plan, walk, routes, items, examples and tsc, commit on its branch, leave it.
+- `w/cap-depth-2` at 375cf21f: depth round 3 (stray-pixel guard, extent log on change, safe cast, `distance_m`). swift test 31, index 3, tsc clean; module files only; not reviewed.
+- `w/cap-parts-1` at 9ac1f14b: the parts engine, green when main was merged at d1c3b03f (parts 25, plan 71, walk 15, select 21, fields 40, table 23, complete 10, process 4, classify 14); needs main merged again, a fresh review, then the routes half (`brief-cap-parts-2.txt`) and the canon rows.
 - `w/cap-ask-1`: parked, never merge (Ben's client is the one client).
 
-**Next, in order**
-1. Identify round 6, its fifth review, merge.
-2. The route join (`brief-cap-identify-2.txt`, updated: upload target already on main; identify from onUploaded; facts, others, rests_on; site rows; edit a known fact; the `Ask` type split; intent derives purpose). Cut from main after step 1. Then compose Lens there.
-3. Lens review and merge; parts review, routes half, canon rows; depth round 3 merge.
-4. Redeploy Fly after the route join (from a clean worktree, never the shared checkout).
+**Half done**
+- The route join (running). Lens composition is part of it once Lens lands: compose only when `TREG_TOKEN` is present and `SECONDHAND_PUBLIC_ORIGIN` is set.
+- On Ben's live app a photo still cannot reach identify: identify starts only once the route join is on main and Fly is redeployed.
 
-**Waiting on Nate**: the treg top-up and his yes for the first live Lens call; publishing the site with `SECONDHAND_API_ORIGIN`.
-
-**Learned**: a strict brand rule broke the three real garments; test every parser rule against `spec/items/capture-real/` before briefing it. Merging on Windows: `git -c merge.autostash=false merge`, because a merge in the shared checkout otherwise tries to stash other sessions' files.
+**Next, in order (for the orchestrator's merges)**
+1. Identify's follow-up from review 5, if it finds must-fix.
+2. The route join (`w/cap-join-2`), then a packet for Ben with the commit and what his client receives, then a Fly redeploy from a clean worktree.
+3. Lens (`w/cap-lens-1`), after its review; the first live call is Nate's yes and the treg top-up.
+4. Depth round 3, then parts.
 
 ## 00. The fourth capture lead (identify, classification, the questions), 2026-11-15 afternoon
 
