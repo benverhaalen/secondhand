@@ -47,7 +47,8 @@ function measure({ index, rect, faces, medium }) {
     const gradient = /gradient\(/.test(bi) ? { radial: /radial-gradient\(/.test(bi), repeating: /repeating-/.test(bi),
       colors: [...new Set([...(bi.match(/rgba?\([^)]*\)/g) ?? []), cs.backgroundColor].filter(c => !clear(c)))] } : null;
     ids.set(el, els.length);
-    els.push({ tag, part: el.dataset.part ?? null, rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, gradient,
+    const logo = tag === 'img' && !photo;
+    els.push({ tag, part: el.dataset.part ?? null, rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
       alt: tag === 'img' ? el.getAttribute('alt') ?? '' : null, hasText: /\S/.test(el.innerText ?? ''),
       bg: clear(cs.backgroundColor) ? null : cs.backgroundColor,
       borders: [...new Set(['Top', 'Right', 'Bottom', 'Left'].filter(s => parseFloat(cs[`border${s}Width`]) > 0 && cs[`border${s}Style`] !== 'none' && !clear(cs[`border${s}Color`])).map(s => cs[`border${s}Color`]))],
@@ -74,10 +75,14 @@ function measure({ index, rect, faces, medium }) {
       }
       break; }
     if (!seen) continue;
+    // What has been done to the letters: a transform, a filter or a fade anywhere above them, and a shadow, stroke, outline or motion on them.
+    const fx = []; for (let a = p; a && a !== document.body && !a.hasAttribute('data-view'); a = a.parentElement) { const s = getComputedStyle(a);
+      if (s.transform !== 'none') fx.push('transformed'); if (s.filter !== 'none') fx.push('filtered'); if (Number(s.opacity) < 1) fx.push('faded'); if (s.animationName !== 'none') fx.push('moving'); }
+    if (cs.textShadow !== 'none') fx.push('shadowed'); if (parseFloat(cs.webkitTextStrokeWidth) > 0) fx.push('stroked'); if (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0) fx.push('outlined');
     const family = first(cs.fontFamily), group = p.parentElement && p.parentElement !== document.body ? p.parentElement : p;
     texts.push({ text: n.data, size: Math.round(parseFloat(cs.fontSize) * 10) / 10, weight: Number(cs.fontWeight), family: cs.fontFamily,
       display: family === faces.display, textFace: family === faces.text, color: cs.color, upper: cs.textTransform === 'uppercase',
-      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, scroller: rs.some(r => r.scroller),
+      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller),
       alone: !/\p{L}/u.test((group.innerText ?? '').replace(n.data, '')) });
   }
   return { index, w: vw, h: vh, els, texts };

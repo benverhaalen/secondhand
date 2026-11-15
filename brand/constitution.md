@@ -390,6 +390,8 @@ Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-c
 | B29 | Feel | Ben looks at it | Ben |
 | B30 | Longest text (Part III) | Words in a view ≤ the medium's limit, not counting the wordmark | Script |
 | B31 | Things of one kind are one size, whatever is in them (Ben, [words](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis)) | Every element with the same `data-part` name renders at one height, within 1 px | Script |
+| B32 | The wordmark's kit (C1; agent proposal, ledger R26) | Once per view; no transform, shadow, outline, stroke, filter, fade or motion; no fill or box of its own; ink or white, on the page or the field; nothing else within half its type size | Script |
+| B33 | Logos in a row (C5; agent proposal, ledger R26) | Logos that share a parent render at one height and one gap. A logo taller than the wordmark's type is a warning until R26 is picked | Script |
 
 A check that passes is not proof of taste ("scripts can't prove it looks good"). It is proof the rules were followed. Record results with the output.
 

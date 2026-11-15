@@ -90,6 +90,8 @@
   { "id": "B28", "rule": "A view is the medium's real size.", "kind": "check", "by": "render:B28", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "B30", "rule": "A view holds no more words than the medium allows.", "kind": "check", "by": "render:B30", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "B31", "rule": "Things of one kind are one size, whatever is in them.", "kind": "check", "by": "render:B31", "media": ["app", "web", "post", "story", "deck"] },
+  { "id": "B32", "rule": "The wordmark is untouched, once per view, with clear space around it.", "kind": "check", "by": "render:B32", "media": ["app", "web", "post", "story", "deck"] },
+  { "id": "B33", "rule": "Logos in a row share one height and one gap.", "kind": "check", "by": "render:B33", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "B1", "rule": "Every element has a reason.", "kind": "judge", "fail": "Fail if you can point at an element and can't say which end, code or rule of the brand it serves.", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "B2", "rule": "The item or the money is seen first.", "kind": "judge", "fail": "Fail if the first thing you see with your eyes half shut is not an item photo or an amount of money, unless the view is a title, an end card or an icon.", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "B24", "rule": "A number can be said back.", "kind": "judge", "fail": "Fail if a number appears that a stranger could not explain from the words beside it.", "media": ["app", "web", "post", "story", "deck"] },
