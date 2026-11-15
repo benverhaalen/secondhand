@@ -12,10 +12,10 @@
   --press: .97;
   --ctl: var(--gray); --ctl-edge: 0 0 0 0 transparent;        /* a control that sits on the page: gray on a white page */
   --ended-fill: var(--ink-2);     /* R30: an ended tag has to hold on a pale photo, so it is dark with white text */
-  --paper-shadow: drop-shadow(0 1px 1px var(--card-shade)) drop-shadow(0 6px 20px var(--card-shade));   /* the receipt is a card of paper: the card's shadow, drawn so it follows the torn foot */
+  --paper-shadow: drop-shadow(0 1px 1px rgb(10 10 10 / .08)) drop-shadow(0 8px 20px rgb(10 10 10 / .07));   /* R31: the receipt may be the one thing that lies on the page with a shadow */
 }
-/* R29, what separates a card from the page. With no class: a white card on a white page, held by its shadow alone. */
-.sh.sep-tint { --page: #F1F3F5; --ctl: var(--surface); --ctl-edge: 0 0 0 1px var(--card-edge); }   /* white cards on a tinted page: dark mode's step, mirrored (1.11:1) */
+/* R29, what separates a card from the page. With no class: a white card on a white page, held by its hairline alone. */
+.sh.sep-tint { --page: #F1F3F5; --ctl: var(--surface); --ctl-edge: 0 0 0 1px var(--card-edge); }   /* white cards with a hairline on a tinted page: dark mode's step, mirrored (1.11:1) */
 .sh.sep-gray .card:not(.field), .sh.sep-gray .notice { background: var(--gray); box-shadow: none; }                              /* round 10: a gray box, no shadow */
 .sh.sep-gray .card:not(.field) .pill.l2 { background: var(--surface); }
 .sh.sep-rows .card:not(.field), .sh.sep-rows .notice { background: none; box-shadow: none; border-radius: 0; padding-left: 0; padding-right: 0; border-top: var(--card-border); }   /* rows on white with a hairline (L16) */
@@ -60,8 +60,12 @@
 /* nav bar: the wordmark left, one 44 target right, in one 44 row (Art. 7.8). The icon's ink lines up with the gutter */
 .sh .nav { height: var(--nav-h); flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--s-2) 0 var(--gutter); position: relative; z-index: 4; }
 .sh .nav .ib { position: relative; }
+/* L3 as locked: the wordmark centered, whatever sits beside it. Left is the proposal (R41) */
+.sh.wm-center .nav { display: grid; grid-template-columns: 1fr auto 1fr; }
+.sh.wm-center .nav .wm { grid-column: 2; }
+.sh.wm-center .nav .ib { grid-column: 3; justify-self: end; }
 .sh .count { position: absolute; top: 2px; right: 0; min-width: var(--badge-h); height: var(--badge-h); padding: 0 var(--s-1); border-radius: var(--r-pill); background: var(--ink); color: var(--surface);
-  font-size: var(--t-13); line-height: var(--badge-h); font-weight: var(--w-medium); text-align: center; box-shadow: 0 0 0 2px var(--page); }
+  font-size: var(--t-13); line-height: var(--lh-13); font-weight: var(--w-medium); display: grid; place-items: center; box-shadow: 0 0 0 2px var(--page); }
 .sh .wash { position: absolute; left: 0; right: 0; top: 0; height: var(--wash-h); background: var(--wash); z-index: 0; pointer-events: none; }
 .sh .a36 { font-size: var(--t-36); line-height: var(--lh-36); letter-spacing: var(--tr-36); }
 .sh .ink { color: var(--ink); }
@@ -73,7 +77,7 @@
 .sh .ib:active { transform: scale(var(--press)); }
 .sh .ib.gray:active { background: var(--gray-press); }
 
-/* cards (Art. 7.8): one corner, one padding, two heights. A card lies on the page, so it has the card's shadow. The one on the field has none */
+/* cards (Art. 7.8): one corner, one padding, two heights. A card on the page has a 1 px edge and no blur (Art. 9.2). The one on the field has none */
 .sh .card { border-radius: var(--r-card); padding: var(--card-pad); background: var(--surface); box-shadow: var(--shadow-card); display: flex; flex-direction: column; flex: none; position: relative; }
 .sh .card.dec { height: var(--card-decision-h); }
 .sh .card.item { height: var(--card-item-h); }
@@ -191,7 +195,7 @@
 .sh .rows > .ln:last-child { border-bottom: var(--card-border); }
 
 /* the sum is a receipt (Ben, round 10: "i like the B. the receipt thing"): white paper with dotted leaders and a torn foot.
-   It is a card of paper, so it takes the card's shadow (Art. 9.2) */
+   Whether it may be the one thing with a shadow is R31 */
 .sh .sum .ln { align-items: baseline; }
 .sh .sum .lead { flex: 1; border-bottom: 1.5px dotted var(--ink-disabled); margin: 0 var(--s-2); transform: translateY(-4px); }
 .sh .sum hr { border: 0; border-top: 1.5px dashed var(--ink-disabled); margin: 0; }

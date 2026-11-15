@@ -32,6 +32,7 @@
   const q = new URLSearchParams(location.search), only = q.get('only'), list = k => new Set((q.get(k) || '').split(',').filter(Boolean));
   const on = list('touches'), o = q.get('o') === 'now' ? { ...SH.NOW } : q.has('o') ? { ...Object.fromEntries(SH.choices.map(([k]) => [k, list('o').has(k)])), sep: SH.NEXT.sep } : { ...SH.NEXT };
   if (q.get('sep')) o.sep = q.get('sep');
+  if (q.get('wm')) o.wm = q.get('wm');
   const wall = document.getElementById('wall'), bar = document.getElementById('bar');
   if (only) document.body.classList.add('bare');
   const draw = () => {
