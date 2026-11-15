@@ -184,16 +184,20 @@ export default function Camera() {
             <Instruction text={ask} />
           </>
         )}
+        framed
+        facts={(
+          <Chips>
+            {!online && waiting ? <CamNote icon="clock-01" text={`${plural(waiting, 'photo', 'photos')} waiting for signal`} /> : null}
+            {kind ? <CamNote icon="information-circle" text={kind === DONT_KNOW ? 'Listed from what can be seen' : kind} /> : null}
+            {appraise ? <CamNote icon="information-circle" text="Appraise first: no quick sale" /> : null}
+            {/* Found first, so what is left to fill is where the line runs on. */}
+            {lamp ? null : [...factsFor(mode)].sort((a, b) => Number(!facts[a.key]) - Number(!facts[b.key])).map(f => (
+              <FactChip key={f.key} id={`fact-${f.key}`} name={f.name} value={facts[f.key]} onChange={v => typed(f.key, v)} />
+            ))}
+          </Chips>
+        )}
         bottom={(
           <CameraFoot>
-            <Chips>
-              {!online && waiting ? <CamNote icon="clock-01" text={`${plural(waiting, 'photo', 'photos')} waiting for signal`} /> : null}
-              {kind ? <CamNote icon="information-circle" text={kind === DONT_KNOW ? 'Listed from what can be seen' : kind} /> : null}
-              {appraise ? <CamNote icon="information-circle" text="Appraise first: no quick sale" /> : null}
-              {lamp ? null : factsFor(mode).map(f => (
-                <FactChip key={f.key} id={`fact-${f.key}`} name={f.name} value={facts[f.key]} onChange={v => typed(f.key, v)} />
-              ))}
-            </Chips>
             {phase === 'done' ? (
               <>
                 <Chips>

@@ -33,6 +33,35 @@ for (const [name, { route, shows }] of Object.entries(STATES)) test(`camera: ${n
   await s.page.close();
 });
 
+test('camera: the frame is 3:4 upright between the bars, with the square inside it and the facts under the square', async () => {
+  const s = await app.open('/camera?world=new');
+  await s.shows('Show the whole front');
+  const frame = await s.page.locator('[data-part="capture-frame"]').boundingBox();
+  assert.ok(Math.abs(frame.width / frame.height - 3 / 4) < 0.01, `3:4 upright: ${frame.width} x ${frame.height}`);
+  const square = await s.page.locator('[data-part="capture-square"]').boundingBox();
+  assert.ok(Math.abs(square.width - square.height) < 1 && Math.abs(square.width - frame.width) < 1, `the square spans the frame's width: ${square.width} x ${square.height}`);
+  assert.ok(Math.abs((square.y - frame.y) - (frame.y + frame.height - square.y - square.height)) < 1, 'the square is centered in the frame');
+  const instruction = await s.page.locator('[data-part="instruction"]').boundingBox(), shutter = await s.page.getByTestId('cam-shutter').boundingBox();
+  assert.ok(frame.y > instruction.y + instruction.height && frame.y + frame.height < shutter.y, 'the frame sits between the top bar and the foot');
+  const chip = await s.page.getByTestId('fact-brand').boundingBox();
+  assert.ok(chip.y >= square.y + square.height && chip.y + chip.height <= frame.y + frame.height, 'the facts sit in the frame under the square, off the item');
+  await s.page.close();
+});
+
+test('camera: Sell reads the union of what every site asks for a jacket', async () => {
+  const s = await app.open('/camera?world=new');
+  for (const name of ['Brand', 'Model', 'Color', 'Size', 'Pit to pit', 'Condition', 'Men’s or women’s', 'Material', 'Style', 'Era', 'Length', 'Sleeve']) await s.shows(name);
+  await s.page.close();
+});
+
+test('camera: Review the draft opens the draft at its review, with every fact the stills read', async () => {
+  const s = await app.open('/camera?world=new&state=done');
+  await s.tap('cam-done');
+  await s.page.waitForURL(u => new URL(u).pathname === '/item/it_draft', { timeout: 3000 });
+  for (const t of ['Review', 'Where it will post', 'Cotton duck', 'Men’s', '1990s']) await s.shows(t);
+  await s.page.close();
+});
+
 test('camera: a still is judged, the found pop-up says what it read, a light haptic fires, and the stage fills', async () => {
   const s = await app.open('/camera?world=new');
   await s.shows('Show the whole front');
