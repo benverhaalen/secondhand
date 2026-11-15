@@ -157,3 +157,14 @@ test('exactly two percentage points over 200 pages promotes; less does not', () 
 test('duplicate truth pages cannot inflate the held-out sample', () => {
   assert.throws(() => extractorChallenger(champion(), challenger(), Array(200).fill(pages(1, 0, 1)[0]), at), /duplicate/);
 });
+
+test('an observed agreement snapshot updates once and person-scoped learning never reads another person', () => {
+  const store = memoryStore(); declareLearning(store);
+  const answer = { kind: 'price_now' as const, stage: 'settled' as const, called: ['public.poshmark'], used: ['public.poshmark'], person: 'person_a', outcome_id: 'basis_a' };
+  updateContribution(store, answer, at);
+  const once = store.read('intel_contribution', { kind: 'price_now', segment: 'public.poshmark', person: 'person_a' });
+  updateContribution(store, answer, at);
+  assert.deepEqual(store.read('intel_contribution', { kind: 'price_now', segment: 'public.poshmark', person: 'person_a' }), once);
+  assert.ok(contributionMean(store, 'price_now', 'public.poshmark', 'person_a') > .5);
+  assert.equal(contributionMean(store, 'price_now', 'public.poshmark', 'person_b'), .5);
+});

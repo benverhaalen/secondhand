@@ -13,7 +13,7 @@ export type ObservationPort = {
 };
 export type ValuateCtx = { params: ParamStore; sources: CompSource[]; observations: ObservationPort; as_of: string; person?: string;
   budget_ms?: number; request_id?: string; log: CheckInput['log']; fitted?: ReturnType<typeof fittedReader> };
-export type ValuationItem = { item_id: string; product_id: string; variant?: string; size?: string; family_id?: string; kind?: string;
+export type ValuationItem = { item_id: string; product_id?: string; title?: string; brand?: string; model?: string; variant?: string; size?: string; family_id?: string; kind?: string;
   condition: string; completeness?: string[]; works?: string; retail_cents?: number; retail_citation?: string;
   floor_cents: number; objective: Objective; sites: CheckInput['sites'] };
 export type GatherNeed = { product_id: string; claim: 'valuation'; basis_level: BasisLevel; reason: 'too_few' | 'stale' | 'source_gap'; n_eff: number; want_n_eff: number };
@@ -95,11 +95,19 @@ export async function valuate(item: ValuationItem, ctx: ValuateCtx): Promise<{ v
   return ctx.log.timed('valuation.valuate', async () => {
     const scope: Scope = { ...(ctx.person !== undefined ? { person: ctx.person } : {}), ...(item.kind !== undefined ? { kind: item.kind } : {}) };
     const resolved = resolve(ctx.params, scope), params = fromResolved(resolved);
+    const product_id = item.product_id ?? item.item_id;
+    // *agent proposal*: packet 55's answer can request identity; a kind alone cannot justify a price.
+    const identity = !!(item.title?.trim() || item.brand?.trim() && item.kind?.trim() || item.product_id?.trim());
+    if (!identity) {
+      const valuation = await check({ ...item, product_id, identity_unknown: true, as_of: ctx.as_of, params, resolved,
+        param_version: 0, warm_comps: [], sources: [], log: ctx.log });
+      return { valuation, gather: null, persisted: true };
+    }
     const calibration = fittedCalibration(ctx, scope, resolved.values.valuation_checked_min_n);
     const curves = item.sites.map(s => item.kind ? ctx.fitted?.curve({ kind: item.kind, site: s.site }) : undefined);
     let warm: Comp[] = [], warmUnavailable = false;
     try {
-      warm = await ctx.log.timed('valuation.observations.read', () => ctx.observations.read({ product_id: item.product_id,
+      warm = await ctx.log.timed('valuation.observations.read', () => ctx.observations.read({ product_id,
         ...(item.family_id !== undefined ? { family_id: item.family_id } : {}), ...(item.kind !== undefined ? { kind: item.kind } : {}), as_of: ctx.as_of }));
     } catch (error) { ctx.log.error('valuation.observations.read', error); warmUnavailable = true; }
     const returned: Comp[] = [];
@@ -108,7 +116,7 @@ export async function valuate(item: ValuationItem, ctx: ValuateCtx): Promise<{ v
       if (!signal.aborted) returned.push(...rows);
       return rows;
     });
-    const input: CheckInput = { ...item, ...(calibration ? { calibration } : {}), as_of: ctx.as_of, params, resolved, store: ctx.params, scope,
+    const input: CheckInput = { ...item, product_id, ...(calibration ? { calibration } : {}), as_of: ctx.as_of, params, resolved, store: ctx.params, scope,
       param_version: 0, warm_comps: warm, sources, budget_ms: ctx.budget_ms, log: ctx.log };
     let valuation = await check(input);
     const reference = valuation.range.q50;
@@ -152,7 +160,7 @@ export async function valuate(item: ValuationItem, ctx: ValuateCtx): Promise<{ v
     const basis = basisOf(valuation.comps, ctx.as_of, params);
     const needs = valuation.basis_level !== 'variant' || valuation.notes.some(note => note === 'too_few' || note === 'stale');
     const stale = !valuation.comps.some(c => c.age_days <= params.recent_days);
-    const gather: GatherNeed | null = needs ? { product_id: item.product_id, claim: 'valuation', basis_level: valuation.basis_level,
+    const gather: GatherNeed | null = needs ? { product_id, claim: 'valuation', basis_level: valuation.basis_level,
       n_eff: basis.n_eff, want_n_eff: params.min_n_eff,
       reason: basis.n_eff < params.min_n_eff ? 'too_few' : stale ? 'stale' : 'source_gap' } : null;
     return { valuation, gather, persisted };

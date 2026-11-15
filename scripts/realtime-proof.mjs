@@ -3,15 +3,14 @@
 // spec/engines/valuation.md §3–4; spec/determinations/money.md D1; spec/plans/joins.md.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync, readdirSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve, relative } from 'node:path';
+import { readFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const AS_OF = '2026-11-15T00:00:00.000Z';
-const LATER = '2026-12-15T00:00:00.000Z';
 const sha = text => createHash('sha256').update(text).digest('hex');
 const read = path => readFileSync(resolve(ROOT, path), 'utf8');
 const json = value => JSON.parse(JSON.stringify(value));
@@ -39,27 +38,7 @@ function location(file, anchor) {
   return { file, line: i + 1 };
 }
 
-// This inventory is evidence of missing joins, not a replacement for executing the routes.
-function importers(target) {
-  const hits = [];
-  const walk = dir => {
-    for (const entry of readdirSync(resolve(ROOT, dir), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-      const path = `${dir}/${entry.name}`;
-      if (entry.isDirectory()) { walk(path); continue; }
-      if (!/\.(ts|tsx|js|mjs)$/.test(path) || /\.test\./.test(path)) continue;
-      for (const m of read(path).matchAll(/(?:from\s*|import\s*\(\s*|import\s*)['"]([^'"]+)['"]/g)) {
-        if (!m[1].startsWith('.')) continue;
-        if (relative(ROOT, resolve(ROOT, dirname(path), m[1])) === target) hits.push(path);
-      }
-    }
-  };
-  walk('app/src');
-  return [...new Set(hits)].sort();
-}
-
 async function runOnce() {
-  // Each worker has fresh module state and stores. Only clock inputs are fixed; no outputs are rounded or masked for equality.
-  // An offline development run (56e985fd: production refusals hold unless development is stated), on a fresh store per run.
   process.env.NODE_ENV = 'development';
   process.env.SECONDHAND_DATA_DIR = mkdtempSync(join(tmpdir(), 'realtime-proof-'));
   delete process.env.SECONDHAND_LIVE_SITES;
@@ -73,188 +52,125 @@ async function runOnce() {
     const { createLog, memorySink } = await import('../log/index.js');
     const { checkLog } = await import('../spec/log.mjs');
     const valuation = await import('../app/src/edge/api/valuations.ts');
-    const { soldSearch } = await import('../app/src/edge/api/valuation-sold.ts');
     const searchApi = await import('../app/src/edge/api/search.ts');
     const { jobs } = await import('../app/src/edge/api/jobs.ts');
     const { store } = await import('../app/src/edge/api/store.ts');
-    const { TABLES } = await import('../app/src/edge/events/ports.ts');
+    const { writeObservations } = await import('../app/src/edge/events/observations.ts');
     const { poshmarkAdapters } = await import('../app/src/edge/harness/sites/poshmark/adapter.ts');
     const { soldSources } = await import('../app/src/engines/valuation/sold.ts');
-    const { check } = await import('../app/src/engines/valuation/check.ts');
-    const { comparables, weigh, DEFAULTS } = await import('../app/src/engines/valuation/comps.ts');
-    const { answer, guardWith } = await import('../app/src/engines/proof/proof.ts');
+    const { comparables } = await import('../app/src/engines/valuation/comps.ts');
     const { memoryStore } = await import('../app/src/engines/param/param.ts');
-    const { declareLearning, updateContribution, contributionMean, cutOrder } = await import('../app/src/edge/intel/learn.ts');
-    const { gather, measure, protocolSteps } = await import('../app/src/edge/intel/gather.ts');
-    const { runPlan } = await import('../app/src/edge/intel/run.ts');
-    const { classify } = await import('../app/src/edge/intel/classify.ts');
-
+    const { declareLearning, contributionMean } = await import('../app/src/edge/intel/learn.ts');
     const sink = memorySink();
     const log = createLog({ src: 'realtime-proof', build: 'realtime-proof', sink, seed: 1, session: 'realtime-proof' });
-    const params = memoryStore();
-    declareLearning(params);
-    const observeCalls = [];
-    const observe = params.observe.bind(params);
+    const ctx = (body, user_id) => ({ body, user_id, visitor_id: null, params: {}, query: new URLSearchParams(),
+      headers: new Headers(), request_id: 'realtime-proof', log });
+    const params = memoryStore(); declareLearning(params); valuation.ports.params = params;
+    const observeCalls = [], reads = [];
+    const observe = params.observe.bind(params), readParam = params.read.bind(params);
     params.observe = (name, scope, outcome, at) => {
       observeCalls.push(json({ name, scope, outcome, at }));
-      const result = observe(name, scope, outcome, at);
-      log.change('param', name, result.reason, { version: result.read.version });
-      return result;
+      return observe(name, scope, outcome, at);
     };
-    const productWrites = [];
-    const put = store.put.bind(store);
-    store.put = (table, row) => {
-      productWrites.push({ table, id: row.id });
-      return put(table, row);
+    params.read = (name, scope, at) => {
+      const result = readParam(name, scope, at);
+      reads.push(json({ name, scope, version: result.version })); return result;
     };
-    const ctx = body => ({ body, user_id: 'usr_8f2k', visitor_id: null, params: {}, query: new URLSearchParams(),
-      headers: new Headers(), request_id: 'realtime-proof', log });
+    const productWrites = [], put = store.put.bind(store);
+    store.put = (table, row) => { productWrites.push({ table, id: row.id }); return put(table, row); };
 
-    // Use the real sold adapter and conversion; never turn an asking page into a sold page or assign a sale date.
     const soldRead = poshmarkAdapters({ signed_in: false,
       doc: async () => ({ status: 200, html: fixture('poshmark-sold') }),
       json: async () => { throw new Error('unexpected signed-in read'); },
-    }).find(a => a.manifest.verb === 'search');
+    }).find(adapter => adapter.manifest.verb === 'search');
     assert.ok(soldRead, 'Poshmark sold reader is unavailable');
     const sources = soldSources(async (_site, query, signal) => {
       const reply = await soldRead.run({ q: query, status: 'sold' }, signal);
       if (!reply.ok) return { rows: [], outcome: reply.error.code, reason: reply.error.message };
       return { rows: Array.isArray(reply.data) ? reply.data : reply.data?.rows ?? [], outcome: 'hit' };
-    }, ['poshmark'],
-      { query: 'Levi 501', condition: 'good', error: (where, error) => log.error(where, error) });
+    }, ['poshmark'], { query: 'Levi 501', condition: 'good', error: (where, error) => log.error(where, error) });
     const sold = await sources[0](new AbortController().signal);
-    assert.ok(sold.length > 1, 'recorded sold fixture no longer supplies the thin and wider diagnostic sets');
-    const input = { product_id: 'pr_realtime', condition: 'good', as_of: AS_OF, floor_cents: 0,
-      objective: 'balanced', param_version: 1, warm_comps: sold.slice(0, 1), sources: [], sites: [], log };
-    const classified = await classify({ text: 'What is a Levi 501 worth?' });
-    const thin = comparables({ condition: input.condition }, input.warm_comps, AS_OF);
-    const item = { id: 'it_realtime', user_id: 'usr_proof', product_id: input.product_id, title: 'Levi 501', condition: 'good' };
+    assert.ok(sold.length > 1);
+    const thin = comparables({ condition: 'good' }, sold.slice(0, 1), AS_OF);
+    const item = { id: 'it_realtime', user_id: 'usr_proof', product_id: 'pr_realtime', title: 'Levi 501', condition: 'good' };
     store.put('item', item);
-    const disabledSearch = soldSearch({ live_sites: [] });
-    // Only the sold source supplies recorded rows; ownership, item mapping, clock, params and valuate run on the real route.
-    const inputPort = { item, route: 'POST /v1/valuations', source_fixture: 'poshmark-sold',
-      observations: 'default uncomposed port',
-      sold_search: await Promise.all(['mercari', 'poshmark'].map(site => disabledSearch(site, item.title, new AbortController().signal))),
-      limitation: 'The source fixture is injected through ports.sources. The default observation port logs not_composed and does not persist.' };
-    valuation.ports.sources = (_search, _sites, q) => {
-      assert.equal(q.query, item.title);
-      return [async () => sold.slice(0, 1)];
-    };
-    const valuate = async () => {
-      const reply = await valuation.handlers['POST /v1/valuations']({ ...ctx({ item_id: item.id }), user_id: item.user_id }, new Request('http://proof.invalid/v1/valuations'));
-      const result = jobs.st.getJob(reply.body.id)?.result;
-      assert.ok(result, 'valuation POST did not store an answer');
-      return json(result);
-    };
-    const before = await valuate();
+    let batch = sold.slice(0, 1);
+    valuation.ports.sources = () => [async () => batch.map(comp => ({ ...comp, data: 'dataset:realtime-fixtures' }))];
 
     const judgementRequests = [];
     searchApi.ports.ask = async (state, questions) => {
       judgementRequests.push({ target: state.target, rows: state.results.length, heads: Object.keys(questions) });
-      // No model judgement was recorded with these pages. This is unavailable input, never a fabricated match.
       return { ok: false, reason: 'no_key', ms: 0 };
     };
-    const searchReplay = {
-      sources: json(searchApi.ports.sources), selected: ['poshmark'],
-      excluded: searchApi.ports.sources.filter(s => s.id !== 'poshmark').map(s => ({ id: s.id,
-        reason: !s.on ? s.reason : s.lane === 'apify' ? 'No recorded Apify response supplied.' : s.lane === 'harness' && !s.needs_ask ? 'Recorded HTML does not supply the current harness search verb.'
-          : s.needs_ask ? 'No person account or recorded harness response supplied.' : 'No recorded MCP response supplied.' })),
-      reads: [], unrecorded_requests: [],
-    };
-    // Select existing rows through the product port; never change a source's lane to fit an old fixture.
-    searchApi.ports.sources = searchApi.ports.sources.filter(s => searchReplay.selected.includes(s.id));
-    const recordedPages = new Map([
-      ['https://poshmark.com/search?query=levi%20501', 'poshmark'],
-      ['https://poshmark.com/search?query=no%20recorded%20matches', 'poshmark-empty'],
-    ]);
+    const configured = searchApi.ports.sources;
+    searchApi.ports.sources = configured.filter(source => source.id === 'poshmark');
+    const searchReplay = { selected: ['poshmark'], reads: [], unrecorded_requests: [] };
     searchApi.ports.fetchPage = async url => {
-      const name = recordedPages.get(url);
-      if (!name) {
-        searchReplay.unrecorded_requests.push('No exact recorded URL');
-        throw new Error('no recorded page supplied for requested URL');
+      if (url !== 'https://poshmark.com/search?query=levi%20501') {
+        searchReplay.unrecorded_requests.push(url); throw new Error('no recorded page supplied for requested URL');
       }
-      searchReplay.reads.push({ url, fixture: name });
-      return { ok: true, status: 200, html: fixture(name), url };
+      searchReplay.reads.push({ url, fixture: 'poshmark' });
+      return { ok: true, status: 200, html: fixture('poshmark'), final_url: url, rung: 'plain', ms: 0, searched: [] };
     };
-    const search = async text => {
-      const reply = await searchApi.handlers['POST /v1/search'](ctx({ text }), new Request('http://proof.invalid/v1/search'));
-      const task = searchApi.searchJobs.pendingSearches.get(reply.body.id);
-      assert.ok(task, 'search POST never scheduled the product runner');
-      await task;
-      assert.deepEqual(searchReplay.unrecorded_requests, [], 'search requested an unrecorded page (possibly swallowed by product code)');
-      const job = jobs.st.getJob(reply.body.id);
-      assert.equal(job.state, 'done', 'recorded search failed');
-      return json(job.result);
+    let routeValuateCalls = 0; const routeValuateCounts = [];
+    const realValuate = valuation.ports.valuate;
+    valuation.ports.valuate = (...args) => { routeValuateCalls++; return realValuate(...args); };
+    const call = async row => {
+      const started = routeValuateCalls;
+      const reply = await valuation.handlers['POST /v1/valuations'](ctx({ item_id: row.id }, row.user_id), new Request('http://proof.invalid/v1/valuations'));
+      await valuation.pendingValuations.get(reply.body.id);
+      routeValuateCounts.push(routeValuateCalls - started);
+      const result = jobs.get(reply.body.id, row.user_id)?.result;
+      assert.ok(result, 'valuation POST did not store an answer'); return json(result);
     };
-    log.input('realtime-proof', 'separate-search', { data: 'dataset:realtime-fixtures' });
-    const searched = await search('levi 501');
-    const after = await valuate();
-    const gatherEvents = sink.lines.map(line => JSON.parse(line)).filter(e => e.event === 'gather.update');
+    const before = await call(item);
+    const routeSearchJobs = jobs.st.jobs({ user_id: item.user_id, kind: 'search' });
+    const routeSearch = json(jobs.get(routeSearchJobs[0].id, item.user_id).result);
+    batch = sold.slice(1);
+    const after = await call(item);
+    const observations = json(store.rows('observation', { user_id: item.user_id }));
+    const personB = { ...item, id: 'it_realtime_b', user_id: 'usr_proof_b' }; store.put('item', personB);
+    batch = [];
+    const person_b = await call(personB);
+    const basisIds = after.citation?.basis_ids ?? [];
+    const resolved = basisIds.filter(id => observations.some(row => row.id === id));
+    const missing = basisIds.filter(id => !observations.some(row => row.id === id));
+    const datasetObserveCalls = observeCalls.length;
 
-    // All calls below are isolated diagnostics. None bridges the product's missing collection or learning join.
-    log.note('Begin direct diagnostics; these do not establish an end-to-end link.');
-    const proofInput = { metric: 'valuation', filters: { product_id: input.product_id }, table_versions: [],
-      definition_version: 'valuation.D1-D15', code_version: 'va-6', param_versions: { valuation: 1 }, model_version: null };
-    const backed = answer({ lo: before.range.q10, hi: before.range.q90 }, before.comps.map(c => ({
-      id: c.comp_id, source: c.citation, at: c.sold_at, weight: c.w, price_cents: c.adjusted_cents,
-    })), proofInput, AS_OF);
-    const guarded = guardWith(undefined, {}, backed).guarded;
-    const fact = { name: 'sold_range', range: { low: before.range.q10, high: before.range.q90 }, unit: 'cents', guarded, sources: [] };
-    const plan = { kind: classified.kind, slots: classified.slots, protocol_version: 1,
-      first_ms: 1, settled_ms: 1000, targets: [], calculate: () => ({ facts: [fact] }) };
-    const settled = await runPlan(plan, undefined, () => Date.parse(AS_OF));
-    const options = { answer: settled, plan, arrivals: [], steps: protocolSteps('price_now', {}),
-      product: input.product_id, now: () => Date.parse(AS_OF) };
-    const gathered = await gather(options);
-    const shownThinGather = await gather({ ...options, answer: { ...settled, facts: [{ ...fact, guarded: { ...guarded, state: 'shown' } }] } });
-    const noBasisGuarded = guardWith(undefined, {}, answer({ lo: 0, hi: 0 }, [], proofInput, AS_OF)).guarded;
-    const noBasisFact = { name: 'sold_range', unit: 'cents', guarded: noBasisGuarded, sources: [] };
-    const noBasisGather = await gather({ ...options, answer: { ...settled, facts: [noBasisFact] },
-      plan: { ...plan, calculate: () => ({ facts: [noBasisFact] }) } });
-    const wider = comparables({ condition: input.condition }, sold, AS_OF);
-    const directWider = await check({ ...input, warm_comps: sold });
-    // Read the Store actually used by /v1 handlers, including an undeclared table if a new writer added one at runtime.
-    const observations = store.systemRows('observation');
-    const resolved = directWider.citation.basis_ids.filter(id => observations.some(o => o.id === id));
-    const missing = directWider.citation.basis_ids.filter(id => !observations.some(o => o.id === id));
-    // A controlled weight probe reuses the same recorded comp and the engine's declared priors, changing only match level.
-    const matchWeights = Object.fromEntries(['variant', 'product', 'family'].map(level => [level,
-      weigh([{ ...sold[0], level, w_match: DEFAULTS.w_match[level] }], AS_OF)[0].w]));
-
-    const called = searched.searched.filter(s => s.outcome === 'hit').map(s => `public.${s.site}`);
-    const used = [...new Set(searched.results.map(r => r.route_id))];
-    const scope = { kind: 'listings_matching', segment: called[0] };
-    const prior = json(params.read('intel_contribution', scope));
-    const meanBefore = contributionMean(params, scope.kind, scope.segment);
-    updateContribution(params, { kind: scope.kind, stage: 'settled', called, used }, AS_OF);
-    const first = json(params.read('intel_contribution', scope));
-    const emptySearch = await search('no recorded matches');
-    assert.equal(emptySearch.results.length, 0, 'empty recorded search unexpectedly kept rows');
-    const calledAgain = emptySearch.searched.filter(s => s.outcome === 'empty').map(s => `public.${s.site}`);
-    updateContribution(params, { kind: scope.kind, stage: 'settled', called: calledAgain, used: [] }, LATER);
-    const second = json(params.read('intel_contribution', scope));
-    const meanAfter = contributionMean(params, scope.kind, scope.segment);
-    const cut = cutOrder(params, scope.kind, called.map(target_id => ({ target_id, p95_ms: 100, cents: 1 })));
-    const afterLearning = await valuate();
+    // Separate synthetic permission control. It proves wiring, never sale accuracy or permission on the recorded public rows.
+    const control = { id: 'it_learning', user_id: 'usr_learning', product_id: 'pr_learning', title: item.title, condition: 'good' };
+    store.put('item', control);
+    const comp = { comp_id: 'synthetic:agreement', site: 'depop', sold_at: AS_OF, price_cents: 1900,
+      kind: 'sold', level: 'product', condition: 'good', w_match: .5, w_extract: .9, may_model: true, citation: 'https://synthetic.invalid/comp' };
+    writeObservations(store, control.user_id, [{ kind: 'price', site: comp.site, product_id: control.product_id,
+      subject_ref: comp.comp_id, observed_at: AS_OF, payload: comp, data: 'synthetic', may_store: true, may_model: true,
+      source_url: comp.citation, extractor_version: 'synthetic-control', source_route: 'synthetic-control',
+      rights: { may_store: true, may_model: true, may_show: true, may_share: false, ttl: null },
+      use_scope: 'hackathon_demo', keep_until: null, channel: 'secondhand', retention_class: 'source_ttl', rights_mode: 'own_scope' }]);
+    searchApi.ports.sources = ['poshmark', 'depop'].map(id => configured.find(source => source.id === id));
+    const meanBefore = contributionMean(params, 'price_now', 'public.depop', control.user_id);
+    const learningBefore = await call(control);
+    const meanAfter = contributionMean(params, 'price_now', 'public.depop', control.user_id);
+    const scope = { kind: 'price_now', segment: 'public.depop', person: control.user_id };
+    const firstVersion = params.read('intel_contribution', scope).version;
+    const learningAfter = await call(control);
+    const repeatVersion = params.read('intel_contribution', scope).version;
+    assert.deepEqual(searchReplay.unrecorded_requests, []);
     log.end({ ok: true });
     const logProblems = checkLog(sink.text()).problems;
     assert.deepEqual(logProblems, [], 'proof log violates log/ contract');
-    return json({ classified, before, thin, after, after_learning: afterLearning,
-      search: searched, search_replay: searchReplay, judgement_requests: judgementRequests, gather_events_from_valuation: gatherEvents,
-      gather: gathered, shown_thin_gather: shownThinGather, no_basis_gather: noBasisGather,
-      tables: TABLES, observations, observation_writes: productWrites.filter(w => w.table === 'observation').length,
-      input_port: inputPort,
-      observation_import_in_search: /(?:memoryProof|\.observe\s*\(|['"]observation['"])/.test(read('app/src/edge/api/search.ts')),
-      product_store_tables: Object.keys(store.dump().rows),
-      direct_basis: { thin, wider, match_weights: matchWeights, gather_measure: measure([{ target_id: 'sold', route_id: 'poshmark.search.page', rows: sold, ms: 0 }], Date.parse(AS_OF)) },
-      direct_wider: directWider, citation_resolution: { resolved, missing },
-      learning: { product_observe_calls: null,
-        product_observe_limitation: 'No param registry port is exposed by the exercised routes. This registry is diagnostic only; missing production callers are established by the import inventory and recorded source port.',
-        prior, first, second, mean_before: meanBefore, mean_after: meanAfter,
-        observe_calls: observeCalls, cut, empty_search: emptySearch },
-      importers: { gather: importers('app/src/edge/intel/gather.ts'), learn: importers('app/src/edge/intel/learn.ts') },
-      log: { checked: true, problems: logProblems },
-    });
+    return json({ before, after, thin, person_b, route_valuate_calls: routeValuateCalls, route_valuate_counts: routeValuateCounts,
+      route_search: routeSearch, route_search_jobs: routeSearchJobs.map(job => ({ user_id: job.user_id, state: job.state })),
+      gather_events_from_valuation: sink.lines.map(line => JSON.parse(line)).filter(event => event.event === 'gather.update').map(event => ({ n: event.n })),
+      search_replay: searchReplay, judgement_requests: judgementRequests, observations,
+      observation_writes: productWrites.filter(write => write.table === 'observation').length - 1,
+      citation_resolution: { resolved, missing }, input_port: { item, route: 'POST /v1/valuations', source_fixture: 'poshmark-sold' },
+      learning_control: { data: 'synthetic', signal: 'agent proposal: observed comp agreement, not a sale outcome',
+        mean_before: meanBefore, mean_after: meanAfter, observe_calls: observeCalls, reads: reads.filter(read => read.name === 'intel_contribution'),
+        first_version: firstVersion, repeat_version: repeatVersion, dataset_observe_calls: datasetObserveCalls,
+        order_before: learningBefore.gather.records.flatMap(record => record.target_id ? [record.target_id] : []),
+        order_after: learningAfter.gather.records.flatMap(record => record.target_id ? [record.target_id] : []) },
+      log: { checked: true, problems: logProblems } });
   });
 }
 
@@ -271,53 +187,39 @@ function replay() {
 }
 
 function linksFor(o, identical) {
-  const link = (n, state, fn, file, anchor, reason, evidence, extra = {}) => ({ link: n, function: fn,
-    ...location(file, anchor), state, reason, evidence, ...extra });
+  const link = (n, earned, fn, file, anchor, evidence, blocker) => ({ link: n, function: fn,
+    ...location(file, anchor), state: earned ? 'works' : 'not earned', reason: earned ? null : blocker, evidence });
+  const g = o.before.gather, c = o.learning_control;
   return [
-    link(1, o.before.basis_level && o.before.notes.includes('too_few') && o.before.product_id === o.input_port.item.product_id ? 'works' : 'wrong', 'POST /v1/valuations → valuate → check → comparables', 'app/src/engines/valuation/check.ts', 'return { product_id:',
-      null,
-      `n_eff=${o.before.n_eff}; q10/q50/q90=${o.before.range.q10}/${o.before.range.q50}/${o.before.range.q90}; answer basis_level=${o.before.basis_level}, notes=${o.before.notes.join(',')}; comparables state=${o.thin.state}, level=${o.thin.level}. Stored item ${o.input_port.item.id} prices as ${o.before.product_id} at ${o.before.as_of} through valuate; range_state=${o.before.range_state}. Only the sold source is replaced with a recorded fixture.`,
-      { spec: 'spec/product.md §6 Guard rules; spec/engines/valuation.md §3',
-        spec_quote: 'the answer names its `basis_level`', code_quote: 'basis_level: range.basis_level, notes: range.notes, last_sale,' }),
-    link(2, 'built, not called', 'gather', 'app/src/edge/intel/gather.ts', 'export async function gather',
-      'check and runPlan never call gather; the proof invokes it separately on a guarded diagnostic.',
-      `No production imports; guard returns shown with notes=${o.gather.answer.facts[0].guarded.notes.join(',')}; thin probe returns ${o.gather.stop} with deadline=${o.gather.request.deadline}; valuate returns a GatherNeed for the integration route. Separate no-basis control deadline=${o.no_basis_gather.request.deadline}.`,
-      { spec: 'spec/engines/intelligence-api.md §3.5; spec/product.md §6 Guard rules' }),
-    link(3, 'built, not called', 'POST /v1/search → runPlan → searchSource → readPage', 'app/src/edge/api/search.ts', 'async function search(',
-      'The proof starts POST /v1/search by hand; gather has no product-supplied widening steps.',
-      `${o.search.found.results_found} rows from ${o.search.found.sources_searched} recorded source (${o.search_replay.selected.join(', ')}); ${o.search_replay.excluded.length} source rows excluded before execution; shown thin probe records ${o.gather.records.length} steps; separate no-basis control records only its skipped signed-in step.`,
-      { spec: 'spec/engines/intelligence-api.md §3.5 step 1', caller: 'explicit proof request, not valuation',
-        data_note: 'Inputs are dataset:realtime-fixtures. Search itself hardcodes live:<site>; that output label does not make this replay live.' }),
-    link(4, 'built, not called', 'sameProduct (called inside the separate search)', 'app/src/edge/intel/reconcile.ts', 'export async function sameProduct',
-      'Search calls sameProduct, but gathering never reaches search; recorded pages lack identifiers, pair scores and recorded model judgements.',
-      `${o.search.results.length} unresolved rows kept; identity.by=${o.search.identity.by}, model_ok=${o.search.identity.model_ok}; product=null; no product identity invented.`,
-      { spec: 'spec/engines/intelligence-api.md §3.3–3.4', missing_input: 'Recorded Jev/Decisions answers or identifier/pair-score evidence for these pages.' }),
-    link(5, 'built, not called', 'valuate → observations.write', 'app/src/engines/valuation/valuate.ts', "await ctx.log.timed('valuation.observations.write'",
-      'The route calls valuate and its ObservationPort.write, but the default port logs not_composed; the Store has an observation table and writer (SV7, events/observations.ts) that the port does not call yet.',
-      `${o.observations.length} observation rows; ${o.observation_writes} writes; no stored source/time/data/evidence chain.`,
-      { spec: 'spec/product.md §3 observation and data provenance; §6 Information engines, Gatherer' }),
-    link(6, 'built, not called', 'comparables / nEff / measure', 'app/src/engines/valuation/comps.ts', 'export function comparables',
-      'The route calls valuate and reads ObservationPort, but the default port returns no stored rows. The wider sold set is a separate direct diagnostic.',
-      `Direct sold control n_eff ${o.direct_basis.thin.n_eff} → ${o.direct_basis.wider.n_eff}; gather.measure=${o.direct_basis.gather_measure.n_eff}; actual route repeat stays ${o.after.n_eff}.`,
-      { spec: 'spec/determinations/money.md D1; spec/engines/valuation.md §3' }),
-    link(7, 'built, not called', 'check → answer', 'app/src/engines/valuation/check.ts', 'const proof = answer',
-      'The repeated valuation is unchanged; only hand-feeding sold comps changes it, and its citation ids resolve to no observation rows.',
-      `Direct range ${o.direct_wider.range.q10}/${o.direct_wider.range.q50}/${o.direct_wider.range.q90}; ${o.citation_resolution.resolved.length} resolved, ${o.citation_resolution.missing.length} missing basis ids.`,
-      { spec: 'spec/engines/intelligence-api.md §3.5; spec/product.md §6 proof layer',
-        limitation: 'The wider control uses the sold adapter. These recorded sold rows have no sale dates; toComps falls back to their listing dates.' }),
-    link(8, 'built, not called', 'updateContribution → ParamStore.observe', 'app/src/edge/intel/learn.ts', 'export function updateContribution',
-      'No answer-settled caller invokes updateContribution; only the proof diagnostic calls it.',
-      `No learning callers in import inventory; diagnostic Beta 1/1 → 2/1 → 1/1.5 after 30 days; version 0 → ${o.learning.second.version}.`,
-      { spec: 'spec/engines/intelligence-api.md §4; spec/product.md §6 Real-time weights',
-        limitation: 'Diagnostics use settled search target usage, not persisted observations. The proof never calls observe itself.' }),
-    link(9, 'built, not called', 'contributionMean / cutOrder', 'app/src/edge/intel/learn.ts', 'export function contributionMean',
-      'contributionMean and cutOrder read learned weights only in the direct diagnostic; runPlan and valuation do not read them.',
-      `Direct mean ${o.learning.mean_before} → ${o.learning.mean_after}, read v${o.learning.second.version}; route valuation unchanged. Its citation records resolved valuation priors at version 0, legacy param_version=${o.after_learning.param_version}; valuate reads its module registry.`,
-      { spec: 'spec/engines/intelligence-api.md §4; spec/product.md §6 Real-time weights, Read and Explain' }),
-    link(10, identical ? 'works' : 'wrong', 'runProof (two fresh in-process product replays)', 'scripts/realtime-proof.mjs', 'export async function runProof',
-      identical ? null : 'Two fresh stores and the same recorded inputs produced different observed outputs.',
-      identical ? 'Two fresh worker isolates return byte-identical observed JSON; zero attempted fetches.' : 'Replay outputs differ.',
-      { scope: 'Complete returned engine answers, search results, requests, diagnostics and inventories; transport job ids and raw logs are not part of the measured output. Fixed wall/performance clocks; report date is outside the replay.' }),
+    link(1, o.before.product_id === o.input_port.item.product_id && o.before.basis_level === 'product' && o.before.notes.includes('too_few'),
+      'POST /v1/valuations → valuate → check → comparables', 'app/src/engines/valuation/check.ts', 'return { product_id:',
+      `Stored item priced at ${o.before.range.q10}/${o.before.range.q50}/${o.before.range.q90}; n_eff=${o.before.n_eff}; basis_level=${o.before.basis_level}; notes=${o.before.notes.join(',')}.`, 'Route did not retain its product fallback and thin-basis note.'),
+    link(2, !!g.request && o.route_valuate_counts.slice(0, 2).every(count => count === 2) && o.gather_events_from_valuation.length > 0,
+      'gather → valuate again', 'app/src/edge/api/valuations.ts', 'gathered = await gather',
+      `Route gather stop=${g.stop}, deadline=${g.request?.deadline}; ${o.route_valuate_calls} route valuate calls; fallback=${o.after.basis_level}.`, 'Route did not gather and revalue.'),
+    link(3, g.records.some(record => record.n === 1 && record.outcome === 'ran') && o.route_search_jobs.length > 0 && o.route_search_jobs.every(job => job.user_id === o.input_port.item.user_id) && o.route_search.results.length > 0,
+      'POST /v1/search → runPlan → searchSource → readPage', 'app/src/edge/intel/gather.ts', 'export function searchStep',
+      `${o.route_search.results.length} recorded-page rows through the gather search handler and settled job frame, owned by the person.`, 'Gather did not produce person-owned search frames and rows.'),
+    link(4, o.judgement_requests.length > 0 && o.route_search.results.every(row => row.relation === 'unresolved') && o.route_search.identity.by === 'default',
+      'sameProduct', 'app/src/edge/intel/reconcile.ts', 'export async function sameProduct',
+      `Route search invokes identity judgement; ${o.route_search.results.length} unresolved rows retained; model_ok=${o.route_search.identity.model_ok}; no identity invented.`, 'Gather did not reach identity reconciliation.'),
+    link(5, o.observations.length > 0 && o.observation_writes > 0 && o.observations.every(row => row.evidence?.fingerprint && row.use_scope === 'hackathon_demo' && row.may_store === true && row.evidence.rights.may_share === false),
+      'valuate → observations.write → writeObservations', 'app/src/edge/api/valuations.ts', 'const observation =',
+      `${o.observations.length} stored dataset sales with SV7 evidence, hackathon_demo scope and may_share=false.`, 'Route did not persist permitted observations with evidence.'),
+    link(6, o.after.n_eff > o.before.n_eff && o.person_b.n_eff === 0 && o.after.comps.some(comp => o.before.comps.some(prior => prior.comp_id === comp.comp_id)),
+      'readObservations → comparables / nEff', 'app/src/edge/api/valuations.ts', 'read: (user, q) => readObservations',
+      `Route n_eff ${o.before.n_eff} → ${o.after.n_eff}; next sold batch combines with stored rows; B n_eff=${o.person_b.n_eff}; active offers excluded.`, 'Stored sales did not grow the route basis or crossed people.'),
+    link(7, o.citation_resolution.resolved.length > 0 && o.citation_resolution.missing.length === 0,
+      'check → answer → stored citations', 'app/src/edge/api/valuations.ts', 'function storedCitations',
+      `${o.citation_resolution.resolved.length} route citation ids resolved to stored observations; ${o.citation_resolution.missing.length} missing.`, 'Route citation ids do not resolve to stored rows.'),
+    link(8, c.observe_calls.length > 0 && c.mean_after !== c.mean_before && c.dataset_observe_calls === 0 && c.first_version === c.repeat_version,
+      'updateContribution → ParamStore.observe', 'app/src/edge/api/valuations.ts', 'updateContribution(ports.params',
+      `Synthetic permission control only: agreement Beta mean ${c.mean_before} → ${c.mean_after}, v${c.first_version}; repeat v${c.repeat_version}; dataset fits=${c.dataset_observe_calls}. Agent proposal; no confirmed-sale learning hook.`, 'Route did not move a permitted contribution weight; public recorded rows may not model.'),
+    link(9, c.order_before[0] !== c.order_after[0] && c.reads.some(read => read.version > 0),
+      'contributionMean / cutOrder → next gather order', 'app/src/edge/intel/gather.ts', 'function orderedSteps',
+      `Synthetic control's next route order ${c.order_before.join(',')} → ${c.order_after.join(',')}; reads moved param versions.`, 'A moved route weight did not change its next gather order.'),
+    link(10, identical, 'runProof (two fresh in-process product replays)', 'scripts/realtime-proof.mjs', 'export async function runProof',
+      identical ? 'Two fresh stores return byte-identical observed JSON; zero attempted fetches.' : 'Replay outputs differ.', 'Fresh replays differ.'),
   ];
 }
 
@@ -330,6 +232,7 @@ export async function runProof() {
   const links = linksFor(first.value, identical);
   return { date: new Date().toISOString().slice(0, 10), as_of: AS_OF, data: 'dataset:realtime-fixtures',
     works: links.filter(r => r.state === 'works').length, total: 10, links, fixtures: FIXTURES,
+    controls: [{ data: 'synthetic', links: [8, 9], signal: 'agent proposal: observed comp agreement' }],
     network_attempts: first.attempts + second.attempts,
     determinism: { identical, first_sha256: sha(a), second_sha256: sha(b) }, observed: first.value };
 }
@@ -342,7 +245,7 @@ else if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.me
     writeFileSync(resolve(ROOT, 'scripts/out/realtime-proof.json'), `${JSON.stringify(report, null, 2)}\n`);
     process.stdout.write('link | state | function | file:line | evidence\n');
     for (const r of report.links) process.stdout.write(`${r.link} | ${r.state} | ${r.function} | ${r.file}:${r.line} | ${r.evidence}\n`);
-    process.stdout.write(`${report.works}/10 works; ${report.date}; dataset replay; scripts/out/realtime-proof.json\n`);
+    process.stdout.write(`${report.works}/10 works; ${report.date}; dataset replay + synthetic learning control; scripts/out/realtime-proof.json\n`);
   } catch (error) {
     process.stderr.write(`realtime-proof: ${error.stack}\n`);
     process.exitCode = 1;
