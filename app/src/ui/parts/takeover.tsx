@@ -3,9 +3,16 @@
 // its ＋ turns to ×, and three large choices rise out of it one after another. A choice opens the camera out of the circle
 // it was touched on. × plays it all back into the button.
 //
-// New draws on the camera's bar (useBar in ./camera): the ink black of the ＋ in light, so the button visibly becomes the
-// circle; the dark page in dark, so a full-screen light circle never flashes at night. It is the door to the camera, and
-// the camera wears the same ground.
+// New's circle grows in the brand's field, sky, mint and lime, and the gradient flows over the whole screen as it grows
+// (Ben, 06:19: "the background might be good to have that be the gradient so it can kind of almost like flow over the
+// whole thing"). It is the field and not the wash: the wash marks the top of a main tab (U8), and the field is the brand's
+// one full ground per view (C2). In dark the field is deep sky, mint and aqua, the quiet ground of the dark Today, so a
+// full-screen light circle never flashes at night. A choice then opens the camera
+// out of the circle it was touched on, on the camera's own black (useBar in ./camera).
+//
+// The three jobs stand centered on the screen (Ben, 06:19: "center the main action buttons"). Each one opens the camera,
+// and each carries a second way in at its end: type what it is or paste a link (Ben: Paste a link and Describe it "should
+// kind of be integrated in other things").
 //
 // Sizes, each with its reason:
 //   PLUS 56      the tab bar's New button (chrome.tsx), so the circle starts exactly where the button is.
@@ -13,6 +20,7 @@
 //                corner nests in the capsule's (Art. 9.1).
 import { useEffect, type ReactNode } from 'react';
 import { View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Icon, type IconName } from '../icon';
 import { MOTIONS } from '../motion';
@@ -22,6 +30,7 @@ import { OnGround, useColors, useScheme } from '../theme';
 import { motion, radius, size, space } from '../tokens.generated';
 import { useBar } from './camera';
 import { mark } from './mark';
+import { alpha } from '../paint';
 
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 const ms = (k: keyof typeof MOTIONS) => { const v = MOTIONS[k].ms; return typeof v === 'number' ? v : motion.panel; };
@@ -32,9 +41,12 @@ export const OVER = { animation: 'none', presentation: 'transparentModal', conte
 export const MODE_ICON = { sell: 'tag-01', worth: 'money-03', find: 'search-01' } as const satisfies Record<string, IconName>;
 export const PLUS = 56;
 export const CHOICE = 88;
-const WELL = CHOICE - 2 * space.s4;
+const WELL_INSET = space.s4;
+const WELL = CHOICE - 2 * WELL_INSET;
 // Each choice rises 30 ms after the one before (emil-design-eng: a stagger of 30 to 80 ms that never blocks).
 const STAGGER = 30;
+// The second way in at a choice's end: the kit's 40 circle, with a 44 reach.
+const TYPE = size.pillCardH;
 const fill: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
 
 // Where the ＋ sits: centered in the tab bar, standing 12 above its top line (chrome.tsx, NewCircle), under the 1 px rule.
@@ -51,12 +63,12 @@ export function CircleStage({ origin, start = PLUS, phase, ground, onSettled, ch
   // The circle's size at its smallest: the button or icon well it grows out of.
   start?: number;
   phase: CirclePhase;
-  // The circle's own fill, when it is a color and not a picture: the bar's ground.
-  ground?: 'bar';
+  // The circle's own fill, when it is a color and not a picture: the camera's bar, or the field over the whole screen.
+  ground?: 'bar' | 'field';
   onSettled?: (phase: CirclePhase) => void;
   children?: ReactNode;
 }) {
-  const b = useBar(), reduced = useReducedMotion(), { width, height } = useWindowDimensions();
+  const b = useBar(), c = useColors(), reduced = useReducedMotion(), { width, height } = useWindowDimensions();
   const r = Math.ceil(Math.max(Math.hypot(origin.x, origin.y), Math.hypot(width - origin.x, origin.y), Math.hypot(origin.x, height - origin.y), Math.hypot(width - origin.x, height - origin.y)));
   const least = start / (2 * r);
   const grow = useSharedValue(phase === 'open' ? 1 : 0);
@@ -73,8 +85,11 @@ export function CircleStage({ origin, start = PLUS, phase, ground, onSettled, ch
     : { opacity: Math.min(1, grow.get() * 8), transform: [{ scale: least + (1 - least) * grow.get() }] }));
   return (
     <View pointerEvents={children ? 'box-none' : 'none'} style={[fill, { overflow: 'hidden' }]}>
-      <Animated.View {...mark('circle-stage', { phase })}
-        style={[{ position: 'absolute', left: origin.x - r, top: origin.y - r, width: 2 * r, height: 2 * r, borderRadius: r, overflow: 'hidden', backgroundColor: ground ? b.bar : undefined }, look]}>
+      <Animated.View {...mark('circle-stage', { phase, ground: ground ?? 'picture' })}
+        style={[{ position: 'absolute', left: origin.x - r, top: origin.y - r, width: 2 * r, height: 2 * r, borderRadius: r, overflow: 'hidden', backgroundColor: ground === 'bar' ? b.bar : ground === 'field' ? c.field1 : undefined }, look]}>
+        {/* The field spans the screen, not the circle, so the whole of it shows at every size the circle passes through. It is
+            --field as tokens.css writes it: lime and mint glowing up from the foot over sky. */}
+        {ground === 'field' ? <View style={{ position: 'absolute', left: r - origin.x, top: r - origin.y, width, height, backgroundColor: c.field1, backgroundImage: `radial-gradient(at 30% 100%, ${c.field2}, ${alpha(c.field2, 0)} 60%), radial-gradient(at 100% 100%, ${c.field3}, ${alpha(c.field3, 0)} 65%)` } as ViewStyle} /> : null}
         {children ? <View style={{ position: 'absolute', left: r - origin.x, top: r - origin.y, width, height }}>{children}</View> : null}
       </Animated.View>
     </View>
@@ -91,9 +106,9 @@ export function TakeoverPlace({ name, state, skip, children }: { name: string; s
 }
 
 // The ＋ that became ×: the same 56 circle where the button was, its plus turned 45° (Art. 11, Arrive: from what you touched).
-// On the bar it is the bar's opposite, so it reads as the one way back.
+// On the field it stays the ＋'s own ink, the one way back.
 export function PlusClose({ open, onPress }: { open: boolean; onPress: () => void }) {
-  const b = useBar(), reduced = useReducedMotion(), plus = usePlus();
+  const c = useColors(), reduced = useReducedMotion(), plus = usePlus();
   const turn = useSharedValue(0);
   useEffect(() => { turn.set(withTiming(open ? 1 : 0, { duration: motion.select, easing: EASE_OUT, reduceMotion: ReduceMotion.System })); }, [open, turn]);
   const look = useAnimatedStyle(() => ({ transform: [{ rotate: `${(reduced ? (open ? 1 : 0) : turn.get()) * 45}deg` }] }));
@@ -101,8 +116,8 @@ export function PlusClose({ open, onPress }: { open: boolean; onPress: () => voi
     <View style={{ position: 'absolute', left: plus.x - PLUS / 2, top: plus.y - PLUS / 2 }}>
       <Press id="new-close" label="Close" onPress={onPress}>
         {({ pressed }) => (
-          <View {...mark('new-button', { open: String(open) })} style={{ width: PLUS, height: PLUS, borderRadius: radius.pill, backgroundColor: b.on, opacity: pressed ? 0.85 : 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Animated.View style={look}><Icon name="add-01" tone={b.iconOnOn} /></Animated.View>
+          <View {...mark('new-button', { open: String(open) })} style={{ width: PLUS, height: PLUS, borderRadius: radius.pill, backgroundColor: c.ink, opacity: pressed ? 0.85 : 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Animated.View style={look}><Icon name="add-01" tone="page" /></Animated.View>
           </View>
         )}
       </Press>
@@ -110,24 +125,36 @@ export function PlusClose({ open, onPress }: { open: boolean; onPress: () => voi
   );
 }
 
-// The column of choices and the ways out, standing on the × with 24 between (the choices stack bottom up, nearest first).
-export function ChoiceColumn({ ways, children }: { ways?: ReactNode; children: ReactNode }) {
-  const plus = usePlus();
+// Where the column of choices stands: centered between the top of the screen and the ×, the choices stacked bottom up so
+// the nearest, the last used, sits lowest.
+export function useChoices(count: number) {
+  const plus = usePlus(), insets = useSafeAreaInsets();
+  const top = insets.top + space.s6, bottom = plus.y - PLUS / 2 - space.s6;
+  const tall = count * CHOICE + (count - 1) * space.s3, low = (top + bottom) / 2 + tall / 2;
+  return {
+    top, bottom: plus.height - bottom,
+    // Where a choice's icon well sits on the screen, so the camera opens out of the circle that was touched.
+    well: (index: number) => ({ x: space.gutter + WELL_INSET + WELL / 2, y: low - index * (CHOICE + space.s3) - CHOICE / 2 }),
+  };
+}
+export function ChoiceColumn({ count, children }: { count: number; children: ReactNode }) {
+  const at = useChoices(count);
   return (
-    <View style={{ position: 'absolute', left: space.gutter, right: space.gutter, bottom: plus.height - plus.y + PLUS / 2 + space.s6, gap: space.s6 }}>
-      {ways}
+    <View pointerEvents="box-none" style={{ position: 'absolute', left: space.gutter, right: space.gutter, top: at.top, bottom: at.bottom, justifyContent: 'center' }}>
       <View style={{ flexDirection: 'column-reverse', gap: space.s3 }}>{children}</View>
     </View>
   );
 }
 
-// One choice: a capsule 88 tall with its icon in a 56 well and its name, raised off the bar. `lead` is the one used last:
-// its well is ink, the one emphasis on the view; the others' wells are gray. It rises out of the button `index` places
-// after the first; `shown` false sinks it back, faster.
-export function ChoiceCapsule({ id, label, icon, lead = false, index, shown, onPress }: {
+// One job: a capsule 88 tall with its icon in a 56 well and its name, raised off the field. Its main part opens the camera;
+// at its end a pencil opens the same job by typing what it is or pasting a link. `lead` is the one used last: its well is
+// ink, the one emphasis on the view; the others' wells are gray. It rises out of the button `index` places after the first;
+// `shown` false sinks it back, faster.
+export function ChoiceCapsule({ id, label, icon, lead = false, index, shown, onPress, onType }: {
   id: string; label: string; icon: IconName; lead?: boolean; index: number; shown: boolean; onPress?: () => void;
+  onType?: () => void;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotion(), b = useBar();
   const rise = useSharedValue(0);
   useEffect(() => {
     rise.set(shown
@@ -138,57 +165,41 @@ export function ChoiceCapsule({ id, label, icon, lead = false, index, shown, onP
     ? { opacity: rise.get() }
     : { opacity: rise.get(), transform: [{ translateY: (1 - rise.get()) * space.s6 }, { scale: 0.97 + 0.03 * rise.get() }] }));
   return (
-    <Animated.View style={look}>
-      <Press id={id} label={label} onPress={onPress} round={false}>
-        {({ pressed }) => <CapsuleBody label={label} icon={icon} lead={lead} pressed={pressed} />}
-      </Press>
+    <Animated.View style={[{ height: CHOICE, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', backgroundColor: b.raised }, look]}>
+      <View style={{ flex: 1 }}>
+        <Press id={id} label={label} onPress={onPress} round={false}>
+          {({ pressed }) => <CapsuleMain label={label} icon={icon} lead={lead} pressed={pressed} />}
+        </Press>
+      </View>
+      {onType ? (
+        <View style={{ paddingRight: WELL_INSET }}>
+          <Press id={`${id}-type`} label={`${label}: type it or paste a link`} onPress={onType} hit={slop(size.controlMin, TYPE)}>
+            {({ pressed }) => <TypeBody pressed={pressed} />}
+          </Press>
+        </View>
+      ) : null}
     </Animated.View>
   );
 }
-function CapsuleBody({ label, icon, lead, pressed }: { label: string; icon: IconName; lead: boolean; pressed: boolean }) {
+function CapsuleMain({ label, icon, lead, pressed }: { label: string; icon: IconName; lead: boolean; pressed: boolean }) {
   const b = useBar(), c = useColors(), dark = useScheme() === 'dark';
+  // The name is centered in the room between the well and the pencil, so the three read as one centered column.
   return (
     <View {...mark('choice', { lead: String(lead) })}
-      style={{ height: CHOICE, borderRadius: radius.pill, padding: space.s4, flexDirection: 'row', alignItems: 'center', gap: space.s4, backgroundColor: pressed ? b.raisedPress : b.raised }}>
+      style={{ height: CHOICE, borderRadius: radius.pill, padding: WELL_INSET, flexDirection: 'row', alignItems: 'center', gap: space.s4, backgroundColor: pressed ? b.raisedPress : b.raised }}>
       <View style={{ width: WELL, height: WELL, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: lead ? c.ink : dark ? c.surface : c.gray }}>
         <Icon name={icon} tone={lead ? 'page' : 'ink'} />
       </View>
-      <Txt role="headline">{label}</Txt>
+      <View style={{ flex: 1, alignItems: 'center' }}><Txt role="headline">{label}</Txt></View>
     </View>
   );
 }
-
-// Where a choice's icon well sits on the screen, so the camera opens out of the circle that was touched.
-export function wellCenter(index: number, plus: { x: number; y: number; width: number; height: number }) {
-  const bottom = plus.y - PLUS / 2 - space.s6;
-  return { x: space.gutter + space.s4 + WELL / 2, y: bottom - index * (CHOICE + space.s3) - CHOICE / 2 };
-}
-
-// The ways out above the choices, arriving with the last of them.
-export function WaysOut({ shown, count, children }: { shown: boolean; count: number; children: ReactNode }) {
-  const reduced = useReducedMotion();
-  const rise = useSharedValue(0);
-  useEffect(() => {
-    rise.set(shown
-      ? withDelay(ms('newOpen') / 3 + count * STAGGER, withTiming(1, { duration: ms('newChoice'), easing: EASE_OUT, reduceMotion: ReduceMotion.System }))
-      : withTiming(0, { duration: motion.feedback, easing: EASE_OUT, reduceMotion: ReduceMotion.System }));
-  }, [shown, count, rise]);
-  const look = useAnimatedStyle(() => (reduced ? { opacity: rise.get() } : { opacity: rise.get(), transform: [{ translateY: (1 - rise.get()) * space.s6 }] }));
-  return <Animated.View style={[{ flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 }, look]}>{children}</Animated.View>;
-}
-
-// A quiet way out on the bar: a pill raised off it, as the choices are, its icon and words in ink. 40 tall, the kit's
-// pill, with a 44 reach.
-export function BarPill({ id, icon, label, onPress }: { id: string; icon: IconName; label: string; onPress?: () => void }) {
-  const b = useBar();
+// The pencil at a capsule's end: a 40 circle in the wells' quiet gray.
+function TypeBody({ pressed }: { pressed: boolean }) {
+  const b = useBar(), c = useColors(), dark = useScheme() === 'dark';
   return (
-    <Press id={id} label={label} onPress={onPress} hit={slop(size.controlMin, size.pillCardH, { y: space.s2 })}>
-      {({ pressed }) => (
-        <View {...mark('pill', { kind: 'second', state: 'idle', fit: 'content' })} style={{ height: size.pillCardH, borderRadius: radius.pill, paddingHorizontal: space.s4, flexDirection: 'row', alignItems: 'center', gap: space.s2, backgroundColor: pressed ? b.raisedPress : b.raised }}>
-          <Icon name={icon} size={20} />
-          <Txt role="body">{label}</Txt>
-        </View>
-      )}
-    </Press>
+    <View {...mark('choice-type')} style={{ width: TYPE, height: TYPE, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: pressed ? b.raisedPress : dark ? c.surface : c.gray }}>
+      <Icon name="pencil-edit-02" size={20} />
+    </View>
   );
 }
