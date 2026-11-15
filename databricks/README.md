@@ -6,7 +6,7 @@ What runs on the lakehouse: the Unity Catalog SQL, the market pipeline, the job 
 
 | Path | Holds |
 |---|---|
-| `sql/` | Unity Catalog SQL in order, `00_layout.sql` to `09_guard.sql`: layout, tables, governance, measures, learning, audit, bench, why, constraints, the money guard |
+| `sql/` | Unity Catalog SQL in order, `00_layout.sql` to `13_metrics.sql`: layout, tables, governance, measures, learning, audit, bench, why, constraints, the money guard, the dashboard views, sources, erasure, and the metric view `valuation_metrics` (created through the Statements API) |
 | `pipelines/market/` | the market pipeline, one SQL file per table (`sold_raw`, `comp`, `comp_daily`, `comp_for_model`, `product`, `source_manifest`) |
 | `tasks/` | the Python tasks the jobs call (`load_logs`, `load_bench`, `migrate_data`, `param_walk`, `recompute`, `backtest`, `parity_job`), each with a `test_*.py` |
 | `parity/` | one calculation in two languages: `fixtures/proof.json`, `proof.ts-out.json` (written by `write-ts-out.mjs`), `parity.py`, `test_parity.py` |

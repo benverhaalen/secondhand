@@ -204,8 +204,8 @@ test('fresh core tables and the migration cover the same provenance tables', () 
     assert.match(ddl ?? '', /data STRING NOT NULL COMMENT '[^']+'/i, table);
   }
   assert.match(migration, /FROM secondhand\.information_schema\.columns/);
-  assert.match(migration, /table_schema = 'core' AND column_name = 'data'/);
-  assert.match(migration, /SELECT table_name, is_nullable/);
+  assert.match(migration, /table_schema = 'core' AND column_name IN \('data', 'basis_level'\)/);
+  assert.match(migration, /SELECT table_name, column_name, is_nullable/);
 });
 
 test('market comps fail the update if dataset provenance is missing', () => {

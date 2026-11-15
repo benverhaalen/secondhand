@@ -498,7 +498,8 @@ const WRITES: Record<'post' | 'revise' | 'end' | 'relist' | 'send_message' | 'an
       now: a.now ? new Date(String(a.now)) : (c.now?.() ?? new Date()), promised_elsewhere: a.promised_elsewhere === true }) as { ok: boolean; why?: string };
     if (!r.ok) return refuse('seller_offer', r.why ?? 'refused');
     const f = underFloor(a, ints(a.offer_cents)); if (f) return f;
-    const days = (fact('offer.seller.expires_h', 'ebay') as number) / 24;
+    const HOURS_A_DAY = 24;
+    const days = (fact('offer.seller.expires_h', 'ebay') as number) / HOURS_A_DAY;
     return { dry: true, url: `${H(c).www}/sh/lst/active`, steps: ['send the offer to every interested buyer of the listing'],
       request: { calls: [json('POST', `${H(c).api}/sell/negotiation/v1/send_offer_to_interested_buyers`, { allowCounterOffer: false, offerDuration: { unit: 'DAY', value: days },
         offeredItems: [{ listingId: listing, price: money(ints(a.offer_cents)!), quantity: 1 }] })] } };

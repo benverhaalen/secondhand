@@ -36,7 +36,7 @@ export function snapshot({ insetTop = 0 } = {}) {
     .map(e => ({ part: e.dataset.part, ...box(e) })).filter(p => p.seen);
   const items = [...document.querySelectorAll('[data-part]')].filter(e => ITEM.test(e.dataset.part) && shown(e) && !partOf(e.parentElement ?? e, ITEM)).map(e => ({ part: e.dataset.part, ...box(e) })).filter(p => p.seen);
   const shelves = [...document.querySelectorAll('[data-shelf]')].map(sh => ({ id: sh.dataset.shelf, head: !!sh.querySelector('[data-part="shelf-head"]'),
-    tags: [...sh.querySelectorAll('[data-part="tag"]')].filter(shown).map(t => t.dataset.state) }));
+    tags: [...sh.querySelectorAll('[data-part="tag"]:not([data-quiet])')].filter(shown).map(t => t.dataset.state) }));
   const navEl = document.querySelector('[data-part="nav"]'), nav = navEl ? box(navEl) : null;
   return { vh: VH, insetTop, nav, texts, pills, items, shelves };
 }

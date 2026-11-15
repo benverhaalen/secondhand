@@ -4,7 +4,7 @@
 // Sources: spec/pages.md §4, §5, §6.2; spec/features/today.md (the cards); research/today/ben/today-feed-and-card-states.md §3
 // (forms and states); .agents/ui-build/README.md (when the agent acts and when it hands off).
 import { feed as order, groups, handled, itemById, unread } from '../demo/world.ts';
-import { clock, day, ms, usd, weekStart } from '../demo/format.ts';
+import { clock, day, ms, shortName, usd, weekStart } from '../demo/format.ts';
 import type { Decision, Feed, Item, LogEvent, Notice, Site } from '../demo/types.ts';
 import type { PhotoKey } from '../demo/photo-keys.ts';
 import type { World } from '../demo/world.ts';
@@ -96,7 +96,7 @@ export function sales(w: World, d: Decision) {
 export function single(w: World, d: Decision): Card {
   const it = itemById(w, d.item_id);
   const base = {
-    key: d.id, ids: [d.id], tier: d.feed, form: 'single' as const, title: it?.title ?? first(d.why), photo: itemPhoto(it), site: d.site,
+    key: d.id, ids: [d.id], tier: d.feed, form: 'single' as const, title: it ? shortName(it.title, (it as { short_name?: string }).short_name) : first(d.why), photo: itemPhoto(it), site: d.site,
     due: d.deadline ? ms(d.deadline) : null, open: itemPath(d), waiting: 0,
     status: d.state === 'acting' ? ('working' as const) : d.state === 'failed' || d.error ? ('failed' as const) : ('open' as const),
     failed: d.error ? asLabel(d.why) : undefined,
@@ -469,4 +469,47 @@ export function entries(w: World, card: Card) {
     const sites = (it?.valuation?.per_site.map(p => p.site) ?? (d.site ? [d.site] : [])).slice(0, 5) as Site[];
     return { id, item_id: d.item_id, title: it?.title ?? asLabel(d.why), photo: itemPhoto(it), cents: d.money?.price_cents ?? 0, sites };
   });
+}
+
+// Today, grouped by what the person will do, so the same kind of work is done in one sitting (Ben, 09:56: "the today page
+// should be sorted completely differently", "think of how to group things in today better"; Art. 7.14). The one card that
+// needs them most leads alone, with its buttons and its color; the rest sit under the verb of their task, quiet, and open
+// on a tap. Groups go by their soonest deadline, then by how many they hold; Good to know is always last.
+export type Task = 'reply' | 'ship' | 'list' | 'fix' | 'know';
+export const TASK_LABEL: Record<Task, string> = { reply: 'Reply', ship: 'Ship', list: 'List', fix: 'Fix', know: 'Good to know' };
+const REPLY = /offer|pickup|question|scam|message|counter|buyer/i, FIX = /sign in|failed|stuck|photos/i;
+export function taskOf(c: Card): Task {
+  if (c.tier === 'good_to_know') return 'know';
+  if (c.tag === 'ship' || c.tag === 'sold' || /^ship/i.test(c.word)) return 'ship';
+  if (c.status === 'failed' || c.tag === 'stuck' || FIX.test(c.word)) return 'fix';
+  if (REPLY.test(c.word)) return 'reply';
+  return 'list';
+}
+export function byTask(list: Card[], lead: string | null): { next: Card | null; groups: { task: Task; label: string; cards: Card[] }[] } {
+  const next = list.find(c => c.key === lead) ?? null;
+  const groups = new Map<Task, Card[]>();
+  for (const c of list) if (c !== next) { const t = taskOf(c); groups.set(t, [...(groups.get(t) ?? []), c]); }
+  const soonest = (cs: Card[]) => Math.min(...cs.map(c => c.due ?? Infinity));
+  const out = [...groups].map(([task, cards]) => ({ task, label: TASK_LABEL[task], cards }));
+  out.sort((a, b) => (a.task === 'know' ? 1 : 0) - (b.task === 'know' ? 1 : 0) || soonest(a.cards) - soonest(b.cards) || b.cards.length - a.cards.length);
+  return { next, groups: out };
+}
+
+// The numbers at the top, side by side so the eye compares them (Art. 7.14, a row of one kind): the ladder's most
+// flattering true number first (top(), Ben 07:12), then how many sold and how many live, or the interest since the last
+// open. Each is a value and a one-word label; a tap opens You. At most three; a zero is never shown.
+export type Stat = { id: string; value: string; label: string };
+export function stats(w: World): Stat[] {
+  const t = top(w);
+  if (!t || t.rung === 'start') return [];
+  const out: Stat[] = [];
+  const got = t.rung === 'since' || t.rung === 'period';
+  out.push({ id: 'stat-top', value: t.figure, label: got ? `You got, ${t.caption.toLowerCase()}` : t.caption });
+  const sold = got ? t.things.length : 0;
+  if (sold) out.push({ id: 'stat-sold', value: String(sold), label: 'Sold' });
+  const live = w.items.filter(i => i.listings.some(l => l.state === 'live')).length;
+  if (live) out.push({ id: 'stat-live', value: String(live), label: 'Live' });
+  const views = w.items.flatMap(i => i.listings.map(l => l.interest_new?.views ?? 0)).reduce((a, b) => a + b, 0);
+  if (views && out.length < 3) out.push({ id: 'stat-views', value: String(views), label: 'New views' });
+  return out.slice(0, 3);
 }
