@@ -881,3 +881,7 @@ Nate, build session (orchestrator), 2026-11-14 about 21:35 Central, as the strea
 ## 2026-11-15 compose screens from the brand system and layer ai photos
 Ben, thread "Shape the app one decision at a time", 2026-11-15 03:24 UTC, on the image loop's camera round, relayed to the thread "Roll the UI system out everywhere".
 > no i dont like this you should combine the brand system created with ai photo gens and layer it rather than telling the photo gen to actually generate the ui. you should piece them together yourself. generate an ai image to be a placeholder for camera feed.
+
+## 2026-11-14 nate the orchestrator understands how things are built and old standard practice does not slow it
+Nate, build session (orchestrator), 2026-11-14 about 21:45 Central, after the eight stream sessions were launched.
+> Well you as fable 5.2 can understand how things should be built, of course given the direction, and not have to strictly go off of example, pull documentation, utilize professional software engineering agentic expert skills, dont let standard practices before agents get in the way and make things longer of a process. Understand that you can be incredible and orchestrate everything to work perfectly
