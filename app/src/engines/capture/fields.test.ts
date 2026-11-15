@@ -3,6 +3,8 @@ import { test } from 'node:test';
 import { CONDITION } from '../../../../spec/sites.mjs';
 import { known, fieldState, formValue } from './fields.ts';
 import { select } from './select.ts';
+import { plan } from './plan.ts';
+import { walks } from './walks.ts';
 import type { State } from './select.ts';
 const state = (patch: Partial<State> = {}): State => ({capture_id:'c',item_id:'i',purpose:'sell',confirm_mode:'tap',has_lidar:true,sites:['ebay'],type:null,kept:[],retakes:{},facts:{},lookups:'none',refused:[],...patch});
 import { memoryStore } from '../param/param.ts';
@@ -92,4 +94,73 @@ test('flat garment variants can settle without a lookup way', () => {
  const result=fieldState(row,s,s.kept,params);
  assert.equal(result.state,'known');
  assert.deepEqual(result.fact!.value,value);
+});
+
+function promoteConfidence(store: ReturnType<typeof memoryStore>, field: string, way: string, kind: string, prior: number, value: number): void {
+  const name=`capture_min_conf.${field}.${way}`,scope={kind};
+  store.declare({name,family:'scalar',prior});
+  const row=store.propose({name,scope,family:'scalar',prior,value_or_hyperparams:value,n_eff:40,
+    fitted_on_ids_hash:'confidence-fixture',metric:'precision',held_out_score:1,guard_lo:0,guard_hi:1},0);
+  assert.equal(store.promote(name,scope,row.version,0,'2026-11-15T00:00:00Z').promoted,true);
+}
+test('a promoted row does not move the known rule: higher scoped confidence makes a known fact unknown', () => {
+  const store=memoryStore(),s=state({type:'apparel',kept:['front','back','tag'],lookups:'done',facts:{brand:{value:'A',source:'label',confidence:.94}}});
+  const row=select(s,store).rows.find(row=>row.field==='brand')!;
+  assert.equal(fieldState(row,s,s.kept,store).state,'known');
+  assert.equal(known(row,s.facts.brand,s.confirm_mode,store,s.suggestion,{kind:'apparel'}).known,true);
+  promoteConfidence(store,'brand','label','apparel',row.ways[0].min_conf!,.98);
+  assert.equal(known(row,s.facts.brand,s.confirm_mode,store,s.suggestion,{kind:'apparel'}).known,false);
+  assert.notEqual(fieldState(row,s,s.kept,store).state,'known');
+});
+test('a param read with the wrong scope falls to another family row: family and kind rows stay isolated', () => {
+  const store=memoryStore();
+  promoteConfidence(store,'brand','label','electronics',.9,.99);
+  promoteConfidence(store,'brand','label','electronics.phones_laptops',.95,.98);
+  for(const [type,kind,confidence,expected] of [
+    ['apparel',undefined,.94,'known'],['electronics',undefined,.94,'proposed'],
+    ['electronics','phones_laptops',.97,'proposed'],['electronics','phones_laptops',.985,'known'],
+  ] as const) {
+    const s=state({type,kind,lookups:'done',facts:{brand:{value:'A',source:'label',confidence}}});
+    const selected=select(s,store);s.kept=selected.process.map(step=>step.key);
+    assert.equal(fieldState(selected.rows.find(row=>row.field==='brand')!,s,s.kept,store).state,expected,`${type}.${kind}`);
+  }
+});
+test('bundle pieces read the base field confidence param in the family scope', () => {
+  const store=memoryStore();promoteConfidence(store,'brand','label','apparel',.9,.98);
+  const s=state({type:'apparel',pieces:2,lookups:'done',facts:{'brand.1':{value:'A',source:'label',confidence:.94}}});
+  const selected=select(s,store);s.kept=selected.process.map(step=>step.key);
+  assert.equal(fieldState(selected.rows.find(row=>row.field==='brand.1')!,s,s.kept,store).state,'proposed');
+});
+test('dimension variant lookup and measured comparisons read the same scoped confidence params', () => {
+  for(const way of ['lookup','measured'] as const) {
+    const store=memoryStore(),value=bagVariants[0].value;
+    const s=state({type:'bags',lookups:'done',kept:['scan','inside_tab'],variants:{dimensions:bagVariants.map((v,i)=>({...v,p:way==='lookup'&&i===0?.94:.6}))},
+      facts:way==='measured'?{dimensions:{value,source:'measured',confidence:.94}}:{}});
+    const row=select(s,store).rows.find(row=>row.field==='dimensions')!;
+    assert.equal(fieldState(row,s,s.kept,store).state,'known');
+    promoteConfidence(store,'dimensions',way,'bags',row.ways.find(w=>w.way===way)!.min_conf!,.98);
+    assert.equal(fieldState(row,s,s.kept,store).reason,'variants');
+  }
+});
+test('walk outputs change with no param rows is a regression: original questions and counts', () => {
+  const counts=[3,2,4,5,5,2,9,1,2];
+  for(const [index,fixture] of walks.entries()) {
+    const store=memoryStore(),s=structuredClone(fixture.initial),asked=new Set<string>();
+    for(const event of fixture.events) {
+      const facts=s.facts;Object.assign(s,event.patch);s.facts={...facts,...event.patch.facts};
+      const result=plan(s,store);
+      assert.deepEqual(result.questions.map(q=>[q.shot?.step??q.field,q.kind,q.options.find(o=>o.proposed)?.value??null]),event.questions,fixture.name);
+      for(const q of result.questions)asked.add(`${q.id}:${q.shot?.reason==='retake'?s.retakes[q.shot.step]??0:''}`);
+    }
+    assert.equal(asked.size,counts[index],fixture.name);
+  }
+});
+
+test('no champion falls back to each row own prior after reading a different kind', () => {
+  const store=memoryStore();
+  for(const kind of ['phones_laptops',undefined,'phones_laptops',undefined]) {
+    const s=state({type:'electronics',kind,lookups:'done',facts:{brand:{value:'A',source:'label',confidence:.94}}});
+    const selected=select(s,store);s.kept=selected.process.map(step=>step.key);
+    assert.equal(fieldState(selected.rows.find(row=>row.field==='brand')!,s,s.kept,store).state,kind?'proposed':'known');
+  }
 });

@@ -116,6 +116,16 @@ The fixed set: 600 real live listings captured once across the five sites (120 e
 | 6 What to sell now | on the fixed demand snapshot, items with a successor release in 12 weeks rank above unchanged ones in every history |
 | 7 Speed | For you under 200 ms at p95 |
 
+## Open from the audit (checked 2026-11-15)
+
+Each row of the Recommendation and style section of [audit.md](audit.md) was checked against the code. 32 of 35 are closed. These 3 are still open, worst first.
+
+| # | What is wrong | Where (file:line today) | Fix | Test that proves it |
+|---|---|---|---|---|
+| RS-A1 | Dismiss is not durable. It edits the cached shelf and marks it stale, but writes no `not_for_me` contribution, so the item returns after a rebuild. | `jobs/style/learn.py:55` | Write a `not_for_me` event with the cluster (and brand when known) before the rebuild. | Dismiss cluster c1, then rebuild the shelf from events: c1 is absent, `compute` shows a `cluster:c1` penalty, and a second rebuild still has no c1. |
+| RS-A2 | The promoted `style.ranker` is trained and published but never served. Ranking is the hand-summed facets. | `jobs/style/rank.py:53` | Read the scoped `style.ranker` champion in `score`. Fall back to the hand sum when there is none. Return the param version. | A champion with intercept 0 and a large positive `deal` coefficient ranks the row with the better deal position first even when the hand sum ranks it second. With no champion the order equals today's. |
+| RS-A3 | `compute` starts from the declared defaults and takes caller weights. It does not read the promoted `style.source_weights`. | `jobs/style/facets.py:113` | When `weights` is None, read the scoped `style.source_weights` champion. | A champion sets the `purchase` taste weight to 0.7. One purchase event gives a different facet weight than the default 0.5 run. With no row the result equals today's. |
+
 ## 10. Build tasks
 
 Code under `jobs/style/`, each task in the [task shape](../plans/README.md#2-the-task-shape) when planned; all build in parallel against the frozen fixture.

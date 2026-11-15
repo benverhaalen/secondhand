@@ -57,8 +57,11 @@ test('pool, sweep and scheduler: the planted site gets zero launches, zero sweep
   const list = linkedList(accounts, EVENT_SITES, 'p1');
   await list.refresh();
   const swept: string[] = [];
-  const scheduler = createScheduler({ params: memoryParams({ watch_cadence_s: 60 }), leases: memoryLeases(() => 0), now: () => 0,
+  let now = 0;
+  const scheduler = createScheduler({ params: memoryParams({ watch_cadence_s: 60 }), leases: memoryLeases(() => now), now: () => now,
     accounts: list.list, stateOf: () => 'live', runSweep: async a => { swept.push(a.site); return { ok: true }; }, onStale: () => {} });
+  // New accounts start spread across the first cadence (9d1d4719): the first tick places the account, the clock then reaches its turn.
+  await scheduler.tick(); now = scheduler.nextDue()['a-depop'];
   const tick = await scheduler.tick();
   assert.deepEqual(swept, ['depop']);
   assert.deepEqual(tick.ran, ['a-depop']);

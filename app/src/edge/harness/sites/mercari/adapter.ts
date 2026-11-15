@@ -299,7 +299,7 @@ const WRITES: Record<'post' | 'revise' | 'end' | 'relist' | 'send_message' | 'an
     return { dry: true, url: ROUTES.offers, request: { offer_id: offer, action, ...(action !== 'decline' ? { amount_cents: a.amount_cents } : {}), expires_at: ends?.toISOString() },
       steps: ['open the offer', `tap ${action === 'accept' ? 'Accept' : action === 'decline' ? 'Decline' : 'Counter'}`, ...(action === 'counter' ? ['fill the amount'] : []), 'stop before the confirm'] };
   },
-  // Offer to likers: at least 10% under the price and the lowest price so far, every 72 hours, binding (spec/sites.mjs, article 347).
+  // Offer to likers: at least 10% under the price and the lowest price so far, no sooner than the site's repeat wait, binding (spec/sites.mjs `offer.seller.*`, article 347).
   make_offer: a => {
     const item = id(a, 'listing_external_id'); if (!item) return refuse('missing_input', 'make_offer needs listing_external_id');
     const offer = Number(a.offer_cents);

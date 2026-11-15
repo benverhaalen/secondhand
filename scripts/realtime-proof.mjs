@@ -153,7 +153,7 @@ async function runOnce() {
     const searchReplay = {
       sources: json(searchApi.ports.sources), selected: ['poshmark'],
       excluded: searchApi.ports.sources.filter(s => s.id !== 'poshmark').map(s => ({ id: s.id,
-        reason: !s.on ? s.reason : s.id === 'depop' ? 'Recorded HTML does not supply the current harness search verb.'
+        reason: !s.on ? s.reason : s.lane === 'harness' && !s.needs_ask ? 'Recorded HTML does not supply the current harness search verb.'
           : s.needs_ask ? 'No person account or recorded harness response supplied.' : 'No recorded MCP response supplied.' })),
       reads: [], unrecorded_requests: [],
     };

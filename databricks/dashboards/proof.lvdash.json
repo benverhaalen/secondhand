@@ -1,214 +1,218 @@
 {
   "datasets": [
     {
-      "name": "headline",
-      "displayName": "headline",
-      "queryLines": [
-        "SELECT * FROM headline_latest ORDER BY source, contestant\n"
-      ]
-    },
-    {
-      "name": "claim",
-      "displayName": "claim",
-      "queryLines": [
-        "SELECT DISTINCT claim, data, n_tests FROM headline_latest WHERE run_id = (SELECT run_id FROM headline_latest ORDER BY started_at DESC, run_id DESC LIMIT 1)\n"
-      ]
-    },
-    {
-      "name": "primary_headline",
-      "displayName": "primary headline",
-      "queryLines": [
-        "SELECT within_20, coverage FROM headline_latest WHERE contestant = 'product_90d_median' AND run_id = (SELECT run_id FROM headline_latest ORDER BY started_at DESC, run_id DESC LIMIT 1)\n"
-      ]
-    },
-    {
-      "name": "model_headline",
-      "displayName": "model headline",
-      "queryLines": [
-        "SELECT within_20, coverage FROM headline_latest WHERE contestant = 'model' AND run_id = (SELECT run_id FROM headline_latest ORDER BY started_at DESC, run_id DESC LIMIT 1)\n"
-      ]
-    },
-    {
-      "name": "accuracy",
-      "displayName": "accuracy",
-      "queryLines": [
-        "SELECT source, contestant, kind, price_band, n, priced, within_20, coverage, median_ape,\n",
-        "       concat(source, ' / ', kind, ' / ', price_band) AS cell\n",
-        "FROM valuation_accuracy\n",
-        "WHERE NOT too_few AND within_20 IS NOT NULL\n",
-        "ORDER BY source, kind, price_band, contestant\n"
-      ]
-    },
-    {
-      "name": "timeline",
-      "displayName": "timeline",
-      "queryLines": [
-        "SELECT t.month, max(t.champion_value) AS champion_value,\n",
-        "       CASE WHEN count_if(t.action = 'rollback') > 0 THEN 'rollback'\n",
-        "            WHEN count_if(t.action = 'promote') > 0 THEN 'promote' ELSE 'hold' END AS action\n",
-        "FROM param_timeline t\n",
-        "JOIN (SELECT run_id, name, scope FROM param_moves ORDER BY month DESC, run_id DESC, name, scope LIMIT 1) chosen\n",
-        "  ON t.run_id = chosen.run_id AND t.name = chosen.name AND t.scope = chosen.scope\n",
-        "WHERE t.action IN ('promote', 'hold', 'rollback')\n",
-        "GROUP BY t.month ORDER BY t.month\n"
-      ]
-    },
-    {
-      "name": "moves",
-      "displayName": "moves",
-      "queryLines": [
-        "SELECT run_id, data, name, scope, month, action, version, value, held_out_score, champion_score, diff, noise, reason FROM param_moves ORDER BY month DESC, run_id DESC, version DESC\n"
-      ]
-    },
-    {
-      "name": "history",
-      "displayName": "history",
-      "queryLines": [
-        "SELECT * FROM param_history ORDER BY _commit_version DESC, name, scope, version\n"
-      ]
-    },
-    {
-      "name": "citation",
-      "displayName": "citation",
-      "queryLines": [
-        "SELECT sum(shown_with_citation) * 1.0 / nullif(sum(shown_numbers), 0) AS share FROM citation_coverage WHERE data <> 'synthetic'\n"
-      ]
-    },
-    {
-      "name": "recompute",
-      "displayName": "recompute",
-      "queryLines": [
-        "SELECT sum(CASE WHEN equal THEN 1 ELSE 0 END) * 1.0 / nullif(count(*), 0) AS share, sum(CASE WHEN equal THEN 1 ELSE 0 END) AS equal_cases, count(*) AS cases FROM recompute_check\n"
-      ]
-    },
-    {
-      "name": "parity",
-      "displayName": "parity",
-      "queryLines": [
-        "SELECT sum(CASE WHEN equal THEN 1 ELSE 0 END) * 1.0 / nullif(count(*), 0) AS share, sum(CASE WHEN equal THEN 1 ELSE 0 END) AS equal_cases, count(*) AS cases FROM parity_check\n"
-      ]
-    },
-    {
-      "name": "hidden",
-      "displayName": "hidden",
-      "queryLines": [
-        "SELECT hide_reason, sum(count) AS count FROM hidden_numbers GROUP BY hide_reason ORDER BY count DESC\n"
-      ]
-    },
-    {
       "name": "why",
-      "displayName": "why",
+      "displayName": "The sales behind one price",
       "queryLines": [
-        "SELECT id, number_id, basis_count, missing_basis, equal FROM recent_why ORDER BY created_at DESC, id DESC\n"
+        "WITH pick AS (\n",
+        "  SELECT g.id, g.value_cents, t.title, t.price_cents AS sold_cents\n",
+        "  FROM secondhand.core.guarded_number g\n",
+        "  JOIN secondhand.market.comp t ON t.comp_id = g.item_id\n",
+        "  WHERE g.metric = 'valuation.model.q50' AND g.state = 'shown' AND g.data = 'dataset:stockx_2019'\n",
+        "  ORDER BY g.id\n",
+        "  LIMIT 12\n",
+        ")\n",
+        "SELECT concat(replace(p.title, '-', ' '), ': our price $', format_number(p.value_cents / 100, 0), ', sold for $', format_number(p.sold_cents / 100, 0)) AS price,\n",
+        "       replace(b.title, '-', ' ') AS basis_title, w.basis_price_cents / 100.0 AS basis_price, date_format(b.at, 'MMM d, yyyy') AS basis_at, b.at AS basis_ts,\n",
+        "       w.source_url, 'StockX' AS page, CASE WHEN w.equal THEN 'Yes' WHEN w.equal IS NULL THEN 'Not checked' ELSE 'No' END AS rebuilt\n",
+        "FROM pick p, LATERAL why(p.id) w\n",
+        "LEFT JOIN secondhand.market.comp b ON b.comp_id = w.basis_id\n",
+        "ORDER BY price, basis_ts DESC\n"
       ]
     },
     {
-      "name": "decisions",
-      "displayName": "decisions",
+      "name": "stats",
+      "displayName": "Every headline figure with its count",
       "queryLines": [
-        "SELECT policy_mode, sum(count) AS count FROM decisions_by_policy GROUP BY policy_mode ORDER BY count DESC\n"
+        "WITH m AS (\n",
+        "  SELECT `Price from` AS price_from, MEASURE(`Within 20 percent`) AS within_20,\n",
+        "         MEASURE(`Range held the sale`) AS range_held, MEASURE(`Estimates shown`) AS shown\n",
+        "  FROM valuation_metrics\n",
+        "  GROUP BY ALL\n",
+        "), c AS (\n",
+        "  SELECT sum(shown_with_citation) AS cited, sum(shown_numbers) AS shown FROM citation_coverage WHERE data <> 'synthetic'\n",
+        "), r AS (\n",
+        "  SELECT count_if(equal) AS equal_cases, count(*) AS cases FROM recompute_check\n",
+        "), l AS (\n",
+        "  SELECT count_if(has_owner_tag) AS locked, count(*) AS tables FROM policies_in_force\n",
+        "), n AS (\n",
+        "  SELECT count_if(NOT allow) AS refused, count(*) AS asked FROM never_automated\n",
+        "), h AS (\n",
+        "  SELECT count_if(state <> 'shown') AS hidden, count(*) AS made FROM secondhand.core.guarded_number\n",
+        "), f AS (\n",
+        "  SELECT sum(kept) AS kept, sum(modelled) AS allowed, count(*) AS sources FROM pipeline_funnel\n",
+        "), w AS (\n",
+        "  SELECT count_if(action = 'promote' AND version > 1) AS changed, count_if(action = 'hold') AS held,\n",
+        "         count_if(action = 'rollback') AS rolled_back, count(DISTINCT month) AS months\n",
+        "  FROM param_moves WHERE run_id = (SELECT max_by(run_id, month) FROM param_moves)\n",
+        "), a AS (\n",
+        "  SELECT count(*) AS readable FROM secondhand.governance.principal_map\n",
+        "  WHERE principal = current_user() AND user_id NOT IN ('system', 'usr_backtest')\n",
+        ")\n",
+        "SELECT 'cited' AS stat, format_number(cited, 0) AS value_label, concat('of ', format_number(shown, 0), ' shown prices') AS sub_label FROM c\n",
+        "UNION ALL SELECT 'rebuilt', format_number(equal_cases, 0), concat('of ', format_number(cases, 0), ' checked') FROM r\n",
+        "UNION ALL SELECT CASE price_from WHEN 'Our price' THEN 'ours' WHEN 'Last sale' THEN 'last_sale' ELSE 'median_90' END,\n",
+        "       coalesce(concat(format_number(within_20 * 100, 1), '%'), 'Too few'), concat('of ', format_number(shown, 0), ' priced') FROM m\n",
+        "UNION ALL SELECT 'ours_range', coalesce(concat(format_number(range_held * 100, 1), '%'), 'Too few'), concat('of ', format_number(shown, 0), ' ranges') FROM m WHERE price_from = 'Our price'\n",
+        "UNION ALL SELECT 'locked', format_number(locked, 0), concat('of ', format_number(tables, 0), ' tables') FROM l\n",
+        "UNION ALL SELECT 'refused', format_number(refused, 0), concat('of ', format_number(asked, 0), ' asked') FROM n\n",
+        "UNION ALL SELECT 'held_back', format_number(hidden, 0), concat('of ', format_number(made, 0), ' prices made') FROM h\n",
+        "UNION ALL SELECT 'kept', format_number(kept, 0), concat('public sales from ', sources, ' sources') FROM f\n",
+        "UNION ALL SELECT 'allowed', format_number(allowed, 0), concat('of ', format_number(kept, 0), ' allowed for the backtest') FROM f\n",
+        "UNION ALL SELECT 'changes', format_number(changed, 0), concat('in ', months, ' months of sales') FROM w\n",
+        "UNION ALL SELECT 'holds', format_number(held, 0), concat('of ', months, ' months tested and kept') FROM w\n",
+        "UNION ALL SELECT 'rollbacks', format_number(rolled_back, 0), 'undone the next month' FROM w\n",
+        "UNION ALL SELECT 'readable', format_number(readable, 0), 'besides system and backtest rows' FROM a\n"
       ]
     },
     {
-      "name": "never",
-      "displayName": "never",
+      "name": "price_band",
+      "displayName": "Price accuracy by sale price, from the metric view",
       "queryLines": [
-        "SELECT id, kind, action, actor, site, policy_mode, data, allow, policy_version, why, created_at FROM never_automated ORDER BY created_at DESC, id\n"
+        "SELECT substr(`Sale price band`, 4) AS band, `Sale price band` AS band_order, `Price from` AS price_from,\n",
+        "       1 - MEASURE(`Within 20 percent`) AS missed, MEASURE(`Estimates shown`) AS shown, MEASURE(`Sales tested`) AS tested\n",
+        "FROM valuation_metrics\n",
+        "GROUP BY ALL\n",
+        "ORDER BY band_order, price_from\n"
+      ]
+    },
+    {
+      "name": "price_range",
+      "displayName": "Ranges that held the sale, from the metric view",
+      "queryLines": [
+        "SELECT `Price from` AS price_from, MEASURE(`Range held the sale`) AS range_held, MEASURE(`Estimates shown`) AS shown\n",
+        "FROM valuation_metrics\n",
+        "GROUP BY ALL\n",
+        "ORDER BY range_held DESC\n"
+      ]
+    },
+    {
+      "name": "held_back",
+      "displayName": "Prices held back, by reason",
+      "queryLines": [
+        "SELECT CASE hide_reason WHEN 'too_few' THEN 'Too few sales' WHEN 'too_wide' THEN 'Sales too far apart'\n",
+        "                        WHEN 'source_gap' THEN 'A site could not be read' WHEN 'stale' THEN 'Sales too old'\n",
+        "                        ELSE replace(hide_reason, '_', ' ') END AS reason,\n",
+        "       CASE WHEN data = 'dataset:stockx_2019' THEN 'StockX 2019 backtest' WHEN data LIKE 'dataset:%' THEN concat(replace(substr(data, 9), '_', ' '), ' backtest') ELSE concat(data, ' items') END AS data_label,\n",
+        "       sum(count) AS held\n",
+        "FROM hidden_numbers\n",
+        "GROUP BY 1, 2\n",
+        "ORDER BY held DESC\n"
+      ]
+    },
+    {
+      "name": "price_week",
+      "displayName": "Price accuracy by week, from the metric view",
+      "queryLines": [
+        "SELECT `Price from` AS price_from, `Week` AS week,\n",
+        "       MEASURE(`Within 20 percent`) AS within_20, MEASURE(`Estimates shown`) AS shown\n",
+        "FROM valuation_metrics\n",
+        "GROUP BY ALL\n",
+        "ORDER BY week\n"
+      ]
+    },
+    {
+      "name": "weight",
+      "displayName": "The half-life in force each month",
+      "queryLines": [
+        "WITH m AS (\n",
+        "  SELECT * FROM param_moves\n",
+        "  WHERE run_id = (SELECT max_by(run_id, month) FROM param_moves)\n",
+        "), v AS (\n",
+        "  SELECT version, first(value) AS value FROM m WHERE action = 'propose' GROUP BY version\n",
+        "), months AS (\n",
+        "  SELECT month, max(champion_version) AS champion,\n",
+        "         count_if(action = 'promote' AND version > 1) AS changed,\n",
+        "         count_if(action = 'hold') AS held, count_if(action = 'rollback') AS rolled_back\n",
+        "  FROM m GROUP BY month\n",
+        ")\n",
+        "SELECT o.month, v.value AS half_life_days, o.changed, o.held, o.rolled_back\n",
+        "FROM months o JOIN v ON v.version = o.champion\n",
+        "UNION ALL\n",
+        "SELECT add_months(min(m.month), -1), first(v.value), 0, 0, 0\n",
+        "FROM m JOIN v ON v.version = 1\n",
+        "ORDER BY month\n"
+      ]
+    },
+    {
+      "name": "weight_change",
+      "displayName": "Each change and its evidence",
+      "queryLines": [
+        "WITH m AS (\n",
+        "  SELECT * FROM param_moves\n",
+        "  WHERE run_id = (SELECT max_by(run_id, month) FROM param_moves)\n",
+        "), v AS (\n",
+        "  SELECT version, first(value) AS value FROM m WHERE action = 'propose' GROUP BY version\n",
+        ")\n",
+        "SELECT date_format(c.month, 'MMM yyyy') AS month,\n",
+        "       concat(CASE c.action WHEN 'promote' THEN '' ELSE 'Rolled back: ' END, format_number(f.value, 0), ' days to ', format_number(c.value, 0), ' days') AS what,\n",
+        "       concat('+', format_number(c.diff * 100, 2), ' points, noise ', format_number(c.noise * 100, 2)) AS evidence\n",
+        "FROM m c\n",
+        "LEFT JOIN v f ON f.version = c.version - 1\n",
+        "WHERE (c.action = 'promote' AND c.version > 1) OR c.action = 'rollback'\n",
+        "ORDER BY c.month\n"
       ]
     },
     {
       "name": "guard",
-      "displayName": "guard",
+      "displayName": "Rule check across every owner",
       "queryLines": [
-        "SELECT count(*) AS violations FROM guard_violations\n"
+        "SELECT format_number(violations_now, 0) AS value_label, concat('checked ', date_format(last_checked_at, 'MMM d, h:mm a')) AS sub_label\n",
+        "FROM guard_status\n"
       ]
     },
     {
-      "name": "policies",
-      "displayName": "policies",
+      "name": "isolation",
+      "displayName": "Locks in force",
       "queryLines": [
-        "SELECT catalog_name, schema_name, table_name, has_owner_tag, to_json(masked_columns) AS masked_columns, retention_class, rights_mode FROM policies_in_force ORDER BY table_name\n"
+        "SELECT concat(schema_name, '.', table_name) AS table_label,\n",
+        "       CASE WHEN has_owner_tag THEN 'Yes' ELSE 'No' END AS locked,\n",
+        "       CASE WHEN has_owner_tag THEN 1 ELSE 0 END AS locked_count,\n",
+        "       coalesce(nullif(array_join(masked_columns, ', '), ''), 'None') AS masked,\n",
+        "       replace(retention_class, '_', ' ') AS kept_for\n",
+        "FROM policies_in_force\n",
+        "ORDER BY schema_name, table_name\n"
       ]
     },
     {
-      "name": "governance",
-      "displayName": "governance",
+      "name": "never",
+      "displayName": "Actions never taken alone",
       "queryLines": [
-        "SELECT table_catalog, table_schema, table_name, table_type, has_row_filter, masked_columns, direct_filter_count, direct_masked_columns, has_owner_tag, to_json(tags) AS tags FROM governance_coverage ORDER BY table_schema, table_name\n"
+        "SELECT CASE kind WHEN 'move_off_site' THEN 'Move a deal off the site'\n",
+        "                 WHEN 'refund' THEN 'Send a refund'\n",
+        "                 WHEN 'payment' THEN 'Take or send a payment'\n",
+        "                 WHEN 'complete_purchase' THEN 'Complete a purchase'\n",
+        "                 ELSE replace(kind, '_', ' ') END AS action_label,\n",
+        "       count(*) AS asked, count_if(NOT allow) AS refused\n",
+        "FROM never_automated\n",
+        "GROUP BY 1\n",
+        "ORDER BY 1\n"
       ]
     },
     {
-      "name": "lineage",
-      "displayName": "lineage",
+      "name": "sources",
+      "displayName": "Where the sales come from",
       "queryLines": [
-        "SELECT source_table_full_name, target_table_full_name, entity_type, last_seen FROM lineage_edges WHERE length(trim(target_table_full_name)) > 0 ORDER BY last_seen DESC\n"
-      ]
-    },
-    {
-      "name": "break_glass",
-      "displayName": "break glass",
-      "queryLines": [
-        "SELECT id, started_at, ended_at, is_open FROM break_glass_windows ORDER BY started_at DESC\n"
-      ]
-    },
-    {
-      "name": "audit",
-      "displayName": "audit",
-      "queryLines": [
-        "SELECT event_date, sum(events) AS events FROM audit_activity GROUP BY event_date ORDER BY event_date\n"
-      ]
-    },
-    {
-      "name": "rights",
-      "displayName": "rights",
-      "queryLines": [
-        "SELECT citations_checked, basis_rows_checked, violations FROM rights_audit_summary\n"
-      ]
-    },
-    {
-      "name": "pipeline",
-      "displayName": "pipeline",
-      "queryLines": [
-        "SELECT source, data, bronze, dropped, kept, modelled, excluded_from_models, first_at, last_at FROM pipeline_funnel ORDER BY kept DESC\n"
-      ]
-    },
-    {
-      "name": "bench_coverage",
-      "displayName": "bench coverage",
-      "queryLines": [
-        "SELECT data, run_id, tool, question, asked, ok, ok_share FROM bench_coverage ORDER BY run_id, tool, question\n"
-      ]
-    },
-    {
-      "name": "bench_speed",
-      "displayName": "bench speed",
-      "queryLines": [
-        "SELECT data, run_id, tool, question, n, first_p50_ms, first_p95_ms, full_p50_ms, full_p95_ms FROM bench_speed ORDER BY run_id, tool, question\n"
-      ]
-    },
-    {
-      "name": "bench_cited",
-      "displayName": "bench cited",
-      "queryLines": [
-        "SELECT data, run_id, tool, numbers_shown, with_citation, share FROM bench_cited ORDER BY run_id, tool\n"
+        "SELECT replace(source, '_', ' ') AS source, kept, modelled, first_at, last_at\n",
+        "FROM pipeline_funnel\n",
+        "ORDER BY kept DESC\n"
       ]
     }
   ],
   "pages": [
     {
-      "name": "valuation",
-      "displayName": "Valuation on real sales",
+      "name": "story",
+      "displayName": "Every price shows its work",
       "pageType": "PAGE_TYPE_CANVAS",
       "layoutVersion": "GRID_V1",
       "layout": [
         {
           "widget": {
-            "name": "valuation_header",
+            "name": "title",
             "multilineTextboxSpec": {
               "lines": [
-                "# Valuation on real sales\n",
-                "\n",
-                "Latest run below: dataset, families and sales dates. Historical backtest; not today\u2019s market.\n"
+                "# Every price shows its work\n",
+                "Each figure below is read live from tables in this workspace. Prices are tested on public sales from past years, never on live listings.\n"
               ]
             }
           },
@@ -221,1357 +225,204 @@
         },
         {
           "widget": {
-            "name": "valuation_claim",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "claim",
-                  "fields": [
-                    {
-                      "name": "claim",
-                      "expression": "`claim`"
-                    },
-                    {
-                      "name": "data",
-                      "expression": "`data`"
-                    },
-                    {
-                      "name": "n_tests",
-                      "expression": "`n_tests`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Latest run"
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "claim",
-                    "displayName": "claim"
-                  },
-                  {
-                    "fieldName": "data",
-                    "displayName": "data"
-                  },
-                  {
-                    "fieldName": "n_tests",
-                    "displayName": "n tests"
-                  }
-                ]
-              }
+            "name": "beat_1",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 1. A price opens to the sales behind it\n"
+              ]
             }
           },
           "position": {
             "x": 0,
             "y": 2,
             "width": 12,
-            "height": 3
+            "height": 1
           }
         },
         {
           "widget": {
-            "name": "primary_within_20",
+            "name": "cited",
             "queries": [
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "primary_headline",
+                  "datasetName": "stats",
                   "fields": [
                     {
-                      "name": "within_20",
-                      "expression": "`within_20`"
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
                     }
                   ],
-                  "disaggregated": true
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'cited'"
+                    }
+                  ]
                 }
               }
             ],
             "spec": {
-              "version": 2,
-              "widgetType": "counter",
-              "frame": {
-                "showTitle": true,
-                "title": "90-day median: within 20%"
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
-                "value": {
-                  "fieldName": "within_20",
-                  "displayName": "90-day median: within 20%",
-                  "format": {
-                    "type": "number-percent",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 5,
-            "width": 3,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "primary_coverage",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "primary_headline",
-                  "fields": [
-                    {
-                      "name": "coverage",
-                      "expression": "`coverage`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "counter",
-              "frame": {
-                "showTitle": true,
-                "title": "90-day median: range coverage"
-              },
-              "encodings": {
-                "value": {
-                  "fieldName": "coverage",
-                  "displayName": "90-day median: range coverage",
-                  "format": {
-                    "type": "number-percent",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "position": {
-            "x": 3,
-            "y": 5,
-            "width": 3,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "model_within_20",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "model_headline",
-                  "fields": [
-                    {
-                      "name": "within_20",
-                      "expression": "`within_20`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "counter",
-              "frame": {
-                "showTitle": true,
-                "title": "Model: within 20%"
-              },
-              "encodings": {
-                "value": {
-                  "fieldName": "within_20",
-                  "displayName": "Model: within 20%",
-                  "format": {
-                    "type": "number-percent",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "position": {
-            "x": 6,
-            "y": 5,
-            "width": 3,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "model_coverage",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "model_headline",
-                  "fields": [
-                    {
-                      "name": "coverage",
-                      "expression": "`coverage`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "counter",
-              "frame": {
-                "showTitle": true,
-                "title": "Model: range coverage"
-              },
-              "encodings": {
-                "value": {
-                  "fieldName": "coverage",
-                  "displayName": "Model: range coverage",
-                  "format": {
-                    "type": "number-percent",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "position": {
-            "x": 9,
-            "y": 5,
-            "width": 3,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "valuation_accuracy",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "accuracy",
-                  "fields": [
-                    {
-                      "name": "cell",
-                      "expression": "`cell`"
-                    },
-                    {
-                      "name": "within_20",
-                      "expression": "`within_20`"
-                    },
-                    {
-                      "name": "contestant",
-                      "expression": "`contestant`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 3,
-              "widgetType": "bar",
-              "frame": {
-                "showTitle": true,
-                "title": "Within 20% by price band",
-                "showDescription": true,
-                "description": "Fewer than 30 priced sales: omitted. Counts, range coverage and median error are in the cell table below."
-              },
-              "encodings": {
-                "x": {
-                  "fieldName": "cell",
-                  "scale": {
-                    "type": "categorical"
-                  }
-                },
-                "y": {
-                  "scale": {
-                    "type": "quantitative"
-                  },
-                  "fieldName": "within_20",
-                  "format": {
-                    "type": "number-percent",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
-                  }
-                },
-                "color": {
-                  "fieldName": "contestant",
-                  "scale": {
-                    "type": "categorical"
-                  }
-                }
-              },
-              "mark": {
-                "layout": "group"
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 8,
-            "width": 12,
-            "height": 6
-          }
-        },
-        {
-          "widget": {
-            "name": "accuracy_cells",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "accuracy",
-                  "fields": [
-                    {
-                      "name": "source",
-                      "expression": "`source`"
-                    },
-                    {
-                      "name": "kind",
-                      "expression": "`kind`"
-                    },
-                    {
-                      "name": "price_band",
-                      "expression": "`price_band`"
-                    },
-                    {
-                      "name": "contestant",
-                      "expression": "`contestant`"
-                    },
-                    {
-                      "name": "n",
-                      "expression": "`n`"
-                    },
-                    {
-                      "name": "priced",
-                      "expression": "`priced`"
-                    },
-                    {
-                      "name": "within_20",
-                      "expression": "`within_20`"
-                    },
-                    {
-                      "name": "coverage",
-                      "expression": "`coverage`"
-                    },
-                    {
-                      "name": "median_ape",
-                      "expression": "`median_ape`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Accuracy by family and price band",
-                "showDescription": true,
-                "description": "Cells with fewer than 30 priced sales are omitted."
-              },
-              "encodings": {
-                "columns": [
+                "fields": [
                   {
-                    "fieldName": "source",
-                    "displayName": "source"
+                    "fieldName": "value_label"
                   },
                   {
-                    "fieldName": "kind",
-                    "displayName": "kind"
-                  },
-                  {
-                    "fieldName": "price_band",
-                    "displayName": "price band"
-                  },
-                  {
-                    "fieldName": "contestant",
-                    "displayName": "contestant"
-                  },
-                  {
-                    "fieldName": "n",
-                    "displayName": "n"
-                  },
-                  {
-                    "fieldName": "priced",
-                    "displayName": "priced"
-                  },
-                  {
-                    "fieldName": "within_20",
-                    "displayName": "within 20",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "coverage",
-                    "displayName": "coverage",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "median_ape",
-                    "displayName": "median ape",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
+                    "fieldName": "sub_label"
                   }
                 ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 14,
-            "width": 12,
-            "height": 6
-          }
-        },
-        {
-          "widget": {
-            "name": "valuation_headline",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "headline",
-                  "fields": [
-                    {
-                      "name": "source",
-                      "expression": "`source`"
-                    },
-                    {
-                      "name": "data",
-                      "expression": "`data`"
-                    },
-                    {
-                      "name": "families",
-                      "expression": "`families`"
-                    },
-                    {
-                      "name": "test_from",
-                      "expression": "`test_from`"
-                    },
-                    {
-                      "name": "test_to",
-                      "expression": "`test_to`"
-                    },
-                    {
-                      "name": "n_tests",
-                      "expression": "`n_tests`"
-                    },
-                    {
-                      "name": "contestant",
-                      "expression": "`contestant`"
-                    },
-                    {
-                      "name": "n",
-                      "expression": "`n`"
-                    },
-                    {
-                      "name": "priced",
-                      "expression": "`priced`"
-                    },
-                    {
-                      "name": "hit_rate",
-                      "expression": "`hit_rate`"
-                    },
-                    {
-                      "name": "within_20",
-                      "expression": "`within_20`"
-                    },
-                    {
-                      "name": "coverage",
-                      "expression": "`coverage`"
-                    },
-                    {
-                      "name": "median_ape",
-                      "expression": "`median_ape`"
-                    },
-                    {
-                      "name": "bias",
-                      "expression": "`bias`"
-                    },
-                    {
-                      "name": "lift_vs_primary",
-                      "expression": "`lift_vs_primary`"
-                    },
-                    {
-                      "name": "claim",
-                      "expression": "`claim`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Latest backtest for each dataset"
               },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "source",
-                    "displayName": "source"
-                  },
-                  {
-                    "fieldName": "data",
-                    "displayName": "data"
-                  },
-                  {
-                    "fieldName": "families",
-                    "displayName": "families"
-                  },
-                  {
-                    "fieldName": "test_from",
-                    "displayName": "test from"
-                  },
-                  {
-                    "fieldName": "test_to",
-                    "displayName": "test to"
-                  },
-                  {
-                    "fieldName": "n_tests",
-                    "displayName": "n tests"
-                  },
-                  {
-                    "fieldName": "contestant",
-                    "displayName": "contestant"
-                  },
-                  {
-                    "fieldName": "n",
-                    "displayName": "n"
-                  },
-                  {
-                    "fieldName": "priced",
-                    "displayName": "priced"
-                  },
-                  {
-                    "fieldName": "hit_rate",
-                    "displayName": "hit rate",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "within_20",
-                    "displayName": "within 20",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "coverage",
-                    "displayName": "coverage",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "median_ape",
-                    "displayName": "median ape",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "bias",
-                    "displayName": "bias",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "lift_vs_primary",
-                    "displayName": "lift vs primary",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "claim",
-                    "displayName": "claim"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 20,
-            "width": 12,
-            "height": 7
-          }
-        },
-        {
-          "widget": {
-            "name": "valuation_gaps",
-            "multilineTextboxSpec": {
-              "lines": [
-                "Released datasets cover only their named families and dates. Depop, Poshmark, Mercari and Facebook sales, furniture, one-off and unbranded items remain gaps unless represented in the results.\n"
-              ]
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 27,
-            "width": 12,
-            "height": 2
-          }
-        }
-      ]
-    },
-    {
-      "name": "weights",
-      "displayName": "Learned weights",
-      "pageType": "PAGE_TYPE_CANVAS",
-      "layoutVersion": "GRID_V1",
-      "layout": [
-        {
-          "widget": {
-            "name": "param_timeline",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "timeline",
-                  "fields": [
-                    {
-                      "name": "month",
-                      "expression": "`month`"
-                    },
-                    {
-                      "name": "champion_value",
-                      "expression": "`champion_value`"
-                    },
-                    {
-                      "name": "action",
-                      "expression": "`action`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 3,
-              "widgetType": "line",
+              "data": {
+                "queryName": "main_query"
+              },
               "frame": {
                 "showTitle": true,
-                "title": "Champion value by month",
+                "title": "Shown prices that carry their sales",
                 "showDescription": true,
-                "description": "Walk with the latest held-out month, one parameter scope; half-life in days. Rollback marks any month containing a rollback."
-              },
-              "encodings": {
-                "x": {
-                  "fieldName": "month",
-                  "scale": {
-                    "type": "temporal"
-                  }
-                },
-                "y": {
-                  "scale": {
-                    "type": "quantitative"
-                  },
-                  "fieldName": "champion_value"
-                },
-                "color": {
-                  "fieldName": "action",
-                  "scale": {
-                    "type": "categorical",
-                    "mappings": [
-                      {
-                        "value": "promote",
-                        "color": "#0072B2"
-                      },
-                      {
-                        "value": "hold",
-                        "color": "#777777"
-                      },
-                      {
-                        "value": "rollback",
-                        "color": "#D55E00"
-                      }
-                    ]
-                  }
-                }
+                "description": "StockX 2019 public sales and the example items. A price without its sales is never shown."
               }
             }
           },
           "position": {
             "x": 0,
-            "y": 0,
-            "width": 12,
-            "height": 6
-          }
-        },
-        {
-          "widget": {
-            "name": "param_moves",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "moves",
-                  "fields": [
-                    {
-                      "name": "run_id",
-                      "expression": "`run_id`"
-                    },
-                    {
-                      "name": "data",
-                      "expression": "`data`"
-                    },
-                    {
-                      "name": "name",
-                      "expression": "`name`"
-                    },
-                    {
-                      "name": "scope",
-                      "expression": "`scope`"
-                    },
-                    {
-                      "name": "month",
-                      "expression": "`month`"
-                    },
-                    {
-                      "name": "action",
-                      "expression": "`action`"
-                    },
-                    {
-                      "name": "version",
-                      "expression": "`version`"
-                    },
-                    {
-                      "name": "value",
-                      "expression": "`value`"
-                    },
-                    {
-                      "name": "held_out_score",
-                      "expression": "`held_out_score`"
-                    },
-                    {
-                      "name": "champion_score",
-                      "expression": "`champion_score`"
-                    },
-                    {
-                      "name": "diff",
-                      "expression": "`diff`"
-                    },
-                    {
-                      "name": "noise",
-                      "expression": "`noise`"
-                    },
-                    {
-                      "name": "reason",
-                      "expression": "`reason`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Held-out decisions"
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "run_id",
-                    "displayName": "run id"
-                  },
-                  {
-                    "fieldName": "data",
-                    "displayName": "data"
-                  },
-                  {
-                    "fieldName": "name",
-                    "displayName": "name"
-                  },
-                  {
-                    "fieldName": "scope",
-                    "displayName": "scope"
-                  },
-                  {
-                    "fieldName": "month",
-                    "displayName": "month"
-                  },
-                  {
-                    "fieldName": "action",
-                    "displayName": "action"
-                  },
-                  {
-                    "fieldName": "version",
-                    "displayName": "version"
-                  },
-                  {
-                    "fieldName": "value",
-                    "displayName": "value"
-                  },
-                  {
-                    "fieldName": "held_out_score",
-                    "displayName": "held out score",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "champion_score",
-                    "displayName": "champion score",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "diff",
-                    "displayName": "diff",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "noise",
-                    "displayName": "noise",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "reason",
-                    "displayName": "reason"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 6,
-            "width": 12,
-            "height": 7
-          }
-        },
-        {
-          "widget": {
-            "name": "param_history",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "history",
-                  "fields": [
-                    {
-                      "name": "name",
-                      "expression": "`name`"
-                    },
-                    {
-                      "name": "scope",
-                      "expression": "`scope`"
-                    },
-                    {
-                      "name": "version",
-                      "expression": "`version`"
-                    },
-                    {
-                      "name": "status",
-                      "expression": "`status`"
-                    },
-                    {
-                      "name": "value_or_hyperparams",
-                      "expression": "`value_or_hyperparams`"
-                    },
-                    {
-                      "name": "held_out_score",
-                      "expression": "`held_out_score`"
-                    },
-                    {
-                      "name": "moved_by",
-                      "expression": "`moved_by`"
-                    },
-                    {
-                      "name": "_change_type",
-                      "expression": "`_change_type`"
-                    },
-                    {
-                      "name": "_commit_version",
-                      "expression": "`_commit_version`"
-                    },
-                    {
-                      "name": "_commit_timestamp",
-                      "expression": "`_commit_timestamp`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Parameter change history"
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "name",
-                    "displayName": "name"
-                  },
-                  {
-                    "fieldName": "scope",
-                    "displayName": "scope"
-                  },
-                  {
-                    "fieldName": "version",
-                    "displayName": "version"
-                  },
-                  {
-                    "fieldName": "status",
-                    "displayName": "status"
-                  },
-                  {
-                    "fieldName": "value_or_hyperparams",
-                    "displayName": "value or hyperparams"
-                  },
-                  {
-                    "fieldName": "held_out_score",
-                    "displayName": "held out score",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  },
-                  {
-                    "fieldName": "moved_by",
-                    "displayName": "moved by"
-                  },
-                  {
-                    "fieldName": "_change_type",
-                    "displayName": " change type"
-                  },
-                  {
-                    "fieldName": "_commit_version",
-                    "displayName": " commit version"
-                  },
-                  {
-                    "fieldName": "_commit_timestamp",
-                    "displayName": " commit timestamp"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 13,
-            "width": 12,
-            "height": 7
-          }
-        }
-      ]
-    },
-    {
-      "name": "citations",
-      "displayName": "Every number cited",
-      "pageType": "PAGE_TYPE_CANVAS",
-      "layoutVersion": "GRID_V1",
-      "layout": [
-        {
-          "widget": {
-            "name": "citation_share",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "citation",
-                  "fields": [
-                    {
-                      "name": "share",
-                      "expression": "`share`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "counter",
-              "frame": {
-                "showTitle": true,
-                "title": "Shown numbers cited",
-                "showDescription": true,
-                "description": "Synthetic data excluded."
-              },
-              "encodings": {
-                "value": {
-                  "fieldName": "share",
-                  "displayName": "Shown numbers cited",
-                  "format": {
-                    "type": "number-percent",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 0,
+            "y": 3,
             "width": 4,
-            "height": 3
+            "height": 4
           }
         },
         {
           "widget": {
-            "name": "recompute_share",
+            "name": "rebuilt",
             "queries": [
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "recompute",
+                  "datasetName": "stats",
                   "fields": [
                     {
-                      "name": "share",
-                      "expression": "`share`"
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
                     }
                   ],
-                  "disaggregated": true
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'rebuilt'"
+                    }
+                  ]
                 }
               }
             ],
             "spec": {
-              "version": 2,
-              "widgetType": "counter",
-              "frame": {
-                "showTitle": true,
-                "title": "Recomputations equal"
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
-                "value": {
-                  "fieldName": "share",
-                  "displayName": "Recomputations equal",
-                  "format": {
-                    "type": "number-percent",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
                   }
-                }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Rebuilt exactly from those sales",
+                "showDescription": true,
+                "description": "Recomputed here from the stored sales. The few that differ are example items."
               }
             }
           },
           "position": {
             "x": 4,
-            "y": 0,
+            "y": 3,
             "width": 4,
-            "height": 3
+            "height": 4
           }
         },
         {
           "widget": {
-            "name": "parity_share",
+            "name": "pick_price",
             "queries": [
               {
-                "name": "main_query",
+                "name": "why_price",
                 "query": {
-                  "datasetName": "parity",
+                  "datasetName": "why",
                   "fields": [
                     {
-                      "name": "share",
-                      "expression": "`share`"
+                      "name": "price",
+                      "expression": "`price`"
                     }
                   ],
-                  "disaggregated": true
+                  "disaggregated": false
                 }
               }
             ],
             "spec": {
               "version": 2,
-              "widgetType": "counter",
-              "frame": {
-                "showTitle": true,
-                "title": "Parity cases equal",
-                "showDescription": true,
-                "description": "Equal cases / all cases; counts below."
-              },
+              "widgetType": "filter-single-select",
               "encodings": {
-                "value": {
-                  "fieldName": "share",
-                  "displayName": "Parity cases equal",
-                  "format": {
-                    "type": "number-percent",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
+                "fields": [
+                  {
+                    "fieldName": "price",
+                    "displayName": "Price",
+                    "queryName": "why_price"
+                  }
+                ]
+              },
+              "selection": {
+                "defaultSelection": {
+                  "values": {
+                    "dataType": "STRING",
+                    "values": [
+                      {
+                        "value": "Adidas Yeezy Boost 350 Low V2 Beluga: our price $598, sold for $665"
+                      }
+                    ]
                   }
                 }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Pick a price",
+                "showDescription": true,
+                "description": "Twelve of our prices from the backtest, each with what the shoe really sold for."
               }
             }
           },
           "position": {
             "x": 8,
-            "y": 0,
+            "y": 3,
             "width": 4,
-            "height": 3
+            "height": 4
           }
         },
         {
           "widget": {
-            "name": "recompute_counts",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "recompute",
-                  "fields": [
-                    {
-                      "name": "equal_cases",
-                      "expression": "`equal_cases`"
-                    },
-                    {
-                      "name": "cases",
-                      "expression": "`cases`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Recomputation counts"
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "equal_cases",
-                    "displayName": "equal cases"
-                  },
-                  {
-                    "fieldName": "cases",
-                    "displayName": "cases"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 3,
-            "width": 6,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "parity_counts",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "parity",
-                  "fields": [
-                    {
-                      "name": "equal_cases",
-                      "expression": "`equal_cases`"
-                    },
-                    {
-                      "name": "cases",
-                      "expression": "`cases`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Parity counts"
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "equal_cases",
-                    "displayName": "equal cases"
-                  },
-                  {
-                    "fieldName": "cases",
-                    "displayName": "cases"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 6,
-            "y": 3,
-            "width": 6,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "hidden_numbers",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "hidden",
-                  "fields": [
-                    {
-                      "name": "hide_reason",
-                      "expression": "`hide_reason`"
-                    },
-                    {
-                      "name": "count",
-                      "expression": "`count`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 3,
-              "widgetType": "bar",
-              "frame": {
-                "showTitle": true,
-                "title": "Why numbers were hidden"
-              },
-              "encodings": {
-                "x": {
-                  "fieldName": "hide_reason",
-                  "scale": {
-                    "type": "categorical"
-                  }
-                },
-                "y": {
-                  "scale": {
-                    "type": "quantitative"
-                  },
-                  "fieldName": "count"
-                }
-              },
-              "mark": {
-                "layout": "group"
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 6,
-            "width": 12,
-            "height": 6
-          }
-        },
-        {
-          "widget": {
-            "name": "recent_why",
+            "name": "why_rows",
             "queries": [
               {
                 "name": "main_query",
@@ -1579,24 +430,28 @@
                   "datasetName": "why",
                   "fields": [
                     {
-                      "name": "id",
-                      "expression": "`id`"
+                      "name": "basis_title",
+                      "expression": "`basis_title`"
                     },
                     {
-                      "name": "number_id",
-                      "expression": "`number_id`"
+                      "name": "basis_price",
+                      "expression": "`basis_price`"
                     },
                     {
-                      "name": "basis_count",
-                      "expression": "`basis_count`"
+                      "name": "basis_at",
+                      "expression": "`basis_at`"
                     },
                     {
-                      "name": "missing_basis",
-                      "expression": "`missing_basis`"
+                      "name": "page",
+                      "expression": "`page`"
                     },
                     {
-                      "name": "equal",
-                      "expression": "`equal`"
+                      "name": "rebuilt",
+                      "expression": "`rebuilt`"
+                    },
+                    {
+                      "name": "source_url",
+                      "expression": "`source_url`"
                     }
                   ],
                   "disaggregated": true
@@ -1606,724 +461,340 @@
             "spec": {
               "version": 2,
               "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Five recent shown numbers"
-              },
               "encodings": {
                 "columns": [
                   {
-                    "fieldName": "id",
-                    "displayName": "id"
+                    "fieldName": "basis_title",
+                    "displayName": "Earlier sale"
                   },
                   {
-                    "fieldName": "number_id",
-                    "displayName": "number id"
+                    "fieldName": "basis_price",
+                    "displayName": "Sold for",
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 0
+                      }
+                    }
                   },
                   {
-                    "fieldName": "basis_count",
-                    "displayName": "basis count"
+                    "fieldName": "basis_at",
+                    "displayName": "Sold on"
                   },
                   {
-                    "fieldName": "missing_basis",
-                    "displayName": "missing basis"
+                    "fieldName": "page",
+                    "displayName": "Product page",
+                    "link": {
+                      "templatedURL": "{{source_url}}"
+                    }
                   },
                   {
-                    "fieldName": "equal",
-                    "displayName": "equal"
+                    "fieldName": "rebuilt",
+                    "displayName": "Rebuilt exactly"
                   }
                 ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 12,
-            "width": 12,
-            "height": 5
-          }
-        }
-      ]
-    },
-    {
-      "name": "never",
-      "displayName": "Never automated",
-      "pageType": "PAGE_TYPE_CANVAS",
-      "layoutVersion": "GRID_V1",
-      "layout": [
-        {
-          "widget": {
-            "name": "guard_violations",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "guard",
-                  "fields": [
-                    {
-                      "name": "violations",
-                      "expression": "`violations`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "counter",
+              },
               "frame": {
                 "showTitle": true,
-                "title": "Guard violations",
+                "title": "The sales behind that price",
                 "showDescription": true,
-                "description": "Must be 0."
-              },
-              "encodings": {
-                "value": {
-                  "fieldName": "violations",
-                  "displayName": "Guard violations",
-                  "format": {
-                    "type": "number",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 0
-                    }
-                  }
-                }
+                "description": "StockX 2019 public sales, all before the price was made. Pick a price above to change them."
               }
             }
           },
           "position": {
             "x": 0,
-            "y": 0,
-            "width": 12,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "decisions_by_policy",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "decisions",
-                  "fields": [
-                    {
-                      "name": "policy_mode",
-                      "expression": "`policy_mode`"
-                    },
-                    {
-                      "name": "count",
-                      "expression": "`count`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 3,
-              "widgetType": "bar",
-              "frame": {
-                "showTitle": true,
-                "title": "Decisions by policy"
-              },
-              "encodings": {
-                "x": {
-                  "fieldName": "policy_mode",
-                  "scale": {
-                    "type": "categorical"
-                  }
-                },
-                "y": {
-                  "scale": {
-                    "type": "quantitative"
-                  },
-                  "fieldName": "count"
-                }
-              },
-              "mark": {
-                "layout": "group"
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 3,
+            "y": 7,
             "width": 12,
             "height": 6
           }
         },
         {
           "widget": {
-            "name": "never_automated",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "never",
-                  "fields": [
-                    {
-                      "name": "id",
-                      "expression": "`id`"
-                    },
-                    {
-                      "name": "kind",
-                      "expression": "`kind`"
-                    },
-                    {
-                      "name": "action",
-                      "expression": "`action`"
-                    },
-                    {
-                      "name": "actor",
-                      "expression": "`actor`"
-                    },
-                    {
-                      "name": "site",
-                      "expression": "`site`"
-                    },
-                    {
-                      "name": "policy_mode",
-                      "expression": "`policy_mode`"
-                    },
-                    {
-                      "name": "data",
-                      "expression": "`data`"
-                    },
-                    {
-                      "name": "allow",
-                      "expression": "`allow`"
-                    },
-                    {
-                      "name": "policy_version",
-                      "expression": "`policy_version`"
-                    },
-                    {
-                      "name": "why",
-                      "expression": "`why`"
-                    },
-                    {
-                      "name": "created_at",
-                      "expression": "`created_at`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Never-automated decisions"
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "id",
-                    "displayName": "id"
-                  },
-                  {
-                    "fieldName": "kind",
-                    "displayName": "kind"
-                  },
-                  {
-                    "fieldName": "action",
-                    "displayName": "action"
-                  },
-                  {
-                    "fieldName": "actor",
-                    "displayName": "actor"
-                  },
-                  {
-                    "fieldName": "site",
-                    "displayName": "site"
-                  },
-                  {
-                    "fieldName": "policy_mode",
-                    "displayName": "policy mode"
-                  },
-                  {
-                    "fieldName": "data",
-                    "displayName": "data"
-                  },
-                  {
-                    "fieldName": "allow",
-                    "displayName": "allow"
-                  },
-                  {
-                    "fieldName": "policy_version",
-                    "displayName": "policy version"
-                  },
-                  {
-                    "fieldName": "why",
-                    "displayName": "why"
-                  },
-                  {
-                    "fieldName": "created_at",
-                    "displayName": "created at"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 9,
-            "width": 12,
-            "height": 7
-          }
-        }
-      ]
-    },
-    {
-      "name": "governance",
-      "displayName": "Governance, ours beside theirs",
-      "pageType": "PAGE_TYPE_CANVAS",
-      "layoutVersion": "GRID_V1",
-      "layout": [
-        {
-          "widget": {
-            "name": "governance_promises",
+            "name": "beat_2",
             "multilineTextboxSpec": {
               "lines": [
-                "| Promise | Databricks feature | What we add |\n",
-                "|---|---|---|\n",
-                "| Own rows only | Unity Catalog row filters and ABAC | Caller-to-person mapping; same rule in both stores |\n",
-                "| Handles masked | Column masks and governed tags | One policy covers newly tagged columns |\n",
-                "| Source rights retained | Catalog, table and column tags | Per-row rights and expectations; fits read comp_for_model |\n",
-                "| Shown numbers guarded | Metric views | Guard state and hide reason; thin numbers withheld |\n",
-                "| Numbers recomputable | Delta time travel, CDF and table lineage | Citation basis ids and hash; recomputation job |\n",
-                "| Claims backed by evidence | Unity Gateway policies (Beta) | claim_check; gateway second layer designed, not yet built |\n",
-                "| Some actions never automated | Grants; service-policy ASK for MCP calls | Versioned policy decisions; writes dry by default |\n",
-                "| Changes have a why | System audit | Decision and event reasons, actors and trace ids |\n",
-                "| Weights change on evidence | MLflow and Delta CDF | Held-out promotion beyond noise; rollback |\n",
-                "| Source data verified | Pipeline expectations and quality monitoring | Source hash and extractor version in each row |\n"
+                "## 2. Closer than the usual guesses, on the same sales\n"
               ]
             }
           },
           "position": {
             "x": 0,
-            "y": 0,
+            "y": 13,
             "width": 12,
-            "height": 9
+            "height": 1
           }
         },
         {
           "widget": {
-            "name": "policies_in_force",
+            "name": "ours",
             "queries": [
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "policies",
+                  "datasetName": "stats",
                   "fields": [
                     {
-                      "name": "catalog_name",
-                      "expression": "`catalog_name`"
+                      "name": "value_label",
+                      "expression": "`value_label`"
                     },
                     {
-                      "name": "schema_name",
-                      "expression": "`schema_name`"
-                    },
-                    {
-                      "name": "table_name",
-                      "expression": "`table_name`"
-                    },
-                    {
-                      "name": "has_owner_tag",
-                      "expression": "`has_owner_tag`"
-                    },
-                    {
-                      "name": "masked_columns",
-                      "expression": "`masked_columns`"
-                    },
-                    {
-                      "name": "retention_class",
-                      "expression": "`retention_class`"
-                    },
-                    {
-                      "name": "rights_mode",
-                      "expression": "`rights_mode`"
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
                     }
                   ],
-                  "disaggregated": true
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'ours'"
+                    }
+                  ]
                 }
               }
             ],
             "spec": {
-              "version": 2,
-              "widgetType": "table",
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
               "frame": {
                 "showTitle": true,
-                "title": "Policy tags",
+                "title": "Our price within 20% of the sale",
                 "showDescription": true,
-                "description": "Tags identify policy matches; they do not prove policy installation."
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "catalog_name",
-                    "displayName": "catalog name"
-                  },
-                  {
-                    "fieldName": "schema_name",
-                    "displayName": "schema name"
-                  },
-                  {
-                    "fieldName": "table_name",
-                    "displayName": "table name"
-                  },
-                  {
-                    "fieldName": "has_owner_tag",
-                    "displayName": "has owner tag"
-                  },
-                  {
-                    "fieldName": "masked_columns",
-                    "displayName": "masked columns"
-                  },
-                  {
-                    "fieldName": "retention_class",
-                    "displayName": "retention class"
-                  },
-                  {
-                    "fieldName": "rights_mode",
-                    "displayName": "rights mode"
-                  }
-                ]
+                "description": "StockX 2019 sneakers, sold from Nov 2018."
               }
             }
           },
           "position": {
             "x": 0,
-            "y": 9,
-            "width": 12,
-            "height": 6
+            "y": 14,
+            "width": 3,
+            "height": 4
           }
         },
         {
           "widget": {
-            "name": "governance_coverage",
+            "name": "last_sale",
             "queries": [
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "governance",
+                  "datasetName": "stats",
                   "fields": [
                     {
-                      "name": "table_catalog",
-                      "expression": "`table_catalog`"
+                      "name": "value_label",
+                      "expression": "`value_label`"
                     },
                     {
-                      "name": "table_schema",
-                      "expression": "`table_schema`"
-                    },
-                    {
-                      "name": "table_name",
-                      "expression": "`table_name`"
-                    },
-                    {
-                      "name": "table_type",
-                      "expression": "`table_type`"
-                    },
-                    {
-                      "name": "has_row_filter",
-                      "expression": "`has_row_filter`"
-                    },
-                    {
-                      "name": "masked_columns",
-                      "expression": "`masked_columns`"
-                    },
-                    {
-                      "name": "direct_filter_count",
-                      "expression": "`direct_filter_count`"
-                    },
-                    {
-                      "name": "direct_masked_columns",
-                      "expression": "`direct_masked_columns`"
-                    },
-                    {
-                      "name": "has_owner_tag",
-                      "expression": "`has_owner_tag`"
-                    },
-                    {
-                      "name": "tags",
-                      "expression": "`tags`"
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
                     }
                   ],
-                  "disaggregated": true
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'last_sale'"
+                    }
+                  ]
                 }
               }
             ],
             "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Filters, masks and tags"
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
-                "columns": [
+                "fields": [
                   {
-                    "fieldName": "table_catalog",
-                    "displayName": "table catalog"
+                    "fieldName": "value_label"
                   },
                   {
-                    "fieldName": "table_schema",
-                    "displayName": "table schema"
-                  },
-                  {
-                    "fieldName": "table_name",
-                    "displayName": "table name"
-                  },
-                  {
-                    "fieldName": "table_type",
-                    "displayName": "table type"
-                  },
-                  {
-                    "fieldName": "has_row_filter",
-                    "displayName": "has row filter"
-                  },
-                  {
-                    "fieldName": "masked_columns",
-                    "displayName": "masked columns"
-                  },
-                  {
-                    "fieldName": "direct_filter_count",
-                    "displayName": "direct filter count"
-                  },
-                  {
-                    "fieldName": "direct_masked_columns",
-                    "displayName": "direct masked columns"
-                  },
-                  {
-                    "fieldName": "has_owner_tag",
-                    "displayName": "has owner tag"
-                  },
-                  {
-                    "fieldName": "tags",
-                    "displayName": "tags"
+                    "fieldName": "sub_label"
                   }
                 ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Last sale within 20%",
+                "showDescription": true,
+                "description": "Previous sale of the same shoe and size."
               }
             }
           },
           "position": {
-            "x": 0,
-            "y": 15,
-            "width": 12,
-            "height": 7
+            "x": 3,
+            "y": 14,
+            "width": 3,
+            "height": 4
           }
         },
         {
           "widget": {
-            "name": "rights_audit",
+            "name": "median_90",
             "queries": [
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "rights",
+                  "datasetName": "stats",
                   "fields": [
                     {
-                      "name": "citations_checked",
-                      "expression": "`citations_checked`"
+                      "name": "value_label",
+                      "expression": "`value_label`"
                     },
                     {
-                      "name": "basis_rows_checked",
-                      "expression": "`basis_rows_checked`"
-                    },
-                    {
-                      "name": "violations",
-                      "expression": "`violations`"
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
                     }
                   ],
-                  "disaggregated": true
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'median_90'"
+                    }
+                  ]
                 }
               }
             ],
             "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Rights audit"
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
-                "columns": [
+                "fields": [
                   {
-                    "fieldName": "citations_checked",
-                    "displayName": "citations checked"
+                    "fieldName": "value_label"
                   },
                   {
-                    "fieldName": "basis_rows_checked",
-                    "displayName": "basis rows checked"
-                  },
-                  {
-                    "fieldName": "violations",
-                    "displayName": "violations"
+                    "fieldName": "sub_label"
                   }
                 ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "90-day median within 20%",
+                "showDescription": true,
+                "description": "The middle price of the last 90 days, on the same sales."
               }
             }
           },
           "position": {
-            "x": 0,
-            "y": 22,
-            "width": 12,
-            "height": 3
+            "x": 6,
+            "y": 14,
+            "width": 3,
+            "height": 4
           }
         },
         {
           "widget": {
-            "name": "lineage_edges",
+            "name": "ours_range",
             "queries": [
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "lineage",
+                  "datasetName": "stats",
                   "fields": [
                     {
-                      "name": "source_table_full_name",
-                      "expression": "`source_table_full_name`"
+                      "name": "value_label",
+                      "expression": "`value_label`"
                     },
                     {
-                      "name": "target_table_full_name",
-                      "expression": "`target_table_full_name`"
-                    },
-                    {
-                      "name": "entity_type",
-                      "expression": "`entity_type`"
-                    },
-                    {
-                      "name": "last_seen",
-                      "expression": "`last_seen`"
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
                     }
                   ],
-                  "disaggregated": true
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'ours_range'"
+                    }
+                  ]
                 }
               }
             ],
             "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Table lineage"
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
-                "columns": [
+                "fields": [
                   {
-                    "fieldName": "source_table_full_name",
-                    "displayName": "source table full name"
+                    "fieldName": "value_label"
                   },
                   {
-                    "fieldName": "target_table_full_name",
-                    "displayName": "target table full name"
-                  },
-                  {
-                    "fieldName": "entity_type",
-                    "displayName": "entity type"
-                  },
-                  {
-                    "fieldName": "last_seen",
-                    "displayName": "last seen"
+                    "fieldName": "sub_label"
                   }
                 ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Our range held the sale price",
+                "showDescription": true,
+                "description": "How often the real price fell inside the range we showed."
               }
             }
           },
           "position": {
-            "x": 0,
-            "y": 25,
-            "width": 12,
-            "height": 6
+            "x": 9,
+            "y": 14,
+            "width": 3,
+            "height": 4
           }
         },
         {
           "widget": {
-            "name": "break_glass",
+            "name": "by_week",
             "queries": [
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "break_glass",
+                  "datasetName": "price_week",
                   "fields": [
                     {
-                      "name": "id",
-                      "expression": "`id`"
+                      "name": "week",
+                      "expression": "`week`"
                     },
                     {
-                      "name": "started_at",
-                      "expression": "`started_at`"
+                      "name": "within_20",
+                      "expression": "`within_20`"
                     },
                     {
-                      "name": "ended_at",
-                      "expression": "`ended_at`"
-                    },
-                    {
-                      "name": "is_open",
-                      "expression": "`is_open`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Maintenance windows"
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "id",
-                    "displayName": "id"
-                  },
-                  {
-                    "fieldName": "started_at",
-                    "displayName": "started at"
-                  },
-                  {
-                    "fieldName": "ended_at",
-                    "displayName": "ended at"
-                  },
-                  {
-                    "fieldName": "is_open",
-                    "displayName": "is open"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 31,
-            "width": 12,
-            "height": 5
-          }
-        },
-        {
-          "widget": {
-            "name": "audit_activity",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "audit",
-                  "fields": [
-                    {
-                      "name": "event_date",
-                      "expression": "`event_date`"
-                    },
-                    {
-                      "name": "events",
-                      "expression": "`events`"
+                      "name": "price_from",
+                      "expression": "`price_from`"
                     }
                   ],
                   "disaggregated": true
@@ -2333,61 +804,93 @@
             "spec": {
               "version": 3,
               "widgetType": "line",
-              "frame": {
-                "showTitle": true,
-                "title": "Audit activity"
-              },
               "encodings": {
                 "x": {
-                  "fieldName": "event_date",
+                  "fieldName": "week",
                   "scale": {
                     "type": "temporal"
-                  }
+                  },
+                  "displayName": "Week"
                 },
                 "y": {
+                  "fieldName": "within_20",
                   "scale": {
                     "type": "quantitative"
                   },
-                  "fieldName": "events"
+                  "displayName": "Within 20% of the sale",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                },
+                "color": {
+                  "fieldName": "price_from",
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": "Our price",
+                        "color": "#0A0A0A"
+                      },
+                      {
+                        "value": "Last sale",
+                        "color": "#7D8387"
+                      },
+                      {
+                        "value": "90-day median",
+                        "color": "#BFC5C9"
+                      }
+                    ]
+                  },
+                  "displayName": "Price from"
                 }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Within 20% of the sale price, week by week",
+                "showDescription": true,
+                "description": "StockX 2019, the same held-out sales for all three. A week with under 30 priced sales shows no point."
               }
             }
           },
           "position": {
             "x": 0,
-            "y": 36,
+            "y": 18,
             "width": 12,
             "height": 6
           }
-        }
-      ]
-    },
-    {
-      "name": "market",
-      "displayName": "The market",
-      "pageType": "PAGE_TYPE_CANVAS",
-      "layoutVersion": "GRID_V1",
-      "layout": [
+        },
         {
           "widget": {
-            "name": "pipeline_funnel",
+            "name": "by_band",
             "queries": [
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "pipeline",
+                  "datasetName": "price_band",
                   "fields": [
                     {
-                      "name": "source",
-                      "expression": "`source`"
+                      "name": "band",
+                      "expression": "`band`"
                     },
                     {
-                      "name": "kept",
-                      "expression": "`kept`"
+                      "name": "band_order",
+                      "expression": "`band_order`"
                     },
                     {
-                      "name": "excluded_from_models",
-                      "expression": "`excluded_from_models`"
+                      "name": "missed",
+                      "expression": "`missed`"
+                    },
+                    {
+                      "name": "price_from",
+                      "expression": "`price_from`"
+                    },
+                    {
+                      "name": "shown",
+                      "expression": "`shown`"
                     }
                   ],
                   "disaggregated": true
@@ -2397,71 +900,1209 @@
             "spec": {
               "version": 3,
               "widgetType": "bar",
-              "frame": {
-                "showTitle": true,
-                "title": "Kept rows and rows excluded from modelling",
-                "showDescription": true,
-                "description": "Excluded rows are part of kept rows. Bars are grouped, not added."
-              },
               "encodings": {
                 "x": {
-                  "fieldName": "source",
+                  "fieldName": "band",
                   "scale": {
-                    "type": "categorical"
-                  }
+                    "type": "categorical",
+                    "sort": {
+                      "by": "custom-order",
+                      "orderedValues": [
+                        "Under $150",
+                        "$150 to $250",
+                        "$250 to $500",
+                        "Over $500"
+                      ]
+                    }
+                  },
+                  "displayName": "What the shoe sold for"
                 },
                 "y": {
+                  "fieldName": "missed",
                   "scale": {
                     "type": "quantitative"
                   },
-                  "fields": [
-                    {
-                      "fieldName": "kept",
-                      "displayName": "kept"
-                    },
-                    {
-                      "fieldName": "excluded_from_models",
-                      "displayName": "excluded from models"
+                  "displayName": "Missed by more than 20%",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
                     }
-                  ]
-                }
+                  }
+                },
+                "color": {
+                  "fieldName": "price_from",
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": "Our price",
+                        "color": "#0A0A0A"
+                      },
+                      {
+                        "value": "Last sale",
+                        "color": "#7D8387"
+                      },
+                      {
+                        "value": "90-day median",
+                        "color": "#BFC5C9"
+                      }
+                    ]
+                  },
+                  "displayName": "Price from"
+                },
+                "extra": [
+                  {
+                    "fieldName": "shown",
+                    "displayName": "Prices given"
+                  },
+                  {
+                    "fieldName": "band_order",
+                    "displayName": "Band"
+                  }
+                ]
               },
               "mark": {
                 "layout": "group"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Missed by more than 20%, by what the shoe sold for",
+                "showDescription": true,
+                "description": "StockX 2019, the same sales for all three. Lower is better."
               }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 24,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "range_held",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "price_range",
+                  "fields": [
+                    {
+                      "name": "price_from",
+                      "expression": "`price_from`"
+                    },
+                    {
+                      "name": "range_held",
+                      "expression": "`range_held`"
+                    },
+                    {
+                      "name": "shown",
+                      "expression": "`shown`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "price_from",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "custom-order",
+                      "orderedValues": [
+                        "Our price",
+                        "90-day median",
+                        "Last sale"
+                      ]
+                    }
+                  },
+                  "displayName": "Price from"
+                },
+                "y": {
+                  "fieldName": "range_held",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Range held the sale price",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                },
+                "color": {
+                  "fieldName": "price_from",
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": "Our price",
+                        "color": "#0A0A0A"
+                      },
+                      {
+                        "value": "Last sale",
+                        "color": "#7D8387"
+                      },
+                      {
+                        "value": "90-day median",
+                        "color": "#BFC5C9"
+                      }
+                    ]
+                  },
+                  "displayName": "Price from"
+                },
+                "extra": [
+                  {
+                    "fieldName": "shown",
+                    "displayName": "Ranges given"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "How often the range held the real price",
+                "showDescription": true,
+                "description": "StockX 2019. A last sale is one number, so its range is the sale itself."
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 24,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "beat_3",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 3. When the sales are too few, it says so\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 30,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "held_back",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'held_back'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Prices held back",
+                "showDescription": true,
+                "description": "Never shown without enough behind it. The person sees why."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 31,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "held_rows",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "held_back",
+                  "fields": [
+                    {
+                      "name": "reason",
+                      "expression": "`reason`"
+                    },
+                    {
+                      "name": "data_label",
+                      "expression": "`data_label`"
+                    },
+                    {
+                      "name": "held",
+                      "expression": "`held`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "reason",
+                    "displayName": "Why it held back"
+                  },
+                  {
+                    "fieldName": "data_label",
+                    "displayName": "Where"
+                  },
+                  {
+                    "fieldName": "held",
+                    "displayName": "Prices"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Held back, by reason",
+                "showDescription": true,
+                "description": "StockX 2019 backtest and the example items, labelled by source."
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 31,
+            "width": 8,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "beat_4",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 4. The weight on recent sales changed once, on evidence\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 35,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "changes",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'changes'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Changes",
+                "showDescription": true,
+                "description": "Only when it beats the one in force by more than the noise."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 36,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "holds",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'holds'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Months it held",
+                "showDescription": true,
+                "description": "Each month the weight in force was tested again on that month's sales."
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 36,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "rollbacks",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'rollbacks'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Rollbacks",
+                "showDescription": true,
+                "description": "A change that does worse the next month is undone."
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 36,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "half_life",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "weight",
+                  "fields": [
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "half_life_days",
+                      "expression": "`half_life_days`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "month",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Month"
+                },
+                "y": {
+                  "fieldName": "half_life_days",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Days until a sale counts half"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Days until a sale counts half",
+                "showDescription": true,
+                "description": "The first point is the starting value, before any sales were scored."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 40,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "change_rows",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "weight_change",
+                  "fields": [
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "what",
+                      "expression": "`what`"
+                    },
+                    {
+                      "name": "evidence",
+                      "expression": "`evidence`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "month",
+                    "displayName": "Month"
+                  },
+                  {
+                    "fieldName": "what",
+                    "displayName": "Change"
+                  },
+                  {
+                    "fieldName": "evidence",
+                    "displayName": "Evidence"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Each change and its evidence",
+                "showDescription": true,
+                "description": "Points of sales priced within 20%, on that month's sales."
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 40,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "beat_5",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 5. Each person's rows stay theirs, even from the owner\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 45,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "guard",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "guard",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Rows breaking a rule, across every owner",
+                "showDescription": true,
+                "description": "Checked inside a logged maintenance window, the only way past the owner lock."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 46,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "locked",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'locked'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Tables locked to each row's owner",
+                "showDescription": true,
+                "description": "Unity Catalog policies on tagged tables. Buyer and seller handles are masked."
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 46,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "readable",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'readable'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Accounts whose rows you can read",
+                "showDescription": true,
+                "description": "For whoever is viewing, leaving out system rows. The owner sees one: their own."
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 46,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "locks",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "isolation",
+                  "fields": [
+                    {
+                      "name": "table_label",
+                      "expression": "`table_label`"
+                    },
+                    {
+                      "name": "locked",
+                      "expression": "`locked`"
+                    },
+                    {
+                      "name": "masked",
+                      "expression": "`masked`"
+                    },
+                    {
+                      "name": "kept_for",
+                      "expression": "`kept_for`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "table_label",
+                    "displayName": "Table"
+                  },
+                  {
+                    "fieldName": "locked",
+                    "displayName": "Locked to owner"
+                  },
+                  {
+                    "fieldName": "masked",
+                    "displayName": "Masked columns"
+                  },
+                  {
+                    "fieldName": "kept_for",
+                    "displayName": "Kept for"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Locks in force",
+                "showDescription": true,
+                "description": "Read from Unity Catalog on every load."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 50,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "beat_6",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 6. What it never does on its own\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 55,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "refused",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'refused'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Refused",
+                "showDescription": true,
+                "description": "Made-up requests run through the real policy code. These always wait for the person."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 56,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "never_rows",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "never",
+                  "fields": [
+                    {
+                      "name": "action_label",
+                      "expression": "`action_label`"
+                    },
+                    {
+                      "name": "asked",
+                      "expression": "`asked`"
+                    },
+                    {
+                      "name": "refused",
+                      "expression": "`refused`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "action_label",
+                    "displayName": "Action"
+                  },
+                  {
+                    "fieldName": "asked",
+                    "displayName": "Asked"
+                  },
+                  {
+                    "fieldName": "refused",
+                    "displayName": "Refused"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Never taken alone",
+                "showDescription": true,
+                "description": "Synthetic requests, labelled as such in the table."
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 56,
+            "width": 8,
+            "height": 4
+          }
+        }
+      ]
+    },
+    {
+      "name": "data",
+      "displayName": "The data",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "data_title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Where the sales come from\n",
+                "Public sold datasets, loaded by the pipeline in this workspace. Only rows a source allows are used to train or test.\n"
+              ]
             }
           },
           "position": {
             "x": 0,
             "y": 0,
             "width": 12,
-            "height": 6
+            "height": 2
           }
         },
         {
           "widget": {
-            "name": "pipeline_counts",
+            "name": "kept",
             "queries": [
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "pipeline",
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'kept'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Sales in the lakehouse",
+                "showDescription": true,
+                "description": "After the pipeline drops rows that fail its checks."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "allowed",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'allowed'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Allowed for the backtest",
+                "showDescription": true,
+                "description": "Sources whose terms allow this demo. None is cleared yet for a model the product ships."
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 6,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "source_rows",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "sources",
                   "fields": [
                     {
                       "name": "source",
                       "expression": "`source`"
-                    },
-                    {
-                      "name": "data",
-                      "expression": "`data`"
-                    },
-                    {
-                      "name": "bronze",
-                      "expression": "`bronze`"
-                    },
-                    {
-                      "name": "dropped",
-                      "expression": "`dropped`"
                     },
                     {
                       "name": "kept",
@@ -2470,10 +2111,6 @@
                     {
                       "name": "modelled",
                       "expression": "`modelled`"
-                    },
-                    {
-                      "name": "excluded_from_models",
-                      "expression": "`excluded_from_models`"
                     },
                     {
                       "name": "first_at",
@@ -2491,373 +2128,55 @@
             "spec": {
               "version": 2,
               "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Source mix and sales dates"
-              },
               "encodings": {
                 "columns": [
                   {
                     "fieldName": "source",
-                    "displayName": "source"
-                  },
-                  {
-                    "fieldName": "data",
-                    "displayName": "data"
-                  },
-                  {
-                    "fieldName": "bronze",
-                    "displayName": "bronze"
-                  },
-                  {
-                    "fieldName": "dropped",
-                    "displayName": "dropped"
+                    "displayName": "Source"
                   },
                   {
                     "fieldName": "kept",
-                    "displayName": "kept"
+                    "displayName": "Sales kept",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 0
+                      }
+                    }
                   },
                   {
                     "fieldName": "modelled",
-                    "displayName": "modelled"
-                  },
-                  {
-                    "fieldName": "excluded_from_models",
-                    "displayName": "excluded from models"
+                    "displayName": "Allowed for the demo backtest",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 0
+                      }
+                    }
                   },
                   {
                     "fieldName": "first_at",
-                    "displayName": "first at"
+                    "displayName": "First sale"
                   },
                   {
                     "fieldName": "last_at",
-                    "displayName": "last at"
+                    "displayName": "Last sale"
                   }
                 ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Sources",
+                "showDescription": true,
+                "description": "Rows after the pipeline's checks. A source with zero allowed rows is shown but never trained on."
               }
             }
           },
           "position": {
             "x": 0,
             "y": 6,
-            "width": 12,
-            "height": 7
-          }
-        }
-      ]
-    },
-    {
-      "name": "benchmark",
-      "displayName": "Benchmark",
-      "pageType": "PAGE_TYPE_CANVAS",
-      "layoutVersion": "GRID_V1",
-      "layout": [
-        {
-          "widget": {
-            "name": "benchmark_header",
-            "multilineTextboxSpec": {
-              "lines": [
-                "# Benchmark\n",
-                "\n",
-                "Tables are empty until the first benchmark run. Times are milliseconds.\n"
-              ]
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 0,
-            "width": 12,
-            "height": 2
-          }
-        },
-        {
-          "widget": {
-            "name": "bench_coverage",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "bench_coverage",
-                  "fields": [
-                    {
-                      "name": "data",
-                      "expression": "`data`"
-                    },
-                    {
-                      "name": "run_id",
-                      "expression": "`run_id`"
-                    },
-                    {
-                      "name": "tool",
-                      "expression": "`tool`"
-                    },
-                    {
-                      "name": "question",
-                      "expression": "`question`"
-                    },
-                    {
-                      "name": "asked",
-                      "expression": "`asked`"
-                    },
-                    {
-                      "name": "ok",
-                      "expression": "`ok`"
-                    },
-                    {
-                      "name": "ok_share",
-                      "expression": "`ok_share`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Answer coverage"
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "data",
-                    "displayName": "data"
-                  },
-                  {
-                    "fieldName": "run_id",
-                    "displayName": "run id"
-                  },
-                  {
-                    "fieldName": "tool",
-                    "displayName": "tool"
-                  },
-                  {
-                    "fieldName": "question",
-                    "displayName": "question"
-                  },
-                  {
-                    "fieldName": "asked",
-                    "displayName": "asked"
-                  },
-                  {
-                    "fieldName": "ok",
-                    "displayName": "ok"
-                  },
-                  {
-                    "fieldName": "ok_share",
-                    "displayName": "ok share",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 2,
-            "width": 12,
-            "height": 6
-          }
-        },
-        {
-          "widget": {
-            "name": "bench_speed",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "bench_speed",
-                  "fields": [
-                    {
-                      "name": "data",
-                      "expression": "`data`"
-                    },
-                    {
-                      "name": "run_id",
-                      "expression": "`run_id`"
-                    },
-                    {
-                      "name": "tool",
-                      "expression": "`tool`"
-                    },
-                    {
-                      "name": "question",
-                      "expression": "`question`"
-                    },
-                    {
-                      "name": "n",
-                      "expression": "`n`"
-                    },
-                    {
-                      "name": "first_p50_ms",
-                      "expression": "`first_p50_ms`"
-                    },
-                    {
-                      "name": "first_p95_ms",
-                      "expression": "`first_p95_ms`"
-                    },
-                    {
-                      "name": "full_p50_ms",
-                      "expression": "`full_p50_ms`"
-                    },
-                    {
-                      "name": "full_p95_ms",
-                      "expression": "`full_p95_ms`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "First and full answer time"
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "data",
-                    "displayName": "data"
-                  },
-                  {
-                    "fieldName": "run_id",
-                    "displayName": "run id"
-                  },
-                  {
-                    "fieldName": "tool",
-                    "displayName": "tool"
-                  },
-                  {
-                    "fieldName": "question",
-                    "displayName": "question"
-                  },
-                  {
-                    "fieldName": "n",
-                    "displayName": "n"
-                  },
-                  {
-                    "fieldName": "first_p50_ms",
-                    "displayName": "first p50 ms"
-                  },
-                  {
-                    "fieldName": "first_p95_ms",
-                    "displayName": "first p95 ms"
-                  },
-                  {
-                    "fieldName": "full_p50_ms",
-                    "displayName": "full p50 ms"
-                  },
-                  {
-                    "fieldName": "full_p95_ms",
-                    "displayName": "full p95 ms"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 8,
-            "width": 12,
-            "height": 6
-          }
-        },
-        {
-          "widget": {
-            "name": "bench_cited",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "bench_cited",
-                  "fields": [
-                    {
-                      "name": "data",
-                      "expression": "`data`"
-                    },
-                    {
-                      "name": "run_id",
-                      "expression": "`run_id`"
-                    },
-                    {
-                      "name": "tool",
-                      "expression": "`tool`"
-                    },
-                    {
-                      "name": "numbers_shown",
-                      "expression": "`numbers_shown`"
-                    },
-                    {
-                      "name": "with_citation",
-                      "expression": "`with_citation`"
-                    },
-                    {
-                      "name": "share",
-                      "expression": "`share`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "table",
-              "frame": {
-                "showTitle": true,
-                "title": "Cited numbers"
-              },
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "data",
-                    "displayName": "data"
-                  },
-                  {
-                    "fieldName": "run_id",
-                    "displayName": "run id"
-                  },
-                  {
-                    "fieldName": "tool",
-                    "displayName": "tool"
-                  },
-                  {
-                    "fieldName": "numbers_shown",
-                    "displayName": "numbers shown"
-                  },
-                  {
-                    "fieldName": "with_citation",
-                    "displayName": "with citation"
-                  },
-                  {
-                    "fieldName": "share",
-                    "displayName": "share",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 14,
             "width": 12,
             "height": 6
           }
@@ -2868,33 +2187,37 @@
   "uiSettings": {
     "theme": {
       "canvasBackgroundColor": {
-        "light": "#FCFCFC",
-        "dark": "#1F272D"
+        "light": "#FFFFFF",
+        "dark": "#101315"
       },
       "widgetBackgroundColor": {
         "light": "#FFFFFF",
-        "dark": "#11171C"
+        "dark": "#101315"
       },
       "widgetBorderColor": {
         "light": "#FFFFFF",
-        "dark": "#11171C"
+        "dark": "#101315"
       },
       "fontColor": {
-        "light": "#11171C",
-        "dark": "#E8ECF0"
+        "light": "#0A0A0A",
+        "dark": "#F2F2F2"
       },
       "selectionColor": {
-        "light": "#0072B2",
-        "dark": "#56B4E9"
+        "light": "#0A0A0A",
+        "dark": "#F2F2F2"
       },
       "visualizationColors": [
-        "#0072B2",
-        "#E69F00",
-        "#009E73",
-        "#CC79A7",
-        "#D55E00"
+        "#0A0A0A",
+        "#7D8387",
+        "#BFC5C9",
+        "#C52B17"
       ],
       "widgetHeaderAlignment": "LEFT"
+    },
+    "genieSpace": {
+      "isEnabled": true,
+      "overrideId": "01f1e0d8d8d3161fa9590e55702c1b46",
+      "enablementMode": "ENABLED"
     }
   }
 }

@@ -71,3 +71,18 @@ export function ago(t: Iso, now: Iso = NOW): string {
   return day(t, now);
 }
 export const daysBetween = (a: Iso, b: Iso) => Math.floor((ms(b) - ms(a)) / DAY);
+
+// The thing's short name, as a person would say it, for a card's one-line title: "Carhartt Detroit jacket", not the
+// listing title the sites hold ("Carhartt Detroit Jacket J97, brown duck, L"). Art. 7.15, check U14. An item's own
+// short_name wins (the backend writes it once at identify; features/app/breaks.md); this is the fallback: the part before
+// the first comma, without a trailing "with ..." clause or a model code, cut at a word to fit 26 characters (about the 234 a card gives its title at 18).
+export function shortName(title: string, own?: string | null, max = 26): string {
+  if (own) return own;
+  let s = title.split(',')[0].replace(/\s+with\s.*$/i, '').trim();
+  const words = s.split(/\s+/);
+  const code = (w: string) => /\d/.test(w) && /[A-Za-z]/.test(w) && w.length <= 5;
+  if (words.length > 2 && code(words.at(-1)!)) words.pop();
+  s = words.join(' ');
+  while (s.length > max && s.includes(' ')) s = s.slice(0, s.lastIndexOf(' '));
+  return s;
+}

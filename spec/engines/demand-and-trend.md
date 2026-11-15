@@ -112,6 +112,17 @@ The fixed set, frozen as one `product_snapshot` table version: 300 real products
 | 5 Learning | refitting weights on the first 18 months and scoring the last 6 does not lose to M8's card weights |
 | 6 Speed | the product read path under 300 ms at p95 |
 
+## Open from the audit (checked 2026-11-15)
+
+Each row of the Demand and trend section of [audit.md](audit.md) was checked against the code. 30 of 35 are closed. 3 are open and 2 are unclear because the module is parked. Worst first.
+
+| # | What is wrong | Where (file:line today) | Fix | Test that proves it |
+|---|---|---|---|---|
+| DM-A1 | The calculators take a params dict, but no production caller reads the promoted `demand_beta_D`, `demand_k_cov` or weights from the registry, so the nightly fold changes nothing a forecast uses. | `jobs/demand/forecast.py:50` (also `direction.py`, `velocity.py`); `jobs/demand/params.py` has `resolve(read)` with no caller | Build params through `resolve(read)` at the product's scope in every caller. | Promote `beta_D` 0.8 for kind K. `count_forecast` for K uses exp(0.8 x D) and lists the new `beta_D` version. Another kind still uses 0.5. |
+| DM-A2 | The product's velocity posterior is not stored. `velocity()` is a weekly batch function. A new sold comp updates nothing. | `jobs/demand/velocity.py:68` | Apply each new clustered sold comp as a Gamma observation on the product's param, with its exposure. | Product prior Gamma(2,1), one sale in a week with exposure 1: the stored posterior is shape 3, rate 2. The same cluster id again leaves it unchanged. |
+| DM-A3 | Every call emits a forecast. The p50-change gate (`demand_forecast_move`, 0.10) is declared and never read. | `jobs/demand/forecast.py:54`; `params.py` | Persist a new forecast only when p50 moved by the configured share of the last stored p50. | Last p50 100, new 105: not written. New 111: written. The first forecast is always written. |
+| DM-A4 | Unclear, module parked by Ben on 2026-11-15. `estimate` returns verdict `use` when there are no placebo windows, and does not enforce the 24-month history gate. `MIN_SALES = 8` is a literal. | `jobs/demand/event_effect.py:90`, `:32` | Return `too_thin` when there are zero placebos and when less than 24 months of calendar history exist. Move `MIN_SALES` to a declared param. Do this only if the module is revived. | A series with `event_week` equal to `window` (no placebo room) returns `too_thin`, not `use`. 23 months of history returns `too_thin`. |
+
 ## 10. Build tasks
 
 Code under `jobs/demand/`, each task in the [task shape](../plans/README.md#2-the-task-shape) when planned; all build in parallel against the frozen snapshot fixture.
