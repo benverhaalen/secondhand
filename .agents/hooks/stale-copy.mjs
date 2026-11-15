@@ -12,21 +12,28 @@ const git = (cwd, ...a) => { try { return execFileSync('git', a, { cwd, encoding
 const changed = (cwd, ...a) => git(cwd, 'diff', '--name-only', '--diff-filter=M', '-z', ...a).split('\0').filter(Boolean);
 
 // The older commit whose version of `file` is `blob`, among the 40 versions before the one at `before`; '' when none.
-function older(cwd, file, blob, before) {
+// A file a merge takes as the other side has it is skipped: that change was made, and checked, on that side.
+function older(cwd, file, blob, before, otherSides) {
+  if (otherSides.some(r => git(cwd, 'rev-parse', `${r}:${file}`) === blob)) return '';
   const versions = git(cwd, 'log', '-n40', '--format=%h', before, '--', file).split('\n').filter(Boolean);
   return versions.slice(1).find(c => git(cwd, 'rev-parse', `${c}:${file}`) === blob) ?? '';
 }
 
-export const staged = cwd => changed(cwd, '--cached')
-  .map(file => ({ file, from: older(cwd, file, git(cwd, 'rev-parse', `:${file}`), 'HEAD') })).filter(h => h.from);
+export function staged(cwd) {
+  const merging = git(cwd, 'rev-parse', '-q', '--verify', 'MERGE_HEAD').split('\n').filter(Boolean);
+  return changed(cwd, '--cached')
+    .map(file => ({ file, from: older(cwd, file, git(cwd, 'rev-parse', `:${file}`), 'HEAD', merging) })).filter(h => h.from);
+}
 
 export function range(cwd, r) {
   const out = [];
-  for (const c of git(cwd, 'rev-list', '--first-parent', r).split('\n').filter(Boolean))
+  for (const line of git(cwd, 'rev-list', '--first-parent', '--parents', r).split('\n').filter(Boolean)) {
+    const [c, , ...merged] = line.split(' ');
     for (const file of changed(cwd, `${c}^`, c)) {
-      const from = older(cwd, file, git(cwd, 'rev-parse', `${c}:${file}`), `${c}^`);
+      const from = older(cwd, file, git(cwd, 'rev-parse', `${c}:${file}`), `${c}^`, merged);
       if (from) out.push({ file, from, in: c.slice(0, 8) });
     }
+  }
   return out;
 }
 
