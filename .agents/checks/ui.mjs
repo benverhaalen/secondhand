@@ -3,7 +3,8 @@ import { read, err, warn, lineOf } from './util.mjs';
 import { scan } from '../../scripts/copy-lint.mjs';
 
 const UI = /\.(tsx|jsx|ts|js|css|scss|html|vue|svelte|swift)$/;
-const NOT_APP = /^(brand|research|assets|scripts|\.agents|node_modules)\/|(^|\/)\.|\.test\.|\.config\.|\.generated\./;
+// A file named tokens.css is where the raw values live (the site's copy is made by web/scripts/tokens.mjs).
+const NOT_APP = /^(brand|research|assets|scripts|\.agents|node_modules)\/|(^|\/)\.|\.test\.|\.config\.|\.generated\.|(^|\/)tokens\.css$/;
 // Strings a person reads: JSX/HTML text and quoted literals.
 export const strings = t => [...t.matchAll(/>([^<>{}\n]*[A-Za-z][^<>{}\n]*)</g), ...t.matchAll(/"([^"\n]*[A-Za-z ][^"\n]*)"|'([^'\n]*[A-Za-z ][^'\n]*)'/g)]
   .map(m => ({ s: m[1] ?? m[2] ?? '', i: m.index }));

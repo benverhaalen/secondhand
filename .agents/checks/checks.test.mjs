@@ -143,6 +143,14 @@ test('provenance: a decision only an agent agreed to, and a Decided line without
   assert.match(e, /#anchor/);
 });
 
+test('a copied tokens.css holds raw colours, and the line-gap-override of a font-face block is not spacing', () => {
+  assert.deepEqual(run(ui, { 'web/app/tokens.css': ':root { --ink: #0A0A0A; --veil: rgb(0 0 0 / 8%); }' }), []);
+  assert.match(errors(run(ui, { 'web/app/page.css': '.a { color: #0A0A0A; }' })), /raw color/);
+  const scales = { 'brand/constitution.md': '| B13 | x | {400, 500} | S |\n| B17 | x | {0, 4, 8, 16} | S |\n| B20 | x | {0, 8, 999} | S |\n' };
+  assert.equal(errors(run(brand, { ...scales, 'web/app/globals.css': '@font-face { font-family: "Outfit"; line-gap-override: 9.7%; }\n.a { gap: 8px; }' })), '');
+  assert.match(errors(run(brand, { ...scales, 'web/app/globals.css': '.a { gap: 9.7%; }' })), /B17/);
+});
+
 test('brand: a reworded scale row fails closed, and rem, em or % spacing is checked', () => {
   const reworded = '| B13 | x | Regular and Medium | Script |\n| B17 | x | Art. 7 | Script |\n| B20 | x | Art. 9.1 | Script |\n';
   assert.match(errors(run(brand, { 'brand/constitution.md': reworded })), /can't read the B13[\s\S]*B17[\s\S]*B20/);
