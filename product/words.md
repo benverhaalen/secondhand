@@ -1613,6 +1613,17 @@ Ben, project chat, 08:43 UTC.
 
 Used in: [intent ledger](../spec/intent-ledger.md#how-the-work-runs).
 
+## 2026-11-15 the hero from the reference, four-finger hands, stop-motion sprites and a lean site workflow
+Ben, project chat, 08:31 UTC, relayed to the website thread.
+> ensure to update the workflow too for the website making too but apply it to that scenario then. for the hugeicons the hands i want you to use are hugeicons but for the default static hand i want the four finger03. for creating animations, they dont have to be crazy smooth. like stop motion like. let codex through cli handle all the generation. it should be making sprites essentially or like short animations. pick only a couple that should be done. the dap is one. the wave. pulling on something maybe. ensure the icons are aligned. the website should look super close to that one website reference i was talking about as far as the hero goes in the pills and the layout. think of a way to make the wordmark text use color or some way to improve it. ensure all written text aheres to the anti slop claudish skill or rules i have. i dont like how the top bar is black. it should really really try to use the brand guidelines and constitution well. add more of the gradient type look. the 'secondhand' text in the hero area should have the hands on either side too. and the hands should be on each side of it. another note, it looks like there is a shadow behind just the text. i want like a semi transparent overlay with a moving gradient that slowly changes color. also, the 5.5 model i wanted is right. i dont care about hot items and seasons anymore. stop that.
+
+Used in: [the website's workflow](../brand/explore/web-home/README.md), [the hero](../brand/explore/web-home/hero/index.html), [the sprites](../brand/explore/web-home/sprites/).
+
+## 2026-11-15 the depop partner api is a proposal, never a claim
+Ben, project chat, 08:32 UTC.
+> propose in roi propostion being in the depop api thing but right now dont claim that we are
+
+Used in: [intent ledger](../spec/intent-ledger.md).
 ## 2026-11-15 nate take ben's asks as ideas, keep what we do better, and read ebay pages anyway
 Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages. The first came after the orchestrator listed what Ben's rulings change, one of them a reply being sent without asking after three unedited sends. The second answered the orchestrator's question after the eBay page lane's builder stopped on eBay's robots.txt and User Agreement.
 > not just three, dont just do stuff that might be thinking in a way we can understand is less than the potential and value already brought, identify which ideas are needed, what we do better, change what we can do better

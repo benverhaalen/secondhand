@@ -2,9 +2,11 @@
 // of the d and h to the baseline, stands on the same baseline, and sits a fifth of the type size away (Ben, 07:34). Icon
 // boxes carry padding that differs by pack, so this crops each hand's viewBox to what is drawn, then sizes and places it
 // from the wordmark's measured ascent and baseline.
-//   fitHands(lockup, word, [left, right]): lockup is the flex row, word the wordmark element, then the two <svg> hands.
-// Returns the gap in px, so an animation that parts the hands can end where the lockup rests.
-window.fitHands = (lockup, word, hands) => {
+//   fitHands(lockup, word, [left, right], most): lockup holds the wordmark element (word) and the two <svg> hands. A flex
+// lockup is set on the baseline by hand; an inline one (the hands inside a line of text) sits them on the line's own
+// baseline, since an inline-block svg rests its bottom there. Returns the gap in px, so an animation that parts the
+// hands can end where the lockup rests.
+window.fitHands = (lockup, word, hands, most = Infinity) => {
   const cs = getComputedStyle(word), size = parseFloat(cs.fontSize), ctx = document.createElement('canvas').getContext('2d');
   ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   const ink = ctx.measureText(word.textContent.trim()).actualBoundingBoxAscent;
@@ -12,11 +14,13 @@ window.fitHands = (lockup, word, hands) => {
   // Where the baseline is: an empty inline-block's bottom edge sits on it.
   const probe = document.createElement('span'); probe.style.cssText = 'display:inline-block;width:0;height:0';
   word.append(probe); const above = word.getBoundingClientRect().bottom - probe.getBoundingClientRect().top; probe.remove();
-  const gap = Math.round(size * 0.2);
-  lockup.style.alignItems = 'flex-end';
+  // A fifth of the type size, taken down to the nearest step of the spacing scale (Art. 7.1), and no more than `most`.
+  const gap = [4, 8, 12, 16, 20, 24, 32, 48, 64].filter(s => s <= Math.max(4, Math.min(most, size * 0.2))).pop();
+  const flex = getComputedStyle(lockup).display.includes('flex');
+  if (flex) lockup.style.alignItems = 'flex-end';
   [...hands].forEach((svg, i) => {
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-    for (const el of svg.querySelectorAll('path, rect, circle, ellipse, line, polyline, polygon')) {
+    for (const el of svg.querySelectorAll('path, rect, circle, ellipse, line, polyline, polygon, use')) {
       const s = getComputedStyle(el), stroked = s.stroke !== 'none' && s.stroke !== 'rgba(0, 0, 0, 0)';
       if (s.fill === 'none' && !stroked) continue;
       const b = el.getBBox(), pad = stroked ? parseFloat(s.strokeWidth) / 2 : 0;
@@ -24,9 +28,9 @@ window.fitHands = (lockup, word, hands) => {
     }
     if (!isFinite(x0)) return;
     svg.setAttribute('viewBox', `${x0} ${y0} ${x1 - x0} ${y1 - y0}`);
-    Object.assign(svg.style, { display: 'block', height: `${ink}px`, width: `${ink * (x1 - x0) / (y1 - y0)}px`, translate: `0 ${-above}px`,
-      marginLeft: i ? `${gap}px` : '0px', marginRight: i ? '0px' : `${gap}px` });
+    Object.assign(svg.style, { height: `${ink}px`, width: `${ink * (x1 - x0) / (y1 - y0)}px`, marginLeft: i ? `${gap}px` : '0px', marginRight: i ? '0px' : `${gap}px` },
+      flex ? { display: 'block', translate: `0 ${-above}px` } : { display: 'inline-block', verticalAlign: 'baseline' });
   });
-  lockup.style.gap = '0px';
+  if (flex) lockup.style.gap = '0px';
   return gap;
 };

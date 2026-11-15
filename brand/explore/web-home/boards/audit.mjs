@@ -20,10 +20,11 @@ export const motionFacts = () => {
 };
 
 // The worst contrast between the text and whatever passes behind it, over one minute: the text is hidden, the ground under
-// each text box is read pixel by pixel at six moments, and the lowest ratio against the text color is kept.
+// each text box is read pixel by pixel at six moments, and the lowest ratio against the text color is kept. A drawing
+// inside the text, such as the hands beside "secondhand", is hidden with it: it is part of the line, not its ground.
 export const contrastFloor = async (page, { at = [0, 12000, 24000, 36000, 48000, 60000], move, text = 'h1, .lead' } = {}) => {
   const boxes = await page.evaluate(sel => [...document.querySelectorAll(sel)].map(e => { const r = e.getBoundingClientRect(), c = getComputedStyle(e).color; e.dataset.ink = c; return { x: r.x, y: r.y, width: r.width, height: r.height, ink: c }; }).filter(b => b.width > 0 && b.y >= 0 && b.y + b.height <= innerHeight), text);
-  await page.addStyleTag({ content: `${text} { color: transparent !important; }` });
+  await page.addStyleTag({ content: `${text} { color: transparent !important; } ${text.split(',').map(t => `${t.trim()} svg`).join(', ')} { visibility: hidden !important; }` });
   let floor = Infinity;
   for (const t of at) {
     if (move) await move(page, t); else await seek(page, t);
