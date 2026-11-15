@@ -4,7 +4,8 @@
 import { openMarketplace } from '@/navigation/open-marketplace';
 import '@/buy/chat/device-store';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { api } from '@/api/client';
 import { ShopView } from '@/buy/chat/shop-view';
 import { useShop } from '@/buy/chat/use-shop';
 import { log, Theme } from '@/ui';
@@ -13,6 +14,14 @@ export default function Shop() {
   const { q } = useLocalSearchParams<{ q?: string }>();
   const shop = useShop();
   const asked = useRef(false);
+  // The person's own recent searches, kept on their account, so shopping starts from what they looked for (Nate, 2026-11-15).
+  const [recent, setRecent] = useState<string[]>([]);
+  useEffect(() => {
+    if (!api.session.token) return;
+    api.call<{ data: { kind?: string; short_name?: string }[] }>('GET /v1/lookups')
+      .then(r => setRecent(r.data.filter(row => row.kind === 'search' && row.short_name).map(row => row.short_name!).slice(0, 6)))
+      .catch(e => log.error('shop.recent', e));
+  }, []);
   useEffect(() => { if (q && !asked.current) { asked.current = true; shop.ask(q); } }, [q, shop]);
   const close = () => { shop.close(); if (router.canGoBack()) router.back(); else router.replace('/buy'); };
   const open = (url: string, id: string) => openMarketplace(url).then(() => undefined, e => { log.error('shop.open_site', e, { result: id }); });
@@ -21,7 +30,7 @@ export default function Shop() {
     <Theme scheme="light">
       <Stack.Screen options={{ animation: 'fade', headerShown: false }} />
       <ShopView skip="empty, one, dense: a search answer says itself how many it found; offline: a search that cannot reach the server is failed"
-        phase={shop.phase} state={shop.failure && shop.phase !== 'chat' ? 'failed' : shop.phase} turns={shop.turns} failure={shop.failure} saved={shop.saved}
+        phase={shop.phase} state={shop.failure && shop.phase !== 'chat' ? 'failed' : shop.phase} turns={shop.turns} failure={shop.failure} saved={shop.saved} recent={recent}
         offer={shop.offer} onAskOffered={shop.askOffered} off={shop.off} onToggleSource={shop.toggleSource}
         onAsk={shop.ask} onAnswer={shop.answerAsk} onClose={close} onOpen={open} onReopen={shop.reopen} onRetry={shop.retry} />
     </Theme>

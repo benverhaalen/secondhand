@@ -131,8 +131,10 @@ export function Viewfinder({ state, mode, feed, live, camera, blink = 0, top, cl
   useEffect(() => {
     if (!blink) return;
     // The shutter blink: the feed dips and comes back, so the press reads as a still taken (frontend-standard §3).
-    dip.set(withTiming(0.6, { duration: ms('shutter') / 3, easing: EASE_OUT, reduceMotion: ReduceMotion.System }, () => {
-      dip.set(withTiming(0, { duration: ms('shutter'), easing: EASE_OUT, reduceMotion: ReduceMotion.System }));
+    // Read on the JS thread: the callback below runs on the UI thread, where calling `ms` (not a worklet) is fatal in Release.
+    const shutter = ms('shutter');
+    dip.set(withTiming(0.6, { duration: shutter / 3, easing: EASE_OUT, reduceMotion: ReduceMotion.System }, () => {
+      dip.set(withTiming(0, { duration: shutter, easing: EASE_OUT, reduceMotion: ReduceMotion.System }));
     }));
   }, [blink, dip]);
   const blinkLook = useAnimatedStyle(() => ({ opacity: reduced ? 0 : dip.get() }));

@@ -3,10 +3,8 @@ import { ApiFailure } from '@/api/client';
 import { AccountField } from '@/account/field';
 import { accountError } from '@/account/session';
 import { FootButton, Nav, Pill, Screen, Stack, Txt, log } from '@/ui';
-import { appleSignIn, emailSignIn, googleSignIn, GoogleSignInUnavailable, type GoogleTokenProvider } from './sign-in-wire';
-import { requestAppleToken } from './apple';
+import { emailSignIn, googleSignIn, GoogleSignInUnavailable, type GoogleTokenProvider } from './sign-in-wire';
 import { requestGoogleIdTokenIos } from './google';
-import * as AppleAuthentication from 'expo-apple-authentication';
 import { Platform } from 'react-native';
 import { GoogleSignInButton } from '../ui/parts/google-sign-in';
 import type { ScreenState } from '@/demo/screen';
@@ -17,8 +15,8 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
   const [address, setAddress] = useState(''), [code, setCode] = useState('');
   const [emailBusy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
   const [resendAt, setResendAt] = useState(0), [now, setNow] = useState(() => Date.now());
-  const [googleBusy, setGoogleBusy] = useState(false), [appleBusy, setAppleBusy] = useState(false);
-  const busy = emailBusy || googleBusy || appleBusy;
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const busy = emailBusy || googleBusy;
   const offline = asked === 'offline';
   // On the iPhone sign-in is Apple or Google only (Nate); email stays on the web.
   const ios = Platform.OS === 'ios';
@@ -29,13 +27,6 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [resendAt]);
-  const signInWithApple = async () => {
-    if (busy || offline) return;
-    setAppleBusy(true); setError(null);
-    try { if (await appleSignIn(requestAppleToken)) await onDone(); }
-    catch (failure) { log.error('sign-in.apple', failure instanceof ApiFailure ? new Error(`Apple sign-in failed (${failure.status})`) : new Error('Apple sign-in failed')); setError(failure instanceof ApiFailure ? accountError(failure) : `Apple sign-in failed: ${failure instanceof Error ? failure.message : String(failure)}`); }
-    finally { setAppleBusy(false); }
-  };
   const signInWithGoogle = async () => {
     if (busy || offline) return;
     setGoogleBusy(true); setError(null);
@@ -66,15 +57,15 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
       setError(failure instanceof ApiFailure && [400, 401, 422].includes(failure.status) ? 'That code did not work or has expired. Check it or request another.' : accountError(failure));
     } finally { setBusy(false); }
   };
-  return <Screen keyboard name="onboarding" state={busy ? 'loading' : error ? 'failed' : offline ? 'offline' : 'new'}
+  return <Screen keyboard center={ios} name="onboarding" state={busy ? 'loading' : error ? 'failed' : offline ? 'offline' : 'new'}
     nav={<Nav back={phase === 'code' ? () => { setPhase('email'); setCode(''); setError(null); } : undefined} />}>
     <Stack gap="tight">
       <Txt role="heading">{phase === 'email' ? 'Welcome' : 'Check your email'}</Txt>
-      <Txt role="body" tone="ink-2">{phase === 'code' ? `Enter the code sent to ${email}.` : ios ? 'Sign in with Apple or Google.' : 'Sign in with Google or get a code by email.'}</Txt>
+      <Txt role="body" tone="ink-2">{phase === 'code' ? `Enter the code sent to ${email}.` : ios ? 'Sign in with Google to get started.' : 'Sign in with Google or get a code by email.'}</Txt>
     </Stack>
     {phase === 'email' ? <>
-      {Platform.OS === 'ios' ? <AppleAuthentication.AppleAuthenticationButton buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN} buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE} cornerRadius={22} style={{ width: 188, height: 44, alignSelf: 'center' }} onPress={() => void signInWithApple()} /> : null}
-      <GoogleSignInButton busy={googleBusy} disabled={emailBusy || appleBusy || offline} onPress={signInWithGoogle} />
+      {/* Apple is off until its sheet works on a device (Nate, 2026-11-15); its code stays in apple.ts. */}
+      <GoogleSignInButton busy={googleBusy} disabled={emailBusy || offline} onPress={signInWithGoogle} />
       {ios ? null : <Txt center tone="ink-2">or use your email</Txt>}
       {ios && error ? <Txt role="body">{error}</Txt> : null}
     </> : null}

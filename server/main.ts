@@ -9,6 +9,17 @@ import { discover, match } from './routes.ts';
 import { toRequest, send } from './node-http.ts';
 import { startTicks } from './ticks.ts';
 
+// The phone's frame for a service sign-in: the cloud browser's live view (a desktop window) fitted to the phone's width and
+// centred on dark, with the step to take under it. The live URL rides in the fragment, so it never reaches this server's logs.
+const CONNECT_PAGE = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sign in</title><style>html,body{margin:0;height:100%;background:#0a0a0a;color:#fff;font:15px -apple-system,system-ui,sans-serif}
+main{min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+iframe{width:100vw;aspect-ratio:1440/900;border:0;background:#000}@media (orientation:landscape){iframe{width:auto;height:88vh}}
+p{margin:0 16px;opacity:.7;text-align:center;line-height:1.4}</style>
+<main><iframe id="f" title="Service sign-in" allow="autoplay; clipboard-read; clipboard-write"></iframe>
+<p id="h">Sign in above, then tap Done. Turn your phone sideways for a larger view.</p></main>
+<script>const u=decodeURIComponent(location.hash.slice(1));if(/^https:\/\/([a-z0-9-]+\.)*browser-use\.com\//.test(u))document.getElementById('f').src=u;else document.getElementById('h').textContent='This sign-in link is not valid. Start again from the app.';</script></html>`;
+
 const log = createLog({ src: 'server', build: process.env.BUILD_SHA ?? 'dev', sink: line => { process.stderr.write(line + '\n'); } });
 
 export async function start({
@@ -43,7 +54,8 @@ export async function start({
       const request = toRequest(req, origin);
       const pathname = new URL(request.url).pathname;
       let response: Response;
-      if (pathname.replace(/\/$/, '') === '/healthz') response = request.method === 'GET'
+      if (pathname === '/connect' && request.method === 'GET') response = new Response(CONNECT_PAGE, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
+      else if (pathname.replace(/\/$/, '') === '/healthz') response = request.method === 'GET'
         ? Response.json({ ok: true }) : errorResponse(405, 'invalid', 'method not allowed', { Allow: 'GET' });
       else {
         const result = match(table, request.method, pathname);

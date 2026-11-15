@@ -1,5 +1,6 @@
 // Rests-on: spec/product.md §7 Jobs and the event stream, §8 search budget; int-search-1 brief.
-import { ApiError, type Ctx, type Handler } from './http.ts';
+import { ApiError, deps, type Ctx, type Handler } from './http.ts';
+import { rememberSearch } from './lookups.ts';
 import { manifestFor, fromEngine, fields, text, bool, strings, money, object, url, invalid, pagination } from './captures.ts';
 import { searchSource, sourceUnavailable, runtimePorts as searchRuntime, type SearchOpts, type SiteSearched, type SearchRow } from '../intel/public/search.ts';
 import { BASE, searchUrl } from '../intel/public/readers.ts';
@@ -437,6 +438,7 @@ export const handlers: Record<string, Handler> = {
     ctx.log.job(job.id, 'search', 'running');
     jobs.append(job.id, 'job.state', { job_id: job.id, kind: 'search', state: 'running', at: started_at });
     const opts = { ...ports, sources: selected };
+    if (ctx.user_id && words) rememberSearch(deps.kv, ctx.user_id, words, started_at);
     const task = Promise.resolve().then(() => search(ctx, job, stages, opts, caller, sources)).catch(e => { ctx.log.error('search.background', e); }).finally(() => searchJobs.pendingSearches.delete(job.id));
     searchJobs.pendingSearches.set(job.id, task);
     return { status: 202, body: { id: job.id, kind: job.kind, state: 'running', stages: structuredClone(stages), stream: `/v1/jobs/${job.id}/events` } };
