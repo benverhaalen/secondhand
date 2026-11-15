@@ -933,8 +933,8 @@ for (const [original, prices] of plantedMoney) {
     assert.equal(streamed(held.events), '', 'planted price must never stream');
     const kept = await run(prices);
     assert.equal(kept.answer.gate.cut, 0);
-    assert.equal(prose(kept.answer), text.replace(/\*\*|__/g, ''), 'figures stay unchanged and emphasis is stripped');
-    assert.equal(streamed(kept.events), text.replace(/\*\*|__/g, ''));
+    assert.equal(prose(kept.answer), text, 'figures and supported bold stay unchanged');
+    assert.equal(streamed(kept.events), text);
   });
 }
 
@@ -1145,8 +1145,8 @@ test('equal-figure gate checks each list item with its header and never a siblin
   const text = 'Prices in US dollars:\n- New: 400\n- Used: 120 [r1]';
   const held = await backedText(text, { ...result, rows: [{ price: '$120' }], counts: {} });
   assert.deepEqual(held.answer.gate.cut_sentences, ['- New: 400']);
-  assert.equal(prose(held.answer), 'Prices in US dollars:\n- Used: 120 [r1]');
-  assert.equal(streamed(held.events), 'Prices in US dollars:\n- Used: 120 [r1]');
+  assert.equal(prose(held.answer), 'Prices in US dollars:\n\n- Used: 120 [r1]');
+  assert.equal(streamed(held.events), 'Prices in US dollars:\n\n- Used: 120 [r1]');
 });
 
 test('equal-figure gate keeps a clean cited price and sold count whole', async () => {
@@ -1162,8 +1162,8 @@ test('equal-figure gate keeps a cited list item and cuts only its invented sibli
   const returned = { ...result, rows: [{ price: '$129' }], counts: {} };
   const held = await backedText(text, returned);
   assert.deepEqual(held.answer.gate.cut_sentences, ['- New: $139 [r1]']);
-  assert.equal(prose(held.answer), 'Prices in US dollars:\n- Used: $129 [r1]');
-  const clean = 'Prices in US dollars:\n- New: $129 [r1]';
+  assert.equal(prose(held.answer), 'Prices in US dollars:\n\n- Used: $129 [r1]');
+  const clean = 'Prices in US dollars:\n\n- New: $129 [r1]';
   assert.equal(prose((await backedText(clean, returned)).answer), clean);
 });
 
@@ -1263,8 +1263,8 @@ test('equal-figure gate inherits header citations and checks whole list items', 
   const text = 'Prices [r1]:\n- New: 129. Available now.\n- Used: 139. Check this row.';
   const held = await backedText(text, returned);
   assert.deepEqual(held.answer.gate.cut_sentences, ['- Used: 139. Check this row.']);
-  assert.equal(prose(held.answer), 'Prices [r1]:\n- New: 129. Available now.');
-  assert.equal(streamed(held.events), 'Prices [r1]:\n- New: 129. Available now.\n');
+  assert.equal(prose(held.answer), 'Prices [r1]:\n\n- New: 129. Available now.');
+  assert.equal(streamed(held.events), 'Prices [r1]:\n\n- New: 129. Available now.\n');
 });
 
 test('equal-figure gate can cite multiple results in one sentence without pooling other results', async () => {
@@ -1501,11 +1501,11 @@ test('multiple proposed picks are cleared and a second ask gets a tool error', a
   assert.match(t.sink.text(), /multiple_proposed/);
 });
 
-test('plain text removes emphasis after gating and cuts internal error sentences in stream and settled text', async () => {
-  const text = '**These match.** __Choose freely.__ It failed with not_connected. A call to search_market failed. Sold prices are not available here yet.';
+test('markdown preserves bold after gating and cuts internal error sentences in stream and settled text', async () => {
+  const text = '**These match.** Choose freely. It failed with not_connected. A call to search_market failed. Sold prices are not available here yet.';
   const t = setup('answer', { client: replay([textMessage(text)]).client });
   const answer = await t.run();
-  assert.equal(prose(answer), 'These match. Choose freely. Sold prices are not available here yet.');
+  assert.equal(prose(answer), '**These match.** Choose freely. Sold prices are not available here yet.');
   assert.equal(streamed(t.events), prose(answer));
   assert.equal(answer.gate.cut, 2);
 });
@@ -1613,13 +1613,13 @@ test('round 4 separate model rounds keep the same line break in streamed and set
   first.content.unshift({ type: 'text', text: 'Found across the sites.', citations: null });
   const t = setup('answer', { client: replay([first, textMessage('- These are asking prices.')]).client });
   const answer = await t.run();
-  assert.equal(answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join(''), 'Found across the sites.\n- These are asking prices.');
-  assert.equal(streamed(t.events), 'Found across the sites.\n- These are asking prices.');
+  assert.equal(answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join(''), 'Found across the sites.\n\n- These are asking prices.');
+  assert.equal(streamed(t.events), 'Found across the sites.\n\n- These are asking prices.');
 });
 
 for (const limit of ['rounds', 'cost'] as const) test(`round 4 ${limit} limit reserves one tools-off answer from the results`, async () => {
   const first = continuingRound({ cost: limit === 'cost' ? 0.2 : 0.001 });
-  const recording = replay([first, textMessage('There are 3 sold listings.')]);
+  const recording = replay([first, textMessage('There are 3 sold listings [r1].')]);
   const t = setup('answer', { seed: [result], client: recording.client,
     max_rounds: limit === 'rounds' ? 2 : 6, max_cost_usd: limit === 'cost' ? 0.25 : 1 });
   const answer = await t.run();
@@ -1719,4 +1719,189 @@ test('decimal number words with grand cannot borrow separate coefficient and sca
   const held = await backedText(text, returned);
   assert.deepEqual(held.answer.gate.cut_sentences, [text]);
   assert.equal(streamed(held.events), '');
+});
+
+// Nate, 14:59 UTC: "add headers, tables, and such, like claude in chat".
+test('round 5 prompt names the supported markdown and row citations', () => {
+  assert.match(SYSTEM, /## /);
+  assert.match(SYSTEM, /- /);
+  assert.match(SYSTEM, /\*\*bold\*\*/);
+  assert.match(SYSTEM, /\|---\|/);
+  assert.match(SYSTEM, /citation \[rN\] in (?:each|the) row/);
+  assert.doesNotMatch(SYSTEM, /plain sentences.*no markdown/);
+});
+
+for (const [name, text, expected] of [
+  ['single heading', 'Intro.\n# Picks\nThese match.', 'Intro.\n\n## Picks\nThese match.'],
+  ['deep heading', 'Intro.\n### Picks\nThese match.', 'Intro.\n\n## Picks\nThese match.'],
+  ['star list', 'Intro.\n* These match.', 'Intro.\n\n- These match.'],
+  ['plus list', 'Intro.\n+ These match.', 'Intro.\n\n- These match.'],
+  ['numbered list', 'Intro.\n1. These match.', 'Intro.\n\n- These match.'],
+  ['unclosed bold', 'These **match.', 'These match.'],
+  ['closed bold', 'These **match**.', 'These **match**.'],
+  ['heading spacing', 'Intro.\n## Picks', 'Intro.\n\n## Picks'],
+  ['list spacing', 'Intro.\n- These match.\n- Choose freely.', 'Intro.\n\n- These match.\n- Choose freely.'],
+  ['missing separator', 'Intro.\n| Site | Ask |\n| Mercari | 45 [r1] |', 'Intro.\n\n| Site | Ask |\n|---|---|\n| Mercari | 45 [r1] |'],
+  ['short row', '| Site | Ask | Basis |\n|---|---|---|\n| Mercari | 45 [r1] |', '| Site | Ask | Basis |\n|---|---|---|\n| Mercari | 45 [r1] |  |'],
+  ['long row', '| Site | Ask |\n|---|---|\n| Mercari | 45 | asking [r1] |', '| Site | Ask |\n|---|---|\n| Mercari | 45 / asking [r1] |'],
+] as const) test(`round 5 normalizes ${name} after gating in stream and settled text`, async () => {
+  const t = setup('answer', { seed: [result], client: replay([textMessage(text)]).client });
+  const answer = await t.run();
+  assert.equal(prose(answer), expected);
+  assert.equal(streamed(t.events), expected);
+});
+
+for (const bad of ['| Bad | 999 [r1] |', '| Bad | 45 |']) test(`round 5 cuts only the unbacked or uncited table row ${bad}`, async () => {
+  const text = `| Site | Median ask ($) |\n|---|---|\n| Mercari | 45 [r1] |\n${bad}\n| Poshmark | 45 [r1] |`;
+  const t = setup('answer', { seed: [result], client: replay([textMessage(text)]).client });
+  const answer = await t.run();
+  assert.equal(answer.gate.cut, 1);
+  assert.equal(prose(answer), text.replace(`${bad}\n`, ''));
+  assert.equal(streamed(t.events), prose(answer));
+});
+
+test('round 5 header citations cannot back any body row and an empty table disappears', async () => {
+  const text = 'Intro.\n| Site [r1] | Ask |\n|---|---|\n| Mercari | 45 |\n| Poshmark | 45 |';
+  const t = setup('answer', { seed: [result], client: replay([textMessage(text)]).client });
+  const answer = await t.run();
+  assert.equal(answer.gate.cut, 2);
+  assert.equal(prose(answer), 'Intro.');
+  assert.equal(streamed(t.events).trim(), 'Intro.');
+});
+
+test('round 5 a table row can cite separate results for separate cells', async () => {
+  const text = '| Site | Ask | Sold |\n|---|---|---|\n| Mercari | 45 [r1] | 17 [r2] |';
+  const t = setup('answer', { seed: [result, { ...result, counts: { sold: 17 } }], client: replay([textMessage(text)]).client });
+  const answer = await t.run();
+  assert.equal(answer.gate.cut, 0);
+  assert.equal(prose(answer), text);
+  assert.equal(streamed(t.events), text);
+});
+
+for (const header of ['Asks in 2026', 'Asks in 2026 [r1]']) test(`round 5 checks table header independently: ${header}`, async () => {
+  const text = `| Site | ${header} |\n|---|---|\n| Mercari | 45 [r1] |`;
+  const t = setup('answer', { seed: [result], client: replay([textMessage(text)]).client });
+  const answer = await t.run();
+  if (header.includes('[r1]')) assert.equal(prose(answer), text);
+  else {
+    assert.ok(answer.gate.cut > 0);
+    assert.equal(prose(answer), '');
+    assert.equal(streamed(t.events), '');
+  }
+});
+
+test('round 5 lists inherit their nearest heading and cannot use its citation for a missing figure', async () => {
+  const text = '## Asks in 2026 [r1]\n- 45 [r1]\n- 999 [r1]';
+  const t = setup('answer', { seed: [result], client: replay([textMessage(text)]).client });
+  const answer = await t.run();
+  assert.equal(prose(answer), '## Asks in 2026 [r1]\n\n- 45 [r1]');
+  assert.equal(streamed(t.events).trimEnd(), prose(answer));
+  assert.equal(answer.gate.cut, 1);
+});
+
+test('round 5 streams table header only beside its first kept row and no rejected body', async () => {
+  const text = 'Intro.\n| Site | Ask |\n|---|---|\n| Bad | 999 [r1] |\n| Mercari | 45 [r1] |\n| Poshmark | 45 [r1] |';
+  const t = setup('answer', { seed: [result], client: replay([textMessage(text)]).client });
+  const answer = await t.run();
+  const deltas = t.events.flatMap(event => event.event === 'assist.text' ? [event.data.delta] : []);
+  const firstTable = deltas.find(delta => delta.includes('| Site |'));
+  assert.ok(firstTable?.includes('|---|---|\n| Mercari | 45 [r1] |'));
+  assert.ok(deltas.every(delta => !delta.includes('999')));
+  assert.equal(streamed(t.events).match(/\| Mercari \|/g)?.length, 1);
+  assert.equal(streamed(t.events).match(/\| Poshmark \|/g)?.length, 1);
+  assert.equal(streamed(t.events), prose(answer));
+});
+
+test('round 5 markdown preserves round 4 privacy, widgets, total counts and round breaks', async () => {
+  const first = continuingRound({});
+  first.content.unshift({ type: 'text', text: '## Found\n**307** listings [r1].\n- not_connected\n- search_market\n- ls_private\n[widget:r1]', citations: null });
+  const text = '| Site | Listings |\n|---|---|\n| Mercari | **307** [r1] |\n| Private | ls_private |';
+  const t = setup('answer', { seed: [{ ...result, counts: { rows: 307 } }], client: replay([first, textMessage(text)]).client });
+  const answer = await t.run();
+  const visible = streamed(t.events);
+  assert.match(visible, /\*\*307\*\*/);
+  assert.doesNotMatch(visible + prose(answer), /not_connected|search_market|ls_private|\[widget:/);
+  assert.match(visible, /\n\n\| Site/);
+  assert.equal(answer.blocks.filter(block => block.type === 'widget').length, 1);
+});
+
+test('round 5 a complete gated table row streams before the model finishes', async () => {
+  const events: AssistEvent[] = [];
+  const rows = ['| Site | Ask |\n', '|---|---|\n', '| Bad | 999 [r1] |\n', '| Mercari | 45 [r1] |\n', '| Poshmark | 45 [r1] |\n'];
+  let finished = false;
+  const client: StreamClient = { messages: { stream() {
+    let listener: ((delta: string) => void) | undefined;
+    return { on(_event, fn) { listener = fn; }, async finalMessage() {
+      for (const [i, row] of rows.entries()) {
+        listener?.(row);
+        await new Promise(resolve => setImmediate(resolve));
+        if (i < 3) assert.equal(streamed(events), '', 'header and rejected rows must stay hidden');
+        else assert.match(streamed(events), /Mercari/, 'the completed safe row must already be visible');
+      }
+      finished = true;
+      return textMessage(rows.join(''));
+    } };
+  } } };
+  const t = setup('answer', { seed: [result], client, onEvent: event => {
+    if (event.event === 'assist.text') assert.equal(finished, false, 'all completed rows should stream before finalMessage resolves');
+    events.push(event);
+  } });
+  const answer = await t.run();
+  assert.equal(answer.state, 'answered');
+  assert.equal(streamed(events).match(/\| Site \|/g)?.length, 1);
+  assert.equal(streamed(events).match(/\| Mercari \|/g)?.length, 1);
+  assert.equal(streamed(events).match(/\| Poshmark \|/g)?.length, 1);
+  assert.equal(streamed(events).trimEnd(), prose(answer));
+});
+
+for (const header of ['| search_market | Ask |', '| Site ls_private | Ask |']) test(`round 5 an internal table header cannot promote a body row: ${header}`, async () => {
+  const text = `${header}\n|---|---|\n| Mercari | 45 [r1] |\n| Poshmark | 45 [r1] |`;
+  const t = setup('answer', { seed: [result], client: replay([textMessage(text)]).client });
+  const answer = await t.run();
+  assert.equal(prose(answer), '');
+  assert.equal(streamed(t.events), '');
+  assert.ok(answer.gate.cut > 0);
+});
+
+for (const text of ['Broken **opening.\n\nThese **match**.', 'Broken **opening. These **match**.']) test(`round 5 an earlier unclosed bold cannot break a later pair: ${text}`, async () => {
+  const t = setup('answer', { client: replay([textMessage(text)]).client });
+  const answer = await t.run();
+  const expected = text.replace('Broken **opening.', 'Broken opening.');
+  assert.equal(prose(answer), expected);
+  assert.equal(streamed(t.events), expected);
+});
+
+test('round 5 failed model streams finish pending table checks before settling', async () => {
+  const events: AssistEvent[] = [];
+  const client: StreamClient = { messages: { stream() {
+    let listener: ((delta: string) => void) | undefined;
+    return { on(_event, fn) { listener = fn; }, async finalMessage() {
+      listener?.('| Site | Ask |\n|---|---|\n| Mercari | 45 [r1] |\n');
+      throw new Error('model stream failed');
+    } };
+  } } };
+  const t = setup('answer', { seed: [result], client, onEvent: event => events.push(event) });
+  const answer = await t.run();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(answer.state, 'failed');
+  assert.equal(events.at(-1)?.event, 'assist.settled');
+  assert.equal(streamed(events), '', 'pending preview must not publish after model failure');
+});
+
+test('round 5 a table publication error is handled by the turn failure path', async () => {
+  const client: StreamClient = { messages: { stream() {
+    let listener: ((delta: string) => void) | undefined;
+    return { on(_event, fn) { listener = fn; }, async finalMessage() {
+      const text = '| Site | Ask |\n|---|---|\n| Mercari | 45 [r1] |\n';
+      listener?.(text);
+      await new Promise(resolve => setImmediate(resolve));
+      return textMessage(text);
+    } };
+  } } };
+  const t = setup('answer', { seed: [result], client, onEvent: event => {
+    if (event.event === 'assist.text') throw new Error('event sink failed');
+  } });
+  const answer = await t.run();
+  assert.equal(answer.state, 'failed');
+  assert.match(t.sink.text(), /event sink failed/);
 });

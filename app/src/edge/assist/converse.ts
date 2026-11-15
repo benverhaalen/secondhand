@@ -92,7 +92,11 @@ const WRITTEN_DATE = new RegExp(`(?:${MONTH}\\s+\\d{1,2}(?:st|nd|rd|th)?,?\\s+\\
 const SENTENCES = new Intl.Segmenter('en', { granularity: 'sentence' });
 export const MAX_TOOL_USES_PER_ROUND = 4;
 
-type Sentence = { segment: string; index: number; header?: string };
+const TABLE_SEPARATOR = /^\s*\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?\s*$/;
+const tableLine = (line: string) => /^\s*\|/.test(line);
+const listLine = (line: string) => /^\s*(?:[-+*]|\d+[.)])\s/.test(line);
+type Table = { index: number; header: string; separator: string };
+type Sentence = { segment: string; index: number; header?: string; table?: Table; tableHeader?: boolean };
 
 function sentences(text: string): Sentence[] {
   const lines = [...text.matchAll(/[^\n]*\n|[^\n]+$/g)];
@@ -106,15 +110,24 @@ function sentences(text: string): Sentence[] {
     }
     paragraph = '';
   };
-  for (const [i, line] of lines.entries()) {
-    const normalized = normalizeFigures(line[0]).trim();
-    const divider = /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(normalized);
-    const tableHeader = normalized.includes('|') && /^\s*\|?\s*:?-{3,}/.test(lines[i + 1]?.[0] ?? '');
-    const isHeader = /:$/.test(normalized) || /^#{1,6}\s/.test(normalized) || tableHeader;
-    const isRow = /^\s*(?:[-+*]|\d+[.)])\s/.test(line[0]) || normalized.includes('|');
-    if (isHeader || isRow || divider) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (tableLine(line[0]) && !TABLE_SEPARATOR.test(line[0])) {
       flush();
-      units.push({ segment: line[0], index: line.index, ...(!isHeader && !divider ? { header } : {}) });
+      const separator = TABLE_SEPARATOR.test(lines[i + 1]?.[0] ?? '') ? lines[++i][0] : '';
+      const table: Table = { index: line.index, header: line[0], separator };
+      units.push({ segment: line[0], index: line.index, table, tableHeader: true });
+      while (tableLine(lines[i + 1]?.[0] ?? '')) {
+        const row = lines[++i];
+        if (!TABLE_SEPARATOR.test(row[0])) units.push({ segment: row[0], index: row.index, header: line[0], table });
+      }
+      continue;
+    }
+    const normalized = normalizeFigures(line[0]).trim();
+    const isHeader = /:$/.test(normalized) || /^#{1,6}\s/.test(normalized);
+    if (isHeader || listLine(line[0])) {
+      flush();
+      units.push({ segment: line[0], index: line.index, ...(!isHeader ? { header } : {}) });
       if (isHeader) header = line[0];
     } else {
       if (!paragraph) paragraphIndex = line.index;
@@ -185,7 +198,7 @@ function wordValue(raw: string): number {
 }
 
 function checkingText(raw: string): string {
-  return normalizeFigures(raw.replace(TAGS, '')).replace(/\[r\d+\]/gi, '');
+  return normalizeFigures(raw.replace(TAGS, '').replace(/(^|\n)\s*\d+[.)]\s+/g, '$1')).replace(/\[r\d+\]/gi, '');
 }
 
 function numbers(raw: string): Figure[] {
@@ -286,7 +299,7 @@ function titleClaims(unit: string, results: (ToolResult | undefined)[]): Figure[
 
 type CitedSpan = { start: number; end: number; sources: number[] };
 
-async function checkedDraft(message: Message | undefined, answer: Answer, _text: string, log: Log, _now: number, preview = false) {
+async function checkedDraft(message: Message | undefined, answer: Answer, _text: string, log: Log, _now: number, preview = false, implicitCites: string[] = []) {
   let draft = '';
   const spans: CitedSpan[] = [];
   for (const block of message?.content ?? []) {
@@ -302,9 +315,13 @@ async function checkedDraft(message: Message | undefined, answer: Answer, _text:
   let kept = '';
   let numberWords = false;
   const keptSpans: CitedSpan[] = [];
-  for (const { segment: sentence, index, header } of sentences(draft)) {
-    const unit = `${header ?? ''}${sentence}`;
-    const resultIds = [...normalizeFigures(unit).matchAll(/\[(r\d+)\]/gi)].map(match => match[1].toLowerCase());
+  const tableHeaders = new Set<number>();
+  const emittedTables = new Set<number>();
+  for (const { segment: sentence, index, header, table, tableHeader } of sentences(draft)) {
+    const unit = `${header ?? ''}\n${sentence}`;
+    // A table header supplies claims and context, never evidence for its body.
+    const references = table && !tableHeader ? sentence : unit;
+    const resultIds = [...implicitCites, ...[...normalizeFigures(references).matchAll(/\[(r\d+)\]/gi)].map(match => match[1].toLowerCase())];
     const citedResults = resultIds.map(id => answer.results[id]);
     const claims = [...numbers(unit), ...titleClaims(unit, citedResults)]
       .map(figure => ({ text: Number.isFinite(figure.value) ? figureToken(figure) : 'invalid', kind: 'number' }));
@@ -320,6 +337,20 @@ async function checkedDraft(message: Message | undefined, answer: Answer, _text:
         answer.gate.cut_sentences.push(sentence.trim());
         continue;
       }
+    }
+    if (INTERNAL_WORD.test(stripTags(plainText(unit)))) {
+      answer.gate.cut++;
+      answer.gate.cut_sentences.push(sentence.trim());
+      continue;
+    }
+    if (tableHeader && table) {
+      tableHeaders.add(table.index);
+      continue;
+    }
+    if (table && !tableHeaders.has(table.index)) continue;
+    if (table && !emittedTables.has(table.index)) {
+      kept += table.header.trimEnd() + '\n' + (table.separator ? table.separator.trimEnd() + '\n' : '');
+      emittedTables.add(table.index);
     }
     const sources = [...new Set(spans.filter(span => span.start < index + sentence.length && span.end > index).flatMap(span => span.sources))];
     keptSpans.push({ start: kept.length, end: kept.length + sentence.length, sources });
@@ -388,6 +419,49 @@ function plainText(text: string): string {
   return text.replace(/\*\*|__/g, '');
 }
 
+function normalizeMarkdown(text: string): string {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n').map(line => {
+    const unmatched = new Set<number>();
+    let open: number | undefined;
+    for (const marker of line.matchAll(/\*\*/g)) {
+      const before = line[marker.index - 1], after = line[marker.index + 2];
+      if (open !== undefined && before && !/\s/.test(before)) open = undefined;
+      else if (after && !/\s/.test(after)) {
+        if (open !== undefined) unmatched.add(open);
+        open = marker.index;
+      } else unmatched.add(marker.index);
+    }
+    if (open !== undefined) unmatched.add(open);
+    return line.replace(/\*\*/g, (marker, index: number) => unmatched.has(index) ? '' : marker);
+  });
+  const output: string[] = [];
+  const blank = () => { if (output.length && output.at(-1)?.trim()) output.push(''); };
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].replace(/^\s*#{1,6}\s+/, '## ').replace(/^\s*(?:[*+]|\d+[.)])\s+/, '- ');
+    if (tableLine(line) && !TABLE_SEPARATOR.test(line)) {
+      const cells = (row: string) => row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
+      const head = cells(line), rows: string[][] = [];
+      const separator = TABLE_SEPARATOR.test(lines[i + 1] ?? '') ? lines[++i] : `|${head.map(() => '---').join('|')}|`;
+      while (tableLine(lines[i + 1] ?? '')) {
+        const row = lines[++i];
+        if (!TABLE_SEPARATOR.test(row)) rows.push(cells(row));
+      }
+      if (!rows.length) continue;
+      blank();
+      output.push(line, separator);
+      for (const row of rows) {
+        if (row.length > head.length) row.splice(head.length - 1, row.length, row.slice(head.length - 1).join(' / '));
+        while (row.length < head.length) row.push('');
+        output.push(`| ${row.join(' | ')} |`);
+      }
+    } else {
+      if (/^## /.test(line) || /^- /.test(line) && !/^- /.test(output.at(-1) ?? '')) blank();
+      output.push(line);
+    }
+  }
+  return output.join('\n');
+}
+
 async function shownDraft(...args: Parameters<typeof checkedDraft>) {
   const answer = args[1];
   let removed = 0;
@@ -410,7 +484,7 @@ async function shownDraft(...args: Parameters<typeof checkedDraft>) {
   }) };
   const text = await checkedDraft(...args);
   answer.gate.tags_removed += removed;
-  const rejected = sentences(text.replace(/\*\*|__/g, '  ')).filter(({ segment }) => INTERNAL_WORD.test(stripTags(segment)));
+  const rejected: Sentence[] = [];
   const heading = /(?:^|\n)[ \t]*(?:#{1,6}[ \t]*)?(?:\*\*|__)?Sources\s*:?(?:\*\*|__)?[ \t]*$/i.exec(text.trimEnd());
   if (heading) rejected.push({ index: heading.index, segment: text.slice(heading.index) });
   rejected.sort((a, b) => a.index - b.index);
@@ -423,7 +497,7 @@ async function shownDraft(...args: Parameters<typeof checkedDraft>) {
       kept += text.slice(cursor, Math.max(cursor, cut.index));
       cursor = Math.min(end, cut.index + cut.segment.length);
     }
-    return plainText(kept + text.slice(cursor, end));
+    return normalizeMarkdown(kept + text.slice(cursor, end));
   };
   let cursor = 0;
   answer.blocks = answer.blocks.flatMap<Answer['blocks'][number]>(block => {
@@ -443,7 +517,7 @@ function appendBlocks(previous: Answer['blocks'], next: Answer['blocks']): Answe
   const last = previous.findLast(block => block.type === 'text');
   const firstIndex = next.findIndex(block => block.type === 'text'), first = next[firstIndex];
   if (last?.type === 'text' && first?.type === 'text' && !last.text.endsWith('\n') && !first.text.startsWith('\n')) {
-    next = next.map((block, index) => index === firstIndex ? { ...first, text: `\n${first.text}` } : block);
+    next = next.map((block, index) => index === firstIndex ? { ...first, text: `${/^(?:## |[-*+] |\|)/.test(first.text) ? '\n\n' : '\n'}${first.text}` } : block);
   }
   return [...previous, ...next];
 }
@@ -452,7 +526,7 @@ async function question(input: unknown, answer: Answer, o: ConverseOptions): Pro
   if (!askInput(input) || !o.job_id) { answer.gate.cut++; return null; }
   const passes = async (text: string, results: Answer['results']) => {
     const probe: Answer = { ...answer, results, blocks: [], sources: [], gate: { checked: 0, cut: 0, cut_sentences: [], tags_removed: 0 } };
-    await shownDraft({ content: [{ type: 'text', text, citations: null }] } as Message, probe, '', o.log, o.now());
+    await shownDraft({ content: [{ type: 'text', text, citations: null }] } as Message, probe, '', o.log, o.now(), false, Object.keys(results));
     answer.gate.checked += probe.gate.checked;
     answer.gate.cut += probe.gate.cut;
     return probe.gate.cut === 0;
@@ -518,11 +592,26 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
   const toolEvent = (call: ToolCallInfo, phase: 'start' | 'end') => o.onEvent?.({ event: 'assist.tool', data: { ...publicCall(call), phase } });
   let resultId = 0, early = false;
   let lastText = '', lastRoundCost = 0, finishReason: string | undefined;
-  const emitText = (text: string) => {
+  const emitText = (text: string, continuation = false) => {
     if (!text) return;
-    if (lastText && !lastText.endsWith('\n') && !text.startsWith('\n')) text = `\n${text}`;
+    if (lastText && !continuation) {
+      const required = /^(?:## |[-*+] |\|)/.test(text) ? 2 : 1;
+      const existing = (lastText.match(/\n*$/)?.[0].length ?? 0) + (text.match(/^\n*/)?.[0].length ?? 0);
+      text = '\n'.repeat(Math.max(0, required - existing)) + text;
+    }
     if (answer.ms.first_text === null) answer.ms.first_text = o.now() - started;
-    o.onEvent?.({ event: 'assist.text', data: { delta: text } });
+    const lines = text.match(/[^\n]*\n|[^\n]+$/g) ?? [];
+    let chunk = '';
+    for (let i = 0; i < lines.length; i++) {
+      // Each later row is a separate delta; the first includes its header and separator.
+      if (tableLine(lines[i]) && tableLine(lines[i - 1] ?? '') && !TABLE_SEPARATOR.test(lines[i])
+        && !TABLE_SEPARATOR.test(lines[i - 1])) {
+        o.onEvent?.({ event: 'assist.text', data: { delta: chunk } });
+        chunk = '';
+      }
+      chunk += lines[i];
+    }
+    if (chunk) o.onEvent?.({ event: 'assist.text', data: { delta: chunk } });
     lastText = text;
   };
   const pendingWeb: PendingWeb = new Map();
@@ -589,15 +678,42 @@ ${rendered}` });
             ...(answerNow ? { tool_choice: { type: 'none' as const } } : {}),
             output_config: { effort: o.effort }, thinking: { type: 'adaptive' },
           }, { signal: o.signal });
-          // Hold the round until its text and web citations are complete, then gate whole sentences.
-          let accumulated = '';
-          stream.on('text', delta => { accumulated += delta; });
-          const message = await stream.finalMessage();
-          const streamed: Message = { ...message, content: [{ type: 'text', text: accumulated || message.content.flatMap(block => block.type === 'text' ? [block.text] : []).join(''), citations:
-            message.content.flatMap(block => block.type === 'text' ? block.citations ?? [] : []) }] };
-          const preview: Answer = { ...answer, blocks: [], gate: { checked: 0, cut: 0, cut_sentences: [], tags_removed: 0 } };
-          const visible = stripTags(await shownDraft(streamed, preview, o.text, o.log, o.now(), true));
-          emitText(visible);
+          let accumulated = '', emitted = '';
+          let pending = Promise.resolve(), publishing = true;
+          let publicationFailure: { error: unknown } | undefined;
+          const publish = async (message: Message) => {
+            const preview: Answer = { ...answer, blocks: [], gate: { checked: 0, cut: 0, cut_sentences: [], tags_removed: 0 } };
+            const visible = stripTags(await shownDraft(message, preview, o.text, o.log, o.now(), true));
+            if (!publishing) return;
+            if (!visible.startsWith(emitted)) throw new Error('gated stream prefix changed');
+            const delta = visible.slice(emitted.length);
+            emitText(delta, emitted.length > 0);
+            emitted = visible;
+          };
+          stream.on('text', delta => {
+            accumulated += delta;
+            if (!delta.includes('\n')) return;
+            const complete = accumulated.slice(0, accumulated.lastIndexOf('\n') + 1);
+            const last = sentences(complete).at(-1);
+            if (!last?.table || last.tableHeader || [...complete.matchAll(/\*\*/g)].length % 2) return;
+            pending = pending.then(async () => {
+              if (!publishing) return;
+              try { await publish({ content: [{ type: 'text', text: complete, citations: null }] } as Message); }
+              catch (error) { publicationFailure = { error }; publishing = false; }
+            });
+          });
+          let message: Message;
+          try { message = await stream.finalMessage(); }
+          catch (error) {
+            publishing = false;
+            await pending;
+            if (publicationFailure) throw publicationFailure.error;
+            throw error;
+          }
+          await pending;
+          if (publicationFailure) throw publicationFailure.error;
+          await publish({ ...message, content: [{ type: 'text', text: accumulated || message.content.flatMap(block => block.type === 'text' ? [block.text] : []).join(''), citations:
+            message.content.flatMap(block => block.type === 'text' ? block.citations ?? [] : []) }] });
           return message;
         } catch (error) {
           throw safeError(error, o);

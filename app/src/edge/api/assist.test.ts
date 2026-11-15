@@ -442,8 +442,8 @@ for (const count of [84, 307]) test(`round 4 route replay answers from all ${cou
       const seed = first.find(b => b.type === 'text' && b.text.startsWith('seed result'));
       assert.ok(seed?.type === 'text');
       const result = JSON.parse(seed.text.slice(seed.text.indexOf('\n') + 1)) as ToolResult;
-      const text = `${result.counts.rows} listings for sale now. ${sites.map(site => `${site}: ${result.counts[`${site}_n`]} listings.`).join(' ')}`;
-      final.content = [{ type: 'text', text: `**What we measured**\n${text}\n[widget:r5]\nIt failed with not_connected.\nSources:`, citations: null }];
+      const text = `${result.counts.rows} listings for sale now [r1]. ${sites.map(site => `${site}: ${result.counts[`${site}_n`]} listings [r1].`).join(' ')}`;
+      final.content = [{ type: 'text', text: `## What we measured\n${text}\n[widget:r5]\nIt failed with not_connected.\nSources:`, citations: null }];
       if (t.requests.length === 1 && count === 84) {
         final.stop_reason = 'tool_use';
         final.content.push({ type: 'tool_use', id: 'redundant-search', name: 'search_market', input: { query }, caller: { type: 'direct' } });
