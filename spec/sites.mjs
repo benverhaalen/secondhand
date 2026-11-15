@@ -14,6 +14,8 @@ const obs = (v, src) => ({ v, mark: 'observed', src: N + src });
 const say = (v, src) => ({ v, mark: 'asserted', src: N + src });
 const chat = say(null, 'facebook-marketplace.md#9-pricing-and-offers'); // local Facebook sales have no offer object, only chat
 const open = src => say(UNKNOWN, src);
+// A fact read on the site's own page, filed in a note outside Ben's platform folder.
+const seen = (v, src) => ({ v, mark: 'observed', src });
 
 export const FACTS = {
   // Hours a buyer's offer stays open.
@@ -21,7 +23,7 @@ export const FACTS = {
   // Hours a counteroffer stays open.
   'offer.counter.expires_h': { ebay: obs(96, 'ebay.md#9-pricing-and-offers'), depop: obs(24, 'depop.md#9-pricing-and-offers'), poshmark: say(24, 'poshmark.md#9-pricing-and-offers'), mercari: obs(24, 'mercari.md#9-pricing-and-offers'), facebook: chat },
   // Hours an offer we send to likers or watchers stays open.
-  'offer.seller.expires_h': { ebay: obs(96, 'ebay.md#9-pricing-and-offers'), depop: obs(24, 'depop.md#9-pricing-and-offers'), poshmark: open('poshmark.md#9-pricing-and-offers'), mercari: obs(24, 'mercari.md#9-pricing-and-offers'), facebook: chat },
+  'offer.seller.expires_h': { ebay: obs(96, 'ebay.md#9-pricing-and-offers'), depop: seen(336, 'research/list/nate/ranking-levers-per-site.md#depop'), poshmark: open('poshmark.md#9-pricing-and-offers'), mercari: obs(24, 'mercari.md#9-pricing-and-offers'), facebook: chat },
   // Least percent under the listing price for an offer we send.
   'offer.seller.min_off_pct': { ebay: obs(5, 'ebay.md#9-pricing-and-offers'), depop: obs(5, 'depop.md#9-pricing-and-offers'), poshmark: say(10, 'poshmark.md#9-pricing-and-offers'), mercari: obs(10, 'mercari.md#9-pricing-and-offers'), facebook: chat },
   // Whether a repeat offer must also undercut the lowest price the item has had.
