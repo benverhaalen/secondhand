@@ -226,7 +226,7 @@ The rows are data the marketplaces released themselves. The terms of the sites' 
 
 Every result names its dataset, the date range of its sales and the families it covers. No sentence built on these says "accuracy on today's market". Families with no released data at all (Depop, Poshmark, Mercari and Facebook sales; furniture; one-off and unbranded items) are listed in the result as a gap, not left out.
 
-Two current sources fill the gap later, both inside the rules. One is the person's own sales read through their linked accounts, frozen before the sale through the `duel-record` and `duel-score` commands in the runner. The other is eBay's official APIs once developer keys exist ([waiting](../plans/waiting.md)), with the API licence's bar on modelling prices respected: such rows are scored against, never fitted on.
+Two current sources fill the gap later, both inside the rules. One is the person's own sales read through their linked accounts, frozen before the sale through the `duel-record` and `duel-score` commands in the runner. The other is eBay's official APIs once developer keys exist ([waiting](../plans/finalization.md#13-what-works-kept-by-the-orchestrator)), with the API licence's bar on modelling prices respected: such rows are scored against, never fitted on.
 
 ### Development reading: the ablation of 2026-11-15
 

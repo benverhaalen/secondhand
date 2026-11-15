@@ -92,7 +92,7 @@ Other naming:
 
 - The root README is a table of `product/` docs and does not match the tree (omissions in §1). It has no "run it" section.
 - One place for how to run: only `app/README.md` (copy `.env.example`, `databricks auth login`, `npm start`; on an iPhone; not done yet). `app/e2e/README.md` and `db/README.md` cover their own folders. Nothing covers the server, the Python tests, `scripts/walk.mjs` (documented only in packets 49 and 55, `board.md`, `start-now.md`), the Databricks bundle (`deploy/deploy.mjs`, only in specs), or benchmarks.
-- `spec/plans/board.md` has 2 ticked and 151 unticked boxes, last changed 2026-11-15; ticks happen only after an orchestrator review, so it does not read as status for a build that has merged many engines. `start-now.md` was last changed 2026-11-14.
+- `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator` has 2 ticked and 151 unticked boxes, last changed 2026-11-15; ticks happen only after an orchestrator review, so it does not read as status for a build that has merged many engines. `start-now.md` was last changed 2026-11-14.
 - Folders with no README: `jobs/`, `databricks/`, `deploy/`, `probes/`, `scripts/`, `product/`, `spec/features`, `spec/determinations`, `spec/fixtures`, `.agents/checks`.
 - `databricks/run-sql.mjs` hard-codes `--profile Nate`, and `deploy/databricks.yml` comments mention it, so a second person following it hits the wrong profile.
 
@@ -149,7 +149,7 @@ Check these branches first: `w/int-bench-3`, `w/eng-style-1`, `w/eng-demand-1`, 
 11. **Resolve the two copies of how-we-price and the two demo-items folders.** Keep `docs/how-it-works/how-we-price.md` as the people-facing page and make `spec/plans/backtest/how-we-price.md` a pointer, or the reverse; check `app/src` imports of `app/assets/demo-items` before deleting either. Who: Nate for docs, Ben for `app/assets` if screens read it. Risk: app import breaks.
 12. **Add the uncovered `watchFolders`** in `app/metro.config.js` for `research/list/ben/levers/` and `jobs/studio/` if Metro does not already resolve them (verify with a web export, which is what `check.yml` runs), and make the `bundle` check name them. Who: Nate. Risk: a Metro config change affects every web and native build.
 13. **Re-index the packets.** Regenerate the `.agents/team/README.md` table from the 53 packets (or have `team-sync.mjs` print it), with a status column. Follow `.agents/thinking.md` §4. Do this after step 1.
-14. **Make the board readable as status.** Add a top-of-file summary to `spec/plans/board.md` (built, in progress, not started, counted by script) while leaving the checkboxes alone; the tick policy is Group C. Remove or create the missing `.agents/checks/plans.mjs` named in `spec/plans/README.md`. Who: Nate. Risk: another session is editing the board; do it in one commit.
+14. **Make the board readable as status.** Add a top-of-file summary to `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator` (built, in progress, not started, counted by script) while leaving the checkboxes alone; the tick policy is Group C. Remove or create the missing `.agents/checks/plans.mjs` named in `spec/plans/README.md`. Who: Nate. Risk: another session is editing the board; do it in one commit.
 
 ### Group C: Needs a decision
 
@@ -169,7 +169,7 @@ Check these branches first: `w/int-bench-3`, `w/eng-style-1`, `w/eng-demand-1`, 
 - `spec/fixtures` (248 files read by tests), `app/src/fixtures`, `bench/fixtures`.
 - `.agents/vendor/emil` and `poteto` (licences and sources are recorded).
 - The `log/` module and its 106 imports; `spec/log.mjs`, `spec/lifecycle.mjs`, `spec/sites.mjs`.
-- `.gitattributes` `merge=union` for `product/words.md` and `spec/plans/waiting.md`.
+- `.gitattributes` `merge=union` for `product/words.md` and `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator`.
 - The `app/src/app/v1/out/` route (a route named "out", not output).
 - `db/` (own README, own tests, separate system).
 
@@ -181,7 +181,7 @@ Check these branches first: `w/int-bench-3`, `w/eng-style-1`, `w/eng-demand-1`, 
 4. Benchmarks are in `bench/`, `scripts/bench/`, `spec/items/`, `spec/benchmark.md`, `spec/plans/backtest/` and Databricks parity.
 5. `check.mjs` passing does not mean the Python, Databricks, db, bench and deploy tests pass; they are not in it.
 6. The app reaches into `scripts/`, `research/list/ben/platforms/`, `jobs/capture/` and `spec/` through Metro, so those folders cannot move freely.
-7. `spec/plans/board.md` shows 2 of 153 boxes done after a build that merged many engines.
+7. `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator` shows 2 of 153 boxes done after a build that merged many engines.
 8. `assets/demo-items` and `app/assets/demo-items`, and two `how-we-price.md` files, are near-duplicates.
 9. 459 MB is tracked, with generated outputs (`features/app/renders`, `brand/explore/web-home/*/out`, `scripts/bench/out`) among it.
 10. `app/README.md` says the first screen is a placeholder, and it is the only run guide.

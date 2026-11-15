@@ -31,3 +31,10 @@ Nate, relayed by the orchestrator: "I think we can add those clarifying question
 The app-walks lead ran Sell on an iOS simulator. Uploads now get a real address on main (eaec5743); two points for `live.tsx`, both yours to decide:
 - **HEIC from the library.** `library()` labels every non-PNG pick `image/jpeg`, but iOS can hand back HEIC. The server reads the type from the bytes and answers 415 "send JPEG or PNG" for HEIC (its metadata cannot be stripped safely). Asking the picker for JPEG (for example a `quality` below 1, which makes it re-encode; check expo-image-picker's docs for SDK 58) or converting before upload avoids it. The camera path already sends JPEG.
 - **Location in picked photos.** iOS shows "Location Is Included" for the picked photos. The server strips all EXIF but orientation before storing (tested), so nothing with GPS is kept; but the bytes cross HTTPS to our server with it. Stripping on the phone too (a re-encode before upload) is the stricter default.
+
+## From the simulator walk at main + the capture fixes (added 2026-11-15, afternoon)
+
+The app-walks lead's walk F reached every question on the server: uploads 204, identify done per photo, questions in order, each answer saved. Three points for your screen:
+- **When identify finds nothing** (no tag text and no codes reach the server, and with no Lens key the visual rung abstains), "Review what we found" has nothing to review and "Check for results" changes nothing. Saying it found nothing and leading to "What is it?" is the screen's call. The server is right to ask the questions.
+- **Chips show raw values** (`new_with_tags`, `["black"]`). Show an option's `label` when the plan sends one, else a readable form of the value.
+- **After finish the item is in `review`** (your d1006a17), and the capture tests and the live end-to-end run now expect that (w/cap-final).

@@ -33,7 +33,7 @@ function Answer({ question, busy, onAnswer }: { question: Question; busy: boolea
       {question.parts.map(part => <Blank key={part} id={`capture-part-${part}`} name={`${words(part)}${question.unit ? ` (${question.unit})` : ''}`} numeric value={parts[part] ?? ''} onChange={next => setParts(old => ({ ...old, [part]: next }))} />)}
       <FootButton id="capture-dimensions" label="Use measurements" state={!busy && question.parts.every(part => Number(parts[part]) > 0) ? 'idle' : 'disabled'} onPress={() => onAnswer(Object.fromEntries(question.parts!.map(part => [part, Number(parts[part])])))}/>
     </> : !options.length || question.other ? <>
-      <Blank id="capture-answer" name={question.unit ? `${question.words} (${question.unit})` : question.words} value={value} onChange={setValue} numeric={question.kind === 'number_with_unit'} />
+      <Blank id="capture-answer" live name={question.unit ? `${question.words} (${question.unit})` : question.words} value={value} onChange={setValue} numeric={question.kind === 'number_with_unit'} />
       <FootButton id="capture-answer-save" label="Use this" state={value.trim() && !busy ? 'idle' : 'disabled'} onPress={() => onAnswer(question.kind === 'number_with_unit' ? Number(value) : value.trim())} />
     </> : null}
   </Stack>;

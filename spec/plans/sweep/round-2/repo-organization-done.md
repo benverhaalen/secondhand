@@ -10,7 +10,7 @@ Status: *agent proposal*; what the additive pass on 2026-11-15 did of [repo-orga
 | A4 READMEs for five folders | Done | `databricks/README.md`, `jobs/README.md`, `deploy/README.md`, `scripts/README.md`, `probes/README.md` |
 | A5 Extend the root README | Not done | Ben's file; needs Ben's agreement |
 | A6 Fix `app/README.md` | Not done | Ben's folder for the screens text; Nate adds the commands |
-| A7 Add paths to `spec/README.md` | Done | `spec/README.md`: rows for `databricks-build.md`, `items/`, `plans/waiting.md`, `plans/joins.md`, `plans/ben-asks.md`, `plans/sweep/`. The file had one "Where to start" section, so none were folded. `bench/` and `deploy/` are not spec files and are left to their own READMEs |
+| A7 Add paths to `spec/README.md` | Done | `spec/README.md`: rows for `databricks-build.md`, `items/`, `plans/finalization.md#13-what-works-kept-by-the-orchestrator`, `plans/joins.md`, `plans/finalization.md#13-what-works-kept-by-the-orchestrator`, `plans/sweep/`. The file had one "Where to start" section, so none were folded. `bench/` and `deploy/` are not spec files and are left to their own READMEs |
 | B8 Stop tracking generated output | Not done | Needs `git rm --cached` at a quiet point; `brand/` is Ben's |
 | B9 Run the unrun suites in CI | Left for a quiet point | A workflow change; start as a non-blocking job |
 | B10 One index for the benchmark | Done as links | `bench/README.md` has a new top section linking each part. No code moved, so merging `scripts/bench/` into `bench/` stays open |

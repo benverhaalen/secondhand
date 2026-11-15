@@ -29,7 +29,7 @@ type Field = {
   numeric?: boolean;
 };
 
-function Editable({ id, name, value, onChange, look = 'headline', numeric, line, placeholder }: Field & { line: 'dotted' | 'solid'; placeholder?: string }) {
+function Editable({ id, name, value, onChange, look = 'headline', numeric, line, placeholder, live = false }: Field & { line: 'dotted' | 'solid'; placeholder?: string; live?: boolean }) {
   // Dotted is the agent's: its value sits on the lilac tint, in the ink every tint takes (Art. 9, The family).
   const agent = line === 'dotted' && !!value;
   const c = useColors(), ground = useGround();
@@ -50,7 +50,7 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
           accessibilityLabel={name}
           autoFocus
           value={draft}
-          onChangeText={setDraft}
+          onChangeText={next => { setDraft(next); if (live) onChange?.(next); }}
           onBlur={commit}
           onSubmitEditing={commit}
           keyboardType={numeric ? 'decimal-pad' : 'default'}
@@ -85,10 +85,10 @@ export function Guess({ id, name, value, onChange, look, numeric, changed }: Fie
 }
 
 // A field nobody knows yet. It shows the name of what is missing on a solid line, so the gap is plain to see and quick to fill.
-export function Blank({ id, name, value = '', onChange, look, numeric }: Omit<Field, 'value'> & { value?: string }) {
+export function Blank({ id, name, value = '', onChange, look, numeric, live = false }: Omit<Field, 'value'> & { value?: string; live?: boolean }) {
   return (
     <View {...mark('blank', { filled: value ? 'true' : 'false', fit: 'content' })} style={{ alignSelf: 'flex-start' }}>
-      <Editable id={id} name={name} value={value} look={look} numeric={numeric} line="solid" placeholder={name} onChange={onChange} />
+      <Editable id={id} name={name} value={value} look={look} numeric={numeric} line="solid" placeholder={name} onChange={onChange} live={live} />
     </View>
   );
 }

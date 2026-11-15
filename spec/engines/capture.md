@@ -30,7 +30,7 @@ It does this with one pure function, `plan(state)`: the same state in gives the 
 | Built, not called | `jobs/capture/suggest.py` (the type suggestion's arithmetic: a person's prior and card 7's preselect rule), `judge_type.py` (the swap rule on `capture_judge`'s scores; only the fixture walk, `scripts/walk.mjs`, calls it), `learn.py` (Beta updates, fold, promote, rollback), `note.py` (the free note read into facts), `app/src/engines/capture/facts.ts` (`fact.found` frames) | Each passes its own tests. None has a caller. The routes take the phone's suggestion as given, and nothing learns yet. |
 | Not built | the Swift capture module (depth, scan, on-device reads and gates); `capture_judge`; the job runner's call to `applyJobResult` | Section 7 has the phone's contract; the runner call belongs to integration. |
 
-The record of what is built, joined, real and reviewed is capture's row in [completion](../plans/completion.md): 26 of 40 cells at the stop.
+The record of what is built, joined, real and reviewed is capture's row in [completion](../plans/finalization.md#13-what-works-kept-by-the-orchestrator): 26 of 40 cells at the stop.
 
 ## 2. The plan
 
