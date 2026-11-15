@@ -53,7 +53,7 @@ For finalists, about 4 minutes. To run without a break: one item the whole way, 
 | | 7. It sells on Depop | "Sold. Coming down everywhere else, checked one by one." | Today's sold card; tiles go to gone; a red tile if one fails | pre-seeded sale; the Poshmark half-second read live |
 | | 8. Pickup | "You pick when you're free; you see who's coming first." | day and time picker, who-is-coming card, Add to Calendar | live on demo data |
 | Buy | 9. The same photo, Find this | "Same engine, other side." | every site at once, fair range, total with shipping, the better official option | live if the search answered in rehearsal |
-| | 10. Save it | "It watches for you." | the want, one alert | live on demo data |
+| | 10. Watch for it, live | "I want one under $25. Nate, list yours." | Nate posts from his phone; Ben's phone pings with how many seconds after listing it was found ([the live buy beat](live-buy-demo.md)) | live if the rehearsal's worst run is under 60 s; otherwise the price drop, or the clip, said to be one |
 | Proof | 11. Why? on the price | "Every number shows where it came from, and refuses when it can't." | the comps, their weights, the range, a thin one hidden with its reason | designed; show only if built |
 | | 12. The photo check | "And the photos can't lie." | the side by side with the box that failed | live |
 

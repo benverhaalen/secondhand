@@ -1,0 +1,130 @@
+// The live buy beat on stage: watch one site's newest-first search for a want, and ping a phone the moment a listing
+// under the price shows up. Plan, timing and fallbacks: product/live-buy-demo.md.
+//
+//   node scripts/demo/stage-watch.mjs --url 'https://poshmark.com/search?query=carhartt+detroit&sort_by=added_desc' \
+//     --cap 25 --every 10 --for 15 --ntfy https://ntfy.sh/<unguessable-topic> [--click <app url>] [--trust-search-price]
+//
+// How it decides (spec/features/watch.md, alert rule): the first read seeds silently; after that a listing never seen
+// before, or one that fell 10% or more, is a candidate; the listing's own page is re-read and only a price read from it,
+// at or under the cap and still for sale, sends an alert. At most three a check, cheapest first. One alert per listing.
+// The product's own cadence is 5 to 60 minutes per want; every 10 s is for one search during the beat only, and it
+// backs off to 60 s the moment the site shows a bot wall.
+//
+// Rests-on: research/watch/ben/page-monitor/monitor.mjs (extract, diff, bot wall), spec/features/watch.md, log/README.md.
+import { parseArgs } from 'node:util';
+import { createLog } from '../../log/index.js';
+import { fileSink, logPath } from '../../log/node.js';
+import { extractListings, diff, emptyState, blocked, siteOf } from '../../research/watch/ben/page-monitor/monitor.mjs';
+
+export const MIN_EVERY_S = 5;
+export const MAX_PER_CHECK = 3; // the product's MAX_PUSHES_PER_RUN
+const BACKOFF_MAX_MS = 60_000;
+const NAMES = { poshmark: 'Poshmark', ebay: 'eBay', mercari: 'Mercari', depop: 'Depop', grailed: 'Grailed', offerup: 'OfferUp', facebook: 'Facebook' };
+
+// Poshmark listing ids are MongoDB ObjectIds, whose first 8 hex digits are the creation time in seconds
+// (observed, research/watch/ben/exa-empirical.md §5). That turns "found it fast" into a number nobody can stage.
+export function listedAt(site, site_id) {
+  return site === 'poshmark' && /^[0-9a-f]{24}$/.test(site_id ?? '') ? parseInt(site_id.slice(0, 8), 16) * 1000 : null;
+}
+
+// One read of the search page: what is new or fell, cheapest first. A bot wall changes nothing.
+export function check(state, html, { site, now }) {
+  const prior = state ?? emptyState();
+  if (blocked(html)) return { blocked: true, candidates: [], state: prior, seen: 0 };
+  const rows = extractListings(html, site);
+  const out = diff(prior, rows, { now });
+  const candidates = out.events
+    .filter(e => e.type === 'listing.new' || e.type === 'price.drop')
+    .sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))
+    .slice(0, MAX_PER_CHECK);
+  return { blocked: false, suspicious: out.suspicious, candidates, state: out.state, seen: rows.length };
+}
+
+// The listing's own page decides: its structured price, at or under the cap, and still for sale. A guess never alerts.
+export function confirm(candidate, html, cap) {
+  const row = extractListings(html, candidate.site).find(r => r.site_id === candidate.site_id && !r.guessed);
+  if (!row || row.sold || row.price == null || row.price > cap) return null;
+  return { ...candidate, price: row.price, title: row.title ?? candidate.title, price_guessed: false };
+}
+
+const usd = n => Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`;
+export function message(a, cap) {
+  const after = a.listed_at != null ? Math.max(0, Math.round((a.found_at - a.listed_at) / 1000)) : null;
+  const what = a.title ? `${a.title}.` : 'A new listing under your price.';
+  return {
+    title: `Under ${usd(cap)}: ${usd(a.price)} on ${NAMES[a.site] ?? a.site}`,
+    body: after != null && a.title ? `${what} Found ${after} s after it was listed.` : what,
+  };
+}
+
+export async function run({ url, cap, every_s = 10, for_min = 15, notify = null, click = null, fetchPage, post, sleep, now, log = null, say = () => {}, trustSearchPrice = false }) {
+  if (!(every_s >= MIN_EVERY_S)) throw new Error(`every_s under ${MIN_EVERY_S} would hammer the site`);
+  const site = siteOf(url);
+  if (!site) throw new Error(`no reader for ${url}`);
+  const end = now() + for_min * 60_000, every = every_s * 1000, told = new Set(), alerts = [];
+  let state, wait = every, checks = 0;
+  while (now() < end) {
+    let html = null;
+    try { html = await fetchPage(url); } catch (e) { log?.error('stage_watch.search', e, { url }); }
+    checks++;
+    const out = html == null ? null : check(state, html, { site, now: now() });
+    if (!out || out.blocked) {
+      wait = Math.min(wait * 2, BACKOFF_MAX_MS);
+      log?.note('stage_watch.backoff', { url, wait_ms: wait, blocked: !!out?.blocked }, 'warn');
+      say(`${out?.blocked ? 'bot wall' : 'no page'}; next read in ${wait / 1000} s`);
+      await sleep(wait);
+      continue;
+    }
+    wait = every;
+    if (!state) say(`watching ${NAMES[site]}: ${out.seen} listings already there, none will ping`);
+    state = out.state;
+    if (out.suspicious) say('the page came back empty; reader or block, not sales');
+    for (const c of out.candidates) {
+      if (told.has(c.site_id)) continue;
+      let hit = null;
+      if (trustSearchPrice) hit = c.price != null && c.price <= cap ? c : null;
+      else { try { hit = confirm(c, await fetchPage(c.url), cap); } catch (e) { log?.error('stage_watch.listing', e, { url: c.url }); } }
+      if (!hit) continue;
+      told.add(c.site_id);
+      const a = { ...hit, listed_at: listedAt(site, c.site_id), found_at: now() };
+      alerts.push(a);
+      const m = message(a, cap);
+      log?.change('match', c.site_id, 'alerted', { site, price: a.price, cap, listed_at: a.listed_at, found_at: a.found_at });
+      say(`${m.title} | ${m.body} | ${a.url}`);
+      if (notify) {
+        try { await post(notify, m.body, { Title: m.title, Click: click ?? a.url, Priority: 'high', Tags: 'shopping' }); }
+        catch (e) { log?.error('stage_watch.notify', e); say('the phone ping failed; the match is on this screen'); }
+      }
+    }
+    await sleep(wait);
+  }
+  return { checks, alerts };
+}
+
+// ---- command line ----
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const { values: v } = parseArgs({ options: {
+    url: { type: 'string' }, cap: { type: 'string' }, every: { type: 'string', default: '10' }, for: { type: 'string', default: '15' },
+    ntfy: { type: 'string' }, click: { type: 'string' }, 'trust-search-price': { type: 'boolean', default: false },
+  } });
+  if (!v.url || !v.cap) { console.error('usage: --url <newest-first search url> --cap <dollars> [--every 10] [--for 15] [--ntfy <topic url>] [--click <url>]'); process.exit(2); }
+  const log = createLog({ src: 'stage-watch', build: 'script', sink: fileSink(logPath({ session: `${Date.now()}` }, 'stage-watch')) });
+  const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
+  const fetchPage = u => log.call('http', 'marketplace.read', { url: u }, async () => {
+    const r = await fetch(u, { headers: { 'user-agent': UA, accept: 'text/html' } });
+    if (!r.ok) throw new Error(`status ${r.status}`);
+    return r.text();
+  }, html => ({ result: { chars: html.length } }));
+  const post = (u, body, headers) => log.call('http', 'notify.push', { url: u, headers }, async () => {
+    const r = await fetch(u, { method: 'POST', headers, body });
+    if (!r.ok) throw new Error(`status ${r.status}`);
+    return { status: r.status };
+  });
+  const t0 = Date.now();
+  const say = s => console.log(`${((Date.now() - t0) / 1000).toFixed(1).padStart(6)} s  ${s}`);
+  const out = await run({
+    url: v.url, cap: Number(v.cap), every_s: Number(v.every), for_min: Number(v.for), notify: v.ntfy ?? null, click: v.click ?? null,
+    fetchPage, post, sleep: ms => new Promise(r => setTimeout(r, ms)), now: () => Date.now(), log, say, trustSearchPrice: v['trust-search-price'],
+  });
+  say(`stopped after ${out.checks} reads, ${out.alerts.length} alert(s)`);
+}
