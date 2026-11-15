@@ -4,7 +4,7 @@
 
 Your second hand for buying and selling used things.
 
-![The secondhand app icon: two price tags, one mint and one white.](../app/assets/images/icon.png)
+![The secondhand app icon: two price tags, one mint and one white.](https://raw.githubusercontent.com/benverhaalen/secondhand/main/app/assets/images/icon.png)
 
 ## The problem
 
@@ -37,7 +37,7 @@ An upload button would have been simpler. The trouble is that a model can't repo
 
 AI reads the photos and fills in the brand, the model and the size. You confirm each one or fix it, and you set the condition yourself, because you're the one who knows about the loose button.
 
-![Two screens of the app. The first shows facts the AI read from the photos. The second asks the seller to confirm the condition.](graphics/devpost/capture-ai-fills-you-confirm.png)
+![Two screens of the app. The first shows facts the AI read from the photos. The second asks the seller to confirm the condition.](https://raw.githubusercontent.com/benverhaalen/secondhand/main/product/graphics/devpost/capture-ai-fills-you-confirm.png)
 
 *One of Ben's own listings. Left: the brand, model and size the AI read from the tag. Right: Ben confirms the condition.*
 
@@ -98,7 +98,7 @@ The same confirmed facts come out differently on each site:
 
 What you get is a draft for each site. We chose drafts over posting for you, because it's your account and your name on the listing. The same code can start from listings you already have. Ben's Depop listings, with the photos he already took, can become drafts for the other sites.
 
-![The listing preview screen for a pair of Carhartt jeans, with the asking price and the item's details.](graphics/devpost/listing-preview.png)
+![The listing preview screen for a pair of Carhartt jeans, with the asking price and the item's details.](https://raw.githubusercontent.com/benverhaalen/secondhand/main/product/graphics/devpost/listing-preview.png)
 
 *One of Ben's own listings, in the listing preview. Every field can be edited before anything is posted.*
 
@@ -110,7 +110,7 @@ We ran 16 test searches. All 16 returned results, and the first ones usually sho
 
 You can ask a follow-up question about the results. The app answers in the shape that fits the question, such as a table or a price range, built from the same parts as the rest of the app. Before it reaches you, every price in it is checked against a listing the search found. We planted 20 false prices to test that check. The first version stopped 2. The current one stops all 20.
 
-![Two screens of the app. The first shows one search with results from several marketplaces. The second shows the answer to a follow-up question as a table and a price range.](graphics/devpost/search-and-answer.png)
+![Two screens of the app. The first shows one search with results from several marketplaces. The second shows the answer to a follow-up question as a table and a price range.](https://raw.githubusercontent.com/benverhaalen/secondhand/main/product/graphics/devpost/search-and-answer.png)
 
 *For these two screenshots we loaded Ben's own Depop listings in as the results, so the data here is sample data and the screens are the app's. Left: one search. Right: a follow-up answer drawn as a table and a range, with the app's note that these are asking prices.*
 
@@ -118,15 +118,15 @@ If the thing you want isn't there at your price, you can track it. The app keeps
 
 ## Challenges
 
-**The same item, listed twice.** People post one item on several marketplaces. If we counted each post as its own sale, popular items would look like they sell more often, and for different prices, than they do. Our pricing code compares the photos with a perceptual hash and the titles by text similarity, and treats matching posts as one item.
+**The same item, listed twice.** A lot of sellers post one item on Depop and eBay at the same time. If we count that as two sales, our price data is wrong. So the pricing code compares the photos and the titles, and when two posts match, it counts them once.
 
-**Two buyers at the same moment.** If your jacket is up on four sites, two people can pay for it before any listing comes down. We wrote out our rules for that case and checked them with a model that walks through every order of events for one item on four sites, 931,406 states in all. In every state where two buyers had paid, the seller sees both and chooses which buyer to refund. To make sure the check could fail, we broke the refund rule on purpose, and it found the double sale in six steps. This tests our rules. We haven't run it against live sales.
+**Two buyers at the same moment.** If a jacket is up on four sites, two people can pay for it before the other listings come down. We wrote down what should happen, then tested it with a model that tries every order of events for one item on four sites. That came to 931,406 cases. In every case where two people paid, the seller sees both buyers and picks who gets refunded. We also broke the refund rule on purpose to see if the test would catch it. It did, in six steps. So far we've only tested this on our own rules. It hasn't seen a real sale.
 
-**Sites that turn automation away.** Depop and Mercari answered a plain headless browser with a 403. That is why the search uses a site's own API where there is one, and a real browser through Browser Use Cloud where there isn't.
+**Sites that block automation.** Depop and Mercari blocked a plain headless browser with a 403. So the search uses a site's own API when it has one, and a real browser through Browser Use Cloud when it doesn't.
 
 ## Ideas we tried and left out
 
-![The original photo, the outline we gave the model, and the result.](../research/studio/ben/renders/trials-2026-11-14/template-trial-original-guide-result.jpg)
+![The original photo, the outline we gave the model, and the result.](https://raw.githubusercontent.com/benverhaalen/secondhand/main/research/studio/ben/renders/trials-2026-11-14/template-trial-original-guide-result.jpg)
 
 *One of Ben's own shirts. The original photo, the outline we gave the model, and the result.*
 
