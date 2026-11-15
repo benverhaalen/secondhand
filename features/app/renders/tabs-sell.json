@@ -2,11 +2,18 @@
   "route": "(tabs)/sell",
   "screen": "sell",
   "states": [
-    "typical"
+    "typical",
+    "new",
+    "empty",
+    "one",
+    "dense",
+    "loading",
+    "failed",
+    "offline"
   ],
   "skip": "",
   "catalog": false,
-  "status": "fail",
+  "status": "clean",
   "findings": [
     {
       "level": "warn",
@@ -19,12 +26,6 @@
       "id": "B3",
       "where": "app",
       "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
-    },
-    {
-      "level": "error",
-      "id": "B35",
-      "where": "screen \"sell\"",
-      "msg": "is not drawn in the states new, empty, one, dense, loading, failed, offline, at /sell?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"new: why\">"
     }
   ]
 }

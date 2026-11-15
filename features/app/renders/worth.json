@@ -2,11 +2,16 @@
   "route": "worth",
   "screen": "worth",
   "states": [
-    "check"
+    "check",
+    "new",
+    "typical",
+    "loading",
+    "failed",
+    "offline"
   ],
-  "skip": "",
+  "skip": "empty: Worth is of one thing, so it has no list to be empty; one: it is always one thing; dense: one thing a page, so nothing piles up",
   "catalog": false,
-  "status": "fail",
+  "status": "clean",
   "findings": [
     {
       "level": "warn",
@@ -25,12 +30,6 @@
       "id": "L2",
       "where": "dark screen 2",
       "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
-    },
-    {
-      "level": "error",
-      "id": "B35",
-      "where": "screen \"worth\"",
-      "msg": "is not drawn in the states new, empty, one, typical, dense, loading, failed, offline, at /worth?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"new: why\">"
     }
   ]
 }

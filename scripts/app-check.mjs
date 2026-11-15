@@ -139,11 +139,12 @@ export async function checkRoute({ route, path }, { browser, base, out = RENDERS
   const seen = new Set(), list = findings.filter(f => { const k = `${f.id}|${f.where.replace(/^dark /, '')}|${f.msg}`; if (seen.has(k)) return false; seen.add(k); return true; })
     .map(f => catalog && composition.has(f.id) ? { ...f, level: 'warn' } : f);
   // B35 for the screen: every required state is drawn on one of its pages, url?state=<s> (app/src/demo/screen.ts), or skipped with why.
+  // The state page drops ?world= and replaces any ?state=, so a route checked with its own query asks the same question.
   const have = new Set(own.states), skip = new Map();
   const skips = n => { for (const x of n.skip.split(';')) { const [id, why] = x.split(':').map(y => y.trim()); if (id) skip.set(id, why ?? ''); } };
   skips(own);
   const required = context().states.states.screen?.required ?? [];
-  for (const st of required) { if (have.has(st) || skip.get(st)) continue; const n = await readNames(`${url}${url.includes('?') ? '&' : '?'}state=${st}`, { browser }); n.states.forEach(x => have.add(x)); skips(n); }
+  for (const st of required) { if (have.has(st) || skip.get(st)) continue; const at = new URL(url); at.searchParams.delete('world'); at.searchParams.set('state', st); const n = await readNames(at.href, { browser }); n.states.forEach(x => have.add(x)); skips(n); }
   const missing = own.screen && !catalog ? required.filter(st => !have.has(st) && !skip.get(st)) : [];
   if (missing.length) list.push({ level: 'error', id: 'B35', where: `screen "${own.screen}"`, msg: `is not drawn ${missing.length === 1 ? 'in the state' : 'in the states'} ${missing.join(', ')}, at ${path}?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip="${missing[0]}: why">` });
   const errors = list.filter(f => f.level === 'error').length;
