@@ -1886,3 +1886,9 @@ Nate, orchestrator's session, 2026-11-15, about 05:10 Central, with a screenshot
 > You set it, ill rotate after hackathon
 
 Read by the orchestrator (agent proposal, until he says otherwise): a go to use those two Apify actors as sources for the hackathon demo, labelled as such and never modelled on. Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate ebay and facebook through apify, integrated selectively, not only apis
+Nate, orchestrator's session, 2026-11-15, about 05:15 Central, after the Apify token was set.
+> Now you have access to both ebay pricing, listings, etc, and facebook marketplace, alot of possible sources we should selectively integrate, improve benchmarks, of course not just utilizing apis
+
+Used in: `app/src/edge/harness/sites/apify/` (in build), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
