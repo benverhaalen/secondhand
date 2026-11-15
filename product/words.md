@@ -644,3 +644,7 @@ Ben, project chat, 01:11 UTC, in full.
 ## 2026-11-15 the code understands each app
 Ben, project chat, 01:11 UTC, inside a longer message.
 > also with the brand specific things ensure somewhere in the instruction we end up being able to have the code understand each app. like if depop offers only last 24 hours, whatever depends on that fact should actually depend on that. deeply thought through software intention. finding where things could go wrong and why.
+
+## 2026-11-14 nate our own protocol, official apis last
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> We can really build this api to account for anything. We develop our own system utilizing the technologies we know are possible and have been done in the past. Lets build our own protocol, and fallback onto official at the end if we can't get it working. I know we can though. And so should you. You are not the genius and highly intelligent ai that can understand code at the source level, understand agents and all of their potential capbailities, the systems we can build, the things we can determine, the operations we can make easy for users
