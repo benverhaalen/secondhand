@@ -6,16 +6,18 @@
 // failed|offline and ?world=<name>. Two extras are Today's own: ?world=stops, the clearing day things went wrong (edge cases
 // §1 and §7), and ?fail=<decision id>,..., which makes those acts fail once so a failed card can be reached.
 import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { Linking } from 'react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ms, usd, world } from '@/demo';
+import { ms, usd, when, world } from '@/demo';
 import { useScreen } from '@/demo/screen';
 import { photo } from '@/demo/photos';
 import {
-  DecisionCard, EmptyState, Feed, FootButton, List, Nav, Notice, Pill, Photo, QueueView, Row, Screen, Section, Sheet, SiteBadge, Skeleton,
+  DecisionCard, EmptyState, Feed, FootButton, Icon, Line, List, MoneyNews, Nav, Notice, Pill, Photo, QueueView, Row, Screen, Section, Sheet, SiteBadge, Skeleton,
   Stack, TopSlot, Txt, UndoToast, Approve, Guess, type PhotoSrc, type QueueEntry,
 } from '@/ui';
+import { Shelf } from '@/ui/parts/tile';
 import { oneCardWorld, stopsWorld } from '@/today/stops';
-import { JOB_MS, backAt, cards as derive, entries as queueEntries, group, handledLine, log as autoLog, notices as deriveNotices, top as deriveTop, inbox, fit, sales as twoSales, single, type Action, type Card } from '@/today/cards';
+import { JOB_MS, TIER_LABEL, tiers as deriveTiers, backAt, cards as derive, entries as queueEntries, group, handledLine, log as autoLog, notices as deriveNotices, top as deriveTop, inbox, fit, sales as twoSales, single, type Action, type Card } from '@/today/cards';
 
 type Status = { s: 'working' | 'failed'; step?: string; option?: string };
 type Toast = { id: string; text: string; undo: () => void };
@@ -65,10 +67,9 @@ export default function Today() {
   // The tiers, with the notices and the handled line at the end of Good to know: they ask nothing, so they are its rows (pages §6.2).
   const quiet = (notices.length > 0 || !!line) && !bare;
   const tiers = useMemo(() => {
-    const out: { tier: Card['tier']; label: string | null; cards: Card[] }[] = [];
-    const LABEL = { now: 'Now', when_you_can: 'When you can', good_to_know: 'Good to know' } as const;
-    for (const c of feed) { const last = out.at(-1); if (last?.tier === c.tier) last.cards.push(c); else out.push({ tier: c.tier, label: out.length ? LABEL[c.tier] : null, cards: [c] }); }
-    if (quiet && out.at(-1)?.tier !== 'good_to_know') out.push({ tier: 'good_to_know', label: out.length ? LABEL.good_to_know : null, cards: [] });
+    // Every tier under its header, as Sell's shelves (cards.ts, TIER_LABEL).
+    const out = deriveTiers(feed);
+    if (quiet && out.at(-1)?.tier !== 'good_to_know') out.push({ tier: 'good_to_know', label: TIER_LABEL.good_to_know, cards: [] });
     return out;
   }, [feed, quiet]);
   // The one card nearest its deadline takes its state's gradient (Art. 5, State gradients rule 2).
@@ -84,6 +85,7 @@ export default function Today() {
   // One tap acts: the pressed pill shows the step, then the card leaves with Undo, or stays and says what failed.
   function act(c: Card, a: Action, value?: number) {
     if (a.do === 'open') return go(a.to);
+    if (a.do === 'site') { Linking.openURL(a.url).catch(() => setToast({ id: `${c.key}-site-failed`, text: 'The site did not open', undo: () => setToast(null) })); return; }
     if (a.do === 'queue') { setQueue({ card: c, total: c.ids.length }); setQueueStatus({ s: 'ready' }); return; }
     if (a.do === 'compare') { setCompare(c); return; }
     if (a.do === 'split') { setSplit(s => new Set(s).add(c.key)); return; }
@@ -149,8 +151,13 @@ export default function Today() {
   const toastEl = toast ? <UndoToast key={toast.id} id={toast.id} text={toast.text} onUndo={toast.undo} onGone={() => setToast(null)} /> : null;
 
   return (
-    <Screen name="today" state={state} wash={top?.kind === 'news'} nav={<Nav inbox={{ count: unread }} />} foot={queue ? undefined : toastEl}>
-      {top?.kind === 'news' ? <TopSlot news={{ since: top.since, kept: top.cents / 100, line: top.line, onPress: () => go('/you') }} /> : null}
+    // The wash sits on every main tab, whatever the top holds (Ben 06:21: "sometimes the gradient at the top of the screen is
+    // there or isnt there").
+    <Screen name="today" state={state} wash nav={<Nav inbox={{ count: unread }} />} foot={queue ? undefined : toastEl}>
+      {top?.kind === 'news' ? (
+        <MoneyNews since={top.since} kept={top.cents / 100} line={top.line} onPress={() => go('/you')}
+          sold={top.sold.map(x => ({ id: x.id, title: x.title, photo: pic(x.photo), site: x.site }))} />
+      ) : null}
       {top?.kind === 'setup' ? <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: top.step, onPress: () => go(top.to) }} /> : null}
 
       {/* Nothing to decide. A new person has the setup step above and one way to start; anyone else is told it is clear. */}
@@ -162,12 +169,21 @@ export default function Today() {
       {loading ? (
         <Stack gap="cards"><Skeleton of="card-decision" /><Skeleton of="card-decision" /><Skeleton of="notice" /></Stack>
       ) : tiers.map(t => (
-        <Section key={t.tier} title={t.label ?? undefined}>
+        <Shelf key={t.tier} id={t.tier} title={t.label ?? TIER_LABEL[t.tier]}
+          count={t.cards.length + (t.tier === 'good_to_know' && quiet ? notices.length + (line ? 1 : 0) : 0)}>
           {t.cards.length ? <Feed>
-            {t.cards.map(c => {
+            {t.cards.flatMap(c => {
               const st = status[c.key], s = st?.s ?? c.status;
               const { primary, second } = c;
-              return (
+              // The lead card's color says why it leads, in words over it (Ben 06:19: "I don't really know why the first entry is
+              // like colored"): it is the one due first.
+              const why = c.key === lead && c.due != null ? (
+                <Line key={`${c.key}-why`}>
+                  <Icon name="clock-01" size={12} tone="ink-2" />
+                  <Txt role="caption">{`Due first, ${when(new Date(c.due).toISOString(), w.now)}`}</Txt>
+                </Line>
+              ) : null;
+              return [why,
                 <DecisionCard
                   key={c.key} id={c.key} kind={c.tag} word={c.word} title={c.title} photo={pic(c.photo)} site={c.site ?? undefined}
                   fact={{ label: c.fact.label, amount: c.fact.cents != null ? c.fact.cents / 100 : undefined }}
@@ -177,9 +193,8 @@ export default function Today() {
                   second={second ? { id: second.id, label: second.label, onPress: () => act(c, second) } : undefined}
                   more={c.more.length ? { id: `${c.key}-more`, label: 'More', onPress: () => setMore(c) } : undefined}
                   onOpen={() => (c.form === 'queue' ? act(c, c.primary) : go(c.open))}
-                />
-              );
-            })}
+                />];
+            }).filter(x => x != null)}
           </Feed> : null}
           {t.tier === 'good_to_know' && quiet ? (
             <>
@@ -187,13 +202,13 @@ export default function Today() {
               {line ? <Notice id="handled" icon="tick-02" text={line} onPress={() => setLogOpen(true)} /> : null}
             </>
           ) : null}
-        </Section>
+        </Shelf>
       ))}
 
       <Sheet open={!!more} title={more?.title} onClose={() => setMore(null)}>
         {more ? (
           <Stack gap="tight">
-            {more.more.map(a => <FootButton key={a.id} id={a.id} kind="second" label={a.label} onPress={() => { const c = more; setMore(null); act(c, a); }} />)}
+            {more.more.map(a => <FootButton key={a.id} id={a.id} kind="second" icon={a.icon} label={a.label} onPress={() => { const c = more; setMore(null); act(c, a); }} />)}
           </Stack>
         ) : null}
       </Sheet>
@@ -226,7 +241,7 @@ export default function Today() {
                   <Row key={o.id} lead={<SiteBadge site={o.site} />}
                     trail={i ? <Pill id={`${compare.key}-keep-second`} kind="second" label="Keep this" onPress={() => { const c = compare; setCompare(null); const a = c.more.find(m => m.id.endsWith('-second')); if (a) act(c, a); }} /> : null}>
                     <Txt role="body" lines={1}>{`${o.buyer} paid ${usd(o.price)}${i ? '' : ', first'}`}</Txt>
-                    <Txt role="caption" tone="ink-2">{`You keep ${usd(o.keep)}. ${o.cancel}.`}</Txt>
+                    <Txt role="caption" tone="ink-2">{`You get ${usd(o.keep)}. ${o.cancel}.`}</Txt>
                   </Row>
                 ))}
               </List>

@@ -15,6 +15,7 @@ Everything under `spec/` that is not code is an *agent proposal* for Ben and Nat
 | [marketing-engine.md](marketing-engine.md) | How the plan for each site is chosen: signals, calculation, weights, learning, speed, proof tests |
 | [data-use.md](data-use.md) | What data is kept, what learns from it, and what needs a person's consent |
 | [assessment.md](assessment.md) | How ready each part is, with the confusions found in the builders' notes |
+| [benchmark.md](benchmark.md) | The open benchmark: ten measures run on one fixed item set against named tools, with every raw answer published |
 | [parity.md](parity.md) | Every capability a rival tool has, whether we adopt its method or use a better one, and where that lives |
 | [databricks.md](databricks.md) | How the platform works, where it is strong and weak for us, and how each feature is built on it |
 | [coverage.md](coverage.md) | Which research backs which feature, and the gaps |

@@ -24,9 +24,9 @@ Money first, then the deadline, then the item. The title names the thing and the
 
 | Event | Level | Title | Body | Buttons |
 |---|---|---|---|---|
-| It sold | Now ([decided](../product/decisions.md#2026-11-15-a-sale-and-a-watched-item-under-your-price-notify-at-once)) | Sold on Depop: the Carhartt jacket | You keep $31.40. Ship by Thu. | Print label |
-| An offer you'd take, under an hour left | Now, Time Sensitive | $42 offer on the Carhartt jacket | You keep $36.70. Expires in 52 min. | Accept, Counter |
-| An offer you'd take, more time left | Now | $42 offer on the Carhartt jacket | You keep $36.70. Expires tomorrow 6 pm. | Accept, Counter |
+| It sold | Now ([decided](../product/decisions.md#2026-11-15-a-sale-and-a-watched-item-under-your-price-notify-at-once)) | Sold on Depop: the Carhartt jacket | You get $31.40. Ship by Thu. | Print label |
+| An offer you'd take, under an hour left | Now, Time Sensitive | $42 offer on the Carhartt jacket | You get $36.70. Expires in 52 min. | Accept, Counter |
+| An offer you'd take, more time left | Now | $42 offer on the Carhartt jacket | You get $36.70. Expires tomorrow 6 pm. | Accept, Counter |
 | Offers under your lowest price | Silent; one line in the digest | | "5 offers under your price, answered for you" | |
 | Ship by today | Now, the morning of | Ship the lamp today | Mercari cancels it Fri 9 am if it isn't scanned. | Print label |
 | A pickup within the hour | Now, Time Sensitive | Sam is coming at 6:30 | Library parking lot. $40 cash. | On my way, Running late |

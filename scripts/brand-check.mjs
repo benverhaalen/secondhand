@@ -228,6 +228,8 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
     await page.goto(/^https?:\/\//.test(file) ? file : pathToFileURL(resolve(file)).href);
     if (faces) { await page.addStyleTag({ content: faces }); await page.evaluate(() => Promise.all([...document.fonts].map(f => f.load().catch(() => null)))); }
     await page.evaluate(() => document.fonts.ready);
+    // Pictures that have not arrived yet are not judged as missing: wait for each to load or fail, three seconds at most.
+    await page.evaluate(() => Promise.race([Promise.all([...document.images].filter(i => !i.complete).map(i => new Promise(r => { i.addEventListener('load', r); i.addEventListener('error', r); }))), new Promise(r => setTimeout(r, 3000))]));
     const theme = await page.evaluate(() => document.documentElement.dataset.theme ?? '');
     const got = await readTokens(browser, tokensCss, theme, names);
     colors = got.colors; lightColors = got.light; calmMax = got.calmMax; lengths = got.lengths; named = got.named; grads = got.grads; textWeight = got.textWeight;
