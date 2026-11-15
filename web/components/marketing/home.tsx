@@ -17,10 +17,9 @@ function ExternalArrow() {
   return <svg className="external-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>;
 }
 
-function Platforms({ preview = false }: { preview?: boolean }) {
+function Platforms() {
   const platforms = [['ebay', 'eBay'], ['depop', 'Depop'], ['poshmark', 'Poshmark'], ['mercari', 'Mercari'], ['facebook', 'Facebook Marketplace']];
-  const shown = preview ? platforms.slice(0, 2) : platforms;
-  return <ul className="marketing-platforms" aria-label={preview ? "Marketplaces shown" : "Marketplace sources"}>{shown.map(([file, name]) => <li key={file}><img src={`/marketing/platforms/${file}.png`} width="32" height="32" alt={name} /></li>)}</ul>;
+  return <ul className="marketing-platforms" aria-label="Marketplace sources">{platforms.map(([file, name]) => <li key={file}><img src={`/marketing/platforms/${file}.png`} width="32" height="32" alt={name} /></li>)}</ul>;
 }
 
 function Hero() {
@@ -49,20 +48,20 @@ function Phone({ screen, alt, pair = false }: { screen: string; alt: string; pai
 function HowItWorks() {
   return <section className="marketing-scene how-scene marketing-atmosphere" data-tone="process" id="how-it-works" aria-labelledby="how-title" data-field>
     <div className="marketing-wrap marketing-split how-split">
-      <div className="marketing-copy"><p className="section-label">How It Works</p><h2 id="how-title">Get your clothes ready to resell from as little as one photo</h2><p className="section-body">See what similar pieces sold for, compare what you’d keep, and review your listings before you post.</p><Link className="marketing-text-link" href="/how-it-works">See the selling steps <Icon name="arrow-right-01" size={16} /></Link></div>
+      <div className="marketing-copy"><p className="section-label">How It Works</p><h2 id="how-title">Get your clothes ready to resell from as little as one photo</h2><p className="section-body">Check sold prices, review the listing and choose where to post.</p><Link className="marketing-text-link" href="/how-it-works">See the selling steps <Icon name="arrow-right-01" size={16} /></Link></div>
       <figure className="selling-journey">
-        <div className="phone-pair"><div><Phone pair screen="capture" alt="App camera framing the sample Carhartt jacket." /><p className="phone-caption">Start with your photo</p></div><Icon name="arrow-right-01" size={20} className="journey-arrow" /><div><Phone pair screen="preview" alt="Listing review for the same sample jacket." /><p className="phone-caption">Review the listings</p></div></div>
-        <figcaption><Platforms preview /><span>Sample listing previews for eBay and Depop.</span></figcaption>
+        <div className="phone-pair"><div><Phone pair screen="capture" alt="App review after adding one photo of the sample Carhartt jacket." /><p className="phone-caption">Start with your photo</p></div><Icon name="arrow-right-01" size={20} className="journey-arrow" /><div><Phone pair screen="preview" alt="Listing review for the same sample jacket." /><p className="phone-caption">Review the listings</p></div></div>
+        <figcaption>App screens with sample data</figcaption>
       </figure>
     </div>
   </section>;
 }
 
 const features = [
-  { screen: 'plan', title: 'Compare what you’d keep', body: 'Check sold prices and compare what is left after each site’s fees before choosing a price.', alt: 'Sample app plan for a Carhartt jacket, showing a price and marketplace payouts.' },
-  { screen: 'preview', title: 'Review a listing for each site', body: 'Check the photos, title and price together. The next step stays yours to approve.', alt: 'Sample app listing preview for a Carhartt jacket across two marketplaces.' },
+  { screen: 'plan', title: 'Choose an asking price', body: 'Check what similar items sold for before you set your price.', alt: 'Asking-price options for a sample Carhartt jacket.' },
+  { screen: 'preview', title: 'Review the listing before you post', body: 'Check the photos, title and price. Copy the details when you’re ready to post on a marketplace.', alt: 'App listing preview for a sample Carhartt jacket.' },
   { screen: 'watch', title: 'Find a match within your limits', body: 'Set your size and budget, then compare the matches with shipping included when it is known.', alt: 'Sample app Watch screen showing a search request and its limits.' },
-  { screen: 'ship', title: 'See what needs shipping', body: 'Keep the next action beside the item, from reviewing a buyer’s offer to preparing a shipment.', alt: 'Sample app shipping screen showing the item and its next action.' },
+  { screen: 'ship', title: 'See what a sale paid out', body: 'Check the sale amount, marketplace fees and what you kept.', alt: 'App sale details for a sample e-reader.' },
 ];
 
 function Features() {
@@ -145,7 +144,7 @@ function Features() {
         }}>
         <div className="feature-track">{features.map((item, index) => <div className="feature-slide" key={item.screen} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${features.length}: ${item.title}`} aria-hidden={index !== page}><div className="feature-phone-ground marketing-atmosphere" data-tone="features"><Phone screen={item.screen} alt={item.alt} /></div></div>)}</div>
       </div>
-      <div className="marketing-copy feature-copy"><p className="section-label">Features</p><h2 id="features-title">AI does the prep. You decide what goes live</h2><p className="section-body feature-summary">It reads item details from photos, drafts listings for different sites, and helps buyers find what fits.</p><div className="feature-explanation" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><h3>{feature.title}</h3><p className="section-body">{feature.body}</p></div><Link className="marketing-text-link" href="/features">Explore features <Icon name="arrow-right-01" size={16} /></Link></div>
+      <div className="marketing-copy feature-copy"><p className="section-label">Features</p><h2 id="features-title">AI does the prep. You decide what goes live</h2><p className="section-body feature-summary">It reads item details from photos, helps you prepare a listing and looks for used items that fit.</p><div className="feature-explanation" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><h3>{feature.title}</h3><p className="section-body">{feature.body}</p></div><Link className="marketing-text-link" href="/features">Explore features <Icon name="arrow-right-01" size={16} /></Link></div>
       <div className="carousel-controls"><button className="carousel-arrow" type="button" aria-label="Previous feature" onClick={event => select((requested.current ?? page) - 1, event.detail > 0)}><Icon name="arrow-left-01" size={20} /></button><div className="carousel-dots" role="group" aria-label="Choose a feature">{features.map((item, index) => <button key={item.screen} type="button" aria-current={index === page ? 'true' : undefined} aria-label={item.title} onClick={event => select(index, event.detail > 0)} />)}</div><button className="carousel-arrow" type="button" aria-label="Next feature" onClick={event => select((requested.current ?? page) + 1, event.detail > 0)}><Icon name="arrow-right-01" size={20} /></button><button className="carousel-play" type="button" aria-label={playing ? 'Pause automatic feature changes' : 'Play automatic feature changes'} onClick={() => setPlaying(!playing)}>{playing ? 'Pause' : 'Play'}</button></div>
       <p className="feature-sample-note">App screens with sample data.</p>
     </div>
@@ -181,7 +180,7 @@ function DataUse() {
 
 function FAQ() {
   const questions = [
-    { id: 'approval', question: 'Who can post from my account?', answer: 'You review the listing before approving it. The app prepares the photos, title and price for each site so you can check what will be sent.', href: '/faq#who-can-post', link: 'Read the approval rules' },
+    { id: 'approval', question: 'Who can post from my account?', answer: 'You review the listing in secondhand, then finish posting it on the marketplace.', href: '/faq#who-can-post', link: 'Read the approval rules' },
     { id: 'two-sales', question: 'What if the same item sells on two sites?', answer: 'A second buyer can pay before the other listings are removed. The workflow is designed to flag a second payment so you can review both orders.', href: '/faq#two-sites', link: 'Read about duplicate sales' },
   ];
   return <section className="marketing-scene faq-scene" id="faq" aria-labelledby="faq-title"><div className="marketing-wrap marketing-split"><div className="marketing-copy"><p className="section-label">FAQ</p><h2 id="faq-title">What should you know before you start?</h2></div><div className="faq-content"><Accordion className="marketing-faq">{questions.map(item => <AccordionItem key={item.id} value={item.id} className="faq-item"><AccordionHeader><AccordionTrigger className="faq-trigger">{item.question}<Icon name="add-01" size={20} /></AccordionTrigger></AccordionHeader><AccordionPanel className="faq-panel"><p>{item.answer}</p><Link href={item.href}>{item.link} <Icon name="arrow-right-01" size={16} /></Link></AccordionPanel></AccordionItem>)}</Accordion><Link className="marketing-text-link" href="/faq">All questions <Icon name="arrow-right-01" size={16} /></Link></div></div></section>;

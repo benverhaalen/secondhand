@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@ui-sdk/react/popover';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { Icon } from '../icon';
 import { getSession, sessionSnapshot, subscribeToSession } from '../../lib/browser-session';
 
@@ -24,19 +23,34 @@ function Mark() {
 }
 
 function MobileNavigation({ current }: { current: string }) {
-  const [open, setOpen] = useState(false);
-  return <Popover open={open} onOpenChange={setOpen}>
-    <PopoverTrigger className="marketing-menu-trigger" aria-label="Pages"><Icon name="more-horizontal" size={20} /></PopoverTrigger>
-    <PopoverContent className="marketing-menu-panel" sideOffset={8} align="end" aria-label="Pages">
-      <nav aria-label="Main">
-        {[...pages, ['/whats-next', 'What’s Next'] as const].map(([url, label]) =>
-          <Link key={url} href={url} aria-current={current === url ? 'page' : undefined} onClick={() => setOpen(false)}>
-            {label}<Icon name="arrow-right-01" size={16} />
-          </Link>
-        )}
-      </nav>
-    </PopoverContent>
-  </Popover>;
+  const menu = useRef<HTMLDetailsElement>(null);
+  const trigger = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const dismiss = (event: PointerEvent) => {
+      if (menu.current?.open && event.target instanceof Node && !menu.current.contains(event.target)) menu.current.open = false;
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || !menu.current?.open) return;
+      menu.current.open = false;
+      trigger.current?.focus();
+    };
+    document.addEventListener('pointerdown', dismiss);
+    document.addEventListener('keydown', escape);
+    return () => {
+      document.removeEventListener('pointerdown', dismiss);
+      document.removeEventListener('keydown', escape);
+    };
+  }, []);
+  return <details className="marketing-menu" ref={menu}>
+    <summary ref={trigger} className="marketing-menu-trigger" aria-label="Pages"><Icon name="more-horizontal" size={20} /></summary>
+    <nav className="marketing-menu-panel" aria-label="Main">
+      {[...pages, ['/whats-next', 'What’s Next'] as const].map(([url, label]) =>
+        <Link key={url} href={url} aria-current={current === url ? 'page' : undefined} onClick={() => { if (menu.current) menu.current.open = false; }}>
+          {label}<Icon name="arrow-right-01" size={16} />
+        </Link>
+      )}
+    </nav>
+  </details>;
 }
 
 export function MarketingHeader({ current }: { current: string }) {

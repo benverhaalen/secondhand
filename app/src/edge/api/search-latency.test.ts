@@ -67,8 +67,9 @@ function reads(ebayRouted: boolean, completions: number[], ebayStarts: number[],
   }
 }
 
-for (const ebayRouted of [false, true]) test(`three unsigned searches omit Facebook and settle at their slowest runnable read; eBay routed=${ebayRouted}`, async () => {
+for (const ebayRouted of [false, true]) test(`three unsigned searches omit Facebook and settle at their slowest ${ebayRouted ? 'ordinary read because queued eBay lands late' : 'runnable read'}; eBay routed=${ebayRouted}`, async () => {
   const completions: number[] = [], ebayStarts: number[] = [], ebayEnds: number[] = [];
+  const lateJobs: string[] = [];
   reads(ebayRouted, completions, ebayStarts, ebayEnds);
   for (let i = 0; i < 3; i++) {
     completions.length = 0;
@@ -87,8 +88,21 @@ for (const ebayRouted of [false, true]) test(`three unsigned searches omit Faceb
     assert.ok(!saved.stages.some(s => s.name === 'site:facebook'), 'a visitor started a person-only read');
     assert.ok(settled.ms.settled >= 590);
     if (!ebayRouted) assert.ok(performance.now() - at < 750, 'a not-routed source delayed answer.settled');
+    else {
+      assert.ok(performance.now() - at < 750, 'queued eBay delayed answer.settled');
+      if (saved.stages.find(s => s.name === 'site:ebay')!.state === 'late') lateJobs.push(saved.id);
+    }
   }
   if (ebayRouted) {
+    await Promise.all(lateJobs.map(id => new Promise<void>((resolve, reject) => {
+      const cut = setTimeout(() => { off(); reject(new Error('queued eBay did not land late')); }, 30000);
+      const check = () => {
+        if (jobs.framesAfter(id, 0).some(f => f.event === 'answer.late' && f.data.site === 'ebay')) {
+          clearTimeout(cut); off(); resolve();
+        }
+      };
+      const off = jobs.listen(id, check); check();
+    })));
     const pace = SOURCES.find(s => s.id === 'ebay')!.pace;
     const gap = Math.max(pace.min_gap_ms, 60000 / pace.per_minute);
     assert.equal(ebayStarts.length, 3);
