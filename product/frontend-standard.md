@@ -50,7 +50,7 @@ A beautiful screen with a dead control fails. So does a working screen that drif
 
 ### Personas for the first round
 
-Ben: "each of the different options in the first run should be favored or tilted or leaned in favor of the wants of a persona", then the judging "should also try and determine if how and why it achieves that. then it should merge them together" ([words](words.md#2026-11-15-gradients-that-tell-state-personas-in-ideation-and-selling-intents)).
+Ben: "each of the different options in the first run should be favored or tilted or leaned in favor of the wants of a persona", then the judging "should also try and determine if how and why it achieves that. then it should merge them together" ([words](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)).
 
 The people, and the one line a call gets for each, are in [personas.md](personas.md). Take the two to four who use the screen. The line says who is looking and what they want, never what the screen contains, so the model is still the one that works out the design. A reseller is a stress case for the judge, never a lean.
 

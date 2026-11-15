@@ -1,6 +1,6 @@
 # Who the designs lean toward
 
-Six people, each defined by what they want from one visit, not by age or job. The image loop leans each first-round design toward one of them ([frontend-standard §2](frontend-standard.md#personas-for-the-first-round)). The set is an *agent proposal*. It comes from [the first person we build for](decisions.md#2026-11-14-the-first-person-we-build-for-is-someone-clearing-their-own-things), from [what sellers and buyers want](../research/cross-cutting/ben/user-wants.md), and from the three selling intents Ben named ([words](words.md#2026-11-15-gradients-that-tell-state-personas-in-ideation-and-selling-intents)).
+Six people, each defined by what they want from one visit, not by age or job. The image loop leans each first-round design toward one of them ([frontend-standard §2](frontend-standard.md#personas-for-the-first-round)). The set is an *agent proposal*. It comes from [the first person we build for](decisions.md#2026-11-14-the-first-person-we-build-for-is-someone-clearing-their-own-things), from [what sellers and buyers want](../research/cross-cutting/ben/user-wants.md), and from the three selling intents Ben named ([words](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)).
 
 | Person | Their situation | What they want | What they fear | The line a design call gets |
 |---|---|---|---|---|
