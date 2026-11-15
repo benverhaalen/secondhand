@@ -19,6 +19,16 @@ function counts(stdout) {
   for (const value of Object.values(row)) assert.ok(Number.isFinite(value) && value >= 0);
   return row;
 }
+test('importing the runtime leaves the background job queue free of API example jobs', t => {
+  const child = spawnSync(process.execPath, ['--input-type=module', '-e', `
+    import assert from 'node:assert/strict';
+    const { runtime } = await import('./app/src/edge/api/runtime.ts');
+    assert.deepEqual(runtime.store.jobs(), [], 'runtime composition imported and seeded API example jobs');
+  `], {
+    env: { ...process.env, SECONDHAND_DATA_DIR: temp(t), SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
+  });
+  assert.equal(child.status, 0, child.stderr);
+});
 test('--once runs the composed runtime, prints one count line, and exits cleanly', t => {
   const child = spawnSync(process.execPath, ['scripts/watch.mjs', '--once'], {
     env: { ...process.env, SECONDHAND_DATA_DIR: temp(t), SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
