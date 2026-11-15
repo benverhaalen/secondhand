@@ -1764,3 +1764,17 @@ Nate, build session (orchestrator), 2026-11-15 about 12:30 Central, answering wh
 > we own backtests and such
 
 Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 nate backtest as we build, and the steps for testflight
+Nate, build session (orchestrator), 2026-11-15 about 13:10 Central. Two messages.
+> Please also give me the steps to set up the bundler id and everything for expo to get testflight builds and everything set up
+
+> well lets backtest as we build to evaluate and improve, but keep building to fully optimized production
+
+Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 nate ben has given me the backend
+Nate, build session (orchestrator), 2026-11-15 about 13:20 Central.
+> Ben has given full reign for me to handle backend
+
+Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
