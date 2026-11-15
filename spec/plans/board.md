@@ -10,6 +10,19 @@ Status: the one place progress is tracked for the build that ends at 03:00 Centr
 - New work found while building is added here as a new box under its stream before it is started. Nothing is built that is not on this board.
 - At each checkpoint the orchestrator posts the counts to Nate: done, building, not started, blocked, per stream.
 
+## Where it stands (checked on the Mac, 2026-11-15 about 00:45 Central)
+
+Every task's own check in `spec/plans/backend/plan.json` was run with `node scripts/prove.mjs --wave N --jobs 3`. "Passes" means the check exits 0; no task has had the fresh review a tick needs, so nothing below is ticked. The 24 tuning tasks (`tn*`) are not counted: they are run by hand after the walk exists.
+
+| Wave | Passes its check | Not built (its test file does not exist) |
+|---|---|---|
+| 0 | 30 of 30 | none |
+| 1 | 40 of 46 | `ho-1` `si-1` `ls-2` `rt-captures` `wk-1` `ad-depop` |
+| 2 | 58 of 104 | analytics `pa-2` to `pa-7`; style `rs-3` to `rs-6`; valuation `va-5` `va-6`; negotiation `ng-3` `ng-5`; trust `tr-6`; marketing `mk-1` `mk-2`; score `ss-1` `ss-2`; the four site adapters `ad-ebay` `ad-facebook` `ad-poshmark` `ad-mercari`; features `msg-1` `st-1` `ap-1` `ins-1` `me-1` `ic-1` `rk-1`; routes `rt-market` `rt-sources` `rt-items` `rt-valuations` `rt-conversations` `rt-orders` `rt-records` `rt-rules` `rt-wants` `rt-buy` `rt-assist` `rt-search` `rt-genie` `rt-scores` `rt-accounts` `rt-insights` |
+| 3 | 1 of 6 | the five live site runs `lv-*`; these wait on the adapters and on Nate's go per site |
+
+Two plan entries, `rt-scores:` and `rt-out:`, are malformed copies and are not counted. The walk (`scripts/walk.mjs`) is not written, so no wave has its end-to-end line.
+
 ## Milestones (the order of the build since 23:00 Central, 2026-11-14)
 
 Set by [Nate](../../product/words.md#2026-11-14-nate-browser-use-on-cloud-tested-the-way-production-runs-with-milestones-that-are-finalised-as-they-are-hit) after two crashes: one thing at a time, each proved on Browser Use Cloud the way production runs it, and finalised before the next starts. A milestone is ticked only when its real run is recorded under `research/cross-cutting/nate/runs/` and a seat that did not write it has reviewed it. The stream boxes below are the detail; this list is the order. *Agent proposal* for the list itself.
