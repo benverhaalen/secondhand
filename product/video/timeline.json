@@ -1,0 +1,114 @@
+[
+ {
+  "id": "s01",
+  "start": 0,
+  "duration": 4.07,
+  "syllables": 16,
+  "text": "This is secondhand. A second hand for buying and selling used things."
+ },
+ {
+  "id": "s02",
+  "start": 4.07,
+  "duration": 7.31,
+  "syllables": 37,
+  "text": "I thrift most of my clothes, and I've grown out of a lot of them. I always mean to sell them, and they pile up in my room. One listing took me hours."
+ },
+ {
+  "id": "n03",
+  "start": 11.37,
+  "duration": 5.43,
+  "syllables": 27,
+  "text": "To sell something, you point the camera at it. It asks what it is, and only asks for the shots it needs."
+ },
+ {
+  "id": "s06",
+  "start": 16.8,
+  "duration": 6.47,
+  "syllables": 31,
+  "text": "It reads the brand, the model and the size off the tag. I confirm them, and I set the condition myself. These are my own jeans."
+ },
+ {
+  "id": "s07",
+  "start": 23.27,
+  "duration": 5.55,
+  "syllables": 24,
+  "text": "The price comes from what similar things sold for. If it can't tell what something is, it doesn't guess."
+ },
+ {
+  "id": "s10",
+  "start": 28.8,
+  "duration": 5.63,
+  "syllables": 26,
+  "text": "Then it builds a listing for each site. No chatbot writes it. I read the draft, and I'm the one who posts it."
+ },
+ {
+  "id": "n07",
+  "start": 34.43,
+  "duration": 6.07,
+  "syllables": 29,
+  "text": "It's built for every marketplace at once. Each site gets its own title and price, and I see what I'd keep after fees."
+ },
+ {
+  "id": "n08",
+  "start": 40.5,
+  "duration": 3.59,
+  "syllables": 14,
+  "text": "All my listings live in one place, whatever site they're on."
+ },
+ {
+  "id": "n09",
+  "start": 44.1,
+  "duration": 4.67,
+  "syllables": 22,
+  "text": "And Today is one short list of what needs me, like an offer on something I'm selling."
+ },
+ {
+  "id": "s11",
+  "start": 48.77,
+  "duration": 4.43,
+  "syllables": 18,
+  "text": "Buying works the other way around. One search reads the marketplaces at once."
+ },
+ {
+  "id": "s12",
+  "start": 53.2,
+  "duration": 5.59,
+  "syllables": 29,
+  "text": "Ask a follow-up, and you get a table or a price range. Every price in it is checked against a real listing."
+ },
+ {
+  "id": "n12",
+  "start": 58.8,
+  "duration": 4.75,
+  "syllables": 22,
+  "text": "It can tell me what something is worth, or keep looking for the one I want, at my price."
+ },
+ {
+  "id": "s08",
+  "start": 63.53,
+  "duration": 9.31,
+  "syllables": 49,
+  "text": "We tested that on forty-two thousand real sneaker sales. We hid each sale, priced it from the ones before it, and compared. On a hundred dollar pair, it's usually off by about four dollars."
+ },
+ {
+  "id": "s09",
+  "start": 72.83,
+  "duration": 8.83,
+  "syllables": 47,
+  "text": "You can also ask why. On Databricks, any price opens up to the exact sales behind it. We wrote a function that rebuilds the number from those sales, and it matched on all but six."
+ },
+ {
+  "id": "s14",
+  "start": 81.67,
+  "duration": 9.91,
+  "syllables": 50,
+  "text": "The hard part was the edge cases. The same item gets posted on more than one site, so we count it once. And two people can buy the same thing at the same moment, so we checked every way that could play out."
+ },
+ {
+  "id": "s17",
+  "start": 91.57,
+  "duration": 3.2,
+  "syllables": 8,
+  "text": "That's secondhand. Thanks for watching."
+ }
+]

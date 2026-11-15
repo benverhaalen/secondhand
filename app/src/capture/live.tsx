@@ -96,20 +96,20 @@ export function LiveCapture({ mode }: { mode: string }) {
   };
   const shoot = () => run('Checking photo', async () => {
     if (!camera.current) throw new Error('Allow the camera or choose a photo.');
-    const photo = await camera.current.takePictureAsync({ base64: true, quality: 0.4, exif: false });
-    if (!photo?.base64) throw new Error('The photo was not captured. Try again.');
+    const photo = await camera.current.takePictureAsync({ quality: 0.4, exif: false });
+    if (!photo?.uri) throw new Error('The photo was not captured. Try again.');
     setBlink(value => value + 1); setLastPhoto(photo.uri); setCoverPhoto(cover => cover ?? photo.uri);
-    const photos: Still[] = [{ uri: photo.uri, base64: photo.base64, type: 'image/jpeg', step, role }];
+    const photos: Still[] = [{ uri: photo.uri, type: 'image/jpeg', step, role }];
     setPending(photos); await send(photos);
   });
   const library = () => run('Uploading photos', async () => {
-    const picked = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], base64: true, quality: 0.4, allowsMultipleSelection: true });
+    const picked = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.4, allowsMultipleSelection: true });
     if (picked.canceled) return;
     const steps = capture?.plan.process.filter(next => next.state !== 'kept') ?? [];
     const photos = picked.assets.map((asset, index): Still => {
-      if (!asset.base64) throw new Error('This photo could not be read. Choose another photo.');
+      if (!asset.uri) throw new Error('This photo could not be read. Choose another photo.');
       const target = steps[index];
-      return { uri: asset.uri, base64: asset.base64, type: asset.mimeType === 'image/png' ? 'image/png' : 'image/jpeg', step: target?.key ?? `${step}.${index + 1}`, role: target?.role ?? role };
+      return { uri: asset.uri, type: asset.mimeType === 'image/png' ? 'image/png' : 'image/jpeg', step: target?.key ?? `${step}.${index + 1}`, role: target?.role ?? role };
     });
     setLastPhoto(photos[0]?.uri ?? null); setCoverPhoto(cover => cover ?? photos[0]?.uri ?? null); setPending(photos); await send(photos);
   });
