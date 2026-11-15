@@ -31,7 +31,7 @@ A judge at a science-fair table gives each team a few minutes, among dozens, and
 
 **D6. Demo accounts only.** Never Ben's personal Depop ([05:54](../words.md#2026-11-15-stop-using-my-personal-depop)). Demo data is fine where a site can't be touched, and is named as demo data if asked ([live-buy-demo, what to say](../live-buy-demo.md#what-to-say-and-not)).
 
-**D7. Claims at the table are only ones true on the day.** Ben's list: applied to the App Store, the deployed site, the video, the Devpost ([05:41](../words.md#2026-11-15-a-demo-that-stuns-science-fair-judging-and-claims-that-change-how-judges-see-it)). Each is said only once it has happened; the [honesty gate](../qa.md#before-you-say-it-the-honesty-gate) decides.
+**D7. Claims at the table are only ones true on the day.** Ben's list: applied to the App Store, the deployed site, the video, the Devpost ([05:41](../words.md#2026-11-15-a-demo-that-stuns-science-fair-judging-and-claims-that-change-how-judges-see-it)). Each is said only once it has happened; the [honesty gate](../qa.md#before-you-say-it-the-honesty-gate) decides. The App Store is said as "coming soon" ([08:33](../words.md#2026-11-15-nano-banana-stays-app-store-coming-soon-the-voice-waits)).
 
 **D8. Resetting a demo takes one command.** Any beat can be rerun from a clean state in under a minute, so rehearsals are cheap ([06:01](../words.md#2026-11-15-show-the-magic-clips-basement-demos-faster-loops-and-the-intelligence-engine): "make the demoing loops faster"; [demo-reel §3](../demo-reel.md#3-faster-demo-loops-website-and-app)).
 
@@ -40,5 +40,4 @@ A judge at a science-fair table gives each team a few minutes, among dozens, and
 ## Open
 
 - Which beats pass three rehearsals. Nothing has been rehearsed end to end yet; the five-site post and ranked identify are not built (see the [ledger](../../spec/intent-ledger.md)).
-- Whether the App Store application is submitted, so D7 can use it.
 - Ben's 07:51 question, "is there any downside to doing it on the dev acct?", has no recorded answer.

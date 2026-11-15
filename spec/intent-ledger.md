@@ -14,14 +14,11 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 
 | # | Ask | Why it's a gap | Proposed |
 |---|---|---|---|
-| G1 | Seedream 5.5 for photos, not Nano Banana ([18:32](../product/words.md#2026-11-14-tools-and-capture), [08:09](../product/words.md#2026-11-15-quantify-everything-a-why-for-every-rule-ranked-identify-and-revenue-streams)) | `jobs/studio/openrouter.py` prefers Nano Banana; Seedream 5.5 was not on OpenRouter's list | Ben: reach Seedream through BytePlus directly (a new key), or accept Nano Banana for the demo |
-| G2 | "We applied to the App Store" as a table claim ([05:41](../product/words.md#2026-11-15-a-demo-that-stuns-science-fair-judging-and-claims-that-change-how-judges-see-it)) | Not submitted ([pitch.md](../product/pitch.md)); the website isn't deployed either (Devpost still says "Live on the web at URL") | Ben: submit a TestFlight build tonight, or say "App Store coming soon" |
-| G3 | A spoken voice in capture: friendly sentences on screen and aloud, a male voice from a new OpenRouter model ([23:01](../product/words.md#2026-11-14-capture-voice-frame-quality-measuring-skipping-and-video-storage), [03:17](../product/words.md#2026-11-15-new-takes-the-screen-a-live-point-cloud-stage-bubbles-and-the-found-pop-up-item-details-per-site-the-person-takes-the-photo-a-male-voice)) | Researched, never built or assigned; the camera shows text only | Ben: build it now, or cut it from the demo |
 | G4 | Sign in with Apple, Google or email as the first onboarding step ([02:46](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)) | Specced in [pages §6.1](pages.md#61-first-launch-onboarding); `onboarding.tsx` starts at connecting sites | UI thread |
-| G5 | shadcn and the Vercel AI SDK "in here somehow" ([22:23](../product/words.md#2026-11-14-the-ui-loop)) | Named in docs only; the Expo app uses neither and no one decided where they fit | Website thread, for the web build |
+| G5 | shadcn and the Vercel AI SDK "in here somehow" ([22:23](../product/words.md#2026-11-14-the-ui-loop)) | Named in docs only; the Expo app uses neither and no one decided where they fit | Website thread (sent) |
 | G6 | "is there any downside to doing it on the dev acct?" (07:51) | No recorded answer | Pitch thread |
-| G7 | "i think stagehand is better than playwright right?" (04:11) | No recorded answer | UI thread, one line |
-| G8 | Gradients whose intensity rises as a deadline nears ([03:41](../product/words.md#2026-11-15-hot-is-red-like-fire-no-glow-state-gradients-with-the-multicolor-intensity-as-deadlines-arise-a-brand-motion-constitution)) | The state colors are built; nothing found that ramps with time | UI thread |
+| G7 | "i think stagehand is better than playwright right?" (04:11) | No recorded answer | UI thread (sent) |
+| G8 | Gradients whose intensity rises as a deadline nears ([03:41](../product/words.md#2026-11-15-hot-is-red-like-fire-no-glow-state-gradients-with-the-multicolor-intensity-as-deadlines-arise-a-brand-motion-constitution)) | The state colors are built; nothing found that ramps with time | UI thread (sent) |
 
 ## Product and scope
 
@@ -84,10 +81,10 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 |---|---|---|---|
 | 18:32 | Guided shots so the person does no thinking | Built (demo data) | `app/src/app/camera.tsx` |
 | 18:32 | Light it in a studio, a garage or a house | Dropped | scene presets dropped ([studio spec](features/studio.md)) |
-| 18:32, 08:09 | Seedream 5.5, not Nano Banana | Gap | G1 |
+| 18:32, 08:09, 08:33 | Seedream 5.5, then Nano Banana kept | Superseded | Ben chose Nano Banana [08:33](../product/words.md#2026-11-15-nano-banana-stays-app-store-coming-soon-the-voice-waits); `jobs/studio/openrouter.py` already prefers it |
 | 18:48 | One shot list for the listing and the model | Done | [decisions](../product/decisions.md#2026-11-14-capture-is-one-session-and-the-item-picks-the-mode) |
 | 21:22, 22:24 | Capture as a decision tree that asks for the tag, the graphic, better light | Planned | [decision-tree-capture.md](../research/capture/ben/decision-tree-capture.md); talk mode one tap away ([decisions](../product/decisions.md#2026-11-14-capture-opens-on-the-guided-shot-list-talk-mode-is-one-tap-away)) |
-| 23:01, 03:17 | Sentences said aloud, a male voice | Gap | G3 |
+| 23:01, 03:17, 08:33 | Sentences said aloud, a male voice | Planned (later) | Not for the demo [08:33](../product/words.md#2026-11-15-nano-banana-stays-app-store-coming-soon-the-voice-waits) |
 | 23:01 | The person can skip parts; the cost of storing video | Planned | [live-video-capture.md](../research/capture/ben/live-video-capture.md) |
 | 03:17 | Stage bubbles to checkmarks, a centered instruction, "Carhartt ✓" from above, a live point cloud; the person takes the photo | Built (demo data) | `app/src/ui/parts/camera.tsx` |
 | 06:19 | The frame is the listing photo's shape; a review screen after | Built (demo data) | 3:4 frame (commits a14a7d9, 9999163) |
@@ -169,7 +166,7 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 | 19:15 | Pitch from data about the problem | Done | [pitch.md](../product/pitch.md) |
 | 05:36 | Every point a judge could dock is answered | Done | [qa.md](../product/qa.md#where-judges-dock-points) |
 | 05:41 | A ranked list of demo beats | Done | [features-proof, what to show](../product/features-proof.md#what-to-show-ranked) |
-| 05:41 | Claims: App Store, deployed site, video, Devpost | Gap | G2; Devpost draft Done ([devpost.md](../product/devpost.md)) |
+| 05:41, 08:33 | Claims: App Store, deployed site, video, Devpost | Planned | App Store is said as "coming soon" [08:33](../product/words.md#2026-11-15-nano-banana-stays-app-store-coming-soon-the-voice-waits); Devpost draft Done ([devpost.md](../product/devpost.md)) |
 | 05:18 | A pitch video | Planned | [pitch-video.md](../product/pitch-video.md); not recorded |
 | 05:43 | Both sides; free; honest business | Done | [business.md](../product/business.md) |
 | 05:47 | What each audience wants; Databricks depth | Done | [showcase §1 and §2](../product/showcase.md) |
