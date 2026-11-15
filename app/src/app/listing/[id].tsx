@@ -11,6 +11,7 @@ import { cover, offerAmounts, offerProblem, paysFor } from '@/buy/read';
 import { Failed, Loading, OfflineLine } from '@/buy/states';
 import { href, usePage } from '@/buy/world';
 import { ago, product, SEARCH_DUNKS, usd, type Match } from '@/demo';
+import { useScreen } from '@/demo/screen';
 import {
   Amount, Approve, EmptyState, FootButton, Gallery, Guess, Line, Nav, Notice, OfferSheet, Pill, PriceRange, PriceRead, Row, Screen,
   Section, Sheet, SiteBadge, Stack, Txt, UndoToast, log,
@@ -21,10 +22,11 @@ const SKIP = 'one: a listing is one thing, with no list in it to hold one or man
 
 export default function Listing() {
   const { w, state } = usePage();
+  const { demo } = useScreen();
   const { id, ...params } = useLocalSearchParams<{ id: string; visitor?: string }>();
   // A new person has no account yet, so the page is the visitor's: Offer and Watch ask them to sign in.
   const visitor = params.visitor ?? (state === 'new' ? '1' : undefined);
-  const m: Match | undefined = state === 'empty' ? undefined : [...w.matches, ...w.searches.flatMap(s => s.rows), ...SEARCH_DUNKS.rows].find(x => x.id === id);
+  const m: Match | undefined = state === 'empty' ? undefined : [...w.matches, ...w.searches.flatMap(s => s.rows), ...(demo ? SEARCH_DUNKS.rows : [])].find(x => x.id === id);
   const ask = w.decisions.find(d => d.kind === 'buy_offer' && d.state === 'open' && d.match_id === id);
   const want = w.wants.find(x => x.id === m?.want_id);
   const [watching, setWatching] = useState(m?.state === 'saved');
@@ -45,7 +47,7 @@ export default function Listing() {
     );
   }
 
-  const p = m.product_id ? product(m.product_id) : null;
+  const p = demo && m.product_id ? product(m.product_id) : null;
   const fair = p?.used_price.range ?? null;
   const pays = paysFor(m);
   const pickup = m.seller.startsWith('pickup');
@@ -105,12 +107,12 @@ export default function Listing() {
         </Section>
       ) : null}
 
-      <Line>
+      {demo ? <Line>
         {handoff
           ? <Pill id="listing-open-second" kind="second" label="Open on site" icon="link-01" onPress={site} />
           : sent == null ? <Pill id="listing-offer" kind="second" label="Offer" onPress={() => (visitor ? router.push(href(w, '/onboarding')) : setPicking(true))} /> : null}
         <Pill id="listing-watch" kind="second" label={watching ? 'Watching' : 'Watch'} icon={watching ? 'tick-02' : 'star'} onPress={toggleWatch} />
-      </Line>
+      </Line> : null}
 
       <Section title="Seller">
         <Row lead={<SiteBadge site={m.site} />}>

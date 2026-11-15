@@ -9,6 +9,7 @@ import { Stack, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 import { usd } from '@/demo';
+import { useScreen } from '@/demo/screen';
 import { CHOICES, DRAFT_ID, ordered, rememberMode, type Mode } from '@/demo/capture';
 import { cents, described, priceAsk } from '@/demo/capture-edges';
 import { feed } from '@/demo/capture-photos';
@@ -25,6 +26,7 @@ const isLink = (s: string) => /^https?:\/\/\S+$/i.test(s.trim());
 export default function New() {
   const params = useLocalSearchParams<{ sheet?: string; what?: string; link?: string; price?: string; ask?: string }>();
   const plus = usePlus();
+  const { demo } = useScreen();
   const [phase, setPhase] = useState<CirclePhase>('opening');
   const [picked, setPicked] = useState<{ mode: Mode; index: number } | null>(null);
   // A link shared in from outside lands in Sell it, the job a listing link most often starts (Ben, 05:47: cross-list the
@@ -56,6 +58,9 @@ export default function New() {
   };
   // Each job ends where its camera ends: a draft to review, the value page, the matches.
   const go = () => {
+    // A real person's job starts from the camera or the live search; the demo draft and catalog are the demo's.
+    if (!demo && (sheet === 'sell' || sheet === 'worth')) { router.replace({ pathname: '/camera', params: { mode: sheet === 'sell' ? 'sell' : 'appraise' } } as Href); return; }
+    if (!demo && sheet === 'find') { router.replace({ pathname: '/shop', params: { q: what.trim() } } as Href); return; }
     if (sheet === 'sell') { if (ask && !asked) { setAsked(true); return; } router.replace(`/item/${DRAFT_ID}` as Href); return; }
     if (sheet === 'worth') { router.replace((match ? `/worth?product=${match.id}` : '/worth') as Href); return; }
     const q = match ? `${match.brand} ${match.model}` : what.trim();

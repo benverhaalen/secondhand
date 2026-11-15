@@ -137,7 +137,7 @@ export function LiveCapture({ mode }: { mode: string }) {
   if (finished && capture) return <Screen name="capture-result" state="typical" nav={<Nav back={close} />}>
     <Section title={purpose === 'find' ? 'Photo matches' : purpose === 'appraise' ? 'Your appraisal' : studio ? 'Your photos' : 'Your item'}>
       <CaptureResults capture={capture} initial={jobs} photo={coverPhoto} />
-      <FootButton id="capture-messages" label={purpose === 'sell' ? 'Review item' : purpose === 'find' ? 'Back to Buy' : 'Open messages'} onPress={() => router.replace((purpose === 'sell' ? `/item/${capture.item_id}/edit` : purpose === 'find' ? '/buy' : '/messages') as Href)} />
+      <FootButton id="capture-messages" label={purpose === 'sell' ? 'Review item' : purpose === 'find' ? 'Back to Buy' : purpose === 'appraise' ? 'Done' : 'Open messages'} onPress={() => purpose === 'appraise' ? close() : router.replace((purpose === 'sell' ? `/item/${capture.item_id}/edit` : purpose === 'find' ? '/buy' : '/messages') as Href)} />
     </Section>
   </Screen>;
 
