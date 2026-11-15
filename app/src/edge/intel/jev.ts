@@ -100,5 +100,5 @@ const FIELD_TEXT_SCHEMA = { type: 'object', properties: { text: { type: 'string'
 
 // The generating call is the injected llm; its answer is typed only if it passes parseFieldText.
 export async function fieldText(llm: Llm, prompt: string): Promise<string | null> {
-  try { return parseFieldText(await llm(prompt, FIELD_TEXT_SCHEMA)); } catch { return null; }
+  try { return parseFieldText(await llm(prompt, FIELD_TEXT_SCHEMA)); } catch (e) { fallbackLog().error('jev.field_text', e); return null; }
 }

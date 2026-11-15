@@ -1,16 +1,17 @@
-// The good news at the top of Today: the money kept since the last look, and the things it came from (Ben 06:19: "the money
-// sold thing ... is kind of like less"; say it "besides just text"). The amount is the peak amount, on its own line so a
-// four-figure week still fits. Under it, the photos of what sold, each with the badge of the site it sold on, overlapped a
-// third as a hand of cards, newest on top, then what they add up to and the chevron: the whole slot opens You (U1). Three
-// photos at most; past that, two and a count of the rest, so the row never runs past the screen.
-// Only shown when there is money that is news (decided 2026-11-15: never $0); a new person sees TopSlot's setup step instead.
+// The top of Today: one true number at its peak size, the things behind it, and what it adds up to (Ben 06:19: "the money
+// sold thing ... is kind of like less"; say it "besides just text"). Today picks the number by a ladder (cards.ts, top):
+// money since the last look and what sold, this week's money, what the live things could bring, or the interest since the
+// last look. The caption names its window, the figure is on its own line so a four-figure week still fits, and under it the
+// photos, each with the badge of its site, overlapped a third as a hand of cards, then the line and the chevron: the whole
+// slot opens where the number comes from (U1). Three photos at most; past that, two and a count of the rest.
+// Today never passes $0 or a made-up figure (decided 2026-11-15); a new person sees TopSlot's setup step instead.
 import { View } from 'react-native';
 import { Icon } from '../icon';
 import { Photo, type PhotoSrc } from '../photo';
 import { Press } from '../press';
 import { Txt } from '../text';
 import { size, space } from '../tokens.generated';
-import { mark, money, type Site } from './mark';
+import { mark, type Site } from './mark';
 import { SiteBadge } from './small';
 
 export type SoldThing = { id: string; title: string; photo: PhotoSrc | null; site: Site };
@@ -18,24 +19,23 @@ export type SoldThing = { id: string; title: string; photo: PhotoSrc | null; sit
 // How far each photo sits over the one before it: a third, so two thirds of each thing still show.
 const OVERLAP = Math.round(size.photoCard / 3);
 
-export function MoneyNews({ id = 'top-news', since, kept, line, sold, onPress }: {
+export function MoneyNews({ id = 'top-news', caption, figure, line, things, onPress }: {
   id?: string;
-  // When the news starts: "Since yesterday".
-  since: string;
-  // Dollars kept after fees, more than 0.
-  kept: number;
-  // What it adds up to: "2 sold, after fees".
+  // The window, or what the number is: "Since yesterday", "This week", "Your 6 listings could bring".
+  caption: string;
+  // The number, written: "$97.33", "$410", "38 views".
+  figure: string;
+  // What it adds up to: "2 sold, after fees", "up to $480, before fees", "6 likes, 2 watching".
   line: string;
-  sold: SoldThing[];
+  things: SoldThing[];
   onPress?: () => void;
 }) {
-  if (!(kept > 0)) return null;
-  const shown = sold.length > 3 ? sold.slice(0, 2) : sold, more = sold.length - shown.length;
+  const shown = things.length > 3 ? things.slice(0, 2) : things, more = things.length - shown.length;
   return (
-    <Press id={id} label={`${since}, ${money(kept)} kept, ${line}`} onPress={onPress} round={false}>
+    <Press id={id} label={`${caption} ${figure}, ${line}`} onPress={onPress} round={false}>
       <View {...mark('money-news')} style={{ gap: space.s2 }}>
-        <Txt role="caption" tone="ink-2">{since}</Txt>
-        <Txt role="amount">{money(kept)}</Txt>
+        <Txt role="caption" tone="ink-2">{caption}</Txt>
+        <Txt role="amount">{figure}</Txt>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s3, height: size.photoCard + space.s1 }}>
           {shown.length ? (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>

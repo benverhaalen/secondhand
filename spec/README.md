@@ -1,6 +1,8 @@
 # spec/
 
-The rules the app's behavior has to keep, written as code so they can be checked rather than just read. This is an *agent proposal* built from Ben's decisions. If a decision changes, change it here as well.
+The rules the app's behavior has to keep, written as code so they can be checked rather than just read. This is an *agent proposal* built from Ben and Nate's decisions.
+
+*Agent proposal*: the settled transport is in [protocol §§3.5 to 3.8](engines/protocol-and-adapters.md#35-starting-routes-site-by-verb): [Browser Use Cloud](../product/words.md#2026-11-14-nate-browser-use-on-cloud-tested-the-way-production-runs-with-milestones-that-are-finalised-as-they-are-hit) behind `Launcher`, with [official APIs where offered](../product/words.md#2026-11-15-nate-official-apis-where-they-exist-the-browser-design-as-specced-ranking-systems-accounted-for-databricks-perfected). [Packet 49](../.agents/team/packets/team/49-handoff-to-the-mac-session.md) records the handoff and replaces the self-hosted, thirteen-session build.
 
 ## Where to start
 
@@ -8,24 +10,24 @@ Everything under `spec/` that is not code is an *agent proposal* for Ben and Nat
 
 | Read | For |
 |---|---|
-| [product.md](product.md) | The canon: every entity, state, verb, endpoint, decision kind, job and event. Where another file differs, this one wins |
-| [features/](features/) | One spec per feature (21): what the person does and sees, design choices, data flow, the frontend contract, failures, how we will know it works |
-| [determinations/](determinations/) | Every thing the system works out, as cards: sources, weights, method, when it is hidden, how it is explained |
-| [engines/](engines/) | One engine per file: what it decides, its signals, the calculation, how it learns, its speed, how it is proved, and the build tasks |
-| [marketing-engine.md](marketing-engine.md) | How the plan for each site is chosen: signals, calculation, weights, learning, speed, proof tests |
+| [product.md](product.md) | Canon entities, states, verbs, endpoints, decisions, jobs and events; wins on conflicts |
+| [features/](features/) | Feature behavior, data flow, contracts, failures and proof |
+| [determinations/](determinations/) | Determination cards: sources, weights, method and explanation |
+| [engines/](engines/) | Engine outputs, signals, calculation, learning, speed, proof and tasks |
+| [marketing-engine.md](marketing-engine.md) | Site plans, calculation and proof |
 | [data-use.md](data-use.md) | What data is kept, what learns from it, and what needs a person's consent |
 | [assessment.md](assessment.md) | How ready each part is, with the confusions found in the builders' notes |
-| [benchmark.md](benchmark.md) | The open benchmark: ten measures run on one fixed item set against named tools, with every raw answer published |
-| [parity.md](parity.md) | Every capability a rival tool has, whether we adopt its method or use a better one, and where that lives |
-| [databricks.md](databricks.md) | How the platform works, where it is strong and weak for us, and how each feature is built on it |
+| [benchmark.md](benchmark.md) | Open benchmark on a fixed item set, with raw answers |
+| [parity.md](parity.md) | Rival capabilities and our methods |
+| [databricks.md](databricks.md) | Platform design and feature integration |
 | [coverage.md](coverage.md) | Which research backs which feature, and the gaps |
-| [plans/board.md](plans/board.md) | The build board: every piece as a box with its proving command, ticked to completion |
-| [plans/workstreams.md](plans/workstreams.md) | The build piece by piece: the sessions, what each owns and delivers, the seams |
+| [plans/board.md](plans/board.md) | Build progress and proving commands |
+| [plans/workstreams.md](plans/workstreams.md) | Build ownership, delivery and seams |
 | [plans/start-now.md](plans/start-now.md) | Every task that can begin this minute |
 | [plans/](plans/README.md) | How the build is organised: stages, task shape, test layers, the first tasks |
-| [hard-calls.md](hard-calls.md) | Where two good answers conflict (a better offer while the first buyer hasn't paid, silence, partial failures, disputes), the call we make and the field it is borrowed from |
+| [hard-calls.md](hard-calls.md) | Calls on conflicting goals, silence, partial failures and disputes |
 | [open-questions.md](open-questions.md) | What only Ben or Nate can settle, each with a recommendation |
-| [../docs/how-it-works/](../docs/how-it-works/README.md) | The same system explained for people, not for the agents that build it |
+| [../docs/how-it-works/](../docs/how-it-works/README.md) | The system explained for people |
 
 ## The checked model
 

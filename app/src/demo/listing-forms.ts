@@ -108,6 +108,13 @@ export const FIT: Record<string, Record<Site, [Verdict, string]>> = {
     poshmark: ['ok', 'must be under 5 lb and mailable'],
     mercari: ['good', 'small housewares sell'],
   },
+  fan_apparel: {
+    ebay: ['best', 'sports memorabilia and fan gear is core here'],
+    facebook: ['ok', 'home-team buyers'],
+    depop: ['good', 'jerseys are named under tops'],
+    poshmark: ['ok', 'another site has the fan buyer'],
+    mercari: ['ok', 'seasonal'],
+  },
   sneakers: {
     ebay: ['best', '8% fee and no per-order fee at $150 and up; authentication'],
     facebook: ['ok', 'cash meetups in cities; buyers fear fakes'],
@@ -117,9 +124,10 @@ export const FIT: Record<string, Record<Site, [Verdict, string]>> = {
   },
 };
 
-// The fit of one kind of thing on one site, with its reason as a sentence; null when the kind has no row.
-export function fitOf(category: string, site: Site): { verdict: Verdict; why: string } | null {
-  const row = FIT[FIT_TYPE[category] ?? '']?.[site];
+// The fit of one kind of thing on one site, with its reason as a sentence; null when the kind has no row. An item's own
+// kind (a fan tee is fan_apparel) is narrower than its family's (apparel), so it wins.
+export function fitOf(it: { category: string; kind?: string }, site: Site): { verdict: Verdict; why: string } | null {
+  const row = (it.kind ? FIT[it.kind] : undefined)?.[site] ?? FIT[FIT_TYPE[it.category] ?? '']?.[site];
   return row ? { verdict: row[0], why: row[1].charAt(0).toUpperCase() + row[1].slice(1) } : null;
 }
 
@@ -132,3 +140,7 @@ export const RETURNS: Record<Site, string> = {
   poshmark: 'No returns unless not as described',
   mercari: 'Not as described only, 72 hours',
 };
+
+// Best first: the plan lists the sites in this order, so it reads from where the thing sells best (platform-fit.json,
+// verdicts: best and good post by default, ok only when asked, avoid says why, blocked never posts).
+export const VERDICT_RANK: Record<Verdict, number> = { best: 0, good: 1, ok: 2, avoid: 3, blocked: 4 };

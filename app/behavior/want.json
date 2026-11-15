@@ -23,7 +23,8 @@
     "A saved want saves each change at once with Undo, as iOS Settings does, and looks again at once (watch.md: a change re-runs the search).",
     "Tell me is a two-row choice (Under the most, Any new one), the iOS list pattern, because both answers are short and exclusive.",
     "Pause and End are gray pills, never the black one: End is the destructive act and it carries Undo.",
-    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
+    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page.",
+    "A live find (the stage beat, ?live=1) sits right under what is being watched, above the price, because it is what the person is waiting for; it is the shared MatchCard with the read 'Under your price', since a find made live has no fair range behind it on stage, and its time is how long after listing it was found, from the site's own clock (Ben chose the alert inside the app, 08:06)."
   ],
   "states": [
     {
@@ -112,6 +113,18 @@
       "state": "offline",
       "route": "/want?state=offline",
       "shows": "Waiting for signal. This is the last copy."
+    },
+    {
+      "state": "found-live",
+      "route": "/want?id=want_dunk&world=buyer&live=sample",
+      "shows": "Under your price",
+      "also": [
+        "Found",
+        "Carhartt Detroit jacket",
+        "41s after listing",
+        "$18"
+      ],
+      "note": "A find shows only while the want runs; before Watch is tapped on a new want, nothing found is shown."
     }
   ],
   "controls": [
@@ -495,6 +508,13 @@
       "in": "failed",
       "does": "loads the page afresh",
       "goes": "/want"
+    },
+    {
+      "control": "A live find",
+      "on_tap": "opens the listing on its own site",
+      "id": "want-found-sample_carhartt",
+      "in": "found-live",
+      "does": "opens the listing on its own site, after Watch is tapped; the card reads 'Under your price' and how many seconds after listing it was found (product/live-buy-demo.md)"
     }
   ],
   "back": "the screen it came from"

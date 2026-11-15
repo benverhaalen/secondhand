@@ -28,7 +28,7 @@ export function createEbayLink({ app, scope, fetchFn = fetch, now = () => Date.n
       const o = (typeof body === 'object' && body ? body : {}) as Record<string, unknown>;
       if (!res.ok || typeof o.access_token !== 'string' || typeof o.expires_in !== 'number')
         return { ok: false as const, status: res.status, error: typeof o.error === 'string' ? o.error : undefined };
-      return { ok: true as const, t: o as unknown as TokenReply };
+      return { ok: true as const, t: { access_token: o.access_token, expires_in: o.expires_in, ...(typeof o.refresh_token === 'string' ? { refresh_token: o.refresh_token } : {}), ...(typeof o.refresh_token_expires_in === 'number' ? { refresh_token_expires_in: o.refresh_token_expires_in } : {}) } };
     };
     // Only the grant and the outcome are logged; tokens, codes and the client secret never are.
     return log ? log.call('http', 'ebay.oauth.token', { grant_type: form.grant_type }, run, r => ({ result: { ok: r.ok, ...(r.ok ? {} : { status: r.status, error: r.error }) } })) : run();
@@ -38,7 +38,7 @@ export function createEbayLink({ app, scope, fetchFn = fetch, now = () => Date.n
     // The person consented on eBay's page; we trade the code for tokens and keep the refresh token behind token_ref.
     async link(account_id: string, code: string): Promise<{ ok: true; token_ref: string } | { ok: false; reason: string }> {
       const r = await post({ grant_type: 'authorization_code', code, redirect_uri: app.redirect_uri });
-      if (!r.ok || !r.t.refresh_token) return { ok: false, reason: `eBay refused the code (${r.ok ? 'no refresh token' : r.status})` };
+      if (!r.ok || !r.t.refresh_token) return { ok: false, reason: `The site refused the code (${r.ok ? 'no refresh token' : r.status})` };
       await scope.put(ref(account_id), r.t.refresh_token);
       access.set(account_id, { token: r.t.access_token, until: now() + r.t.expires_in * 1000 });
       return { ok: true, token_ref: ref(account_id) };

@@ -4,7 +4,7 @@ gate (research/studio/ben/prototype/gate.py, which aligns the render onto the ph
 Pixel checks, no model, cheapest first:
   prints   every print and logo close-up is found again in the render (SIFT plus one homography), and looks the same there
   color    the item's median CIEDE2000 against the real photo, after the color is pushed back to the real one
-  shape    width over length against the tape (8% band) or against the real photo's outline (12% band)
+  shape    width over length against the tape (8% band); with no tape reading the redraw is never shown (Ben, 2026-11-15)
   layout   the outline matches the kind's template (ranks only)
 A model check (judge) reads the render against the real photos: same item, every letter the same, no invented label,
 every flaw still there. Either kind of miss drops the render; the real photo is used instead. Nothing here ranks a lie up.
@@ -22,7 +22,7 @@ from lab import deltaE_ciede2000, rgb2lab  # noqa: E402
 from lay import layout, proportions  # noqa: E402
 from seeded_faults import item_mask  # noqa: E402
 
-BAND = {"tape": 0.08, "photo": 0.08}  # photo: only when the real photo is laid flat; honest pants redraws read 1 to 6%
+BAND = {"tape": 0.08}  # honest pants redraws read 1 to 6% against the tape
 PRINT_MIN_INLIERS = 14
 PRINT_NCC = 0.45
 PRINT_COVER = 0.5  # share of the print's box the matched points span
@@ -275,14 +275,17 @@ def check(src: np.ndarray, ren: np.ndarray, template: str | None, prints: list[n
             out["numbers"]["shape"] = {"render": got, "truth": round(tape_ratio, 3), "against": "tape", "off": round(off, 3)}
             if abs(off) > BAND["tape"]:
                 out["reasons"].append(f"proportions {off:+.0%} against the tape")
-        elif laid_well:
-            truth = proportions(ms, kind)["ratio"]
-            off = got / truth - 1
-            out["numbers"]["shape"] = {"render": got, "truth": round(truth, 3), "against": "photo", "off": round(off, 3)}
-            if abs(off) > BAND["photo"]:
-                out["reasons"].append(f"proportions moved {off:+.0%} against the photo")
         else:
-            out["numbers"]["shape"] = {"against": None, "note": "not checked: no tape, and the real photo is not laid flat enough to measure"}
+            # Ben, 2026-11-15 08:09: a redraw is only trusted when the item has dimensions. The model sets the length by
+            # itself (the tee came back about 2 in narrow), and a photo outline is not a measurement, so without a tape
+            # reading the redraw is dropped and the real photo is used. The outline comparison is kept as a number only.
+            out["reasons"].append("no tape reading: a redraw is shown only when the tape can check its size")
+            if laid_well:
+                truth = proportions(ms, kind)["ratio"]
+                out["numbers"]["shape"] = {"render": got, "truth": round(truth, 3), "against": "photo",
+                                           "off": round(got / truth - 1, 3), "note": "informational; the tape decides"}
+            else:
+                out["numbers"]["shape"] = {"against": None, "note": "no tape, and the real photo is not laid flat"}
         lay = layout(mr)
         out["numbers"]["layout"] = {"template": lay["template"], "overlap": lay["overlap"], "tilt": lay["tilt_deg"]}
     out["ok"] = not out["reasons"]

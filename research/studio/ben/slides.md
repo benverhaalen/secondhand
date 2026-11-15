@@ -75,13 +75,15 @@ Why it is hard: a model "cleaning up" a photo removes exactly what a flaw is (a 
 |---|---|---|
 | Read | [look.py](../../../jobs/studio/look.py) | One call to Gemini 4 Carbon through OpenRouter with every photo: role, side, zone, item box, each print with its text, each flaw with sure/unsure, tape readings |
 | Plan | [plan.py](../../../jobs/studio/plan.py) | The slide set and the asks, from [slides.json](../../../jobs/studio/slides.json). Pure function, 8 tests |
-| Redraw | [slides_run.py](../../../jobs/studio/slides_run.py) | Cover and back only. Inputs: the real photo, the template outline, up to two real print close-ups. Four candidates in parallel: Nano Banana 2.1 three seeds, Gemini 3 Pro Image one |
+| Redraw | [slides_run.py](../../../jobs/studio/slides_run.py) | Cover and back only. Inputs: the real photo, the template outline, up to two real print close-ups. Five candidates in parallel: Nano Banana 2.1 four seeds and Gemini 3 Pro Image one (Ben, 08:33: "stay on nanobanana"; Seedream 5.5 led for about an hour that morning and was reverted) |
 | Check | [check.py](../../../jobs/studio/check.py) | Pixel checks: each print found again (SIFT, one homography, then correlation), color drift as drawn, proportions. Then the judge reads the candidate against the real photos for letters, invented labels and lost flaws. Then the color is pushed back to the real item's |
 | Pick | slides_run.py | Of the candidates that pass, the flattest and best laid; if none pass, the real photo |
 | Assemble | slides_run.py | 1080 px squares, no padding, the before-and-after sheet, a manifest with every number and `ai_marked` per slide |
 | Run | [studio-touchup.yml](../../../.github/workflows/studio-touchup.yml) | `command: slides` on any branch, with the repo's OpenRouter key; commits the run to that branch, never to main |
 
 Models on OpenRouter on 2026-11-15 (*observed*, [models.json](slides/runs/20261115-0607-43683951280/models.json) and the smoke run): Seedream 5.5 is not listed any more. Nano Banana 2.1 rendered in 6.8 s for $0.037, Gemini 3 Pro Image in 14.6 s for $0.14, GPT image 2 in 95 s for $0.24.
+
+**Update, 2026-11-15 08:30.** Seedream 5.5 has a live OpenRouter page (`bytedance-seed/seedream-5-5`, released Nov 12, from $0.02 an image plus $0.008 per reference image, up to 10 reference images, *observed* on [its page](https://openrouter.ai/bytedance-seed/seedream-5-5)), and Runware serves it at the same price (*observed*, [runware.ai/seedream-5-5](https://runware.ai/seedream-5-5)). The slug was still missing from the models list this morning, so a call through OpenRouter is not yet proven. Ben chose to stay on Nano Banana 2.1 at 08:33, so the run leads with it. If Seedream 5.5 comes back later, Runware serves it at the same price.
 
 ## Results on the three real items
 

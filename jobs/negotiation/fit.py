@@ -44,6 +44,12 @@ class Logistic:
         return {'terms': self.terms, 'weights': self.weights, 'precision': self.precision}
 
 
+def bounds(prior):
+    # negotiation.md §4 clamps probabilities to [.02,.98]; zero terms use the corresponding finite log-odds.
+    width = abs(prior) * .5 if prior else math.log(.98 / .02)
+    return prior - width, prior + width
+
+
 def fit(rows, prior, label='accepted', pooling=1.):
     validate(rows, len(prior.weights), label)
     levels = sorted(set(k for r in rows for k in keys(r)))
@@ -56,8 +62,8 @@ def fit(rows, prior, label='accepted', pooling=1.):
         return (np.logaddexp(0, z) - y * z).sum() + pooling * np.dot(delta, delta) / 2
     def gradient(w):
         return x.T @ (expit(x @ w) - y) + pooling * (w - center)
-    bounds = [(v - abs(v) * .5, v + abs(v) * .5) for v in center]
-    result = minimize(objective, center, jac=gradient, bounds=bounds, method='L-BFGS-B')
+    guards = [bounds(v) for v in center]
+    result = minimize(objective, center, jac=gradient, bounds=guards, method='L-BFGS-B')
     if not result.success:
         raise RuntimeError(f'logistic fit failed: {result.message}')
     return Logistic(dict(zip(levels, result.x[:len(levels)].tolist())), result.x[len(levels):].tolist())
@@ -78,7 +84,7 @@ def online_update(model, row, days=0):
         information = max(1., precision.get(name, 1.) * decay)
         precision[name] = information + p * (1 - p) * feature * feature
         estimate = prior + decay * (value - prior) + (row['accepted'] - p) * feature / precision[name]
-        lo, hi = sorted((prior * .5, prior * 1.5))
+        lo, hi = bounds(prior)
         return float(np.clip(estimate, lo, hi))
     terms = {k: update(k, v, priors[k], float(k in keys(row))) for k, v in model.terms.items()}
     weights = [update(f'w:{i}', w, pw[i], row['features'][i]) for i, w in enumerate(model.weights)]
@@ -100,6 +106,8 @@ def calibration_error(model, rows, label='accepted'):
 
 
 def nightly(training, held_out, champion, store, scope, at, log=None):
+    if scope.get('person') is not None and any(r.get('person') != scope['person'] for r in [*training, *held_out]):
+        raise ValueError('outcome outside person scope')
     if not held_out:
         raise ValueError('held-out outcomes required')
     training_ids = {r['outcome_id'] for r in training}

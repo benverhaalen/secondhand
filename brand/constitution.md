@@ -128,7 +128,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 - In a row, logos share one height and one gap, and none is taller than the wordmark's type size. In the app, a logo that stands where a photo would be, for a thing that has no photo, sits alone in the photo's 72 slot at 40. Corners stay as the file has them: rounding a logo alters it (agent proposal, R26). A logo sits on white, or on a white plate: eBay's file has an off-white ground, and Ben saw it blend into the receipt's gray ([round 10](../product/words.md#2026-11-15-round-10-picks)).
 
 **C6. Plain money.** Amounts are set in the text face, with the currency sign, at the same size as the text around them or one step up. The one peak amount per view (a sale) may be 50 in the app or up to 200 in a post or deck, still in the text face (agent proposal). Tabular figures follow Article 6.7. No band or highlight sits behind an amount: it stands out by size alone, and one kind of amount looks the same everywhere it appears (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)).
-- Boundary: never a counter animation; never an amount at 36 or larger without the words that say what it is ("$46.95" alone fails; "You keep $46.95" passes).
+- Boundary: never a counter animation; never an amount at 36 or larger without the words that say what it is ("$46.95" alone fails; "You get $46.95" passes).
 
 ### Article 5. Color
 
@@ -380,7 +380,7 @@ On screen in video, text holds 0.3 s per word (per 2 characters in Chinese, Japa
 How secondhand sounds, in every medium and language. The rules for app strings are in [copy.md](../product/copy.md) and the UI constitution; this article covers voice everywhere else (site, posts, video, deck).
 
 1. **Plain words a person would say across a table.** If a stranger could not say what a line means back to you, rewrite it (E3).
-2. **Numbers mean something.** "Similar ones sold for $36 to $52", not "n=41". "You keep $46.95", not "Net: 46.95".
+2. **Numbers mean something.** "Similar ones sold for $36 to $52", not "n=41". "You get $46.95", not "Net: 46.95".
 3. **No chatter.** No greetings, motivational lines, "AI-powered", "seamless", "unlock". A feeling is carried by the design, never stated (copy.md C7). That a person decides is shown by who acts on each screen (C4, Who acts), never written as a line such as "a human always decides". The brand has one line, and no other tagline: "Your second hand, for everything secondhand." (Ben, [round 11](../product/words.md#2026-11-15-round-11-picks); L51). It stands alone as a sentence, never beside the wordmark (C1). Where it goes is an agent proposal: the website's first screen, a store listing, a deck's opening slide, a post, and the first screen a new person sees in the app. It is on no other app screen.
 4. **Short.** Headlines under 8 words, captions under 2 sentences, buttons a verb and an object.
 5. **No exclamation marks, no em dashes and no emoji**, in any language. Ben: "ban all emojis" ([words](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis)).

@@ -77,14 +77,17 @@
 
   // The open.
   const intro = document.querySelector('.intro'), lockup = document.querySelector('.lockup');
+  // An automated check without ?intro=1 sees the page settled, not mid-fade, as it does the open.
+  const settled = () => reduce || (navigator.webdriver && q.get('intro') !== '1');
   const show = () => {
     opened = true;
-    if (reduce) return;
+    if (settled()) return;
     wall.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 900, easing: 'ease-out' });
     copy.animate([{ opacity: 0, transform: 'translate3d(0, 12px, 0)' }, { opacity: 1, transform: 'none' }], { duration: 700, delay: 120, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
   };
   function open() {
     const dap = intro.querySelector('.dap'), [h1, h2] = dap.querySelectorAll('.hand'), word = dap.querySelector('.intro-word');
+    const g = (window.fitHands && fitHands(dap, word, [h1, h2])) || 24;
     const W = word.scrollWidth; word.style.width = '0px';
     lockup.style.visibility = 'hidden';
     const ease = 'cubic-bezier(.2,.8,.2,1)', inout = 'cubic-bezier(.65,0,.35,1)', run = [];
@@ -94,8 +97,8 @@
     // 2. The dap: a small bump where they meet.
     run.push(dap.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }], { duration: 220, delay: 500, easing: 'ease-out' }));
     // 3. They part, and the wordmark is between them.
-    run.push(h1.animate([{ transform: 'translateX(3px) rotate(-10deg)', marginRight: '0px' }, { transform: 'none', marginRight: '24px' }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
-    run.push(h2.animate([{ transform: 'translateX(-3px) scaleX(-1) rotate(-10deg)', marginLeft: '0px' }, { transform: 'scaleX(-1)', marginLeft: '24px' }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
+    run.push(h1.animate([{ transform: 'translateX(3px) rotate(-10deg)', marginRight: '0px' }, { transform: 'none', marginRight: `${g}px` }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
+    run.push(h2.animate([{ transform: 'translateX(-3px) scaleX(-1) rotate(-10deg)', marginLeft: '0px' }, { transform: 'scaleX(-1)', marginLeft: `${g}px` }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
     run.push(word.animate([{ width: '0px', opacity: 0 }, { width: `${W}px`, opacity: 1 }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
     // 4. The mark settles into the header, and the page comes up under it.
     const settle = () => {
@@ -123,7 +126,9 @@
     const a = xh({ weight: cs.fontWeight, family: cs.fontFamily }), b = xh({ weight: hl.fontWeight, family: hl.fontFamily });
     if (a && b) html.style.setProperty('--hl-fit', (a / b).toFixed(3));
   }
-  document.fonts.ready.then(fit);
+  // The hands as tall as the wordmark's ink and on its baseline (hands-fit.js, Ben 07:34).
+  const fitLockup = () => { const l = document.querySelector('header .lockup'); if (l && window.fitHands) fitHands(l, l.querySelector('.wordmark'), l.querySelectorAll('.hand')); };
+  document.fonts.ready.then(() => { fit(); fitLockup(); });
 
   // The menu on narrow screens: a sheet under the header, closed by the button, Escape or a link.
   const btn = document.querySelector('.menu-btn'), menu = document.querySelector('#menu');

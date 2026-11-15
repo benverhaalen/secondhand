@@ -11,6 +11,7 @@
   ],
   "skip": "loading: a thread row has no skeleton in the kit yet, and a card skeleton would move the list when it lands; dense: no world holds more than five conversations, and a longer list is the same rows",
   "catalog": false,
+  "wash": false,
   "status": "fail",
   "findings": [
     {

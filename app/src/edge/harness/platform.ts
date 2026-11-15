@@ -3,14 +3,14 @@
 // clocks and rules come from spec/sites.mjs, listing fields and limits from research/list/ben/platforms/platform-fit.json,
 // which verbs a site has from the route table in spec/product.md#the-harness-protocol. This file only says where each lives,
 // plus the storefront figures each site shows (read_storefront, storefront_snapshot), each with its mark and source.
-import { readFileSync } from 'node:fs';
+// Static imports only: Metro bundles this file into every API route, and it cannot bundle import.meta or a top-level await.
+import { FACTS, UNKNOWN } from '../../../../spec/sites.mjs';
+import fit from '../../../../research/list/ben/platforms/platform-fit.json' with { type: 'json' };
 import { SITES, VERBS, type Site, type Verb } from './names.ts';
 
 type Fact = { v: unknown; mark: 'observed' | 'asserted' | 'inferred'; src: string };
-const SITES_MJS: string = new URL('../../../../spec/sites.mjs', import.meta.url).href;
-const sitesMod = await import(SITES_MJS) as { FACTS: Record<string, Partial<Record<Site, Fact>>>; UNKNOWN: symbol };
-const FIT = JSON.parse(readFileSync(new URL('../../../../research/list/ben/platforms/platform-fit.json', import.meta.url), 'utf8')) as
-  { platforms: Record<string, Record<string, unknown>> };
+const sitesMod = { FACTS, UNKNOWN } as { FACTS: Record<string, Partial<Record<Site, Fact>>>; UNKNOWN: symbol };
+const FIT = fit as { platforms: Record<string, Record<string, unknown>> };
 
 // The storefront_snapshot fields (spec/product.md, the storefront_snapshot row): what a shop can report about itself.
 export const STOREFRONT_FIELDS = ['followers', 'following', 'rating', 'review_count', 'active_count', 'sold_count', 'joined_at',
@@ -50,9 +50,9 @@ const BASE: Record<Site, Pick<SiteProfile, 'verbs' | 'storefront'>> = {
     mark: 'inferred', src: `${P}poshmark.md#15-adapter-rules-agent-proposal` } },
   mercari: { verbs: ALL(), storefront: { shows: ['followers', 'rating', 'review_count', 'active_count', 'sold_count', 'views', 'likes', 'offers', 'orders', 'gross_cents'],
     mark: 'inferred', src: `${P}mercari.md` } },
-  offerup: { verbs: SEARCH_ONLY('OfferUp is search and price only for now (spec/product.md route table: n/a)'),
+  offerup: { verbs: SEARCH_ONLY('This site is search and price only for now (spec/product.md route table: n/a)'),
     storefront: { shows: ['rating', 'review_count', 'active_count', 'sold_count'], mark: 'inferred', src: `${P}offerup.md` } },
-  grailed: { verbs: SEARCH_ONLY('Grailed is search and price only for now (spec/product.md route table: n/a)'),
+  grailed: { verbs: SEARCH_ONLY('This site is search and price only for now (spec/product.md route table: n/a)'),
     storefront: { shows: ['followers', 'rating', 'review_count', 'active_count', 'sold_count', 'likes'], mark: 'inferred', src: `${P}grailed.md` } },
 };
 

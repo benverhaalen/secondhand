@@ -47,7 +47,9 @@ function screen(page) {
     page,
     events: () => page.evaluate(() => structuredClone(globalThis.__events ?? [])),
     // Presses the part with this testID (React Native for web writes it as data-testid). Fails if it is not on screen.
-    async tap(id) { const el = page.getByTestId(id); await el.waitFor({ state: 'visible', timeout: 3000 }); await el.tap(); },
+    // Only what is shown counts: a stack keeps the page under a pushed one in the DOM, hidden, with the same testIDs
+    // (opening /item/x/ship cold puts the item page under it, app/src/app/item/[id]/_layout.tsx).
+    async tap(id) { const el = page.getByTestId(id).filter({ visible: true }); await el.waitFor({ state: 'visible', timeout: 3000 }); await el.tap(); },
     // Waits until an event with these fields is in the log, and returns it.
     async saw(want, { timeout = 3000 } = {}) {
       const end = Date.now() + timeout;
@@ -56,7 +58,7 @@ function screen(page) {
         await page.waitForTimeout(50); }
     },
     // Waits until this text is on screen (a string is matched exactly, a RegExp as a pattern).
-    async shows(text, { timeout = 3000 } = {}) { await page.getByText(text, { exact: typeof text === 'string' }).first().waitFor({ state: 'visible', timeout }); },
+    async shows(text, { timeout = 3000 } = {}) { await page.getByText(text, { exact: typeof text === 'string' }).filter({ visible: true }).first().waitFor({ state: 'visible', timeout }); },
     path: () => new URL(page.url()).pathname,
   };
   return self;

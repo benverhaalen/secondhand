@@ -44,13 +44,13 @@ You take three photos of a $40 jacket. It becomes one record: what it is, its si
 
 **It's open source.** The whole project is public on GitHub under the Apache 2.0 licence. [Add the repo link.]
 
-[Say only what runs on the day; cut the rest or mark it "designed".]
+[Say only what runs on the day; cut the rest or mark it "designed".] The full list, with each feature's proof mark, is [features-proof.md](https://github.com/benverhaalen/secondhand/blob/main/product/features-proof.md); pull from it.
 
 - **One record per item.** Every fact on an item (brand, size, a stain) keeps where it came from: a region of a photo, a line of the tag, a measurement, or "you said". Listings for every site are built from that record.
 - **A harness for each marketplace.** eBay through its official API. For the others, your own signed-in session runs in a cloud browser (Browser Use Cloud) and does each action the way the site's own web app does it, then reads the site back to confirm. Nothing counts as done until the site shows it.
 - **Seeing a sale without watching all day.** A sold Poshmark or Mercari listing stays public with a sold mark, so we check the public page, which takes about half a second (0.44 s, observed), and open a signed-in browser only to confirm.
 - **A fee engine.** One dated row per site per fee. On a $20 item you keep $18.69 on Depop and $16.00 on Poshmark; to keep $17 you'd ask $18.25 and $21.25.
-- **Photos that can't lie.** Clean up only adjusts the light in your own photo. AI relighting is optional, labeled, and checked against your original before you see it: color, structure, and every logo, tag and flaw box. The real photo is always first.
+- **Photos that can't lie.** Clean up only adjusts the light in your own photo. AI relighting is optional, labeled, and checked against your original before you see it: color, structure, and every logo, tag and flaw box. The AI doesn't keep sizes on its own (one redraw of a tee came out about 2 inches too narrow), so every AI photo is measured against your tape before it posts, and set back to the measured shape or rejected. The real photo is always first.
 - **Databricks** [only what's deployed]: live state in Lakebase, every event and comparable sale in Delta tables, photos in a Unity Catalog volume, every model call through one gateway, and every agent step as an MLflow trace that the app shows when you tap Why?.
 - **The phone app** is Expo with a native Swift camera module; the website is the same app on the web.
 

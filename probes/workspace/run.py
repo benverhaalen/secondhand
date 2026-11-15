@@ -16,6 +16,11 @@ import json
 import re
 import subprocess
 import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "log"))
+from secondhand_log import create_log, stdout_sink
+log = create_log('probes.workspace.run', 'dev', stdout_sink)
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -192,6 +197,20 @@ def p_apps(ctx: Ctx) -> Result:
 BROWSER_TASK = Path(__file__).with_name("browser_task.py")
 
 
+def browser_result_ok(output: str) -> bool:
+    for line in output.splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict):
+            continue
+        result = event.get("result", event)
+        if isinstance(result, dict) and result.get("browser") == "ok":
+            return True
+    return False
+
+
 def p_hosted_browser(ctx: Ctx) -> Result:
     """Whether a headless Chromium starts on serverless job compute, its cold start and memory; also egress (assessment 592)."""
     if not ctx.allow_create:
@@ -200,6 +219,7 @@ def p_hosted_browser(ctx: Ctx) -> Result:
     dest = f"/Workspace/Users/{me['userName']}/secondhand-probes/browser_task.py"
     ctx.json(["workspace", "mkdirs", str(Path(dest).parent).replace("\\", "/")])
     ctx.json(["workspace", "import", dest, "--file", str(BROWSER_TASK), "--format", "AUTO", "--overwrite"])
+    ctx.json(['workspace', 'import', str(Path(dest).with_name('secondhand_log.py')).replace('\\', '/'), '--file', str(Path(__file__).resolve().parents[2] / 'log' / 'secondhand_log.py'), '--format', 'AUTO', '--overwrite'])
     run = {"run_name": "secondhand-t0-1-browser", "tasks": [{"task_key": "browser", "spark_python_task": {"python_file": dest}, "environment_key": "e"}],
            "environments": [{"environment_key": "e", "spec": {"client": "3", "dependencies": ["playwright==1.49.1"]}}]}
     t = ctx.now()
@@ -211,7 +231,7 @@ def p_hosted_browser(ctx: Ctx) -> Result:
         out = (ctx.json(["jobs", "get-run-output", str(task_run)]) or {}).get("logs", "")
     except Exception as e:  # noqa: BLE001
         out = f"no output: {e}"
-    ok = state.get("result_state") == "SUCCESS" and '"browser": "ok"' in out
+    ok = state.get("result_state") == "SUCCESS" and browser_result_ok(out)
     return Result("pass" if ok else "fail", f"run {state.get('result_state')}: {out[-600:]}", {"wall_ms": int((ctx.now() - t) * 1000)})
 
 
@@ -269,7 +289,7 @@ def run_all(ctx: Ctx, only: list | None, timeout: float, probes: dict = PROBES) 
 def report(results: dict, profile: str | None, workspace_id: str | None) -> str:
     lines = [
         "# Workspace checks (T0-1)", "",
-        f"Written by `python probes/workspace/run.py`; profile `{profile or 'none'}`, workspace id `{workspace_id or 'unknown'}`. "
+        f"Researched {dt.datetime.now(CENTRAL).date()} by Nate (workspace probe). Observed probe verdicts.\n\nWritten by `python probes/workspace/run.py`; profile `{profile or 'none'}`, workspace id `{workspace_id or 'unknown'}`. "
         "Each row is one probe's dated verdict; a fail records what was seen and the fallback. No token, cookie or secret appears here.", "",
         "| Probe | Verdict | At (Central) | What was seen | Measured |", "|---|---|---|---|---|",
     ]
@@ -303,11 +323,14 @@ def main(argv: list | None = None, runner: Runner | None = None) -> int:
         Path(a.report).parent.mkdir(parents=True, exist_ok=True)
         Path(a.report).write_text(text, encoding="utf-8")
     except OSError as e:
-        print(redact(f"cannot write report: {e}"), file=sys.stderr)
+        log.error('probe.report', e)
         return 2
-    print(text)
+    log.note('probe.report', report=text)
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    finally:
+        log.end()

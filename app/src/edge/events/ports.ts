@@ -1,6 +1,8 @@
 // The ports stream 2 builds against, each with an in-memory fake. They stand in for db-1 (Lakebase tables),
 // hp-1/hp-2 (harness.call, session lease) and pr-1 (params) until those land; then each fake is swapped
 // for the real one behind the same shape. Design: app/src/edge/events/README.md.
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { randomUUID } from 'node:crypto';
 import type { EventKind, EventRow, Site } from './event.ts';
 
 // ---- names (product.md §4 job kinds, §5 decision kinds; NEW ones are asked of the orchestrator) ----
@@ -35,6 +37,7 @@ export interface JobRow {
 
 export interface DecisionRow {
   id: string;
+  data?: 'synthetic' | 'example' | `dataset:${string}` | `live:${string}` | 'captured';
   user_id: string;
   kind: string; // product.md §5 decision kinds
   subject: string; // what it is about (item, account, listing); one open decision per (kind, subject)
@@ -71,7 +74,24 @@ export const JOB_FOR: Record<EventKind, JobKind> = {
 };
 
 // ---- the store: db-1's event, job, outbox and decision tables ----
+export const TABLES = ['item', 'listing', 'account', 'limits', 'rule', 'want', 'match', 'order', 'conversation', 'offer', 'operation'] as const;
+export type Table = (typeof TABLES)[number];
+export type Row = { id: string; user_id: string; version?: number } & Record<string, unknown>;
+export interface StoreState {
+  events: EventRow[];
+  jobs: JobRow[];
+  decisions: DecisionRow[];
+  rows: Partial<Record<Table, Row[]>>;
+}
+
 export interface Store {
+  put<T extends Row>(table: Table, row: T): T;
+  get<T extends Row>(table: Table, user_id: string, id: string): T | undefined;
+  rows<T extends Row>(table: Table, filter: { user_id: string } & Record<string, unknown>): T[];
+  // Cross-tenant read for system work; never called from a route handler.
+  systemRows<T extends Row>(table: Table, filter?: Record<string, unknown>): T[];
+  beginOperation(op: { id: string; user_id: string; site: string; verb: string; sku_hash?: string; data: 'synthetic' | 'example' | `dataset:${string}` | `live:${string}`; at: string }): { row: Row; duplicate: boolean };
+  settleOperation(user_id: string, id: string, patch: { state: 'done' | 'unknown'; envelope?: unknown; attempts?: number; at: string }): Row;
   // unique (user_id, dedupe_key); a repeat returns the first row with duplicate true
   insertEvent(e: Omit<EventRow, 'id'>): { row: EventRow; duplicate: boolean };
   // unique (user_id, idempotency_key)
@@ -94,13 +114,61 @@ export interface Store {
 let n = 0;
 const uid = (p: string) => `${p}_${(++n).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
-export function memoryStore(): Store & { claims: Map<string, string> } {
-  let events: EventRow[] = [], jobs: JobRow[] = [], decisions: DecisionRow[] = [];
+function checkOperationEnvelope(value: unknown, seen = new Set<object>()): void {
+  if (typeof value !== 'object' || value === null || seen.has(value)) return;
+  seen.add(value);
+  for (const [key, nested] of Object.entries(value)) {
+    if (/cookie|token|authorization|password|set-cookie|buyer_name|address/i.test(key)) {
+      throw new Error('operation envelope contains a forbidden key');
+    }
+    checkOperationEnvelope(nested, seen);
+  }
+}
+
+export function memoryStore(initial?: StoreState): Store & { claims: Map<string, string>; dump(): StoreState } {
+  let { events, jobs, decisions, rows } = structuredClone<StoreState>(initial ?? { events: [], jobs: [], decisions: [], rows: {} });
   const claims = new Map<string, string>();
   const match = <T extends object>(f: Partial<T> | undefined) => (r: T) =>
     !f || Object.entries(f).every(([k, v]) => v === undefined || (r as Record<string, unknown>)[k] === v);
-  const s: Store & { claims: Map<string, string> } = {
+  const s: Store & { claims: Map<string, string>; dump(): StoreState } = {
     claims,
+    dump: () => structuredClone({ events, jobs, decisions, rows }),
+    put(table, row) {
+      const tableRows = rows[table] ?? [];
+      const i = tableRows.findIndex(r => r.id === row.id && r.user_id === row.user_id);
+      const old = tableRows[i];
+      if (row.version !== undefined && row.version !== old?.version) {
+        throw Object.assign(new Error(`stale ${table} ${row.id}`), { code: 'stale' });
+      }
+      const stored = { ...row, version: (old?.version ?? 0) + 1 };
+      if (i < 0) tableRows.push(stored); else tableRows[i] = stored;
+      rows[table] = tableRows;
+      return stored;
+    },
+    get: <T extends Row>(table: Table, user_id: string, id: string) =>
+      rows[table]?.find(r => r.id === id && r.user_id === user_id) as T | undefined,
+    rows: <T extends Row>(table: Table, filter: { user_id: string } & Record<string, unknown>) =>
+      (rows[table] ?? []).filter(r => Object.entries(filter).every(([key, value]) => r[key] === value)) as T[],
+    systemRows: <T extends Row>(table: Table, filter: Record<string, unknown> = {}) =>
+      (rows[table] ?? []).filter(r => Object.entries(filter).every(([key, value]) => r[key] === value)) as T[],
+    beginOperation(op) {
+      const old = s.get('operation', op.user_id, op.id);
+      if (old) return { row: old, duplicate: true };
+      const row = { ...op, state: 'started', attempts: 1, version: 1 };
+      (rows.operation ??= []).push(row);
+      return { row, duplicate: false };
+    },
+    settleOperation(user_id, id, patch) {
+      const tableRows = rows.operation ?? [];
+      const i = tableRows.findIndex(row => row.user_id === user_id && row.id === id);
+      if (i < 0) throw new Error(`no operation ${id}`);
+      checkOperationEnvelope(patch.envelope);
+      const old = tableRows[i];
+      if (old.state === 'done') return old;
+      const row = { ...old, ...patch, version: (old.version ?? 0) + 1 };
+      tableRows[i] = row;
+      return row;
+    },
     insertEvent(e) {
       const old = events.find(x => x.user_id === e.user_id && x.dedupe_key === e.dedupe_key);
       if (old) return { row: old, duplicate: true };
@@ -135,8 +203,13 @@ export function memoryStore(): Store & { claims: Map<string, string> } {
       decisions[i] = { ...decisions[i], ...patch }; return decisions[i];
     },
     tx(fn) {
-      const saved = [structuredClone(events), structuredClone(jobs), structuredClone(decisions)] as const;
-      try { return fn(s); } catch (e) { [events, jobs, decisions] = saved.map(x => structuredClone(x)) as [EventRow[], JobRow[], DecisionRow[]]; throw e; }
+      const saved = s.dump(), savedClaims = new Map(claims);
+      try { return fn(s); } catch (e) {
+        ({ events, jobs, decisions, rows } = saved);
+        claims.clear();
+        for (const [id, worker] of savedClaims) claims.set(id, worker);
+        throw e;
+      }
     },
   };
   return s;
@@ -168,20 +241,49 @@ export function fakeHarness(scripts: Record<string, Script> = {}, delayMs = 0) {
 }
 
 // ---- the session lease: hp-2. One job drives an account's session at a time; busy answers 409. ----
+export type Leased<T> = { ok: true; value: T } | { ok: false; status: 409; held_by: string };
 export interface Leases {
+  withLease<T>(account_id: string, job_id: string, ttl_ms: number, run: () => Promise<T>): Promise<Leased<T>>;
   take(account_id: string, job_id: string, ttl_ms: number): { ok: true } | { ok: false; status: 409; held_by: string };
   give(account_id: string, job_id: string): void;
 }
 export function memoryLeases(now: () => number = Date.now): Leases {
   const held = new Map<string, { job_id: string; until: number }>();
-  return {
+  const scope = new AsyncLocalStorage<ReadonlyMap<string, string>>();
+  const leases: Leases = {
     take(a, j, ttl) {
       const h = held.get(a);
       if (h && h.job_id !== j && h.until > now()) return { ok: false, status: 409, held_by: h.job_id };
       held.set(a, { job_id: j, until: now() + ttl }); return { ok: true };
     },
     give(a, j) { if (held.get(a)?.job_id === j) held.delete(a); },
+    async withLease(a, job, ttl, run) {
+      const inherited = scope.getStore()?.get(a);
+      if (inherited) {
+        const current = held.get(a);
+        if (current?.job_id !== inherited || current.until <= now()) return { ok: false, status: 409, held_by: current?.job_id ?? '' };
+        const value = await run(), after = held.get(a);
+        return after?.job_id === inherited && after.until > now()
+          ? { ok: true, value } : { ok: false, status: 409, held_by: after?.job_id ?? '' };
+      }
+      const owner = `scope:${job}:${randomUUID()}`, taken = leases.take(a, owner, ttl);
+      if (!taken.ok) return taken;
+      let lost = false;
+      const owns = () => { const current = held.get(a); return current?.job_id === owner && current.until > now(); };
+      const renew = setInterval(() => {
+        if (!owns()) { lost = true; clearInterval(renew); return; }
+        if (!leases.take(a, owner, ttl).ok) lost = true;
+      }, Math.max(1, Math.floor(ttl / 3)));
+      renew.unref();
+      const owners = new Map(scope.getStore()); owners.set(a, owner);
+      try {
+        const value = await scope.run(owners, run);
+        return lost || !owns() ? { ok: false, status: 409, held_by: held.get(a)?.job_id ?? '' } : { ok: true, value };
+      }
+      finally { clearInterval(renew); leases.give(a, owner); }
+    },
   };
+  return leases;
 }
 
 // ---- params: pr-1. Every cadence, budget and threshold is read here with its scope, never a constant. ----

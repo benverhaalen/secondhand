@@ -4,14 +4,54 @@ import assert from 'node:assert/strict';
 import { WORLD_NAMES, world } from '../demo/index.ts';
 import { ms } from '../demo/format.ts';
 import { ROW_CHARS, cards, handledLine, log, sales, tiers, top } from './cards.ts';
-import { stopsWorld } from './stops.ts';
+import { oneCardWorld, quietWorld, stopsWorld } from './stops.ts';
 
 const ALL = [...WORLD_NAMES.map(n => [n as string, world(n)] as const), ['stops', stopsWorld] as const];
 
-test('today: the top slot is never $0, and a new person gets the next setup step', () => {
-  for (const [n, w] of ALL) { const t = top(w); if (t?.kind === 'news') assert.ok(t.cents > 0, n); }
-  assert.equal(top(world('new'))?.kind, 'setup');
-  assert.equal(top(world('clearing'))?.kind, 'news');
+// The top is the most flattering true number, by a ladder (Ben 07:12: "the top thing should be the most flattering metric ...
+// updates from last time are definitely best but you dont always have updates. what do you say when nothings gone on yet").
+// One test per rung, then the rules every rung keeps: never $0, never rounded up, always a named window.
+test('today top, rung a: money since the last open, with what sold', () => {
+  const t = top(world('clearing'));
+  assert.equal(t.rung, 'since');
+  assert.equal(t.caption, 'Since yesterday'); assert.equal(t.figure, '$97.33'); assert.equal(t.line, '2 sold, after fees');
+  assert.equal(t.things.length, 2); for (const x of t.things) { assert.ok(x.photo); assert.ok(x.site); }
+});
+test('today top, rung b: nothing new since the last open, so this week, else this month', () => {
+  const week = top(oneCardWorld);
+  assert.equal(week.rung, 'period');
+  assert.equal(week.caption, 'This week'); assert.equal(week.line, '3 sold, after fees'); assert.equal(week.things.length, 3);
+  const c = world('clearing'), kin = c.orders.find(o => o.id === 'ord_kin');
+  assert.ok(kin);
+  const month = top({ ...c, user: { ...c.user, last_open_at: c.now }, orders: [{ ...kin, created_at: '2026-11-03T18:00:00Z' }] });
+  assert.equal(month.rung, 'period');
+  assert.equal(month.caption, 'This month'); assert.equal(month.line, '1 sold, after fees');
+});
+test('today top, rung c: never sold and something is live, what it could bring, before fees', () => {
+  const t = top(world('one'));
+  assert.equal(t.rung, 'could');
+  assert.equal(t.caption, 'Your listing could bring'); assert.equal(t.figure, '$85'); assert.equal(t.line, 'up to $115, before fees');
+});
+test('today top, rung d: sold before, nothing this month, so the interest since the last open', () => {
+  const t = top(quietWorld);
+  assert.equal(t.rung, 'interest');
+  assert.equal(t.caption, 'Since yesterday'); assert.equal(t.figure, '38 views'); assert.equal(t.line, '6 likes, 2 watching');
+  // With no new interest, what is live is still a true number: rung c again.
+  const still = top({ ...quietWorld, items: quietWorld.items.map(i => ({ ...i, listings: i.listings.map(l => ({ ...l, interest_new: undefined })) })) });
+  assert.equal(still.rung, 'could');
+});
+test('today top, rung e: nothing listed yet, no number, one way forward', () => {
+  const t = top(world('new'));
+  assert.equal(t.rung, 'start');
+  if (t.rung === 'start') { assert.equal(t.step, 'See what your things are worth'); assert.equal(t.to, '/camera'); }
+});
+test('today top: never $0, never without its window, and new, one and empty land on different rungs', () => {
+  for (const [n, w] of [...ALL, ['one-card', oneCardWorld] as const, ['quiet', quietWorld] as const]) {
+    const t = top(w);
+    if (t.rung === 'start') continue;
+    assert.doesNotMatch(t.figure, /^\$0(\.00)?$|^0 /, n); assert.ok(t.caption.length > 0, n);
+  }
+  assert.equal(new Set([top(world('new')).rung, top(oneCardWorld).rung, top(quietWorld).rung]).size, 3);
 });
 
 test('today: no card shows an amount of $0 or less', () => {
@@ -96,9 +136,3 @@ test('today: a card on a listed item has the way back to its site', () => {
   }
 });
 
-// The top slot shows what sold, with its photo and site, so the good news is the things, not only a number.
-test('today: the top slot names what sold since the last look', () => {
-  const t = top(world('clearing'));
-  assert.equal(t?.kind, 'news');
-  if (t?.kind === 'news') { assert.equal(t.sold.length, 2); for (const s of t.sold) { assert.ok(s.photo); assert.ok(s.site); } }
-});

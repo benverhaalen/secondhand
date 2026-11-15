@@ -1,12 +1,12 @@
 {
   "screen": "(tabs)/you",
   "route": "/you",
-  "what": "You: what selling has earned after fees, what is on its way, what is live and what it could fetch, what was kept and its worth, the month's goal, the weekly money kept once there is a shape, and the rows into each page.",
+  "what": "You, a dashboard (Ben 06:19): a site that signed the person out with Sign in on its row; money kept after fees and from how many sales; one bar of where the money is (paid out, on its way, could still earn); money kept each week on a dollar axis with each week's count of sales; everything being sold by where it is; how each live thing is doing against what is usual for it; then the rows into each page.",
   "frame": {
     "who": "Every seller; the person clearing out (primary) opens it after a sale to see the money, the flipper most days for the running total and the trend (product/personas.md; research/today/ben/top-of-today-and-stacking.md §1).",
     "how_often": "A few times a week; Today's top slot taps through to it after a sale (spec/pages.md §4).",
-    "came_to": "See that it worked (money kept, money coming), then reach a setting, a site or the log in one tap.",
-    "costly_mistake": "Reading money that can still be taken back as money in hand: on its way is shown apart from what landed and never added to it (spec/features/insights.md, Kept versus sold). A site that signed the person out going unnoticed: it leads the page.",
+    "came_to": "See that it worked and how it is going: the money and where it is, the sales over time, what is for sale and how each live thing is doing, then reach a setting, a site or the log in one tap.",
+    "costly_mistake": "Reading money that can still be taken back as money in hand: on its way is its own part of the bar and its own row, never added to paid out (spec/features/insights.md, Kept versus sold). One big sale read as a good run: each week shows its count of sales under its bar. A site that signed the person out going unnoticed: it leads the page, with Sign in on the row.",
     "ways_out": "Pause selling, never suggest edits, units, delete (Settings); quiet hours and every kind of alert (Notifications); unlink a site (Your sites); undo what the agent did (Activity); turn a rule back to asking (Rules and limits). spec/ways-out.md rows: I'm away, Not at night, Don't edit my photos, Inches not centimetres, Get me out.",
     "in_the_loop": "The person stays in the loop through Rules and limits (what runs alone, what always asks) and Activity (every automatic step with Undo); this page points to both and says how many rules run on their own."
   },
@@ -14,22 +14,22 @@
     {
       "state": "typical",
       "world": "clearing",
-      "shows": "the title You in the nav with the inbox and its count; \"A site signed you out\" leading; the amount earned after fees with how many sales; rows On its way with the soonest word still to come and its date (Ready on the site about Tuesday), live and could earn, kept and worth; the November goal bar; rows By site and Records; rows Your sites (3 of 5), Rules and limits (3 on their own), Activity, Notifications, Settings"
+      "shows": "the title You with the inbox and its count; Poshmark's logo with Signed out yesterday at 9 pm, Nothing sells there until you sign in, and Sign in; $163.63, Earned after fees, from 4 sales; a bar of Paid out ($31.30), On its way ($132.33, Ready on the site about Tuesday) and Could still earn ($253 to $276, If your 4 live things sell); Sales each week on a dollar axis ($0, $100, $200) with a Sales row under the dates (1, then 3 this week); Your things: a bar and tiles Getting ready 2, Live 4, Sold 4, Kept 1 worth $70 to $95; How they’re doing: the lamp, the jacket, the pants and the fleece, each with views, likes, offers and days up against the usual, and the key; rows By site, Records, Your sites (3 of 5), Rules and limits, Activity, Notifications, Settings"
     },
     {
       "state": "dense",
       "world": "flipper",
-      "shows": "the same as typical with the flipper's numbers; no signed-out notice; the goal bar far from its target"
+      "shows": "the same as typical with the flipper's numbers: no signed-out row, no paid out, the chart topping at $250 with 6 sales this week, 40 getting ready, the 4 slowest of 16 live and All 16 live"
     },
     {
       "state": "one",
       "world": "one",
-      "shows": "Nothing sold yet with its line and no button, then one row: 1 live, could earn; the goal bar at nothing kept; rows Your sites, Rules and limits, Notifications, Settings"
+      "shows": "Poshmark's Sign in row; Nothing sold yet with its line and no button; the bar with Could still earn; Your things with Live 1; How they’re doing with the jacket; no chart; rows Your sites, Rules and limits, Notifications, Settings"
     },
     {
       "state": "new",
       "world": "new",
-      "shows": "Nothing sold yet, its line and Sell something; rows Your sites (0 of 5), Rules and limits, Notifications, Settings; no money rows, no goal"
+      "shows": "Nothing sold yet, its line and Sell something; rows Your sites (0 of 5), Rules and limits, Notifications, Settings; no bar, no chart, no things"
     },
     {
       "state": "loading",
@@ -56,11 +56,23 @@
       "goes": "/messages"
     },
     {
-      "id": "you-signed-out",
-      "control": "A site signed you out",
-      "on_tap": "opens Your sites",
-      "does": "opens Your sites",
-      "goes": "/you/connections"
+      "id": "you-signin-poshmark",
+      "control": "Sign in (on the signed-out site's row)",
+      "on_tap": "starts that site's own sign-in in place; the row says Signing in, Finish on Poshmark’s own page, then Linked again",
+      "does": "signs back in to Poshmark",
+      "logs": {
+        "type": "change",
+        "entity": "account",
+        "id": "poshmark",
+        "to": "loading"
+      }
+    },
+    {
+      "id": "you-paid-out",
+      "control": "Paid out",
+      "on_tap": "opens Payouts",
+      "does": "opens Payouts",
+      "goes": "/you/payouts"
     },
     {
       "id": "you-on-its-way",
@@ -71,17 +83,74 @@
     },
     {
       "id": "you-live",
-      "control": "Live, could earn",
-      "on_tap": "opens the Sell tab",
+      "control": "Could still earn",
+      "on_tap": "opens the Sell tab on Live",
+      "does": "opens Sell on Live",
+      "goes": "/sell"
+    },
+    {
+      "id": "things-in_progress",
+      "control": "Getting ready (tile)",
+      "on_tap": "opens Sell on In progress",
       "does": "opens Sell",
       "goes": "/sell"
     },
     {
-      "id": "you-kept",
-      "control": "Kept, worth",
-      "on_tap": "opens By site at what your things are worth",
-      "does": "opens By site",
-      "goes": "/you/insights"
+      "id": "things-live",
+      "control": "Live (tile)",
+      "on_tap": "opens Sell on Live",
+      "does": "opens Sell",
+      "goes": "/sell"
+    },
+    {
+      "id": "things-sold",
+      "control": "Sold (tile)",
+      "on_tap": "opens Sell on Sold",
+      "does": "opens Sell",
+      "goes": "/sell"
+    },
+    {
+      "id": "things-kept",
+      "control": "Kept (tile)",
+      "on_tap": "opens Sell on Kept",
+      "does": "opens Sell",
+      "goes": "/sell"
+    },
+    {
+      "id": "pulse-it_lamp",
+      "control": "A live thing (how it's doing)",
+      "on_tap": "opens that item",
+      "does": "opens the lamp",
+      "goes": "/item/it_lamp"
+    },
+    {
+      "id": "pulse-it_jacket",
+      "control": "A live thing (how it's doing)",
+      "on_tap": "opens that item",
+      "does": "opens the jacket",
+      "goes": "/item/it_jacket"
+    },
+    {
+      "id": "pulse-it_pants",
+      "control": "A live thing (how it's doing)",
+      "on_tap": "opens that item",
+      "does": "opens the pants",
+      "goes": "/item/it_pants"
+    },
+    {
+      "id": "pulse-it_fleece",
+      "control": "A live thing (how it's doing)",
+      "on_tap": "opens that item",
+      "does": "opens the fleece",
+      "goes": "/item/it_fleece"
+    },
+    {
+      "id": "you-all-live",
+      "control": "All 16 live",
+      "on_tap": "opens Sell on Live",
+      "does": "opens Sell",
+      "goes": "/sell",
+      "world": "flipper"
     },
     {
       "id": "you-insights",
@@ -143,14 +212,17 @@
   ],
   "back": "none: a tab. The tab bar moves between places.",
   "decisions": [
-    "The title is You in the text face at 21, Medium, centered where Today has the wordmark: the wordmark stays the one brand mark, and iOS titles its tabs in the text face (research/today/ben/today-feed-and-card-states.md §5). Brand-check warns B3 (no wordmark) on purpose.",
-    "The peak amount is earned after fees across every sale, with on its way as the first row under it: the person wants to see it worked, and the row keeps money that can still be clawed back apart, as insights.md asks.",
-    "Live and kept are rows with their range, not more big numbers: one peak amount per view (C6).",
-    "On its way counts a sale's money until it is in the bank or in the hand (the four words, spec/edge-cases.md, Ben 05:05), the same sum as Payouts, and its line names the soonest word still to come with its date, so the person sees when, not only how much.",
-    "The weekly bars show only once 3 weeks have a sale (top-of-today-and-stacking.md §1). No demo world has 3 such weeks, so the parts sheet shows the bars; the rule stays.",
-    "Rows into pages are a settings list with hairlines, the pattern every phone's Settings uses, in three groups: money, how the agent runs, the app.",
-    "A signed-out site leads the page as a need notice: it stops selling there, so it is the one thing to fix first.",
-    "Payouts, By site and Records rows are hidden until there is a sale, and Activity until the agent has done something: a row to an empty page costs a tap and says nothing.",
-    "No tabular figures on this page: no amount here sits in a column or changes in place (Art. 6.7), and PP Neue Montreal's tabular digits read as letter-spaced in a lone value."
+    "The title is You in the text face at 21, Medium, centered where Today has the wordmark: the wordmark stays the one brand mark (research/today/ben/today-feed-and-card-states.md §5). Brand-check warns B3 on purpose.",
+    "You is a dashboard (Ben 06:19, product/words.md, notes on the first gallery): each of his questions gets one form. Sales: the amount with its count of sales, and a weekly bar chart. Where the money is: one bar. Listings: a bar by state with a tile per part. How they're doing: a row per live thing with four counts against the usual. Why: he asked for visuals and context, and each form answers one question (dataviz: one form per question).",
+    "A signed-out site leads the page as a row with its logo and Sign in, and the tap starts that site's own sign-in in place (Ben 06:19: click on something to sign back in). Why: one tap fixes it, and the person sees it work without leaving You. The row is not a button itself, so there is one act and no chevron.",
+    "The peak amount is earned after fees with the number of sales beside it, and the bar under it splits that money into paid out and on its way, then adds what the live things could bring. Why: one big sale is read as one sale, and money that can still be taken back is never shown as in hand (insights.md).",
+    "Could still earn is what the person keeps after each site's fees at the asking price (engines/valuation/keep.ts), a range when one thing is up at different prices on different sites and one number when every thing is on one site, in whole dollars. Why: Ben 06:19, 'if it was one site, it would just be one number'; it was the valuation range before, which is what it might fetch, not what is asked. The words are plain: Could still earn, If your 4 live things sell (Ben: '4 live, could earn' was clunky).",
+    "The weekly chart shows once there are 3 sales in its 8 weeks (it was 3 weeks with a sale, an agent proposal in top-of-today-and-stacking.md §1). Why: Ben wants the chart, and 3 sales make a shape; fewer is a sentence. The axis is dollars from zero to a round top, each week's count of sales sits under its date in the same column, and only this week and the tallest week are labelled. Two measures share the columns, never a second y-axis.",
+    "No goal on You: Ben 06:19, 'I don't really like the November goal type thing'. The goal the person sets stays on By site as Kept so far against their own target, where it is their number; it comes back to You only if it earns a place on the chart.",
+    "How each live thing is doing compares views, likes (eBay watchers count as likes), offers and days up with the usual for it: the median per day of the person's other live listings on the same site (3 needed, else 3 across all sites, else none), and for days, the market's outlook, then the product's time to sell on that site, then the person's own. Why: it is the only usual the world holds; a per-listing usual from similar listings on the market is asked for as data. A count with no usual has no tick; a site that shows no views shows a dash, never zero. Slow ones come first, then the longest up; 4 show, with All N live beyond that.",
+    "Colors follow the state everywhere else (ui/states.ts): lime paid, mint sold and on its way, sky live, gray getting ready, lilac kept, peach didn't sell; the unsure part of could earn is the quieter step of sky. Text stays in ink, and every part has its words and an icon or a swatch beside them, so color is never alone.",
+    "Rows into pages are a settings list with hairlines, in groups: money, how the agent runs, the app. Payouts, By site and Records rows wait for a sale, and Activity for the agent's first step.",
+    "No tabular figures on this page: no amount here changes in place, and PP Neue Montreal's tabular digits read as letter-spaced in a lone value (Art. 6.7).",
+    "Money to come is said as You get, never You keep (Ben 06:19 found \"you keep this much money\" clunky; one form across the app). Money that came is Earned after fees, and the chart is Sales each week with its axis titled After fees."
   ]
 }

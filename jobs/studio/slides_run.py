@@ -13,6 +13,10 @@ import io
 import json
 import os
 import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "log"))
+from secondhand_log import create_log, stdout_sink
+log = create_log('jobs.studio.slides_run', 'dev', stdout_sink)
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -31,8 +35,9 @@ from lay import wrinkle  # noqa: E402  (research/studio/ben/prototype, on the pa
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 TEMPLATES = os.path.join(ROOT, "research", "studio", "ben", "templates")
 VISION = ["google/gemini-4-carbon", "google/gemini-4-hydrogen", "google/gemini-2.5-pro"]
-# candidates per whole slide: Nano Banana 2.1 is fast and cheap (6.8 s, $0.037 in the smoke run), Gemini 3 Pro Image a
-# second opinion ($0.14); GPT image 2 took 95 s and is left out of the default
+# candidates per whole slide: Nano Banana 2.1 leads (Ben, 2026-11-15 08:33: "stay on nanobanana"); it is fast and cheap
+# (6.8 s, $0.037 in the smoke run), and Gemini 3 Pro Image is a second opinion ($0.14). Seedream 5.5 was not reachable on
+# OpenRouter's model list that morning. GPT image 2 took 95 s and is left out.
 CANDIDATES = [("google/gemini-nano-banana-2.1", 1), ("google/gemini-nano-banana-2.1", 2), ("google/gemini-nano-banana-2.1", 3),
               ("google/gemini-nano-banana-2.1", 4), ("google/gemini-3-pro-image", 1)]
 SIDE = 1080
@@ -347,7 +352,7 @@ def main(items_dir: str, out_dir: str, *names: str) -> None:
     rows = []
     for n in names:
         r = run_item(os.path.join(items_dir, n), os.path.join(out_dir, n))
-        print(json.dumps(r, default=str), flush=True)
+        log.note('studio.slides', result=r)
         rows.append(r)
     with open(os.path.join(out_dir, "summary.json"), "w") as f:
         json.dump(rows, f, indent=1, default=str)

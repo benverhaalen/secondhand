@@ -7,8 +7,8 @@ import { fact } from '../../../../spec/sites.mjs';
 export function offer(state: OfferState, pAccept: PAccept, posture: number, policy: Decision['policy'] = 'champion', param_version = 0): Decision {
   assertState(state); // before the accept line is computed from the floor
   const s = stance(posture);
-  const adjusted = { ...state,
-    always_accept_cents: state.floor_cents + s.accept_line_share * (Math.max(state.floor_cents, state.always_accept_cents) - state.floor_cents),
+  const accept_line_cents = Math.ceil(state.floor_cents + s.accept_line_share * (Math.max(state.floor_cents, state.always_accept_cents) - state.floor_cents));
+  const adjusted = { ...state, always_accept_cents: accept_line_cents, accept_line_cents,
     counter_under_floor: s.counter_under_floor_offers };
   let decision = decide(adjusted, pAccept, policy, param_version);
   if ((decision.kind === 'counter_offer' || decision.kind === 'price_below_floor') && decision.amount_cents !== null) {
@@ -20,7 +20,7 @@ export function offer(state: OfferState, pAccept: PAccept, posture: number, poli
       const permitted = decision.candidates.filter(c => c.amount_cents > state.offer_cents && c.amount_cents >= line);
       const row = policy === 'challenger' ? permitted.sort((a, b) => b.expected_keep - a.expected_keep)[0] : permitted.find(c => c.amount_cents === line);
       const amount = row?.amount_cents ?? line;
-      decision = { ...decision, amount_cents: amount, keep_at_amount: state.keep(amount), p_accept: row?.p_accept ?? null, expected_keep: row?.expected_keep ?? null };
+      decision = { ...decision, amount_cents: amount, keep_at_amount: Math.round(state.keep(amount)), p_accept: row?.p_accept ?? null, expected_keep: row?.expected_keep ?? null };
     }
   }
   return assertLimits(decision, adjusted);

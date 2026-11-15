@@ -1,3 +1,4 @@
+Researched 2026-11-14 by Nate (retriever seat).
 Owner: Nate. Written 2026-11-14 by a retriever seat. Status: reference.
 
 Labels: **observed** = read at the cited URL on 2026-11-14. **asserted** = the vendor says it, no code or reference page shows it. **inferred** = my reasoning. Prices and limits can change; re-read https://browser-use.com/pricing before a spend decision. No browser was started and the cloud API was not called.

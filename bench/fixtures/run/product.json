@@ -1,0 +1,56 @@
+{
+  "id": "pr_4hd1",
+  "brand": "Carhartt",
+  "model": "Detroit Jacket J97",
+  "variant": "brown duck, blanket lined",
+  "category": "apparel",
+  "used_price": {
+    "range": {
+      "low": {
+        "amount_cents": 8500,
+        "currency": "USD"
+      },
+      "high": {
+        "amount_cents": 11500,
+        "currency": "USD"
+      }
+    },
+    "basis_count": 41,
+    "as_of": "2026-11-15T03:58:00Z",
+    "citation_id": "ci_41x",
+    "state": "shown"
+  },
+  "retail_price": {
+    "value": {
+      "amount_cents": 15999,
+      "currency": "USD"
+    },
+    "basis_count": 1,
+    "as_of": "2026-11-15T00:00:00Z",
+    "citation_id": "ci_rt1",
+    "state": "shown"
+  },
+  "trend": {
+    "value": "rising",
+    "basis_count": 90,
+    "as_of": "2026-11-15T00:00:00Z",
+    "citation_id": "ci_tr1",
+    "state": "shown"
+  },
+  "offers": [
+    {
+      "site": "ebay",
+      "condition": "used_good",
+      "seller_kind": "person",
+      "delivered_cents": {
+        "amount_cents": 7900,
+        "currency": "USD"
+      },
+      "delivery_min_days": 2,
+      "delivery_max_days": 5,
+      "stock": 1,
+      "ships_from": "US-PA",
+      "ships_to": "US"
+    }
+  ]
+}

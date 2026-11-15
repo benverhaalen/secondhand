@@ -17,14 +17,14 @@ const text = s => s.page.locator('body').innerText();
 
 // Each state: how to reach it, and what must then be on screen.
 const STATES = {
-  typical: async () => { const s = await open(); for (const t of ['Since yesterday', '$97.33', '2 sold, after fees', 'Needs you now', 'Due first, today at 3 pm', 'When you can', 'Good to know', 'Meet in public', 'Send address', 'Possible scam', /You get \$81\.55/, 'Accept $85', 'Counter $92', 'Buy 2 labels', 'Took 2 listings down, and 1 more']) await s.shows(t); },
-  new: async () => { const s = await open(ROUTE.new); await s.shows('Link a site'); await s.shows('What’s something worth?'); assert.equal(await count(s, '[data-part="card-decision"]'), 0); },
-  dense: async () => { const s = await open(ROUTE.flipper); await s.shows('Since this morning'); await s.shows('5 to ship'); await s.shows('40 to post'); await s.shows('Review 40'); assert.equal(await count(s, '[data-part="card-stack"]'), 1); },
+  typical: async () => { const s = await open(); for (const t of ['Since yesterday', '$97.33', '2 sold, after fees', 'Needs you now', 'Due first, today at 3 pm', 'Can wait', 'Good to know', 'Meet in public', 'Send address', 'Possible scam', /You get \$81\.55/, 'Accept $85', 'Counter $92', 'Buy 2 labels', 'Took 2 listings down, and 1 more']) await s.shows(t); },
+  new: async () => { const s = await open(ROUTE.new); await s.shows('Start here'); await s.shows('See what your things are worth'); assert.doesNotMatch(await text(s), /\$0/); assert.equal(await count(s, '[data-part="card-decision"]'), 0); },
+  dense: async () => { const s = await open(ROUTE.flipper); await s.shows('Since this morning'); await s.tap('shelf-when_you_can-all'); await s.shows('5 to ship'); await s.shows('40 to post'); await s.shows('Review 40'); assert.equal(await count(s, '[data-part="card-stack"]'), 1); },
   empty: async () => {
-    const s = await open('/?state=empty'); await s.shows('Nothing needs you');
-    for (const sel of ['[data-part="money-news"]', '[data-part="card-decision"]', '[data-part="notice"]']) assert.equal(await count(s, sel), 0, sel);
+    const s = await open('/?state=empty'); await s.shows('Nothing needs you'); await s.shows('38 views'); await s.shows('6 likes, 2 watching');
+    for (const sel of ['[data-part="card-decision"]', '[data-part="notice"]']) assert.equal(await count(s, sel), 0, sel);
   },
-  one: async () => { const s = await open('/?state=one'); await s.shows('$97.33'); await s.shows('Meet in public'); assert.equal(await count(s, '[data-part="card-decision"]'), 1); },
+  one: async () => { const s = await open('/?state=one'); await s.shows('This week'); await s.shows('3 sold, after fees'); await s.shows('Meet in public'); assert.equal(await count(s, '[data-part="card-decision"]'), 1); },
   'did not load': async () => {
     const s = await open('/?state=failed'); await s.shows('Today didn’t load'); assert.equal(await count(s, '[data-part="card-decision"]'), 0);
     await s.tap('retry'); await s.shows('Meet in public');
@@ -42,7 +42,7 @@ const STATES = {
     await s.shows(/did not go through/, { timeout: 5000 }); await s.shows('Retry');
   },
   queue: async () => {
-    const s = await open(ROUTE.flipper); await s.tap('queue-first_post-review'); await s.shows('Ready to post'); await s.shows('1 of 40');
+    const s = await open(ROUTE.flipper); await s.tap('shelf-when_you_can-all'); await s.tap('queue-first_post-review'); await s.shows('Ready to post'); await s.shows('1 of 40');
     await s.tap('queue-approve'); await s.shows('2 of 40', { timeout: 4000 });
   },
   offline: async () => {
@@ -50,10 +50,20 @@ const STATES = {
     await s.page.getByTestId('dec_jacket-acc').getByText('Waiting for signal').waitFor({ timeout: 3000 });
   },
   stops: async () => {
-    const s = await open(ROUTE.stops); for (const t of ['Sold twice', 'Both paid, $42 and $40', '3 sold, after fees', 'Do the Joy-Cons drift?', 'The tag photo is blurry', 'The site shows $44, not your $48']) await s.shows(t);
+    const s = await open(ROUTE.stops); await s.tap('shelf-when_you_can-all'); for (const t of ['Sold twice', 'Both paid, $42 and $40', '3 sold, after fees', 'Do the Joy-Cons drift?', 'The tag photo is blurry', 'The site shows $44, not your $48']) await s.shows(t);
     await s.tap('dec_double-compare'); await s.shows(/workpants_jo paid \$42, first/); await s.shows(/Cancelling here marks your seller record/);
   },
-  break: async () => { const s = await open('/?world=edge'); await s.shows('99+'); await s.shows('Accept $10,999.99'); await s.shows('Counter'); assert.equal(await count(s, '[data-part="card-decision"]') > 10, true); },
+  fanned: async () => {
+    const s = await open(); const shelf = '[data-shelf="when_you_can"] [data-part="card-decision"]';
+    await s.page.locator('[data-pile="when_you_can"]').waitFor(); assert.equal(await count(s, shelf), 1, 'piled: one card in full');
+    await s.tap('when_you_can-pile'); await s.page.waitForFunction(sel => document.querySelectorAll(sel).length === 4, shelf, { timeout: 3000 });
+    await s.tap('shelf-when_you_can-less'); await s.page.waitForFunction(sel => document.querySelectorAll(sel).length === 1, shelf, { timeout: 3000 });
+    await s.tap('shelf-when_you_can-all'); await s.page.waitForFunction(sel => document.querySelectorAll(sel).length === 4, shelf, { timeout: 3000 });
+  },
+  'could bring': async () => { const s = await open('/?world=one'); await s.shows('Your listing could bring'); await s.shows('$85'); await s.shows('up to $115, before fees'); },
+  break: async () => {
+    const s = await open('/?world=edge'); await s.shows('99+'); await s.shows('Accept $10,999.99'); await s.shows('Counter');
+    for (const t of ['when_you_can', 'good_to_know']) if (await count(s, `[data-testid="shelf-${t}-all"]`)) await s.tap(`shelf-${t}-all`); assert.equal(await count(s, '[data-part="card-decision"]') > 10, true); },
 };
 
 test('today: every state in the behavior table has a test here', () => {
@@ -70,7 +80,10 @@ for (const w of ['new', 'clearing', 'flipper', 'one', 'edge']) test(`today: ${w}
 // The steps that put a control on screen: a sheet or the queue opens first.
 const BEFORE = {
   'dec_jacket-amount': ['dec_jacket-more'], 'dec_jacket-later': ['dec_jacket-more'], 'dec_jacket-go-chat': ['dec_jacket-more'],
-  'log-all': ['handled'], 'dec_double-keep-first': ['dec_double-compare'], 'dec_jacket-elsewhere': ['dec_jacket-more'], 'dec_jacket-site': ['dec_jacket-more'], 'queue-approve': ['queue-first_post-review'], 'queue-skip': ['queue-first_post-review'], 'nav-back': ['queue-first_post-review'],
+  'log-all': ['handled'], 'dec_double-keep-first': ['dec_double-compare'], 'dec_jacket-elsewhere': ['dec_jacket-more'], 'dec_jacket-site': ['dec_jacket-more'], 'queue-approve': ['shelf-when_you_can-all', 'queue-first_post-review'], 'queue-skip': ['shelf-when_you_can-all', 'queue-first_post-review'], 'nav-back': ['shelf-when_you_can-all', 'queue-first_post-review'],
+  'queue-first_post-review': ['shelf-when_you_can-all'], 'shelf-when_you_can-less': ['shelf-when_you_can-all'],
+  'dec_post-post': ['shelf-when_you_can-all'], 'dec_post-edit': ['shelf-when_you_can-all'], 'dec_mark-lower': ['shelf-when_you_can-all'], 'dec_reply-send': ['shelf-when_you_can-all'], 'dec_reply-edit': ['shelf-when_you_can-all'],
+  'dec_fact-no': ['shelf-when_you_can-all'], 'dec_retake-take': ['shelf-when_you_can-all'],
 };
 for (const c of table.controls) test(`today: ${c.id} ${c.on_tap}`, async () => {
   const s = await open(c.route ?? ROUTE[c.world ?? 'clearing']);

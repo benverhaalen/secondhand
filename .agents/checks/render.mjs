@@ -347,11 +347,12 @@ function checkView(view, ctx) {
   view.els.forEach((el, i) => { const inside = k => { for (let j = k.parent; j >= 0; j = view.els[j].parent) if (j === i) return true; return false; };
     if (el.link && el.block && size(el)[0] > .6 * view.w && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img' && Math.max(...size(k)) <= 32 * u) && inside(k) && (k.rect[0] + k.rect[2]) / 2 > el.rect[2] - .2 * size(el)[0]))
       E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a row that opens a screen and ends in no chevron: nothing shows it can be pressed');
-    // The fill may sit on a child that covers the whole button, as a Press wrapper around a pill draws it.
+    // The fill may sit on a child that covers the whole button, as a Press wrapper around a pill draws it. A photo counts as a
+    // picture whether it is an img or a background image, as react-native-web draws one.
     const covers = k => inside(k) && (k.bg || k.borders.length || k.gradient) && k.rect[0] <= el.rect[0] + 1 && k.rect[1] <= el.rect[1] + 1 && k.rect[2] >= el.rect[2] - 1 && k.rect[3] >= el.rect[3] - 1;
     // Judged only when the whole button is on screen: a row cut by the fold has its chevron below, and the next screenful sees it whole.
     const whole = el.rect[0] >= -1 && el.rect[1] >= -1 && el.rect[2] <= view.w + 1 && el.rect[3] <= view.h + 1;
-    if (whole && el.button && el.part !== 'tab' && el.hasText && !el.bg && !el.borders.length && !el.gradient && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img') && inside(k) || covers(k))) E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a button with no fill and no outline: a button is a pill or a filled shape'); });
+    if (whole && el.button && el.part !== 'tab' && el.hasText && !el.bg && !el.borders.length && !el.gradient && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img' || k.photo) && inside(k) || covers(k))) E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a button with no fill and no outline: a button is a pill or a filled shape'); });
   // B36 edges line up or clearly differ: two blocks of text, one above the other, never start 1 to 3 px apart
   // Words inside a small box of their own (a tag, a pill, a button) start where the box's padding puts them, so they are left out.
   const boxed = t => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].bg || view.els[i].borders.length) return size(view.els[i])[0] < view.w / 2; return false; };

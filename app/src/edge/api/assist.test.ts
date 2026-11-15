@@ -1,3 +1,4 @@
+import { object } from './captures.ts';
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
@@ -95,4 +96,14 @@ test('assist: owned Expo files bind auth and export the contract method', async 
     assert.ok(source.includes("export const " + method + " = route('" + entry.endpoint + "'"), relative);
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
+});
+
+test('assist stores the cited engine answer on its job, including source gaps', async () => {
+  const { jobs } = await import('./jobs.ts');
+  const response = await call(examples.find(e => e.name === 'assist.parse')!);
+  const body = await response.json();
+  const result = jobs.get(body.id, 'usr_8f2k')?.result;
+  assert.ok(object(result));
+  assert.equal(result.status, 'no_source');
+  assert.ok(Array.isArray(result.searched));
 });

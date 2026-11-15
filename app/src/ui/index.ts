@@ -19,6 +19,7 @@ export { Guess, Blank, Approve } from './parts/loop';
 export { Sheet, UndoToast, EmptyState, Skeleton } from './parts/overlays';
 export { ThreadRow, Message, Meta, Draft, Composer, remark, type Span, type DraftStatus } from './parts/thread';
 export { TimeSpan, type SpanValue } from './parts/time-span';
+export { SiteLink, SiteCopy } from './parts/site-link';
 // The buy side's parts: the search box, a found listing, where a search looked, a price against its range, the history, the photos, one answer of a few.
 export { SearchField } from './parts/search-field';
 export { MatchCard, PriceRead, VERDICT, LIKENESS, type Verdict, type Likeness } from './parts/match';
@@ -39,3 +40,4 @@ export { ASPECT, CaptureFrame, frameRect } from './parts/camera-frame';
 export { Feed } from './parts/feed';
 export { QueueView, type QueueEntry } from './parts/queue';
 export { MoneyNews, type SoldThing } from './parts/money-news';
+export { Pile } from './parts/pile';

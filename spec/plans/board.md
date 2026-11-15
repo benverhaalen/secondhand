@@ -1,27 +1,14 @@
 # The build board
 
-Status: the one place progress is tracked for the build that ends at 03:00 Central on 2026-11-15. *Agent proposal* until Nate accepts it. What each stream is: [workstreams.md](workstreams.md). What can start this minute: [start-now.md](start-now.md). The global spec: [spec/README.md](../README.md) and the repo [README](../../README.md).
+Status: the one place progress is tracked for the cloud build. *Agent proposal* until Nate accepts it. What each stream is: [workstreams.md](workstreams.md). What can start this minute: [start-now.md](start-now.md). The global spec: [spec/README.md](../README.md) and the repo [README](../../README.md). How every feature joins every other one, and which joins are real, example or missing: [joins.md](joins.md).
 
 ## How to use it
 
 - A box is ticked only by the orchestrator, only when the item's proving command exits 0 on `main` and a seat that did not write it has reviewed it. The tick line gains the commit: `- [x] ... (abc1234)`.
-- A stream that starts an item writes its session name after it: `- [ ] ... (stream 5, building)`. One commit per change to this file: `chore(board): ...`, pulled and pushed at once.
+- The lead assigns owned files to workers in separate worktrees, reruns their task checks and commits their files after review. Workers run one test file at a time; the lead runs the full check before pushing.
 - A blocked item gets `BLOCKED:` and the question, and the question goes to Nate the same minute.
 - New work found while building is added here as a new box under its stream before it is started. Nothing is built that is not on this board.
 - At each checkpoint the orchestrator posts the counts to Nate: done, building, not started, blocked, per stream.
-
-## Where it stands (checked on the Mac, 2026-11-15 about 00:45 Central)
-
-Every task's own check in `spec/plans/backend/plan.json` was run with `node scripts/prove.mjs --wave N --jobs 3`. "Passes" means the check exits 0; no task has had the fresh review a tick needs, so nothing below is ticked. The 24 tuning tasks (`tn*`) are not counted: they are run by hand after the walk exists.
-
-| Wave | Passes its check | Not built (its test file does not exist) |
-|---|---|---|
-| 0 | 30 of 30 | none |
-| 1 | 40 of 46 | `ho-1` `si-1` `ls-2` `rt-captures` `wk-1` `ad-depop` |
-| 2 | 58 of 104 | analytics `pa-2` to `pa-7`; style `rs-3` to `rs-6`; valuation `va-5` `va-6`; negotiation `ng-3` `ng-5`; trust `tr-6`; marketing `mk-1` `mk-2`; score `ss-1` `ss-2`; the four site adapters `ad-ebay` `ad-facebook` `ad-poshmark` `ad-mercari`; features `msg-1` `st-1` `ap-1` `ins-1` `me-1` `ic-1` `rk-1`; routes `rt-market` `rt-sources` `rt-items` `rt-valuations` `rt-conversations` `rt-orders` `rt-records` `rt-rules` `rt-wants` `rt-buy` `rt-assist` `rt-search` `rt-genie` `rt-scores` `rt-accounts` `rt-insights` |
-| 3 | 1 of 6 | the five live site runs `lv-*`; these wait on the adapters and on Nate's go per site |
-
-Two plan entries, `rt-scores:` and `rt-out:`, are malformed copies and are not counted. The walk (`node scripts/walk.mjs`) was written at about 01:50 Central on the 15th and exits 0 on both machines: twelve stages, ten on real code and two on fakes (`post` and `answer_offer`, which wait on a site adapter), one item sold on Poshmark and delisted on eBay and Depop. It is not yet reviewed against its accepts, so `wk-1` and the 23:30 checkpoint are not ticked.
 
 ## Milestones (the order of the build since 23:00 Central, 2026-11-14)
 
@@ -37,17 +24,9 @@ Set by [Nate](../../product/words.md#2026-11-14-nate-browser-use-on-cloud-tested
 - [ ] M8 Poshmark, Mercari, eBay, Facebook Marketplace, one at a time through M5 to M7
 - [ ] M9 the walk end to end on real pieces, the `/v1` routes answering from engines, deployed
 
-## Checkpoints (Central)
-
-- [ ] 21:45 wave 0 done; interfaces of streams 1, 2, 10, 13, 15 pushed
-- [ ] 23:30 the protocol runs and the walk passes on fixtures
-- [ ] 02:00 every engine built and proved
-- [ ] 03:00 five sites wired behind dry runs, deployed on the event workspace, one rehearsal
-- [ ] by 07:00 tuning done, live runs on Nate's go, Ben's screens joined to the API
-
 ## 0 Orchestrator
 
-Session: the orchestrator; fixtures, the reporter and run traces are with three seats, building since 21:45. The Python scaffold and the event catalogue are pushed and wait for review.
+One orchestrator, Codex workers on the Mac in their own worktrees, Claude builders and reviewers beside it ([Nate](../../product/words.md#2026-11-15-nate-the-mac-as-extra-compute-claude-driving-here-and-codex-there-and-no-more-crashes); [packet 49](../../.agents/team/packets/team/49-handoff-to-the-mac-session.md)). Streams are ownership groups, not concurrent sessions.
 
 - [ ] T0-2 contract examples for every `/v1` endpoint: `node --test spec/examples.test.mjs`
 - [ ] T0-3 real items with known answers and the scorer: `node --test spec/items.test.mjs`
@@ -60,7 +39,6 @@ Session: the orchestrator; fixtures, the reporter and run traces are with three 
 
 ## 1 Platform kernel
 
-Session: s1-kernel, building since 21:40.
 
 - [ ] interface first: `harness.call(site, verb, args)`, the envelope, error codes, hints, with a fake site behind it
 - [ ] sessions: lease, pace, keep-alive, `needs_session` per verb and field
@@ -68,15 +46,14 @@ Session: s1-kernel, building since 21:40.
 - [ ] release gate: fixture test, field gate, canary, rollback
 - [ ] repair loop with the ten-mutation drill
 - [ ] route health and order as `param` rows
-- [ ] hosted browser pool on our own compute, one steady address and profile per account
+- [ ] Browser Use Cloud pool behind `Launcher`, one browser per account lease; timeout on create, stop on every path, no proxy rotation
 - [ ] cookie-carrying request runner (no browser)
-- [ ] saved-password secret: write-only from the app, readable by the sign-in job alone, every other identity refused
-- [ ] session hand-off from the phone's web view to the hosted browser, with the one re-verify prompt
+- [ ] stored session behind `account.token_ref`, loaded at lease start and saved after success; no credentials in logs
+- [ ] person-driven cloud live-view sign-in; challenge and login wall pause; later phone transport behind the same port
 - [ ] all of it: `node --test app/src/edge/harness/`
 
 ## 2 Events and pipeline
 
-Session: s2-events, building since 21:40.
 
 - [ ] interface first: the `event` row and the snapshot shape, with a fake source
 - [ ] event intake with dedupe and one job per event
@@ -91,69 +68,68 @@ Session: s2-events, building since 21:40.
 
 ## 3 to 7 Platform teams
 
-Not started: the five teams launch when stream 1 pushes the envelope.
+Build one site at a time through M5 to M7, starting with Depop. Route and cost rules live in [protocol §§3.5 to 3.8](../engines/protocol-and-adapters.md#35-starting-routes-site-by-verb).
 
-One block per site. Every line is that site's own adapter, proved on a fixture and then on a test account on Nate's go.
+One block per site. Recon its own data calls before page driving; use official APIs where offered ([Nate](../../product/words.md#2026-11-15-nate-official-apis-where-they-exist-the-browser-design-as-specced-ranking-systems-accounted-for-databricks-perfected)). Every write stays dry until Nate's go per site, then acts once and reads back; never replay. Account work launches and schedules only linked sites. Boxes remain unticked. Public measurements: [M1](../../research/cross-cutting/nate/runs/m1.md).
 
 ### 3 eBay
-- [ ] operating design written: what the site's client reads and calls per verb
-- [ ] link (OAuth and a harness session), hold and renew
-- [ ] public: search active, search sold, read a listing, a seller's shop, reviews, the "still up" check
+- [ ] operating design: developer APIs with OAuth; browser only for capabilities not offered by the API
+- [ ] link by OAuth, refresh tokens; cloud profile only where a browser is needed
+- [ ] public: Browse API for active search after the signed-out browser returned 403; prove sold, listing, shop, reviews and status routes separately
 - [ ] listings: create with every field, edit, reprice, relist, delist, mark sold, read all with counts
 - [ ] offers: read, accept, decline, counter, send to watchers, auto-offer settings
 - [ ] messages and notifications: read inbox and feed, send, mark read
 - [ ] orders, with the accepted Best Offer amount
 - [ ] stats per listing, normalised by stage
-- [ ] the watch snapshot
+- [ ] `read_storefront` and the watch snapshot, linked accounts only
 - [ ] push against watcher measured; push kept as a trigger only if faster
 - [ ] fixtures, mutation drill, pace bench: `node --test app/src/edge/harness/sites/ebay/`
 
 ### 4 Facebook Marketplace
 - [ ] operating design written
-- [ ] link, hold and renew
-- [ ] public: search active, read a listing, a seller's profile, the "still up" check
+- [ ] link once through the cloud live view; store auth per account, pause on expiry
+- [ ] public: measure plain request, then anonymous cloud browser; search, listing, profile and still-up routes need live proof
 - [ ] listings: create, edit, reprice, relist, delist, mark sold, read all with counts
 - [ ] messages and notifications: read, send, mark read; cash at pickup is not an off-site signal
 - [ ] stats: views, clicks, threads, saves, shares
-- [ ] the watch snapshot
+- [ ] `read_storefront` and the watch snapshot, linked accounts only
 - [ ] fixtures, mutation drill, pace bench: `node --test app/src/edge/harness/sites/facebook/`
 
 ### 5 Depop
-- [ ] operating design written (recon settles whether sold status is public)
-- [ ] link, hold and renew (no partner access)
-- [ ] public: search active, read a listing, a shop, reviews, the "still up" check
+- [ ] operating design from cloud recon: in-page data calls and Next flight; sold status public per listing and shop, no public sold search
+- [ ] link once through the cloud live view; store auth per account, pause on expiry (no partner access)
+- [ ] public: search, listing, shop listings, reviews, still-up and `read_storefront`; live runs recorded in [ad-depop](../../research/cross-cutting/nate/runs/ad-depop.md), signed-in verbs still need live recon
 - [ ] listings: create, edit, reprice, relist, delist, mark sold, read all with counts
 - [ ] offers: read, respond, send to likers, auto-respond set to always-accept and never the floor; offers last 24 h
 - [ ] messages and notifications: read, send, mark read
 - [ ] orders and stats
-- [ ] the watch snapshot
+- [ ] `read_storefront` and the watch snapshot, linked accounts only
 - [ ] fixtures, mutation drill, pace bench: `node --test app/src/edge/harness/sites/depop/`
 
 ### 6 Poshmark
 - [ ] operating design written
-- [ ] link, hold and renew
-- [ ] public: search active, search sold, read a listing, a closet, the "still up" check from the page's availability data
+- [ ] link once through the cloud live view; store auth per account, pause on expiry
+- [ ] public: cloud search read 48 rows without login ([M1](../../research/cross-cutting/nate/runs/m1.md)); prove sold, listing, closet and availability reads
 - [ ] listings: create, edit, reprice, relist, delist, mark sold, read all with counts
-- [ ] offers: read, respond, offer to likers (10% rule), Smart Sell settings
+- [ ] offers: read, respond, offer to likers (10% rule), site auto-offer settings
 - [ ] comments, messages and notifications: read, send
 - [ ] orders and stats
-- [ ] the watch snapshot
+- [ ] `read_storefront` and the watch snapshot, linked accounts only
 - [ ] fixtures, mutation drill, pace bench: `node --test app/src/edge/harness/sites/poshmark/`
 
 ### 7 Mercari
 - [ ] operating design written
-- [ ] link, hold and renew
-- [ ] public: search active, search sold, read a listing, a seller, the "still up" check from the page's sold-out data
+- [ ] link once through the cloud live view; store auth per account, pause on expiry
+- [ ] public: cloud search read 30 rows on rerun ([M1](../../research/cross-cutting/nate/runs/m1.md)); prove sold, listing, seller and sold-out reads; headed profile for local recon
 - [ ] listings: create, edit, reprice, relist, delist, mark sold, read all with counts
 - [ ] offers: read, respond, offer to likers, Promote
 - [ ] messages and notifications: read, send
 - [ ] orders and stats (views are impressions)
-- [ ] the watch snapshot
+- [ ] `read_storefront` and the watch snapshot, linked accounts only
 - [ ] fixtures, mutation drill, pace bench: `node --test app/src/edge/harness/sites/mercari/`
 
 ## 10 Swarm intelligence
 
-Session: s10-intel, building since 21:40.
 
 - [ ] interface first: the `answer` object and the question kinds, with a fake behind it
 - [ ] question protocols as data: per kind, every target and its deadline
@@ -173,7 +149,6 @@ Session: s10-intel, building since 21:40.
 
 ## 11 Scoring: money
 
-Session: s11-money, building since 21:40.
 
 - [ ] valuation 1: comps arithmetic
 - [ ] valuation 2: keep in cents, and the path
@@ -191,7 +166,6 @@ Session: s11-money, building since 21:40.
 
 ## 12 Scoring: knowledge
 
-Session: s12-knowledge, building since 21:40.
 
 - [ ] identity id-1 to id-6
 - [ ] demand and trend dt-1 to dt-6
@@ -203,33 +177,47 @@ Session: s12-knowledge, building since 21:40.
 
 ## 13 Databricks
 
-Session: s13-databricks, building since 21:40.
+Design and what is proved: [databricks-build.md](../databricks-build.md#9-what-is-proved). Every number below was read on Nate's workspace (`--profile Nate`) on 2026-11-15. Boxes stay unticked until a fresh reviewer has read the diffs.
 
-- [ ] T0-1 the workspace checks on the event workspace, including whether a headless browser runs on its compute
+- [ ] T0-1 workspace checks on the event workspace; browsers use Browser Use Cloud
 - [ ] interface first: the `param`, `observation`, `evidence`, `citation` shapes with an in-memory fake
 - [ ] Lakebase tables and migrations for the canon
 - [ ] the `param` registry: versions, promote on a backtest win, rollback
 - [ ] per-event updates in the transaction that records the outcome
-- [ ] nightly refits as jobs, champion and challenger
-- [ ] the proof layer: guarded numbers, `claim_check`, `rights` tags
-- [ ] the secret scope for sessions and saved passwords
+- [ ] nightly refits as jobs, champion and challenger: deployed as `secondhand-nightly-fits`, at most 4 tasks at once (Free Edition allows 5); its first run waits on the `--root` fix (serverless runs a task file with no `__file__`)
+- [ ] the proof layer: guarded numbers, `claim_check`, `rights` tags. Python twin of proof.ts: 20 of 20 parity cases equal (`python -m pytest databricks/parity/test_parity.py`). Isolation by the catalog ABAC policy `sh_owner_only`: 7 of the example loader's 14 guarded numbers visible to Nate, all `usr_nate` (`SELECT user_id, count(*) FROM secondhand.core.guarded_number GROUP BY 1`). Handles masked by `sh_mask_handle` (`m***`). Policy sweep over `check()`: 480 answers, all 32 never-performed answers refused (`node databricks/policy-sweep.mjs`)
+- [ ] the market layer: pipeline `secondhand-market` holds 1,688,603 comps from 6 public sold sets (bronze 1,688,864; 261 dropped by expectations), 1,581,374 cleared for modelling (StockX and Mercari Kaggle), update f5f78337 (`SELECT source, count(*) FROM secondhand.market.comp GROUP BY source`)
+- [ ] the secret scope for sessions and saved passwords: bound to the bundle (`databricks bundle deployment bind vault secondhand --target dev --profile Nate`)
 - [ ] jobs for watchers, gathers and refits, with their triggers
-- [ ] deployed on the event workspace; the edge reaches it
+- [ ] deployed on the event workspace; the edge reaches it. On Nate's workspace: bundle deployed, target dev; setup job SUCCESS (`node deploy/deploy.mjs deploy --target dev --profile Nate`)
 
 ## 14 Capture and photo
 
-Session: s14-capture, building since 21:40.
 
 - [ ] the type suggestion contract and both ways of confirming it (tap, and skip when confident)
 - [ ] the per-type process table as data: instant, series, scan
 - [ ] the follow-up inputs as data, one input per field a type needs
+- [ ] the deterministic plan ([capture engine §11](../engines/capture.md#11-the-deterministic-plan)): one table by family and dimension class, field states, per-site form, one completeness check, the question planner. Proved 2026-11-15 (merge 929926f1): 86 engine tests pass and six item types (T-shirt, sneakers, handbag, phone, chair from an unsure first frame, a bundle of three) walk from first photo to done, run twice with identical output, `node --test --test-concurrency=1 app/src/engines/capture/walk.test.ts`. Questions to done (printed by the walk, `capture.questions`): T-shirt 3 (2 with auto confirm), sneakers 4, handbag 5 (one refused), phone 5, chair 2, bundle of three 9; a table with two close size variants 1 when a depth reading picks the variant, 2 without depth (condition, then one pick between the two sizes). Round 3 (0c92f237, 103 tests) adds the variants and studio asks. Plan speed p50 0.103 ms, p95 0.285 ms over 47 states (budget 100 ms), measured by cap-routes-1. The fresh review's fixes are round 4; ticked once it merges. The routes wait on four integration edits (waiting.md)
 - [ ] the free note reader: confirms, marks a contradiction, adds; never re-asks; address, phone and payment never reach a listing
 - [ ] photo ph-1 to ph-6
 - [ ] proof per [capture](../engines/capture.md) sections 9 and 10: `python -m pytest jobs/photo` and `node --test app/src/engines/capture/`
 
 ## 15 API and contract
 
-Session: s15-api (owns T0-2 and app sign-in), building since 21:40.
+Integration lead's rows. The joins are in [joins.md](joins.md); what waits on whom is in [waiting.md](waiting.md).
+
+### Where it stands (integration, rerun 2026-11-15 on the Mac unless marked)
+
+| Measure | Number | Before | Command | Commit |
+|---|---|---|---|---|
+| `/v1` endpoints answering from examples | 24 of 86 | 43 of 86 this morning | `node -e` over `manifest` in `app/src/edge/api/routes.ts` (count `source: 'example'`); `node --test app/src/edge/api/routes.test.ts` keeps each reason true | a97e78f1 |
+| Restart survival | events, jobs, decisions, product rows and the write ledger reload from `SECONDHAND_DATA_DIR`; a running job reloads queued; a started write stays started | all in memory | `node --test app/src/edge/events/file-store.test.ts` (12 pass), `app/src/edge/api/runtime.test.ts` (10 pass, two child processes) | fda50f8, a97e78f1 |
+| The week in the background | 7 simulated days, 10080 ticks: 3124 / 2475 / 403 sweeps for Depop / Poshmark / eBay, 0 calls for the unlinked Facebook, one offer answered by rule as a Depop dry plan, two offers become decisions, one relink, one sale ends Poshmark and eBay and never Depop; same counts when the store reloads on day 4 | no join existed | `node --test app/src/edge/events/watcher.test.ts` | 12f2db3; reviewer found two high breaks (a like reaching `answer_offer`, a sale pause lost after a crash): fixes in int-watch-2, rows not ticked |
+| The walk | 15 stages, 11 real, 4 fake each naming its owner (capture: shot scoring; Poshmark and eBay adapters: scripted routes); `post` and `answer_offer` real on Depop dry plans | 12 stages, 3 fake by label | `node scripts/walk.mjs` on the Mac and on Windows (both total ok); `node --test scripts/walk.test.mjs` (14 pass) | b68fcc7 |
+| Benchmark baseline, 20 market items | row 1 coverage 0 of 20 (Wilson 95% 0 to 0.16): `POST /v1/search` still read one stub page | none | `node bench/run.mjs && node bench/score.mjs bench/out/<run_id>` | ecece93 |
+| Route code safe for Metro's server bundle | 0 findings | 5 files broke Ben's export | `.agents/checks/bundle.mjs` inside `node .agents/check.mjs`; `node --test .agents/checks/bundle.test.mjs` (7 pass) | 03e5993 |
+
+Open in the next round: streaming search on the real lanes (int-search-1), the watcher fixes and the hazard cadence (int-watch-2), item responses leaking the store's `data` field (one contract test red, int-runtime-2), then the bench rerun after search.
 
 - [ ] interface first: `spec/examples/` for every endpoint, pushed for Ben's screens
 - [ ] `/v1` routes over each engine as it lands
@@ -240,11 +228,11 @@ Session: s15-api (owns T0-2 and app sign-in), building since 21:40.
 
 ## 16 Review, test and fix
 
-Not started: launches with the first merges. Each stream lead runs its own engines' expert sessions (X-1 to X-11).
+Fresh review follows each working piece. Each stream lead runs its own engines' expert sessions (X-1 to X-11).
 
 - [ ] X-1 to X-11 expert session per engine, findings folded into its tasks
 - [ ] a fresh review of every stream's merges, with `node scripts/evidence.mjs brief`
-- [ ] Codex sessions sweeping continuously: rerun every proving command and the walk on `main`, review what merged, and fix what is red through the owning stream
+- [ ] assigned reviewers rerun the piece's proving commands one file at a time, review against sources, and return fixes to the owner
 - [ ] the real-item set scored per field
 - [ ] one full rehearsal of the path on the event workspace with real counts
 

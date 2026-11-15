@@ -45,7 +45,7 @@ export function jevRung({ state, ask = (s, q) => jevAsk(s, q) }: { state: (args:
     let pick = found[0];
     if (found.length > 1) {
       const r = await ask(found.map(c => `${c.id}: ${c.size} items at ${c.path.join('.')}: ${c.sample}`).join('\n'), {
-        results: { type: 'choice', instructions: `Which list is the page's main ${manifest.verb === 'search' ? 'search results' : 'listing'} set the person asked for, not ads, recommendations or recently viewed?`,
+        results: { type: 'choice', instructions: `Which list is the page’s main ${manifest.verb === 'search' ? 'search results' : 'listing'} set the person asked for, not ads, recommendations or recently viewed?`,
           criteria: Object.fromEntries(ids.map(id => [id, null])) },
       });
       const v = r.ok ? validateChoice(r.answers.results, ids) : undefined;

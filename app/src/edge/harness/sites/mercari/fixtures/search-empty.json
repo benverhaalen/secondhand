@@ -1,0 +1,26 @@
+{
+ "url": "https://www.mercari.com/search/?keyword=zqxjvbnmwk%20plorpt&itemStatuses=1",
+ "recorded_at": "2026-11-15",
+ "status": 200,
+ "html": "",
+ "api": [
+  {
+   "op": "searchFacetQuery",
+   "body": {
+    "data": {
+     "search": {
+      "count": 0,
+      "nextKey": "0",
+      "page": {
+       "offset": -1,
+       "soldItemsOffset": -1,
+       "promotedItemsOffset": -1,
+       "__typename": "SearchPage"
+      },
+      "itemsList": []
+     }
+    }
+   }
+  }
+ ]
+}

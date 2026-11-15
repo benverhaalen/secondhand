@@ -1,0 +1,49 @@
+# Paths are relative to deploy/resources/. Integration requires sync paths for
+# ../databricks and ../log in deploy/databricks.yml, alongside ../jobs.
+resources:
+  jobs:
+    recompute:
+      name: secondhand-recompute
+      environments:
+        - environment_key: proof
+          spec:
+            environment_version: "3"
+      tasks:
+        - task_key: recompute
+          environment_key: proof
+          spark_python_task:
+            python_file: ../../databricks/tasks/recompute.py
+            parameters: ["--root", "${workspace.file_path}"]
+    load_logs:
+      name: secondhand-load-logs
+      environments:
+        - environment_key: proof
+          spec:
+            environment_version: "3"
+      tasks:
+        - task_key: load_logs
+          environment_key: proof
+          spark_python_task:
+            python_file: ../../databricks/tasks/load_logs.py
+            parameters: ["--root", "${workspace.file_path}"]
+    parity:
+      name: secondhand-parity
+      environments:
+        - environment_key: proof
+          spec:
+            environment_version: "3"
+      tasks:
+        - task_key: parity
+          environment_key: proof
+          spark_python_task:
+            python_file: ../../databricks/tasks/parity_job.py
+            parameters: ["--root", "${workspace.file_path}"]
+    measures_setup:
+      name: secondhand-measures-setup
+      tasks:
+        - task_key: measures_setup
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../../databricks/sql/03_measures.sql
+              source: WORKSPACE

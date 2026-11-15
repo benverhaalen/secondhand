@@ -45,7 +45,7 @@ test('the final price rung keeps selling through the full horizon', () => {
   const x = fixture(); x.adjusted_cents = [5000]; x.weights = [1];
   x.curve = { p: (_p, d) => 1 - Math.exp(-d / 20), t: () => 20 * Math.log(2) };
   const plan = calculate(x);
-  assert.ok(plan.scores); assert.ok(Math.abs(plan.scores.p_sale.d30! - (1 - Math.exp(-30 / 20))) < 1e-9);
+  assert.equal(plan.verdict, 'list'); assert.ok('scores' in plan); assert.ok(plan.scores); assert.ok(Math.abs(plan.scores.p_sale.d30! - (1 - Math.exp(-30 / 20))) < 1e-9);
 });
 test('greater visibility lowers holding time using the same survival curve', () => {
   const curve = { p: (_p: number, d: number) => 1 - Math.exp(-d / 20), t: () => 14 };
@@ -58,4 +58,24 @@ test('Poshmark liker offers stay off without the required shipping discount', ()
   const x = fixture('poshmark');
   assert.equal(calculate(x).standing?.offers_to_likers.on, false);
   assert.equal(calculate({ ...x, shipping_discount_cents: 200 }).standing?.offers_to_likers.on, true);
+});
+
+test('F3: bundle is enabled only where a sourced bundle lever exists', () => {
+  for (const site of ['ebay', 'mercari', 'facebook'] as const)
+    assert.equal(calculate(fixture(site)).standing?.bundle.on, false, site);
+  assert.equal(calculate(fixture('poshmark')).standing?.bundle.on, true);
+});
+test('F3: Poshmark liker discount and seller shipping together preserve net floor', () => {
+  const x = { ...fixture('poshmark'), floor_cents: 4200, ship_cents: 2000, shipping_discount_cents: 2000, keep: (p: number) => Math.round(.8 * p) };
+  const out = calculate(x);
+  const offer = out.standing?.offers_to_likers;
+  assert.ok(offer);
+  assert.ok(!offer.on || x.keep(offer.amount_cents!) - offer.shipping_discount_cents >= x.floor_cents);
+});
+
+test('F8: fractional shipping cents are refused on every site', () => {
+  for (const site of ['ebay', 'poshmark'] as const) {
+    assert.throws(() => calculate({ ...fixture(site), ship_cents: 850.5 }), /whole cents/);
+    assert.throws(() => calculate({ ...fixture(site), shipping_discount_cents: .5 }), /whole cents/);
+  }
 });

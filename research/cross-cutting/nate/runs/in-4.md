@@ -1,6 +1,7 @@
 # Run trace: in-4
+Researched 2026-11-15 by Nate (original agent not recorded).
 
-Logs: in-4.log. 38 lines, 1 session(s), first line 2026-11-15T04:00:43.700Z.
+*Observed in the recorded local run:* Logs: in-4.log. 38 lines, 1 session(s), first line 2026-11-15T04:00:43.700Z.
 Total: 19647 ms.
 
 ## Steps

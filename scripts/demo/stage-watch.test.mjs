@@ -1,0 +1,144 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { listedAt, check, confirm, message, run, toApp, MAX_PER_CHECK } from './stage-watch.mjs';
+
+// Poshmark ids are MongoDB ObjectIds; 6551f0a1 is 2023-11-13T09:47:13Z.
+const A = '6551f0a1b2c3d4e5f6a7b8c9', B = '6551f0a1b2c3d4e5f6a7b8ca', C = '6551f0a1b2c3d4e5f6a7b8cb';
+const card = (id, price) => `<div><a href="/listing/Carhartt-Detroit-jacket-${id}">Carhartt Detroit jacket</a><span>$${price}</span></div>`;
+const page = (...cards) => `<html><title>Search</title><body>${cards.join('')}</body></html>`;
+const listing = (id, price, availability = 'InStock') => `<html><head><meta property="og:image" content="https://di2ponv0v5otd.cloudfront.net/posts/${id}.jpg"></head><script type="application/ld+json">${JSON.stringify({ '@type': 'Product', name: 'Carhartt Detroit jacket', url: `https://poshmark.com/listing/Carhartt-Detroit-jacket-${id}`, offers: { price: String(price), priceCurrency: 'USD', availability: `https://schema.org/${availability}` } })}</script></html>`;
+const opts = { site: 'poshmark', now: 1_700_000_000_000 };
+
+test('listedAt: a Poshmark id carries its creation time; other sites give none', () => {
+  assert.equal(listedAt('poshmark', A), Date.parse('2023-11-13T09:47:13Z'));
+  assert.equal(listedAt('ebay', '167003929710'), null);
+  assert.equal(listedAt('poshmark', 'not-an-id'), null);
+});
+
+test('check: the first read seeds silently, the next names only what is new', () => {
+  const one = check(undefined, page(card(A, 80), card(B, 60)), opts);
+  assert.deepEqual(one.candidates, []);
+  assert.equal(one.seen, 2);
+  const two = check(one.state, page(card(C, 18), card(A, 80), card(B, 60)), opts);
+  assert.deepEqual(two.candidates.map(c => c.site_id), [C]);
+});
+
+test('check: a listing that drops a lot is a candidate too (the booth variant)', () => {
+  const one = check(undefined, page(card(A, 60)), opts);
+  const two = check(one.state, page(card(A, 20)), opts);
+  assert.deepEqual(two.candidates.map(c => [c.type, c.site_id]), [['price.drop', A]]);
+});
+
+test('check: a bot wall is reported and changes nothing', () => {
+  const one = check(undefined, page(card(A, 80)), opts);
+  const two = check(one.state, '<html><title>Just a moment...</title></html>', opts);
+  assert.equal(two.blocked, true);
+  assert.equal(two.state, one.state);
+  assert.deepEqual(two.candidates, []);
+});
+
+test('check: more new listings than a stage needs are cut to the cheapest few', () => {
+  const ids = Array.from({ length: 6 }, (_, i) => `6551f0a1b2c3d4e5f6a7b8d${i}`);
+  const one = check(undefined, page(card(A, 80)), opts);
+  const two = check(one.state, page(...ids.map((id, i) => card(id, 50 - i)), card(A, 80)), opts);
+  assert.equal(two.candidates.length, MAX_PER_CHECK);
+  assert.deepEqual(two.candidates.map(c => c.price), [45, 46, 47]);
+});
+
+test('confirm: only the listing page decides, at or under the cap and still for sale', () => {
+  const cand = { site: 'poshmark', site_id: C, url: `https://poshmark.com/listing/x-${C}`, price: 18, price_guessed: true };
+  assert.equal(confirm(cand, listing(C, 18), 25).price, 18);
+  assert.equal(confirm(cand, listing(C, 25), 25).price, 25);
+  assert.equal(confirm(cand, listing(C, 26), 25), null);
+  assert.equal(confirm(cand, listing(C, 18, 'SoldOut'), 25), null);
+  assert.equal(confirm(cand, '<html>no data</html>', 25), null);
+});
+
+test('message: says what, how much, where, and how long after listing it was found', () => {
+  const m = message({ title: 'Carhartt Detroit jacket', price: 18, site: 'poshmark', url: 'https://poshmark.com/listing/x', listed_at: 1_000_000, found_at: 1_041_000 }, 25);
+  assert.equal(m.title, 'Under $25: $18 on Poshmark');
+  assert.equal(m.body, 'Carhartt Detroit jacket. Found 41 s after it was listed.');
+  const n = message({ title: null, price: 18, site: 'ebay', url: 'u', listed_at: null, found_at: 5 }, 25);
+  assert.equal(n.body, 'A new listing under your price.');
+});
+
+test('run: seeds, catches the new listing, confirms it, sends one alert, and stops on time', async () => {
+  let t = opts.now, reads = 0;
+  const pages = [page(card(A, 80)), page(card(A, 80)), page(card(C, 18), card(A, 80))];
+  const fetchPage = async url => url.includes('/listing/') ? listing(C, 18) : pages[Math.min(reads++, pages.length - 1)];
+  const sent = [];
+  const out = await run({
+    url: 'https://poshmark.com/search?query=carhartt&sort_by=added_desc', cap: 25, every_s: 10, for_min: 1,
+    notify: 'https://ntfy.sh/topic', click: 'https://app.example/want',
+    fetchPage, post: async (u, body, headers) => { sent.push({ u, body, headers }); return { ok: true }; },
+    sleep: async ms => { t += ms; }, now: () => t,
+  });
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].u, 'https://ntfy.sh/topic');
+  assert.equal(sent[0].headers.Title, 'Under $25: $18 on Poshmark');
+  assert.equal(sent[0].headers.Click, 'https://app.example/want');
+  assert.equal(out.alerts.length, 1);
+  assert.ok(out.checks >= 6 && out.checks <= 7, `checks ${out.checks}`);
+});
+
+test('run: a blocked site backs off instead of hammering it', async () => {
+  let t = opts.now; const waits = [];
+  await run({
+    url: 'https://poshmark.com/search?query=x', cap: 25, every_s: 10, for_min: 3,
+    fetchPage: async () => '<html><title>Access Denied</title></html>', post: async () => ({ ok: true }),
+    sleep: async ms => { waits.push(ms); t += ms; }, now: () => t,
+  });
+  assert.deepEqual(waits.slice(0, 4), [20_000, 40_000, 60_000, 60_000]);
+});
+
+test('run: refuses a check faster than every 5 seconds', async () => {
+  await assert.rejects(run({ url: 'https://poshmark.com/search?query=x', cap: 25, every_s: 2, for_min: 1, fetchPage: async () => '', post: async () => ({}), sleep: async () => {}, now: () => 0 }), /every_s/);
+});
+
+test('confirm: takes the listing photo from the page, for the card in the app', () => {
+  const cand = { site: 'poshmark', site_id: C, url: `https://poshmark.com/listing/x-${C}`, price: 18 };
+  assert.equal(confirm(cand, listing(C, 18), 25).image, `https://di2ponv0v5otd.cloudfront.net/posts/${C}.jpg`);
+});
+
+test('toApp: the file the app reads, in whole cents, with the cap', () => {
+  const a = { site: 'poshmark', site_id: C, url: 'https://poshmark.com/listing/x', title: 'Carhartt Detroit jacket', price: 18.5, image: null, listed_at: 1000, found_at: 42000 };
+  assert.deepEqual(toApp([a], 25), { alerts: [{ id: C, site: 'poshmark', url: 'https://poshmark.com/listing/x', title: 'Carhartt Detroit jacket', price_cents: 1850, cap_cents: 2500, image: null, listed_at: 1000, found_at: 42000 }] });
+});
+
+test('run: writes an empty file at the start, then the file the app reads after each alert', async () => {
+  let t = opts.now, reads = 0;
+  const pages = [page(card(A, 80)), page(card(C, 18), card(A, 80))];
+  const writes = [];
+  await run({
+    url: 'https://poshmark.com/search?query=carhartt', cap: 25, every_s: 10, for_min: 0.5,
+    fetchPage: async url => url.includes('/listing/') ? listing(C, 18) : pages[Math.min(reads++, 1)],
+    post: async () => ({ ok: true }), write: out => writes.push(out),
+    sleep: async ms => { t += ms; }, now: () => t,
+  });
+  assert.deepEqual(writes[0], { alerts: [] });
+  assert.equal(writes.at(-1).alerts[0].price_cents, 1800);
+});
+
+// --want: the alert fires only for a listing that fits the want, read from Poshmark's own page data.
+const want = { team: ['\\bbrewers\\b'], item: ['\\bjersey\\b'], not: ['\\btee\\b'], departments: ['Men'], category: 'Jerseys', sizes: ['L', 'XL'], cap: 60 };
+const W = '6551f0a1b2c3d4e5f6a7b8d1', T = '6551f0a1b2c3d4e5f6a7b8d2', K = '6551f0a1b2c3d4e5f6a7b8d3';
+const poshCard = (id, title, price, size, dept = 'Men', cat = 'Jerseys') => ({ id, title, price_amount: { val: String(price) }, inventory: { status: 'available', size_quantities: [{ size_obj: { display: size } }] },
+  catalog: { department_obj: { display: dept }, category_feature_objs: [{ display: cat }] }, first_published_at: '2023-11-13T09:47:20Z' });
+const poshPage = (...cs) => `<html><script>window.__INITIAL_STATE__ = ${JSON.stringify({ $_search: { gridData: { data: cs } } })};</script>${cs.map(c => `<a href="/listing/x-${c.id}">${c.title}</a><span>$${c.price_amount.val}</span>`).join('')}</html>`;
+const poshListing = c => `<html><script type="application/ld+json">${JSON.stringify({ '@type': 'Product', name: c.title, url: `https://poshmark.com/listing/x-${c.id}`, offers: { price: c.price_amount.val, priceCurrency: 'USD', availability: 'https://schema.org/InStock' } })}</script><script>window.__INITIAL_STATE__ = ${JSON.stringify({ $_listing_details: { listingDetails: c } })};</script></html>`;
+
+test('run --want: a cheaper tee and a kids jersey never ping; the fitting jersey does, timed from its publish time', async () => {
+  let t = Date.parse('2023-11-13T09:48:00Z'), reads = 0;
+  const jersey = poshCard(W, 'Milwaukee Brewers Jersey', 45, 'L'), tee = poshCard(T, 'Brewers jersey tee', 12, 'L', 'Men', 'Tees'), kids = poshCard(K, 'Brewers Jersey', 20, 'XL', 'Kids');
+  // three cheaper new listings in the same read must not push the fitting one out of the three-a-check limit
+  const cheap = poshCard('6551f0a1b2c3d4e5f6a7b8d4', 'Brewers jersey tee', 10, 'L', 'Men', 'Tees');
+  const seed = poshPage(poshCard(A, 'Old Brewers Jersey', 80, 'L'));
+  const pages = [seed, seed, poshPage(tee, kids, cheap, jersey, poshCard(A, 'Old Brewers Jersey', 80, 'L'))];
+  const byId = { [W]: jersey, [T]: tee, [K]: kids, [cheap.id]: cheap };
+  const fetchPage = async url => { const id = /-([0-9a-f]{24})$/.exec(url)?.[1]; return id ? poshListing(byId[id]) : pages[Math.min(reads++, pages.length - 1)]; };
+  const out = await run({ url: 'https://poshmark.com/search?query=brewers%20jersey&sort_by=added_desc', want, every_s: 10, for_min: 1,
+    fetchPage, post: async () => ({}), sleep: async ms => { t += ms; }, now: () => t });
+  assert.deepEqual(out.alerts.map(a => a.site_id), [W]);
+  assert.equal(out.alerts[0].listed_at, Date.parse('2023-11-13T09:47:20Z'));
+  assert.equal(out.alerts[0].size, 'L');
+});

@@ -9,7 +9,7 @@ export function health(metrics: Metric[], p: Pf, opts: { paused?: boolean; next?
   const flagged = risk >= p('trust_flag_m');
   if (opts.paused) return { risk, flagged, action: 'block', reasons: ['The site warned this account, so every action is paused.'] };
   const n = opts.next && metrics.find((m) => m.name === opts.next?.metric);
-  if (n && (n.value + (opts.next?.delta ?? 0)) / n.threshold >= 1) return { risk, flagged, action: 'ask', reasons: [`One more would put ${n.name} over the site's limit.`] };
+  if (n && (n.value + (opts.next?.delta ?? 0)) / n.threshold >= 1) return { risk, flagged, action: 'ask', reasons: [`One more would put ${n.name} over the site’s limit.`] };
   return { risk, flagged, action: 'none', reasons: flagged ? ['This account is close to a site limit.'] : [] };
 }
 // A site warning at ratio r sets that metric's flag to 0.9 r (0.7 -> 0.63).

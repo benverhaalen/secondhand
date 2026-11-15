@@ -27,7 +27,9 @@ export type Attribute = { id: string; name: string; value: string | number | nul
 export type StandingWord = 'hot' | 'on_pace' | 'slow' | 'stuck' | 'still_learning' | 'waiting_for_price';
 export type MarketStanding = { word: StandingWord; place?: { rank: number; of: number; basis: 'price' }; outlook?: { days_lo: number; days_hi: number }; fix?: { change: string; consequence: string }; line: string; citation_id: string | null; state: 'shown' | 'hidden' };
 
-export type Listing = { id: string; item_id: string; site: Site; state: ListingState; price_cents: Cents; url: string; interest: { views?: number; watchers?: number; likes?: number }; posted_at: Iso | null; market_standing?: MarketStanding; error?: string };
+export type Listing = { id: string; item_id: string; site: Site; state: ListingState; price_cents: Cents; url: string; interest: { views?: number; watchers?: number; likes?: number };
+  // What came in since the person last opened the app (read_stats rollups, spec/data-use.md): Today's interest rung.
+  interest_new?: { views?: number; watchers?: number; likes?: number }; posted_at: Iso | null; market_standing?: MarketStanding; error?: string };
 
 export type PlanChoice = 'sell' | 'fast' | 'best' | 'reserve' | 'check';
 export type ItemLimits = { floor_cents: Cents; always_accept_cents: Cents | null; plan_choice: PlanChoice; gone_by: Iso | null; fallback: 'ask' | 'donate' | 'keep' | 'trade_in' | 'relist'; markdown_on: boolean };
@@ -36,6 +38,8 @@ export type Valuation = Guard & { range: Range; per_site: { site: Site; low: Cen
 
 export type Item = {
   id: string; state: ItemState; title: string; category: KindFamily; product_id?: string;
+  // The kind of thing as platform-fit.json types it (fan_apparel, sneakers), when it is narrower than the family.
+  kind?: string;
   cost?: { amount_cents: Cents; date: string; source: 'purchase' | 'bought_it' | 'you_said' };
   origin: 'capture' | 'purchase' | 'import' | 'folder'; location: { label: string }; quantity: number; group_id?: string;
   note?: string; kept_reason?: string; photos: Photo[]; attributes: Attribute[]; valuation?: Valuation; limits?: ItemLimits;
@@ -89,7 +93,9 @@ export type StyleFacet = { name: 'brand' | 'category' | 'size' | 'colour' | 'era
 
 // Buy side.
 export type MatchLabel = 'exact' | 'likely_same_model' | 'same_family_other_variant' | 'comparable' | 'unresolved';
-export type Want = { id: string; state: 'active' | 'paused' | 'ended'; text: string; product_id: string | null; fit: { size?: string; condition_floor?: string; radius_mi?: number }; max_total_cents: Cents | null; sites: Site[]; checked: Partial<Record<Site, Iso>>; behind: Site[]; quiet_hours: { from: string; to: string } | null; alert: 'available' | 'under' };
+// Who clothes are cut for. A letter size means a different garment in each (the Brewers trial, research/watch/ben/brewers-alert-trial.md).
+export type Cut = 'mens' | 'womens' | 'youth';
+export type Want = { id: string; state: 'active' | 'paused' | 'ended'; text: string; product_id: string | null; fit: { size?: string; cut?: Cut; condition_floor?: string; radius_mi?: number }; max_total_cents: Cents | null; sites: Site[]; checked: Partial<Record<Site, Iso>>; behind: Site[]; quiet_hours: { from: string; to: string } | null; alert: 'available' | 'under' };
 export type Match = { id: string; state: 'found' | 'alerted' | 'saved' | 'asked' | 'offered' | 'bought' | 'dismissed' | 'gone'; want_id: string | null; source: 'want' | 'search' | 'for_you'; label: MatchLabel; site: Site; title: string; key: PhotoKey; url: string; price_cents: Cents; delivered_cents: Cents; condition: string; seller: string; verdict: 'good' | 'fair' | 'high'; seen_at: Iso; product_id: string | null; size?: string };
 export type RetailOffer = { id: string; product_id: string; relation: 'same_product' | 'successor' | 'functional_equivalent'; store: string; condition: 'new' | 'refurbished'; price_cents: Cents; delivered_cents: Cents; delivery_min_days: number; delivery_max_days: number; warranty_months: number; returns_days: number };
 export type Product = {

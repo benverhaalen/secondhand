@@ -1350,6 +1350,34 @@ Note, 07:18 UTC: the market research named in the 07:14 "Used in" line moved to 
 Ben, project chat, 07:18 UTC.
 > whenever i have a decision to make bring it here essentially. also considering a backtest, how would you set this up in a flattering but truthful way. like average price changes over season. we could potentially look up general trends and possible spikes in either buying or sales on the resale market. i feel like it goes in waves. and we can explain super well and intuitively to the user when these things happen. some could be dates too. see if theres any rdd for this. for our market we are trying to predict. things that are predictable as humans are relatively predictable. merge all prs get them onto main why havent you been doing this
 
+## 2026-11-15 the hand glyphs: A, C and F up close, two colors, every position
+
+Ben, website thread, 07:28 UTC:
+> show me the different hand glyphs for A C and F
+
+Ben, website thread, 07:29 UTC:
+> also the two glyphs should have either different gradient colors or two colors of the same gradient without the gradient. i want to see the icon pack with all the different positions of the hand. like recall huge icons how you showed me an array of positions the hand could be in. show me that for each.
+
+Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs).
+
+Ben, website thread, 07:32 and 07:33 UTC:
+> use the actual font for secondhand for me
+
+> theres brand font on my computer though
+
+> also show me the full array of poses for tabler now
+
+Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs), drawn in CI where the brand faces load from the BRAND_FONTS secret.
+
+Ben, website thread, 07:34 UTC:
+> i also want the hands to be tighter to the wordmark. the same height and alignment vertically as the wordmark
+
+Used in: [hands-fit.js](../brand/explore/web-home/hands-fit.js), the hero's header and opening, and the hand pose sheets.
+
+Ben, website thread, 07:51 UTC:
+> recall the original set of icons i denied. show me that again
+
+Read as Hugeicons, the app's set, whose waving hand round 11 showed beside the wordmark and Ben asked to be slimmer ([round 11](#2026-11-15-round-11-picks)). Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs).
 Used in (07:18 entry): [seasons-events-and-a-fair-backtest.md](../research/price/ben/seasons-events-and-a-fair-backtest.md), [money D6](../spec/determinations/money.md#d6-range-calibration-and-display-state) steps 6, 8 and 9, [market-insight M12](../spec/determinations/market-insight.md#m12-seasonality).
 
 ## 2026-11-15 the backtest proves it works now and is where we tune, and trends reach past resale
@@ -1391,3 +1419,232 @@ Ben, studio thread, 09:00 UTC.
 
 Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md), jobs/studio/plan.py (`relay_measured`).
 
+## 2026-11-15 demo the buy side live, Nate posts and my phone pings
+
+Ben, project chat, 07:46 UTC.
+> another thing - i feel like demoing the buy feature live would be so cool. like notify me when someone posts whatever product for whatever price and make it super low, etc but like nate does it live on his phone and it then notifies me right then and there
+
+Used in: [live-buy-demo.md](live-buy-demo.md), [scripts/demo/stage-watch.mjs](../scripts/demo/stage-watch.mjs).
+
+## 2026-11-15 nate official APIs where they exist, the browser design as specced, ranking systems accounted for, Databricks perfected
+Nate, build session (orchestrator), 2026-11-15 between about 03:00 and 04:00 Central. Separate messages.
+> Lets focus on everything but the harnesses right now. What else is there thats being built.
+
+> Lets do this, continue with the way everything is built, not the private api endpoints, but at least take into account the ranking systems found
+
+> I dont want to violate tos or introduce problems to the users, send out subagents after updating each feature spec, to fix everything already built, to add more, to optimize and finish developing out all engines and harnesses
+
+> Ensure databricks is perfected, ensure we expemplify and really impress the databricks judges and employees. We already hope to position our safety and governance against the built in databricks, but ideally we extend and improve on everything they introduced, show our new features and such
+
+> The way you were speccing the browser automation was perfect before, utilize official apis as well for certain platforms, but dont limit us. we find everyhting and already approved how its not automation as the user opts in and is technically driving each intent
+
+> Send out and utilize the macs when you can ensure things are pushed and pulled so everything syncs
+## 2026-11-15 every AI feature, how we did it and how to prove it
+
+Ben, project chat, 07:53 UTC.
+> where else can we prove such things across the numerous ai features we have. can you list out each feature we have for me that is ai or is a feature you think we should show off. this could include data etc. we need to also tell how we did it and be able to effectively explain it
+
+Used in: [features-proof.md](features-proof.md).
+
+## 2026-11-15 quantify every feature with why, the review step and ROI
+
+Ben, project chat, 08:09 UTC. His numbers refer to the first list of 13 features (photo to listing, studio and its lie check, price ranges, fees and where to sell, cross-listing rules, sale detection, no double sales, replies, earned trust, hot and seasons, buy alerts, Databricks, cost).
+> for our purposes now, quantify and really break everything down. dont dumb it down for me. we need to figure out obviously explaining it on the site but dont worry about that now. like databricks would be more about how do we show how we effectively and creatively used the databricks platform and what OUR specific use did that improved us. also think about the response to each of these. a lot are human in the loop step. can talk about how it avoids mislisting an item. in the plan maybe consider telling a story about someone who doesn't know what an item is. super easy way to figure it out and list what matters about it without needing any knowledge. there are a lot of situations where it could be useful. 2. say it cannot redimension a product. it actually can only ai beautify if you have dimensions or else you cannot trust it. 3. the backtest is super useful here. 4. yeah explain why though and the math numbers or put them somewhere. 5. rules and why. in the constitution judges want to know why. if we dont know why or dont have a why for anything we need one that is backed in something actually good. 5. hitl too. 6. test this more is this actually true. like say if i wanted a brewers jersey because im a big brewers fan and we just won the world series if one actually fits my criteria that it will actually happen. 7. this is not a number that means anything. what does this actually mean. 8. hitl. 9. hitl. 10. this might need some like rdd or something research to give better reasoning to similar problems. 11. oh sorry i thought 6 was talking about this. 12. more about how we creatively used the databricks platform and easy reasons as to why we did and how we did and all that. 13. break this down too look at our costs and estimate an roi for everything at scale essentially. so we need to explain our revenue streams. like the referral links too. see if you can figure out how much those cost for things like honey and businesses that make money that way because on the buy side we link to the sites. use hypotheticals backed in research but research that flatters us but it honest and inspectable. also check that the ui is actually implementing ui flows for all these and if not why not fix it. well not all of them. but for the app features. what should the ui look like for each. like for example photo to listing we can test irl with like a chair or my headphones or something in person but think of how to go about this. is there a way where we can get potential probabilities on it all? like say there are a few options and its ranked by most likely and you choose the one that matches and it auto fills in. maybe a button for similarity scan. identifying something. built into creating a listing too. or it could just be part of the workflow that creating a listing works through. think of these decisions. as for the ai clothing thing, we only let it pass once its accurate. also ensure you are using the 5.5 model i was talking about. rather than nano banana. ensure docs and plans and research is all updated. is there a reason you are using poshmark for polling. specifically compared. i want to use the brewers jersey example. also ensure somewhere that the app is suggesting platform by type or tailoring to each platform. like depop is different from ebay. userbases are different. it might want to have rules for suggesting what to post where.
+
+Used in: [feature-breakdown.md](feature-breakdown.md), [roi.md](roi.md), [jobs/studio/check.py](../jobs/studio/check.py), [jobs/studio/slides_run.py](../jobs/studio/slides_run.py), [jobs/demand/event_effect.py](../jobs/demand/event_effect.py).
+## 2026-11-15 nate no one leaves our platform, and the system reaches each site in the background
+Nate, build session (orchestrator), 2026-11-15 about 01:30 Central. Separate messages.
+> no one should have to leave our platform, and the system can always access each in the background over the period of days, weeks, thats how it works for the user
+
+> So everything is working the way it should be? In terms of the platform harnesses, the engines, the realtime calculations? is there already an understanding for how everything will work, credibly proven, and presented? How it'll be fast, the information it can find, information it can determine and deliver on top of whats found?
+
+## 2026-11-15 nate opus team leads that send out to codex
+Nate, build session (orchestrator), 2026-11-15 about 02:15 Central.
+> Ensure we have focused opus 5.5 team leads covering sessions that send out to codex, covering the databricks design and development, all engines, they combine with the consideration for every feature working together, every engine, deterministic calculations, the way capture works, deterministically selecting by product type and dimensions, all needed fields and information determined and ascertained, with the intelligent ui generating any needed clarifying questions
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 no applications to marketplaces yet
+
+Ben, thread "Cross-list Depop listings and price with quant", 08:15 UTC, answering whether to apply to eBay for Buyer Demand Data.
+> no dont do any applications i dont think they would get accepted yet.
+
+Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), [packet 61](../.agents/team/packets/list/61-ebay-item-specifics.md).
+
+## 2026-11-15 nate use the mac, sonnet and opus under each lead, test but not overtest, problems come up to the rep
+Nate, build session (orchestrator), 2026-11-15 about 02:40 Central. Two messages.
+> You can take alot of advantage with the mac compute. and utilize sonnet 5.5 and other opuses for some of these sessions being delegated by their opus 5.5 team lead. YOu are the fable 5.2 company rep overseeing all the leads, who report back to you. All should be ensured to test, but not overtest, to develop and build and optimize perfectly, updating docs and the progress indicating with benchmarks and measurments and tests, full things to support and show how incredible we are. With problems, have them sent to you, ones that greatly affect what we imagined and require rethinking
+
+> careful not to overdoo it, we have alot of sessions running so keep this amount of team leads
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate account for the documentation of everything we build with
+Nate, build session (orchestrator), 2026-11-15 about 02:55 Central.
+> remember to account for all documentation for relevant platforms, languages, frameworks, etc we develop with
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-14 better than the pseudo-solutions, nothing to learn, transparent
+Ben, project chat, 18:23 UTC. Added 2026-11-15 by the intent-ledger thread.
+> the thing its missing is that existing pseudo solutions to this dont do it anywhere as well as we are going to do it. i want to ensure that my intent is understood well enough by you and that my head is most aligned with how your context thinks of what i want. the recording gave a rough proposal with ideas. but based on the mvp try and refine the idea into a conceptual platform that works incredibly well as a whole and is intutitive and easy to use and understand from a user perspective what should be done. it shouldn't have to be learned. it should be transparent whats going on. i think human in the loop is big too especially for the judges at this. by the way this is our project for madhacks.
+
+Used in: [spec/intent-ledger.md](../spec/intent-ledger.md), [product/constitutions/](constitutions/README.md).
+
+## 2026-11-15 as close as possible, which side we miss on, and a paper behind each number
+Ben, project chat, 07:38 UTC.
+> wouldn't we want as close as possible? also pricing below vs above think about that. what numbers could we say get users the best look as to how we actually do things. time, money, speed etc are some functions. think if there are any more. as a user what are the ways to show that. how do you design an experiment to test all of those. like we need to present whatever statistic in a digestable way into the context of the problem as to why ours is better. and use great data science to do so and allow essentially a link to a more in depth explanation. whether that could be a paper we write outlining the experiment. also could compare to competitors. think of all the reasons we would design an experiment, all of ways we should do it to not need to solve a crazy problem to get the data. and how we design the experiment to both give probabilities and those more data science or cs type numbers however also get numbers anyone could do and we can defend exactly what the results of the experiment suggest.
+
+Used in: [spec/plans/backtest/plan.md §7](../spec/plans/backtest/plan.md#7-every-outcome-a-seller-cares-about-and-the-cheapest-test-for-each), [constitutions/price.md](constitutions/price.md).
+
+## 2026-11-15 prove the photos with the tape measure
+Ben, project chat, 07:51 UTC.
+> is there any downside to doing it on the dev acct? also another thing - there could be a hesitation with how the ai enhancement of the shirts or clothing etc dewrinkling and like essentially just ironing them and framing the pictures nicely people could say it lies. how do we prove in some respect it doesnt. by using its actual measurements (of course with a boundary of error) to audit and compare the ai generated outputs against the actual image of the shirt. it looks like it isnt getting rid of wrinkles as much as i thought though. but keeping dimensions super accurate. how do you prove this? we have measurements from the items. can show images are accurate to measurements by knowing what the pit to pit and length on a shirt is and plan on showing this visually somewhere on the website or pitch etc.
+
+Used in: [constitutions/photo.md](constitutions/photo.md).
+
+## 2026-11-15 quantify everything, a why for every rule, ranked identify, and revenue streams
+Ben, project chat, 08:09 UTC, answering the numbered list of AI features in [features-proof.md](features-proof.md).
+> for our purposes now, quantify and really break everything down. dont dumb it down for me. we need to figure out obviously explaining it on the site but dont worry about that now. like databricks would be more about how do we show how we effectively and creatively used the databricks platform and what OUR specific use did that improved us. also think about the response to each of these. a lot are human in the loop step. can talk about how it avoids mislisting an item. in the plan maybe consider telling a story about someone who doesn't know what an item is. super easy way to figure it out and list what matters about it without needing any knowledge. there are a lot of situations where it could be useful. 2. say it cannot redimension a product. it actually can only ai beautify if you have dimensions or else you cannot trust it. 3. the backtest is super useful here. 4. yeah explain why though and the math numbers or put them somewhere. 5. rules and why. in the constitution judges want to know why. if we dont know why or dont have a why for anything we need one that is backed in something actually good. 5. hitl too. 6. test this more is this actually true. like say if i wanted a brewers jersey because im a big brewers fan and we just won the world series if one actually fits my criteria that it will actually happen. 7. this is not a number that means anything. what does this actually mean. 8. hitl. 9. hitl. 10. this might need some like rdd or something research to give better reasoning to similar problems. 11. oh sorry i thought 6 was talking about this. 12. more about how we creatively used the databricks platform and easy reasons as to why we did and how we did and all that. 13. break this down too look at our costs and estimate an roi for everything at scale essentially. so we need to explain our revenue streams. like the referral links too. see if you can figure out how much those cost for things like honey and businesses that make money that way because on the buy side we link to the sites. use hypotheticals backed in research but research that flatters us but it honest and inspectable. also check that the ui is actually implementing ui flows for all these and if not why not fix it. well not all of them. but for the app features. what should the ui look like for each. like for example photo to listing we can test irl with like a chair or my headphones or something in person but think of how to go about this. is there a way where we can get potential probabilities on it all? like say there are a few options and its ranked by most likely and you choose the one that matches and it auto fills in. maybe a button for similarity scan. identifying something. built into creating a listing too. or it could just be part of the workflow that creating a listing works through. think of these decisions. as for the ai clothing thing, we only let it pass once its accurate. also ensure you are using the 5.5 model i was talking about. rather than nano banana. ensure docs and plans and research is all updated. is there a reason you are using poshmark for polling. specifically compared. i want to use the brewers jersey example. also ensure somewhere that the app is suggesting platform by type or tailoring to each platform. like depop is different from ebay. userbases are different. it might want to have rules for suggesting what to post where.
+
+Used in: [constitutions/](constitutions/README.md), [spec/intent-ledger.md](../spec/intent-ledger.md).
+
+## 2026-11-15 a live five-site post with the photo toggles, and AI-filled fields in their own color
+Ben, project chat, 08:12 UTC.
+> also a live demo of posting one draft to 5 places at once. being able to have something like the photos before after done already. everything set. and then being able to quickly toggle on off the beautification (both the non ai and the ai one) and showing that live before going into a posting. also when its an ai suggested input for like the color of the garment, etc. then it should be a different color than the user set ones. and this is how we show how it works more than just a video of us using it.
+
+Used in: [constitutions/demo.md](constitutions/demo.md), [constitutions/crosslist.md](constitutions/crosslist.md).
+
+## 2026-11-15 every plan written up the chain, and how close the UI is
+Ben, project chat, 08:16 UTC.
+> try and ensure all plans and intentions get written up the chain similar to how i did the ui constitution. inferring from my chats what i want and getting a great problem statement for say demoing or the website etc. and ensuring all these little details i say actually end up being done or planne dssentially. also explain to me how close you think the app ui is to being done
+
+Used in: [product/constitutions/](constitutions/README.md), [spec/intent-ledger.md](../spec/intent-ledger.md).
+
+## 2026-11-15 save opus: cut steps and tokens from the build
+Ben, project chat, 08:18 UTC.
+> im worried im going to run out of opus usage. are there any things from the logging youve been collecting that you can remove as steps in the build of the ui to increase speed. are there any other ways to increase speed of building. and decrease the token spend
+## 2026-11-15 nate the leads use codex well
+Nate, build session (orchestrator), 2026-11-15 about 03:10 Central.
+> Ensure the team leads are best utilizing codex, understand the proper models, efforts, and how to effectively prompt and configure for using such workers too
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate is this the most efficient way to read a site
+Nate, build session (orchestrator), 2026-11-15 about 03:05 Central.
+> is this really the most optimized way to read the site too? like acounting for efficienny? using jev ultrafast and such?
+
+## 2026-11-15 nate the benchmark measures spec/benchmark.md
+Nate, build session (orchestrator), 2026-11-15 about 03:30 Central, after the orchestrator offered to time each site's read path.
+> Well benchmark we were thinking would measure spec\benchmark.md
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate up to seven at once per lead
+Nate, build session (orchestrator), 2026-11-15 about 03:45 Central.
+> Go for up to 7 subagents for each lead, if they see it needed, of course too much on one focus is crazy but if waiting because of the limit each can have up to 7 concurrent
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate no worker waits confused, and experts sweep the spec
+Nate, build session (orchestrator), 2026-11-15 about 04:00 Central, after the integration lead found the benchmark's item set unfilled.
+> Oh wow, well ensure workers aren't going to get confused and all wait in a way that connects to it working, that they check through all docs and that you have expert data scientists and ai software engineers, databricks professional subagents, sweep over the spec of whats imagined and suggest improvements
+
+Used in: [who is waiting on what](../spec/plans/waiting.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate the reviewers know what we are trying to outperform, and the benchmark may run alongside
+Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages, the second a minute after the first.
+> well we should probably wait for things to work before fully benchmarking, but have the reviewers understand what we are trying to outperform
+
+> or let everything go its cool if they can benchmark at the same time
+
+Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/waiting.md).
+
+## 2026-11-15 nano banana stays, app store coming soon, the voice waits
+Ben, project chat, 08:33 UTC, answering the image model, App Store and capture voice questions.
+> stay on nanobanana for 1. 2. coming soon. 3. wait on the voice, plan for later.
+
+Used in: [intent ledger](../spec/intent-ledger.md), [photo F7](constitutions/photo.md), [demo D7](constitutions/demo.md).
+## 2026-11-15 stop hot items and seasons; stay on Nano Banana; Depop's API is a proposal, not a claim
+
+Ben, project chat, 08:31 to 08:34 UTC (excerpts that concern product scope; the rest of the 08:31 message is about the website).
+> also, the 5.5 model i wanted is right. i dont care about hot items and seasons anymore. stop that.
+
+> propose in roi propostion being in the depop api thing but right now dont claim that we are
+
+> stay on nanobanana for 1. 2. coming soon. 3. wait on the voice, plan for later.
+
+> ensure to instruct research flows to not use opus subagents
+
+Used in: [decisions.md](decisions.md), [roi.md](roi.md), [feature-breakdown.md](feature-breakdown.md#10-hot-and-seasons-dropped), [jobs/studio/slides_run.py](../jobs/studio/slides_run.py). Note: the event-effect estimator listed under the 08:09 entry is parked since 08:31, run by nothing.
+## 2026-11-15 nate poshmark share, like and repost are suggested and the person taps
+Nate, build session (orchestrator), 2026-11-15 about 04:40 Central, after the Poshmark harness build reported that Poshmark's terms name automated liking, sharing and reposting. Two messages.
+> well lets have suggestions for liking sharing, reposting and such, or the things we can't automate we link directly, or even pull up an in app browser ideally for them to do it
+
+> just the poshmark one
+
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/waiting.md).
+
+## 2026-11-15 nate mercari under the person's approval, broad search through sites that already show it, ebay on the harness until the api is approved
+Nate, build session (orchestrator), 2026-11-15 about 05:15 Central, after the Mercari harness build quoted Mercari's rule against automated access.
+> Pull all packets from ben to see recent benchmarking and changes, ensure too you are focused on everything. Also we do read mercari, but we do it cognizently under user approval, I believe for more broad searches like the buying system that searches across all marketplaces, we are less through with mercari, and instead lean on websites that already display information from those platforms, or others as well, like we could harness dupe. Also ebay is pending api approval, so fall on the optimized harness for now
+
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
+
+## 2026-11-15 nate registers the api keys, the giannis jersey counts, the want asks what i want
+Ben, project thread "Prove the Brewers jersey buy alert", 08:36 UTC.
+> nate will register. the giannis one can count. ensure the flow asks and helps me specify what i want considering dynamic ui. color, size, etc. if not done already
+
+Used in: [scripts/demo/wants/brewers-jersey.json](../scripts/demo/wants/brewers-jersey.json), [spec/features/watch.md](../spec/features/watch.md), [app/src/app/want.tsx](../app/src/app/want.tsx), [brewers-alert-trial.md](../research/watch/ben/brewers-alert-trial.md).
+
+## 2026-11-15 the demo runs on nates harness and the cadence is a lever
+Ben, project chat, 08:42 and 08:43 UTC. Two messages.
+> plan to use however nate builds the harness to end up doing the demo. im hearing ebay api takes like a day for approval so im just going to end up using whatever he engineers up. try and see the drawbacks or benefits to levers in our design about how often we do things. so like what is the drawback of making it an hour? we can design a demo mode that never says demo mode for the backend so that we can increase the rate at which it polls or have some mechanism to make it instant. but carefully choosing how often we probe to improve our roi. also from the ways we could make money including proposed ways we need to assess the whole market for such a thing too. ask codex to conduct all this research to save my precious claude usage though just ensure ot prompt it right
+
+> switch research over to codex when you get the chance without setting the research back at all
+
+Used in: [live-buy-demo.md](live-buy-demo.md), [research/watch/ben/codex-briefs/cadence-and-market.md](../research/watch/ben/codex-briefs/cadence-and-market.md).
+## 2026-11-15 research moves to codex
+Ben, project chat, 08:43 UTC.
+> switch research over to codex when you get the chance without setting the research back at all
+
+Used in: [intent ledger](../spec/intent-ledger.md#how-the-work-runs).
+
+## 2026-11-15 nate take ben's asks as ideas, keep what we do better, and read ebay pages anyway
+Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages. The first came after the orchestrator listed what Ben's rulings change, one of them a reply being sent without asking after three unedited sends. The second answered the orchestrator's question after the eBay page lane's builder stopped on eBay's robots.txt and User Agreement.
+> not just three, dont just do stuff that might be thinking in a way we can understand is less than the potential and value already brought, identify which ideas are needed, what we do better, change what we can do better
+
+> read ebay pages anyway
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
+
+## 2026-11-15 nate dimensions come from the published ones first, not from a required tape
+Nate, build session (orchestrator), 2026-11-15 about 06:30 Central, after the orchestrator relayed Ben's studio rule as "no AI redraw without a tape measurement".
+> So bens request wasn't to require that we rely on tape measurement, it was misinterpreted so please don't change that. Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 67](../.agents/team/packets/team/67-nates-rulings-and-where-they-meet-bens-plans.md).
+
+## 2026-11-15 nate the system always prices with fallbacks, and its power is what it weighs in real time
+Nate, build session (orchestrator), 2026-11-15 about 07:00 Central, after the leads confirmed stronger forms of Ben's asks, among them a bar on automatic pricing that needed thirty sales in a cell.
+> Ok, while bens asks are confirmed, and you see autopricing as fair, of course the system must price and have established fallbacks, but the power of the system relies on things being realtime determined and weighed by how the system was designed
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 ben a bug may be fixed if the same system generalizes; claim the most each experiment allows without lying
+Ben, project timeline, 08:49 and 08:54 UTC, after the first StockX backtest and its fix. Two messages.
+> get git back . also you can selectively remove a bug. just ensure the same system generalizes. think about what each dataset proves too. and how we can make the best claims for a given experiment without lying. think about the project evidence skill and how i frame my projects in my get-hired repo
+
+> with the 70 20 rule thing im interested where that came from and why like the logic behind our pricing algorithm. i feel like there could be like proxies in a small dataset possibly where its more realistic to how we price based on the market at the time. idk. again all research use codex from here on out if you need it. but like actually using the harness what data do we ingest essentially and is there some proxy of depreciation.
+
+Used in: [backtest claims](../spec/plans/backtest/claims.md), [how we price](../spec/plans/backtest/how-we-price.md).
+## 2026-11-15 nate ebay does work in cases
+Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the orchestrator reported that eBay refused every public page with a 403.
+> you havent worked out far enough, ebay does work in cases, I've seen it used
+
+Used in: [when eBay serves its public pages](../research/cross-cutting/nate/runs/ebay-when-it-serves.md).
+
+## 2026-11-15 nate there is a way to use browser use cloud we are not considering
+Nate, build session (orchestrator), 2026-11-15 about 08:00 Central, after the eBay finding.
+> Theres some way to browser use cloud you aren't considering
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.

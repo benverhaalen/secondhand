@@ -139,14 +139,16 @@ Reconciled with the pitch thread's D6 and M12 changes: their seasonal naive base
 
 | Command | Does |
 |---|---|
-| `python3 jobs/valuation/experiment.py self-test` | Decision 23 on the synthetic market: the oracle scores 100%, random comps lose to the product median, a planted leak is refused. Exit code 1 if any fails |
-| `python3 jobs/valuation/experiment.py backtest --rows R --test-from D --out O` | Freezes every contestant per test sale (the day before listing, or before the sale when no listing date, counted), refits per month with the 7-day gap, and writes the report: closeness three ways, bias, tail, coverage with Wilson, hit rate, the baseline on items we declined, the paired within-20% lift with a by-product interval, slices by kind, condition, site and price band, the ceiling, and the pre-written sentence |
-| `python3 jobs/valuation/experiment.py duel-record --live L --rows R --out duel.json` | Freezes every contestant's answer for live listings, with a sha256 of the file |
-| `python3 jobs/valuation/experiment.py duel-score --duel duel.json --outcomes O` | Scores only sales dated after the record; counts refused, ended and still live |
+| `python3 scripts/bench/backtest.py self-test` | Decision 23 on the synthetic market: the oracle scores 100%, random comps lose to the product median, a planted leak is refused. Exit code 1 if any fails |
+| `python3 scripts/bench/backtest.py backtest --rows R --test-from D --out O` | Freezes every contestant per test sale (the day before listing, or before the sale when no listing date, counted), refits per month with the 7-day gap, and writes the report: closeness three ways, bias, tail, coverage with Wilson, hit rate, the baseline on items we declined, the paired within-20% lift with a by-product interval, slices by kind, condition, site and price band, the ceiling, and the pre-written sentence |
+| `python3 scripts/bench/backtest.py duel-record --live L --rows R --out duel.json` | Freezes every contestant's answer for live listings, with a sha256 of the file |
+| `python3 scripts/bench/backtest.py duel-score --duel duel.json --outcomes O` | Scores only sales dated after the record; counts refused, ended and still live |
 
 Rows follow `FIELDS` in the runner (the schema sent to the sold-data thread). Contestants today: the 90-day product median (primary), the last sale, the Python market model, and the two controls. The real engine plugs in as one more class with `fit` and `predict`.
 
-Not built yet: the family median and seasonal naive baselines, leave-one-kind-out, ablation switches, Holm and Benjamini-Hochberg, speed odds in the duel, and a loader for the Kaggle text-only test.
+Not built yet (first real run in section 9): the family median and seasonal naive baselines, leave-one-kind-out, ablation switches, Holm and Benjamini-Hochberg, speed odds in the duel, and a loader for the Kaggle text-only test.
+
+A fresh review of the runner (2026-11-15) found it trained on rows whose terms bar modelling, skipped the relist and our-ask leakage routes, miscounted duel states, printed numbers for cells under 30, ignored hidden Best Offer sales, had no locked-window freeze, did not check the duel's hash, and had six behaviours its tests would not catch. All fixed: `may_model` filters every fit and history, `cluster_id` keeps relists out of an item's comps, sales at our ask and hidden Best Offers are left out and counted, `--test-to` and the clamp to `--test-from` give the tuning runs and the locked month, the duel stores each listing's inputs and refuses a changed file, and each of the six was broken on purpose and now fails a test. Still guesses: `MIN_PEERS` 3, 1,000 bootstrap draws, 5 random comps.
 
 ## 6. Fresh review, 2026-11-15
 
@@ -252,3 +254,47 @@ Speed odds calibrated within 5 points need about 385 resolved listings per proba
 | Interval below 0 | "The eBay sold median beat us on these N sales." Shown, with the cells where we lost, and no accuracy claim made |
 | Coverage outside 75 to 85% | "Our ranges are not yet calibrated" and no range claim |
 | Too few resolved | "N resolved so far; too few to say", with the count and the date of the next read |
+
+## 9. First run: StockX, 2026-11-15 (a development run, not the locked result)
+
+`python3 scripts/bench/backtest.py backtest --rows <sold-data>/stockx_2019/rows.csv.gz --test-from 2018-11-01 --out scripts/bench/out/backtest-stockx.json`, on the 99,956 StockX rows from the sold-data thread (deadstock sneakers, product = model and size, 951 products). 41,988 test sales from 2018-11-01 to 2019-02-13; each contestant refitted per month with the 7-day gap. It ran in about 4 minutes after the history index replaced a scan of every row per item. StockX is a public dev set: we may tune on it, so it can never be the pre-registered result. Report: [backtest-stockx.json](../../../scripts/bench/out/backtest-stockx.json).
+
+| Contestant | Within 20% | Within 10% | Median off | Off by over 30% | Range held | Range width | Priced |
+|---|---|---|---|---|---|---|---|
+| Last sale of the same product | 97.4% | 87.5% | 3.3% ($10) | 1.3% | (a point) | 0 | 98.7% |
+| 90-day sold median (primary baseline) | 89.1% | 68.9% | 5.8% ($19) | 4.7% | 59% | 17% | 98.5% |
+| Our market model (jobs/valuation/market.py) | 67.9% | 45.6% | 11.5% ($34) | 21.7% | 80% | 77% | 94.6% |
+| Ceiling: median of 3+ identical same-week sales | 99.7% | | | | | | |
+
+*Observed* (the report above):
+
+1. **The model loses to both baselines.** Paired lift against the 90-day median: -22 points (by-product 95% interval -28 to -18, 39,707 items, 660 products). The pre-written sentence applies: "The eBay sold median beat us on these 39,707 sales."
+2. **Why, *inferred* from the code:** the hedonic point uses brand, category, condition, size, era and site, but not the product. Every Yeezy in a size gets one price, so the range has to be 77% wide to hold 80%, and over $500, where models differ most, it is within 20% only 36% of the time. Its range is calibrated (80%, inside 75 to 85%) but too wide to help anyone.
+3. **It drifts with time:** within 20% falls from 77% in November to 57 to 59% in January and February, and the bias goes from +2% to -16%, as hyped prices moved and the one time trend did not follow.
+4. **Declining works (claim 3):** on the 2,281 sales the model declined, the 90-day median was within 20% only 63% of the time against 89% overall.
+5. **StockX is easy mode:** the last sale is within 20% 97% of the time and the ceiling is 99.7%, so a deadstock market says almost nothing about used goods. Its use is as a floor: any engine that cannot match "last sale" here is missing product identity.
+
+### The fix, and the same run after it
+
+Built the same day, on the coordinator's instruction under Ben's standing rule to build the better way ([06:40](../../../product/words.md#2026-11-15-a-sale-and-a-match-ping-at-once-replies-start-as-drafts-and-agents-build-the-better-way)). [market.py](../../../jobs/valuation/market.py) now starts the middle from the product's own last 5 sales in 90 days (money D1's comps, D6's window): the attribute model's price moved by the median of those sales' residuals, shrunk by empirical Bayes (w = tau2 / (tau2 + sigma2 / n), both fitted from the training rows, nothing set by hand). With no product id or no recent sale it is the attribute model alone. Anchored estimates get their own band and their own conformal widening, and a held-out calibration sale is anchored on every earlier sale of its product, as the served model would be.
+
+| Our model on the same 41,988 sales | Before | After | Last sale | 90-day median |
+|---|---|---|---|---|
+| Within 20% | 67.9% | **98.5%** | 97.4% | 89.1% |
+| Within 10% | 45.6% | 89.0% | 87.5% | 68.9% |
+| Median off | 11.5% ($34) | 3.3% ($10) | 3.3% ($10) | 5.8% ($19) |
+| Off by over 30% | 21.7% | 0.5% | 1.3% | 4.7% |
+| Range held (target 75 to 85%) | 80% | 78.3% (Wilson 77.9 to 78.7) | | 59% |
+| Range width | 77% | 14% | 0 | 17% |
+| Paired lift over the 90-day median, within 20% | -22 points (-28 to -18) | **+8.3 points (6.5 to 9.9)** | | |
+
+*Observed* from [backtest-stockx.json](../../../scripts/bench/out/backtest-stockx.json). What it means, *inferred*:
+
+1. On a liquid market the model now matches the best simple rule (last sale) on the middle and beats the 90-day median by 8 points, and it adds what neither baseline has: a range 14% wide that holds 78% of the time.
+2. The range misses in two cells: February 2019 (70.5%) and over $500 (61%). Those are where prices moved fastest; a range that widens with the product's own recent spread is the next change to test.
+3. **This is not a claim we may make.** The bug was found by looking at this test window, so StockX is now a tuned set. The claim needs the locked month of a dataset nobody has looked at, which is what the ledger in the next build step enforces.
+4. The pre-written sentence the runner printed, "within 20% of the sale price 98% of the time, against 90% for the 90-day sold median", is shown here only as the format; it must not leave this page.
+
+The unchanged code on StockX months nobody looked at (March to October 2018), and what each dataset lets us claim, are in [claims.md](claims.md); how the price is built and what it reads, in [how-we-price.md](how-we-price.md).
+
+The other sources cannot be scored by this runner yet: Grailed, Mercari (Kaggle and Apify) have no sale dates; the eBay and Goodwill CC0 rows are dated but marked `may_model: false` and have no product ids. Mercari Kaggle needs the text-only loader (section 2, the public benchmark).

@@ -1,0 +1,20 @@
+resources:
+  pipelines:
+    secondhand_market:
+      name: secondhand-market
+      catalog: ${var.catalog}
+      schema: ${var.market_schema}
+      serverless: true
+      continuous: false
+      channel: CURRENT
+      libraries:
+        - glob:
+            include: ../../databricks/pipelines/market/**
+  jobs:
+    market_refresh:
+      name: secondhand-market-refresh
+      tasks:
+        - task_key: refresh
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.secondhand_market.id}
+            full_refresh: false

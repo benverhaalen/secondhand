@@ -43,7 +43,7 @@ export async function genie(question: string, d: GenieDeps): Promise<GenieResult
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       });
       if (!res.ok) throw new Fail(`HTTP_${res.status}`);
-      const o = obj(await res.json().catch(() => null));
+      const o = obj(await res.json().catch(e => { throw new Fail('bad_reply', { cause: e }); }));
       if (!o) throw new Fail('bad_reply');
       return o;
     }, o => ({ status: str(o.status) ?? 'ok' }));

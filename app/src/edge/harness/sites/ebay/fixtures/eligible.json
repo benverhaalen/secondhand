@@ -1,0 +1,1 @@
+{"href":"https://api.ebay.com/sell/negotiation/v1/find_eligible_items?limit=10&offset=0","limit":10,"offset":0,"total":1,"eligibleItems":[{"listingId":"110551234567"}]}

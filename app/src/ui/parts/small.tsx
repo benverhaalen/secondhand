@@ -38,7 +38,7 @@ export function SiteBadge({ site }: { site: Site }) {
   );
 }
 
-// The peak amount, 50 in the text face (never Clofie: Art. 6), always with what it is under it ("You keep", "Sold for").
+// The peak amount, 50 in the text face (never Clofie: Art. 6), always with what it is under it ("You get", "Sold for").
 export function Amount({ value, what, currency }: { value: number; what: string; currency?: string }) {
   return (
     <View {...mark('amount')} style={{ gap: space.s1 }}>

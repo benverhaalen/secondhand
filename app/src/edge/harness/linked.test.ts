@@ -2,7 +2,8 @@
 // a planted unlinked site gets zero launches, zero sweeps, zero scheduled jobs and zero adapter runs.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { linkedList, memoryAccounts, memoryVault } from '../browser/auth.ts';
+import { memoryAccounts, memoryVault } from '../browser/auth.ts';
+import { linkedList } from './linked.ts';
 import { createPool, type Launcher } from '../browser/pool.ts';
 import { createScheduler } from '../events/schedule.ts';
 import { memoryLeases, memoryParams } from '../events/ports.ts';
@@ -45,7 +46,7 @@ test('pool, sweep and scheduler: the planted site gets zero launches, zero sweep
     async persistent(dir) { launched.push(dir); return { newPage: async () => ({ close: async () => {} }), close: async () => {}, onClose() {} }; },
     async anonymous() { launched.push('anon'); return { newPage: async () => ({ close: async () => {} }), close: async () => {}, onClose() {} }; },
   };
-  const pool = createPool({ launcher, profileRoot: '/profiles', accounts, vault });
+  const pool = createPool({ leases: memoryLeases(), launcher, profileRoot: '/profiles', accounts, vault });
   await pool.warmLinked('p1', 0);
   assert.equal(launched.length, 1);
   assert.ok(launched[0].endsWith('a-depop'));

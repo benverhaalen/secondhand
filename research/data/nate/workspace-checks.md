@@ -1,6 +1,7 @@
 # Workspace checks (T0-1)
+Researched 2026-11-14 by Nate (workspace probe).
 
-Written by `python probes/workspace/run.py`; profile `Nate`, workspace id `7474651613371474`. Each row is one probe's dated verdict; a fail records what was seen and the fallback. No token, cookie or secret appears here.
+*Observed in the recorded local run:* Written by `python probes/workspace/run.py`; profile `Nate`, workspace id `7474651613371474`. Each row is one probe's dated verdict; a fail records what was seen and the fallback. No token, cookie or secret appears here.
 
 | Probe | Verdict | At (Central) | What was seen | Measured |
 |---|---|---|---|---|

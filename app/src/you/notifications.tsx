@@ -12,8 +12,8 @@ import { cash, changed, PAGES, useGo, usePage } from './state';
 type Kind = { kind: string; pref?: string; label: string; says: string };
 // The events table of spec/notifications.md, by level. `pref` names the kind stored on the person (user.notification_pref).
 const NOW: Kind[] = [
-  { kind: 'sale', pref: 'sale', label: 'It sold', says: `Sold: the Carhartt jacket. You keep ${cash(3140)}` },
-  { kind: 'offer', pref: 'offer', label: 'An offer you’d take', says: `${cash(4200)} offer on the Carhartt jacket. You keep ${cash(3670)}` },
+  { kind: 'sale', pref: 'sale', label: 'It sold', says: `Sold: the Carhartt jacket. You get ${cash(3140)}` },
+  { kind: 'offer', pref: 'offer', label: 'An offer you’d take', says: `${cash(4200)} offer on the Carhartt jacket. You get ${cash(3670)}` },
   { kind: 'deadline', pref: 'deadline', label: 'Ship by today', says: 'Ship the lamp today. The site cancels it Fri 9 am' },
   { kind: 'pickup', label: 'A pickup within the hour', says: 'Sam is coming at 6:30. Library parking lot' },
   { kind: 'claim', label: 'A return or claim', says: 'Return request: the Nike hoodie. Answer by Wed 5 pm' },

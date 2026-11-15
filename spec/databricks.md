@@ -1,6 +1,6 @@
 # Databricks, and how secondhand is built on it
 
-Status: explanation and *agent proposal* for Ben and Nate. Written 2026-11-14.
+Status: explanation and *agent proposal* for Ben and Nate. Written 2026-11-14. What is built on Nate's workspace, the tables, the jobs and the governance side by side: [databricks-build.md](databricks-build.md).
 
 This page explains Databricks in plain words. It shows where each feature of secondhand runs on the platform, and proposes what we add that the platform does not have. It answers Nate's asks: [go beyond the standard](../product/words.md#2026-11-14-nate-databricks-beyond-the-standard), [a full explanation](../product/words.md#2026-11-14-nate-the-databricks-explanation), [make it provable and build features for Databricks](../product/words.md#2026-11-14-nate-provable-and-features-for-databricks), [images, proven aggregates and adaptive algorithms](../product/words.md#2026-11-14-nate-images-proven-aggregates-and-adaptive-algorithms), [a general scoring feature](../product/words.md#2026-11-14-nate-a-general-scoring-feature-and-real-time-algorithms) and [innovate without overcomplicating](../product/words.md#2026-11-14-nate-innovate-without-overcomplicating-and-the-agent-framework). The choice of Databricks as the backend is decided ([decisions](../product/decisions.md#2026-11-14-databricks-runs-the-whole-backend-with-a-hybrid-fallback)), and so is the rule that licences and site terms are recorded as facts and do not shape the build ([decisions](../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build)). Everything here about *how* is an *agent proposal*. Nothing on this page is a decision, and every feature stays in scope ([decisions](../product/decisions.md#2026-11-14-keep-every-feature-in-scope)).
 
@@ -264,7 +264,7 @@ Each block gives the pieces, the data path, what the official skills say, what w
 - **Test first:** keep an event stream open across a Lakebase suspend.
 
 ### 4.7 Studio ([spec](features/studio.md))
-- **Pieces:** Seedream 5.5 and Nano Banana 2.1; a loop that prepares, renders, checks and repairs, with at most 2 repair rounds; render records as files in the volume and rows in Delta; photo tweaks without generation (brightness, contrast and the like), as Ben asked ([words](../product/words.md#2026-11-14-photo-tweaks-without-generation-and-a-photo-score)).
+- **Pieces:** Nano Banana 2.1 (Ben's pick, 2026-11-15), Seedream 5.5 if it becomes reachable; a loop that prepares, renders, checks and repairs, with at most 2 repair rounds; render records as files in the volume and rows in Delta; photo tweaks without generation (brightness, contrast and the like), as Ben asked ([words](../product/words.md#2026-11-14-photo-tweaks-without-generation-and-a-photo-score)).
 - **Data path:** each render keeps a pointer to its source frames and its check result. A render is never used as identification evidence. The photo score feeds the Quality axis (§5.2).
 - **What the skills say:** databricks-unity-gateway fronts external model providers. Whether it fronts these two image models is unverified. If it does not, the job calls them directly and logs each call as a trace span (*inferred*).
 - **Test first:** register one image model as a Gateway endpoint.

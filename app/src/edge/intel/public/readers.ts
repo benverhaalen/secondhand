@@ -49,7 +49,7 @@ const SPECS: Record<Exclude<Site, 'offerup'>, Spec> = {
     card: c => { const r: Row = {}; const href = grab(c, /href="(\/us\/item\/[^"]+)"/);
       put(r, 'url', href); put(r, 'id', grab(c, /^<div id="(m\d+)"/));
       put(r, 'title', decode(strip(grab(c, /data-testid="ItemName"[^>]*>([\s\S]*?)<\/p>/) ?? '')));
-      const cents = Number(grab(c, /data-itemprice="(\d+)"/)); if (cents > 0) { r.price_cents = cents; r.currency = 'USD'; }
+      const cents = Number(grab(c, /data-itemprice="(\d+)"/)); if (cents > 0 && Number.isSafeInteger(cents)) { r.price_cents = cents; r.currency = 'USD'; }
       if (grab(c, /data-itemstatus="([a-z_]+)"/) === 'sold_out') r.sold = true;
       put(r, 'image_url', image(c)); return r; },
   },
@@ -104,7 +104,8 @@ function offerup(html: string, base: string): { rows: Row[]; anchors: number } {
     put(r, 'id', id); if (id) r.url = `${base}/item/detail/${id}`;
     put(r, 'title', typeof l.title === 'string' ? decode(l.title) : undefined);
     const p = typeof l.price === 'string' && /^\d+(\.\d+)?$/.test(l.price) ? l.price : undefined;
-    if (p !== undefined) { r.price_cents = Math.round(Number(p) * 100); r.currency = 'USD'; }
+    const c = p === undefined ? NaN : Math.round(Number(p) * 100);
+    if (Number.isSafeInteger(c)) { r.price_cents = c; r.currency = 'USD'; } // a price too long to be whole cents is dropped, never passed on
     put(r, 'condition', typeof l.conditionText === 'string' ? l.conditionText : undefined);
     const img = l.image as { url?: unknown } | null; put(r, 'image_url', typeof img?.url === 'string' ? img.url : undefined);
     return r;

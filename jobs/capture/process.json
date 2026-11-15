@@ -1,5 +1,5 @@
 {
- "version": 1,
+ "version": 2,
  "source": "spec/determinations/capture-shots.md#default-plans-by-kind, spec/features/capture.md#the-process-for-each-type",
  "no_lidar": {
   "kind": "series",
@@ -274,5 +274,1663 @@
     "when": "not_rigid"
    }
   ]
+ },
+ "family_class": {
+  "apparel": "flat_garment",
+  "shoes": "footwear",
+  "bags": "bag",
+  "jewellery_watches": "small_hard",
+  "furniture": "large_bulky",
+  "lighting_home": "medium_hard",
+  "electronics": "medium_hard",
+  "appliances_tools": "medium_hard",
+  "media": "small_hard",
+  "cards_collectibles": "small_hard",
+  "toys_lego": "medium_hard",
+  "bikes_sports": "large_bulky",
+  "baby_gear": "large_bulky",
+  "other": null,
+  "electronics.phones_laptops": "small_hard"
+ },
+ "classes": {
+  "flat_garment": {
+   "checks": [
+    "stains",
+    "holes",
+    "pilling",
+    "fading",
+    "print_cracking"
+   ],
+   "weight": "under_1lb",
+   "dimensions": {
+    "field": "dimensions",
+    "type": "dimensions",
+    "ways": [
+     {
+      "way": "measured",
+      "view": "front",
+      "min_conf": 0.8
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all",
+    "unit": "cm",
+    "ask": {
+     "kind": "number_with_unit",
+     "words": "Measurements?",
+     "units": [
+      "cm",
+      "in"
+     ],
+     "parts": [
+      "pit_to_pit",
+      "length"
+     ]
+    },
+    "per_piece": true
+   }
+  },
+  "footwear": {
+   "checks": [
+    "sole_wear",
+    "creasing",
+    "heel_drag",
+    "scuffs"
+   ],
+   "weight": "1_to_3lb"
+  },
+  "bag": {
+   "checks": [
+    "corner_wear",
+    "handle_darkening",
+    "hardware_scratches",
+    "lining_stains"
+   ],
+   "weight": "1_to_3lb",
+   "dimensions": {
+    "field": "dimensions",
+    "type": "dimensions",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "measured",
+      "view": "scan",
+      "min_conf": 0.8
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all",
+    "unit": "cm",
+    "ask": {
+     "kind": "number_with_unit",
+     "words": "Dimensions?",
+     "units": [
+      "cm",
+      "in"
+     ],
+     "parts": [
+      "width",
+      "height",
+      "depth"
+     ]
+    },
+    "per_piece": true
+   }
+  },
+  "small_hard": {
+   "checks": [
+    "scratches",
+    "dents",
+    "cracks"
+   ],
+   "weight": "under_1lb"
+  },
+  "medium_hard": {
+   "checks": [
+    "scratches",
+    "dents",
+    "missing_parts"
+   ],
+   "weight": "3_to_10lb",
+   "dimensions": {
+    "field": "dimensions",
+    "type": "dimensions",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "measured",
+      "view": "scan",
+      "min_conf": 0.8
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all",
+    "unit": "cm",
+    "ask": {
+     "kind": "number_with_unit",
+     "words": "Dimensions?",
+     "units": [
+      "cm",
+      "in"
+     ],
+     "parts": [
+      "width",
+      "height",
+      "depth"
+     ]
+    },
+    "per_piece": true
+   }
+  },
+  "large_bulky": {
+   "checks": [
+    "stains",
+    "scratches",
+    "tears",
+    "loose_joints"
+   ],
+   "weight": "over_10lb",
+   "dimensions": {
+    "field": "dimensions",
+    "type": "dimensions",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "measured",
+      "view": "scan",
+      "min_conf": 0.8
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": "all",
+    "recommended": [],
+    "unit": "cm",
+    "ask": {
+     "kind": "number_with_unit",
+     "words": "Dimensions?",
+     "units": [
+      "cm",
+      "in"
+     ],
+     "parts": [
+      "width",
+      "depth",
+      "height"
+     ]
+    },
+    "per_piece": true
+   }
+  },
+  "soft_goods": {
+   "checks": [
+    "stains",
+    "holes",
+    "fading"
+   ],
+   "weight": "under_1lb",
+   "dimensions": {
+    "field": "dimensions",
+    "type": "dimensions",
+    "ways": [
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all",
+    "unit": "cm",
+    "ask": {
+     "kind": "number_with_unit",
+     "words": "Dimensions?",
+     "units": [
+      "cm",
+      "in"
+     ],
+     "parts": [
+      "width",
+      "height"
+     ]
+    },
+    "per_piece": true
+   }
+  },
+  "set_bundle": {
+   "wraps": "inner_class",
+   "lot_count": {
+    "field": "lot_count",
+    "type": "number",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "group",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "tap",
+    "required": "all",
+    "recommended": [],
+    "values": [
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "How many pieces?"
+    }
+   }
+  }
+ },
+ "fields": {
+  "apparel": [
+   {
+    "field": "size_label",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "tag",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "tap",
+    "required": [
+     "depop",
+     "poshmark"
+    ],
+    "recommended": [
+     "ebay",
+     "mercari",
+     "facebook"
+    ],
+    "values": [
+     "XS",
+     "S",
+     "M",
+     "L",
+     "XL",
+     "XXL"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Size?"
+    },
+    "per_piece": true
+   },
+   {
+    "field": "brand",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "tag",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [
+     "ebay",
+     "poshmark",
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    },
+    "per_piece": true
+   },
+   {
+    "field": "fabric",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "tag",
+      "min_conf": 0.85
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": [
+     "ebay"
+    ],
+    "ask": {
+     "kind": "text",
+     "words": "Fabric?"
+    }
+   },
+   {
+    "field": "department",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "seen",
+      "view": "front",
+      "min_conf": 0.8
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [
+     "ebay",
+     "poshmark"
+    ],
+    "values": [
+     "women",
+     "men",
+     "unisex",
+     "kids"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Who is it for?"
+    }
+   }
+  ],
+  "shoes": [
+   {
+    "field": "size",
+    "type": "number",
+    "ways": [
+     {
+      "way": "label",
+      "view": "size_label",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "tap",
+    "required": [
+     "depop",
+     "poshmark"
+    ],
+    "recommended": [
+     "ebay",
+     "mercari",
+     "facebook"
+    ],
+    "unit": "US",
+    "ask": {
+     "kind": "number_with_unit",
+     "words": "Size?",
+     "units": [
+      "US",
+      "UK",
+      "EU"
+     ]
+    }
+   },
+   {
+    "field": "brand",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "size_label",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [
+     "ebay",
+     "poshmark",
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    }
+   },
+   {
+    "field": "model",
+    "type": "text",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": [
+     "ebay"
+    ],
+    "ask": {
+     "kind": "text",
+     "words": "Model?"
+    }
+   },
+   {
+    "field": "box",
+    "type": "bool",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "*",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "tap",
+    "required": [],
+    "recommended": "all",
+    "ask": {
+     "kind": "yes_no",
+     "words": "Original box?"
+    }
+   }
+  ],
+  "bags": [
+   {
+    "field": "brand",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "inside_tab",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [
+     "ebay",
+     "poshmark",
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    }
+   },
+   {
+    "field": "model",
+    "type": "text",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": [
+     "ebay"
+    ],
+    "ask": {
+     "kind": "text",
+     "words": "Model?"
+    }
+   },
+   {
+    "field": "accessories",
+    "type": "list",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "*",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "tap",
+    "required": [],
+    "recommended": "all",
+    "values": [
+     "dust_bag",
+     "authenticity_card",
+     "box",
+     "strap"
+    ],
+    "ask": {
+     "kind": "pick_many",
+     "words": "Comes with?"
+    }
+   }
+  ],
+  "jewellery_watches": [
+   {
+    "field": "brand",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "back_or_stamp",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [
+     "ebay",
+     "poshmark",
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    }
+   },
+   {
+    "field": "metal",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "label",
+      "view": "back_or_stamp",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all",
+    "values": [
+     "gold",
+     "silver",
+     "platinum",
+     "steel",
+     "plated",
+     "other"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Metal?"
+    }
+   },
+   {
+    "field": "box_papers",
+    "type": "bool",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "*",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "tap",
+    "required": [],
+    "recommended": "all",
+    "ask": {
+     "kind": "yes_no",
+     "words": "Box and papers?"
+    }
+   }
+  ],
+  "furniture": [
+   {
+    "field": "brand",
+    "type": "text",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    }
+   },
+   {
+    "field": "material",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "*",
+      "min_conf": 0.7
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all",
+    "values": [
+     "wood",
+     "metal",
+     "plastic",
+     "fabric",
+     "leather",
+     "glass",
+     "rattan",
+     "mixed"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Material?"
+    }
+   },
+   {
+    "field": "handover",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "derived",
+      "min_conf": 0.9,
+      "from": "profile.handover"
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": [
+     "facebook",
+     "ebay"
+    ],
+    "values": [
+     "pickup",
+     "delivery",
+     "either"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Pickup or delivery?"
+    }
+   }
+  ],
+  "lighting_home": [
+   {
+    "field": "brand",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "base",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [
+     "ebay",
+     "poshmark",
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    }
+   },
+   {
+    "field": "function",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "always",
+    "required": [],
+    "recommended": "all",
+    "values": [
+     "works",
+     "partly",
+     "not_working",
+     "not_checked"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Does it work?"
+    },
+    "note": "ours: we do not post an untested device as working"
+   }
+  ],
+  "electronics": [
+   {
+    "field": "brand",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "model_plate",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [
+     "ebay",
+     "poshmark",
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    }
+   },
+   {
+    "field": "model",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "model_plate",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "ebay"
+    ],
+    "recommended": [
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "text",
+     "words": "Model?"
+    }
+   },
+   {
+    "field": "function",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "always",
+    "required": "all",
+    "recommended": [],
+    "values": [
+     "works",
+     "partly",
+     "not_working",
+     "not_checked"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Does it work?"
+    },
+    "note": "ours: we do not post an untested device as working"
+   }
+  ],
+  "appliances_tools": [
+   {
+    "field": "brand",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "rating_plate",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [
+     "ebay",
+     "poshmark",
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    }
+   },
+   {
+    "field": "model",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "rating_plate",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "ebay"
+    ],
+    "recommended": [
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "text",
+     "words": "Model?"
+    }
+   },
+   {
+    "field": "voltage",
+    "type": "number",
+    "ways": [
+     {
+      "way": "label",
+      "view": "rating_plate",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": [
+     "ebay"
+    ],
+    "unit": "V"
+   },
+   {
+    "field": "accessories",
+    "type": "list",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "*",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "tap",
+    "required": [],
+    "recommended": "all",
+    "values": [
+     "charger",
+     "batteries",
+     "case"
+    ],
+    "ask": {
+     "kind": "pick_many",
+     "words": "Comes with?"
+    }
+   },
+   {
+    "field": "function",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "always",
+    "required": "all",
+    "recommended": [],
+    "values": [
+     "works",
+     "partly",
+     "not_working",
+     "not_checked"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Does it work?"
+    },
+    "note": "ours: we do not post an untested device as working"
+   }
+  ],
+  "media": [
+   {
+    "field": "code",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "back_barcode",
+      "min_conf": 0.95
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": [
+     "ebay"
+    ]
+   },
+   {
+    "field": "function",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "always",
+    "required": [],
+    "recommended": "all",
+    "values": [
+     "works",
+     "partly",
+     "not_working",
+     "not_checked"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Plays without skips?"
+    },
+    "note": "ours: we do not post an untested device as working"
+   }
+  ],
+  "cards_collectibles": [
+   {
+    "field": "set",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "front",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all",
+    "ask": {
+     "kind": "text",
+     "words": "Set?"
+    }
+   },
+   {
+    "field": "graded",
+    "type": "bool",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "front",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "tap",
+    "required": [
+     "ebay"
+    ],
+    "recommended": [],
+    "ask": {
+     "kind": "yes_no",
+     "words": "Graded?"
+    },
+    "note": "eBay condition descriptors need graded or ungraded"
+   }
+  ],
+  "toys_lego": [
+   {
+    "field": "set_no",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "box_or_set_front",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all"
+   },
+   {
+    "field": "completeness",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "*",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "tap",
+    "required": "all",
+    "recommended": [],
+    "values": [
+     "sealed",
+     "complete",
+     "incomplete"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Sealed or complete?"
+    },
+    "note": "ours: it sets the price class"
+   }
+  ],
+  "bikes_sports": [
+   {
+    "field": "frame_size",
+    "type": "number",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all",
+    "unit": "cm",
+    "ask": {
+     "kind": "number_with_unit",
+     "words": "Frame size?",
+     "units": [
+      "cm",
+      "in"
+     ]
+    }
+   },
+   {
+    "field": "function",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "always",
+    "required": "all",
+    "recommended": [],
+    "values": [
+     "works",
+     "partly",
+     "not_working",
+     "not_checked"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Rides, shifts and brakes?"
+    },
+    "note": "ours: we do not post an untested device as working"
+   }
+  ],
+  "baby_gear": [
+   {
+    "field": "model",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "model_date_label",
+      "min_conf": 0.9
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "ebay"
+    ],
+    "recommended": [],
+    "ask": {
+     "kind": "text",
+     "words": "Model?"
+    }
+   },
+   {
+    "field": "date_code",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "model_date_label",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all",
+    "ask": {
+     "kind": "text",
+     "words": "Date code?"
+    }
+   },
+   {
+    "field": "all_hardware",
+    "type": "bool",
+    "ways": [
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "always",
+    "required": [],
+    "recommended": "all",
+    "ask": {
+     "kind": "yes_no",
+     "words": "All hardware there?"
+    }
+   }
+  ],
+  "other": [],
+  "root": [
+   {
+    "field": "type",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "first_frame"
+     }
+    ],
+    "confirm": "tap",
+    "required": "all",
+    "recommended": [],
+    "values": [
+     "apparel",
+     "shoes",
+     "bags",
+     "jewellery_watches",
+     "furniture",
+     "lighting_home",
+     "electronics",
+     "appliances_tools",
+     "media",
+     "cards_collectibles",
+     "toys_lego",
+     "bikes_sports",
+     "baby_gear",
+     "other"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "What is it?"
+    }
+   },
+   {
+    "field": "condition",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "*",
+      "min_conf": 0
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "always",
+    "required": "all",
+    "recommended": [],
+    "values": [
+     "new_with_tags",
+     "new_without_tags",
+     "like_new",
+     "excellent",
+     "good",
+     "fair",
+     "poor"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Condition?"
+    }
+   },
+   {
+    "field": "brand",
+    "type": "text",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [
+     "ebay",
+     "poshmark",
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    }
+   },
+   {
+    "field": "colour",
+    "type": "list",
+    "ways": [
+     {
+      "way": "seen",
+      "view": "*",
+      "min_conf": 0.8
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": "all",
+    "values": [
+     "black",
+     "white",
+     "grey",
+     "blue",
+     "red",
+     "green",
+     "yellow",
+     "orange",
+     "pink",
+     "purple",
+     "brown",
+     "beige",
+     "multi",
+     "silver",
+     "gold"
+    ],
+    "ask": {
+     "kind": "pick_many",
+     "words": "Colour?"
+    }
+   },
+   {
+    "field": "package_weight",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "derived",
+      "min_conf": 0.8,
+      "from": "class_weight"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "mercari"
+    ],
+    "recommended": [],
+    "values": [
+     "under_1lb",
+     "1_to_3lb",
+     "3_to_10lb",
+     "over_10lb"
+    ]
+   }
+  ],
+  "electronics.phones_laptops": [
+   {
+    "field": "brand",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "about_screenshot",
+      "min_conf": 0.95
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "depop"
+    ],
+    "recommended": [
+     "ebay",
+     "poshmark",
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    }
+   },
+   {
+    "field": "model",
+    "type": "text",
+    "ways": [
+     {
+      "way": "label",
+      "view": "about_screenshot",
+      "min_conf": 0.95
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "ebay"
+    ],
+    "recommended": [
+     "mercari",
+     "facebook"
+    ],
+    "ask": {
+     "kind": "text",
+     "words": "Model?"
+    }
+   },
+   {
+    "field": "storage_gb",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "label",
+      "view": "about_screenshot",
+      "min_conf": 0.95
+     },
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [
+     "ebay"
+    ],
+    "recommended": [
+     "mercari",
+     "facebook"
+    ],
+    "values": [
+     16,
+     32,
+     64,
+     128,
+     256,
+     512,
+     1024,
+     2048
+    ],
+    "unit": "GB",
+    "ask": {
+     "kind": "pick_one",
+     "words": "Storage?"
+    }
+   },
+   {
+    "field": "battery_health_pct",
+    "type": "number",
+    "ways": [
+     {
+      "way": "label",
+      "view": "about_screenshot",
+      "min_conf": 0.95
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": [
+     "ebay",
+     "mercari"
+    ],
+    "unit": "%",
+    "ask": {
+     "kind": "number_with_unit",
+     "words": "Battery health?",
+     "units": [
+      "%"
+     ]
+    }
+   },
+   {
+    "field": "carrier_lock",
+    "type": "enum",
+    "ways": [
+     {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "auto",
+    "required": [],
+    "recommended": [
+     "ebay",
+     "facebook"
+    ],
+    "values": [
+     "unlocked",
+     "locked"
+    ],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Carrier lock?"
+    }
+   },
+   {
+    "field": "signed_out",
+    "type": "bool",
+    "ways": [
+     {
+      "way": "asked"
+     }
+    ],
+    "confirm": "always",
+    "required": "all",
+    "recommended": [],
+    "ask": {
+     "kind": "yes_no",
+     "words": "Erased and signed out?"
+    },
+    "note": "ours: a locked phone cannot be resold"
+   }
+  ]
+ },
+ "steps": {
+  "group": {
+   "step": "group",
+   "kind": "instant",
+   "role": "group",
+   "needs_lidar": false,
+   "seconds": 5
+  },
+  "front_still": {
+   "step": "front",
+   "kind": "series",
+   "role": "front",
+   "needs_lidar": false,
+   "seconds": 5
+  }
  }
 }

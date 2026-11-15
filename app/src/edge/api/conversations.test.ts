@@ -3,11 +3,13 @@ import { beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
-import { handlers, manifest } from './conversations.ts';
+import { handlers, manifest, replyPorts, seedConversations } from './conversations.ts';
+import { memoryStore } from '../events/ports.ts';
 
 const prefixes = ["conversations"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
 beforeEach(() => {
+  replyPorts.store = memoryStore(); seedConversations(replyPorts.store);
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
@@ -32,9 +34,9 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
   assert.ok(r.headers.get('X-Request-Id'));
   for (const [key, value] of Object.entries(e.headers ?? {})) assert.equal(r.headers.get(key), value);
   if (e.response === null) assert.equal(await r.text(), '');
-  else assert.deepEqual(await r.json(), e.response);
+  else { const body = await r.json(); if (e.name === 'conversations.reply') { assert.ok(replyPorts.store.getJob(body.id)); body.id = (e.response as { id: string }).id; } assert.deepEqual(body, e.response); }
 });
-for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
+for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor' && e.name !== 'conversations.reply')) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
 });
@@ -95,4 +97,107 @@ test('conversations: owned Expo files bind auth and export the contract method',
     assert.ok(source.includes("export const " + method + " = route('" + entry.endpoint + "'"), relative);
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
+});
+
+test('conversation reads validate stored incoming messages through handleMessages', async () => {
+  const { ports } = await import('./conversations.ts');
+  const read = ports.read_messages;
+  try {
+    ports.read_messages = async account => (await read(account)).map(row => ({ ...row, sent_at: 'not-a-date' }));
+    const response = await call(examples.find(e => e.name === 'conversations.messages')!);
+    assert.equal(response.status, 503);
+  } finally { ports.read_messages = read; }
+});
+
+test('reply: unsupported claim writes no event; a repeated acknowledgment writes one approved event', async () => {
+  const store = replyPorts.store;
+  const e = examples.find(e => e.name === 'conversations.reply')!;
+  const before = store.events().length;
+  const held = await call(e, { body: { text: 'This is brand new and never worn.' }, headers: { 'Idempotency-Key': 'held' } });
+  assert.equal(held.status, 422, 'unbacked claim must be held');
+  assert.equal((await held.json()).failed_step, 'claim_check');
+  assert.equal(store.events().length, before);
+  const options = { body: { text: 'Thanks!' }, headers: { 'Idempotency-Key': 'approved-reply' } };
+  const sent = await call(e, options); await call(e, options);
+  assert.equal(sent.status, 202);
+  const events = store.events().slice(before);
+  assert.equal(events.length, 1); assert.equal(events[0].actor, 'user'); assert.equal(events[0].why, 'your reply');
+  assert.equal(store.getJob((await sent.json()).id)?.event_id, events[0].id);
+});
+
+test('reply: durable dedupe survives HTTP cache loss, retains text by reference, and logs no text', async () => {
+  const sink = memorySink(); deps.log = createLog({ src: 'test', build: 'test', sink });
+  const e = examples.find(e => e.name === 'conversations.reply')!;
+  const opts = { body: { text: 'Thanks!' }, headers: { 'Idempotency-Key': 'durable-reply' } };
+  const first = await (await call(e, opts)).json(); deps.idem.clear();
+  const second = await (await call(e, opts)).json();
+  assert.deepEqual(second, first);
+  const st = replyPorts.store;
+  assert.equal(st.events().length, 1); assert.equal(st.jobs().length, 1);
+  const job = st.getJob(first.id)!;
+  const row = st.get('conversation', 'usr_8f2k', 'cv_6t1')!;
+  assert.deepEqual(row.outgoing, [{ id: job.args.text_ref, text: 'Thanks!' }]);
+  assert.equal(JSON.stringify(st.events()).includes('Thanks!'), false);
+  assert.equal(sink.text().includes('Thanks!'), false);
+});
+
+test('reply: confirmed stored attributes back a claim; missing support refuses it', async () => {
+  replyPorts.store.put('item', { id: 'it_7c2m', user_id: 'usr_8f2k', attributes: [{ id: 'att_lining', name: 'lining', value: 'blanket lined', confirmed: true }] });
+  const e = examples.find(e => e.name === 'conversations.reply')!;
+  assert.equal((await call(e, { body: { text: 'Blanket lined.' }, headers: { 'Idempotency-Key': 'backed' } })).status, 202);
+  assert.equal((await call(e, { body: { text: 'Ships tomorrow.' }, headers: { 'Idempotency-Key': 'unsupported' } })).status, 422);
+  assert.equal(replyPorts.store.events().length, 1);
+});
+
+test('reply: backing one fact cannot authorize an extra claim in the same sentence', async () => {
+  replyPorts.store.put('item', { id: 'it_7c2m', user_id: 'usr_8f2k', attributes: [{ id: 'att_lining', name: 'lining', value: 'blanket lined', confirmed: true }] });
+  const response = await call(examples.find(e => e.name === 'conversations.reply')!, { body: { text: 'Blanket lined and never worn' } });
+  assert.equal(response.status, 422);
+  assert.equal(replyPorts.store.events().length, 0);
+});
+
+test('reply: original unsupported fixture answers the claim_check error contract', async () => {
+  const e = examples.find(e => e.name === 'conversations.reply.unbacked')!;
+  const response = await call(e);
+  assert.equal(response.status, e.status); assert.deepEqual(await response.json(), e.response);
+});
+
+test('reply: changed durable key is refused after HTTP cache loss', async () => {
+  const e = examples.find(e => e.name === 'conversations.reply')!;
+  await call(e); deps.idem.clear();
+  const response = await call(e, { body: { text: 'Thank you!' } });
+  assert.equal(response.status, 409); assert.equal((await response.json()).code, 'idempotency_mismatch');
+});
+
+test('reply: concurrent valid replies retain both text references and events', async () => {
+  const e = examples.find(e => e.name === 'conversations.reply')!;
+  const responses = await Promise.all(['one', 'two'].map(key => call(e, { headers: { 'Idempotency-Key': key } })));
+  assert.deepEqual(responses.map(r => r.status), [202, 202]);
+  assert.equal(replyPorts.store.events().length, 2);
+  assert.equal((replyPorts.store.get('conversation', 'usr_8f2k', 'cv_6t1')!.outgoing as unknown[]).length, 2);
+});
+
+test('reply: concurrent changed bodies on one key return one job and a 409', async () => {
+  const e = examples.find(e => e.name === 'conversations.reply')!;
+  const responses = await Promise.all(['Thanks!', 'Hello!'].map(text => call(e, { body: { text }, headers: { 'Idempotency-Key': 'racing-key' } })));
+  assert.deepEqual(responses.map(r => r.status).sort(), [202, 409]);
+  assert.equal(replyPorts.store.events().length, 1); assert.equal(replyPorts.store.jobs().length, 1);
+});
+
+test('reply: a new person can reply in their own conversation while foreign conversations are 404', async () => {
+  const st = replyPorts.store;
+  st.put('conversation', { id: 'cv_new', user_id: 'usr_other', site: 'depop', account_id: 'acc_other' });
+  const e = examples.find(e => e.name === 'conversations.reply')!;
+  for (const options of [{ token: 'other' }, { path: '/v1/conversations/cv_new/messages' }]) {
+    const response = await call(e, options);
+    assert.equal(response.status, 404);
+    assert.equal((await response.json()).code, 'not_found');
+  }
+  assert.equal(st.events().length, 0, 'foreign replies must write no event');
+  const response = await call(e, { token: 'other', path: '/v1/conversations/cv_new/messages', body: { text: 'Thanks!' } });
+  assert.equal(response.status, 202, 'reply permission comes from conversation ownership');
+  const job = st.getJob((await response.json()).id)!;
+  assert.equal(st.events({ user_id: 'usr_other' }).length, 1);
+  assert.equal(st.events({ user_id: 'usr_8f2k' }).length, 0);
+  assert.deepEqual(st.get('conversation', 'usr_other', 'cv_new')?.outgoing, [{ id: job.args.text_ref, text: 'Thanks!' }]);
 });

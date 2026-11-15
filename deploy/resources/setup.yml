@@ -1,0 +1,29 @@
+resources:
+  jobs:
+    setup:
+      name: secondhand-setup
+      environments:
+        - environment_key: migration
+          spec:
+            environment_version: "3"
+      tasks:
+        - task_key: layout
+          sql_task:
+            file: { path: ../../databricks/sql/00_layout.sql, source: WORKSPACE }
+            warehouse_id: ${var.warehouse_id}
+        - task_key: tables
+          depends_on: [{ task_key: layout }]
+          sql_task:
+            file: { path: ../../databricks/sql/01_tables.sql, source: WORKSPACE }
+            warehouse_id: ${var.warehouse_id}
+        - task_key: data
+          depends_on: [{ task_key: tables }]
+          environment_key: migration
+          spark_python_task:
+            python_file: ../../databricks/tasks/migrate_data.py
+            parameters: ["--root", "${workspace.file_path}"]
+        - task_key: governance
+          depends_on: [{ task_key: data }]
+          sql_task:
+            file: { path: ../../databricks/sql/02_governance.sql, source: WORKSPACE }
+            warehouse_id: ${var.warehouse_id}

@@ -23,7 +23,7 @@
     "The ending defaults to what they said (free), and the Wednesday card offers Pack it first for a thing worth keeping: the person said 'given away', but what they want is the room empty, not a $70 jacket handed to a stranger (ui-constitution Article 8, want over words). It is their tap, not a silent override.",
     "Prices are Guesses under the tiles before the tap and plain text after: a price waits for the tap (ui-build README), and once approved it is theirs.",
     "One black act at the foot, Approve, saying exactly what the tap does now ('Post 2 and lower 1'); what happens later is written in the Until Friday rows above it, each guess underlined.",
-    "Money is a caption ('You keep about $498 if all 5 sell'), not a 50 amount: for this person money is second (P1). The 50 amount appears once, on moving morning, as the outcome (copy.md peak-end).",
+    "Money is a caption ('You get about $498 if all 5 sell'), not a 50 amount: for this person money is second (P1). The 50 amount appears once, on moving morning, as the outcome (copy.md peak-end).",
     "The predicted miss is the only card on the page and takes the lead gradient: it is the one alarm worth a push (price.md Gone fast).",
     "The Wednesday card's countdown is left off: the kit's countdown reads the device clock and zone, and showed Fri 2 AM for Thursday 8 pm in the render; the day is in the card's line instead.",
     "Not mine is a fourth choice on every thing: a room has a roommate's things, and the camera cannot tell (ui-constitution Article 6, That's wrong).",
@@ -146,7 +146,7 @@
       "on": "plan",
       "pattern": true,
       "expected": true,
-      "on_tap": "Closes the sheet and moves the tile to the group picked (Sell, Give away or Keeping); the line \"You keep about $498 if all 5 sell\", the Today line and the foot button count again.",
+      "on_tap": "Closes the sheet and moves the tile to the group picked (Sell, Give away or Keeping); the line \"You get about $498 if all 5 sell\", the Today line and the foot button count again.",
       "control": "thing-<item id>-<choice id> (plan)"
     },
     {
@@ -167,7 +167,7 @@
       "id": "thing-it_pants",
       "on": "wednesday",
       "expected": true,
-      "on_tap": "Opens the sold pants and shows \"You keep $38.14\"; there is nothing left to choose.",
+      "on_tap": "Opens the sold pants and shows \"You get $38.14\"; there is nothing left to choose.",
       "control": "thing-it_pants (wednesday)"
     },
     {
@@ -204,7 +204,7 @@
       "on": "plan",
       "pattern": true,
       "expected": true,
-      "on_tap": "Closes the sheet; the tile reads \"For\" and the price picked, and \"You keep about $498 if all 5 sell\" changes to the new total.",
+      "on_tap": "Closes the sheet; the tile reads \"For\" and the price picked, and \"You get about $498 if all 5 sell\" changes to the new total.",
       "control": "price-<item id>-<choice id> (plan)"
     },
     {

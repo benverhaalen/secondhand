@@ -2,17 +2,27 @@
 // link where you sell, each site on its own and each skippable; an optional saved pickup spot, the only pickup step, with no
 // hours to set and no calendar read (spec/edge-cases.md §16, Ben 05:24); then a photo of the first thing. No carousel of promises.
 // Email for sales and alerts are asked later, the first time each one is needed (Behavior: app/behavior/onboarding.json).
-import { router, type Href } from 'expo-router';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Blank, FootButton, Line, List, Nav, Pill, Screen, Section, Stack, Txt } from '@/ui';
 import { LinkRow } from '@/you/link-row';
+import { SignIn } from '@/you/sign-in';
 import { changed, SITE_ORDER, plural, useGo, useLinks, usePage } from '@/you/state';
 import { ListRow } from '@/ui/parts/list-row';
 
 // First launch is only ever seen by a person who has nothing yet, so empty, one and dense cannot happen on it.
 const ONLY_NEW = 'empty: first launch is only for a new person, who has nothing yet; one: first launch is only for a new person; dense: first launch is only for a new person';
 
+// The first step is signing in, and it cannot be skipped. A signed-in person (?signed=1, or a state that only a signed-in person
+// has) goes straight to the sites. TODO: the 6-second hero loop above the choices is left for later (spec/pages.md §6.1).
+const SIGNED_STATES = ['typical', 'one', 'dense', 'empty'];
 export default function Onboarding() {
+  const { asked } = usePage('new'), { signed } = useLocalSearchParams<{ signed?: string }>();
+  const [in_, setIn] = useState(signed === '1' || SIGNED_STATES.includes(asked ?? ''));
+  return in_ ? <Sites /> : <SignIn asked={asked} onDone={() => setIn(true)} />;
+}
+
+function Sites() {
   const { w, asked } = usePage('new'), go = useGo();
   // ?state= starts a row mid-way: typical has one site linked, loading one signing in, failed Mercari's try timed out.
   const { links, link } = useLinks(w, asked === 'typical' ? { ebay: { state: 'connected', note: null } } : asked === 'loading' ? { ebay: { state: 'loading', note: 'Signing in' } }

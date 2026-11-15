@@ -16,14 +16,15 @@ import { mark } from './mark';
 
 const CHIP_H = space.s7;
 
-export function FixChip({ id, label, on, onPress }: { id: string; label: string; on: boolean; onPress: () => void }) {
+// disabled: the redraw can't be trusted yet (no measurement to hold its size to); the camera says why beside it.
+export function FixChip({ id, label, on, onPress, disabled = false }: { id: string; label: string; on: boolean; onPress: () => void; disabled?: boolean }) {
   return (
     <Animated.View entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)}>
-      <Press id={id} label={label} selected={on} onPress={onPress} hit={slop(size.controlMin, CHIP_H)}>
+      <Press id={id} label={label} selected={on} disabled={disabled} onPress={onPress} hit={slop(size.controlMin, CHIP_H)}>
         <ChipBody>
-          <View {...mark('fix', { on: String(on), fit: 'content' })} style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1 }}>
-            <Icon name={on ? 'tick-02' : 'add-01'} size={12} />
-            <Txt role="body">{label}</Txt>
+          <View {...mark('fix', { on: String(on), disabled: String(disabled), fit: 'content' })} style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1 }}>
+            <Icon name={on ? 'tick-02' : 'add-01'} size={12} tone={disabled ? 'ink-2' : 'ink'} />
+            <Txt role="body" tone={disabled ? 'ink-2' : 'ink'}>{label}</Txt>
           </View>
         </ChipBody>
       </Press>

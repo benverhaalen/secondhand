@@ -5,9 +5,9 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
   Amount, Approve, Blank, Composer, Count, DecisionCard, Draft, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Message, Meta, Nav, Notice, Pill,
-  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, ThreadRow, TimeSpan, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
+  Screen, Section, Sheet, SiteBadge, SiteLink, Skeleton, Stack, Tag, TabBar, Theme, ThreadRow, TimeSpan, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
   CamButton, CamNote, CaptureFrame, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
-  Feed, QueueView, MoneyNews, type SoldThing,
+  Feed, QueueView, MoneyNews, Pile, type SoldThing,
 } from '@/ui';
 import { ChoiceChips, ColourSwatches, Gallery, MatchCard, OfferSheet, PriceChart, PriceRange, RangeSlider, SearchField, SiteStrip, SizePicker } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
@@ -15,6 +15,10 @@ import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { WeekBars } from '@/ui/parts/week-bars';
+import { WeekChart } from '@/ui/parts/week-chart';
+import { MoneyBar } from '@/ui/parts/money-bar';
+import { StateBar } from '@/ui/parts/state-bar';
+import { PulseKey, PulseRow } from '@/ui/parts/pulse-row';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
 import { Shelf, Tile } from '@/ui/parts/tile';
 import { KeepRow, Range } from '@/ui/parts/worth';
@@ -30,6 +34,11 @@ const QUEUE: Record<string, { title: string; photo: 'brass-lamp' | 'kindle' | 'i
   q1: { title: 'Brass desk lamp', photo: 'brass-lamp' }, q2: { title: 'Kindle Paperwhite', photo: 'kindle' }, q3: { title: 'IKEA Stefan chair', photo: 'ikea-chair' },
 };
 const QUEUE_SITES: ('ebay' | 'depop')[] = ['ebay', 'depop'];
+const PILE: { id: string; kind: 'ship' | 'live' | 'need'; word: string; title: string; photo: 'kindle' | 'switch-oled' | 'brass-lamp'; fact: string; act: string }[] = [
+  { id: 'p1', kind: 'ship', word: 'Ship 2', title: '2 to ship', photo: 'kindle', fact: 'Labels cost $6.40', act: 'Buy 2 labels' },
+  { id: 'p2', kind: 'live', word: 'Ready', title: 'Nintendo Switch OLED', photo: 'switch-oled', fact: 'Lists at $235', act: 'Post to 2 sites' },
+  { id: 'p3', kind: 'need', word: 'Price', title: 'Brass desk lamp', photo: 'brass-lamp', fact: 'Sells about $38', act: 'Lower to $38' },
+];
 const MONEY_SOLD: SoldThing[] = [
   { id: 'm1', title: 'IKEA Stefan chair', photo: 'ikea-chair', site: 'facebook' }, { id: 'm2', title: 'Nike Dunk Low', photo: 'nike-dunks', site: 'depop' },
   { id: 'm3', title: 'Kindle Paperwhite', photo: 'kindle', site: 'ebay' }, { id: 'm4', title: 'Brass desk lamp', photo: 'brass-lamp', site: 'ebay' },
@@ -54,6 +63,7 @@ function Sheetful() {
   const [on, setOn] = useState(true);
   const [fed, setFed] = useState(['f-a', 'f-b']);
   const [queued, setQueued] = useState<string[] | null>(null);
+  const [piled, setPiled] = useState(false);
   const [msg, setMsg] = useState('');
   const [span, setSpan] = useState({ start: 28, end: 32 });
   return (
@@ -61,33 +71,33 @@ function Sheetful() {
       <TopSlot news={{ since: 'Since yesterday', kept: 96.2, line: '2 sold, after fees' }} />
 
       <Section title="Decision card, the lead (state gradients, by time left)">
-        <DecisionCard id="d-need" kind="need" word="Offer" title="Carhartt Detroit jacket" photo="carhartt-jacket" site="depop" fact={{ label: 'You keep', amount: 33.44 }}
+        <DecisionCard id="d-need" kind="need" word="Offer" title="Carhartt Detroit jacket" photo="carhartt-jacket" site="depop" fact={{ label: 'You get', amount: 33.44 }}
           due={at(3.67)} lead primary={{ id: 'd-need-accept', label: 'Accept $38' }} second={{ id: 'd-need-counter', label: 'Counter' }} more={{ id: 'd-need-more', label: 'More' }} />
-        <DecisionCard id="d-ship" kind="ship" word="Ship" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} site="ebay" fact={{ label: 'You keep', amount: 31.4 }}
+        <DecisionCard id="d-ship" kind="ship" word="Ship" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} site="ebay" fact={{ label: 'You get', amount: 31.4 }}
           due={at(30)} lead primary={{ id: 'd-ship-print', label: 'Print label' }} second={{ id: 'd-ship-spots', label: 'Drop-off spots' }} />
         <DecisionCard id="d-live" kind="live" word="Price" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} site="poshmark" fact={{ label: 'Lower to', amount: 52 }}
           lead primary={{ id: 'd-live-lower', label: 'Lower to $52' }} second={{ id: 'd-live-keep', label: 'Keep $58' }} />
-        <DecisionCard id="d-paid" kind="paid" word="Paid" title="Levi’s 501, 32 × 32" photo="levis-501" site="poshmark" fact={{ label: 'You keep', amount: 44.1 }}
+        <DecisionCard id="d-paid" kind="paid" word="Paid" title="Levi’s 501, 32 × 32" photo="levis-501" site="poshmark" fact={{ label: 'You get', amount: 44.1 }}
           due={at(47)} lead primary={{ id: 'd-paid-out', label: 'Cash out' }} second={{ id: 'd-paid-later', label: 'Later' }} />
       </Section>
 
       <Section title="Decision card, every state">
-        <DecisionCard id="d-open" kind="need" word="Offer" title="Brass desk lamp" photo="brass-lamp" site="ebay" fact={{ label: 'You keep', amount: 28.9 }}
+        <DecisionCard id="d-open" kind="need" word="Offer" title="Brass desk lamp" photo="brass-lamp" site="ebay" fact={{ label: 'You get', amount: 28.9 }}
           due={at(20)} primary={{ id: 'd-open-accept', label: 'Accept $32' }} second={{ id: 'd-open-counter', label: 'Counter' }} />
-        <DecisionCard id="d-working" kind="ship" word="Ship" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} site="ebay" fact={{ label: 'You keep', amount: 31.4 }}
+        <DecisionCard id="d-working" kind="ship" word="Ship" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} site="ebay" fact={{ label: 'You get', amount: 31.4 }}
           due={at(21)} status="working" step="Printing" primary={{ id: 'd-working-print', label: 'Print label' }} second={{ id: 'd-working-spots', label: 'Drop-off spots' }} />
-        <DecisionCard id="d-failed" kind="ship" word="Ship" title="Switch OLED" photo="switch-oled" site="mercari" fact={{ label: 'You keep', amount: 210 }}
+        <DecisionCard id="d-failed" kind="ship" word="Ship" title="Switch OLED" photo="switch-oled" site="mercari" fact={{ label: 'You get', amount: 210 }}
           status="failed" step="The label did not print" primary={{ id: 'd-failed-print', label: 'Print label' }} second={{ id: 'd-failed-help', label: 'Get help' }} />
         <Txt role="caption">Done: the card leaves and this shows in its place</Txt>
         <UndoToast id="d-done-undo" text="Label printed" onUndo={() => {}} />
       </Section>
 
       <Section title="Decision card, batch and queue">
-        <DecisionCard id="d-batch" kind="ship" word="Ship 3" title="3 sold today" photo="brass-lamp" site="ebay" fact={{ label: 'You keep', amount: 104.2 }}
+        <DecisionCard id="d-batch" kind="ship" word="Ship 3" title="3 sold today" photo="brass-lamp" site="ebay" fact={{ label: 'You get', amount: 104.2 }}
           due={at(22)} form="batch" primary={{ id: 'd-batch-print', label: 'Print 3 labels' }} second={{ id: 'd-batch-each', label: 'One by one' }} />
-        <DecisionCard id="d-batch-run" kind="ship" word="Ship 3" title="3 sold today" photo="brass-lamp" site="ebay" fact={{ label: 'You keep', amount: 104.2 }}
+        <DecisionCard id="d-batch-run" kind="ship" word="Ship 3" title="3 sold today" photo="brass-lamp" site="ebay" fact={{ label: 'You get', amount: 104.2 }}
           due={at(22)} form="batch" status="working" step="2 of 3" primary={{ id: 'd-batch-run-print', label: 'Print 3 labels' }} second={{ id: 'd-batch-run-each', label: 'One by one' }} />
-        <DecisionCard id="d-queue" kind="need" word="Offer" title="Kindle Paperwhite" photo={photo('kindle') as PhotoSrc} site="ebay" fact={{ label: 'You keep', amount: 51 }}
+        <DecisionCard id="d-queue" kind="need" word="Offer" title="Kindle Paperwhite" photo={photo('kindle') as PhotoSrc} site="ebay" fact={{ label: 'You get', amount: 51 }}
           due={at(6)} form="queue" waiting={4} primary={{ id: 'd-queue-accept', label: 'Accept $58' }} second={{ id: 'd-queue-counter', label: 'Counter' }} />
       </Section>
 
@@ -95,15 +105,26 @@ function Sheetful() {
         <Feed>
           {fed.map(k => (
             <DecisionCard key={k} id={k} kind="need" word="Offer" title={k === 'f-a' ? 'Brass desk lamp' : 'Kindle Paperwhite'} photo={k === 'f-a' ? 'brass-lamp' : 'kindle'} site="ebay"
-              fact={{ label: 'You keep', amount: 28.9 }} primary={{ id: `${k}-accept`, label: 'Accept $32', onPress: () => setFed(f => f.filter(x => x !== k)) }} />
+              fact={{ label: 'You get', amount: 28.9 }} primary={{ id: `${k}-accept`, label: 'Accept $32', onPress: () => setFed(f => f.filter(x => x !== k)) }} />
           ))}
         </Feed>
         <Line><Pill id="f-reset" kind="second" label="Bring them back" onPress={() => setFed(['f-a', 'f-b'])} /></Line>
       </Section>
 
+      <Section title="Pile: the lower tiers, layered, fanned out on a tap">
+        <Shelf id="p" title="Can wait" count={3} onAll={piled ? undefined : () => setPiled(true)} onFold={piled ? () => setPiled(false) : undefined}>
+          <Pile id="p" open={piled} onOpen={() => setPiled(true)}>
+            {PILE.map(k => (
+              <DecisionCard key={k.id} id={k.id} kind={k.kind} word={k.word} title={k.title} photo={k.photo} site="ebay"
+                fact={{ label: k.fact }} primary={{ id: `${k.id}-act`, label: k.act }} />
+            ))}
+          </Pile>
+        </Shelf>
+      </Section>
+
       <Section title="Money news: what was kept, and what sold">
         {/* One per view: an amount is the one peak number (C6). Five sold shows two photos and +3; Today shows the two-sold case. */}
-        <MoneyNews id="mn-five" since="Since Monday" kept={1204.5} line="5 sold, after fees" sold={MONEY_SOLD} />
+        <MoneyNews id="mn-five" caption="Since Monday" figure="$1,204.50" line="5 sold, after fees" things={MONEY_SOLD} />
       </Section>
 
       <Section title="Queue view: one of many, full screen">
@@ -116,7 +137,7 @@ function Sheetful() {
       <Section title="Item card">
         <ItemCard id="i-live" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} site="poshmark" state="live" fact={{ label: 'Listed at', amount: 58 }} />
         <ItemCard id="i-hot" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} site="depop" state="hot" fact={{ label: '14 watching' }} />
-        <ItemCard id="i-ship" title="Brass desk lamp" photo="brass-lamp" site="ebay" state="ship" word="Ship by Tue" fact={{ label: 'You keep', amount: 31.12 }} due={at(40)} />
+        <ItemCard id="i-ship" title="Brass desk lamp" photo="brass-lamp" site="ebay" state="ship" word="Ship by Tue" fact={{ label: 'You get', amount: 31.12 }} due={at(40)} />
         <ItemCard id="i-ended" title="IKEA Poäng chair" photo="ikea-chair" site="facebook" state="ended" fact={{ label: 'Listed at', amount: 40 }} />
         <ItemCard id="i-nophoto" title="A very long title that runs on past the edge of the card" state="draft" fact={{ label: 'Pricing' }} />
       </Section>
@@ -178,13 +199,13 @@ function Sheetful() {
         <Grid columns={3}>
           <Tile id="t-live" title="Patagonia Retro-X fleece" photo={photo('patagonia-fleece') as PhotoSrc} state="hot"><Txt role="caption">For $110</Txt></Tile>
           <Tile id="t-none" title="Nike Dunk Low" photo={photo('nike-dunks') as PhotoSrc}><Txt role="caption">Still wear them</Txt></Tile>
-          <Tile id="t-gone" title="Kindle Paperwhite" photo={photo('kindle') as PhotoSrc} state="sold" faded><Txt role="caption">You keep $61.12</Txt></Tile>
+          <Tile id="t-gone" title="Kindle Paperwhite" photo={photo('kindle') as PhotoSrc} state="sold" faded><Txt role="caption">You get $61.12</Txt></Tile>
           <Tile id="t-empty" title="Still looking" state="working"><Txt role="caption">Pricing</Txt></Tile>
         </Grid>
       </Section>
 
       <Section title="Amount">
-        <Amount value={46.95} what="You keep, after fees" />
+        <Amount value={46.95} what="You get, after fees" />
       </Section>
 
       <Section title="Grid tile, shelf, filter row (Sell)">
@@ -257,6 +278,13 @@ function Sheetful() {
         <TimeSpan id="ts-dark" day="Fri 20" words="6 to 8 pm" value={{ start: 36, end: 40 }} onChange={() => {}} note="Ends after dark" />
       </Section>
 
+      <Section title="Site link">
+        <Line>
+          <SiteLink id="sl-depop" site="depop" onPress={() => {}} />
+          <SiteLink id="sl-ebay" site="ebay" onPress={() => {}} />
+        </Line>
+      </Section>
+
       <BuySide />
       <Section title="New and the camera (on the bar)">
         <FeedSwatch>
@@ -297,6 +325,29 @@ function Sheetful() {
         </List>
         <GoalBar label="November goal" kept={132.33} target={300} />
         <WeekBars weeks={[{ label: 'Sep 22', amount: 31.3 }, { label: '29', amount: 0 }, { label: 'Oct 6', amount: 64 }, { label: '13', amount: 12.5 }, { label: '20', amount: 0 }, { label: '27', amount: 88.1 }, { label: 'Nov 3', amount: 40 }, { label: '10', amount: 132.33, now: true }]} />
+      </Section>
+
+      <Section title="You: the dashboard's week chart, money bar, state bar and how each is doing">
+        <WeekChart top={200} axis="After fees" count={{ name: 'Sales', one: 'sale', many: 'sales' }}
+          weeks={[{ label: 'Sep 21', amount: 0, n: 0 }, { label: '28', amount: 0, n: 0 }, { label: 'Oct 5', amount: 64, n: 2 }, { label: '12', amount: 0, n: 0 }, { label: '19', amount: 31.3, n: 1 }, { label: '26', amount: 0, n: 0 }, { label: 'Nov 2', amount: 120, n: 1 }, { label: '9', amount: 132.33, n: 3, now: true }]} />
+        <MoneyBar parts={[
+          { id: 'mb-paid', label: 'Paid out', detail: 'In your bank or your hand', value: '$31.30', low: 3130, fill: 'lime', onPress: () => {} },
+          { id: 'mb-way', label: 'On its way', detail: 'Ready on the site about Tuesday', value: '$132.33', low: 13233, fill: 'mint', onPress: () => {} },
+          { id: 'mb-could', label: 'Could still earn', detail: 'If your 4 live things sell', value: '$253 to $276', low: 25341, high: 27563, fill: 'sky', onPress: () => {} },
+        ]} />
+        <StateBar onOpen={() => {}} parts={[
+          { id: 'sb-ready', word: 'Getting ready', count: 2, fill: 'gray', icon: 'search-01' }, { id: 'sb-live', word: 'Live', count: 4, fill: 'sky', icon: 'live-streaming-02' },
+          { id: 'sb-sold', word: 'Sold', count: 4, fill: 'mint', icon: 'money-03' }, { id: 'sb-kept', word: 'Kept', count: 1, fill: 'lilac', icon: 'store-01', note: 'worth $70 to $95' },
+        ]} />
+        <List>
+          <PulseRow id="pr-1" title="Carhartt Detroit Jacket J97, brown duck, L" photo="carhartt-jacket" sites={['ebay', 'depop']} price="$95 to $98" line="Third cheapest of 14 like it. Should sell this week."
+            cells={[{ value: '63', word: 'views', share: 0.53, said: '63 views, about usual (usual 59)' }, { value: '15', word: 'likes', share: 0.47, said: '15 likes, about usual (usual 16)' },
+              { value: '2', word: 'offers', share: null, said: '2 offers' }, { value: '8', word: 'days up', share: 0.57, said: '8 days up, about usual (usual 7)' }]} onPress={() => {}} />
+          <PulseRow id="pr-2" title="Patagonia Retro-X fleece, cream, M" photo="patagonia-fleece" sites={['depop', 'poshmark']} price="$110 to $118" line="31 likes in 3 days. Similar ones get 8."
+            cells={[{ value: 'Not shown', word: 'views', share: null, said: 'No views shown on this site', muted: true }, { value: '37', word: 'likes', share: 1, said: '37 likes, more than usual (usual 9)' },
+              { value: '0', word: 'offers', share: null, said: '0 offers' }, { value: '3', word: 'days up', share: 0.09, said: '3 days up, shorter than usual (usual 16)' }]} onPress={() => {}} />
+        </List>
+        <PulseKey text="The tick is what’s usual for it" />
       </Section>
 
       <Section title="Tab bar">

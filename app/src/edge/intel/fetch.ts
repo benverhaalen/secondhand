@@ -6,7 +6,8 @@ import { spawn } from 'node:child_process';
 import { closeSync, existsSync, mkdtempSync, openSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Log } from '../../../../log/index.js';
+import { createLog, consoleSink, type Log } from '../../../../log/index.js';
+const log = createLog({ src: 'intel.fetch', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 import type { Searched, Outcome } from './answer.ts';
 
 export type Rung = 'plain' | 'render';
@@ -213,7 +214,7 @@ export function agentBrowserRenderer(o: { bin?: string } = {}): Renderer {
     if (signal.aborted) return rej(new Error('aborted'));
     const dir = mkdtempSync(join(tmpdir(), 'fr-')), f = join(dir, 'out'), fd = openSync(f, 'w');
     const cp = spawn(bin, args, { stdio: ['ignore', fd, 'ignore'], windowsHide: true });
-    const done = (e?: Error) => { clearTimeout(t); signal.removeEventListener('abort', stop); closeSync(fd); const out = e ? '' : readFileSync(f, 'utf8'); rmSync(dir, { recursive: true, force: true }); e ? rej(e) : res(out); };
+    const done = (e?: Error) => { clearTimeout(t); signal.removeEventListener('abort', stop); closeSync(fd); const out = e ? '' : readFileSync(f, 'utf8'); rmSync(dir, { recursive: true, force: true }); e ? rej(e) : res(out); }; // bundle-safe: reads the temp file the CLI wrote, not a repo file
     const stop = () => { cp.kill(); done(new Error('aborted')); };
     const t = setTimeout(() => { cp.kill(); done(new Error(`agent-browser ${args[2] ?? ''} timed out`)); }, ms);
     signal.addEventListener('abort', stop, { once: true });
@@ -226,14 +227,14 @@ export function agentBrowserRenderer(o: { bin?: string } = {}): Renderer {
         const session = `fr-${Date.now().toString(36)}`, S = ['--session', session];
         try {
           await run([...S, 'open', url], deadline_ms, signal);
-          await run([...S, 'wait', '--load', 'networkidle'], Math.min(5000, deadline_ms), signal).catch(() => {}); // a page that never idles is read as it is
+          await run([...S, 'wait', '--load', 'networkidle'], Math.min(5000, deadline_ms), signal).catch(e => { log.error('fetch.renderer', e); }); // a page that never idles is read as it is
           const out = await run([...S, 'eval', "JSON.stringify({s:performance.getEntriesByType('navigation')[0]?.responseStatus||200,u:location.href,h:document.documentElement.outerHTML})"], 15_000, signal);
           let v: unknown = JSON.parse(out.trim()); if (typeof v === 'string') v = JSON.parse(v); // the CLI prints the string JSON-quoted
           const r = v as { s: number; u: string; h: string };
           return { status: r.s, html: r.h, final_url: r.u };
-        } finally { await run([...S, 'close'], 10_000, new AbortController().signal).catch(() => {}); }
+        } finally { await run([...S, 'close'], 10_000, new AbortController().signal).catch(e => { log.error('fetch.renderer', e); }); }
       });
-      queue = job.catch(() => {});
+      queue = job.catch(e => { log.error('fetch.renderer', e); });
       return job;
     },
   };

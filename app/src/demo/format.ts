@@ -44,6 +44,11 @@ export function clock(t: Iso): string {
   const d = local(t), h = d.getUTCHours(), m = d.getUTCMinutes();
   return `${h % 12 || 12}${m ? ':' + String(m).padStart(2, '0') : ''} ${h < 12 ? 'am' : 'pm'}`;
 }
+// Monday 00:00 local of the week that holds t: the start of "this week".
+export function weekStart(t: Iso): Iso {
+  const d = local(t), back = (d.getUTCDay() + 6) % 7;
+  return iso(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - back) - OFFSET_MIN * MIN);
+}
 // Today, Tomorrow, Yesterday, Tuesday (within a week), else Nov 2.
 export function day(t: Iso, now: Iso = NOW): string {
   const diff = dayNumber(t) - dayNumber(now);

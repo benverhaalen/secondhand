@@ -1,4 +1,5 @@
 # bp-1: the hosted browser pool, observed runs
+Researched 2026-11-14 by Nate (original agent not recorded).
 
 Host: our own compute (this Windows workstation). The Databricks verdict waits on T0-1. The pool code does not depend on the host: the launcher runs wherever the process runs.
 Browser: Playwright Chromium headless shell 1217, launched with only `headless` and an optional proxy. No user-agent override, no stealth flag, no challenge solver.

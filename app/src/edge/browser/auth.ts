@@ -8,6 +8,8 @@ export type StorageState = { cookies: Cookie[]; origins: { origin: string; local
 export type AuthVault = {
   get(token_ref: string): Promise<StorageState | undefined>;
   put(token_ref: string, state: StorageState): Promise<void>;
+  snapshot(token_ref: string): Promise<{ state: StorageState | undefined; version: number }>;
+  compareAndPut(token_ref: string, version: number, state: StorageState): Promise<number | undefined>;
   delete(token_ref: string): Promise<void>;
 };
 
@@ -17,10 +19,14 @@ export type Accounts = { linked(person_id?: string): Promise<LinkedAccount[]>; b
 
 export function memoryVault(): AuthVault & { size(): number } {
   const m = new Map<string, string>(); // serialised, so a caller mutating its copy never mutates the stored secret
+  const versions = new Map<string, number>();
+  const put = (ref: string, state: StorageState) => { const version = (versions.get(ref) ?? 0) + 1; versions.set(ref, version); m.set(ref, JSON.stringify(state)); return version; };
   return {
+    async snapshot(ref) { const s = m.get(ref); return { state: s ? JSON.parse(s) as StorageState : undefined, version: versions.get(ref) ?? 0 }; },
+    async compareAndPut(ref, version, state) { if ((versions.get(ref) ?? 0) !== version) return undefined; return put(ref, state); },
     async get(ref) { const s = m.get(ref); return s ? JSON.parse(s) as StorageState : undefined; },
-    async put(ref, state) { m.set(ref, JSON.stringify(state)); },
-    async delete(ref) { m.delete(ref); },
+    async put(ref, state) { put(ref, state); },
+    async delete(ref) { versions.set(ref, (versions.get(ref) ?? 0) + 1); m.delete(ref); },
     size: () => m.size,
   };
 }
@@ -35,16 +41,4 @@ export function memoryAccounts(rows: (LinkedAccount | Omit<LinkedAccount, 'token
   };
 }
 
-// The watcher scheduler reads its accounts synchronously each tick; this keeps that list equal to the linked rows,
-// refreshed before each tick, so a site the person did not link is never swept or scheduled.
-// sites: the sites the caller serves (the scheduler's own site list), so its rows are typed to them.
-export function linkedList<S extends Site>(accounts: Accounts, sites: readonly S[], person_id?: string) {
-  let rows: { account_id: string; site: S; user_id: string }[] = [];
-  const serves = (s: Site): s is S => (sites as readonly Site[]).includes(s);
-  return {
-    async refresh() {
-      rows = (await accounts.linked(person_id)).flatMap(a => serves(a.site) ? [{ account_id: a.account_id, site: a.site, user_id: a.person_id }] : []);
-    },
-    list: () => rows,
-  };
-}
+export { linkedList } from '../harness/linked.ts';
