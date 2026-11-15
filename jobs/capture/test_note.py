@@ -54,7 +54,7 @@ def test_note_gives_a_phone_number_dropped_from_listing():
     r = read_note("Selling because I moved, call 612-555-0147", "spoken")
     assert "phone" in r["removed"]
     assert "555" not in listing_text(r)
-    assert r["item_note"]["text"].endswith("0147")  # the person keeps their own words
+    assert r["item_note"].endswith("0147") and r["item_note_source"] == "spoken"  # the person keeps their own words
 
 
 def test_plain_notes_are_not_cut():
