@@ -247,6 +247,11 @@ for (const [what, layout, inner, re] of [['a slide that names no layout', '', '<
   test(`render B37: ${what} fails`, { skip: !pw }, async () => { const f = join(dir, `layout-${n++}.html`); writeFileSync(f, `<!doctype html>${SLIDE(layout, inner)}`);
     assert.match((await check(f, 'deck', { browser })).findings.map(o => `${o.id} ${o.where} ${o.msg}`).join('\n'), re); });
 CASES.push(['B14', 'slide text at the browser\'s own leading and tracking', deck('<p class="b" style="line-height:normal;letter-spacing:0">Listed in a minute</p>'), /B14 .*is set at leading normal and tracking 0em: on a deck a size of 32 and up is leading 1.1/]);
+// Ben, 03:22: "a less subtle way to show what section you are on. its super faint". He picked the pill behind the icon.
+const TABBAR = (on, pill = 'width:56px;height:32px') => app(`<nav style="position:absolute;left:0;right:0;bottom:0;height:var(--tab-h);display:flex;justify-content:space-around">${['Today', 'Items', 'You'].map((w, k) => `<button data-part="tab"${k === on ? ' aria-current="page"' : ''} style="border:0;background:none;font:var(--w-text) 13px var(--font-text);color:var(--ink)"><i style="display:block;${pill};border-radius:var(--r-pill);margin:0 auto 4px;${k === on ? 'background:var(--tab-on)' : ''}"></i>${w}</button>`).join('')}</nav>`);
+test('render: a tab bar with a pill behind the current tab passes', { skip: !pw }, async () => assert.deepEqual(await ids(TABBAR(0), "app"), []));
+CASES.push(['L29', 'a tab bar that marks no tab', TABBAR(-1), /L29 .*0 tabs are marked aria-current/, 'app'],
+  ['L29', 'a current tab with a pill of another size', TABBAR(1, "width:40px;height:32px"), /L29 .*a pill of 40 by 32: it is 56 by 32/, 'app']);
 CASES.push(['B37', 'a slide in a layout the deck does not have', `<section class="s" data-view data-layout="collage"><p class="b">Listed in a minute</p>${MARK}</section>${END}`, /B37 .*"collage", which a deck does not have/]);
 CASES.push(['B3', 'the closing wordmark in a corner', `${TITLE}<section class="s" data-view><p class="m">secondhand</p></section>`, /B3 .*alone at 64 px it goes in the middle/]);
 // U6 and U7 came from Ben's corrections at 03:49: logos that were not the saved square icons, and tabs that slid over when the current one changed.
