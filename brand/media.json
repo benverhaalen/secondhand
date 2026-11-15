@@ -1,0 +1,50 @@
+{
+  "app": {
+    "canvas": [[390, 844]],
+    "unit": 1,
+    "margin": { "x": 20 },
+    "sizes": { "390": [13, 15, 18, 21, 36, 50] },
+    "wordmark": { "sizes": [21], "at": "top-center" },
+    "act": true
+  },
+  "web": {
+    "canvas": [[1440, 900], [390, 844]],
+    "unit": 1,
+    "margin": { "x": { "1440": 64, "390": 24 }, "content": 1200 },
+    "sizes": { "1440": [15, 18, 24.9, 58.3, 86.5], "390": [15, 18, 21, 36, 50] },
+    "wordmark": { "sizes": [21, 86.5], "at": "top-left" },
+    "act": true
+  },
+  "post": {
+    "canvas": [[1080, 1350]],
+    "unit": 3,
+    "margin": { "x": 72, "top": 72, "bottom": 72 },
+    "sizes": { "1080": [40, 72] },
+    "peak": 200,
+    "words": 20,
+    "wordmark": { "sizes": [40], "at": "top-or-bottom-center", "same": true },
+    "fields": 1,
+    "act": false
+  },
+  "story": {
+    "canvas": [[1080, 1920]],
+    "unit": 3,
+    "margin": { "x": 96, "top": 250, "bottom": 340 },
+    "sizes": { "1080": [48, 96] },
+    "words": 8,
+    "wordmark": { "sizes": [120], "at": "center", "views": "last" },
+    "fields": 1,
+    "act": false
+  },
+  "deck": {
+    "canvas": [[1920, 1080]],
+    "unit": 2,
+    "margin": { "x": 96, "top": 96, "bottom": 96 },
+    "sizes": { "1920": [32, 64] },
+    "peak": 200,
+    "words": 15,
+    "wordmark": { "sizes": [64], "at": "any", "views": "first-last" },
+    "fields": 2,
+    "act": false
+  }
+}
