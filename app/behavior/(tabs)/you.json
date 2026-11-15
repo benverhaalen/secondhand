@@ -1,16 +1,45 @@
 {
   "screen": "(tabs)/you",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "route": "/you",
+  "what": "You: what selling has earned after fees, what is on its way, what is live and what it could fetch, what was kept and its worth, the month's goal, the weekly money kept once there is a shape, and the rows into each page.",
+  "frame": {
+    "who": "Every seller; the person clearing out (primary) opens it after a sale to see the money, the flipper most days for the running total and the trend (product/personas.md; research/today/ben/top-of-today-and-stacking.md §1).",
+    "how_often": "A few times a week; Today's top slot taps through to it after a sale (spec/pages.md §4).",
+    "came_to": "See that it worked (money kept, money coming), then reach a setting, a site or the log in one tap.",
+    "costly_mistake": "Reading money that can still be taken back as money in hand: on its way is shown apart from what landed and never added to it (spec/features/insights.md, Kept versus sold). A site that signed the person out going unnoticed: it leads the page.",
+    "ways_out": "Pause selling, quiet hours, never suggest edits, units, delete (Settings); unlink a site (Your sites); undo what the agent did (Activity); turn a rule back to asking (Rules and limits). spec/ways-out.md rows: I'm away, Not at night, Don't edit my photos, Inches not centimetres, Get me out.",
+    "in_the_loop": "The person stays in the loop through Rules and limits (what runs alone, what always asks) and Activity (every automatic step with Undo); this page points to both and says how many rules run on their own."
+  },
   "states": [
-    {
-      "state": "stub",
-      "shows": "the nav and the screen title"
-    }
+    { "state": "typical", "world": "clearing", "shows": "the title You in the nav with the inbox and its count; \"A site signed you out\" leading; the amount earned after fees with how many sales; rows On its way with the soonest word still to come and its date (Ready on the site about Tuesday), live and could earn, kept and worth; the November goal bar; rows By site and Records; rows Your sites (3 of 5), Rules and limits (3 on their own), Activity, Settings" },
+    { "state": "dense", "world": "flipper", "shows": "the same as typical with the flipper's numbers; no signed-out notice; the goal bar far from its target" },
+    { "state": "one", "world": "one", "shows": "Nothing sold yet with its line and no button, then one row: 1 live, could earn; the goal bar at nothing kept; rows Your sites, Rules and limits, Settings" },
+    { "state": "new", "world": "new", "shows": "Nothing sold yet, its line and Sell something; rows Your sites (0 of 5), Rules and limits, Settings; no money rows, no goal" }
   ],
   "controls": [
-    {
-      "control": "Inbox",
-      "on_tap": "opens Messages"
-    }
+    { "id": "nav-inbox", "control": "Inbox", "on_tap": "opens Messages", "does": "opens Messages", "goes": "/messages" },
+    { "id": "you-signed-out", "control": "A site signed you out", "on_tap": "opens Your sites", "does": "opens Your sites", "goes": "/you/connections" },
+    { "id": "you-on-its-way", "control": "On its way", "on_tap": "opens Payouts", "does": "opens Payouts", "goes": "/you/payouts" },
+    { "id": "you-live", "control": "Live, could earn", "on_tap": "opens the Sell tab", "does": "opens Sell", "goes": "/sell" },
+    { "id": "you-kept", "control": "Kept, worth", "on_tap": "opens By site at what your things are worth", "does": "opens By site", "goes": "/you/insights" },
+    { "id": "you-insights", "control": "By site", "on_tap": "opens By site", "does": "opens By site", "goes": "/you/insights" },
+    { "id": "you-records", "control": "Records", "on_tap": "opens Records", "does": "opens Records", "goes": "/you/records" },
+    { "id": "you-connections", "control": "Your sites", "on_tap": "opens Your sites", "does": "opens Your sites", "goes": "/you/connections" },
+    { "id": "you-rules", "control": "Rules and limits", "on_tap": "opens Rules and limits", "does": "opens Rules and limits", "goes": "/you/rules" },
+    { "id": "you-log", "control": "Activity", "on_tap": "opens Activity", "does": "opens Activity", "goes": "/you/log" },
+    { "id": "you-settings", "control": "Settings", "on_tap": "opens Settings", "does": "opens Settings", "goes": "/you/settings" },
+    { "id": "you-sell", "control": "Sell something", "on_tap": "opens New (new person only)", "does": "opens New", "goes": "/new", "world": "new" }
+  ],
+  "back": "none: a tab. The tab bar moves between places.",
+  "decisions": [
+    "The title is You in the text face at 21, Medium, centered where Today has the wordmark: the wordmark stays the one brand mark, and iOS titles its tabs in the text face (research/today/ben/today-feed-and-card-states.md §5). Brand-check warns B3 (no wordmark) on purpose.",
+    "The peak amount is earned after fees across every sale, with on its way as the first row under it: the person wants to see it worked, and the row keeps money that can still be clawed back apart, as insights.md asks.",
+    "Live and kept are rows with their range, not more big numbers: one peak amount per view (C6).",
+    "On its way counts a sale's money until it is in the bank or in the hand (the four words, spec/edge-cases.md, Ben 05:05), the same sum as Payouts, and its line names the soonest word still to come with its date, so the person sees when, not only how much.",
+    "The weekly bars show only once 3 weeks have a sale (top-of-today-and-stacking.md §1). No demo world has 3 such weeks, so the parts sheet shows the bars; the rule stays.",
+    "Rows into pages are a settings list with hairlines, the pattern every phone's Settings uses, in three groups: money, how the agent runs, the app.",
+    "A signed-out site leads the page as a need notice: it stops selling there, so it is the one thing to fix first.",
+    "Payouts, By site and Records rows are hidden until there is a sale, and Activity until the agent has done something: a row to an empty page costs a tap and says nothing.",
+    "No tabular figures on this page: no amount here sits in a column or changes in place (Art. 6.7), and PP Neue Montreal's tabular digits read as letter-spaced in a lone value."
   ]
 }
