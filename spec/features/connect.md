@@ -73,7 +73,7 @@ Sign-in in progress is the account job's stage, not a health value. Job stages: 
 
 ### Verbs and capability per site
 
-Every harness has the same verbs: `post, revise, end, relist, read_inbox, send_message, read_offers, answer_offer, read_orders, read_stats, search, save` ([product.md](../product.md) §6, Harnesses). What runs underneath:
+Every harness has the same 14 verbs: `post, revise, end, relist, read_listings, read_inbox, send_message, read_offers, answer_offer, make_offer, read_orders, read_stats, search, save` ([product.md](../product.md) §6, Harnesses; [protocol and adapters §1](../engines/protocol-and-adapters.md#1-what-it-decides)). What runs underneath:
 
 | Site | Route | Native underneath | Handoff (opens the site) | Detector (asserted) | Risk line shown |
 |---|---|---|---|---|---|

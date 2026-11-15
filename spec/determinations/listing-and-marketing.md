@@ -280,7 +280,7 @@ Step 1, the determinations:
 | Photo count | Use the limit when photos exist | Rank 4 | Each extra image raised sale likelihood 0.049 in second-hand clothing (Tise, *observed*, working paper) |
 
 **Method**
-1. Cover: among photos meeting the site cover rule, pick the style with the largest share in `W_s` if its share beats the next style by more than the noise floor with 10 or more winners; else the site default (eBay plain background front; Depop and Poshmark the cleanest front). Within the style, the highest quality score. Touch-up per site follows Ben's levels in [platform-fit.json](../../research/list/ben/platforms/platform-fit.json) (level 2 only on Depop, Poshmark, Mercari covers).
+1. Cover: among photos meeting the site cover rule, pick the style with the largest share in `W_s` if its share beats the next style by more than the noise floor with 10 or more winners; else the site default (eBay plain background front; Depop and Poshmark the cleanest front). Within the style, the highest quality score. The cover is the true-colour real front at level 0 on every site ([photo §3](../engines/photo.md#3-the-calculation)). Retouch is off by default and runs only when the person taps Generate; Ben's per-site levels in [platform-fit.json](../../research/list/ben/platforms/platform-fit.json) are the level offered for each site, never switched on, and level 2 (pressed) is never a preset ([studio](../features/studio.md#retouch-chosen-by-the-person)).
 2. Then the coverage set in registry priority, flaws before extras.
 3. Then extras by quality score until the limit.
 4. Over the limit with coverage alone: keep cover, label and every flaw; drop the lowest-priority coverage views.

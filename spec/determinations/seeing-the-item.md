@@ -688,7 +688,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 | source | what it contributes | weight or rank | why that weight |
 |---|---|---|---|
-| item pixels inside the mask, original against edited after paste-back | byte equality | blocks | cut-out plus paste-back keeps item pixels byte for byte ([studio](../features/studio.md)) |
+| item pixels inside the mask, original against edited, on a taken photo (light, background and crop only) | byte equality after the same transform | blocks | a taken photo's item pixels are never redrawn; cut-out plus paste-back keeps them byte for byte. A redraw of the item is a generated photo, a new `photo` with `ai_marked` true and tagged in the app, so this row does not apply to it ([photo §3](../engines/photo.md#3-the-calculation) steps 6 and 7; [Nate](../../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos); [studio](../features/studio.md#design-choices)) |
 | OCR of tag and label regions, original against edited | text equality | blocks | changed text is a changed fact |
 | protected boxes (logos, flaws) | unchanged | blocks | flaw photos are never touched; creases never relaxed |
 | CIEDE2000 mean ΔE00 inside the mask (relit renders only) | colour drift | ranks; at most 2.0 (start) | about the threshold where people start to notice a difference (asserted) |
@@ -697,7 +697,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 **Method**
 
-1. Arithmetic: run the 3 blocking gates. Any failure means not faithful, and the edit is discarded.
+1. Arithmetic: on a taken photo, run the 3 blocking gates. On a generated photo, the OCR and protected-box gates block (a vanished flaw is a changed protected box) and the item-pixel row does not apply. Any failure means not faithful, and the edit is discarded. Whether a model-drawn background behind the real item pixels keeps a photo "taken" is open ([J37](../open-questions.md#for-both)).
 2. Edits that pass are ranked by the sum of the normalised ranking gates.
 3. Model steps: BiRefNet makes the mask, with SAM 3 for edge failures where it is served, and the embedding for `render_same_item`. Everything after is arithmetic.
 

@@ -142,7 +142,7 @@ Shared rules for every card:
 |---|---|---|
 | Asks for a code sent to the seller's phone | hard | the Google Voice pattern (asserted, [trust, returns, disputes §8](../../research/sold/nate/trust-returns-disputes.md)) |
 | Claims an overpayment, sends a check, asks for a refund of the difference | hard | named pattern, same source (asserted) |
-| Asks to pay or talk off-site (Zelle, phone, email) | +2.0 | moves the deal outside site protection; also a locked action |
+| Asks to pay or talk off-site (Zelle, phone, email) before meeting, or on a deal with checkout | +2.0 | moves the deal outside site protection; also a locked action. On a Facebook local deal, cash or an app payment at the meeting scores 0 and is not `move_off_site`: that is how local sales are paid (*agent proposal*, as in [trust §2](../engines/trust.md#2-signals); open as [J32](../open-questions.md#for-both)) |
 | Asks to ship a local-only listing to another address | +1.5 | the "post it to me" pattern, one source only (asserted) |
 | Link in the first or second message | +1.0 | common phishing form (inferred) |
 | Account younger than 30 days, or no ratings | +0.7 | weak; many real buyers are new (inferred) |
@@ -157,7 +157,7 @@ Shared rules for every card:
 
 **Why this method**: No labelled base rate exists per site, so a learned probability would be invented; a sum of named signals is honest and each reason can be shown (inferred). Named signals come from [trust, returns, disputes](../../research/sold/nate/trust-returns-disputes.md) and [messages and offers](../../research/messages/ben/messages-and-offers.md). The alternative, a trained classifier, is the upgrade once confirmed scams are labelled; until then it would fit noise.
 
-**When it is not shown**: tier `none` shows nothing. No percentage is ever shown, because the base rate is unknown.
+**When it is not shown**: tier `none` shows nothing. No percentage is shown until the [calibration gate in trust.md](../engines/trust.md#the-calibration-gate-row-703-and-row-704) passes for the site group; below it the person sees reasons and real counts (*agent proposal*; the bar is open as [J33](../open-questions.md#for-both)).
 
 **How it is explained**: "This buyer asked for a code sent to your phone. That is a known scam." Tap opens the lines and what the scam does.
 
@@ -210,7 +210,7 @@ Shared rules for every card:
 **Method** (all code; the model only words the reply)
 1. `keep(x) = x - fees(x, site) - ship_cost`.
 2. If `keep(offer) >= keep(always_accept)`: accept.
-3. If `keep(floor) <= keep(offer) < keep(always_accept)`: accept if `keep(offer)` is at least the continuation value `V` of [money D16](money.md#d16-offer-response); else counter at `round_to_ending(max(floor, (offer + current price) / 2))`, rounded to a precise amount ending in 5 or 8 dollars over $20, whole dollars under. This is the one counter rule, the same as money D16: the midpoint between the offer and the current price, never below the floor (*agent proposal*).
+3. If `keep(floor) <= keep(offer) < keep(always_accept)`: accept if `keep(offer)` is at least the continuation value `V` of [money D16](money.md#d16-offer-response); else counter at the amount the [negotiation engine](../engines/negotiation.md#3-the-calculation) picks, rounded to a precise amount ending in 5 or 8 dollars over $20, whole dollars under, never below the floor. This is the one counter rule, the same as money D16: the midpoint `round_to_ending(max(floor, (offer + current price) / 2))` is the starting prior and first champion, replaced per (site, category) only when the learned policy passes the engine's [switch rule](../engines/negotiation.md#4-learning) (*agent proposal*).
 4. If `keep(offer) < keep(floor)`: never accepted. It becomes an ask (`price_below_floor`) that proposes the counter of step 3; the person decides.
 5. A higher open offer on the same item is answered first; one accept per item.
 
@@ -462,7 +462,7 @@ Tiers (*agent proposal*, starting values; they merge the earlier connect and mes
 
 ## 16. Which route to use
 
-**Determines**: for one action on one site, the official API, a recorded-call replay, or the cloud browser.
+**Determines**: for one action on one site, the route: our own adapter (an endpoint or page recipe, run in the cloud browser or on the person's own device), our fetch engine for public reads, or, last, the site's official API or an outside aggregator ([product.md routes](../product.md#the-harness-protocol), [protocol and adapters](../engines/protocol-and-adapters.md#35-starting-routes-site-by-verb), [Nate's words](../../product/words.md#2026-11-14-nate-our-own-protocol-official-apis-last)).
 
 **Sources and weights**
 
@@ -474,7 +474,7 @@ Tiers (*agent proposal*, starting values; they merge the earlier connect and mes
 | Cost per call | cost | rank 3 | cheapest among equally fast |
 | Recipe state ([replay](../features/replay.md)) | only `active` recipes | hard | `drifted` and `retired` are off |
 
-**Method**: among eligible routes, keep those whose success lower bound `>= 0.95`; pick the fastest median, ties to the cheaper. If none qualify, pick the highest success mean. Default order when data is thin (fewer than 20 calls): API, active recipe, browser ([replay](../features/replay.md)). On failure, fall back down that order; the job result records `{route, fell_back, ms}`. A challenge page stops all routes and sets the account `broken`.
+**Method**: among eligible routes, keep those whose success lower bound `>= 0.95`; pick the fastest median, ties to the cheaper. If none qualify, pick the highest success mean. Default order when data is thin (fewer than 20 calls): our own adapter (active recipe, endpoint before page), then our fetch engine for public reads, then the official API or an outside aggregator last ([protocol and adapters §3.5](../engines/protocol-and-adapters.md#35-starting-routes-site-by-verb)). On failure, fall back down that order; the job result records `{route, fell_back, ms}`. A challenge page stops all routes and sets the account `broken`.
 
 **Why this method**: A lower bound rather than the mean keeps a route with 3 lucky calls from taking over (inferred); measured success, speed and freshness per tool is the [treg routing note](../../research/cross-cutting/nate/treg-tool-routing.md) design (observed in the note). The alternative, a fixed order, ignores that a recipe can beat the API on one site and drift on another.
 

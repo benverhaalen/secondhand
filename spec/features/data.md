@@ -64,7 +64,7 @@ An `event` is written in the same transaction as the change it records. Message 
 
 **Re-extraction.** Bump `extractor_version`; a job reads each kept snapshot whose `fingerprint` is unchanged and appends a new `comp`; the old row stays, so an old number recomputes at its own version. No refetch happens. Where `ttl` has passed the snapshot is gone, the row keeps only its fingerprint and parsed fields, and re-extraction is skipped and marked.
 
-**Guarded numbers.** Each metric is a metric view plus one rule file beside it (`min_basis`, label bands, window, `hide_reason`, wording). `guarded_query` is the only path to a screen.
+**Guarded numbers.** Each metric is a metric view plus one rule file beside it (`min_basis`, label bands, window, `hide_reason`, wording). `guarded_query` is the only path to a screen. A thin basis first sends a `gather_request` to the intelligence engine; the number is hidden only if gathering still leaves the basis thin ([intelligence-api §3.5](../engines/intelligence-api.md#35-gathering-more)).
 
 | Metric | Hidden when | Bands and words | Source (mark) |
 |---|---|---|---|
@@ -209,7 +209,7 @@ Test: if it were removed, would the app change? Borrowed from the contest guidan
 | The router learns | 30% injected failures on a route demote it within 20 calls, and it recovers within 1 h of the failures stopping ([databricks.md](../databricks.md) §9) | (*agent proposal*) |
 | Weights move in real time | an outcome event changes its `param` in the same transaction; the next read after the 60 s cache shows it | (*agent proposal*) |
 | Each adapter works | its fixture test passes, a live read on the test account matches the fixture's fields, a write is read back ([product §6](../product.md#the-harness-protocol)) | (*agent proposal*) |
-| Engines are fast | a research answer shows cited findings within 3 s and completes within 20 s; a repeat question answers from the standing index in under 1 s | (*agent proposal*) |
+| Engines are fast | a research answer shows cited findings within 3 s and settles within 20 s, with any wider gather continuing as a background job; a repeat question answers from the standing index in under 1 s | (*agent proposal*) |
 | Deletion is whole | after `DELETE /v1/me`, a scan by user id finds zero rows in every store | (*agent proposal*) |
 | Sync and wake are quick | p95 sync, wake time and SSE lag measured | [coverage](../coverage.md) row 2 |
 
