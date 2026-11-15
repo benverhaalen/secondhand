@@ -1,43 +1,57 @@
 name: studio touch-up test
+# Runs studio against the repo's OpenRouter key and commits what it made to the branch it ran on.
+# It never pushes to main; a run on main writes to a new studio-runs branch instead.
 on:
   workflow_dispatch:
     inputs:
       model:
-        description: OpenRouter model slug
-        default: bytedance-seed/seedream-5-5
+        description: unused, kept so older dispatches still validate
+        default: auto
+      command:
+        description: "models, slides or touchup"
+        default: slides
+      items:
+        description: item folders under assets/demo-items/real, space separated (empty is all)
+        default: ""
 permissions:
   contents: write
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-      - name: Render touch-ups
+      - name: Install
+        run: pip install -q opencv-python-headless pillow numpy
+      - name: Run studio
         env:
           K1: ${{ secrets.OPENROUTER_API_KEY }}
           K2: ${{ secrets.OPENROUTER_KEY }}
           K3: ${{ secrets.OPEN_ROUTER_API_KEY }}
           K4: ${{ secrets.OPENROUTER }}
           K5: ${{ secrets.OPEN_ROUTER }}
-          STUDIO_MODEL: ${{ inputs.model }}
+          COMMAND: ${{ inputs.command }}
+          ITEMS: ${{ inputs.items }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           export OPENROUTER_API_KEY="${K1:-${K2:-${K3:-${K4:-$K5}}}}"
-          python3 research/studio/ben/prototype/touchup.py assets/demo-items/real research/studio/ben/renders
-      - name: Shrink for the repo
-        run: |
-          pip install -q pillow
-          python3 - <<'PY'
-          import glob, os
-          from PIL import Image
-          for f in glob.glob('research/studio/ben/renders/*.png'):
-              im = Image.open(f).convert('RGB'); print(f, im.size)
-              im.thumbnail((1600, 1600)); im.save(f[:-4] + '.jpg', quality=90); os.remove(f)
-          PY
-      - name: Commit renders
+          OUT=research/studio/ben/slides/runs/$(date -u +%Y%m%d-%H%M)-$RUN_ID
+          mkdir -p "$OUT"
+          case "$COMMAND" in
+            models) python3 jobs/studio/run.py models "$OUT/models.json" ;;
+            slides) python3 jobs/studio/run.py slides assets/demo-items/real "$OUT" $ITEMS ;;
+            touchup) python3 research/studio/ben/prototype/touchup.py assets/demo-items/real "$OUT" ;;
+            *) echo "unknown command $COMMAND"; exit 1 ;;
+          esac
+          # a run never carries the key: fail closed if any output holds it
+          if grep -rqF "$OPENROUTER_API_KEY" "$OUT"; then echo "key found in outputs"; rm -rf "$OUT"; exit 1; fi
+      - name: Commit what it made
+        if: always()
         run: |
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
-          git add research/studio/ben/renders
-          git commit -m "test(studio): touch-up renders of the three real items" || exit 0
-          git pull --no-rebase origin main && git push origin HEAD:main
+          git add research/studio/ben/slides/runs || true
+          git commit -m "test(studio): run ${{ github.run_id }} (${{ inputs.command }})" || exit 0
+          BRANCH="${GITHUB_REF_NAME}"
+          [ "$BRANCH" = "main" ] && BRANCH="studio-runs/${{ github.run_id }}"
+          for i in 1 2 3; do git pull --no-rebase origin "$BRANCH" 2>/dev/null; git push origin "HEAD:$BRANCH" && break; sleep 5; done
