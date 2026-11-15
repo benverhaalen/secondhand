@@ -1,0 +1,14 @@
+{
+  "header": {
+    "source": "recorded garment tag",
+    "mark": "observed on one tag; FTC database check pending",
+    "date": "2026-11-15"
+  },
+  "rows": {
+    "14806": {
+      "brand": "Carhartt",
+      "source": "tag text in research/studio/ben/slides/runs/20261115-0800-43692434630/carhartt-pants/manifest.json, which reads 'RN# 14806' and 'Carhartt, Inc.'",
+      "mark": "observed on one tag; FTC database check pending"
+    }
+  }
+}

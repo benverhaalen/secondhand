@@ -1,0 +1,29 @@
+{
+  "header": {
+    "source": [
+      "spec/items/capture-real/2026-11-15.json and its three manifest read.tag_text values",
+      "assets/demo-items/real/carhartt-pants/03.jpg",
+      "assets/demo-items/real/chico-hoodie/06.jpg",
+      "assets/demo-items/real/marquette-tee/05.jpg"
+    ],
+    "mark": "Manual segmentation of the unchanged flattened manifest words around the size and style regions, inspected from the local tag photos. Other text blocks remain flattened. Not a recorded phone OCR reply; confidences remain zero.",
+    "date": "2026-11-15"
+  },
+  "items": {
+    "carhartt-pants": [
+      "RN# 14806 1010 179045 7311750 16 Carhartt, Inc. P.O. Box 600 Dearborn, MI 48121 USA Made in Mexico Fabrique au Mexique Hecho en Mexico 100% Cotton Exclusive of Trimming 100% Coton Sans garniture 100% Algodon Sin incluir adorno Carhartt Care on reverse side Entretien au verso Instrucciones de cuidado al dorso",
+      "B324 BLK 38 X 36",
+      "Relaxed Fit"
+    ],
+    "chico-hoodie": [
+      "R RUSSELL ATHLETIC",
+      "XXL",
+      "MADE IN MEXICO"
+    ],
+    "marquette-tee": [
+      "FRUIT OF THE LOOM HEAVY cotton",
+      "XL",
+      "100% COTTON PRESHRUNK MADE IN HONDURAS"
+    ]
+  }
+}
