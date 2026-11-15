@@ -2361,3 +2361,9 @@ Nate, the orchestrator's session, 2026-11-15, about 13:12 UTC, set as the sessio
 > is to finalize all systems, test, fix, get them realized
 
 Used in: [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate simulate full user experiences, verify by eye, natively too, and get the benchmarks perfect
+Nate, the orchestrator's session, 2026-11-15, about 13:30 UTC.
+> with the server getting hosted, begin simulating full user experiences, checking and visually verifying the features. Both natively with xcode, sending codex reviewers to drive the tests, and however you can audit and such to confirm and benchmark everything working. fixing yourself quickly and ingeniously to get benchmarks perfect\
+
+Used in: [the finalization spec, section 12](../spec/plans/finalization.md).
