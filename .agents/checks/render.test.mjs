@@ -1,4 +1,5 @@
-import { test, before, after } from 'node:test';
+import { test, describe, before, after } from 'node:test';
+import { availableParallelism } from 'node:os';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -272,7 +273,10 @@ CASES.push(['U6', 'an old line-drawn logo in place of the square icon', app(`<im
   ['U6', 'a copy of the icon kept somewhere else', app(`<img alt="Depop" src="${PX}" data-x style="width:24px;height:24px;margin:16px 20px">`), /U6 .*an inline picture as the Depop logo/, 'app'],
   ['U7', 'a current tab whose gray box pushes the others over', TABS('', 'class="on"'), /U7 .*moves [\d.]+ px when \.on on "Items"/, 'app'],
   ['U7', 'a current tab marked by aria-current that grows', app(`<nav style="display:flex;gap:8px;padding:16px 20px;font-size:13px">${['Today', 'Items', 'You'].map((t, i) => `<a href="#" ${i ? '' : 'aria-current="page"'}>${t}</a>`).join('')}</nav><style>nav a[aria-current=page]{padding:0 12px}</style>`), /U7 .*when aria-current on "Items"/, 'app']);
-for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
+// Each case renders in its own page of the one browser, so they run side by side.
+describe('render: each rule fails on the output it exists to catch', { concurrency: availableParallelism() }, () => {
+  for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
+});
 
 // The rule list knows the render checks, the media, and Part IV's "Runs" column.
 import { mkdirSync } from 'node:fs';
