@@ -26,9 +26,10 @@
     "Typing what it is or pasting a link lives on New, at the end of each job; the library button lives here, left of the shutter, as on the phone's camera.",
     "A still that matches something already held asks Same thing? with that item, and the agent's guess (same) is the black pill.",
     "A brand or model typed into its blank is matched to the catalog with spelling tolerance before the chip shows it: Carhart reads Carhartt (edge-cases §3).",
-    "When two things look alike, the camera offers both and I don’t know as three answers of one weight; I don’t know lists it from what can be seen (edge-cases §4).",
+    "When it isn’t sure what the thing is, the camera shows what it might be, most likely first, each with what it was matched on, a bar for its odds and, once that kind is calibrated, the odds as a percent; a tap fills in what that one is known to be, each fact as the agent’s suggestion (Ben, 08:09: “ranked by most likely and you choose the one that matches and it auto fills in”). None of these and I don’t know sit under them as answers of the same weight; I don’t know lists it from what can be seen (edge-cases §4).",
+    "A fact the camera or a model filled sits on the lilac tint, the agent’s ground; one the person typed is plain, so a suggestion and the person’s own answer are told apart at a glance (Ben, 08:12).",
     "A maker’s mark, hallmark or signature stops the quick path: a sheet says why and offers Appraise first as the black pill, with Price it anyway beside it; until then nothing is sold fast or marked down (edge-cases §4).",
-    "Clean up and Enhance with AI are two chips side by side once the stills are done, Clean up first, both off until picked; one only adjusts the photo, the other redraws it and says so in its name (edge-cases §6)."
+    "Clean up and Enhance with AI are two chips side by side once the stills are done, Clean up first, both off until picked; one only adjusts the photo, the other redraws it and says so in its name (edge-cases §6). Enhance with AI can’t be picked until the thing is measured, and the camera says so: a redraw is held to its real size only by the tape (Ben, 08:09)."
   ],
   "states": [
     { "state": "typical", "shows": "the feed, five empty stage bubbles with the current one ringed, Show the whole front, the outline points, the 3:4 frame with the outside dimmed, its square ticked, and a line of Blank chips for each fact in the frame under the square, Sell Worth Find, the library, the shutter and Skip" },
@@ -38,7 +39,7 @@
     { "state": "offline", "shows": "a chip saying the stills are waiting for signal, and the shutter still working" },
     { "state": "done", "shows": "every bubble checked, Matching against 41 sold jackets, every chip filled, twelve facts in one sliding line, Clean up and Enhance with AI off, and Review the draft" },
     { "state": "denied", "shows": "Camera is off, how to allow it in Settings, Open Settings and Choose photos" },
-    { "state": "unsure", "shows": "the brass lamp, and a sheet asking Which one is it? with Banker’s lamp, Desk lamp and I don’t know" },
+    { "state": "unsure", "shows": "the brass lamp, and a sheet asking Which one is it? with Banker’s lamp, Desk lamp and Piano lamp, most likely first, each with its odds bar, then None of these and I don’t know" },
     { "state": "valuable", "shows": "the brass lamp, and a sheet saying It may be worth more: a maker’s mark on the base, with Appraise first and Price it anyway" }
   ],
   "controls": [
@@ -57,8 +58,10 @@
     { "control": "Choose photos", "id": "denied-library", "on_tap": "opens the photo library", "does": "opens the library", "state": "denied" },
     { "control": "Clean up", "id": "cam-clean", "on_tap": "crops, straightens, sets exposure and white balance and blurs the background, with no generative model; a second tap goes back to the original", "does": "cleans up the photos", "state": "done" },
     { "control": "Enhance with AI", "id": "cam-ai", "on_tap": "turns on the AI redraw, which is checked against the original before it is used; a second tap turns it off", "does": "turns on AI enhancement", "state": "done" },
-    { "control": "Banker’s lamp", "id": "unsure-1", "on_tap": "says it is a banker’s lamp, then the maker’s mark is asked about", "does": "picks a candidate", "state": "unsure" },
-    { "control": "Desk lamp", "id": "unsure-2", "on_tap": "says it is a desk lamp, then the maker’s mark is asked about", "does": "picks a candidate", "state": "unsure" },
+    { "control": "Banker’s lamp", "id": "unsure-1", "on_tap": "fills in what a banker’s lamp is (kind, material, era, style) as suggestions, then the maker’s mark is asked about", "does": "picks a candidate", "state": "unsure" },
+    { "control": "Desk lamp", "id": "unsure-2", "on_tap": "fills in what a desk lamp is as suggestions, then the maker’s mark is asked about", "does": "picks a candidate", "state": "unsure" },
+    { "control": "Piano lamp", "id": "unsure-3", "on_tap": "fills in what a piano lamp is as suggestions, then the maker’s mark is asked about", "does": "picks a candidate", "state": "unsure" },
+    { "control": "None of these", "id": "unsure-other", "on_tap": "leaves what it is as blanks to type, then the maker’s mark is asked about", "does": "answers none of these", "state": "unsure" },
     { "control": "I don’t know", "id": "unsure-none", "on_tap": "an answer, not a failure: it is listed from what can be seen, then the maker’s mark is asked about", "does": "answers I don’t know", "state": "unsure" },
     { "control": "Appraise first", "id": "valuable-appraise", "on_tap": "keeps it off the quick path and notes Appraise first on the camera", "does": "holds it for an appraisal", "state": "valuable" },
     { "control": "Price it anyway", "id": "valuable-price", "on_tap": "closes the sheet; the mark stays on the item, so no quick sale or markdown", "does": "keeps going", "state": "valuable" }

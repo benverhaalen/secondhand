@@ -69,8 +69,9 @@ def label(product: str, cands: dict[str, tuple[float, frozenset[int]]], confirme
 # scores into odds: p_i = exp(c_i / t) / (exp(b / t) + sum_j exp(c_j / t)). t and b are fitted per kind by maximum
 # likelihood on the captures people confirmed (a tap on a candidate, or "none of these"), so a shown 70% is right about
 # 70% of the time on that kind. Under MIN_LABELS confirmed captures the starting values hold; they are a guess, picked so
-# a 0.1 lead in c is about e to 1, and are replaced by the first fit.
-STARTING_ODDS = (0.10, 0.50)
+# a 0.1 lead in c is about e to 1 and an image-only match (c at most 0.5) can still lead "none of these"; they are
+# replaced by the first fit.
+STARTING_ODDS = (0.10, 0.30)
 MIN_LABELS = 200
 _T_GRID = [round(0.01 * 1.08 ** k, 5) for k in range(60)]
 _B_GRID = [round(0.02 * k, 2) for k in range(51)]

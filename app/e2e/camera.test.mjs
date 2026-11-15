@@ -18,7 +18,7 @@ const STATES = {
   offline: { route: '/camera?world=new&state=offline', shows: [/waiting for signal/i] },
   done: { route: '/camera?world=new&state=done', shows: ['Matching against 41 sold jackets', 'Clean up', 'Enhance with AI', 'Review the draft'] },
   denied: { route: '/camera?state=denied', shows: ['Camera is off', 'Open Settings', 'Choose photos'] },
-  unsure: { route: '/camera?world=clearing&state=unsure', shows: ['Which one is it?', 'Banker’s lamp', 'Desk lamp', 'I don’t know'] },
+  unsure: { route: '/camera?world=clearing&state=unsure', shows: ['Which one is it?', 'Banker’s lamp', 'Desk lamp', 'Piano lamp', 'None of these', 'I don’t know'] },
   valuable: { route: '/camera?world=clearing&state=valuable', shows: ['It may be worth more', 'Appraise first', 'Price it anyway'] },
 };
 const LAMP = new Set(['same', 'unsure', 'valuable']);
@@ -130,6 +130,50 @@ test('camera: I don’t know is an answer, and a maker’s mark then asks for an
   await s.tap('valuable-appraise');
   await s.shows('Listed from what can be seen');
   await s.shows('Appraise first: no quick sale');
+  await s.page.close();
+});
+
+test('camera: a candidate tap fills in what it is, as suggestions on the tint; a typed fact is plain', async () => {
+  const s = await app.open('/camera?world=clearing&state=unsure');
+  await s.tap('unsure-1');
+  await s.tap('valuable-price');
+  for (const t of ['Banker’s lamp', 'Brass', '1930s to 1950s', 'Traditional']) await s.shows(t);
+  const facts = await s.page.locator('[data-part="fact"]').evaluateAll(els => els.map(e => e.dataset.by));
+  assert.deepEqual(facts, ['agent', 'agent', 'agent', 'agent']);
+  await s.page.close();
+});
+
+test('camera: the candidates come most likely first, and a kind not yet calibrated shows no percent', async () => {
+  const s = await app.open('/camera?world=clearing&state=unsure');
+  await s.shows('Banker’s lamp');
+  const odds = await s.page.locator('[data-part="candidate"]').evaluateAll(els => els.map(e => Number(e.dataset.odds)));
+  assert.deepEqual(odds, [...odds].sort((a, b) => b - a));
+  assert.equal(await s.page.getByText(/\d+%/).count(), 0);
+  await s.page.close();
+});
+
+test('camera: None of these leaves what it is to type', async () => {
+  const s = await app.open('/camera?world=clearing&state=unsure');
+  await s.tap('unsure-other');
+  await s.tap('valuable-price');
+  await s.shows('Kind');
+  assert.equal(await s.page.locator('[data-part="fact"]').count(), 0, 'nothing is filled');
+  await s.page.close();
+});
+
+test('camera: a fact the person types is theirs, not the agent’s', async () => {
+  const s = await app.open('/camera?world=new');
+  await s.tap('fact-brand');
+  await s.page.getByTestId('fact-brand-input').fill('Carhartt');
+  await s.page.getByTestId('fact-brand-input').press('Enter');
+  assert.equal(await s.page.locator('[data-part="fact"]').first().getAttribute('data-by'), 'person');
+  await s.page.close();
+});
+
+test('camera: Enhance with AI waits for a measurement', async () => {
+  const s = await app.open('/camera?world=new&mode=worth&state=done');
+  await s.shows('Measure it to use AI');
+  assert.equal(await s.page.locator('[data-testid="cam-ai"] [data-part="fix"]').getAttribute('data-disabled'), 'true');
   await s.page.close();
 });
 
