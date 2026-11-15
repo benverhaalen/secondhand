@@ -16,8 +16,9 @@ import urllib.request
 API = "https://openrouter.ai/api/v1"
 
 # Preference order when picking a model by what it can do; the first slug that the live list carries wins.
-IMAGE_PREFS = ("google/gemini-3.1-flash-image", "google/gemini-3-pro-image", "google/gemini-2.5-flash-image",
-               "bytedance-seed/seedream-5-5", "bytedance-seed/seedream-4.5", "openai/gpt-image")
+# Seen on the live list 2026-11-15 (research/studio/ben/slides/runs/*/models.json); Seedream 5.5 was not on it.
+IMAGE_PREFS = ("google/gemini-nano-banana-2.1", "google/gemini-3-pro-image", "openai/gpt-5.4-image-2",
+               "bytedance-seed/seedream-5-5", "google/gemini-3.1-flash-image")
 VISION_PREFS = ("google/gemini-4-carbon", "google/gemini-4-hydrogen", "google/gemini-3-pro", "google/gemini-3-flash",
                 "google/gemini-2.5-pro", "google/gemini-2.5-flash", "anthropic/claude", "openai/gpt-5")
 

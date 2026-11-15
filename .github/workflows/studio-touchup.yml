@@ -39,6 +39,7 @@ jobs:
           mkdir -p "$OUT"
           case "$COMMAND" in
             models) python3 jobs/studio/run.py models "$OUT/models.json" ;;
+            smoke) python3 jobs/studio/run.py smoke "$OUT" ;;
             slides) python3 jobs/studio/run.py slides assets/demo-items/real "$OUT" $ITEMS ;;
             touchup) python3 research/studio/ben/prototype/touchup.py assets/demo-items/real "$OUT" ;;
             *) echo "unknown command $COMMAND"; exit 1 ;;

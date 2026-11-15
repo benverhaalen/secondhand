@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "status": "agent proposal, written 2026-11-15 for Ben; explained in research/studio/ben/slides.md",
+  "frame": {"export_px": 1080, "close_up_min_px": 560, "tag_min_letter_px": 16},
+
+  "rules": [
+    "A slide is only ever made from a real photo of the same side. No back photo means no back slide: the set asks for one, it never draws one.",
+    "Only whole-item slides (cover, back) may be redrawn, and only by the kind's whole_route. Tag, care label, measurement and flaw slides are never redrawn; they get level 0 (white balance, exposure, crop) at most.",
+    "A close-up may be cut from a whole-item photo when the cut is at least close_up_min_px on its short side; otherwise the set asks for the close-up.",
+    "Every flaw found or reported gets its own slide, kept inside every site's photo cap. A redrawn whole-item slide that loses a flaw, a print or a letter is dropped, and the real photo takes its place.",
+    "Measurements come from the tape or LiDAR, never from a redrawn slide. A redraw whose proportions move past the band is dropped.",
+    "No text, border, badge or watermark is ever drawn onto a slide."
+  ],
+
+  "slide_types": {
+    "cover":   {"shows": "the whole item, front up", "fill": ["front"], "route": "whole", "required": true,
+                "ask": "Lay it flat, front up, and take one photo from straight above."},
+    "back":    {"shows": "the whole item, back up, same lay as the cover", "fill": ["back"], "route": "whole", "required": true,
+                "ask": "Turn it over where it lies and take the same photo."},
+    "graphic": {"shows": "one print, logo or patch, close enough to read", "fill": ["graphic"], "derive": "crop_graphic", "route": "level0", "per": "graphic",
+                "ask": "Get close to the {zone} print so the letters fill the screen."},
+    "tag":     {"shows": "brand and size label, every letter readable", "fill": ["tag"], "route": "level0", "required": true,
+                "ask": "Photo of the brand and size tag from a hand's length away."},
+    "flaw":    {"shows": "one flaw, as it is, close up", "fill": ["flaw"], "derive": "crop_flaw", "route": "as_shot", "per": "flaw", "required": true,
+                "ask": "Get close to the {kind} on the {zone} so it fills the middle of the screen."},
+    "fabric":  {"shows": "the fabric and its real wear: fading, pilling, softness", "fill": ["fabric", "detail"], "derive": "crop_plain", "route": "level0"},
+    "detail":  {"shows": "a part buyers check for this kind", "fill": ["detail"], "route": "level0"},
+    "measure": {"shows": "a tape across one measurement, numbers readable", "fill": ["measure"], "route": "level0", "per": "photo"},
+    "care":    {"shows": "care and fibre label", "fill": ["care"], "route": "level0"}
+  },
+
+  "kinds": {
+    "tee": {
+      "family": "apparel", "template": "shirt", "whole_route": "relay", "names": ["t-shirt", "tee", "short sleeve", "polo", "tank"],
+      "whole_look": "front up, collar centred at the top, shoulders level, both short sleeves out at the same angle (about 30 degrees below level) and lying flat with their hems open, side seams straight and parallel, hem straight across, no fold lines across the chest or stomach, the print flat and undistorted",
+      "tuck": "The neck tag is tucked down inside the collar so it cannot be seen.",
+      "graphic_zones": ["chest_centre", "left_chest", "full_front", "back_neck", "full_back", "sleeve", "hem"],
+      "details": ["collar", "hem"],
+      "measurements": ["pit_to_pit", "length"],
+      "order": ["cover", "back", "graphic", "tag", "fabric", "detail", "flaw", "measure", "care"]
+    },
+    "long_sleeve": {
+      "family": "apparel", "template": "sweatshirt", "whole_route": "relay", "names": ["long sleeve", "longsleeve", "button up", "flannel", "jersey"],
+      "whole_look": "front up, collar centred at the top, shoulders level, both long sleeves laid out and down at the same angle (about 45 degrees below level) with the full length of each sleeve visible and the cuffs open at the ends, nothing folded under, hem straight across, buttons done up if it has them, no fold lines across the body",
+      "tuck": "The neck tag is tucked down inside the collar so it cannot be seen.",
+      "graphic_zones": ["chest_centre", "left_chest", "full_front", "back_neck", "full_back", "sleeve", "cuff"],
+      "details": ["cuff", "collar", "buttons"],
+      "measurements": ["pit_to_pit", "length", "sleeve"],
+      "order": ["cover", "back", "graphic", "tag", "fabric", "detail", "flaw", "measure", "care"]
+    },
+    "sweatshirt": {
+      "family": "apparel", "template": "sweatshirt", "whole_route": "relay", "names": ["crewneck", "sweatshirt", "sweater", "fleece pullover", "quarter zip"],
+      "whole_look": "front up, neck rib round and centred at the top, shoulders level, both sleeves laid out and down at the same angle (about 45 degrees below level) with the cuff ribs straight and not flipped, the waistband rib straight across and not rolled, the body boxy and flat with no fold lines",
+      "tuck": "The neck tag is tucked down inside the collar so it cannot be seen.",
+      "graphic_zones": ["chest_centre", "left_chest", "full_front", "back_neck", "full_back", "sleeve"],
+      "details": ["cuff", "waistband"],
+      "measurements": ["pit_to_pit", "length", "sleeve"],
+      "order": ["cover", "back", "graphic", "tag", "fabric", "detail", "flaw", "measure", "care"]
+    },
+    "hoodie": {
+      "family": "apparel", "template": "sweatshirt", "whole_route": "relay", "names": ["hoodie", "hooded sweatshirt", "zip hoodie"],
+      "whole_look": "front up, the hood laid flat above the shoulders with its opening facing up and centred, shoulders level, both sleeves laid out and down at the same angle (about 45 degrees below level) with the cuff ribs straight, the front pocket flat and closed, any drawstrings hanging straight and even, zip closed if it has one, the waistband rib straight across, no fold lines across the body",
+      "tuck": "The neck tag is tucked down inside the hood so it cannot be seen.",
+      "graphic_zones": ["chest_centre", "left_chest", "full_front", "hood", "back_neck", "full_back", "sleeve", "pocket"],
+      "details": ["hood", "pocket", "cuff"],
+      "measurements": ["pit_to_pit", "length", "sleeve"],
+      "order": ["cover", "back", "graphic", "tag", "fabric", "detail", "flaw", "measure", "care"]
+    },
+    "jacket": {
+      "family": "apparel", "template": "sweatshirt", "whole_route": "relay", "names": ["jacket", "coat", "fleece", "vest", "denim jacket", "work jacket"],
+      "whole_look": "front up and closed (zipped or buttoned the way it was shot), collar folded down evenly, shoulders level, both sleeves laid out and down at the same angle with the cuffs visible, pockets flat, hood (if any) flat behind the collar, hem straight across, no fold lines across the body; quilting, corduroy and fleece keep their own texture",
+      "tuck": "Any inside label stays hidden inside the collar.",
+      "graphic_zones": ["left_chest", "chest_centre", "full_back", "sleeve", "collar", "pocket"],
+      "details": ["zip", "lining", "cuff", "collar", "pocket"],
+      "measurements": ["pit_to_pit", "length", "sleeve"],
+      "order": ["cover", "back", "graphic", "tag", "detail", "fabric", "flaw", "measure", "care"]
+    },
+    "pants": {
+      "family": "apparel", "template": "pants", "whole_route": "relay", "names": ["pants", "jeans", "trousers", "chinos", "work pants", "cargo", "joggers"],
+      "whole_look": "lying sideways with the waistband on the left, front up, both legs together and straight, side by side and parallel, the fly closed and the button done, the waistband straight, the hems even and square, no twist along the inseam and no fold lines across the thighs; denim and canvas keep their fading and whiskers exactly",
+      "tuck": "Any waist label stays where it is and is not redrawn.",
+      "graphic_zones": ["back_pocket", "waistband_patch", "front_pocket", "leg", "hem"],
+      "details": ["waistband", "fly", "back_pocket", "hem"],
+      "measurements": ["waist", "inseam", "rise", "leg_opening"],
+      "order": ["cover", "back", "detail", "graphic", "tag", "fabric", "flaw", "measure", "care"]
+    },
+    "shorts": {
+      "family": "apparel", "template": "pants", "whole_route": "relay", "names": ["shorts", "jorts", "swim trunks"],
+      "whole_look": "waistband at the top, front up, both legs straight down and even, the fly closed and the button done, the hems square, no fold lines",
+      "tuck": "Any waist label stays where it is and is not redrawn.",
+      "graphic_zones": ["back_pocket", "waistband_patch", "front_pocket", "leg"],
+      "details": ["waistband", "fly", "hem"],
+      "measurements": ["waist", "inseam", "rise", "leg_opening"],
+      "order": ["cover", "back", "detail", "graphic", "tag", "fabric", "flaw", "measure", "care"]
+    },
+    "shoes": {
+      "family": "shoes", "template": null, "whole_route": "light", "names": ["shoes", "sneakers", "boots", "trainers"],
+      "whole_look": "the pair as shot; only the light and color are evened. Toe-box creasing, scuffs, sole wear and yellowing are condition and stay exactly",
+      "graphic_zones": ["side_logo", "heel", "tongue", "insole"],
+      "details": ["sole", "heel", "toe_box", "insole", "box"],
+      "measurements": ["insole_length"],
+      "order": ["cover", "back", "detail", "tag", "graphic", "flaw", "measure"]
+    },
+    "bag": {
+      "family": "bags", "template": null, "whole_route": "light", "names": ["bag", "backpack", "tote", "purse", "wallet"],
+      "whole_look": "the bag as shot, standing or flat; only the light and color are evened. Corner wear, handle darkening and creases stay exactly",
+      "graphic_zones": ["front_logo", "hardware", "inside_label"],
+      "details": ["inside", "corners", "handles", "hardware", "zip"],
+      "measurements": ["width", "height", "depth"],
+      "order": ["cover", "back", "detail", "graphic", "tag", "flaw", "measure"]
+    },
+    "hat": {
+      "family": "apparel", "template": null, "whole_route": "light", "names": ["hat", "cap", "beanie"],
+      "whole_look": "the hat as shot; only the light and color are evened. Brim curve, sweat marks and fading stay exactly",
+      "graphic_zones": ["front", "side", "back_strap"],
+      "details": ["inside_band", "under_brim", "strap"],
+      "measurements": [],
+      "order": ["cover", "back", "graphic", "tag", "detail", "flaw"]
+    },
+    "accessory": {
+      "family": "other", "template": null, "whole_route": "light", "names": ["belt", "scarf", "jewellery", "watch", "sunglasses"],
+      "whole_look": "the item as shot; only the light and color are evened",
+      "graphic_zones": ["logo", "engraving"],
+      "details": ["clasp", "hallmark", "serial"],
+      "measurements": ["length"],
+      "order": ["cover", "back", "graphic", "detail", "tag", "flaw", "measure"]
+    }
+  },
+
+  "measurements": {
+    "pit_to_pit": "straight across the chest, one inch below the armpits, seam to seam",
+    "length": "from the highest point of the shoulder by the collar straight down to the hem",
+    "sleeve": "from the shoulder seam down the outside of the sleeve to the cuff",
+    "waist": "straight across the top of the closed waistband, doubled",
+    "inseam": "from the crotch seam down the inside of the leg to the hem",
+    "rise": "from the crotch seam up to the top of the waistband at the front",
+    "leg_opening": "straight across the hem, doubled",
+    "insole_length": "heel to toe inside the shoe",
+    "width": "widest side to side", "height": "base to top, without the handle", "depth": "front to back at the base",
+    "length_any": "end to end"
+  }
+}
