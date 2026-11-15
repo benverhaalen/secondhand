@@ -1149,6 +1149,17 @@ test('equal-figure gate checks each list item with its header and never a siblin
   assert.equal(streamed(held.events), 'Prices in US dollars:\n\n- Used: 120 [r1]');
 });
 
+test('the gate checks a sentence against a 3000-row seeded search in well under a second', async () => {
+  // Measured 2026-11-15: the claim gate's contradiction check was cubic in the cited figures and froze the server.
+  const rows = Array.from({ length: 3000 }, (_, i) => ({ price: '$' + (i + 1), price_cents: (i + 1) * 100, title: 'Jacket ' + i }));
+  const started = performance.now();
+  const kept = await backedText('It costs $129 [r1].', { ...result, rows, counts: { listings: 3000 } });
+  const cut = await backedText('It costs $9999 [r1].', { ...result, rows, counts: { listings: 3000 } });
+  assert.ok(performance.now() - started < 1000, 'gating must stay linear in the cited figures');
+  assert.equal(kept.answer.gate.cut, 0);
+  assert.equal(cut.answer.gate.cut, 1);
+});
+
 test('equal-figure gate keeps a clean cited price and sold count whole', async () => {
   const text = 'It costs $129 with 11 sold [r1].';
   const kept = await backedText(text, { ...result, rows: [{ price: '$129', price_cents: 12900 }], counts: { sold: 11 } });

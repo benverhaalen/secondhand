@@ -3,7 +3,6 @@ import type { ContentBlockParam, Message, MessageCreateParamsBase, MessageParam,
 import type { Log } from '../../../../log/index.js';
 import type { Ask } from '../../engines/capture/plan.ts';
 import { sha256Hex } from '../../engines/proof/sha256.ts';
-import { gate } from '../gate/gate.ts';
 import { searchBasis, type LateUpdate } from './tools.ts';
 import { SYSTEM } from './prompt.ts';
 import { resolveTags, stripTags } from './widgets.ts';
@@ -326,12 +325,13 @@ async function checkedDraft(message: Message | undefined, answer: Answer, _text:
     const claims = [...numbers(unit), ...titleClaims(unit, citedResults)]
       .map(figure => ({ text: Number.isFinite(figure.value) ? figureToken(figure) : 'invalid', kind: 'number' }));
     const tokens = [...new Set(citedResults.flatMap(result => toolFacts(result)))];
-    const facts = tokens.map((value, index) => ({ attribute_id: `number${index}`, name: 'number', value }));
+    const known = new Set(tokens);
     const wordFigure = [...normalizeFigures(sentence.replace(TAGS, '')).matchAll(WORD_FIGURE)].length > 0;
     if (claims.length) {
       answer.gate.checked++;
-      const verdict = await gate({ subject: 'assist', text: claims.map(c => c.text).join(' ') }, facts, [], () => claims, { log });
-      if (verdict.verdict !== 'pass') {
+      // Every figure must equal a figure of a cited result. A set lookup, not the claim gate: its contradiction check is cubic in
+      // the facts, and a seeded search's thousands of figures froze the server on 2026-11-15 (found on the dev server).
+      if (!claims.every(claim => known.has(claim.text))) {
         numberWords ||= wordFigure;
         answer.gate.cut++;
         answer.gate.cut_sentences.push(sentence.trim());
