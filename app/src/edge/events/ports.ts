@@ -73,7 +73,20 @@ export const JOB_FOR: Record<EventKind, JobKind> = {
 };
 
 // ---- the store: db-1's event, job, outbox and decision tables ----
+export const TABLES = ['item', 'listing', 'account', 'limits', 'rule', 'want', 'match', 'order', 'conversation', 'offer'] as const;
+export type Table = (typeof TABLES)[number];
+export type Row = { id: string; user_id: string; version?: number } & Record<string, unknown>;
+export interface StoreState {
+  events: EventRow[];
+  jobs: JobRow[];
+  decisions: DecisionRow[];
+  rows: Partial<Record<Table, Row[]>>;
+}
+
 export interface Store {
+  put<T extends Row>(table: Table, row: T): T;
+  get<T extends Row>(table: Table, user_id: string, id: string): T | undefined;
+  rows<T extends Row>(table: Table, filter: { user_id: string } & Record<string, unknown>): T[];
   // unique (user_id, dedupe_key); a repeat returns the first row with duplicate true
   insertEvent(e: Omit<EventRow, 'id'>): { row: EventRow; duplicate: boolean };
   // unique (user_id, idempotency_key)
@@ -96,13 +109,30 @@ export interface Store {
 let n = 0;
 const uid = (p: string) => `${p}_${(++n).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
-export function memoryStore(): Store & { claims: Map<string, string> } {
-  let events: EventRow[] = [], jobs: JobRow[] = [], decisions: DecisionRow[] = [];
+export function memoryStore(initial?: StoreState): Store & { claims: Map<string, string>; dump(): StoreState } {
+  let { events, jobs, decisions, rows } = structuredClone<StoreState>(initial ?? { events: [], jobs: [], decisions: [], rows: {} });
   const claims = new Map<string, string>();
   const match = <T extends object>(f: Partial<T> | undefined) => (r: T) =>
     !f || Object.entries(f).every(([k, v]) => v === undefined || (r as Record<string, unknown>)[k] === v);
-  const s: Store & { claims: Map<string, string> } = {
+  const s: Store & { claims: Map<string, string>; dump(): StoreState } = {
     claims,
+    dump: () => structuredClone({ events, jobs, decisions, rows }),
+    put(table, row) {
+      const tableRows = rows[table] ?? [];
+      const i = tableRows.findIndex(r => r.id === row.id);
+      const old = tableRows[i];
+      if (row.version !== undefined && row.version !== old?.version) {
+        throw Object.assign(new Error(`stale ${table} ${row.id}`), { code: 'stale' });
+      }
+      const stored = { ...row, version: (old?.version ?? 0) + 1 };
+      if (i < 0) tableRows.push(stored); else tableRows[i] = stored;
+      rows[table] = tableRows;
+      return stored;
+    },
+    get: <T extends Row>(table: Table, user_id: string, id: string) =>
+      rows[table]?.find(r => r.id === id && r.user_id === user_id) as T | undefined,
+    rows: <T extends Row>(table: Table, filter: { user_id: string } & Record<string, unknown>) =>
+      (rows[table] ?? []).filter(r => Object.entries(filter).every(([key, value]) => r[key] === value)) as T[],
     insertEvent(e) {
       const old = events.find(x => x.user_id === e.user_id && x.dedupe_key === e.dedupe_key);
       if (old) return { row: old, duplicate: true };
@@ -137,8 +167,13 @@ export function memoryStore(): Store & { claims: Map<string, string> } {
       decisions[i] = { ...decisions[i], ...patch }; return decisions[i];
     },
     tx(fn) {
-      const saved = [structuredClone(events), structuredClone(jobs), structuredClone(decisions)] as const;
-      try { return fn(s); } catch (e) { [events, jobs, decisions] = saved.map(x => structuredClone(x)) as [EventRow[], JobRow[], DecisionRow[]]; throw e; }
+      const saved = s.dump(), savedClaims = new Map(claims);
+      try { return fn(s); } catch (e) {
+        ({ events, jobs, decisions, rows } = saved);
+        claims.clear();
+        for (const [id, worker] of savedClaims) claims.set(id, worker);
+        throw e;
+      }
     },
   };
   return s;

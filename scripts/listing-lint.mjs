@@ -7,8 +7,9 @@
 //        node scripts/listing-lint.mjs coverage <site> <draft.json> <facts.json> <searches.json>
 //        node scripts/listing-lint.mjs <site> <draft.json> <facts.json>   (draft: {title, body, tags[]})
 import { readFileSync } from 'node:fs';
+import fit from '../research/list/ben/platforms/platform-fit.json' with { type: 'json' }; // static, no import.meta: the app's server bundle includes this file
 
-const profiles = JSON.parse(readFileSync(new URL('../research/list/ben/platforms/platform-fit.json', import.meta.url), 'utf8')).platforms;
+const profiles = fit.platforms;
 export const sites = Object.keys(profiles);
 
 const FILLER = new Set(['size', 'with', 'and', 'in', 'of', 'the', 'for', 'a', 'an', 'by', 'x']);
@@ -108,7 +109,7 @@ export function lint(site, draft, facts) {
   });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1]?.endsWith('listing-lint.mjs')) {
   const [a, b, c] = process.argv.slice(2), json = f => JSON.parse(readFileSync(f, 'utf8'));
   const [, , , d, e] = process.argv.slice(2);
   if (a === 'title') console.log(buildTitle(b, json(c), d && json(d)));
