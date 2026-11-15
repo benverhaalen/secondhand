@@ -111,11 +111,14 @@ function Found({ reach, query, onOpen }: { reach: Reach; query: string; onOpen: 
 
 // The answer's words, drawn from its own markdown: a heading at the headline size, lists with their marks, a table as
 // rows under a caption header row, hairlines between (Nate, words.md 2026-11-15: "headers, tables, and such").
+// [r1] marks which result a sentence rests on, for the server's number gate; a person reads the sentence without it.
+const uncited = (text: string) => text.replace(/ ?\[r\d+(?:\s*,\s*r\d+)*\]/gi, '');
+
 function Prose({ text }: { text: string }) {
   const c = useColors();
   return (
     <Stack gap="tight">
-      {markdown(text).map((b, i) => b.type === 'heading' ? <Txt key={i} role="headline">{b.text}</Txt>
+      {markdown(uncited(text)).map((b, i) => b.type === 'heading' ? <Txt key={i} role="headline">{b.text}</Txt>
         : b.type === 'para' ? <Txt key={i} role="body">{b.text}</Txt>
         : b.type === 'list' ? (
           <Stack key={i} gap="tight">
