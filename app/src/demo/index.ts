@@ -20,7 +20,7 @@ export default clearing;
 
 export * from './format.ts';
 export * from './world.ts';
-export type * from './types.ts';
+export * from './types.ts';
 export { SITE_LABEL } from './sites.ts';
 export { AMOUNTS, NAMES, TITLES } from './edges.ts';
 export { PRODUCTS, RETAIL, SEARCH_DUNKS, SEARCH_EMPTY, SEARCH_SLOW, product } from './market.ts';
