@@ -184,4 +184,4 @@ P. Open Retail Data Model, ORDM (open-retail-data-model, Apache-2.0, pushed 2026
 - Databricks sitemap (sm.xml, s0.xml) and about 80 accelerator pages (ap/*.html); named in section 3.
 - GitHub API org listing for databricks-industry-solutions (repos.tsv), READMEs and shallow clones of 35 repos (rd/, clones/).
 - Product page status checks listed in section 4.
-- Local scratchpad: C:\Users\Nate2\AppData\Local\Temp\claude\0d274a2c06ff7ac8\b9fd8858-8a42-40c4-8775-6a7f5961d8aa\scratchpad\ (repos.tsv, ri.txt, featmap.txt, clones/, ap_txt/).
+- Local scratchpad: scratchpad/ (repos.tsv, ri.txt, featmap.txt, clones/, ap_txt/).
