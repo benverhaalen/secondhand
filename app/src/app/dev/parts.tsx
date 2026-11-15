@@ -5,7 +5,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
   Amount, Approve, Blank, Composer, Count, DecisionCard, Draft, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Message, Meta, Nav, Notice, Pill,
-  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, ThreadRow, TimeSpan, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
+  Screen, Section, Sheet, SiteBadge, SiteLink, Skeleton, Stack, Tag, TabBar, Theme, ThreadRow, TimeSpan, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
   BarPill, CamButton, CamNote, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
   Feed, QueueView,
 } from '@/ui';
@@ -230,6 +230,13 @@ function Sheetful() {
       <Section title="Time span">
         <TimeSpan id="ts-day" day="Mon 16" words="2 to 4 pm" value={span} onChange={setSpan} />
         <TimeSpan id="ts-dark" day="Fri 20" words="6 to 8 pm" value={{ start: 36, end: 40 }} onChange={() => {}} note="Ends after dark" />
+      </Section>
+
+      <Section title="Site link">
+        <Line>
+          <SiteLink id="sl-depop" site="depop" onPress={() => {}} />
+          <SiteLink id="sl-ebay" site="ebay" onPress={() => {}} />
+        </Line>
       </Section>
 
       <BuySide />
