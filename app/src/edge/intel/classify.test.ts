@@ -56,8 +56,8 @@ test('slots: filled by code; a missing required slot is named', async () => {
   assert.equal(ok.missing, undefined);
   assert.equal(ok.slots.site, 'poshmark');
   const sw = await classify({ text: 'write a listing for this' }, { jev: down });
-  assert.deepEqual([sw.kind, sw.missing], ['listing_swarm', ['item_id']]);
-  assert.equal((await classify({ text: 'write a listing', slots: { item_id: 'it_1' } }, { jev: down })).missing, undefined);
+  assert.deepEqual([sw.kind, sw.missing], ['listing_swarm', ['item_id', 'product_id']]);
+  assert.equal((await classify({ text: 'write a listing', slots: { item_id: 'it_1', product_id: 'pr_1' } }, { jev: down })).missing, undefined);
   const none = await classify({}, { jev: down });
   assert.deepEqual([none.kind, none.missing], ['general', ['text']]);
 });
@@ -164,4 +164,26 @@ test('fuzz: 1000 random invalid Jev answers never yield a non-general kind', asy
     const r = await classify({ text: VAGUE }, { jev: answering({ kind: a }) });
     assert.equal(r.kind, 'general', `case ${i}`);
   }
+});
+
+test('the three full protocols pin the doc deadlines and budgets (engine doc §1)', async () => {
+  const { PROTOCOLS } = await import('./protocols.ts');
+  const dl = (k: keyof typeof PROTOCOLS) => PROTOCOLS[k].targets.map(x => x.deadline_ms);
+  assert.deepEqual(dl('price_now'), [150, 2500, 2500, 4000, 4000, 6000]);
+  assert.deepEqual(PROTOCOLS.price_now.budget, { first_ms: 1500, settled_ms: 10000, cents: 2 });
+  assert.deepEqual(dl('available_now').slice(0, 5), [150, 3000, 4000, 5000, 4000]);
+  assert.deepEqual(PROTOCOLS.available_now.budget, { first_ms: 3000, settled_ms: 10000, cents: 2 });
+  assert.deepEqual(dl('listing_swarm'), [3000, 10000, 3000, 10000, 10000, 1000, 1000, 3000, 20000, 5000]);
+  assert.deepEqual([PROTOCOLS.listing_swarm.budget.first_ms, PROTOCOLS.listing_swarm.budget.settled_ms], [3000, 20000]);
+});
+
+test('the accept gate is at 0.85: 0.85 is accepted, 0.84 is not; contact details never reach Jev', async () => {
+  let sent = '';
+  const at = (top: number) => async (state: object): Promise<JevResult> => {
+    sent = JSON.stringify(state);
+    return { ok: true, ms: 1, answers: { kind: dist(KIND_CHOICES, 'trend', top) } };
+  };
+  assert.equal((await classify({ text: 'hmm what about this thing me@x.com +1 (312) 555-0100' }, { jev: at(0.85) })).kind, 'trend');
+  assert.ok(!sent.includes('me@x.com') && !sent.includes('555-0100'));
+  assert.equal((await classify({ text: 'hmm what about this thing' }, { jev: at(0.84) })).kind, 'general');
 });

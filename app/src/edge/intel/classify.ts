@@ -96,7 +96,9 @@ export async function classify(q: Question, deps: ClassifyDeps = {}): Promise<Cl
 
   const ask = deps.jev ?? ((state, questions) => jevAsk(state, questions));
   let r: JevResult;
-  try { r = await ask({ question: text }, heads()); } catch { return done('general', slots, 'fallback'); }
+  // The question goes to a third party: contact details are masked and the text clipped first (the machine client's reduce()).
+  const outgoing = text.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, '[email]').replace(/\+?\d[\d\s().-]{7,}\d/g, '[phone]').slice(0, 2000);
+  try { r = await ask({ question: outgoing }, heads()); } catch { return done('general', slots, 'fallback'); }
   if (!r.ok) return done('general', slots, 'fallback');
 
   const kind = validateChoice(r.answers.kind, QUESTION_KINDS);

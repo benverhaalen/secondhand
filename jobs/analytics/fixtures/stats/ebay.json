@@ -1,0 +1,66 @@
+{
+ "site": "ebay",
+ "synthetic": true,
+ "reads": [
+  {
+   "site": "ebay",
+   "listing_id": "ls_e1",
+   "item_id": "item_a",
+   "posted_at": "2026-09-01T18:00:00Z",
+   "read_at": "2026-09-02T12:00:00Z",
+   "route": "api",
+   "payload": {
+    "day": "2026-09-01",
+    "tz": "-07:00",
+    "lastUpdatedDate": "2026-09-02T09:00:00Z",
+    "metrics": {
+     "impressions_total": 40,
+     "views": 3,
+     "watchers": 0,
+     "offers": 0,
+     "transactions": 0
+    }
+   }
+  },
+  {
+   "site": "ebay",
+   "listing_id": "ls_e1",
+   "item_id": "item_a",
+   "posted_at": "2026-09-01T18:00:00Z",
+   "read_at": "2026-09-03T12:00:00Z",
+   "route": "api",
+   "payload": {
+    "day": "2026-09-02",
+    "tz": "-07:00",
+    "lastUpdatedDate": "2026-09-03T09:00:00Z",
+    "metrics": {
+     "impressions_total": 120,
+     "views": 9,
+     "watchers": 2,
+     "offers": 0,
+     "transactions": 0
+    }
+   }
+  },
+  {
+   "site": "ebay",
+   "listing_id": "ls_e1",
+   "item_id": "item_a",
+   "posted_at": "2026-09-01T18:00:00Z",
+   "read_at": "2026-09-04T12:00:00Z",
+   "route": "api",
+   "payload": {
+    "day": "2026-09-03",
+    "tz": "-07:00",
+    "lastUpdatedDate": "2026-09-04T09:00:00Z",
+    "metrics": {
+     "impressions_total": 80,
+     "views": 5,
+     "watchers": 2,
+     "offers": 0,
+     "transactions": 0
+    }
+   }
+  }
+ ]
+}

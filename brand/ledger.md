@@ -52,6 +52,9 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L44 | Dark mode as Ben saw it: the seven lines in constitution Art. 5, Dark mode. Replaces A5 | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) |
 | L45 | A shipping state is never brown or a dark yellow, because Ben is color blind. Today it is mint with the parcel icon. Which color each state takes is open again (Ben, 2026-11-15 02:46: "im not set on any relation colors ie what color is shipping, sold, stale"), with the thread "Make gradients and colors carry meaning" | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) |
 | L46 | The parts and their sizes: the table in constitution Art. 7.8. Corners nest, 36 less 16 is 20. Closes R19 | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) |
+| L47 | A card's gradient comes from its state: the state's color and its two neighbors on the ring, three colors, never one. The brand's own gradient (sky, mint, lime) is for the brand: the wash, the website, posts | [hot is fire](../product/words.md#2026-11-15-hot-is-red-like-fire-no-glow-state-gradients-with-the-multicolor-intensity-as-deadlines-arise-a-brand-motion-constitution): "i like the same rule", "i liked the multicolor" |
+| L48 | Hot is red, like fire: a fire tag with the flame, never a glow. No glow on a photo, a tag or a card | [hot is fire](../product/words.md#2026-11-15-hot-is-red-like-fire-no-glow-state-gradients-with-the-multicolor-intensity-as-deadlines-arise-a-brand-motion-constitution): "i dont like the glow, it feels too ai slop like. i think hot should be red. like fire" |
+| L49 | A gradient grows stronger as its deadline nears. Nothing pulses; the countdown words stay | [hot is fire](../product/words.md#2026-11-15-hot-is-red-like-fire-no-glow-state-gradients-with-the-multicolor-intensity-as-deadlines-arise-a-brand-motion-constitution): "intensity changes as deadlines arise that would be super cool" |
 
 ## Decided by agents (means; Ben can veto)
 
@@ -66,6 +69,9 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | A8 | Type is centered by its ink: a label is trimmed to its cap height and baseline, and Clofie moves down .12 em where text cannot be trimmed. Ben asked for the tailoring in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 6.10, [the numbers](../research/cross-cutting/ben/brand-round-11.md) |
 | A9 | A pill is balanced at its icon: one step less padding at an icon end, and a tag is 20 with a 12 icon. Ben saw the imbalance in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 7.7 |
 | A10 | State fills are checked under simulated protan and deutan vision. Closer than .05 in Oklab is a warning, not a failure: Ben is color blind, and he also wrote "dont weight to colorblindness too much" ([his words](../product/words.md#2026-11-15-do-not-weight-color-blindness-too-much)) | constitution Art. 5, State colors and color blindness |
+| A11 | Standing: only Hot and Stuck are marked. Stuck is a gray tag with an hourglass and the fact ("No views in 9 days"), and the photo keeps its color, so it never looks ended. On pace, Slow and Still learning are words, not colors | constitution Art. 5, States |
+| A12 | Which card gets the gradient: the first that needs the person, by the order in Art. 5, State gradients. Failed takes its brick tag, never the gradient | constitution Art. 5, State gradients |
+| A13 | State gradients stay light in dark mode, with black text, because a deep yellow or lime is brown | constitution Art. 5, State gradients |
 
 ## Open (Ben picks; round 11)
 

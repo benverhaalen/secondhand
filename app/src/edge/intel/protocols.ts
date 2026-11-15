@@ -1,5 +1,6 @@
 // One `question_protocol` row per question kind (spec/engines/intelligence-api.md §1: the kinds table and the row shape).
-// price_now, listing_swarm and available_now are written out exactly as the doc gives them. The other eleven take their slots,
+// price_now, listing_swarm and available_now follow the doc's three full protocols (deadlines and budgets pinned by a test);
+// values the doc does not give are marked agent proposal inline. The other eleven take their slots,
 // targets, first/settled budgets and layers from the kinds table; the per-target deadlines, cents and freshness the table does
 // not state are *agent proposal* starting values, tuned later as params (§4) and changed only by review.
 import type { QuestionKind } from './answer.ts';
@@ -58,7 +59,7 @@ export const PROTOCOLS: Record<QuestionKind, QuestionProtocol> = {
   }),
   sold_history: row({
     kind: 'sold_history',
-    slots_schema: { required: [prod], optional: ['window', 'condition', 'size'] },
+    slots_schema: { required: [prod, ['window']], optional: ['condition', 'size'] },
     facts_schema: ['sold_range', 'sold_count', 'sold_series'],
     targets: [
       t('t1', 'index', 'comps', 'none', 150, ['sold_range', 'sold_count', 'sold_series']),
@@ -123,6 +124,7 @@ export const PROTOCOLS: Record<QuestionKind, QuestionProtocol> = {
       t('t3', 'engine', 'fetch', 'schema', 4000, ['offers'], 1, 0.2),
       t('t4', 'engine', 'search+fetch', 'ladder', 5000, ['offers'], 1, 0.4),
       t('t5', 'engine', 'fetch', 'schema', 4000, ['offers'], 1, 0.2),
+      // agent proposal: the doc gives t6 no deadline or cents; 3 s and 0.1 cents are starting values.
       t('t6', 'jev', 'heads', 'none', 3000, ['best_by_relation'], 1, 0.1, 'variant check over size, colour and edition per offer'),
     ],
     budget: { first_ms: 3000, settled_ms: 10000, cents: 2 },
@@ -157,7 +159,7 @@ export const PROTOCOLS: Record<QuestionKind, QuestionProtocol> = {
   }),
   site_rules: row({
     kind: 'site_rules',
-    slots_schema: { required: [['site']], optional: ['kind_family'] },
+    slots_schema: { required: [['site'], ['kind_family']], optional: [] },
     facts_schema: ['fee_lines', 'listing_limits', 'restricted_rules', 'rules_changed'],
     targets: [
       t('t1', 'reviewed_rules', 'read', 'none', 150, ['fee_lines', 'listing_limits', 'restricted_rules'], 1, 0, '{site}/{kind_family}'),
@@ -193,18 +195,23 @@ export const PROTOCOLS: Record<QuestionKind, QuestionProtocol> = {
   }),
   listing_swarm: row({
     kind: 'listing_swarm',
-    slots_schema: { required: [['item_id', 'product_id']], optional: ['sites'] },
-    facts_schema: ['identity', 'comps', 'winners', 'terms', 'photo_rules', 'rules_fees', 'demand', 'risk', 'per_site'],
+    // "item, confirmed identity": the item and its confirmed product.
+    slots_schema: { required: [['item_id'], ['product_id']], optional: ['sites'] },
+    // swarm_result{product_id, identity, comps, demand, risk, per_site{site: {winners, terms, photo_rules, rules, fees, blocked?}}}
+    facts_schema: ['identity', 'comps', 'demand', 'risk', 'per_site'],
     targets: [
       t('t1', 'identity', 'resolve', 'none', 3000, ['identity'], 1, 0.3, '{item_id}'),
       t('t2', 'plan', 'run', 'none', 10000, ['comps'], 1, 2, 'price_now'),
-      t('t3', 'index', 'winners', 'adapter', 10000, ['winners'], 5, 0.2),
-      t('t4', 'engine', 'fetch', 'schema', 10000, ['terms'], 5, 0.3),
-      t('t5', 'reviewed_rules', 'read', 'none', 1000, ['photo_rules'], 1, 0),
-      t('t6', 'reviewed_rules', 'read', 'none', 1000, ['rules_fees'], 1, 0),
-      t('t7', 'demand_trend', 'signals', 'none', 20000, ['demand'], 1, 0.3),
+      t('t3a', 'index', 'winners', 'none', 3000, ['per_site'], 1, 0),          // 3 s from the index
+      t('t3b', 'site_protocol', 'search', 'adapter', 10000, ['per_site'], 5, 0.2), // 10 s fresh
+      t('t4', 'engine', 'fetch', 'schema', 10000, ['per_site'], 5, 0.3),      // terms from winners plus the attribute taxonomy
+      t('t5', 'reviewed_rules', 'read', 'none', 1000, ['per_site'], 1, 0),    // photo requirements
+      t('t6', 'reviewed_rules', 'read', 'none', 1000, ['per_site'], 1, 0),    // rules and fees
+      t('t7a', 'index', 'demand', 'none', 3000, ['demand'], 1, 0),            // 3 s
+      t('t7b', 'demand_trend', 'signals', 'none', 20000, ['demand'], 1, 0.3), // 20 s settled
       t('t8', 'trust', 'risk', 'none', 5000, ['risk'], 1, 0.1),
     ],
+    // agent proposal: the doc gives listing_swarm no cents ceiling; 5 cents covers the nested price_now (2) and the fresh reads.
     budget: { first_ms: 3000, settled_ms: 20000, cents: 5 },
     calculation_id: 'swarm_join',
     freshness: { identity: 7 * D, comps: 24 * H, winners: 15 * MIN, terms: D, photo_rules: D, rules_fees: D, demand: 6 * H, risk: D },
@@ -212,7 +219,7 @@ export const PROTOCOLS: Record<QuestionKind, QuestionProtocol> = {
   }),
   my_analytics: row({
     kind: 'my_analytics',
-    slots_schema: { required: [['metric']], optional: ['window', 'storefronts'] },
+    slots_schema: { required: [['metric'], ['window']], optional: ['storefronts'] },
     facts_schema: ['metric_value', 'series'],
     targets: [
       t('t1', 'own_tables', 'read', 'none', 1000, ['metric_value', 'series'], 1, 0, '{metric} {window}'),
