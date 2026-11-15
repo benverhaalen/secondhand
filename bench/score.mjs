@@ -1,7 +1,8 @@
 // Rows 1, 2, 3, 8 and 10 of spec/benchmark.md.
 // Prove: node --test --test-concurrency=1 bench/score.test.mjs
-// Run: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json] [--set market|owned] [--baseline <run_dir>]
+// Run: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json] [--set market|owned] [--baseline <run_dir>] [--upload]
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -262,27 +263,45 @@ export function scoreRun(runDir, manifestPath = MANIFEST, set = 'market', baseli
   };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+export async function scoreCli({ args = process.argv.slice(2), execFileSync: execute = execFileSync, writeStdout = line => process.stdout.write(line+'\n') } = {}) {
   const log = createLog({ src:'bench.score', build:'benchmark-rows-1-2-3-8-10', sink:line=>process.stderr.write(line+'\n') });
+  let exitCode=0;
   try {
-    const [runDir, ...args] = process.argv.slice(2);
-    let manifestPath, baselineRunDir, set='market';
-    if (!runDir || runDir.startsWith('--')) throw new Error('usage: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json] [--set market|owned] [--baseline <run_dir>]');
-    for (let i=0; i<args.length; i++) {
-      if (args[i]==='--manifest' && args[i+1] && !args[i+1].startsWith('--')) manifestPath=args[++i];
-      else if (args[i]==='--baseline' && args[i+1] && !args[i+1].startsWith('--')) baselineRunDir=args[++i];
-      else if (args[i]==='--set' && args[i+1] && !args[i+1].startsWith('--')) set=args[++i];
-      else throw new Error(`unknown or incomplete argument: ${args[i]}`);
+    const [runDir, ...options] = args;
+    let manifestPath, baselineRunDir, set='market', upload=false;
+    if (!runDir || runDir.startsWith('--')) throw new Error('usage: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json] [--set market|owned] [--baseline <run_dir>] [--upload]');
+    for (let i=0; i<options.length; i++) {
+      if (options[i]==='--manifest' && options[i+1] && !options[i+1].startsWith('--')) manifestPath=options[++i];
+      else if (options[i]==='--baseline' && options[i+1] && !options[i+1].startsWith('--')) baselineRunDir=options[++i];
+      else if (options[i]==='--set' && options[i+1] && !options[i+1].startsWith('--')) set=options[++i];
+      else if (options[i]==='--upload') upload=true;
+      else throw new Error(`unknown or incomplete argument: ${options[i]}`);
     }
     log.note('score input', { run_dir:runDir, manifest:manifestPath ?? MANIFEST, set, baseline:baselineRunDir });
     const result = log.timed('bench.score',()=>scoreRun(runDir,manifestPath,set,baselineRunDir));
     const output = path.join(runDir,'results.json');
     fs.writeFileSync(output,JSON.stringify(result,null,2)+'\n');
     log.note('results written', { run_id:result.run_id, output });
+    if (upload) {
+      const landing=`dbfs:/Volumes/secondhand/raw/landing/bench/${result.run_id}`;
+      try {
+        await log.call('databricks','fs mkdir',{target:landing,profile:'Nate'},()=>execute('databricks',['fs','mkdir',landing,'--profile','Nate']),()=>({result:'completed'}));
+        for (const file of ['records.jsonl','results.json']) {
+          const source=path.join(runDir,file), target=`${landing}/${file}`;
+          await log.call('databricks','fs cp',{source,target,overwrite:true,profile:'Nate'},()=>execute('databricks',['fs','cp',source,target,'--overwrite','--profile','Nate']),()=>({result:'completed'}));
+        }
+      } catch (error) {
+        const reason=(error instanceof Error ? error.message : String(error)).split(/\r?\n/,1)[0];
+        writeStdout(`upload skipped: ${reason}`);
+      }
+    }
   } catch (error) {
     log.error('bench.score',error);
-    process.exitCode=1;
+    exitCode=1;
   } finally {
     log.end();
   }
+  return exitCode;
 }
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) process.exitCode=await scoreCli();
