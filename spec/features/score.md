@@ -259,6 +259,15 @@ Each score must never claim: that a factor weight is the site's real weight; a c
 
 For Ben and Nate to mark.
 
+## Open from the audit (checked 2026-11-15)
+
+Each row of the Score section of [engines/audit.md](../engines/audit.md) was checked against the code. 5 of 7 are closed. These 2 are still open.
+
+| # | What is wrong | Where (file:line today) | Fix | Test that proves it |
+|---|---|---|---|---|
+| SC-A1 | The score itself is not guarded. `state` is shown whenever a raw score exists, and the proof answer's thin or stale notes are not carried onto it. Only the projected changes go through `guard()`. | `app/src/engines/score/score.ts:62` | Run `guard(proof, guardRules)` on the score answer as the changes already do. Return its `state` and `notes`. | A one-row basis dated 40 days before `as_of` returns the score with `notes` of `too_few` and `stale`. Today the result has no notes. A refused answer (no rows) returns hidden with `source_gap`. |
+| SC-A2 | The nightly band fold has no caller. The TypeScript scorer needs a declared `score_bands` param, so the band stays `still_learning`. | `jobs/score/fit.py:109` | Schedule `nightly` and read the promoted `score_bands` row by scope when scoring. | Run `nightly` on a fixture with 40 training rows per band. A score of 90 on the next `successScore` call returns band `strong` and lists the `score_bands` version in `param_versions`. |
+
 ## Open for Ben and Nate
 
 - Should tests on live listings be on for everyone by default, with an easy off, or off until a person turns them on? The spec assumes off (opt in).

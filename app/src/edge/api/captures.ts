@@ -1,4 +1,4 @@
-// Rests-on: spec/product.md §7 Resources; spec/engines/capture.md §11; spec/examples/captures.json.
+// Rests-on: spec/product.md §7 Resources; spec/engines/capture.md §§2,5,6,8,11; spec/examples/captures.json.
 // Upload signing and realtime credentials remain contract examples.
 // The shared example boundary stays here until the contract layer's owner can move it to http.ts.
 import { ApiError, deps, paramsOf, served, type Ctx, type Handler, type Reply } from './http.ts';
@@ -7,8 +7,10 @@ import { FAMILIES, type Family } from '../../engines/capture/process.ts';
 import { plan, type State, type Fact } from '../../engines/capture/plan.ts';
 import { select } from '../../engines/capture/select.ts';
 import type { StudioAsk } from '../../engines/capture/select.ts';
-import { viewsFor } from '../../engines/capture/fields.ts';
-import type { FieldRow, Site } from '../../engines/capture/table.ts';
+import { fieldState, viewsFor } from '../../engines/capture/fields.ts';
+import { table, type FieldRow, type Site } from '../../engines/capture/table.ts';
+import { mergeAttribute, type Attribute } from '../card/card.ts';
+import type { AttributeEvidence } from '../../engines/proof/proof.ts';
 import { memoryStore } from '../../engines/param/param.ts';
 import { SITES } from '../../../../spec/sites.mjs';
 import slides from '../../../../jobs/studio/slides.json' with { type: 'json' };
@@ -114,6 +116,8 @@ function initial(body: Record<string, unknown>, id: string, item_id: string): St
     has_lidar, object_capture: device?.object_capture ?? false, sites: [...linkedSites], type: null,
     ...(body.suggestion === undefined ? {} : {suggestion: structuredClone(body.suggestion) as State['suggestion']}),
     ...(body.pieces === undefined ? {} : {pieces: body.pieces as number}),
+    ...(body.extent_cm === undefined ? {} : {extent_cm: body.extent_cm as number}),
+    ...(body.rigid === undefined ? {} : {rigid: body.rigid as boolean}),
     kept: [], retakes: {}, facts: {}, lookups: 'none', refused: [] };
 }
 export function resetCaptures() {
@@ -139,8 +143,9 @@ function view(row: CaptureRow) {
     created_at: row.created_at, version: row.version, plan: next};
 }
 function write(ctx: Pick<Ctx,'log'>, row: CaptureRow, status: CaptureRow['status'], detail: Record<string,unknown> = {}) {
+  const was=row.status;
   row.status = status; row.version++; row.updated_at = new Date(deps.now()).toISOString();
-  ctx.log.event('state.change', {entity: 'capture', id: row.state.capture_id, to: status, ...detail});
+  if (was!==status) ctx.log.event('state.change', {entity: 'capture', id: row.state.capture_id, was, to: status, ...detail});
 }
 function writable(row: CaptureRow) {
   if (row.status === 'judged') throw new ApiError('stale', 'capture is finished', 'state_check', {by:'none'}, {current:{version:row.version}});
@@ -172,18 +177,33 @@ function validValue(row: FieldRow, value: unknown): boolean {
       return object(value) && Object.keys(value).length===parts.length && parts.every(part=>Object.hasOwn(value,part) && number(value[part]) && value[part]>0);
     }
     case 'list': return Array.isArray(value) && value.length>0 && new Set(value).size===value.length &&
-      value.length<=(row.field.split('.')[0]==='colour'?2:row.values?.length ?? Infinity) &&
+      value.length<=(row.max ?? row.values?.length ?? Infinity) &&
       (row.values ? value.every(v=>row.values!.includes(v)) : value.every(text));
   }
 }
 type PhotoRead = {field: string; value: unknown; source?: 'seen'|'label'|'measured'; confidence?: number; unknown_reason?: 'not_read'};
-type Photo = {role: string; step: string; key?: string; reads?: PhotoRead[]};
+type Scan = {scan_ok: boolean; extent_cm: {width:number;depth:number;height:number}; extent_conf:number; frames:number};
+type Photo = {role: string; step: string; key?: string; reads?: PhotoRead[]; scan?:Scan};
+const positive = (v: unknown): v is number => number(v) && v>0;
+function validScan(v:unknown): boolean {
+  if (!object(v) || !object(v.extent_cm)) return false;
+  const extent=v.extent_cm;
+  return bool(v.scan_ok) && ['width','depth','height'].every(part=>positive(extent[part])) && probability(v.extent_conf) && integer(v.frames);
+}
 function validRead(v: unknown): boolean {
   return object(v) && text(v.field) && Object.hasOwn(v, 'value') && (v.value === null
     ? v.unknown_reason === 'not_read' && v.source === undefined && v.confidence === undefined
     : v.unknown_reason === undefined && oneOf('seen', 'label', 'measured')(v.source) && probability(v.confidence));
 }
 const rank: Record<Fact['source'], number> = {seen: 0, label: 1, measured: 2, derived: 3, lookup: 4, you_said: 5};
+function applyRead(state:State, read:PhotoRead, key:string) {
+  const old=state.facts[read.field];
+  const source=read.source ?? 'label';
+  if (!old || old.source!=='you_said' && read.unknown_reason!=='not_read' && (old.unknown_reason==='not_read' || rank[source]>=rank[old.source])) state.facts[read.field]={
+    value:structuredClone(read.value),source,confidence:read.confidence ?? 0,step:key,
+    ...(read.unknown_reason?{unknown_reason:read.unknown_reason}:{}),
+  };
+}
 
 export type IdentifyResult = {kind:'identify';action:'confirm'|'pick'|'ask';set:{product_id:string;family:Family;brand?:string;model?:string;c:number;label?:string;dimensions?:Record<string,number>}[]};
 export type StudioPlan = {kind:string;asks:StudioAsk[]};
@@ -208,6 +228,14 @@ function validateJobResult(result: unknown): asserts result is JobResult {
     for (const ask of p.asks as unknown[]) {
       if (!object(ask)) throw invalid('asks is not valid',['asks']);
       fields(ask,{type:oneOf('cover','back','tag','graphic','flaw','measure'),text},{zone:text,kind:text,name:text});
+      if (ask.type==='graphic' || ask.type==='flaw') fields(ask,{zone:text});
+      if (ask.type==='flaw') fields(ask,{kind:text});
+      if (ask.type==='measure') {
+        fields(ask,{name:text});
+        const kinds:Record<string,{measurements:string[]}>=slides.kinds;
+        if (Object.hasOwn(kinds,p.kind as string) && !kinds[p.kind as string].measurements.includes(ask.name as string))
+          throw invalid('name is not a measurement for this kind',['name']);
+      }
     }
   } else {
     fields(result,{photos:Array.isArray});
@@ -229,7 +257,10 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
   const log=deps.log.child({user:user_id,capture:capture_id});
   log.input('api','capture.job_result',{kind:object(result)?result.kind:undefined});
   try {
+    writable(current);
     validateJobResult(result);
+    if (result.kind==='photo_score') for (const photo of result.photos)
+      if (!current.state.kept.includes(photo.key)) throw invalid(`${photo.key} was not kept`,[photo.key]);
     const row=structuredClone(current);
     const state=row.state;
     if (result.kind==='identify') {
@@ -261,7 +292,7 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
     row.version++; row.updated_at=new Date(deps.now()).toISOString();
     const body=view(row);
     captureRows.set(capture_id,row);
-    log.event('state.change',{entity:'capture',id:capture_id,to:row.status,kind:result.kind});
+    if (current.status!==row.status) log.event('state.change',{entity:'capture',id:capture_id,was:current.status,to:row.status,kind:result.kind});
     return body;
   } catch (error) {
     log.error('capture.job_result',error);
@@ -275,7 +306,7 @@ export const handlers: Record<string, Handler> = {
       {mode:oneOf('shots','scan','talk'),purpose:oneOf('sell','appraise','find')},
       {first_photo_hint:text,item_id:text,device:v=>object(v) && (v.has_lidar===undefined || bool(v.has_lidar)) && (v.object_capture===undefined || bool(v.object_capture)),
         suggestion:v=>object(v) && family(v.family) && probability(v.p) && probability(v.second_p) && v.second_p<=v.p,
-        pieces:v=>integer(v) && v>=1 && v<=12,confirm_mode:oneOf('tap','auto')});
+        pieces:v=>integer(v) && v>=1 && v<=12,confirm_mode:oneOf('tap','auto'),extent_cm:positive,extent_conf:probability,rigid:bool});
     const device=ctx.body.device as {has_lidar?:boolean;object_capture?:boolean}|undefined;
     if (device?.object_capture && !device.has_lidar) throw answerError('device.object_capture');
     if (ctx.body.item_id) {
@@ -288,7 +319,7 @@ export const handlers: Record<string, Handler> = {
     const state=initial(ctx.body,id,item_id), created_at=new Date(deps.now()).toISOString();
     const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined};
     captureRows.set(id,row);
-    ctx.log.event('state.change',{entity:'capture',id,to:row.status});
+    ctx.log.event('state.change',{entity:'capture',id,was:null,to:row.status});
     return {status:201,body:view(row)};
   }),
   'GET /v1/captures/:id': captureHandler('GET /v1/captures/:id', ctx=>({status:200,body:view(read(ctx))})),
@@ -296,22 +327,35 @@ export const handlers: Record<string, Handler> = {
     const row=read(ctx); writable(row);
     fields(ctx.body,{photos:v=>Array.isArray(v) && v.length>0 && v.every(p=>object(p) && text(p.role) && text(p.step) &&
       oneOf('image/heic','image/jpeg','image/png')(p.content_type) && version(p.bytes) &&
-      (p.key===undefined || text(p.key)) && (p.reads===undefined || Array.isArray(p.reads) && p.reads.every(validRead)))});
+      (p.key===undefined || text(p.key)) && (p.reads===undefined || Array.isArray(p.reads) && p.reads.every(validRead)) &&
+      (p.scan===undefined || validScan(p.scan)) && (p.depth_ref===undefined || typeof p.depth_ref==='string') && (p.pose_ref===undefined || typeof p.pose_ref==='string'))});
+    // shortcut: depth_ref and pose_ref are validated but not stored, store them when integration adds the photo table (F5).
     const uploads=(example('captures.photos').response as {photos:{upload:{expires_at:string}}[]}).photos;
     const photos=(ctx.body.photos as Photo[]).map(photo=> {
       const key=photo.key ?? photo.step;
+      const selected=select(row.state,params);
+      const reads=(photo.reads ?? []).filter(read=> {
+        const definition=selected.rows.find(field=>field.field===read.field);
+        const reason=!definition?'no field row':read.value!==null && !validValue(definition,read.value)?'value does not fit field row':undefined;
+        if (reason) ctx.log.note('capture read dropped',{field:read.field,reason});
+        return !reason;
+      });
       const kept=row.state.kept.includes(key);
       row.replacements[key]=(row.replacements[key] ?? 0)+(kept?1:0);
-      if (kept && photo.reads?.some(read=>read.unknown_reason==='not_read')) row.state.retakes[key]=row.replacements[key];
+      if (kept && reads.some(read=>read.unknown_reason==='not_read')) row.state.retakes[key]=row.replacements[key];
       if (!kept) row.state.kept.push(key);
       if (row.state.lookups==='none') row.state.lookups='running';
-      for (const read of photo.reads ?? []) {
-        const old=row.state.facts[read.field];
-        const source=read.source ?? 'label';
-        if (!old || old.source!=='you_said' && read.unknown_reason!=='not_read' && (old.unknown_reason==='not_read' || rank[source]>=rank[old.source])) row.state.facts[read.field]={
-          value:read.value,source,confidence:read.confidence ?? 0,step:key,
-          ...(read.unknown_reason?{unknown_reason:read.unknown_reason}:{}),
-        };
+      for (const read of reads) applyRead(row.state,read,key);
+      if (photo.scan && selected.process.some(step=>step.key===key && step.kind==='scan')) {
+        if (!photo.scan.scan_ok) row.state.object_capture=false;
+        else {
+          const field=key.includes('.')?`dimensions.${key.split('.').at(-1)}`:'dimensions';
+          const definition=selected.rows.find(row=>row.field===field);
+          const value=Object.fromEntries(Object.entries(photo.scan.extent_cm).filter(([part])=>definition?.ask?.parts?.includes(part)));
+          if (definition && validValue(definition,value))
+            applyRead(row.state,{field,value,source:'measured',confidence:photo.scan.extent_conf},key);
+          else ctx.log.note('capture read dropped',{field,reason:definition?'scan does not fill field parts':'no field row'});
+        }
       }
       const id=`ph_a${++row.photos}`;
       return {id,role:photo.role,step:photo.step,upload:{url:`https://uploads.example/v/${id}?sig=example`,method:'PUT',expires_at:uploads[0].upload.expires_at}};
@@ -341,12 +385,37 @@ export const handlers: Record<string, Handler> = {
         if (field==='type') row.state.type=answer.value as Family;
       } else row.state.refused.push(field);
     }
+    if (field) ctx.log.note('capture field updated',{field});
     write(ctx,row,plan(row.state,params).status==='shooting'?'shooting':row.status,field?{field}:{});
     return {status:200,body:{...view(row),item:{id:row.state.item_id,category:row.state.type}}};
   }),
-  'POST /v1/captures/:id/finish': captureHandler('POST /v1/captures/:id/finish', ctx=> {
+  'POST /v1/captures/:id/finish': captureHandler('POST /v1/captures/:id/finish', async ctx=> {
+    const {runtime}=await import('./runtime.ts');
     const row=read(ctx); writable(row); fields(ctx.body,{version},{note:text}); checkVersion(ctx,row);
-    write(ctx,row,'judged');
+    const at=new Date(deps.now()).toISOString();
+    const selected=select(row.state,params), keys=selected.process.map(step=>step.key);
+    const sources:Record<Fact['source'],Attribute['source']>={label:'label',measured:'measured',lookup:'spec',you_said:'you_said',seen:'inferred',derived:'inferred'};
+    const kinds:Record<Fact['source'],AttributeEvidence['kind']>={you_said:'owner',label:'label_text',measured:'depth',lookup:'lookup',seen:'image_region',derived:'image_region'};
+    await ctx.log.call('db','capture.finish_item',{item_id:row.item_id},()=> {
+      runtime.store.tx(st=> {
+        const current=st.get('item',row.user_id,row.item_id);
+        const attributes=[...(current?.attributes as Attribute[] ?? [])];
+        for (const field of selected.rows) {
+          if (field.field==='type' || field.field==='lot_count') continue;
+          const resolution=fieldState(field,row.state,keys,params);
+          if (resolution.state!=='known') continue;
+          const fact=resolution.fact!;
+          const next:Attribute={name:field.field,value:structuredClone(fact.value),source:sources[fact.source],confidence:fact.confidence,
+            confirmed:fact.confirmed===true || fact.source==='you_said',method:fact.source,at,
+            evidence:[{kind:kinds[fact.source],ref:`${row.id}/${fact.step ?? field.field}`,captured_at:at,extractor_version:`capture.v${table.version}`}]};
+          const index=attributes.findIndex(attribute=>attribute.name===next.name);
+          const merged=mergeAttribute(index<0?next:attributes[index],next,next.source==='you_said'?'user':'auto');
+          if (index<0) attributes.push(merged); else attributes[index]=merged;
+        }
+        st.put('item',current?{...current,attributes,updated_at:at}:{id:row.item_id,user_id:row.user_id,title:'',state:'researching',origin:'capture',data:'captured',quantity:row.state.pieces ?? 1,attributes,photos:[],created_at:at,updated_at:at});
+      });
+      write(ctx,row,'judged');
+    },()=>({item_id:row.item_id}));
     return {status:202,body:{...structuredClone(example('captures.finish').response as Record<string,unknown>),capture:view(row),item:{id:row.state.item_id,state:'researching'}}};
   }),
   'POST /v1/captures/:id/talk': exampleHandler('POST /v1/captures/:id/talk', c=>fields(c.body,{voice:bool})),

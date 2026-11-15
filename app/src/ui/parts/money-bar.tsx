@@ -27,7 +27,7 @@ export function MoneyBar({ parts }: { parts: MoneyPart[] }) {
         {parts.map(p => {
           const sure = Math.max(MIN, (p.low / total) * 100), more = p.high && p.high > p.low ? ((p.high - p.low) / total) * 100 : 0;
           return (
-            <View key={p.id} style={{ flexBasis: `${sure + more}%`, flexGrow: 0, flexShrink: 1, flexDirection: 'row', borderRadius: radius.pill, overflow: 'hidden' }}>
+            <View key={p.id} style={{ flexBasis: `${sure + more}%`, flexGrow: 0, flexShrink: 1, flexDirection: 'row', borderRadius: radius.pill, borderCurve: 'continuous', overflow: 'hidden' }}>
               <View style={{ flex: sure, backgroundColor: c[p.fill] }} />
               {more ? <View style={{ flex: more, backgroundColor: tint[p.fill] }} /> : null}
             </View>
@@ -39,7 +39,7 @@ export function MoneyBar({ parts }: { parts: MoneyPart[] }) {
           <Press key={p.id} id={p.id} onPress={p.onPress} round={false}>
             {() => (
               <View style={{ minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: space.s3 }}>
-                <View style={{ width: BAR, height: BAR, borderRadius: radius.pill, backgroundColor: c[p.fill] }} />
+                <View style={{ width: BAR, height: BAR, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c[p.fill] }} />
                 <View style={{ flex: 1 }}>
                   <Txt role="body" lines={1}>{p.label}</Txt>
                   {p.detail ? <Txt role="caption" lines={1}>{p.detail}</Txt> : null}

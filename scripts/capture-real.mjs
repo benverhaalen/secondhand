@@ -12,7 +12,8 @@ import { createLog } from '../log/index.js';
 export const root = fileURLToPath(new URL('../', import.meta.url));
 // The Mac keeps a .venv; Windows and CI use the python on PATH.
 export const python = existsSync(resolve(root, '.venv/bin/python')) ? resolve(root, '.venv/bin/python') : 'python';
-export const output = resolve(root, 'spec/items/capture-real/2026-11-15.json');
+// A test run writes elsewhere (CAPTURE_REAL_OUT), so the dated record changes only when someone means to rerun it.
+export const output = process.env.CAPTURE_REAL_OUT ?? resolve(root, 'spec/items/capture-real/2026-11-15.json');
 const real = 'assets/demo-items/real';
 const runs = 'research/studio/ben/slides/runs';
 const json = path => JSON.parse(readFileSync(resolve(root,path),'utf8'));
