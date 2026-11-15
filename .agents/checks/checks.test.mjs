@@ -265,3 +265,106 @@ test('brand: spacing written as a token name passes, and a raw number off the sc
   assert.equal(errors(run(brand, { ...base, 'app/src/ui/a.tsx': 'const s = { padding: space.s1, margin: -space.s3, gap: GAP.section };' })), '');
   assert.match(errors(run(brand, { ...base, 'app/src/ui/a.tsx': 'const s = { padding: 7 };' })), /7 is off the B17/);
 });
+
+// Ben's picks and the UI loop's rules. Each test is named "picks <id>:" so rules.mjs can see the check has one.
+const pick = async (id, files) => { const { PICKS } = await import('./picks.mjs'); return errors(run(PICKS[id], files)); };
+const screen = body => ({ 'app/src/app/sell.tsx': `import { Screen } from '@/ui/layout';\nexport default () => <Screen>${body}</Screen>;\n` });
+const FAMILY = ':root {\n  --ink: #0A0A0A;\n  --on-color: #0A0A0A;\n  --sky: #A5E1FE; --sky-tint: #DFF4FF; --sky-deep: #035571;\n  --mint: #A1EACB; --mint-tint: #D5FAE9; --mint-deep: #035C42;\n  --s-1: 4px;\n  --font-text: "Neue Montreal", sans-serif;\n}\n';
+
+test('picks L3: the name written with a capital fails; lowercase passes', async () => {
+  assert.match(await pick('L3', screen('<Txt>Secondhand</Txt>')), /sell\.tsx:2 .*lowercase/);
+  assert.equal(await pick('L3', screen('<Txt>secondhand</Txt>')), '');
+});
+
+test('picks L6: a marketplace named in words fails; its name in a screen reader label passes', async () => {
+  assert.match(await pick('L6', screen('<Txt>Listed on eBay</Txt>')), /"eBay" as words/);
+  assert.equal(await pick('L6', screen('<Logo site="ebay" accessibilityLabel="eBay" />')), '');
+});
+
+test('picks L7: a mono face, Marist or Inter in the brand values or the app fails', async () => {
+  assert.match(await pick('L7', { 'brand/tokens.css': FAMILY.replace('"Neue Montreal"', '"Inter"') }), /--font-text names Inter/);
+  assert.match(await pick('L7', { 'brand/tokens.css': FAMILY, 'app/src/ui/text.tsx': "const s = { fontFamily: 'SF Mono' };" }), /font SF Mono/);
+  assert.equal(await pick('L7', { 'brand/tokens.css': FAMILY, 'app/src/ui/text.tsx': 'const s = { fontFamily: type.text };' }), '');
+});
+
+test('picks L8: statistics notation on a screen fails; the same fact in plain words passes', async () => {
+  assert.match(await pick('L8', screen('<Txt>Median $38 (n=41)</Txt>')), /"n=41" is statistics notation/);
+  assert.equal(await pick('L8', screen('<Txt>From 41 sales</Txt>')), '');
+});
+
+test('picks L13: a count of what needs you against what was handled fails', async () => {
+  assert.match(await pick('L13', screen('<Txt>3 need you, 11 handled</Txt>')), /no count/);
+  assert.match(await pick('L13', screen('<Txt>{`${n} handled`}</Txt>')), /no count/);
+  assert.equal(await pick('L13', screen('<Txt>Needs you</Txt>')), '');
+});
+
+test('picks L15: a pill with no fill and icon fails; every pill mapped passes', async () => {
+  const grid = "export const PILLS = ['Live', 'Ship by'] as const;\n";
+  assert.match(await pick('L15', { 'app/src/sell/grid.ts': grid, 'app/src/ui/states.ts': "export const STATES = { Live: { fill: 'mint', icon: 'live' } };" }), /"Ship by" has no fill and icon/);
+  assert.match(await pick('L15', { 'app/src/sell/grid.ts': grid }), /states\.ts is missing/);
+  assert.equal(await pick('L15', { 'app/src/sell/grid.ts': grid, 'app/src/ui/states.ts': "export const STATES = { Live: { fill: 'mint', icon: 'live' }, 'Ship by': { fill: 'marigold', icon: 'package' } };" }), '');
+});
+
+test('picks L17: a platform logo that is not square fails; a square one passes', async () => {
+  const png = (w, h) => { const b = Buffer.alloc(24); b.write('\x89PNG\r\n\x1a\n', 0, 'latin1'); b.write('IHDR', 12, 'latin1'); b.writeUInt32BE(w, 16); b.writeUInt32BE(h, 20); return b; };
+  assert.match(await pick('L17', { 'assets/platforms/square/ebay.png': png(60, 24) }), /60 by 24/);
+  assert.equal(await pick('L17', { 'assets/platforms/square/ebay.png': png(60, 60) }), '');
+});
+
+test('picks L19: lines or grain on the gradient fail', async () => {
+  assert.match(await pick('L19', { 'brand/tokens.css': ':root { --field: repeating-linear-gradient(90deg, red, blue 2px); }' }), /no lines and no grain/);
+  assert.match(await pick('L19', { 'brand/tokens.css': FAMILY, 'app/src/ui/field.tsx': "const n = require('./grain-2.png');" }), /grain-2\.png/);
+  assert.equal(await pick('L19', { 'brand/tokens.css': FAMILY }), '');
+});
+
+test('picks L22: dark mode that changes anything but color fails, and so does a screen that branches on it', async () => {
+  const dark = d => `${FAMILY}:root[data-theme="dark"] { ${d} }\n`;
+  assert.match(await pick('L22', { 'brand/tokens.css': dark('--ink: #FFFFFF; --s-1: 6px;') }), /dark mode changes --s-1/);
+  assert.equal(await pick('L22', { 'brand/tokens.css': dark('--ink: #FFFFFF;') }), '');
+  assert.match(await pick('L22', { 'brand/tokens.css': FAMILY, 'app/src/app/sell.tsx': 'const dark = useColorScheme();' }), /never branches on light or dark/);
+  assert.equal(await pick('L22', { 'brand/tokens.css': FAMILY, 'app/src/ui/layout.tsx': 'const dark = useColorScheme();' }), '');
+});
+
+test('picks L25: pure black ink fails', async () => {
+  assert.match(await pick('L25', { 'brand/tokens.css': FAMILY.replace('--ink: #0A0A0A', '--ink: #000000') }), /never flat pure black/);
+  assert.equal(await pick('L25', { 'brand/tokens.css': FAMILY }), '');
+});
+
+test('picks L33: a hand-picked hex that leaves the family fails, by lightness or by hue', async () => {
+  assert.equal(await pick('L33', { 'brand/tokens.css': FAMILY }), '');
+  assert.match(await pick('L33', { 'brand/tokens.css': FAMILY.replace('--mint-tint: #D5FAE9', '--mint-tint: #B0E8CF') + ':root { --aqua: #91EAE9; --aqua-tint: #CEFAF9; --aqua-deep: #005959; }' }), /--mint-tint is at lightness/);
+  assert.match(await pick('L33', { 'brand/tokens.css': FAMILY.replace('--sky-deep: #035571', '--sky-deep: #5C3D80') }), /--sky drift/);
+});
+
+test('picks A2: a fill too dark for black text, or a deep too light for white text, fails', async () => {
+  assert.equal(await pick('A2', { 'brand/tokens.css': FAMILY }), '');
+  assert.match(await pick('A2', { 'brand/tokens.css': FAMILY.replace('--mint: #A1EACB', '--mint: #3C8F6C') }), /black text on --mint is/);
+  assert.match(await pick('A2', { 'brand/tokens.css': FAMILY.replace('--sky-deep: #035571', '--sky-deep: #5FA9C9') }), /white text on --sky-deep is/);
+});
+
+test('picks P5: a screen with no behavior table fails; one with its states and controls passes', async () => {
+  const s = screen('<Txt>Sold</Txt>');
+  assert.match(await pick('P5', s), /no behavior table at app\/behavior\/sell\.json/);
+  assert.match(await pick('P5', { ...s, 'app/behavior/sell.json': '{ "states": [], "controls": [] }' }), /needs "states"/);
+  assert.equal(await pick('P5', { ...s, 'app/behavior/sell.json': '{ "states": [{ "state": "empty", "shows": "one line and Add" }], "controls": [{ "control": "Add", "on_tap": "opens Capture" }] }', 'app/src/app/_layout.tsx': 'x', 'app/src/app/v1/health+api.ts': 'x' }), '');
+});
+
+test('rules: a locked pick with no row fails, a check with no test fails, and a finding seen twice fails until it becomes a rule', async () => {
+  const { rules, judgeBrief } = await import('./rules.mjs');
+  const { seen } = await import('../../scripts/ui-rules.mjs');
+  const ledger = '## Locked\n| # | Decision |\n|---|---|\n| L3 | Wordmark |\n| L9 | Three actions |\n\n## Open\n| R16 | The item in a feed |\n';
+  const tests = "test('picks L3: x', () => {});";
+  const at = list => errors(run(rules, { 'brand/ledger.md': ledger, '.agents/checks/checks.test.mjs': tests, '.agents/ui-rules.json': JSON.stringify(list) }));
+  const good = [{ id: 'L3', kind: 'check', by: 'picks:L3' }, { id: 'L9', kind: 'judge', fail: 'Fail if a decision offers two actions or fewer.' }];
+  assert.equal(at(good), '');
+  assert.match(at(good.slice(0, 1)), /ledger\.md L9 is locked and has no row/);
+  assert.match(at([{ id: 'L3', kind: 'check', by: 'picks:L6' }, good[1]]), /no test named "picks L6:"/);
+  assert.match(at([{ id: 'L3', kind: 'check', by: 'picks:nope' }, good[1]]), /doesn't exist/);
+  assert.match(at([good[0], { id: 'L9', kind: 'judge', fail: 'Use actions well.' }]), /starts "Fail if"/);
+  const list = [...good];
+  seen(list, 'An arrow sits mid-row', 'round 9 critique');
+  assert.equal(at(list), '');
+  seen(list, 'an arrow sits mid-row', 'Today audit');
+  assert.match(at(list), /has come up 2 times \(round 9 critique; Today audit\)/);
+  assert.equal(judgeBrief(good), 'L9: Fail if a decision offers two actions or fewer.');
+});

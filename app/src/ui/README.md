@@ -12,6 +12,7 @@ A screen file never imports `View`, `Text` or `StyleSheet`. It composes these pa
 | `Card` | Something that asks the person to decide | An offer with Accept and Counter |
 | `Grid` | Photo tiles | The Sell grid |
 | `Txt` | Every word | Roles: caption, body, headline, heading, amount |
+| `STATES` (states.ts) | The fill and the icon of every pill | A tile's corner tag on the Sell grid |
 
 ## Which separator means what
 
