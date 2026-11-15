@@ -12,16 +12,18 @@ The flow stays the AI's ([Ben](../product/words.md#2026-11-15-no-missing-functio
 
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
-| "Stop doing that for me" | Min, Test | Every automatic kind in [product §5](product.md#decision-kinds-the-complete-list) can be set to ask, from the Why? sheet of anything it did ("Ask me first next time") or from You > Automation, which lists each kind in plain words with its current mode. "Ask me about everything" is the existing `ask_every_time`. Locked kinds stay locked | `ask_every_time` specced; per-kind override *new* |
+| "Stop doing that for me" | Min, Test | Every promotable automatic kind in [product §5](product.md#decision-kinds-the-complete-list) can be set to ask, from the Why? sheet of anything it did ("Ask me first next time") or from You > Automation, which lists each kind in plain words with its current mode. "Ask me about everything" is the existing `ask_every_time`. Locked kinds stay locked. `delist_after_sale` stays automatic, because asking first invites a double sale, and the screen says so. `answer_fact` is governed by the Messages setting below; `push_my_edit` and `book_pickup` already follow the person's own edit and windows | rules specced (`POST /v1/rules {kind, scope, limits}`, [today](features/today.md)); a person-set ask on an auto kind *new* |
 | "That wasn't what I wanted" | everyone | Undo in the toast and in the item's Why, until the site's limit. Where a site allows none (a sent message, an accepted offer), the card said so before the tap ([product § Undo](product.md#undo)) | specced |
 | "Why did it do that?" | Min, Price | Why? on every number and every automatic move, with its sources | specced |
-| "I'm away for two weeks" | Clear, Resell | You > Pause selling, with an end date. Each site's own away mode where it has one (eBay Time Away, Depop holiday mode, Poshmark vacation hold), otherwise listings end and come back on the date. Messages get one holding reply; nothing else goes out. Orders already sold still have to ship, and the card says so | *new* (`user.paused_until`) |
+| "I'm away for two weeks" | Clear, Resell | You > Pause selling, with an end date. Each site's own away mode where it has one (eBay Time Away, Depop holiday mode, Poshmark vacation hold). Where a site has none, the listing ends, and on the date a `relist` card asks to bring it back (never on Poshmark, where its own hold is used). Automatic replies, counters and markdowns stop; incoming messages wait in Messages. Orders already sold still have to ship, and the card says so | *new* (`user.paused_until`) |
 | "I'm on bad signal" | Clear at a garage sale | Shots and taps queue on the phone and send when the signal returns, each showing "Waiting for signal". The `operation_id` on every outward action makes a late send safe | client side; `operation_id` specced |
 | "No notifications" | Clear | Today is complete without push; nothing important lives only in a push. Batched only, or none | specced (onboarding step 7) |
 | "I use the website, not the phone" | Price, Browse | Every page exists on the web; the camera becomes upload ([parallel build §2](plans/parallel-build.md#2-the-website-in-tandem-one-codebase)) | specced |
-| "I can't see color well / I use large text / VoiceOver" | anyone | Every state has a word and an icon, not only a color ([pages §3](pages.md#3-what-every-card-and-tile-tells)); type follows the system text size; every control has a label | specced |
+| "I can't see color well / I use large text / VoiceOver" | anyone | Every state has a word and an icon, not only a color ([pages §3](pages.md#3-what-every-card-and-tile-tells)); type follows the system text size; every control has a label | word and icon specced; text size and labels *new* |
 | "Get me out" | anyone | Unlink a site ([connect](features/connect.md)), export everything, delete the account ([data](features/data.md)) | specced |
 | "Two of us sell from one household" | Clear | One account per person for the demo | *open* |
+| "Inches, not centimetres" / "not dollars" | anyone | Units and currency follow `user.locale`, and a measurement can be shown in either unit | locale specced; unit switch *new* |
+| "Not at night" | Min, Test | Quiet hours for selling alerts, as wants already have; a deadline inside quiet hours is pushed before they start | *new* for sellers |
 
 ## Refused on purpose
 
@@ -42,8 +44,9 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 | "I don't sell on any of these sites" | Clear, Test | Skip at step 2. Scanning, pricing and What's it worth all work. Post preview then offers Link a site, or Copy listing (below) | skip specced; Copy listing *new* |
 | "I sell somewhere you don't support" (OfferUp, Grailed, Craigslist, a group chat) | Clear, Resell | Copy listing on any item: the title and description go to the clipboard, the photos are saved to the camera roll, and the item gets "Listed elsewhere" so Sold elsewhere (§6.6) closes it | *new* |
 | "I won't give you my password" | everyone | eBay uses its own sign-in; the others show the site's real login page, and we never see the password. Not now leaves the site unlinked | specced |
+| "It wants a code from my phone" / a captcha | anyone | The live login shows the site's own 2FA or captcha step for the person to finish; if it times out, Try again or Not now | *new* |
 | "Don't bring in all 41 listings" | Resell | We found these shows each listing with a tick, all ticked; untick any, then Bring them in | preview *new* ([pages §8](pages.md#8-what-the-pages-need-that-the-canon-does-not-have-yet)) |
-| "Not my Gmail" | Min | Skip. One line says what changes: "Sales on Poshmark and Mercari show up a few minutes later" | specced |
+| "Not my Gmail" | Min | Skip. One line says what changes: sales on Poshmark and Mercari are found from the sold page instead | skip specced; the line is copy |
 | "I don't meet strangers" | Clear, Min | Pickups step: Ship only | specced |
 | "I'll finish this later" | everyone | Every step after sign-in can be skipped and is resumed from the top slot's next setup step | specced |
 
@@ -60,8 +63,9 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
-| "I'll answer buyers myself" | Min, Test | Every thread is fully writable. You > Messages: Answer for me (default), Draft for me (auto replies become drafts that wait for a tap), or Off. Per site, too | your own text specced (`actor: user`); the setting *new* (`user.auto_reply`) |
-| "It told a buyer something wrong" | Min | Each automatic message is marked "Sent for you" with Why?. It cannot be unsent on any site, so Correct it sends a follow-up and fixes the fact on the item, so it is never said again | `claim_check` specced; Correct it *new* |
+| "I'll answer buyers myself" | Min, Test | Every thread is fully writable. You > Messages: Answer for me (default), Draft for me (`answer_fact` replies become drafts that wait for a tap), or Off. Per site, too. Offers are not messages: they follow the Plan's accept mode and floor whatever this says, and the screen says so. The automatic dibs message still goes, because it only tells a buyer the item is spoken for | your own text specced (`actor: user`); the setting *new* (`user.auto_reply`) |
+| "It told a buyer something wrong" | Min | Each automatic message is marked "Sent for you" with Why?. It cannot be unsent on any site, so Correct it fixes the fact on the item and drafts a follow-up as a `reply_other` card the person sends, through `claim_check` | `reply_other` and `claim_check` specced; Correct it *new* |
+| "They want more photos or a video" | Min | The agent sends any photo already on the item; for anything else the thread shows Take a photo, which opens the camera and attaches it | *new* |
 | "I don't want to haggle" | Clear, Fire | No offers in the Plan, or the floor and Always accept answer for you | specced |
 | "This buyer is creepy" | anyone | Block on the thread; the conversation goes to `blocked` | specced |
 
@@ -79,12 +83,13 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
-| "Don't edit my photos" | Min, Test | The default already uses the original photo ([studio](features/studio.md)). An improved version is only offered, never applied, and each photo has Use original. You > Photos: Never suggest edits turns the offers off | default specced; the setting *new* |
+| "Don't edit my photos" | Min, Test | The default already uses the original photo, and Generate is off until the person picks it ([studio](features/studio.md)). Each photo has Use original. You > Photos: Never suggest edits turns off the Generate offers and any "Always do this" for `studio_approve`; the no-model tweaks (exposure, crop, straighten) stay as plain controls the person can reset | default specced; the setting *new* |
 | "I don't want to follow the steps" | Clear | Skip any step and Finish at any time from one photo. The review then says what is missing and what it costs ("No tag photo: brand from the logo only") | skip and finish specced; the cost line *new* |
 | "That's not what it is" | everyone | Change type at any point | specced |
 | "No LiDAR" / "older phone" | Clear | Measurements are asked as numbers you can type, or marked "not measured" | specced ([measure](features/measure.md)) |
 | "I said no to camera access" | anyone | The screen says how to allow it in Settings and offers the photo library instead | *new* |
 | "My face or my mail is in the shot" | anyone | Faces, mail, house numbers and screens are blurred on the phone before upload | specced ([capture](features/capture.md)) |
+| "I scanned that one already" | Clear | A new capture that matches an item already held asks Same thing? before making a second item | *new* (today `merge_items` covers imports only) |
 | "Let me just talk" | Clear | Talk mode | specced |
 
 ## §6.6 Item
@@ -92,13 +97,14 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
 | "It's identified wrong" | everyone | Tap the identity line: the other candidates, or type it. Price and plan recompute | specced (`clarify`, attribute edit) |
-| "I'll write the title myself" | Min, Resell | Edit any field; the edit goes to every live listing and wins. Lock it so the agent never proposes a change | edit specced; lock *new* (`attribute.locked`) |
+| "I'll write the title myself" | Min, Resell | Edit any field; the edit goes to every live listing and wins, except where `claim_check` holds a claim it cannot back or `identity_claim` applies, which ask as they always do. Lock it so the agent never proposes a change | edit specced; lock *new* (`attribute.locked`) |
+| "Change the cover photo" / "drop that one" / "add one" | Min, Resell | Photos on the item can be reordered, removed, replaced or added from the camera or library at any stage; a change goes to every live listing | *new* on a live item |
 | "My price, not yours" | Min | Type a price in the Plan; the suggestion stays as one line beside it ("Similar ones sold for $36 to $52") and is never forced | *new* (typed price on the Plan sheet) |
-| "I sold it to a friend" / "sold at the garage sale" | Clear | Sold elsewhere, with an optional price: ends every listing, records the sale, closes its cards | *new* (`POST /v1/items/:id/sold-elsewhere`) |
-| "I'm keeping it" / "I gave it away" | Test, Clear | Keep it or Donated, at any time from More, not only when the plan ends | *new* (today only through `end_unsold`) |
+| "I sold it to a friend" / "sold at the garage sale" | Clear | Sold elsewhere, with an optional price: ends every listing, then the item goes to `done` with an order of kind `offline` so it counts in Records | *new*: `POST /v1/items/:id/sold-elsewhere`, a user transition from any state before sold, and the order kind |
+| "I'm keeping it" / "I gave it away" | Test, Clear | Keep it or Donated, at any time from More: ends every listing and sets `kept` with its reason | specced (`any before sold → kept`, [item-card](features/item-card.md)) |
 | "I have three of these" | Resell | Sell one like this copies the item without its photos; or set a quantity | quantity specced ([item-card](features/item-card.md)); copy *new* |
-| "Delete it" | anyone | Delete removes the item and its photos and ends its listings first | *new* |
-| "These are two things" | Resell | Split moves photos to a new item | merge specced; split *new* |
+| "Delete it" | anyone | Delete removes the item and its photos and ends its listings first. Refused while an order is open (claim window, return or dispute), and a sold item's sale stays in Records | *new* |
+| "These are two things" | Resell | Split moves photos to a new item | *new* |
 
 ## §6.7 Plan
 
@@ -113,15 +119,17 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
-| "Different words on Depop" | Resell | Each site's preview is editable on its own | specced ([list](features/list.md)) |
+| "Different words on Depop" | Resell | Each site's preview is editable on its own, including its price, shipping and returns where the site has them | words specced ([list](features/list.md)); per-site price and terms *new* |
+| "Post it Sunday evening" | Clear | Post later, with a time | specced (`list_at`) |
 | "Just eBay for now" | anyone | Untick sites | specced |
-| "The post keeps failing" | anyone | Retry, Edit or Skip; and Post it myself, which opens the site with the text copied and the photos saved | Retry/Edit/Skip specced; the handoff specced in [product §6](product.md); this button *new* |
+| "The post keeps failing" | anyone | Retry, Edit or Skip; and Post it myself, which opens the site with the text copied and the photos saved | Retry, Edit and Skip specced; Post it myself *new* |
 
 ## §6.9 Ship and Pickup
 
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
-| "I have my own label" | Resell | I'll ship it myself: enter the tracking number, or just mark it shipped | *new* (self-ship on `POST /v1/orders/:id/ship`) |
+| "I have my own label" | Resell | I'll ship it myself: enter the carrier and tracking number. Mark shipped without tracking is allowed, with one line on what it costs: eBay and Depop protect the seller only with tracking | *new* (self-ship on `POST /v1/orders/:id/ship`) |
+| "I can't send it" (it broke, I sold it in person) | Clear | Cancel sale from the Ship sheet, with the reason and what the site does to the account shown before the tap | `cancel_sale` specced; the Ship sheet path *new* |
 | "I can't make it" | Clear | Running late, Move the time, Cancel, each sending the buyer a message | late and no-show specced; move *new* |
 | "The buyer didn't show" | Clear | Rebook, next in line, or relist | specced |
 
@@ -138,6 +146,7 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 |---|---|---|---|
 | "I only wanted to know" | Test | Keep it (just value it) saves the value and never asks to list it | specced |
 | "It's not mine, I'm at a garage sale" | Price | Bought it, or Find this | specced |
+| "I only have the model number" | Price | Type a model number or scan a barcode instead of a photo | barcode read specced in capture; typed model *new* |
 
 ## §6.12 to §6.15 Buy, Search, Listing and Want, Product
 
@@ -152,7 +161,7 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
-| "Forget what you learned about my style" | Browse | Your style shows what it learned; edit or clear it | *new* endpoint already asked (`PATCH /v1/me/style`) |
+| "Forget what you learned about my style" | Browse | Your style shows what it learned; edit or clear it | specced (`GET`, `PATCH /v1/me/style`) |
 | "Don't test things on my listings" | Min | Experiments off | specced (`experiments_consent`) |
 | "I won't tell you what I paid" | Clear | Cost is never asked; it is only offered to resellers | specced |
 
