@@ -34,7 +34,7 @@ function Hero() {
     </div>
     <div className="marketing-hero-copy">
       <h1 id="home-title"><span className="hero-kicker">Your second hand for all things:</span>{' '}<span className="hero-wordmark">secondhand</span></h1>
-      <p>Check sold prices, prepare listings, and find used items across resale sites in one place.</p>
+      <p>See what similar items sold for, prepare your listing, or search resale sites for something you want.</p>
       <a className="marketing-pill" href="#how-it-works">See how it works</a>
       <Platforms />
     </div>
@@ -59,8 +59,8 @@ function HowItWorks() {
 const features = [
   { screen: 'plan', title: 'Choose an asking price', body: 'Check what similar items sold for before you set your price.', alt: 'Asking-price options for a Carhartt jacket.' },
   { screen: 'preview', title: 'Review the listing before you post', body: 'Check the photos, title and price. Copy the details when you’re ready to post on a marketplace.', alt: 'App listing preview for a Carhartt jacket.' },
-  { screen: 'watch', title: 'Find a match within your limits', body: 'Set your size and budget, then compare the matches with shipping included when it is known.', alt: 'Brewers jersey tracking request with a target price and size.' },
-  { screen: 'ship', title: 'See what a sale paid out', body: 'Check the sale amount, marketplace fees and what you kept.', alt: 'App sale details for an e-reader.' },
+  { screen: 'watch', title: 'Find what fits your size and budget', body: 'Set your size and budget. Compare matching items by their total cost, including shipping when available.', alt: 'Brewers jersey tracking request with a target price and size.' },
+  { screen: 'ship', title: 'See what you kept after a sale', body: 'Check the sale amount, marketplace fees and what you kept.', alt: 'App sale details for an e-reader.' },
 ];
 
 function Features() {
@@ -143,7 +143,7 @@ function Features() {
         }}>
         <div className="feature-track">{features.map((item, index) => <div className="feature-slide" key={item.screen} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${features.length}: ${item.title}`} aria-hidden={index !== page}><div className="feature-phone-ground marketing-atmosphere" data-tone="features"><Phone screen={item.screen} alt={item.alt} /></div></div>)}</div>
       </div>
-      <div className="marketing-copy feature-copy"><p className="section-label">Features</p><h2 id="features-title">AI does the prep. You decide what goes live</h2><p className="section-body feature-summary">It reads item details from photos, helps you prepare a listing and looks for used items that fit.</p><div className="feature-explanation" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><h3>{feature.title}</h3><p className="section-body">{feature.body}</p></div><Link className="marketing-text-link" href="/features">Explore features <Icon name="arrow-right-01" size={16} /></Link></div>
+      <div className="marketing-copy feature-copy"><p className="section-label">Features</p><h2 id="features-title">AI does the prep. You decide what goes live</h2><p className="section-body feature-summary">Start with a photo to prepare a listing, or save what you want to find.</p><div className="feature-explanation" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><h3>{feature.title}</h3><p className="section-body">{feature.body}</p></div><Link className="marketing-text-link" href="/features">Explore features <Icon name="arrow-right-01" size={16} /></Link></div>
       <div className="carousel-controls"><button className="carousel-arrow" type="button" aria-label="Previous feature" onClick={event => select((requested.current ?? page) - 1, event.detail > 0)}><Icon name="arrow-left-01" size={20} /></button><div className="carousel-dots" role="group" aria-label="Choose a feature">{features.map((item, index) => <button key={item.screen} type="button" aria-current={index === page ? 'true' : undefined} aria-label={item.title} onClick={event => select(index, event.detail > 0)} />)}</div><button className="carousel-arrow" type="button" aria-label="Next feature" onClick={event => select((requested.current ?? page) + 1, event.detail > 0)}><Icon name="arrow-right-01" size={20} /></button><button className="carousel-play" type="button" aria-label={playing ? 'Pause automatic feature changes' : 'Play automatic feature changes'} onClick={() => setPlaying(!playing)}>{playing ? 'Pause' : 'Play'}</button></div>
     </div>
   </section>;
@@ -151,15 +151,15 @@ function Features() {
 
 function DataPipeline() {
   return <figure className="data-pipeline" aria-labelledby="pipeline-title" data-field>
-    <figcaption id="pipeline-title">From source record to price evidence</figcaption>
+    <figcaption id="pipeline-title">From a sale record to a price estimate</figcaption>
     <div className="pipeline-flow">
       <div className="pipeline-step"><h3>Incoming records</h3><p>Listings<br />Completed sales</p></div>
       <Icon name="arrow-right-01" size={20} className="pipeline-arrow" />
-      <div className="pipeline-step"><h3>Checked in Databricks</h3><p>Lakeflow checks incoming records.<br />Unity Catalog tracks usage rules.</p><Link href="/data-use#pipeline">Inspect the pipeline <Icon name="arrow-right-01" size={16} /></Link></div>
+      <div className="pipeline-step"><h3>Checked in Databricks</h3><p>Lakeflow checks incoming records.<br />Source rules say which records a model may use.</p><Link href="/data-use#pipeline">Inspect the pipeline <Icon name="arrow-right-01" size={16} /></Link></div>
       <Icon name="arrow-right-01" size={20} className="pipeline-arrow" />
-      <div className="pipeline-step"><h3>Price evidence</h3><p>Eligible sales<br />Traceable sources</p></div>
+      <div className="pipeline-step"><h3>Price evidence</h3><p>Comparable sales<br />Links to their sources</p></div>
     </div>
-    <div className="pipeline-branches"><span>Invalid prices excluded</span><span>Display-only records kept out of pricing</span></div>
+    <div className="pipeline-branches"><span>Invalid prices excluded</span><span>Display-only records kept out of models</span></div>
   </figure>;
 }
 
@@ -168,18 +168,18 @@ function PricingProof() {
     <div className="proof-heading"><figcaption id="pricing-title"><span className="proof-number">84%</span> fewer big pricing misses</figcaption><a className="marketing-text-link" href={`${repository}/blob/main/scripts/bench/out/backtest-stockx.json`}>Method and full results <ExternalArrow /></a></div>
     <div className="proof-bars" role="img" aria-label="On the same historical sneaker cases, the 90-day median missed by over 20 percent on 9.8 percent of prices. The research model did so on 1.5 percent."><div className="proof-row"><span>90-day median</span><div className="proof-track"><span className="proof-bar baseline-bar" /></div><span>9.8%</span></div><div className="proof-row"><span>Research model</span><div className="proof-track"><span className="proof-bar model-bar" /></div><span>1.5%</span></div></div>
     <div className="proof-axis" aria-hidden="true"><span>0%</span><span>5%</span><span>10%</span></div>
-    <p>On past sneaker sales, a big miss was more than 20% from the sale price. See the unseen-month results on Data Use.</p>
+    <p>Historical StockX research, comparing the same 39,707 sneaker sales. A big miss means an estimate more than 20% from the sale price. This model is separate from the app’s pricing engine; Data Use includes the unseen-month results.</p>
   </figure>;
 }
 
 function DataUse() {
-  return <section className="marketing-scene data-scene" id="data-use" aria-labelledby="data-title"><div className="marketing-wrap data-layout"><div className="marketing-copy"><p className="section-label">Data Use</p><h2 id="data-title">From messy listings to a price you can check</h2><p className="section-body">We use Databricks to check incoming records, record how they can be used, and show the sales behind an estimate.</p><Link className="marketing-text-link" href="/data-use">Explore Data Use <Icon name="arrow-right-01" size={16} /></Link></div><div className="data-figures"><DataPipeline /><PricingProof /></div></div></section>;
+  return <section className="marketing-scene data-scene" id="data-use" aria-labelledby="data-title"><div className="marketing-wrap data-layout"><div className="marketing-copy"><p className="section-label">Data Use</p><h2 id="data-title">From messy listings to a price you can check</h2><p className="section-body">Databricks checks incoming records and lets us follow an estimate back to its source sales. Separate rules record which data a model may use.</p><Link className="marketing-text-link" href="/data-use">Explore Data Use <Icon name="arrow-right-01" size={16} /></Link></div><div className="data-figures"><DataPipeline /><PricingProof /></div></div></section>;
 }
 
 function FAQ() {
   const questions = [
     { id: 'approval', question: 'Who can post from my account?', answer: 'You review the listing in secondhand, then finish posting it on the marketplace.', href: '/faq#who-can-post', link: 'Read the approval rules' },
-    { id: 'two-sales', question: 'What if the same item sells on two sites?', answer: 'A second buyer can pay before the other listings are removed. The workflow is designed to flag a second payment so you can review both orders.', href: '/faq#two-sites', link: 'Read about duplicate sales' },
+    { id: 'two-sales', question: 'What if the same item sells on two sites?', answer: 'A second buyer can pay before the other listings are removed. Our planned workflow flags both orders so you can decide which sale to keep.', href: '/faq#two-sites', link: 'Read about duplicate sales' },
   ];
   return <section className="marketing-scene faq-scene" id="faq" aria-labelledby="faq-title"><div className="marketing-wrap marketing-split"><div className="marketing-copy"><p className="section-label">FAQ</p><h2 id="faq-title">What should you know before you start?</h2></div><div className="faq-content"><Accordion className="marketing-faq">{questions.map(item => <AccordionItem key={item.id} value={item.id} className="faq-item"><AccordionHeader><AccordionTrigger className="faq-trigger">{item.question}<Icon name="add-01" size={20} /></AccordionTrigger></AccordionHeader><AccordionPanel className="faq-panel"><p>{item.answer}</p><Link href={item.href}>{item.link} <Icon name="arrow-right-01" size={16} /></Link></AccordionPanel></AccordionItem>)}</Accordion><Link className="marketing-text-link" href="/faq">All questions <Icon name="arrow-right-01" size={16} /></Link></div></div></section>;
 }

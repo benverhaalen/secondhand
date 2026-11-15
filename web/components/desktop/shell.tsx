@@ -15,7 +15,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string>(); const [modal, setModal] = useState<'upload' | 'settings'>();
   const [signingOut, setSigningOut] = useState(false); const router = useRouter(), pathname = usePathname();
   useEffect(() => { getSession().catch(e => setError(message(e))); }, []);
-  useEffect(() => { if (session === null) router.replace('/signin?next=' + encodeURIComponent(pathname)); }, [session, router, pathname]);
+  useEffect(() => { if (session === null) router.replace('/signin?next=' + encodeURIComponent(pathname + window.location.search + window.location.hash)); }, [session, router, pathname]);
   async function logout() { setSigningOut(true); try { await signOutSession(); router.replace('/'); } catch (e) { setError(message(e)); } finally { setSigningOut(false); } }
   if (!session) return <main id="main" className="desk-auth"><Link href="/" className="wordmark">secondhand</Link><ErrorNotice error={error} retry={() => { setError(undefined); getSession(true).catch(e => setError(message(e))); }} />{!error && <Loading />}</main>;
   const active = pathname.startsWith('/app/sell') ? 'sell' : pathname.startsWith('/app/buy') ? 'buy' : pathname.startsWith('/app/you') ? 'you' : pathname.startsWith('/app/messages') ? 'messages' : 'today';

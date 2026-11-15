@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { requestAsUser } from '../../lib/browser-session';
 import { Dialog, DialogBackdrop, DialogClose, DialogContent, DialogTitle } from '@ui-sdk/react/dialog';
 import { Icon } from '../icon';
-import { webLink } from '../../lib/desktop-api';
+import { amount, webLink, type Offer } from '../../lib/desktop-api';
 export { Icon } from '../icon';
 export function Site({ site }: { site: string }) {
   return ['ebay', 'depop', 'facebook', 'mercari', 'poshmark'].includes(site) ? <img className="desk-site" src={`/marketing/platforms/${site}.png`} alt={site} width="36" height="36" /> : <span className="desk-tag">{site.replaceAll('_', ' ')}</span>;
@@ -39,3 +39,5 @@ export function Modal({ title, children, close }: { title: string; children: Rea
   }, [opener]);
   return <Dialog open onOpenChange={open => { if (!open) close(); }}><DialogBackdrop className="desk-backdrop" /><DialogContent className="desk-dialog" data-keyboard={keyboard ? '' : undefined} finalFocus={opener}><div className="desk-dialog-heading"><DialogTitle>{title}</DialogTitle><DialogClose className="desk-icon-button" aria-label="Close"><Icon name="cancel-01" size={20} /></DialogClose></div>{children}</DialogContent></Dialog>;
 }
+
+export function Offers({ offers }: { offers: Offer[] }) { return <div className="desk-item-grid">{offers.map(offer => <article className="desk-item" key={offer.id}><Picture src={webLink(offer.image_url)} title={offer.title} /><div className="desk-item-copy"><h3>{offer.title}</h3><p className="desk-amount">{amount(offer.delivered_cents ?? offer.price_cents)}</p>{offer.shipping_estimated && <p className="desk-meta">Shipping not confirmed</p>}<div className="desk-offer-bottom"><Site site={offer.site} />{webLink(offer.url) && <a className="desk-secondary" target="_blank" rel="noopener noreferrer" href={webLink(offer.url)}>View listing</a>}</div></div></article>)}</div>; }

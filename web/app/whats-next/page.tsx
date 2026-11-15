@@ -11,19 +11,34 @@ export const metadata: Metadata = {
 
 const nextSteps = [
   {
+    name: 'A confirmed live sale',
+    question: 'Can we complete a sale from start to finish?',
+    body: 'Post a real listing from the app, detect its sale, remove the other listings and confirm each result. The pieces have been tested separately; the complete sale still needs to run on a live account.',
+    path: 'spec/plans/waiting.md', link: 'See what the live test needs',
+  },
+  {
     name: 'Broader appraisal',
     question: 'Where does the estimate hold up?',
     body: 'Test more kinds of items and publish the results by category. When there are too few comparable sales, ask for the detail that would help or point someone to a specialist.',
+    path: 'spec/features/appraise.md', link: 'Read the appraisal plan',
   },
   {
     name: 'The whole selling process',
     question: 'How much work does it actually save?',
-    body: 'Follow real items from the first photo to a confirmed result. Measure the time spent, the edits sellers make and what needs their attention when a marketplace action fails.',
+    body: 'Follow real items from the first photo through the sale. Measure the seller’s time, the edits they make and the problems they have to resolve.',
+    path: 'product/numbers.md', link: 'Read the measurement plan',
   },
   {
     name: 'Affordable monitoring',
     question: 'When is a faster check worth it?',
-    body: 'Measure what it costs to watch active listings. Check more often when a change matters, and use the results to decide which marketplaces and account limits we can support.',
+    body: 'Measure the cost of checking active listings and how often a faster check catches a sale sooner. Use those results to decide which marketplaces and account limits we can support.',
+    path: 'product/roi.md', link: 'Inspect the cost model',
+  },
+  {
+    name: 'Data controls in use',
+    question: 'Do the live controls match the code?',
+    body: 'Put the newer source-permission, deletion and validation controls into use. Check that accounts stay isolated and that a model uses only records cleared for customer use.',
+    path: 'spec/databricks-build.md', link: 'Read the deployment status',
   },
 ];
 
@@ -54,7 +69,7 @@ export default function WhatsNextPage() {
             </div>
           </figure>
           <div className={styles.photoQuestions}>
-            <p>What would help price this?</p>
+            <p>What helps price this jacket?</p>
             <ul><li>A readable label</li><li>Clear signs of wear</li><li>Comparable items that sold</li></ul>
           </div>
         </div>
@@ -64,13 +79,13 @@ export default function WhatsNextPage() {
     <section id="next-steps" className={`${styles.wrap} ${styles.nextSteps}`} aria-labelledby="next-steps-title">
       <div className={styles.sectionIntro}>
         <p className={styles.label}>The next tests</p>
-        <h2 id="next-steps-title">More kinds of items. Evidence for each</h2>
-        <p className={styles.body}>Appraise anything is the ambition. We need to show where estimates hold up, and when to ask for more information.</p>
+        <h2 id="next-steps-title">What we need to test next</h2>
+        <p className={styles.body}>We want to appraise anything with a resale market. That means testing more categories, showing where estimates hold up and asking for more information when they do not.</p>
       </div>
       <div className={styles.steps}>
         {nextSteps.map(step => <article className={styles.step} key={step.name}>
           <p className={styles.stepName}>{step.name}</p>
-          <h3>{step.question}</h3><p className={styles.body}>{step.body}</p>
+          <h3>{step.question}</h3><div><p className={styles.body}>{step.body}</p><a className={styles.textLink} href={`https://github.com/benverhaalen/secondhand/blob/main/${step.path}`}>{step.link} <Arrow /></a></div>
         </article>)}
       </div>
     </section>
@@ -85,13 +100,13 @@ export default function WhatsNextPage() {
           {businessOptions.map(option => <article key={option.name}><h3>{option.name}</h3><p className={styles.body}>{option.body}</p></article>)}
         </div>
         <div className={styles.cost}>
-          <div className={styles.costAmount}><p className={styles.amount}>2 to 8¢</p><p>Modeled basic listing cost per item</p></div>
+          <div className={styles.costAmount}><p className={styles.amount}>2 to 8¢</p><p>Estimated cost to prepare a basic listing</p></div>
           <div className={styles.costContext}>
-            <p>We modeled this cost using provider prices. Monitoring costs extra. Customer pricing is undecided.</p>
+            <p>This is our estimated cost from provider prices, not a bill from actual usage. Monitoring costs extra. We have not set customer prices.</p>
             <a className={styles.textLink} href="https://github.com/benverhaalen/secondhand/blob/main/product/numbers.md#what-it-costs-us">See the cost assumptions <Arrow /></a>
           </div>
         </div>
-        <p className={styles.businessConclusion}>We’ll measure costs and referral revenue before making a pricing promise.</p>
+        <p className={styles.businessConclusion}>We need to measure both costs and referral income before promising the core product can stay free.</p>
         <a className={styles.textLink} href="https://github.com/benverhaalen/secondhand/blob/main/product/business.md">Read the business proposal <Arrow /></a>
       </div>
     </section>
