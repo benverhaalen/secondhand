@@ -666,3 +666,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate win by launching something useful, working, fast, reliable and powerful
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > I feel certain things can be improved beyond what we have it at. Think throughout all of this how when we present, we will win for launching a truly useful, working, fast, reliable, and powerful tool all in one
+
+## 2026-11-14 nate what other engines are needed and what is not strong enough
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Beyond marketing, what other engines are needed, what are things not strong enough as it stands
