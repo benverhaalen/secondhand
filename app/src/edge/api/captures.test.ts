@@ -3,6 +3,7 @@ import { beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
+import * as capturesApi from './captures.ts';
 import { handlers, manifest, resetCaptures } from './captures.ts';
 
 const prefixes = ["captures"];
@@ -14,10 +15,10 @@ beforeEach(async t => {
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
   const e = examples.find(e => t.name.startsWith(e.name + ':'));
   const name = e?.name ?? (t.name.startsWith('capture reconnect:') ? 'captures.finish' : '');
-  if (['captures.set_type','captures.finish','captures.answer','captures.refuse'].includes(name)) {
+  if (['captures.set_type','captures.finish','captures.answer','captures.refuse','captures.generate'].includes(name)) {
     await call(examples.find(e => e.name === 'captures.photos')!);
   }
-  if (['captures.finish','captures.answer','captures.refuse'].includes(name)) {
+  if (['captures.finish','captures.answer','captures.refuse','captures.generate'].includes(name)) {
     await call(examples.find(e => e.name === 'captures.set_type')!);
   }
   if (['captures.answer','captures.refuse'].includes(name)) {
@@ -46,7 +47,7 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
   if (e.response === null) assert.equal(await r.text(), '');
   else assert.deepEqual(await r.json(), e.response);
 });
-for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
+for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor' && e.endpoint !== 'POST /v1/captures')) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
 });
@@ -204,9 +205,10 @@ let requestNumber = 0;
 const photo = (step: string, reads: unknown[] = []) => ({role: step, step, content_type: 'image/jpeg', bytes: 1000, reads});
 const patchEndpoint = 'PATCH /v1/captures/:id';
 const photosEndpoint = 'POST /v1/captures/:id/photos';
-const openInput = {mode:'shots',purpose:'sell',suggestion:{family:'apparel',p:.86,second_p:.05},device:{has_lidar:true}};
+const openInput = {mode:'shots',purpose:'sell',suggestion:{family:'apparel',p:.86,second_p:.05},device:{has_lidar:true,object_capture:true}};
 async function routeWalk() {
   const bodies: unknown[] = [];
+  let questions = 0;
   const state: State = {capture_id:'cap_3n9q',item_id:'it_7c2m',purpose:'sell',confirm_mode:'tap',has_lidar:true,object_capture:true,sites:['ebay','poshmark'],type:null,suggestion:{family:'apparel',p:.86,second_p:.05},kept:[],retakes:{},facts:{},lookups:'none',refused:[]};
   const params = memoryStore();
   async function step(endpoint: string, input?: unknown) {
@@ -235,16 +237,18 @@ async function routeWalk() {
     const value=answers[q.field] ?? q.options[0]?.value;
     assert.notEqual(value,undefined,`fixture answer for ${q.field}`);
     state.facts[q.field]={value,source:'you_said',confidence:1,confirmed:true};
+    questions++;
     capture = await step(patchEndpoint,{version:capture.version,answer:{field:q.field,value}});
   }
   assert.equal(capture.plan.status,'done');
   for(const site of state.sites) assert.equal(capture.plan.complete[site].ready,true,site);
-  return bodies;
+  return {bodies, questions};
 }
-test('T-shirt walks through routes twice with deterministic bodies', async () => {
+test('T-shirt walks through routes twice with deterministic bodies', async t => {
   const {resetCaptures}=await import('./captures.ts');
   resetCaptures(); const first=await routeWalk();
   resetCaptures(); deps.idem.clear(); assert.deepEqual(await routeWalk(),first);
+  t.diagnostic(`capture.route.questions T-shirt=${first.questions}`);
 });
 
 async function askingCapture() {
@@ -284,4 +288,307 @@ test('not_read tag allows two retakes then asks size without a proposal', async 
     assert.equal(c.plan.questions.some((q:{shot?:{step:string}})=>q.shot?.step==='tag'),i<2);
     if(i===2) { const q=c.plan.questions.find((q:{field:string})=>q.field==='size_label');assert.ok(q);assert.ok(q.options.every((o:{proposed:boolean})=>!o.proposed)); }
   }
+});
+
+type CaptureBody = {id:string;version:number;state:string;plan:ReturnType<typeof plan>};
+async function bodyOf(response: Response): Promise<CaptureBody> {
+  assert.ok(response.status < 300, JSON.stringify(await response.clone().json()));
+  const body = await response.json();
+  return body.capture ?? body;
+}
+const getCapture = () => requestCapture('GET /v1/captures/:id').then(bodyOf);
+function job(result: unknown, user = 'usr_8f2k', id = 'cap_3n9q'): CaptureBody {
+  assert.ok('applyJobResult' in capturesApi, 'capture route exports applyJobResult');
+  return (capturesApi.applyJobResult as (user:string,id:string,result:unknown)=>CaptureBody)(user,id,result);
+}
+const fieldOf = (capture:CaptureBody, field:string) => capture.plan.fields.find(f=>f.field===field)!;
+const identify = (set:unknown[], action = 'confirm') => ({kind:'identify',action,set});
+const product = {product_id:'pr_table',family:'furniture',brand:'IKEA',model:'LACK',c:.98,dimensions:{width:55,depth:55,height:45}};
+const studioResult = {kind:'studio_plan',plan:{kind:'tee',asks:[{type:'flaw',text:'Show the mark.',zone:'hem',kind:'stain'}]}};
+const scoreResult = (sharpness = .3, role = 'tag') => ({kind:'photo_score',photos:[{key:'tag',role,score:50,parts:{sharpness,exposure:.9,clipping:.9}}]});
+
+test('read precedence: not_read preserves M, seen fills a placeholder, and owner facts survive', async () => {
+  let c=await askingCapture();
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'size_label',value:null,unknown_reason:'not_read'}])]}));
+  assert.equal(fieldOf(c,'size_label').value,'M','not_read cannot erase label M');
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'brand',value:null,unknown_reason:'not_read'}])]}));
+  assert.equal(fieldOf(c,'brand').value,null);
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'brand',value:'Acme',source:'seen',confidence:.9}])]}));
+  assert.equal(fieldOf(c,'brand').value,'Acme','seen fills not_read placeholder');
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'size_label',value:'S',source:'seen',confidence:1}])]}));
+  assert.equal(fieldOf(c,'size_label').value,'M','seen cannot replace label');
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'size_label',value:'L',source:'label',confidence:.98}])]}));
+  assert.equal(fieldOf(c,'size_label').value,'L','same source replaces');
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,answer:{field:'size_label',value:'XL'}}));
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'size_label',value:'S',source:'measured',confidence:1}])]}));
+  assert.equal(fieldOf(c,'size_label').value,'XL','you_said is never replaced');
+});
+
+test('not_read has no source or confidence and malformed photo batches never half apply', async () => {
+  const before=await getCapture();
+  for(const read of [
+    {field:'brand',value:null,unknown_reason:'not_read',source:'label'},
+    {field:'brand',value:null,unknown_reason:'not_read',confidence:.5},
+    {field:'brand',value:'Acme',source:'seen',confidence:.9,unknown_reason:'not_read'},
+  ]) {
+    const r=await requestCapture(photosEndpoint,{photos:[photo('front'),photo('tag',[read])]});
+    assert.equal(r.status,400);
+    assert.deepEqual(await getCapture(),before);
+  }
+});
+
+async function questionCapture(family:string, extra:Record<string,unknown> = {}) {
+  let c=await bodyOf(await requestCapture('POST /v1/captures',{mode:'shots',purpose:'sell',...extra}));
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,type:family}));
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:c.plan.process.map(s=>photo(s.key,[{field:'colour',value:['black'],source:'seen',confidence:.99}]))}));
+  return job(identify([],'ask'));
+}
+async function invalidAnswers(c:CaptureBody, field:string, values:unknown[]) {
+  assert.ok(c.plan.questions.some(q=>q.field===field),`${field} is an open question`);
+  const before=await getCapture();
+  for(const value of values) {
+    const r=await requestCapture(patchEndpoint,{version:c.version,answer:{field,value}});
+    assert.equal(r.status,422,`${field}: ${JSON.stringify(value)}`);
+    assert.deepEqual((await r.json()).fields,[field]);
+    assert.deepEqual(await getCapture(),before,'failed answer leaves the capture unchanged');
+  }
+}
+test('number answers obey lot_count values', async () => {
+  const c=await questionCapture('apparel',{pieces:3});
+  await invalidAnswers(c,'lot_count',[0,2.5,99]);
+});
+test('list answers require values, uniqueness, nonempty and colour maximum two', async () => {
+  let c=await questionCapture('apparel');
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('front',[{field:'colour',value:['invalid'],source:'seen',confidence:0}])]}));
+  // Required fields come first; refuse them until colour is inside the optional question cap.
+  while(!c.plan.questions.some(q=>q.field==='colour')) {
+    const q=c.plan.questions[0]; assert.ok(q);
+    c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,refuse:q.field}));
+  }
+  await invalidAnswers(c,'colour',[[],['black','black'],['impossible'],['black','white','red']]);
+});
+test('dimensions answers require exactly positive finite row parts', async () => {
+  let c=await questionCapture('apparel');
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,generate:true}));
+  await invalidAnswers(c,'dimensions',[{}, {pit_to_pit:52}, {pit_to_pit:52,length:71,extra:3}, {pit_to_pit:0,length:71}, {pit_to_pit:-1,length:71}, {pit_to_pit:null,length:71}, {pit_to_pit:'52',length:71}]);
+});
+test('free length numbers reject negatives and nonfinite values', async () => {
+  const c=await questionCapture('bikes_sports');
+  await invalidAnswers(c,'frame_size',[-1,null,'50']);
+  assert.equal((await requestCapture(patchEndpoint,{version:c.version,answer:{field:'frame_size',value:0}})).status,200);
+});
+test('yes_no requires boolean', async () => {
+  const c=await questionCapture('cards_collectibles');
+  await invalidAnswers(c,'graded',[0,'yes',null]);
+  assert.equal((await requestCapture(patchEndpoint,{version:c.version,answer:{field:'graded',value:true}})).status,200);
+});
+test('text answers reject whitespace', async () => {
+  let c=await questionCapture('apparel');
+  while(!c.plan.questions.some(q=>q.field==='brand')) {
+    const q=c.plan.questions[0]; assert.ok(q);
+    c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,refuse:q.field}));
+  }
+  await invalidAnswers(c,'brand',['','   ',42]);
+});
+
+test('device flags default false independently and impossible object capture is 422', async () => {
+  for(const device of [undefined,{}, {has_lidar:false}, {has_lidar:true}]) {
+    resetCaptures();
+    const c=await bodyOf(await requestCapture('POST /v1/captures',{mode:'shots',purpose:'sell',...(device?{device}:{})}));
+    const next=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,type:'furniture'}));
+    assert.ok(next.plan.process.every(s=>s.kind!=='scan'),'omitted object_capture means no scan');
+  }
+  const r=await requestCapture('POST /v1/captures',{mode:'shots',purpose:'sell',device:{object_capture:true}});
+  assert.equal(r.status,422);assert.deepEqual((await r.json()).fields,['device.object_capture']);
+});
+async function at(endpoint:string,id:string,body?:unknown,token='good') {
+  return call(examples.find(e=>e.endpoint===endpoint)!,{path:endpoint.split(' ')[1].replace(':id',id),body,token,headers:{'Idempotency-Key':`tenant_${++requestNumber}`}});
+}
+test('two users open distinct captures and only owners read or write every capture route', async () => {
+  const first=await bodyOf(await requestCapture('POST /v1/captures',openInput));
+  const second=await bodyOf(await requestCapture('POST /v1/captures',openInput));
+  const other=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
+  assert.equal(first.id,'cap_3n9q');assert.equal(second.id,'cap_1');assert.equal(other.id,'cap_2');
+  for(const [c,owner,foreign] of [[first,'good','other'],[second,'good','other'],[other,'other','good']] as const) {
+    assert.deepEqual(await bodyOf(await at('GET /v1/captures/:id',c.id,undefined,owner)),c);
+    for(const endpoint of ['GET /v1/captures/:id',photosEndpoint,patchEndpoint,'POST /v1/captures/:id/finish']) {
+      const r=await at(endpoint,c.id,endpoint.startsWith('GET')?undefined:{},foreign);
+      assert.equal(r.status,404,endpoint);assert.equal((await r.json()).code,'not_found');
+    }
+    const changed=await bodyOf(await at(patchEndpoint,c.id,{version:c.version,type:'apparel'},owner));
+    assert.equal(changed.version,2);
+    assert.equal((await at(photosEndpoint,c.id,{photos:[photo('front')]},owner)).status,201);
+    assert.equal((await at('POST /v1/captures/:id/finish',c.id,{version:3},owner)).status,202);
+  }
+});
+test('open validates caller item through items port', async () => {
+  assert.equal((await requestCapture('POST /v1/captures',{...openInput,item_id:'it_missing'})).status,404);
+  assert.equal((await requestCapture('POST /v1/captures',{...openInput,item_id:'it_7c2m'},'other')).status,404);
+  assert.equal((await requestCapture('POST /v1/captures',{...openInput,item_id:'it_7c2m'})).status,201);
+});
+test('judged captures refuse photos, answers, Generate and finish without version movement', async () => {
+  const c=await askingCapture();
+  const finished=await bodyOf(await requestCapture('POST /v1/captures/:id/finish',{version:c.version}));
+  for(const [endpoint,body] of [
+    [photosEndpoint,{photos:[photo('front')]}],
+    [patchEndpoint,{version:finished.version,answer:{field:'condition',value:'good'}}],
+    [patchEndpoint,{version:finished.version,generate:true}],
+    ['POST /v1/captures/:id/finish',{version:finished.version}],
+  ] as const) {
+    const r=await requestCapture(endpoint,body);assert.equal(r.status,409);assert.equal((await r.json()).code,'stale');
+    assert.deepEqual(await getCapture(),finished);
+  }
+});
+test('PATCH preserves status after shooting and logs only answered or refused field name', async () => {
+  const sink=memorySink();deps.log=createLog({src:'test',build:'test',sink});
+  let c=await askingCapture(); assert.equal(c.state,'uploading');
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,answer:{field:'condition',value:'good'}}));
+  assert.equal(c.state,'uploading');
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,refuse:'size_label'}));
+  const changes=sink.lines.map(s=>JSON.parse(s)).filter(e=>e.event==='state.change');
+  assert.ok(changes.some(e=>e.field==='condition'));assert.ok(changes.some(e=>e.field==='size_label'));
+  assert.ok(!changes.some(e=>'value' in e));
+});
+
+test('identify confirm publishes lookup dimensions without a question and preserves candidate order', async () => {
+  await questionCapture('furniture');
+  const c=job(identify([product]));
+  assert.equal(fieldOf(c,'dimensions').state,'known');assert.equal(fieldOf(c,'dimensions').source,'lookup');
+  assert.deepEqual(fieldOf(c,'dimensions').value,product.dimensions);
+  assert.ok(!c.plan.questions.some(q=>q.field==='dimensions'));
+  const withoutPhone=job(identify([product]));
+  assert.equal(withoutPhone.plan.family,'furniture');
+});
+test('identify pick yields exactly one dimensions pick_one with variant labels', async () => {
+  await questionCapture('furniture');
+  const c=job(identify([{...product,c:.7,label:'Small'},{...product,product_id:'pr_large',c:.6,dimensions:{width:90,depth:55,height:45}}],'pick'));
+  const qs=c.plan.questions.filter(q=>q.field==='dimensions');assert.equal(qs.length,1);assert.equal(qs[0].kind,'pick_one');
+  assert.deepEqual(qs[0].options.map(o=>o.label),['Small','pr_large']);
+});
+test('identify empty set completes lookups and leaves phone suggestion alone', async () => {
+  await askingCapture();
+  const c=job(identify([],'ask'));assert.equal(c.plan.family,'apparel');
+  assert.equal(fieldOf(c,'brand').state,'missing','lookups are done so brand is no longer waiting');
+  resetCaptures();await requestCapture('POST /v1/captures',{mode:'shots',purpose:'sell'});
+  assert.equal(job(identify([product])).plan.family,'furniture','job supplies missing suggestion');
+});
+test('studio plan waits for Generate then exposes flaw shot and kind measurements', async () => {
+  let c=await askingCapture();const before=c.plan;
+  c=job(studioResult);assert.deepEqual(c.plan,before);
+  c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,generate:true}));
+  const flaw=c.plan.questions.find(q=>q.shot?.step==='flaw:hem');assert.ok(flaw);assert.equal(flaw.kind,'shot');assert.equal(flaw.words,'Show the mark.');
+  assert.deepEqual(c.plan.questions.find(q=>q.field==='dimensions')?.parts,['pit_to_pit','length']);
+  c=job({kind:'studio_plan',plan:{kind:'pants',asks:[]}});
+  assert.ok(c.plan.questions.find(q=>q.field==='dimensions')?.parts?.includes('inseam'));
+  c=job({kind:'studio_plan',plan:{kind:'unrecognised',asks:[]}});
+  assert.deepEqual(c.plan.questions.find(q=>q.field==='dimensions')?.parts,['pit_to_pit','length']);
+});
+test('Generate is exactly one PATCH action and must be true', async () => {
+  const c=await askingCapture();
+  for(const body of [{generate:false},{generate:true,type:'apparel'},{generate:true,refuse:'condition'},{generate:true,answer:{field:'condition',value:'good'}}]) {
+    assert.equal((await requestCapture(patchEndpoint,{version:c.version,...body})).status,400);
+    assert.deepEqual(await getCapture(),c);
+  }
+});
+test('photo score blurry tag yields retake, threshold passes and existing facts survive', async () => {
+  await questionCapture('apparel');
+  let c=job(scoreResult());assert.ok(c.plan.questions.some(q=>q.shot?.step==='tag' && q.shot.reason==='retake'));
+  resetCaptures();await questionCapture('apparel');
+  c=job(scoreResult(.5));assert.ok(!c.plan.questions.some(q=>q.shot?.step==='tag'));
+  c=job(scoreResult(.3,'front'));assert.ok(!c.plan.questions.some(q=>q.shot?.step==='tag'));
+  resetCaptures();c=await askingCapture();c=job(scoreResult());assert.equal(fieldOf(c,'size_label').value,'M');
+});
+test('job results validate all fields before applying, bump once, log once and enforce ownership', async () => {
+  await askingCapture();
+  const invalidResults:[unknown,string][]=[
+    [{kind:'unknown'},'kind'],
+    [identify([product],'unknown'),'action'],
+    [identify([{...product,c:2}]),'c'],
+    [identify([{...product,family:'unknown'}]),'family'],
+    [identify([{...product,brand:1}]),'brand'],
+    [identify([{...product,model:1}]),'model'],
+    [identify([{...product,label:1}]),'label'],
+    [identify([{...product,product_id:''}]),'product_id'],
+    [identify([{...product,dimensions:{width:0}}]),'dimensions'],
+    [identify([{...product,c:.5},{...product,c:.8}],'pick'),'c'],
+    [{kind:'studio_plan',plan:{kind:'tee',asks:[{type:'unknown',text:'x'}]}},'type'],
+    [{kind:'studio_plan',plan:{kind:'tee',asks:[{type:'flaw',text:'',zone:'hem'}]}},'text'],
+    [{kind:'studio_plan',plan:{kind:'tee',asks:[{type:'flaw',text:'x',zone:3}]}},'zone'],
+    [{kind:'photo_score',photos:[scoreResult().photos[0],{key:'tag',role:'tag',score:50,parts:{sharpness:NaN,exposure:.9,clipping:.9}}]},'sharpness'],
+    [{kind:'photo_score',photos:[{key:'tag',role:'tag',score:101,parts:{sharpness:.3,exposure:.9,clipping:.9}}]},'score'],
+    [{kind:'photo_score',photos:[{key:'tag',role:'tag',score:50,parts:{sharpness:.3,exposure:.9}}]},'clipping'],
+  ];
+  for(const [result,field] of invalidResults) {
+    const before=await getCapture();assert.throws(()=>job(result),new RegExp(field));assert.deepEqual(await getCapture(),before);
+  }
+  for(const [user,id] of [['usr_other','cap_3n9q'],['usr_8f2k','cap_unknown']]) {
+    assert.throws(()=>job(identify([],'ask'),user,id),e=>e instanceof Error && 'code' in e && e.code==='not_found');
+  }
+  const sink=memorySink();deps.log=createLog({src:'test',build:'test',sink});
+  for(const result of [identify([],'ask'),studioResult,scoreResult()]) {
+    const before=await getCapture();const c=job(result);assert.equal(c.version,before.version+1);
+  }
+  assert.equal(sink.lines.map(s=>JSON.parse(s)).filter(e=>e.event==='state.change').length,3);
+});
+
+test('identify refreshes its own suggestion but never the phone suggestion', async () => {
+  await requestCapture('POST /v1/captures',{mode:'shots',purpose:'sell'});
+  assert.equal(job(identify([product])).plan.family,'furniture');
+  const c=job(identify([{...product,family:'apparel'}]));
+  assert.equal(c.plan.family,'apparel');
+  resetCaptures();await requestCapture('POST /v1/captures',openInput);
+  assert.equal(job(identify([product])).plan.family,'apparel');
+});
+
+test('identify brand and model choices are distinct and retain set order', async () => {
+  await questionCapture('electronics');
+  const c=job(identify([
+    {...product,family:'electronics',brand:'Apple',model:'First',c:.8},
+    {...product,product_id:'pr_second',family:'electronics',brand:'Other',model:'Second',c:.7},
+    {...product,product_id:'pr_third',family:'electronics',brand:'Apple',model:'First',c:.6},
+  ],'pick'));
+  for(const [field,values] of [['brand',['Apple','Other']],['model',['First','Second']]] as const) {
+    const q=c.plan.questions.find(q=>q.field===field);
+    assert.ok(q,`${field} candidate question appears`);
+    assert.deepEqual(q.options.map(o=>o.value),values);
+  }
+});
+
+test('photo scoring permits two replacement retakes and never double-counts phone not_read', async () => {
+  for(const phoneReads of [false,true]) {
+    resetCaptures();await questionCapture('apparel');
+    let c=job(scoreResult());
+    assert.ok(c.plan.questions.some(q=>q.shot?.step==='tag'));
+    for(let replacement=1;replacement<=2;replacement++) {
+      await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',phoneReads?[{field:'size_label',value:null,unknown_reason:'not_read'}]:[])]}));
+      c=job(scoreResult());
+      assert.equal(c.plan.questions.some(q=>q.shot?.step==='tag'),replacement<2,`replacement ${replacement}, phone not_read=${phoneReads}`);
+      const again=job(scoreResult());
+      assert.deepEqual(again.plan,c.plan,'repeated scoring does not spend another retake');
+    }
+  }
+});
+
+test('capture handlers and job results log through the event contract without answer values', async () => {
+  const {checkLog}=await import('../../../../spec/log.mjs');
+  const sink=memorySink();deps.log=createLog({src:'test',build:'test',sink});
+  async function dispatch(endpoint:string, body:Record<string,unknown>):Promise<CaptureBody> {
+    const reply=await handlers[endpoint]({user_id:'usr_8f2k',visitor_id:null,request_id:'rq_capture_log',params:{id:'cap_3n9q'},query:new URLSearchParams(),body,headers:new Headers(),log:deps.log},new Request('http://edge.test'));
+    assert.ok(!(reply instanceof Response));
+    const result=reply.body as CaptureBody & {capture?:CaptureBody};
+    return result.capture ?? result;
+  }
+  let c=await dispatch('POST /v1/captures',openInput);
+  c=await dispatch(patchEndpoint,{version:c.version,type:'apparel'});
+  c=await dispatch(photosEndpoint,{photos:[photo('front'),photo('back'),photo('tag')]});
+  c=await dispatch(patchEndpoint,{version:c.version,answer:{field:'condition',value:'good'}});
+  c=job(studioResult);
+  await dispatch(patchEndpoint,{version:c.version,generate:true});
+  assert.throws(()=>job({kind:'identify',action:'confirm',set:[{...product,c:2}]}),/c/);
+  deps.log.end();
+  const checked=checkLog(sink.text());
+  assert.deepEqual(checked.problems,[]);
+  assert.deepEqual(checked.warnings,[]);
+  const changes=checked.events.filter((e:{event:string})=>e.event==='state.change');
+  assert.ok(changes.every((e:Record<string,unknown>)=>!('value' in e)));
 });
