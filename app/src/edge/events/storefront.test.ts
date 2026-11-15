@@ -17,6 +17,7 @@ async function setup() {
       data: { active_count: 2, sold_count: 1, orders: 1, gross_cents: 2000 } };
   } };
   const scheduler = createScheduler({ params: memoryParams({ watch_cadence_s: 900 }), leases, now: () => time,
+    state: { load: () => ({ due: { acc_1: 0, unlinked: 0 }, paused: {} }), save() {} },
     accounts: () => [ { account_id: 'acc_1', user_id: 'usr_1', site: 'depop' }, { account_id: 'unlinked', user_id: 'usr_1', site: 'depop' } ],
     stateOf: () => 'live', runSweep: async a => { sweeps.push(a.account_id); return { ok: true }; }, onStale: a => { stale.push(a.account_id); },
     storefront: { accounts, harness: createHarness({ adapters: [adapter], accounts }), store: { put: async row => { snapshots.push(row); } } } });
