@@ -1,6 +1,6 @@
 # Pitch
 
-How secondhand is told to judges and to users. Every number links to [pitch-evidence.md](../research/cross-cutting/ben/pitch-evidence.md) or [problem-and-pitch.md](../research/cross-cutting/ben/problem-and-pitch.md), where it carries its mark. Everything here is an *agent proposal* until Ben picks; nothing changes the [decisions](decisions.md) (selling leads; appraise and buy are add-ons).
+How secondhand is told to judges and to users. The [pitch constitution](pitch-constitution.md) governs how it's told; this file holds the material. Every number links to [pitch-evidence.md](../research/cross-cutting/ben/pitch-evidence.md) or [problem-and-pitch.md](../research/cross-cutting/ben/problem-and-pitch.md), where it carries its mark. Everything here is an *agent proposal* until Ben picks; nothing changes the [decisions](decisions.md) (selling leads; appraise and buy are add-ons).
 
 Ben's two meanings of the name, 19:15 ([words](words.md#2026-11-14-pitch-and-structure)):
 1. **Your second hand.** It does the actions for you, the way an AI agent does.
@@ -15,6 +15,8 @@ For most things people own, there are two ways to sell, and both are bad: hand i
 That sentence rests on observed numbers (ThredUp's payout table, eBay's fee page, a 33,638-listing eBay study) and is the strongest problem statement we found. It replaced the draft "listing takes too long", because AI drafting is already about 30 seconds at eBay and the listing vendors.
 
 ## Five ways to tell it
+
+*Kept for the record.* The order to use now is in the [pitch constitution](pitch-constitution.md) and the [three-minute version](#the-three-minute-version-with-the-demo) below; it supersedes the recommendation in the next section.
 
 Each differs on the assumption that decides it: what judges and users believe the problem is.
 
@@ -122,16 +124,15 @@ Ben, 06:01 ([words](words.md#2026-11-15-show-the-magic-clips-basement-demos-fast
 
 ## The three-minute version, with the demo
 
-Ben, 06:40 ([words](words.md#2026-11-15-its-always-you-security-open-source-and-show-it-working-first)): show it working first, with real runs, and make it clear it's a working product and not a staged demo; then dig into the engineering. *Agent proposal* for the times.
+Follows the [pitch constitution](pitch-constitution.md): one jacket, shown working first, then how we think, told through the jacket. Ben, 06:40 ([words](words.md#2026-11-15-its-always-you-security-open-source-and-show-it-working-first)): show it working first, with real runs, then dig into the engineering. *Agent proposal* for the times.
 
 | Time | Part | Say | Show |
 |---|---|---|---|
 | 0:00 | Theme and problem | "The theme says start digging. Most of us already have: a closet full of things worth money that never get sold. Consignment pays you $3 of a $20 sale; selling it yourself is five apps." | the $3 against $17 card |
-| 0:20 | **It works** | "Hand us anything you have on you." Photograph the judge's item, or ours if they have none: identified, measured, priced per site, with what you keep on each, and the sites it won't sell on | the camera, the plan, the clock on screen |
-| 1:00 | **It's real** | "That's a real post, on a real site." Open the live listing on a second phone; then the sale and the take-downs, live or the recorded run, said as one | the site's own page beside ours; [demo reel](demo-reel.md#1-the-evidence-is-the-clip) clips 7 and 11 |
-| 1:30 | **How we dug in** | "AI where it's good, code where it has to be exact." Code checks the money; every reply is matched to the item's facts; the photo check has no model in it and caught 173 of 174 planted lies; every order of two buyers paying, 931,406 of them, ends in a decision on screen | the held reply; the photo side by side; the checker in a terminal |
-| 2:20 | **It's always you** | "It helps you; it isn't you. Anything over your line waits for your tap. Your sign-ins sit in a Databricks secret scope, and the AI models never see them. And it's open source: read every line." | the offer card; the GitHub page |
-| 2:50 | Close | "secondhand. Let AI help you, not be you." | the wordmark |
+| 0:20 | **It works** | Three photos of the jacket: what it is, its size, its flaws; what you keep on each site; and the site it won't sell on | the camera, the plan, the clock on screen |
+| 1:00 | **It's real** | "That's a real listing, on the real site." Then it sells on Depop and comes down everywhere else, each one checked; live, or the recorded run said as one | the site's own page beside ours; [demo reel](demo-reel.md#1-the-evidence-is-the-clip) clips 7 and 11 |
+| 1:30 | **How we think** | The jacket's story ([Part IV](pitch-constitution.md#part-iv-the-worked-example-one-jacket)): one record with four views; a price from what sold, wider when the data is thin; your limits, and the offer under your minimum that comes to you; the second buyer we planned for, 931,406 ways; every step written down. One flaw we found in our own work: lining photos up hid a stretch, so we fixed the gate | the offer card; the held reply; the checker in a terminal |
+| 2:40 | Close | "We built it for someone clearing out a closet. It does the work; you make the calls. It's open source, and your sign-ins never reach the AI. secondhand: it's always you." | the wordmark |
 
 **Proving it isn't staged.** Three things a staged demo can't do: a judge's own item, the live listing open on the site itself, and the repo public with the benchmark run in front of them. If posting isn't live on the day, say "this part is a recording of a real run from [date]" before playing it.
 

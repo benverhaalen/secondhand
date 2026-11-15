@@ -36,6 +36,10 @@ You see one short list of decisions. Anything that touches your money, your addr
 
 **It's free.** Listing an item costs us a few cents, so we don't charge sellers or buyers. We earn a referral when someone buys through us, and that never changes which listing we show first.
 
+## One jacket, start to finish
+
+You take three photos of a $40 jacket. It becomes one record: what it is, its size, its flaws, each fact pointing to the spot in the photo it came from. Before anything goes live, it picks the sites and the price from what similar jackets actually sold for, and where there's too little to go on, it says so. You set the limits once; inside them it acts, outside them it asks. Saturday at 2:14 it sells on Depop. From that moment the other listings are a risk, so it takes them down and checks each one is gone. If a second buyer pays anyway, that's a case we planned for: we counted every way it can happen, 931,406 of them, and each ends with you deciding. Every step is written down and never overwritten.
+
 ## How we built it
 
 **It's open source.** The whole project is public on GitHub under the Apache 2.0 licence. [Add the repo link.]
