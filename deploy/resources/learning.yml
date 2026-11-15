@@ -1,0 +1,46 @@
+# Bundle root deploy/ syncs ../databricks, ../jobs and ../log. Paths are relative to this file.
+resources:
+  jobs:
+    learning_setup:
+      name: secondhand-learning-setup
+      max_concurrent_runs: 1
+      tasks:
+        - task_key: learning_tables
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../../databricks/sql/04_learning.sql
+              source: WORKSPACE
+    valuation_backtest:
+      name: secondhand-valuation-backtest
+      max_concurrent_runs: 1
+      parameters:
+        - name: source
+          default: stockx_2019
+        - name: test_from
+          default: "2018-11-01"
+      environments:
+        - environment_key: learning
+          spec:
+            environment_version: "3"
+            dependencies: [numpy, scipy, lightgbm, mlflow]
+      tasks:
+        - task_key: backtest
+          environment_key: learning
+          spark_python_task:
+            python_file: ../../databricks/tasks/backtest.py
+            parameters: [--root, "${workspace.file_path}", --source, "{{job.parameters.source}}", --test-from, "{{job.parameters.test_from}}"]
+    param_walk:
+      name: secondhand-param-walk
+      max_concurrent_runs: 1
+      environments:
+        - environment_key: learning
+          spec:
+            environment_version: "3"
+            dependencies: [numpy, scipy, lightgbm, mlflow]
+      tasks:
+        - task_key: walk
+          environment_key: learning
+          spark_python_task:
+            python_file: ../../databricks/tasks/param_walk.py
+            parameters: [--root, "${workspace.file_path}", --source, stockx_2019, --seed, "7"]
