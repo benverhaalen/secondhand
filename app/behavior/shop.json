@@ -7,7 +7,7 @@
     "Where a mistake costs most: a source that failed or ran late read as having nothing, a number no frame said, a chat that leaves the phone."
   ],
   "decisions": [
-    "Each source comes in as its logo when the job asks it and its listings slide in beside it as its frame lands (research/buy/nate/search-in-progress.md, patterns 1 and 3); a failed or late one stays, faded, with why.",
+    "Each source comes in as its logo when the job asks it and its listings slide in beside it as its frame lands (research/buy/nate/search-in-progress.md, patterns 1 and 3); a failed or late one stays, faded, with why; one not connected here (no route, or it needs the person's account) is not listed (Nate: \"if not connected, don't list it\").",
     "After the first answer, where it looked folds into one line of logos and counts that opens again (pattern 4), and nothing says Where we looked or For sale (Nate).",
     "The first row large with View listing, the next on a shelf of Tiles, then the spread of asks: no price verdict, since a search row carries no fair range.",
     "White with black type whatever the phone's mode (Nate: \"turning everything in the background white\").",
@@ -15,7 +15,7 @@
   ],
   "states": [
     { "state": "ask", "route": "/shop", "shows": "the field, focused, with each saved chat under it" },
-    { "state": "building", "route": "/shop?q=levi%20501", "shows": "the question in black, then each source's logo with Asking, its listings sliding in as it lands, Not connected where it is not" },
+    { "state": "building", "route": "/shop?q=levi%20501", "shows": "the question in black, then each source's logo with Asking, its listings sliding in as it lands; a source not connected here is not listed" },
     { "state": "chat", "route": "/shop?q=levi%20501", "shows": "a line of logos with 88 read, 69 kept, the first listing large with View listing, a shelf of the next, the spread of asks, and the bar at the bottom" },
     { "state": "failed", "route": "/shop?q=levi%20501", "shows": "Couldn’t search", "also": ["Try again"] }
   ],
