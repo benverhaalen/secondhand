@@ -2165,3 +2165,9 @@ Nate, orchestrator's session, 2026-11-15, about 06:45 Central.
 > Get this going too, unless theres a lead working on this stuff, the identification and intelligent listing classification and generative intelligent ui built
 
 Used in: [the finalization spec](../spec/plans/finalization.md), the identify lead's brief.
+
+## 2026-11-15 nate production and the domain later, protection stays, set the api origin
+Nate, buying-conversation lead's session, 2026-11-15, about 06:10 Central.
+> production and custom domain, we'll do it later. Turning off protection not yet. Setting that yes
+
+Used in: [packet 78](../.agents/team/packets/team/78-buying-conversation-handoff.md) (the Vercel row).
