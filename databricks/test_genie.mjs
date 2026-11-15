@@ -9,7 +9,7 @@ const expectedTables = [
   'measures.param_moves', 'measures.param_timeline', 'measures.citation_coverage',
   'measures.hidden_numbers', 'measures.decisions_by_policy', 'measures.never_automated',
   'measures.rights_audit_summary', 'measures.locks_in_force', 'measures.price_basis', 'measures.guard_violations',
-  'measures.bench_coverage', 'measures.bench_speed', 'measures.backtest_estimate', 'measures.shown_prices', 'measures.pipeline_funnel', 'governance.source_rights',
+  'measures.bench_coverage', 'measures.bench_speed', 'measures.engine_ablation', 'measures.backtest_estimate', 'measures.shown_prices', 'measures.pipeline_funnel', 'governance.source_rights',
 ].map(name => `secondhand.${name}`).sort()
 const categorical = ['source', 'site', 'kind', 'brand', 'category', 'condition'].sort()
 const ddl = directory => readdirSync(new URL(directory, import.meta.url))
@@ -224,7 +224,7 @@ test('instructions keep cents, thin counts, historical scope, provenance, proof 
   const rules = JSON.parse(read('genie/market.json')).instructions.text_instructions[0].content.join('\n')
   for (const pattern of [/integer.*cents/i, /divid\w* by 100/i, /fewer than 30/i, /too few: N sales/, /wider date range/, /parent kind/,
     /every accuracy answer/i, /dataset/, /families/, /backtest_run/, /backtest_headline/, /2017-09/, /2019-02/, /never.*today.s market/i,
-    /synthetic/, /example/, /secondhand\.measures\.price_basis/, /SELECT \* FROM secondhand\.measures\.why\('<id>'\), which Genie does not call/, /report rebuilt_exactly as given/i, /may_model = true/, /secondhand\.market\.comp_for_model/]) assert.match(rules, pattern)
+    /synthetic/, /example/, /secondhand\.measures\.price_basis/, /SELECT \* FROM secondhand\.measures\.why\('<id>'\), which Genie does not call/, /rebuilds exactly from the sales it cites/, /never describe it as verified, real or confirmed/, /engine_ablation/, /does not serve/, /trails the last sale by about a point/, /Every answer names its dataset/, /may_model = true/, /secondhand\.market\.comp_for_model/]) assert.match(rules, pattern)
 })
 
 test('examples and benchmarks cover the required judge questions with guarded SQL shapes', () => {
@@ -266,4 +266,13 @@ test('bundle declares secondhand market using a resource-relative JSON path and 
   const path = resource.match(/file_path: ["']?([^\s"']+)/)[1]
   assert.equal(new URL(path, new URL('../deploy/resources/genie.yml', import.meta.url)).href, new URL('genie/market.json', import.meta.url).href)
   assert.doesNotMatch(resource, /serialized_space:/)
+})
+
+test('the answer recorder writes Genie words, its SQL and any error under the question', async () => {
+  const { section, QUESTIONS } = await import('./genie/ask.mjs')
+  const md = section('Q?', { status: 'COMPLETED', attachments: [{ text: { content: ' too few: 10 sales ' } }, { query: { query: 'SELECT 1' } }] })
+  assert.equal(md, '## Q?\n\nStatus: COMPLETED\n\ntoo few: 10 sales\n\n```sql\nSELECT 1\n```')
+  assert.match(section('Q?', { status: 'FAILED', error: { error: 'boom' } }), /Error: boom$/)
+  const samples = JSON.parse(read('genie/market.json')).config.sample_questions.map(q => q.question[0])
+  for (const q of samples) assert.ok(QUESTIONS.includes(q), `sample question not recorded: ${q}`)
 })
