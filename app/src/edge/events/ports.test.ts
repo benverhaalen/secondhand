@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { memoryStore, memoryLeases, memoryParams, fakeHarness, JOB_FOR } from './ports.ts';
+import { memoryStore, memoryLeases, memoryParams, fakeHarness, JOB_FOR, type JobRow } from './ports.ts';
 import { EVENT_KINDS } from './event.ts';
 
 const ev = { user_id: 'u1', source: 'app', action: 'app.list', dedupe_key: 'k1', actor: 'user', observed_at: 'x', effective_at: 'x', trace_id: 't' } as const;
@@ -13,7 +13,7 @@ test('store: dedupe, skip-locked claims, tx rollback', () => {
   const s = memoryStore();
   assert.equal(s.insertEvent(ev).duplicate, false);
   assert.equal(s.insertEvent(ev).duplicate, true);
-  const job = { kind: 'post', user_id: 'u1', event_id: 'e', idempotency_key: 'k1', args: {}, state: 'queued', stages: [], attempts: 0, trace_id: 't', created_at: 'x' } as const;
+  const job: Omit<JobRow, 'id'> = { kind: 'post', user_id: 'u1', event_id: 'e', idempotency_key: 'k1', args: {}, state: 'queued', stages: [], attempts: 0, trace_id: 't', created_at: 'x' };
   s.insertJob(job); s.insertJob({ ...job, idempotency_key: 'k2' });
   assert.equal(s.claimJobs(1, 'w1').length, 1);
   assert.equal(s.claimJobs(5, 'w2').length, 1); // the first is invisible to w2

@@ -1,0 +1,12 @@
+{
+  "title": "An offer comes in, and one tap takes it",
+  "shows": "Today: the money since yesterday, the decisions waiting, and accepting the jacket's best offer",
+  "steps": [
+    { "open": "/" },
+    { "wait": 1400 },
+    { "tap": "dec_jacket-acc" },
+    { "wait": 1600 },
+    { "scroll": 420 },
+    { "wait": 1400 }
+  ]
+}

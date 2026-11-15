@@ -63,7 +63,15 @@ export function assertLimits(d: Decision, s: OfferState): Decision {
   return d;
 }
 
+// The floor is the person's protection, so an offer state with no usable floor is refused before anything is decided:
+// a comparison with NaN or undefined is false, which once let an accept through with no floor at all.
+export function assertState(s: OfferState): void {
+  for (const k of ['floor_cents', 'offer_cents', 'ask_cents'] as const)
+    if (!Number.isSafeInteger(s[k]) || s[k] < 0) throw new LimitBreach(`${k} must be a whole number of cents, zero or more`);
+}
+
 export function decide(s: OfferState, pAccept: PAccept, policy: 'champion' | 'challenger' = 'champion', param_version = 0): Decision {
+  assertState(s);
   const v = s.v_wait_cents;
   const base = { policy, param_version, v_after: v };
   if (s.trust_block) return { ...base, kind: 'trust_block', amount_cents: null, keep_at_amount: null, p_accept: null, expected_keep: null, candidates: [], ask: false };

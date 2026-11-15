@@ -75,7 +75,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | A10 | State fills are checked under simulated protan and deutan vision. Closer than .05 in Oklab is a warning, not a failure: Ben is color blind, and he also wrote "dont weight to colorblindness too much" ([his words](../product/words.md#2026-11-15-do-not-weight-color-blindness-too-much)) | constitution Art. 5, State colors and color blindness |
 | A11 | Standing: only Hot and Stuck are marked. Stuck is a gray tag with an hourglass and the fact ("No views in 9 days"), and the photo keeps its color, so it never looks ended. On pace, Slow and Still learning are words, not colors | constitution Art. 5, States |
 | A12 | Which card gets the gradient: the first that needs the person, by the order in Art. 5, State gradients. Failed takes its brick tag, never the gradient | constitution Art. 5, State gradients |
-| A13 | State gradients stay light in dark mode, with black text, because a deep yellow or lime is brown | constitution Art. 5, State gradients |
+| A13 | In dark a state gradient is the deep field for every state, with light text, and the tag carries the state, because a deep yellow or lime is brown (Ben, [deep teal in dark](../product/words.md#2026-11-15-deep-teal-lead-card-in-dark)) | constitution Art. 5, State gradients |
 
 ## Open (Ben picks; round 12)
 

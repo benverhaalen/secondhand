@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>secondhand</title>
+<link rel="stylesheet" href="../../../../tokens.css">
+<link rel="stylesheet" href="../../site.css">
+<!-- Variant B: the line on the left, the product's own flow on the right: one photo becoming listings on five sites
+     (spec/pages.md 6.17, research/cross-cutting/ben/bold-and-alive.md). Rendered at its end state; live it plays once. -->
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: var(--s-9); align-items: center; width: min(var(--content), 100%); margin-inline: auto; text-align: left; }
+  .split .hero-t, .split .lead { margin-inline: 0; }
+  .split .act { justify-content: flex-start; }
+  .flow { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); align-items: center; }
+  .flow .photo { border-radius: var(--r-card); overflow: hidden; aspect-ratio: 4 / 5; box-shadow: var(--shadow-soft); }
+  .flow .photo img { width: 100%; height: 100%; object-fit: cover; }
+  .flow .sites { display: grid; gap: var(--s-2); }
+  .flow .chip { opacity: 0; animation: post var(--t-panel) var(--ease-out) forwards; }
+  .flow .chip:nth-child(2) { animation-delay: .4s; } .flow .chip:nth-child(3) { animation-delay: .8s; } .flow .chip:nth-child(4) { animation-delay: 1.2s; } .flow .chip:nth-child(5) { animation-delay: 1.6s; }
+  @keyframes post { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .flow .chip { animation: none; opacity: 1; } }
+  @media (max-width: 760px) { .split { grid-template-columns: 1fr; gap: var(--s-8); text-align: center; } .split .act { justify-content: center; } .split .hero-t, .split .lead { margin-inline: auto; } .flow .photo { aspect-ratio: 1; } }
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <header>
+  <div class="wrap">
+    <a class="wordmark" href="#">secondhand</a>
+    <nav aria-label="Pages"><a href="#">How it works</a><a href="#">Sites and fees</a><a href="#">The data</a><a href="#">FAQ</a></nav>
+    <a class="signin" href="#">Sign in</a>
+  </div>
+</header>
+    <div class="field" data-field>
+      <div class="split">
+        <div>
+          <h1 class="hero-t">Your second hand, for everything secondhand.</h1>
+          <p class="lead">Take one photo. It's priced, posted on five sites and sold for you.</p>
+          <div class="act"><a class="pill glow" href="#">Try it</a></div>
+        </div>
+        <div class="flow" data-item>
+          <div class="photo"><img src="../../../../../assets/demo-items/real/chico-hoodie/01_cover.jpg" alt="Faded crimson Chico State hoodie flat on concrete"></div>
+          <div class="sites">
+            <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../../../assets/platforms/square/ebay.png" alt="eBay"><span class="tag live">Live</span></div>
+            <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../../../assets/platforms/square/depop.png" alt="Depop"><span class="tag live">Live</span></div>
+            <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../../../assets/platforms/square/poshmark.png" alt="Poshmark"><span class="tag live">Live</span></div>
+            <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../../../assets/platforms/square/mercari.png" alt="Mercari"><span class="tag live">Live</span></div>
+            <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace"><span class="tag live">Live</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

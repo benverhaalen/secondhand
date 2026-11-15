@@ -3,6 +3,12 @@ export type Sink = (line: string) => void | Promise<void>;
 
 export interface Log {
   session: string;
+  input(screen: string, control: string, fields?: Record<string, unknown>): unknown;
+  note(msg: string, fields?: Record<string, unknown>, level?: string): unknown;
+  job(job: string, kind: string, state: string, fields?: Record<string, unknown>): unknown;
+  stage(job: string, stage: string, fields?: Record<string, unknown>): unknown;
+  ask(decision: string, kind: string, tier: string, fields?: Record<string, unknown>): unknown;
+  end(fields?: Record<string, unknown>): unknown;
   call<T>(
     kind: string,
     name: string,

@@ -128,6 +128,19 @@ export function marketItem(l: SourceListing) {
 const FEE_SITES: readonly string[] = ['ebay', 'facebook', 'depop', 'poshmark', 'mercari'];
 const feeSite = (s: string) => (FEE_SITES.includes(s) ? (s as FeeSite) : undefined);
 
+// How the prices on the other sites relate to each other: the seller's choice, not a number we pick for them.
+// Each is a rule sellers already use (research/list/ben/crosslist-pricing.md): Nifty's fee-based default is same_keep,
+// Crosslist's default markup of 0 is same_price, a hotel steering bookings to its own site is home_first.
+// `says` is the plain reason the person reads first; the numbers sit under it, shown on a tap (Ben, 06:53).
+export const SPREADS = {
+  same_keep: { name: 'Same take-home', says: 'You get the same money wherever it sells. Sites with higher fees show a higher price.' },
+  same_price: { name: 'Same price', says: 'Every site shows one price, so buyers who look around see the same thing. You get less where fees are higher.' },
+  site_market: { name: 'What each site pays', says: "Each site asks what buyers there have paid for things like this. You may get more on one site than another." },
+  home_first: { name: 'Your shop first', says: 'Your own shop stays the cheapest place to buy it, so sales and reviews build up there.' },
+} as const;
+export type Spread = keyof typeof SPREADS;
+const HOME_MARKUP = 0.1;   // guess: home_first lists the other sites 10% above the take-home price, never below it
+
 export type SiteDraft = {
   site: Site;
   verdict: string;
@@ -136,12 +149,14 @@ export type SiteDraft = {
   price_cents?: number;
   floor_cents?: number;
   keep_cents?: number;
+  why?: { says: string; numbers: string };          // the plain reason for this site's price, then the arithmetic behind it
   listing?: ReturnType<typeof buildListing>;
 };
 export type ItemPlan = {
   source: Pick<SourceListing, 'site' | 'external_id' | 'url' | 'title' | 'price_cents'>;
   product_type: string;
   target_keep_cents: number;
+  spread: Spread;
   sites: SiteDraft[];
   asks: { kind: 'clarify'; field: string; sites: Site[] }[];
 };
@@ -154,7 +169,26 @@ export type PlanOptions = {
   posted_before?: (site: Site) => boolean;
   promoted?: boolean;
   live_on?: (l: SourceListing, site: Site) => boolean;            // already listed there (merge_items found a match)
+  spread?: Spread;                                                  // default same_keep
+  site_market?: (l: SourceListing, site: Site) => number | undefined;   // the market's median sale on that site, when shown
 };
+
+const usd = (c: number) => `$${(c / 100).toFixed(2)}`;
+
+// One site's price under the chosen spread, and why. The floor and readiness are the same under every spread.
+function sitePrice(spread: Spread, l: SourceListing, site: FeeSite, target: number, sticker: number, market?: number) {
+  const even = priceForKeep(site, target);
+  const numbers = (p: number, how: string) => `${how}: ${usd(p)} on ${site}, ${usd(p - keep(site, p).keep_cents)} in fees, you keep ${usd(keep(site, p).keep_cents)}`;
+  if (spread === 'same_price') return { price: sticker, why: { says: `Same price as your ${l.site} listing.`, numbers: numbers(sticker, `the ${l.site} price`) } };
+  if (spread === 'site_market' && market !== undefined)
+    return { price: market, why: { says: `What buyers on ${site} have paid for things like this.`, numbers: numbers(market, `${site}'s median sale`) } };
+  if (spread === 'home_first') {
+    const p = Math.max(even, Math.round(even * (1 + HOME_MARKUP)));
+    return { price: p, why: { says: `A little above your ${l.site} shop, so your shop stays the cheapest.`, numbers: numbers(p, `same take-home plus ${HOME_MARKUP * 100}%`) } };
+  }
+  const says = spread === 'site_market' ? `Not enough ${site} sales to say what buyers there pay, so you get the same as everywhere.` : 'You get the same as on every other site, after its fees.';
+  return { price: even, why: { says, numbers: numbers(even, `to keep ${usd(target)}`) } };
+}
 
 export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
   const type = productType(l);
@@ -162,6 +196,8 @@ export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
   const source = feeSite(l.site);
   const target = opts.target_keep_cents?.(l) ?? (source ? keep(source, l.price_cents).keep_cents : l.price_cents);
   const card = toItemCard(l);
+  const spread = opts.spread ?? 'same_keep';
+  const sticker = source ? priceForKeep(source, target) : l.price_cents;   // the source site's price for this payout
   const floorKeep = l.floor_cents === undefined ? undefined : source ? keep(source, l.floor_cents).keep_cents : l.floor_cents;
   const verdicts = [
     ...r.post.map((e: { platform: string; verdict: string; reason: string }) => ({ ...e, action: 'post' as const })),
@@ -176,7 +212,7 @@ export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
     const fs = feeSite(site);
     if (opts.live_on?.(l, site)) return { ...base, action: 'live' };
     if (e.action === 'never' || !fs) return base;
-    const price_cents = priceForKeep(fs, target);
+    const { price: price_cents, why } = sitePrice(spread, l, fs, target, sticker, opts.site_market?.(l, site));
     // The person's floor carries over as the same keep on every site (decisions: "you set the lowest you'd take").
     const floor_cents = floorKeep === undefined ? undefined : Math.min(price_cents, priceForKeep(fs, floorKeep));
     const built = buildListing(card, site, {
@@ -184,7 +220,7 @@ export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
       posted_before: opts.posted_before?.(site) ?? false, promoted: opts.promoted ?? false,
     });
     const listing = floor_cents === undefined ? { ...built, missing: [...built.missing, 'floor'], ready: false } : built;
-    return { ...base, price_cents, floor_cents, keep_cents: keep(fs, price_cents).keep_cents, listing };
+    return { ...base, price_cents, floor_cents, keep_cents: keep(fs, price_cents).keep_cents, why, listing };
   });
 
   const asks = new Map<string, { kind: 'clarify'; field: string; sites: Site[] }>();
@@ -195,7 +231,7 @@ export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
   }
   return {
     source: { site: l.site, external_id: l.external_id, url: l.url, title: l.title, price_cents: l.price_cents },
-    product_type: type, target_keep_cents: target, sites, asks: [...asks.values()],
+    product_type: type, target_keep_cents: target, spread, sites, asks: [...asks.values()],
   };
 }
 

@@ -21,7 +21,7 @@ The Windows machine (31 GB) crashed three times. Each time, thirteen sessions wi
 
 ## Set up the Mac
 
-1. Clone `main`. `npm ci` in `app/`. Python 3.12 with `pytest`. Playwright's Chromium for the local browser tests.
+1. Clone `main`. `npm ci` in `app/` and `npm install` in `db/`. `pip install -r jobs/requirements.txt`. Python 3.12 with `pytest`. Playwright's Chromium for the local browser tests.
 2. Nate sets two keys in the Mac's environment himself; neither is ever written to a file, a brief or a log, and both are checked by presence only: `OPENROUTER_API_KEY` (jev, in `app/src/edge/intel/jev.ts`) and `BROWSER_USE_API_KEY` (cloud browsers). Both were pasted into a chat on the Windows machine, so Nate should rotate them after the event.
 3. `databricks auth login --profile Nate` if the workspace is needed; the profile is Nate's own workspace ([checks](../../../../research/data/nate/workspace-checks.md)).
 4. Read, in this order: this packet, [the board](../../../../spec/plans/board.md), [the Browser Use Cloud reference](../../../../research/cross-cutting/nate/browser-use-cloud.md), `app/src/edge/browser/OPERATING.md`, `app/src/edge/harness/OPERATING.md`, `app/src/edge/harness/ENDPOINTS.md`.

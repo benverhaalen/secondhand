@@ -82,6 +82,90 @@ def main() -> dict:
     return {"state": "ran", "backtest": out["backtest"], "n_rows": out["n_rows"]}
 
 
+def switch_rule(champion: dict, challenger: dict) -> tuple[bool, str]:
+    cells = challenger["cells"]
+    if not cells or any(not c["passes"] or not 0.75 <= c["coverage"] <= 0.85 for c in cells):
+        return False, "fail: coverage"
+    old = {(c["group"], c["price_band"]): c for c in champion["cells"]}
+    fresh = {(c["group"], c["price_band"]): c for c in cells}
+    if not old.keys() <= fresh.keys():
+        return False, "kept: missing cell"
+    if any(fresh[k]["q50_median_error"] - c["q50_median_error"] > 0.02 + 1e-12 for k, c in old.items()):
+        return False, "kept: cell regression"
+    gain = champion["overall"]["q50_median_error"] - challenger["overall"]["q50_median_error"]
+    return (True, "held-out win") if gain >= 0.01 - 1e-12 else (False, "kept: median error")
+
+
+def publish(store, scope, model_ref, champion, challenger, at):
+    allowed, reason = switch_rule(champion, challenger)
+    if not allowed:
+        return False, reason
+    history = store.history("valuation", scope)
+    row = store.propose({"name": "valuation", "scope": scope, "family": "model_ref",
+                         "value_or_hyperparams": model_ref, "prior": None,
+                         "held_out_score": -challenger["overall"]["q50_median_error"],
+                         "metric": "negative_q50_median_error"}, max((r["version"] for r in history), default=0))
+    return store.promote("valuation", scope, row["version"], 0, at)
+
+
+def fit_quantiles(rows):
+    if not rows or any(not r.get("may_model", True) for r in rows):
+        raise ValueError("empty fit or may_model false")
+    from lightgbm import LGBMRegressor
+    x = [r["features"] for r in rows]
+    y = [r["price_cents"] for r in rows]
+    return {q: LGBMRegressor(objective="quantile", alpha=q, random_state=0,
+                             n_jobs=1, verbosity=-1).fit(x, y) for q in (0.1, 0.5, 0.9)}
+
+
+def calibrate(quantiles, truth, weights, alpha=0.2):
+    import numpy as np
+    from valuation.backtest import conformal_q
+    q = np.asarray(quantiles, float)
+    y = np.asarray(truth, float)
+    return conformal_q(np.maximum(q[:, 0] - y, y - q[:, 2]), weights, alpha)
+
+
+class CureModel:
+    def __init__(self, weights, rate):
+        self.weights, self.rate = weights, rate
+
+    def probability(self, features, days):
+        import numpy as np
+        from scipy.special import expit
+        return float(expit(np.dot(features, self.weights)) * -np.expm1(-self.rate * days))
+
+
+def fit_cure(features, days, sold):
+    import numpy as np
+    from scipy.optimize import minimize
+    from scipy.special import expit
+    x, t, event = np.asarray(features, float), np.asarray(days, float), np.asarray(sold, float)
+    if x.ndim != 2 or len(x) != len(t) or len(t) != len(event) or not len(t):
+        raise ValueError("cure rows must align")
+    if not np.isfinite(x).all() or not np.isfinite(t).all() or (t < 0).any() or not np.isin(event, [0, 1]).all():
+        raise ValueError("invalid censored rows")
+    def loss(theta):
+        susceptible, rate = expit(x @ theta[:-1]), np.exp(theta[-1])
+        survival = np.exp(-rate * t)
+        likelihood = np.where(event == 1, susceptible * rate * survival, 1 - susceptible + susceptible * survival)
+        return -np.log(np.maximum(likelihood, 1e-300)).sum() + .5 * np.dot(theta[:-1], theta[:-1])
+    result = minimize(loss, np.r_[np.zeros(x.shape[1]), np.log(1 / max(t.mean(), 1))], method="L-BFGS-B")
+    if not result.success:
+        raise RuntimeError(f"cure fit failed: {result.message}")
+    return CureModel(result.x[:-1], float(np.exp(result.x[-1])))
+
+
+def fit_weights(priors, held_out_loss):
+    # D1 guards surround the priors; coordinate search evaluates the D6 pinball objective supplied by the backtest.
+    weights = dict(priors)
+    for _ in range(3):
+        for name, prior in priors.items():
+            candidates = [prior * (0.5 + i / 20) for i in range(21)]
+            weights[name] = min(candidates, key=lambda value: held_out_loss({**weights, name: value}))
+    return weights
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--comps", required=True)

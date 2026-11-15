@@ -3,7 +3,8 @@
  * D1: reject non-sales and stale rows; multiply type, match, age and extraction weights.
  * Add variant, product, family, category levels until the sold basis is sufficient.
  * D2/D3: multiply condition and fitted size ratios by capped exponential log drift.
- * D1: reject excessive total adjustments, then trim by median/MAD of log prices.
+ * D1: reject comps whose gross adjustment (sum of absolute log factors) is excessive,
+ * weight the rest by 1 / (1 + gross), flag an extrapolated set, then trim by median/MAD of log prices.
  * D5: take cumulative-weight quantiles; D4 translates a thin site's pooled basis
  * only with supported ratios, widening endpoints before whole-dollar rounding.
  * Everything here is deterministic arithmetic; may_model never filters cited sales.
@@ -62,7 +63,7 @@ export const DEFAULTS: Params = {
   min_recent: 2, // D1 minimum recent sales.
   min_n_eff: 6, // D1 effective-count gate.
   outlier_k: 3 * 1.4826, // D1 scaled MAD cut on log price.
-  adjustment_cut: Math.log(1.25), // D1 maximum absolute log adjustment.
+  adjustment_cut: Math.log(1.25), // D1 maximum gross adjustment (sum of absolute log factors).
   d_offer_cat: 0, // D1 learned unknown-offer discount; no numeric prior is supplied, so no discount until fitted.
   condition_ratios: { new_with_tags: 1.35, new_without_tags: 1.2, excellent: 1.1, good: 1, fair: 0.75, for_parts: 0.35 }, // D2 condition priors relative to good.
   completeness_ratios: { box_missing: 0.9, accessory_missing: 0.85 }, // D2 completeness priors (not represented in Comp).
@@ -78,7 +79,7 @@ export const DEFAULTS: Params = {
 };
 
 export type WeightedComp = Comp & { w: number; w_type: number; w_age: number; age_days: number };
-type AdjustedComp = Comp & { adjusted_cents: number };
+type AdjustedComp = Comp & { adjusted_cents: number; gross?: number; net?: number };
 type Dropped = { comp_id: string; reason: 'adjustment' | 'outlier' };
 type Target = { condition: string; size?: string; site?: Comp['site'] };
 const levels: Comp['level'][] = ['variant', 'product', 'family', 'category'];
@@ -131,14 +132,32 @@ export function backOff<T extends WeightedComp>(comps: readonly T[], params = DE
   throw new Error('unreachable comp level');
 }
 
-export function adjust(comp: Comp, target: Target, timeIndex: (sold_at: string) => number, params = DEFAULTS): number {
+/**
+ * D2/D3 adjustments with their sizes. `gross` sums each adjustment's absolute log factor, the appraiser's
+ * gross adjustment. `net` is the signed sum of the D2 (feature) factors only (positive: the comp was worse than
+ * this item and moved up); the D3 time factor moves every comp alike, so it would fake bracketing.
+ * The Best Offer correction fixes what the comp sold for, not how it differs, so it counts in neither.
+ */
+export function adjustDetail(comp: Comp, target: Target, timeIndex: (sold_at: string) => number, params = DEFAULTS) {
   const source = params.condition_ratios[comp.condition];
   const destination = params.condition_ratios[target.condition];
   if (!(source > 0) || !(destination > 0)) throw new RangeError('condition has no ratio');
-  const size = (params.size_ratios[target.size ?? ''] ?? 1) / (params.size_ratios[comp.size ?? ''] ?? 1);
+  const condition = destination / source;
+  const sizes = [params.size_ratios[target.size ?? ''], params.size_ratios[comp.size ?? '']];
+  // A size known on one side only is not a difference we can price; adjusting it would also cost the comp weight.
+  const size = sizes[0] > 0 && sizes[1] > 0 ? sizes[0] / sizes[1] : 1;
   const time = Math.max(params.time_factor_min, Math.min(params.time_factor_max, Math.exp(timeIndex(comp.sold_at))));
   const offer = comp.kind === 'best_offer' ? 1 - params.d_offer_cat : 1;
-  return Math.round(comp.price_cents * offer * destination / source * size * time);
+  const features = [condition, size].map(Math.log);
+  return {
+    adjusted_cents: Math.round(comp.price_cents * offer * condition * size * time),
+    gross: [...features, Math.log(time)].reduce((sum, l) => sum + Math.abs(l), 0),
+    net: features.reduce((sum, l) => sum + l, 0),
+  };
+}
+
+export function adjust(comp: Comp, target: Target, timeIndex: (sold_at: string) => number, params = DEFAULTS): number {
+  return adjustDetail(comp, target, timeIndex, params).adjusted_cents;
 }
 
 function median(values: number[]): number {
@@ -150,7 +169,7 @@ function median(values: number[]): number {
 export function trim<T extends AdjustedComp>(comps: readonly T[], params = DEFAULTS): { kept: T[]; dropped: Dropped[] } {
   const dropped: Dropped[] = [];
   const adjusted = comps.filter(c => {
-    const delta = Math.abs(Math.log(c.adjusted_cents / c.price_cents));
+    const delta = c.gross ?? Math.abs(Math.log(c.adjusted_cents / c.price_cents));
     if (c.adjusted_cents <= 0 || !Number.isFinite(delta) || delta > params.adjustment_cut + Number.EPSILON) {
       dropped.push({ comp_id: c.comp_id, reason: 'adjustment' });
       return false;
@@ -201,8 +220,20 @@ function basis(comps: readonly (WeightedComp & AdjustedComp)[], params: Params) 
   }
 }
 
+/** D1 bracketing: 'up' when every comp had to be adjusted up (all worse than this item), 'down' when all down. */
+export function extrapolated(comps: readonly { net?: number }[]): 'up' | 'down' | null {
+  if (!comps.length) return null;
+  if (comps.every(c => (c.net ?? 0) > 1e-9)) return 'up';
+  if (comps.every(c => (c.net ?? 0) < -1e-9)) return 'down';
+  return null;
+}
+
 export function comparables(target: Target, candidates: readonly Comp[], as_of: string, params = DEFAULTS) {
-  const weighted = weigh(candidates, as_of, params).map(c => ({ ...c, adjusted_cents: adjust(c, target, params.timeIndex, params) }));
+  const weighted = weigh(candidates, as_of, params).map(c => {
+    const detail = adjustDetail(c, target, params.timeIndex, params);
+    // D1 w_adj: 1 for an exact match, 0.5 at the gross cap.
+    return { ...c, ...detail, w: c.w / (1 + detail.gross / params.adjustment_cut) };
+  });
   let selected = basis(target.site ? weighted.filter(c => c.site === target.site) : weighted, params);
   let ratio: SiteRatio | undefined;
   if (target.site && !sufficient(selected.comps, params)) {
@@ -220,6 +251,7 @@ export function comparables(target: Target, candidates: readonly Comp[], as_of: 
     comps: selected.comps, n_eff: selected.n_eff, level: selected.level,
     range: { q10: quantile(0.1, ratio?.q25 ?? 1), q50: quantile(0.5, ratio?.ratio ?? 1), q90: quantile(0.9, ratio?.q75 ?? 1) },
     dropped: selected.dropped,
+    extrapolated: extrapolated(selected.comps),
     state: sufficient(selected.comps, params) ? 'ok' as const : 'too_few' as const,
   };
 }

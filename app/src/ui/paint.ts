@@ -1,5 +1,7 @@
 // Color arithmetic the brand rules ask for, so no part mixes a color by eye.
-import { calm, color } from './tokens.generated';
+import { calm, color, colorDark } from './tokens.generated';
+
+const DARK_CARD = colorDark.surface;
 
 const channels = (hex: string) => {
   const h = hex.replace('#', '');
@@ -13,9 +15,15 @@ export function alpha(hex: string, a: number): string {
   return `#${hex.slice(1, 7)}${aa}`;
 }
 
-// A color mixed toward white by t (0 keeps it, 1 is white).
+// A color mixed toward white, the light --surface, by t (0 keeps it, 1 is white).
 export function towardWhite(hex: string, t: number): string {
-  const [r, g, b] = channels(hex).map(v => Math.round(v + (255 - v) * t));
+  return toward(hex, color.surface, t);
+}
+
+// A color mixed toward another by t (0 keeps it, 1 is the other).
+export function toward(hex: string, to: string, t: number): string {
+  const end = channels(to);
+  const [r, g, b] = channels(hex).map((v, i) => Math.round(v + (end[i] - v) * t));
   return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
 }
 
@@ -35,11 +43,17 @@ const STOPS: Record<Gradient, [string, string, string]> = {
   paid: [color.fieldPaid1, color.fieldPaid2, color.fieldPaid3],
 };
 
-// A state's three colors, each mixed toward white by (1 - u) x 58%, laid out the way --field-mesh lays out the field.
-// The tokens are not overridden in dark: a state gradient stays light, with black text (A13).
-export function stateGradient(kind: Gradient, hours: number | null) {
+// In dark the field is deep, the way Ben's dark Today reference draws the lead card (research/today/ben/today-v3-light-dark.png;
+// Ben 06:19: "recall what the dark mode agent was talking about ... what colors to use"). One cool trio for every state,
+// because a deep marigold, lime or peach is brown (U4): in dark the field says "this one first", and the tag says the state.
+// It is the dark --field itself, so there is one dark trio to keep.
+const DEEP: [string, string, string] = [colorDark.field1, colorDark.field2, colorDark.field3];
+
+// A state's three colors, each mixed toward the ground by (1 - u) x 58%, laid out the way --field-mesh lays out the field:
+// toward white in light, toward the dark card in dark.
+export function stateGradient(kind: Gradient, hours: number | null, scheme: 'light' | 'dark' = 'light') {
   const t = (1 - strength(hours)) * calm.max;
-  const [c1, c2, c3] = STOPS[kind].map(c => towardWhite(c, t));
+  const [c1, c2, c3] = scheme === 'dark' ? DEEP.map(c => toward(c, DARK_CARD, t)) : STOPS[kind].map(c => towardWhite(c, t));
   return {
     backgroundColor: c1,
     backgroundImage: `radial-gradient(at 30% 100%, ${c2}, ${alpha(c2, 0)} 60%), radial-gradient(at 100% 100%, ${c3}, ${alpha(c3, 0)} 65%)`,

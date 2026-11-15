@@ -1,0 +1,8 @@
+{
+ "_fixture": "synthetic, not recorded: no account is linked, the signed-in path and shape are unobserved",
+ "objects": [
+  { "id": "m1", "conversation_id": "c1", "product_id": 999002396, "sent_at": "2026-11-14T10:00:00Z", "from_me": false },
+  { "id": "m2", "conversation_id": "c1", "product_id": 999002396, "sent_at": "2026-11-14T10:05:00Z", "from_me": true }
+ ],
+ "page_info": { "has_more": false }
+}

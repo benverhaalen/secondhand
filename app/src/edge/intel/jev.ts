@@ -11,9 +11,10 @@ export interface JevChoiceQuestion { type: 'choice'; instructions: string; crite
 export type JevQuestions = Record<string, JevChoiceQuestion>;
 
 export type JevFailure = 'timeout' | 'http' | 'bad_response' | 'no_key';
-export type JevResult =
-  | { ok: true; answers: Record<string, unknown>; ms: number }
-  | { ok: false; reason: JevFailure; ms: number };
+type JevOutcome =
+  | { ok: true; answers: Record<string, unknown> }
+  | { ok: false; reason: JevFailure };
+export type JevResult = JevOutcome & { ms: number };
 
 export interface JevOptions { timeoutMs?: number; fetchImpl?: typeof fetch; log?: Log }
 
@@ -23,14 +24,14 @@ const fallbackLog = (): Log => (defaultLog ??= createLog({ src: 'edge', build: p
 export async function jevAsk(state: string | object, questions: JevQuestions, opts: JevOptions = {}): Promise<JevResult> {
   const { timeoutMs = JEV_BUDGET_MS, fetchImpl = globalThis.fetch, log = fallbackLog() } = opts;
   const started = performance.now();
-  const done = (r: Omit<JevResult, 'ms'>): JevResult => ({ ...r, ms: Math.round(performance.now() - started) }) as JevResult;
+  const done = (r: JevOutcome): JevResult => ({ ...r, ms: Math.round(performance.now() - started) });
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) return done({ ok: false, reason: 'no_key' });
   const ac = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
   // The race, not only the abort signal, enforces the budget: a fetch that ignores its signal still times out.
   const timedOut = new Promise<'timeout'>(res => { timer = setTimeout(() => { ac.abort(); res('timeout'); }, timeoutMs); });
-  const run = async (): Promise<Omit<JevResult, 'ms'>> => {
+  const run = async (): Promise<JevOutcome> => {
     try {
       const res = await fetchImpl(JEV_ENDPOINT, {
         method: 'POST',
@@ -52,7 +53,7 @@ export async function jevAsk(state: string | object, questions: JevQuestions, op
   return log.call('http', 'jev.decisions', { model: JEV_MODEL, heads: Object.keys(questions), state_chars: JSON.stringify(state).length, timeout_ms: timeoutMs },
     async () => {
       try {
-        const r = await Promise.race([run(), timedOut.then((): Omit<JevResult, 'ms'> => ({ ok: false, reason: 'timeout' }))]);
+        const r = await Promise.race([run(), timedOut.then((): JevOutcome => ({ ok: false, reason: 'timeout' }))]);
         return done(r);
       } finally { clearTimeout(timer); }
     },

@@ -154,3 +154,6 @@ Agreed by: Ben, on the layout decision card in the project thread. Changed: rese
 
 ## 2026-11-14: keep every feature in scope
 Agreed by: Ben. Source: [words.md](words.md#2026-11-14-scope). Changed: the concept brief stopped trimming features and now lists them in build order.
+
+## 2026-11-15: cross-listing starts on same take-home
+Agreed by: Ben. Source: [words.md](words.md#2026-11-15-a-new-seller-starts-on-same-take-home), [crosslist-pricing.md](../research/list/ben/crosslist-pricing.md). A new seller's items are priced so each site pays the same after fees. The seller can switch to same price, what each site pays, or your shop first, once for the account, and override it on one item.

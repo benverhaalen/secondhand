@@ -1053,6 +1053,29 @@ Ben, project chat and thread "Roll the UI system out everywhere", 2026-11-15, ti
 
 Used in: [.agents/ui-build/README.md](../.agents/ui-build/README.md) (the page contract, the method, the one intake, the hand-off rule), checks U6 and U7 in [.agents/checks/render.mjs](../.agents/checks/render.mjs), [.agents/vendor/](../.agents/vendor/).
 
+## 2026-11-15 the website: references, story, photography, signed-in web and the buy/sell toggle
+
+Ben, 04:32 UTC, thread "Design the secondhand website with me":
+> i want you to help me ideate on the website design. here are a few things. i have this folder of top to bottom websites. its super effective for looking at great sites (however its static) but its like 30+ images of great sites. each site has its own context about why they designed it in that way. how it conveys and storytells well.
+
+> part of the website might include defining a photography direction for the brand, especially considering who we are marketing towards, and knowing how to effectively tell a story in many mediums is something that can be really good. also using evidence, statistics, etc is really good
+
+> also considering sorta that this is about a hackathon too - but we are pitching this. also great web design and ui and optimal loading and super fast stuff is important and could be a little different compared to say an app.
+
+> the landing page and other miscellaneous pages that are unsigned in pages should all be about this. but then theres the signed in one that should function near identical to the app. but you need to lay it out as an expert web dev would. expert ui ux. for web. think about ways to translate but not lose anything. what features are lost. what features stay. like nate was thinking a toggle for selling or buying. but i want to know what you think.
+
+> using something like the image gen that is the one weve been using through open router over the one on gpt. choosing colors intently, transparency, what tabs, etc. making sure images look really realistic by providing really good reference images.
+
+> also creating other things with images that aren't photos too. or having app screenshots. a unique layout is central too.
+
+> i think the cleo reference is pretty close to what we design like. but its up to you about what you think in our specific situation for our purposes and how we tell the story. communicating the idea super easily.
+
+> understand how to write well and how to make an interactive website that isnt static and moves well and also serves the same functionalities as the app
+
+The board: https://pin.it/69cpIHqRl ("Landing pages", 35 pins). 25 are saved in the project files under secondhand-web/references/.
+
+Used in: the website proposal, https://claude.ai/artifact/QbFh2FStnWRPr1bgEk2dBg (*agent proposal* throughout).
+
 ## 2026-11-15 logs that can hill-climb speed and efficiency, the whole repo
 
 Ben, thread "Set up logging of everything", 04:36:
@@ -1071,6 +1094,27 @@ Nate, build session (orchestrator), 2026-11-14 about 23:20 Central, with a paste
 Ben, project chat, 2026-11-15 05:05 UTC.
 > i more liked the cleo ui how they presented it spatially, the photography direction, maybe less length though. i dont want it to be excessive. another thing, think and reason about product decisions and edge cases to consider when building. one that a mentor just brought up was what happens when two platforms buy at the same time. heres another concern. what happens when different sites pay out and take rake differently. also hopefully stuff like typos. so human error and being able to search to understand that. so like people when typing things out right end up possibly misspelling or not knowing what a product is. like they are selling a dead relatives or something. continue to extrapolate these and think of the issues in all those categories how people would possibly end up listing and accounting for that. also really understanding the audiences and the mediums of each. like each site has a different audience and different types of products and different goals from sellers and buyers. think of all these problems and possibly identify other ones. think about the most impressive ways to explain the app. and also the simplest way to pitch it too. also the future is important too. like scaling something like this. our future plans. and how this data we use is useful. we are also doing the databricks track too. but explaining really intutitively the complexities of how we do things and why and being able to answer questions. i want the website to explain things well. and also have those little pages most vibecoded sites disregard. continuing to think about edge cases. and the data on each platform and the audiences and everything else about it. there were concerns from the mentor about the ai image enhancement thing. so we can allow both ai enhancement and deterministic enhancement. and also thinking a lot a lot about the decision tree. creating a super magic way to just automatically list things. but thinking of all the different things and when things break. breaking the ai. and how we can end up telling the story and all the crazy crazy features we have and measuring them with numbers. possibly think about the logging or the poteto type skill for benchmarks or my project evidence skill and use those and think very deeply about how we could actually measure and use statistics to our advantage. planning out possible ways to benchmark in such a short amount of time. and utlizing numbers from our technologies too. also we are going to test personally. but thinking about what to show on each page. our features. our data. our sophisticated setup and how we architected everything.
 
+## 2026-11-15 judges and users, guarantees, buyer side, safety, approved messages, sale detection, where not to list, proving photo honesty, an FAQ
+Ben, project chat, 2026-11-15 05:18 UTC.
+> i did the actions secret. i really think we need to think about the problems and who is judging and or using our thing. think from reasoning about it all. worries. what we guarantee and how. things that are impressive to databricks too or just about the data side. also the ai side of things. also cost too. and then future business model and possible blockers to it all. some features i hope you didnt forget that i came up with. think about all the different things with an item. there are so many variables and different points. where is it listed, the photos, the description of it all, if its going to be shipped if its fine for pickup if that is good. also for the buyer side i feel like i havent talked as closely with you about all that - like all the buyer features and all the places those could break and what we do then. what we can control on our site vs not. refunds. like understanding what's out of our control. what matters on certain sites to credibility. managing automated messages and the right ui for all that. recommendations and best practices for meeting up places. where to meet up. when. try to keep people safe with the app. adding things to your calendar. i think you should be able to quickly answer questions with messages too in some way where you approve exact messages in a ui and you stay fully in the loop and can escalate and audit it all when necessary. i dont like the schedule setting decision because i feel like it ends up probably creating a lot of problems. also taking down posts too is an important feature. there is a lot a lot of edge cases that need to be covered in all this. and in a plan before we go present we should be able to answer most of them. also in the plans before its over we should create a pitch video. really continue thinking. also im not sure the mechanism nate has had for monitoring our own stuff. how we know when something has sold and if there are any proxies for it. and how say on depop my approved action can turn into an approved offer. ensuring a user can go audit wherever whenever from one app what is happening in the other apps. the ai should also suggest apps to maybe not list on. of course the user can if they want. but like a couch shouldn't be on depop. you need to understand the profile of the sales and the enviroment on the platforms so so so well. another thing is how do we prove the ai enhancement is not lying about photos. how do we prove it. is there any way to measure it or benchmark it. or just show it to a judge. we should def have an faq section. where people can learn more on the site.
+
+## 2026-11-15 the public site one section at a time, its purposes, the worries and the future
+Ben, project chat (relayed), 2026-11-15 05:28 UTC.
+> with the website i want to build it one section or interaction at a time with you especially the landing page. you know how websites are segmented out. you probably have a rough idea of the segments, but visually auditing and deciding different design decisions per. similar to how the dark mode previews that i liked were displayed and done. but per section of the website. could include what happens when you scroll. but doing it piece by piece in small steps at least at the start to get the primitives of the website design where they are ambigious down first then we can go faster on the next pages. but think effectively of the purpose of pages or sections. the purpose of the site (mainly just talking about the public side right now). there are a few different purposes. with such a new and oddly constructed and worrysome product such as this there are a lot of concerns across the board. also i want generally storytelling wise to think about the future. so recall if or as we scale these are the capabilities we have. ensure to display all the useful type features too.
+
+## 2026-11-15 the visitor's path, the first scroll, demos driven on mock data, impressive versus housekeeping, show versus tell
+Ben, project chat (relayed), 2026-11-15 05:32 UTC.
+> think of how a user navigates the site and the context they have on it in each respect. so they get on the site. they see our headline. what then. also i want the first scroll to have a really cool animation. also it should feature mock demos using the app when its fully built out. recall how we had my magic uw drive the product and use mock data when we were creating our demo video. this is how you should essentially use the product and coordinate movements and such. how to do iphone type demos and show functionality. also determining which features are features where someone is like this is a great and impressive product vs ones that are more housekeeping. like the onboarding, where you connect services - housekeeping. but the services we connect with - not housekeeping. how to show rather than tell and what the purpose is of showing vs telling. when we can use each well. how to best show in the impressive way. i think story telling doesnt have to use a specific persona or use case here. it should be general enough where people can see their own applications of how it applies to their life.
+
+## 2026-11-15 the hero: the line alone, ambient clothing motion, dark by default, the hands and the wordmark face on words
+Ben, thread "Design the secondhand website with me", 05:49 UTC, on board 1 (what the first screen shows besides the line).
+> i think 1. but i think there should be some sort of animation going on in the background. something ambient. ensure the user can immediately relate it to clothing. i think default should be the dark mode color scheme personally. really using the look from that one image i liked. also effectively using the hands and the wordmark font to highlight certain words
+
+Used in: [board 2](../brand/explore/web-home/boards/02-ambient/board.json).
+
+## 2026-11-15 the photo templates, demos that let the magic talk, and "monitors and manages markets for you"
+Ben, project chat, 06:01 UTC.
+> also did you ever fully flesh out the image creation thing. like for pants and sweatshirts and short sleeve and long sleeve clearly defining roughly what the image should look like when unwrinkled and what should be slide 1, slide 2, etc. and ensuring edge cases. defect photo is hard to do. where different graphics could be. how to effectively organize a slide of photos and generate them from not taking individual photos with the tool and then giving templates effectively to magically get each image beautified and perfected. ensure this capability on the backend actually works super well. also think of evidence to back the problem the best is just showing the magic of it. the different features and flows and letting the demos or the videos of them talk. us actually demoing them in the basement. try to make the demoing loops faster for website and app too. also think about how to visually convey how it works. use things like exa and firebase and treg x videos that they do to demo new features. here are some new notes second hand monitors and manages markets for you. explaining all our thought processes. official apis and when and how. how there is low risk on your end. an intelligence engine. more than just reselling clothes as we see this scale you can effectively create a way to price anything you own against the market and for the purpose you want.
 ## 2026-11-15 who judges it, guarantees, the buyer side, messages you approve, meetups, audit every site, and no fixed pickup schedule
 Ben, project chat, 2026-11-15 05:18 UTC.
 > i did the actions secret. i really think we need to think about the problems and who is judging and or using our thing. think from reasoning about it all. worries. what we guarantee and how. things that are impressive to databricks too or just about the data side. also the ai side of things. also cost too. and then future business model and possible blockers to it all. some features i hope you didnt forget that i came up with. think about all the different things with an item. there are so many variables and different points. where is it listed, the photos, the description of it all, if its going to be shipped if its fine for pickup if that is good. also for the buyer side i feel like i havent talked as closely with you about all that - like all the buyer features and all the places those could break and what we do then. what we can control on our site vs not. refunds. like understanding what's out of our control. what matters on certain sites to credibility. managing automated messages and the right ui for all that. recommendations and best practices for meeting up places. where to meet up. when. try to keep people safe with the app. adding things to your calendar. i think you should be able to quickly answer questions with messages too in some way where you approve exact messages in a ui and you stay fully in the loop and can escalate and audit it all when necessary. i dont like the schedule setting decision because i feel like it ends up probably creating a lot of problems. also taking down posts too is an important feature. there is a lot a lot of edge cases that need to be covered in all this. and in a plan before we go present we should be able to answer most of them. also in the plans before its over we should create a pitch video. really continue thinking. also im not sure the mechanism nate has had for monitoring our own stuff. how we know when something has sold and if there are any proxies for it. and how say on depop my approved action can turn into an approved offer. ensuring a user can go audit wherever whenever from one app what is happening in the other apps. the ai should also suggest apps to maybe not list on. of course the user can if they want. but like a couch shouldn't be on depop. you need to understand the profile of the sales and the enviroment on the platforms so so so well. another thing is how do we prove the ai enhancement is not lying about photos. how do we prove it. is there any way to measure it or benchmark it. or just show it to a judge. we should def have an faq section. where people can learn more on the site.
@@ -1104,6 +1148,48 @@ Ben, project chat, 05:37:
 
 Used in: [AGENTS.md](../AGENTS.md#how-to-work-here), [.agents/vendor/poteto/](../.agents/vendor/poteto/SOURCE.md), [.agents/skills/hillclimb](../.agents/skills/hillclimb/SKILL.md).
 
+## 2026-11-15 the hero: a blurred wall of many real things, the dap that opens into the wordmark, "see how it works"
+Ben, thread "Design the secondhand website with me", 07:07 UTC, on board 2.
+> a few updates, i think that the secondhand font should be for the second, 'secondhand' not the first. i think the button should say, see how it works. also i like the rail. but i think that it shouldn't just use my images, it should pull a bunch of different types of images across a few different types of things we want to sell. and then create a wall that sits behind the text. kind of blurred. could encorporate a very slow moving gradient that is very natural in movement. kind of like that site design reference. and then as you scroll down or hit the button the images kind of speed up and transition out. it should all be super natural. like how an expert professional motion designer would do it. pull actual images from actual things. different clothes items, shoes, furniture, airpods, etc. all different categories and a bunch of unique ones. another thing when you open the site, it should have the dap/handshake animation that opens into a transition into the secondhand logo too. so when you open the site its the dap and into the modified version of A i said. also i feel like having the items in the rail periodically and randomly switch out too. ensure you grab enough items of enough different types to not all make it look the same. could do this without needing to be logged into. but the items should have enough to not be apparent to the user immediately that things are repeating
+
+## 2026-11-15 the hero on every screen: one baseline for both faces, no period, a menu on phones, rounded store logos, the hand options
+Ben, thread "Design the secondhand website with me", 07:09 UTC.
+> also, the different font is aligned differently. and fits a little differently. also remove the period at the end of the hero phrase. also the top section on mobile should probably have like the collapsable thing because we are having different pages on our site. not just sign in. really ensure it looks great on mobile, ipad, computer, ensure to use professional principles for 'breaking' it. edge cases etc. all the logos of the stores should also be rounded like the app. also the hands on the sides of the secondhand wordmark help me decide them i think i told you to find a few different options with them.
+## 2026-11-15 what could dock us points, mitigated everywhere
+Ben, thread "Prepare the pitch, Q&A and video" (relayed), 2026-11-15 05:36 UTC.
+> there are also a lot of things that could 'dock us points' when being compared to other projects. the goal in our project and our pitch and our website and our demos is to mitigate each one and show that we have thoroughly thought about it
+
+Used in: [qa.md](qa.md#where-judges-dock-points).
+
+## 2026-11-15 a demo that stuns, science-fair judging, and claims that change how judges see it
+Ben, project chat (relayed), 2026-11-15 05:41 UTC.
+> also figuring out the ranking of demoing capabilities. where we can show it to anyone live and it works so well and so fast that we just stun everyone. its so polished and so finished that judges question how we did it in 24 hours. it looks so un-ai slop. also the website should use expert ui ux practices for being viewed on mobile. also say like app store coming soon or something. the hackathon judging works in a science fair style. its very similar to last year's judging. 6 get chosen as finalists, then the prizes get judged as a whole from those. i also want to jot down claims we can make about the thing to try and improve how they view it. like one is we applied to the app store. one is the actual deployed site. one is having a video. one is having a really really well written devpost. i mean considering we can only live demo the app we really need the written portions to convey its use and what it does super well and super easily. we need to be personable. the judges should see us as a breath of fresh air. think of all the unique engineering weve done. we can also pitch about thinking about costs too. data. how we have humans in the loop and use graphics and examples to show how extensively we have thought about this. really communicate how sophisticated the technology we are using is.
+
+Used in: [pitch.md](pitch.md#the-table-demo-science-fair-judging), [devpost.md](devpost.md).
+
+## 2026-11-15 both sides in the demo, why people want it, and free as the business model
+Ben, thread "Prepare the pitch, Q&A and video", 2026-11-15 05:43 UTC.
+> i think showing buying and selling - both sides to capture as much of the audience as possible. we should know why people would die to download this. you have all this stuff. this is the easiest way to sell it, optimized to save you the most time and get you the most money, as cheaply as possible. and its completely free because this is how we propose this is a viable business model because of all the other business models. market research. where our market reach could be. where our market doesnt reach. here is what we need to make this viable. here are the hurdles we may run into. keeping it extremely honest
+
+Used in: [business.md](business.md), [pitch.md](pitch.md#what-to-show-ranked).
+
+## 2026-11-15 each audience, databricks depth, quant pricing, hot in context, and depop import
+Ben, project chat (relayed), 2026-11-15 05:47 UTC.
+> another point that can really help is how sophisticated we used databricks. think of software engineers and data scientists and product managers and solutions architects and recruiters who are looking at our product. what do each one of those audiences love to see we think like. how do we pitch this product live to be able to show the medium off super well. both the buying and selling features. from start to end. the most impressive thing is a seamless thing that works flawlessly. how as it scales we can effectively price literally any product along the market and heres how we propose using quant techniques to do so. we could possibly even implement this too. also the ai running its own business thing. like it can track and understand all the levers that increase how a post is doing. if its hot. what does that mean. its all in context. it means different things to different people. i use it on my actual depop account. another feature to create, i can use my existing depop listings and automated cross list them on all these platforms automated to them. also the settings should have app defaults and permission defaults too
+
+Used in: [showcase.md](showcase.md).
+
+## 2026-11-15 stop using my personal depop
+Ben, project chat (relayed), 2026-11-15 05:54 UTC.
+> hey stop using my personal dpop
+
+Used in: [showcase.md](showcase.md#6-bringing-existing-depop-listings-over).
+
+## 2026-11-15 show the magic: clips, basement demos, faster loops, and the intelligence engine
+Ben, project chat (relayed), 2026-11-15 06:01 UTC.
+> also did you ever fully flesh out the image creation thing. like for pants and sweatshirts and short sleeve and long sleeve clearly defining roughly what the image should look like when unwrinkled and what should be slide 1, slide 2, etc. and ensuring edge cases. defect photo is hard to do. where different graphics could be. how to effectively organize a slide of photos and generate them from not taking individual photos with the tool and then giving templates effectively to magically get each image beautified and perfected. ensure this capability on the backend actually works super well. also think of evidence to back the problem the best is just showing the magic of it. the different features and flows and letting the demos or the videos of them talk. us actually demoing them in the basement. try to make the demoing loops faster for website and app too. also think about how to visually convey how it works. use things like exa and firebase and treg x videos that they do to demo new features. here are some new notes second hand monitors and manages markets for you. explaining all our thought processes. official apis and when and how. how there is low risk on your end. an intelligence engine. more than just reselling clothes as we see this scale you can effectively create a way to price anything you own against the market and for the purpose you want.
+
+Used in: [demo-reel.md](demo-reel.md), [pitch.md](pitch.md#the-new-framing-it-watches-and-manages-your-markets).
 ## 2026-11-15 cross-list existing depop listings and price any product with quant techniques
 
 Ben, project chat, 05:47 UTC.
@@ -1124,6 +1210,160 @@ Ben, thread "Roll the UI system out everywhere", 06:19 UTC, on the first gallery
 Ben, same thread, 06:21 UTC.
 > also sometimes the gradient at the top of the screen is there or isnt there yk
 
+## 2026-11-15 the theme: let's dig in
+Ben, project chat (relayed), 2026-11-15 06:35 UTC.
+> also idk if anyone said this: but the theme is "Let's dig in" inspired by the book or essay from the uw madison person. but they talk about different ways to interpret this. so read it and think about the different ways to really tailor to this prompt. brainstorm the different ways where what we are doing is special. we should really have a section on whatever we do about this and tailor our presentation or pitch to judges using it.
+
+Used in: [theme.md](theme.md), [pitch.md](pitch.md#the-theme-lets-dig-in), [devpost.md](devpost.md).
+
+## 2026-11-15 it's always you, security, open source, and show it working first
+Ben, project chat (relayed), 2026-11-15 06:40 UTC.
+> also pitching about ai impersonation. its always you. also think about how people feel about ai. like its scary. let it help you. not impersonate you. not take you out of it. whether your in an office or just reselling your clothes on the internet its always good to have a human in the loop. some phrase like that, engineered in a way. advertise open source too in a way. can also talk about we are built on databricks security and how. even third party ai providers dont see your credentials. i confirm that is the essay. like there are a lot of ways we digged into this. used ai to solve problems in a unique way. dig deep into your closet. like think of all the ways and angles to take it. could be how we engineered it sophistically. i think in the pitch its probably good to obviously show how well it works and run through demos either live or recorded and actual ones and make sure its clear that its an actual working product not a staged demo. and then dive into the engineering behind everything.
+
+Used in: [pitch.md](pitch.md#its-always-you-ai-that-helps-you-not-ai-that-is-you), [pitch.md, security](pitch.md#security-and-open-source), [pitch.md, three minutes](pitch.md#the-three-minute-version-with-the-demo), [theme.md](theme.md), [devpost.md](devpost.md).
 ## 2026-11-15 a sale and a match ping at once, replies start as drafts, and agents build the better way
 Ben, thread "Map every feature and page so the build can start", 06:40 UTC, answering "Should a sale, and a watched item under your price, notify you right away?" and "Replies starting as drafts changes Nate's rule".
 > 1. yes. 2. yes do that. ensure the ui building completely understands all this and the ui system. and overall across all agents when they think theres a better way to do things for our purposes and constitution then do it. anything i have edit wise gets applied too.
+
+## 2026-11-15 you send it, and if a buyer asks it says so
+Ben, project chat (relayed), 2026-11-15 06:44 UTC, answering "Should automatic replies say they were sent with secondhand?"
+> no i mean if the user manually reads and chooses to send, the user then sends it. if the buyer asks then it can say
+
+Used in: [pitch.md](pitch.md#its-always-you-ai-that-helps-you-not-ai-that-is-you), [spec/features/messages.md](../spec/features/messages.md).
+
+## 2026-11-15 what did we do that nobody else has
+Ben, project chat (relayed), 2026-11-15 06:44 UTC.
+> also did you figure out any super unique ways that we ended up solving problems. ways that nobody really has done things before or a super unique way and why and how to exemplify that in the pitch or website etc
+
+Used in: [unique.md](unique.md), [pitch.md](pitch.md#whats-new-three-things-we-havent-seen-anyone-else-do), [devpost.md](devpost.md).
+## 2026-11-15 adjacent appraisal, risk and why this price
+
+Ben, thread "Frame the problems and beat competitors", 06:10 UTC.
+> i want you to help me work through the difference between actual problems. we can tell the value of the brand itself. say the nike brand adds x value. we can then tell those brands unique insights. also rarity. collect things for the brands. get the user the cheapest items. track earnings. maximize for the user's goals. also think about how we can benchmark against things like semrush serp where companies like salesforce (going and using things that these companies pay for - so find how much all these companies where the sponsors are possibly spending money) dupe.com vs thriftx. we compare to each of these. we say how we are different. the competitors. what we do. quantify it. show why our data is better. show how - not just say how - at scale we can provide insane value to businesses and consumers. also can talk about and quantify how this helps the earth. encouraging secondhand marketplace and everything happens. break all this down into like a few separate problems or find how our competitors pitch. can pitch both to consumers and to value to businesses. researching and using rdd and iae about finding all our consumers. across all ranges of products. its not just a secondhand site for consumers. can really expand our pitch over time. for example start small and really just keep wowing and wowing and wowing over time. use evidence cite it. be honest but confident about the possibility of scaling over time. how at a large scale we might be able to partner with these selling sites too? im not really sure to be honest. ok use rdd to seeded looped research our competitors. or other similar things. these are ideas. i want your opinion. you know the goals. we need to be humble and honest too. i think ive given you an alright idea on the problem. how consumers find value. can we go through all the problems and see whether or not someone would ask them. the ones you came up with.
+
+Ben, same thread, 06:32 UTC.
+> nate told me about it idk its fine if you cant get it. is there anything from this research where we can find the underlying mechanisms for how these all work and then possibly use them to improve our product? we can say our data collection is better using examples when we start to test
+
+Ben, same thread, 06:43 UTC.
+> what about what we do that we know competitors dont. how we engineered it better and can do more things and its all in one. maybe use rdd and iae and adjacent research think about insurance and other adjacent fields about how they appraise and see if based on our information there are any mechanisms to improve accuracy
+
+Ben, project chat, 06:46 UTC.
+> also see if insurance or quant or other appraisal and market type adjacent fields have any good mechanisms for evaluating certain things that we could take into account here. ways to quantify the risk of everything we are doing. or like reasons why we make decisions to price at whatever based on similar products and whats sold etc.
+
+Ben, thread "Frame the problems and beat competitors", 06:54 UTC, on the proposals in [risk-and-reconciliation.md](../research/price/ben/risk-and-reconciliation.md).
+> i like these apply them to the logic or the plans of logic of how the entire product should work
+
+Used in: [money D1, D2, D5, D6, D12, D13](../spec/determinations/money.md), [managing-and-buyers cards 17 and 18](../spec/determinations/managing-and-buyers.md#17-whether-an-account-is-healthy-or-at-risk), [market-insight M10](../spec/determinations/market-insight.md#m10-depreciation-by-category-and-brand), [appraise](../spec/features/appraise.md), [capture-shots](../spec/determinations/capture-shots.md).
+## 2026-11-15 cross-listing prices are a choice, the reason in words first
+
+Ben, thread "Cross-list Depop listings and price with quant", 06:51 UTC.
+> think about what a user would want. like different sites have different prices where it sells at. how does a user decide what they want with crosslisting. like do they want to sell it at a certain price no matter what. some price will be the highest some price will be the lowest and how do you navigate that. do you let the user sell to get the same profit everywhere. think of all the presets. think of all the reasons someone might sell and conflicting reasons. like should you truthfully price or should you keep the same price across platforms for what you get in return etc. i think the user should be able to choose just need to understand what they would want to do you know. maybe use a bit of research to help solve this. this is an ambiguous problem and use rdd and possible similar ways where a generalized problem was solved to try and solve it. i think there probably isnt one concrete answer to all this and it should be some sort of feature in it
+
+Ben, project chat, 06:53 UTC.
+> i think also you dont want to make it a quantitative thing. but also you can see the reasoning as to why we think this. maybe take rdd and iae from adjacent oss projects with agents doing things. strategically understanding the different levers a user might want.
+
+Ben, project chat, 06:53 UTC.
+> like the user should in plain language be able to understand the reasoning and can then see numbers if need be
+
+Used in: [research/list/ben/crosslist-pricing.md](../research/list/ben/crosslist-pricing.md), `SPREADS` in app/src/engines/listing/crosslist.ts.
+
+## 2026-11-15 a pitch constitution, ambiguous problems, and the judges' own logic
+Ben, project chat (relayed), 2026-11-15 06:59 UTC.
+> go through and find a bunch of ambigious problems that need solving with logic and how the product is made - similar to the cross posting thing. we have a lot of messy problems and places where this can fail and we need to have an answer about how we respond to all of them. so find them and use rdd research or iae and find adjacent fields. also consider the crowd in the pitch. without getting too specific or saying directly how to think about it in an insurance lens, our example should explain everything in a way where a guy whos worked in insurance his whole life kinda gets the logic. or databricks. or salesforce. but like making it super implicit. hidden in a way. but pulling from all these domains of the judges and explaining it in ways that make sense to them super easily. and showing we really thought through this problem and really have conviction about its usecase. i do worry that there is almost too many features to state all out loud and the process of thinking we went with building it is super important to how we explain it. we want to show that we think like a guy the companies need to hire. all implicit. maybe create a pitch constitution and build it out. like really should outline the multiple things we have and the why. understanding what i want out of this not what i say.
+
+Used in: [pitch-constitution.md](pitch-constitution.md), [pitch.md](pitch.md#the-three-minute-version-with-the-demo), [devpost.md](devpost.md).
+Used in: [spec/hard-calls.md](../spec/hard-calls.md), [hard-calls-references.md](../research/cross-cutting/ben/hard-calls-references.md), and on the pitch thread's branch, pitch-constitution.md.
+## 2026-11-15 a new seller starts on same take-home
+
+Ben, thread "Cross-list Depop listings and price with quant", 07:00 UTC, tapped on a decision card. The question: "Which cross-listing price rule should a new seller start on?" The option he chose:
+> Same take-home: Default is same money everywhere; seller can switch rule once for the account and override per item.
+
+Used in: [decisions.md](decisions.md#2026-11-15-cross-listing-starts-on-same-take-home), `SPREADS` in app/src/engines/listing/crosslist.ts.
+
+## 2026-11-15 nate benchmark our intelligence engines against the others in the open
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15, early morning Central.
+> what is thriftx, a repo? I want to find things to benchmark our intelligence engines against, things to really show on our website how we are more reliable, accurate, and credible than these other systems. don't do just because of the eval for fact based pricing and such, but the swath of data that even paid enterprise sources don't. If there aren't things you can find, then list everything every competitor does, and we'll find aspects to what we can beat them on
+
+## 2026-11-15 nate show the benchmark as amounts, not tables of checks and crosses
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15.
+> exemplify and take reference from other public benchmarks and products that are of similar nature and compete, what do they show, tables with x's and check marks? we dont want that when it doesnt show enough, we want amount of items compared graphically shown, amount of time, price, accuracy or capability could be the x's and checkmarks
+
+## 2026-11-15 nate write the benchmark up in full and push it
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15.
+> write up a full md detailing it and push it in the repo
+
+## 2026-11-15 nate the Mac as extra compute, Claude driving here and Codex there, and no more crashes
+Nate, build session (orchestrator), 2026-11-15 between about 00:10 and 01:30 Central, as the Mac Studio came online over Tailscale. Separate messages.
+> Lets have you though finish what was paused. And fully prepare all streams at a good point to then get it up. You can even copy everything currently local if you want and get everything up, using it as an extra machine for compute and testing and such. Of course update things as you see fit
+
+> ensure codex is up to date, and our config is pristine, no biggie if not just port what works and ensure it is even base codex with the necessary skills and optimized token spend per task
+
+> I would say one problem is none of your streams on this device finished, or at least none I can see. I would check on these, you can still leverage this for main development and pass bulk huge tests and running sessions onto that
+
+> this node issue is something wrong with what or how we run what we do. Its crashing on my computer and takes up so much memory on my mac
+
+> review through everything, now you can also clear up the stale streams like stream 1, 12, 13, 10 that all stopped
+
+> Lets check through real quick, Ill sign into claude on mac, ideally claude here, codex there
+
+> Utilize the mac to also run tests, utilize runs of the browser and building harnesses, you can use claude, port over the full config for this project and such, its however you feel best to perform and execute it very well
+
+> ensure we continue focused development, planning, and orchestration driven by you claude on this computer
+
+> you can update and utilize docker, take advantage of the ram, see all aspects such compute can aid us in performance and efficiency when building, but dont let the fact that the other device isn't fully configured out to affect how we develop, how much we spend, it should optimally follow how you prompt and instruct it
+
+> Now that we fixed the crash, ensure it doesnt happen again and perhaps push further now to handle more, not of course so much that it crashes either this computer or the mac but you understand how to effectively dispatch.
+
+## 2026-11-15 deep teal lead card in dark
+
+Ben, thread "Roll the UI system out everywhere", 07:10 UTC, tapped on a decision card after pointing back to his dark Today reference (research/today/ben/today-v3-light-dark.png). The question: "Make the lead card deep teal in dark mode, like your dark reference?" The option he chose:
+> Deep teal in dark: The lead card in dark goes deep teal with light text, as in the render. I change the brand rule and its check to match.
+
+Used in: [brand/constitution.md](../brand/constitution.md) Art. 5, State gradients rule 3; ledger A13; `stateGradient` in app/src/ui/paint.ts; `stateOf` in .agents/checks/render.mjs.
+## 2026-11-15 the lower tiers pile and fan out, and the top of Today always shows a flattering number
+
+Ben, 07:12, on the redone Today: "also, i think this is when you should use the collapsable pile where they are layered and an animation expands them. also ensure the actual app knows the top thing should be the most flattering metric. or a flattering metric. say theres zero sales. say potential money you could earn. say people who saw your listing. likes. updates from last time are definitely best but you dont always have updates. what do you say when nothings gone on yet."
+
+## 2026-11-15 proof without sales
+Ben, project chat (relayed), 2026-11-15 07:15 UTC.
+> theres a problem of how do we show or explain why our thing works and convince someone that it would get them sales effectively if we have no proof of sales or any of this because we are in a 24hr hackthon. brainstorm. see if rdd adjacent research could be helpful at all. how do we do our best to prove logic. and use comparison too.
+
+Used in: [proof-without-sales.md](proof-without-sales.md), [pitch.md](pitch.md#proof-without-sales), [qa.md](qa.md).
+
+## 2026-11-15 everything goes in the repo, and Nate gets the packets he needs
+
+Ben, project chat, 07:14 UTC.
+> ensure all information is continually added to the repo and that nate gets packets that he might need
+
+Used in: [research/cross-cutting/ben/market-and-competitors.md](../research/cross-cutting/ben/market-and-competitors.md), [packet 54](../.agents/team/packets/price/54-least-adjusted-comps-and-risk.md).
+## 2026-11-15 everything goes into the repo, and nate gets the packets he needs
+
+Ben, project chat, 07:14:
+> ensure all information is continually added to the repo and that nate gets packets that he might need
+
+Used in: [AGENTS.md](../AGENTS.md#how-to-work-here).
+
+Note, 07:18 UTC: the market research named in the 07:14 "Used in" line moved to [product/pitch/market.md](pitch/market.md); the old path keeps a pointer.
+
+## 2026-11-15 a backtest that flatters truthfully, seasons and waves, and merge to main
+
+Ben, project chat, 07:18 UTC.
+> whenever i have a decision to make bring it here essentially. also considering a backtest, how would you set this up in a flattering but truthful way. like average price changes over season. we could potentially look up general trends and possible spikes in either buying or sales on the resale market. i feel like it goes in waves. and we can explain super well and intuitively to the user when these things happen. some could be dates too. see if theres any rdd for this. for our market we are trying to predict. things that are predictable as humans are relatively predictable. merge all prs get them onto main why havent you been doing this
+
+Used in (07:18 entry): [seasons-events-and-a-fair-backtest.md](../research/price/ben/seasons-events-and-a-fair-backtest.md), [money D6](../spec/determinations/money.md#d6-range-calibration-and-display-state) steps 6, 8 and 9, [market-insight M12](../spec/determinations/market-insight.md#m12-seasonality).
+
+## 2026-11-15 the backtest proves it works now and is where we tune, and trends reach past resale
+
+Ben, project chat (relayed), about 07:20 UTC.
+> also design the test to be fairly easy to conduct. choose the conditions, the sites, time period, products, but also dont limit yourself. i dont want to backtest yet i want to research any research that suggests trends we can use to improve our prediction models. think of any data we collect and how that correlates with the outcome we want
+
+Ben, project chat (relayed), about 07:21 UTC.
+> but also think and debate and possibly use research or applicable skills or rea at all knowing the data and the things that matter about accurate predictions and what metric we can use to prove our thing works. also tuning our algorithm. but backtesting yes. help design it well. consider its purpose and we need to defend and explain it well.
+
+Ben, project chat, 07:27 UTC.
+> the backtest should both test if our system works now as well as serve as a way to tune our model without overfitting. we can also use research and rdd and iae and theories if we get an interesting model output. but using backtest(s). tell me all the decisions youd make and why. what numbers look best for a backtest and designing a test to get statistics that are best. tell me what you think are the best statistics to prove what people have no clue about with our project. proof that our process works and that you should download and that our experiment was actually good. there could be experiment design or backtest etc skills. how would an expert designer and expert in this field understand the actual problem. what i want not what i say. and really well design this problem to create a credible but also great backtest. also a few different tests or a test that tests a lot of dimensions. and in a way where we can tune and test across categories etc.
+
+Ben, pitch thread, 07:28 UTC.
+> but also not just secondhand but general buying trends in the places where the products that relate to us are. supply and demand. donating times. when people donate vs buy new etc.
+
+Used in: [spec/plans/backtest/plan.md](../spec/plans/backtest/plan.md), [what-predicts-price-and-speed.md](../research/price/ben/what-predicts-price-and-speed.md).

@@ -51,7 +51,7 @@ Two rules hold for every card:
 
 **Sources and weights**
 
-Weight of comp i: `w_i = w_type x w_match x w_age x w_extract`. All numbers are starting values to tune on the D6 backtest.
+Weight of comp i: `w_i = w_type x w_match x w_age x w_extract x w_adj`. All numbers are starting values to tune on the D6 backtest.
 
 | Source | Contributes | Weight | Why that weight |
 |---|---|---|---|
@@ -81,6 +81,12 @@ Weight of comp i: `w_i = w_type x w_match x w_age x w_extract`. All numbers are 
 | marketplace structured field | 0.9 |
 | inferred from photo or text by a model | 0.7 |
 
+| How much the comp had to be adjusted (D2, D3) | w_adj |
+|---|---|
+| Gross adjustment `G_i` = the sum of `|ln factor|` over every D2 and D3 adjustment, each counted as a positive number (the Best Offer correction fixes the sold price and is not counted) | `1 / (1 + G_i / ln 1.25)`: 1 for an exact match, 0.5 at the step 4 cap (*agent proposal*, starting form) |
+
+Appraisers give the most weight to the sales that needed the least adjustment, and count gross adjustment (the sum of absolute adjustments), because two large adjustments that cancel still mean a weak match: "A sale with small gross and net adjustments usually deserves more weight than one with a 35% gross adjustment package" (*observed*, [risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md); Ben approved applying it, [words](../../product/words.md#2026-11-15-adjacent-appraisal-risk-and-why-this-price)). The divisor is scaled to our own cap so the weight spans 1 to 0.5 over the comps we keep; an unscaled `1 / (1 + G_i)` would move a kept comp by at most 18% (*inferred*). The backtest in Check later decides whether it stays.
+
 **One rule per quantity** (*agent proposal*; this card owns these four, and [market-insight.md](market-insight.md), [data.md](../features/data.md) and [price.md](../features/price.md) link here):
 - Site weight: every site's sold row weighs w_type 1.0 (eBay, Mercari, Depop alike); our own orders 1.2. A site whose sold price is less certain is handled by w_extract and the Best Offer row, not by a lower site weight.
 - Sold against ask: an ask weighs 0 for value; it enters only the D5 cap and D10.
@@ -90,16 +96,17 @@ Weight of comp i: `w_i = w_type x w_match x w_age x w_extract`. All numbers are 
 **Method**
 1. Retrieve candidates (model step: the embedding and the comp-text extractor, Claude Haiku 5.5 per [price.md](../features/price.md)). Filter by category and hard attributes, then rank by keyword plus embedding match ([valuation-engine.md](../../research/price/ben/valuation-engine.md) section 2).
 2. Drop junk (arithmetic on extracted flags): for parts, broken (unless the item is), lot, reproduction, the item's own listing, and duplicates or relists of one item by `fingerprint`.
-3. Back off: start at the exact level. Move one level coarser while the effective count `n_eff = (sum w)^2 / sum w^2` is under 6 or there are fewer than 2 sold in 90 days.
-4. Adjust each comp with [D2](#d2-condition-variant-completeness-and-size-adjustment) and [D3](#d3-time-adjustment). Drop a comp whose total adjustment `|ln(adjusted / sold)|` exceeds ln(1.25).
+3. Back off: start at the exact level. The step 4 adjustments are computed first, so `w_adj` is known here; the drop in step 4 still applies. Move one level coarser while the effective count `n_eff = (sum w)^2 / sum w^2` is under 6 or there are fewer than 2 sold in 90 days.
+4. Adjust each comp with [D2](#d2-condition-variant-completeness-and-size-adjustment) and [D3](#d3-time-adjustment). Drop a comp whose gross adjustment `G_i` exceeds ln(1.25). The cap is on gross, not net, so offsetting adjustments cannot hide a poor match (the mortgage-appraisal guide of 25% gross, [adjacent-valuation.md](../../research/price/ben/adjacent-valuation.md); starting value).
 5. Drop outliers: `|ln adjusted - median ln adjusted| > 3 x 1.4826 x MAD`.
 6. Shown set: the top 3 to 8 by `w_i`. The full set feeds D5.
+7. Bracketing (arithmetic): over every kept comp, sum its D2 adjustments only (condition, variant, completeness, size). The D3 time adjustment moves every comp the same way, so it is left out. If every comp moved up (all worse than this item), mark the set `extrapolated: up`; if every one moved down, `extrapolated: down`. The item then lies outside what the sales show, and D5 widens that side ([D5](#d5-fair-value-range-overall-and-per-site) step 3). Appraisers require the value to sit "within the range of the adjusted sales price of the comparables" (*observed*, [risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md)); applying that to the item's features rather than its final value is our reading (*inferred*).
 
 **Why this method**: it is the appraiser's sales-comparison approach: close, recent, adjusted sales, written out. MMR does the same with recency weighting and an abstain rule (*observed*, [adjacent-valuation.md](../../research/price/ben/adjacent-valuation.md)). The usual alternative is a pure regression over all listings, which is harder to explain to the person and gives no shown evidence. Here the regression comes later (D5) and uses these comps as features (*inferred*). Exponential decay is chosen over a hard 90-day window so that one old sale does not count as much as a new one at the window's edge (*inferred*).
 
 **When it is not shown**: at the family level with `n_eff < 6`, or with fewer than 2 sold in 90 days, the basis is thin. A thin basis first starts a `gather_request` to the intelligence engine ([intelligence-api §3.5](../engines/intelligence-api.md#35-gathering-more)), which widens the search as a background job. Only if gathering still leaves it thin is the result `too_few`: the person then sees "Not enough sales to price this yet" and the nearest coarser band labelled as such, plus Deep research.
 
-**How it is explained**: "Based on 14 sales, last 90 days." Tap: each comp with its photo, site, date, sold or asking, the adjustments written out, and its weight shown as "counts a lot", "counts some" or "counts a little".
+**How it is explained**: "Based on 14 sales, last 90 days." Tap: each comp with its photo, site, date, sold or asking, the adjustments written out, and its weight shown as "counts a lot", "counts some" or "counts a little". The first line under the price is one reconciliation sentence: which sales counted most and why, for example "Most weight on the 3 that needed the least adjustment ($44, $47, $50)". When the set is `extrapolated: up`: "Few sales were this good; the top of the range is less sure." The weights are shown so the price can be recomputed from them (appraisers write weights out so "a reviewer can replicate your steps", *observed*, [risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md)).
 
 **Speed**: candidate sets and weights are kept ready per `product_id` and refreshed when new comps land. Only the person's own item adjustments run on demand.
 
@@ -118,7 +125,7 @@ Weight of comp i: `w_i = w_type x w_match x w_age x w_extract`. All numbers are 
 | Parent-category fit | a fallback coefficient | 3 | more data, less specific |
 | Starting priors (no fit yet) | below | 4 | placeholders, to be replaced |
 
-Starting condition priors relative to Good. These are *asserted* placeholders, to be overwritten by the fit: new with tags 1.35, new without tags 1.20, excellent 1.10, good 1.00, fair 0.75, for parts 0.35. Completeness priors: original box missing 0.90 for sneakers and electronics, and a missing charger or accessory 0.85. Size: no prior; it comes from the fit only, because it varies by category and gender.
+Starting condition priors relative to Good. These are *asserted* placeholders, to be overwritten by the fit: new with tags 1.35, new without tags 1.20, excellent 1.10, good 1.00, fair 0.75, for parts 0.35. Completeness priors: original box missing 0.90 for sneakers and electronics, and a missing charger or accessory 0.85. Function priors for electronics and appliances, as the attribute `works`: `verified` (the power-on clip or the screen-on shot) 1.00, `said` (the person says so) 0.92, `unknown` 0.80, `not working` priced as for parts. Pawn shops lower offers for items that don't work or are incomplete (*asserted*, a shop's own figures, direction only, [risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md)); these are placeholders for the paired-sales fit like the rest. Size: no prior; it comes from the fit only, because it varies by category and gender.
 
 **Method** (arithmetic after extraction)
 1. Model step: the extractor gives condition grade, variant, completeness flags and size for the item and for every comp, in one schema.
@@ -127,9 +134,9 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 4. `adjusted = sold x factor x time_factor` (D3). Each step is written out: "+10% for better condition".
 5. Exposed per field (*agent proposal*): for every `requirement` field of the item's kind, D2 publishes its `beta_a` per value with `n_a` and the rank it came from (paired, category, parent, prior), versioned with the nightly fit. The `requirement_fold` challenger reads these as the value effect of each field ([fields-by-kind](fields-by-kind.md)); D2 does not rank fields itself.
 
-**Why this method**: shrinking a category estimate toward its parent is the empirical-Bayes answer to thin categories (*inferred*). It keeps one sparse category from producing a wild factor. The alternative is a fixed condition table for everything. It is simpler, but condition premiums differ by category (new-with-tags matters more in fashion than in tools), so a learned factor with a shrinkage fallback is better (*inferred*). The 25% total cap in D1 limits damage from a wrong factor (*asserted* real-estate heuristic in [valuation-engine.md](../../research/price/ben/valuation-engine.md)).
+**Why this method**: shrinking a category estimate toward its parent is the empirical-Bayes answer to thin categories (*inferred*). It keeps one sparse category from producing a wild factor. The alternative is a fixed condition table for everything. It is simpler, but condition premiums differ by category (new-with-tags matters more in fashion than in tools), so a learned factor with a shrinkage fallback is better (*inferred*). The 25% gross cap in D1 limits damage from a wrong factor (*asserted* real-estate heuristic in [valuation-engine.md](../../research/price/ben/valuation-engine.md)).
 
-**When it is not shown**: a comp needing more than 25% total adjustment is dropped (D1). If the item's own condition is unresolved, the range is computed for each candidate grade and the next-question card asks for it ([valuation-engine.md](../../research/price/ben/valuation-engine.md) section 5).
+**When it is not shown**: a comp needing more than 25% gross adjustment (D1 step 4) is dropped. If the item's own condition is unresolved, the range is computed for each candidate grade and the next-question card asks for it ([valuation-engine.md](../../research/price/ben/valuation-engine.md) section 5).
 
 **How it is explained**: "This one sold for $40; yours has its box, so we count it as $44." Tap: the factor and the number of paired sales behind it.
 
@@ -149,7 +156,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 | Month effects from the D2 hedonic fit | the category index | 2 | uses all sales |
 | None (fewer than 30 pairs and 200 sales) | factor 1, rely on D1 decay | 3 | no evidence, no adjustment |
 
-**Method**: `I_cat(m)` is a monthly index, smoothed with a 3-month centred mean. `time_factor = I_cat(now) / I_cat(month of sale)`, capped at 0.8 to 1.25. The trend axis in [score.md](../features/score.md) reads the 30-day drift of the same index.
+**Method**: `I_cat(m)` is a monthly index, smoothed with a 3-month centred mean. `time_factor = I_cat(now) / I_cat(month of sale)`, capped at 0.8 to 1.25. Where [M12](market-insight.md#m12-seasonality) shows a season or a dated event for the category, the factor is also moved to the expected sale date (today plus the D11 median time to sale): `x S_cat(expected sale date) / S_cat(today)`, inside the same cap (*agent proposal*, [seasons-events-and-a-fair-backtest.md](../../research/price/ben/seasons-events-and-a-fair-backtest.md)). The trend axis in [score.md](../features/score.md) reads the 30-day drift of the same index.
 
 **Why this method**: hype and season move resale prices, so an old comp needs moving forward rather than only down-weighting (*inferred*). A repeat-sales index is the published way to separate price change from quality mix (*observed* Case-Shiller). The alternative, a time feature inside the quantile model, would work but cannot be written out per comp.
 
@@ -194,9 +201,10 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 **Method**
 1. Model step (a trained tabular model, deterministic at inference): LightGBM quantile heads q10, q50 and q90 with a site feature ([price.md](../features/price.md)). Per site, set site = s. Overall, set site missing (the model's missing branch learns the pooled answer).
 2. Conformal step, arithmetic: [D6](#d6-range-calibration-and-display-state) widens or narrows by `Q_g`: `low = q10 - Q_g`, `high = q90 + Q_g`.
-3. Ask cap: when the item is new with tags, `high <= min(lowest live ask for the same product and condition, retail D7 price new today)`. A buyer can buy the same thing for that.
-4. Before the model is trained (cold start): weighted quantiles p10 and p90 of the adjusted comps, widened by the parent's `Q_g`, with state "not checked yet".
-5. Round to whole dollars; net ranges come from [D9](#d9-what-you-keep-per-site).
+3. Bracketing: when D1 marks the set `extrapolated: up`, raise `high` by the parent group's `Q_g` and label that side "less sure"; `extrapolated: down` widens `low` the same way (*agent proposal*, starting rule, checked in D6 by the coverage of extrapolated sets alone).
+4. Ask cap: when the item is new with tags, `high <= min(lowest live ask for the same product and condition, retail D7 price new today)`. A buyer can buy the same thing for that. The cap applies after the widening.
+5. Before the model is trained (cold start): weighted quantiles p10 and p90 of the adjusted comps, widened by the parent's `Q_g` and by step 3, with state "not checked yet".
+6. Round to whole dollars; net ranges come from [D9](#d9-what-you-keep-per-site).
 
 **Why this method**: weighted quantiles of comps describe the spread of comps, not the error of a prediction for a new item. The one public tool measured at 75.3% of 81 in a range meant to hold 8 in 10, and its own earlier range from "measured spread" held "about half" (*observed*, [range-calibration.md](../../research/price/nate/range-calibration.md) section 6). Quantile heads plus conformal correction give stated coverage with ranges that adapt to how hard an item is (*observed* CQR, arXiv 1905.03222). The alternative, an LLM estimate, measured $30 to $43 typical miss on $100 (*observed* via the same page) and cannot state coverage. Both figures are the vendor's own, and its method is not sound, so they show the failure, not a bar ([published-price-tests-and-their-flaws.md](../../research/price/nate/published-price-tests-and-their-flaws.md)).
 
@@ -242,11 +250,14 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 1. Prospective rolling origin on held-out sales: for each test month, train on sales before it, leave a 7-day gap, and freeze each estimate (q10, q50, q90) as of the day before the test sale's listing went live, using only comps sold before that day. The tested item and its relists are removed (leakage routes 1 to 6, [range-calibration.md](../../research/price/nate/range-calibration.md) section 7).
 2. Stratified by family and by price band of the frozen q50 (starting bands: under $25, $25 to $100, $100 to $500, over $500). A cell with fewer than 30 test sales states no result; it is reported as "too few" with its count.
 3. Truth, stated per site in the report: the accepted price where we can read it, else the sold price. eBay: the sold price, with Best Offer sales at the accepted amount where read through the person's session ([M3](market-insight.md#m3-used-price-per-site-over-time)), otherwise left out and counted. Mercari and Depop: the sold price. Our own orders on any site: the accepted price from the order or payout. Shipping charged to the buyer is taken off; cancelled and returned sales are removed.
-4. Unsold listings are not dropped. Each one that ends or goes stale in the test month enters through the time-to-sale model ([D10](#d10-chance-of-sale-within-a-period-at-a-price)) as a sale censored at its last ask, and the report states how many there were per cell.
-5. Report per cell and overall: coverage of the 80% range with a Wilson 95% interval, and the distribution of absolute percentage error of q50 against the truth (p25, median, p75, p90), next to two baselines on the same sales: the median of the product's sold comps in the 90 days before the frozen date, and the last sale of the same product before that date.
-6. Sales at exactly the seller's ask are reported separately (step 5 above) and are not in the headline.
+4. Accuracy report, in the terms lenders use for valuation models (*observed* definitions, [risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md)), per cell: **hit rate** (the share of test items that got a shown range rather than `too_few` or `too_wide`), **PPE10** and **PPE20** (the share whose q50 is within 10% and 20% of the sale), **median absolute percentage error**, and **the share off by more than 30%**, because PPE10 "does not capture" the far misses. The same five numbers are computed on every real sale we see, and published per category on the site with their n. Card 18 of [managing-and-buyers](managing-and-buyers.md#18-whether-an-action-kind-has-earned-auto) reads PPE20 from the item's cell (family × price band).
+5. Unsold listings are not dropped. Each one that ends or goes stale in the test month enters through the time-to-sale model ([D10](#d10-chance-of-sale-within-a-period-at-a-price)) as a sale censored at its last ask, and the report states how many there were per cell.
+6. Report per cell and overall: coverage of the 80% range with a Wilson 95% interval, and the distribution of absolute percentage error of q50 against the truth (p25, median, p75, p90), next to three baselines on the same sales: the median of the product's sold comps in the 90 days before the frozen date, the last sale of the same product before that date, and seasonal naive (the product's median in the same calendar month a year earlier, where one exists). Each baseline gets a skill line, `1 - our median error / its median error`, because a seller's real alternative is one of these (*agent proposal*, [seasons-events-and-a-fair-backtest.md](../../research/price/ben/seasons-events-and-a-fair-backtest.md)).
+7. Sales at exactly the seller's ask are reported separately in step 6 and are not in the headline.
+8. Two populations, always side by side. **Listed with us**: sales of items listed through us, scored only where the sale price was not simply our suggested ask (the person set their own price, or a buyer's offer was accepted); a sale at our ask partly measures our own anchor, so it stays in step 7. **From a photo**: sales on any site of items not listed through us, priced from that listing's photos and title as of the day it went live. Zillow publishes 1.80% on-market against 7.21% off-market on one page (*observed*, [seasons-events-and-a-fair-backtest.md](../../research/price/ben/seasons-events-and-a-fair-backtest.md)), and its on-market figure carries the same anchoring, because the list price feeds the estimate; so we state ours next to the number. The listed case leads because it is the one the product is built for; the other is never hidden (*agent proposal*).
+9. Frozen first: the cells, baselines, metrics and pass bar are committed before a run, every month of the test period is reported, and each run is repeated with the D3 season and event term set to 1, so the calendar's own share of the accuracy is stated. The M12 factors, and the rule that keeps or drops an event, are refit only on data before each frozen date; choosing events on the full history would leak the answer (*agent proposal*; Ben asked for a test that is "flattering but truthful", [words](../../product/words.md#2026-11-15-a-backtest-that-flatters-truthfully-seasons-and-waves-and-merge-to-main)).
 
-Pass, as starting values to fix after the first run: in every reported cell and overall, coverage is between 75% and 85%, and the median error of q50 is no worse than the better of the two baselines. The range is wrong if any reported cell fails either, two months running.
+Pass, as starting values to fix after the first run: in every reported cell and overall, coverage is between 75% and 85%, and the median error of q50 is no worse than the best of the three baselines; seasonal naive is compared only on the sales where it exists, with ours on the same subset and its n shown. The headline skill per cell is against the best baseline in that cell. Seasonal naive carries a year of depreciation ([M10](market-insight.md#m10-depreciation-by-category-and-brand)), so it is the weakest of the three and never the headline alone. The range is wrong if any reported cell fails either, two months running.
 
 ## D7 Original retail price
 
@@ -382,8 +393,9 @@ Pass, as starting values to fix after the first run: in every reported cell and 
 **Method** (arithmetic)
 1. Eligible sites: fit (D8), category allowed, the person has an account.
 2. Rank by `E_s(T = 30)`.
-3. Add sites greedily: add site j while `gain_j = (1 - P_set) x P_j x keep_j - P_double x cancel_cost_j > 0`, where `P_set = 1 - prod over chosen of (1 - P_i)` assumes independence. `P_double` is the chance two sites sell before delisting finishes: 0.01 with automatic delist within 5 minutes, as a starting value.
-4. Ties go to the site with the higher P.
+3. Add sites greedily: add site j while `gain_j = (1 - P_set) x P_j x keep_j - P_double_j x cancel_cost_j > 0`, where `P_set = 1 - prod over chosen of (1 - P_i)` assumes independence. `P_double_j` is the chance that adding j causes two sales: a sale on the chosen set followed by a buyer on j inside j's delist window, or a sale on j followed by a buyer on a chosen site inside that site's window: `P_double_j ≈ P_set x (1 - exp(-W_j / m_j)) + P_j x sum over chosen i of (1 - exp(-W_i / m_i))`, where `W` is a site's detection plus delist budget in minutes (about 4 by design, [sold](../features/sold.md)) and `m` the expected minutes to sale on that site at the plan price (D11). The earlier fixed 0.01 overstated the risk for an item that takes weeks (about 0.01% per site) and understated it for one that sells within hours (about 3% per site) ([risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md), *inferred*).
+4. Hot items: when the median time to sale on the best site (D11) is under 24 hours, list on that site alone and run this card again after 24 hours unsold. Double-sale risk sits almost entirely in these items, the way correlated losses sit in a few insurance events (*inferred*; Ben approved, [words](../../product/words.md#2026-11-15-adjacent-appraisal-risk-and-why-this-price)).
+5. Ties go to the site with the higher P.
 
 **Why this method**: each extra site adds buyers but also double-sale risk and work. The greedy marginal rule stops when the next site does not pay (*inferred*). The alternative, listing everywhere, ignores cancellation penalties that count against seller standing.
 
@@ -421,7 +433,9 @@ They differ because the formula follows each site's fee rows (D9) and the learne
 
 **When it is not shown**: when D5 or D10 is hidden, no price is suggested. The person types one and sees D9 for it.
 
-**How it is explained**: "List at $45: you keep the most for a sale within a month." Tap: the ladder with P and keep per rung.
+**How it is explained**: "List at $45: you keep the most for a sale within a month." Then the trade-off in one line: "At $45 about 55% sell within 30 days; at $60 about 20%" (two rungs of the ladder). When the risk is real, a downside line follows: "If it sells slowly, the worst 1 in 10 outcomes leave you about $22." Tap: the ladder with P and keep per rung, and the markdown path (D15).
+
+The downside line is the plan's **expected shortfall**: the average keep over the worst 10% of outcomes by day T, counting an unsold item at the value of its best non-sale route (D19), from the same D10 curve and the D15 markdown path. It is shown only when it is below 70% of the expected keep (starting value; *asserted* method from quant finance, [risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md); Ben approved, [words](../../product/words.md#2026-11-15-adjacent-appraisal-risk-and-why-this-price)).
 
 **Speed**: on demand from kept-ready inputs.
 

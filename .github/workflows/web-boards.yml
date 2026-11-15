@@ -1,0 +1,51 @@
+name: web section boards
+# Draws the website's section boards (brand/explore/web-home/boards) in the brand faces, which are licensed and live only
+# in the BRAND_FONTS secret, audits each variant with the web brand check, and commits the renders to this branch.
+on:
+  push:
+    branches: [claude/project-thread-dbgps7]
+    paths: ['brand/explore/web-home/**', '!brand/explore/web-home/boards/*/out/**', '.github/workflows/web-boards.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: web-boards
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/pw" --no-save playwright@1.63.0
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+          echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
+      - name: Install ffmpeg, for the motion boards' recordings
+        run: command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg)
+      - name: Unpack the brand faces
+        env:
+          BRAND_FONTS_B64: ${{ secrets.BRAND_FONTS }}
+        run: |
+          if [ -n "$BRAND_FONTS_B64" ]; then
+            mkdir -p "$RUNNER_TEMP/fonts"
+            printf '%s' "$BRAND_FONTS_B64" | base64 -d | tar xzf - -C "$RUNNER_TEMP/fonts"
+            echo "BRAND_FONTS=$RUNNER_TEMP/fonts" >> "$GITHUB_ENV"
+            ls "$RUNNER_TEMP/fonts"
+          else
+            echo "::warning::BRAND_FONTS is not set, so the boards are drawn in a fallback face"
+          fi
+      - name: Draw the boards
+        run: node brand/explore/web-home/boards/render.mjs brand/explore/web-home/boards/*/
+      - name: Check the hero on every screen, and record it
+        run: |
+          node brand/explore/web-home/hero/photos.mjs
+          node brand/explore/web-home/hero/check.mjs || echo "::warning::the hero check found a screen that breaks; see hero/out/audit.json"
+      - name: Commit the renders
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add brand/explore/web-home/boards brand/explore/web-home/hero
+          git commit -m "test(web): section boards drawn in the brand faces" || exit 0
+          git pull --no-rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"

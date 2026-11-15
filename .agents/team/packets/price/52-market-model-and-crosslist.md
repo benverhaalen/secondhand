@@ -34,7 +34,19 @@ Still open:
 - Nothing plans the delist when one copy sells (crosspost-and-delist.md).
 - The guessed constants are listed in the commit messages.
 
+## Cross-listing price rules (same day, later)
+
+- `SPREADS` in `app/src/engines/listing/crosslist.ts`: four rules for how one item's prices relate across sites: `same_keep` (same take-home), `same_price`, `site_market` (each site's median sale, falling back to `same_keep` when there is none), and `home_first` (other sites 10% above the take-home price, a guess).
+- `planItem(l, { spread, site_market })` sets `ItemPlan.spread`, and each `SiteDraft` now carries `why: { says, numbers }`. `says` is plain words with no digits, and the test enforces that. `numbers` is the price, fees and take-home.
+- The floor pays the same on every site under every rule.
+- Ben decided that new sellers start on `same_keep`, with the rule set once for the account and an override per item ([decision](../../../../product/decisions.md#2026-11-15-cross-listing-starts-on-same-take-home)). Research: [crosslist-pricing.md](../../../../research/list/ben/crosslist-pricing.md).
+
+For Nate:
+- `site_market` needs a median sale per site from `comp`. The fitted per-site premiums in `valuation_fit` are the natural source once real rows land.
+- Nothing stores the account rule or the per-item override yet. If you want them in the server schema, they are one setting per account (`crosslist_spread`, default `same_keep`) and one optional field per item.
+
 ## Next action
 
 - Ben: whether cross-listing keeps the person's own price as the payout (the default here) or reprices to the market median (`--market`).
+- Nate: whether the account rule and the per-item override live in the server schema.
 - Nate: when the `comp` table lands, run the `valuation` task once and reply here with its backtest line.

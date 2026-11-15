@@ -307,21 +307,25 @@ test('ui: an emoji in app copy is an error', () => {
   try { assert.match(ui(r, { files: ['app/src/app/x.tsx'] }).filter(o => o.level === 'error').map(o => o.msg).join('\n'), /emoji/); } finally { rmSync(r, { recursive: true }); }
 });
 // React Native has no var(), so the app kit writes the wash and the state gradients out in code (app/src/ui/paint.ts).
-// They pass when they are the token's shape in the token's colors, and a state gradient stays light in dark with black text.
-const toward = (hex, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - t) + 255 * t).toString(16).padStart(2, '0')).join('');
+// They pass when they are the token's shape in the token's colors. In dark a state gradient is the deep field, mixed toward
+// --surface, with the dark ink, and its tag stays light (Ben, 07:10).
+const toward = (hex, t, to = '#FFFFFF') => '#' + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - t) + parseInt(to.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
+const DEEP = t => STATE(0, ['#0A4C65', '#03523B', '#025050'].map(c => toward(c, t, '#1A1D20')));
 const STATE = (t, [c1, c2, c3] = ['#F5D297', '#EBF08F', '#FECCAA'].map(c => toward(c, t))) => `background-color:${c1};background-image:radial-gradient(at 30% 100%, ${c2}, ${c2}00 60%), radial-gradient(at 100% 100%, ${c3}, ${c3}00 65%)`;
 const NEED = (style, inner = '') => app(`<div role="button" data-part="card-decision" style="cursor:pointer;margin:64px 20px 0;height:156px;border-radius:36px;padding:16px 24px;border:1px solid var(--card-edge);${style}">${inner}</div>`);
+const ON_DEEP = `<p style="font-size:15px;color:var(--on-field)">Nike Dunk Low</p><p style="font-size:13px;color:var(--on-field-2)">Mon 10 AM</p><span data-part="tag" style="display:inline-block;height:20px;padding:0 8px;border-radius:999px;font-size:13px;background:#F5D297;color:#0A0A0A">Offer</span>`;
 const ON_NEED = `<p style="font-size:15px;color:#0A0A0A">Nike Dunk Low</p><p style="font-size:13px;color:rgb(10 10 10 / .65)">Mon 10 AM</p><span data-part="tag" style="display:inline-block;height:20px;padding:0 8px;border-radius:999px;font-size:13px;background:#EFF1F2;color:#0A0A0A">Offer</span>`;
 const WASH_IN_CODE = (page, w1, w2) => `<header style="position:absolute;left:0;right:0;top:0;height:var(--wash-h);background-color:${w1};background-image:linear-gradient(180deg, ${page}00 0%, ${page}40 45%, ${page}cc 80%, ${page} 100%), linear-gradient(105deg, ${w1}, ${w2})"><p style="font-size:15px;position:absolute;top:120px;left:20px">Today</p></header>`;
 browserTest('render: the wash and a state gradient written out in code pass, in light and dark, with a tag in a card pressed as a whole', { skip: !pw }, async () => {
   for (const t of [0, .3, .58]) assert.deepEqual(await ids(NEED(STATE(t), ON_NEED), 'app'), [], `light at ${t}`);
-  assert.deepEqual(await ids(NEED(STATE(.3), ON_NEED), 'app', 'error', 'dark'), []);
+  for (const t of [0, .3, .58]) assert.deepEqual(await ids(NEED(DEEP(t), ON_DEEP), 'app', 'error', 'dark'), [], `dark at ${t}`);
   assert.deepEqual(await ids(app(WASH_IN_CODE('#FFFFFF', '#A5E1FE', '#A1EACB')), 'app'), []);
   assert.deepEqual(await ids(app(WASH_IN_CODE('#101315', '#0A4C65', '#03523B')), 'app', 'error', 'dark'), []);
 });
 CASES.push(['B5', 'a state gradient whose colors are mixed by two amounts', NEED(STATE(0, [toward('#F5D297', .1), toward('#EBF08F', .4), toward('#FECCAA', .1)])), /B5 .*\[card-decision\] is a gradient built by hand/, 'app'],
   ['B5', 'a state gradient paler than two days out', NEED(STATE(.8)), /B5 .*\[card-decision\] is a gradient built by hand/, 'app'],
-  ['B6', 'the ink of the dark field on a state gradient, which stays light', NEED(STATE(.3), '<p style="font-size:15px;color:var(--on-field)">Nike Dunk Low</p>'), /B6 .*"Nike Dunk Low" is .* on a state gradient: it stays light in dark/, 'app', 'dark'],
+  ['B6', 'black text on the deep state field in dark', NEED(DEEP(.3), '<p style="font-size:15px;color:#0A0A0A">Nike Dunk Low</p>'), /B6 .*"Nike Dunk Low" is .* on a state gradient: text on it is --on-field or --on-field-2, the ink of its mode/, 'app', 'dark'],
+  ['B5', 'a light state gradient in dark', NEED(STATE(.3), ON_NEED), /B5 .*\[card-decision\] is a light state gradient in dark/, 'app', 'dark'],
   ['U1', 'a tag that is its own button inside a card', NEED(STATE(0), '<button data-part="tag" style="height:20px;padding:0 8px;border:0;border-radius:999px;font:500 13px var(--font-text);background:var(--marigold-tint);color:var(--on-color)">Offer</button>'), /U1 .*\[tag\] that looks pressable/, 'app']);
 // From the kit (rollout thread, 05:31): a Press wrapper whose pill is its one child that fills it, and a large amount whose
 // line height is shorter than the face's content area, so the range box pokes out of its part while the ink stays in.
@@ -336,6 +340,13 @@ test('render: tag gradients on tiles under a field are not more fields, and logo
   const tile = `<div style="width:167px;height:96px;padding:12px;background:var(--gray);border-radius:20px">${HOT}${HOT.replace('var(--hot-2) linear-gradient(120deg,var(--hot-1),var(--hot-2))', 'linear-gradient(var(--sky),var(--mint))')}<img alt="eBay" data-logo src="${pathToFileURL(join(root, 'assets/platforms/square/ebay.png')).href}" style="width:20px;height:20px;display:block;margin-top:12px"></div>`;
   const found = await ids(app(`<div class="f" style="margin:16px 20px;height:96px"></div><div style="display:flex;gap:16px;margin:0 20px">${tile}${tile}</div>`), 'app');
   assert.deepEqual(found.filter(o => /^B(4|33) /.test(o)), []);
+});
+// From the You tab (06:53): a row cut by the fold, whose chevron is below it, and a row of chips that scrolls sideways.
+test('render: a row cut by the fold and text in a sideways scroller are judged when they are in view, not before', { skip: !pw }, async () => {
+  const chevron = '<svg width="20" height="20" viewBox="0 0 20 20" style="position:absolute;right:16px;top:36px"><path d="M8 5l5 5-5 5" stroke="currentColor" fill="none"/></svg>';
+  const found = await ids(app(`<div style="position:absolute;top:812px;left:20px;right:20px"><button style="position:relative;display:block;width:100%;height:56px;border:0;background:none;text-align:left;font:500 15px var(--font-text);color:var(--ink)">Notifications${chevron}</button></div>
+    <div data-part="chip-row" style="margin:16px 20px;overflow-x:auto;white-space:nowrap;height:36px">${'<span style="display:inline-block;height:36px;padding:8px 12px;margin-right:8px;background:var(--gray);border-radius:999px;font-size:15px">Nike Dunks</span>'.repeat(5)}</div>`), 'app');
+  assert.deepEqual(found.filter(o => /^(U1|B34) /.test(o)), []);
 });
 // Each case renders in its own page of the one browser, so they run side by side.
 describe('render: in a real browser, side by side', { concurrency: 4 * availableParallelism() }, () => {

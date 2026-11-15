@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { buildListing, buildAll } from './build.ts';
-import type { Attr, ItemCard } from './build.ts';
+import type { Attr, ItemCard, Requirement } from './build.ts';
 import { buildTitle } from '../../../../scripts/listing-lint.mjs';
 
-const { rows } = JSON.parse(readFileSync(new URL('../../../../spec/fixtures/requirement/requirement.json', import.meta.url), 'utf8'));
+const { rows }: { rows: Requirement[] } = JSON.parse(readFileSync(new URL('../../../../spec/fixtures/requirement/requirement.json', import.meta.url), 'utf8'));
 const { platforms } = JSON.parse(readFileSync(new URL('../../../../research/list/ben/platforms/platform-fit.json', import.meta.url), 'utf8'));
 const attr = (value: Attr['value'], source: Attr['source'] = 'label', confirmed = true): Attr => ({ value, source, confirmed });
 const item = (): ItemCard => ({ item_id: 'item_1', kind: 'apparel', attrs: {
@@ -25,7 +25,7 @@ test('unknown required size is missing and asked once across two sites', () => {
 
 test('title follows each site profile and stays within its limit on overflowing facts', () => {
   const card = item(); card.attrs.model = attr('Detailed model '.repeat(30));
-  for (const site of ['ebay', 'facebook', 'depop', 'poshmark', 'mercari']) {
+  for (const site of ['ebay', 'facebook', 'depop', 'poshmark', 'mercari'] as const) {
     const listing = buildListing(card, site, opts);
     const facts = { brand: 'Acme', type: 'Shirt', size_label: 'M', size: 'M', condition: 'Good', colour: 'Blue', color: 'Blue', model: card.attrs.model.value };
     assert.equal(listing.title, buildTitle(site, facts, []));
@@ -54,7 +54,7 @@ test('price under floor is clamped; a higher posture price is preserved', () => 
 
 test('photos are strongest first, capped per site, stable on ties and never mutate inputs', () => {
   const card = item(), before = structuredClone(card);
-  for (const site of ['ebay', 'depop', 'facebook', 'poshmark', 'mercari']) {
+  for (const site of ['ebay', 'depop', 'facebook', 'poshmark', 'mercari'] as const) {
     const listing = buildListing(card, site, opts);
     assert.deepEqual(listing.photo_ids, [...card.photos].sort((a, b) => b.score - a.score).slice(0, platforms[site].photos.max).map(p => p.photo_id));
     assert.deepEqual(buildListing(card, site, opts), listing);

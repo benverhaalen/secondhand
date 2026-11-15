@@ -255,19 +255,19 @@ What differs from D1 for a product-level index, and why: there are no per-item a
 
 **Determines**: the share of retail a typical product in a category (or a brand within it) keeps as it ages.
 
-**Sources and weights**: every sold comp with a product that has launch retail ([M2](#m2-retail-price-and-release-date)), weighted as in [M3](#m3-used-price-per-site-over-time); Keepa used-price history and PriceCharting for categories with years of history (rank 2, marked "from a price tracker").
+**Sources and weights**: every sold comp with a product that has launch retail ([M2](#m2-retail-price-and-release-date)), weighted as in [M3](#m3-used-price-per-site-over-time); Keepa used-price history and PriceCharting for categories with years of history (rank 2, marked "from a price tracker"); insurers' depreciation schedules, which give each kind of item "an annual depreciation rate and expected years of service" and are "utilized by hundreds of insurance companies annually" (Claims Pages, *observed*; the table itself is behind a sign-in and not yet read), as the rank 3 prior for a category with no curve yet, marked "insurer schedule, not market", used only once the table rows have been read, and replaced bin by bin as our sales arrive ([risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md); Ben approved, [words](../../product/words.md#2026-11-15-adjacent-appraisal-risk-and-why-this-price)).
 
 **Method** (arithmetic): a hedonic regression with product fixed effects, `ln(price_ij / retail_i) = a_i + f(age_ij) + c(band_ij) + m(month_ij) + e`, where `f` is a step function over age bins 0-3, 3-6, 6-12, 12-24, 24-48, 48+ months, `c` the condition bands and `m` calendar months. The category curve is `exp(f)` at band `good`, rebased to the youngest bin. Brand curves add a brand-by-age term and are reported only where they differ from the category by more than the noise ([M15](#m15-what-is-trending-and-how-a-trend-is-told-from-noise) method on bootstrap intervals).
 
-**Why this method**: product fixed effects compare each product with itself as it ages, so a category whose young products are luxury and old ones are cheap does not fake a curve (*asserted*, the standard hedonic and repeat-sales logic used in housing and car price indices; not fetched this session). No standard depreciation curve for used consumer goods was found ([market-intelligence](../../research/data/nate/market-intelligence.md#4-measures-and-definitions), *observed*). A simple average of price over retail by age is the alternative and mixes product quality with age.
+**Why this method**: product fixed effects compare each product with itself as it ages, so a category whose young products are luxury and old ones are cheap does not fake a curve (*asserted*, the standard hedonic and repeat-sales logic used in housing and car price indices; not fetched this session). No standard depreciation curve for used consumer goods was found ([market-intelligence](../../research/data/nate/market-intelligence.md#4-measures-and-definitions), *observed*); insurers' schedules exist but are formulas on new retail prices, not market curves (Verisk prices from "Items that retailers are currently selling online", *observed*, [risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md)). A simple average of price over retail by age is the alternative and mixes product quality with age.
 
-**When it is not shown**: fewer than 20 products with retail, or an age bin with under 30 sales (that bin is blank); a brand under 8 products is folded into its category.
+**When it is not shown**: fewer than 20 products with retail, or an age bin with under 30 sales (that bin shows the insurer prior, labelled, where one has been read, and is blank otherwise); a brand under 8 products is folded into its category.
 
 **How it is explained**: "A typical pair of running shoes keeps about 45% of its store price after a year". Tap opens the curve, the bins and the products in it.
 
 **Speed**: kept ready, refit monthly per category.
 
-**Check later**: predict the next quarter's sale prices of products from their age alone. Wrong if the curve does no better than the category median.
+**Check later**: predict the next quarter's sale prices of products from their age alone. Wrong if the curve does no better than the category median. Also report, per category, the gap between the insurer schedule and our curve: California requires depreciation to "reflect a measurable difference in market value attributable to the condition and age" (*observed*, quoted by United Policyholders), and that gap is the number an insurer would want from us (*agent proposal*).
 
 ## M11. Price retention of one product
 
@@ -291,19 +291,21 @@ What differs from D1 for a product-level index, and why: there are no per-item a
 
 **Determines**: in which months a category's prices and sales are usually higher or lower than the year's average.
 
-**Sources and weights**: rank 1, our sold counts and category index ([M14](#m14-a-category-price-index)) once 2 full years exist; rank 2, Keepa used price and Google Trends 5-year series for the category's head terms (*observed*, rolling 5-year window); rank 3, eBay sold data over at most 90 days is too short and is not used.
+**Sources and weights**: rank 1, our sold counts ([M5](#m5-how-many-sold-in-a-period)), new listings ([M4](#m4-how-many-are-for-sale-now)) and category index ([M14](#m14-a-category-price-index)) once 2 full years exist (3 preferred for events); rank 2, Keepa used price and Google Trends 5-year series for the category's head terms (*observed*, rolling 5-year window); rank 3, eBay sold data over at most 90 days is too short and is not used.
 
 **Method** (arithmetic): ratio to a centred 12-month moving average, per calendar month, averaged over all years present, normalised so the 12 factors average 1 (the classical decomposition behind X-11, *asserted*). The seasonal effect is shown only when the range of factors is larger than twice the spread of the same month across years.
 
-**Why this method**: it is transparent and needs no model; STL or X-13 is the alternative and handles a changing season better, but needs more years than we have (*inferred*).
+Dated events (*agent proposal*, [seasons-events-and-a-fair-backtest.md](../../research/price/ben/seasons-events-and-a-fair-backtest.md); Ben, [words](../../product/words.md#2026-11-15-a-backtest-that-flatters-truthfully-seasons-and-waves-and-merge-to-main)): next to the monthly factors, a named list of events, each with a window of days and its own effect on price, sold count and new listings. The effect is fitted on the weekly M14, M5 and M4 series as the deviation from that month's factor, as in Prophet (trend + season + events, *observed* form), because a fixed-date event such as Valentine's Day falls in the same month every year and the monthly factor already holds part of it. Events use our own data only after 24 months; before that they are not shown. Starting list: tax refund weeks (mid-February to April; *asserted* timing, from a paper read partly as a summary), Black Friday to Cyber Monday, the Christmas shipping cut-off, January, Valentine's Day, back to school, Prime Day, the February and September fashion weeks, Thanksgiving, and each product's release and restock dates ([M16](#m16-how-new-retail-releases-relate-to-used-supply-and-price)). An event is kept for a category only when its effect is larger than twice its spread across years; otherwise it is dropped, not shown. Events are measured on sold counts and new listings as well as price, because a wave can be in buying or in selling.
+
+**Why this method**: the monthly factors are transparent and need no model, and the event step is one regression whose coefficients each read as a sentence; STL or X-13 is the alternative and handles a changing season better, but needs more years than we have (*inferred*).
 
 **When it is not shown**: fewer than 24 months in the best source; season not larger than its noise, shown as "no clear season".
 
-**How it is explained**: "Coats usually sell for about 15% more in November than in May". Tap opens the 12 months and the years used.
+**How it is explained**: "Coats usually sell for about 15% more in November than in May". An event reads the same way, with what it means now: "Tax refunds start landing in two weeks; electronics usually sell faster then." Tap opens the wave chart: real prices, the shaded usual season, a pin per event, and the years used.
 
 **Speed**: kept ready, recomputed monthly.
 
-**Check later**: hold out the last year. Wrong if seasonal factors do not cut the error of a flat forecast.
+**Check later**: hold out the last year. Wrong if seasonal factors do not cut the error of a flat forecast. Each event is wrong for a category if adding it does not cut the held-out error; across an abrupt change (a fee change, a platform rule) the estimates are flagged, because backtest errors across a break are "essentially useless" (*observed*, Prophet paper).
 
 ## M13. A brand's or category's movement
 

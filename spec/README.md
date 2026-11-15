@@ -15,6 +15,7 @@ Everything under `spec/` that is not code is an *agent proposal* for Ben and Nat
 | [marketing-engine.md](marketing-engine.md) | How the plan for each site is chosen: signals, calculation, weights, learning, speed, proof tests |
 | [data-use.md](data-use.md) | What data is kept, what learns from it, and what needs a person's consent |
 | [assessment.md](assessment.md) | How ready each part is, with the confusions found in the builders' notes |
+| [benchmark.md](benchmark.md) | The open benchmark: ten measures run on one fixed item set against named tools, with every raw answer published |
 | [parity.md](parity.md) | Every capability a rival tool has, whether we adopt its method or use a better one, and where that lives |
 | [databricks.md](databricks.md) | How the platform works, where it is strong and weak for us, and how each feature is built on it |
 | [coverage.md](coverage.md) | Which research backs which feature, and the gaps |
@@ -22,6 +23,7 @@ Everything under `spec/` that is not code is an *agent proposal* for Ben and Nat
 | [plans/workstreams.md](plans/workstreams.md) | The build piece by piece: the sessions, what each owns and delivers, the seams |
 | [plans/start-now.md](plans/start-now.md) | Every task that can begin this minute |
 | [plans/](plans/README.md) | How the build is organised: stages, task shape, test layers, the first tasks |
+| [hard-calls.md](hard-calls.md) | Where two good answers conflict (a better offer while the first buyer hasn't paid, silence, partial failures, disputes), the call we make and the field it is borrowed from |
 | [open-questions.md](open-questions.md) | What only Ben or Nate can settle, each with a recommendation |
 | [../docs/how-it-works/](../docs/how-it-works/README.md) | The same system explained for people, not for the agents that build it |
 

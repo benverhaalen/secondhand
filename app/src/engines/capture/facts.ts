@@ -10,7 +10,7 @@ export type FactFrame = {
 };
 
 /** prev is what was last sent for this attribute (undefined if nothing); the caller keeps it. */
-export function factFound(prev: Pick<Attribute, 'value' | 'source'> | undefined, attr: Attribute, ctx: Ctx): FactFrame | null {
+export function factFound(prev: Pick<Attribute, 'value' | 'source'> | undefined, attr: Attribute, ctx: Ctx): (FactFrame & { attribute: Attribute }) | null {
   if (attr.value === null) return null;
   // a lower source never overrides a higher one; a disagreement there is a mark, not a frame
   if (prev !== undefined && (LADDER[attr.source] < LADDER[prev.source] || (prev.value === attr.value && attr.source === prev.source))) return null;
