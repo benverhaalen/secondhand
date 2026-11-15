@@ -1,16 +1,17 @@
 import { answer, guard, PROOF_PARAMS, type BasisRow } from '../proof/proof.ts';
 import { memoryStore, type ParamStore } from '../param/param.ts';
 import type { PlanChoice, Objective } from '../valuation/path.ts';
+import { lowestBasis, type BasisLevel } from '../listing/basis.ts';
 
 import { resolve } from './params.ts';
 import { money, rounded } from './money.ts';
 
-export type Utility = { expected_keep_cents: number; expected_days: number; holding_cost_cents: number };
-export type Axis = { axis: string; state: 'shown' | 'hidden'; value: number | null; citation_id: string };
+export type Utility = { expected_keep_cents: number; expected_days: number; holding_cost_cents: number; basis_level?: BasisLevel };
+export type Axis = { axis: string; state: 'shown' | 'hidden'; value: number | null; citation_id: string; basis_level?: BasisLevel };
 export type Change = { kind: 'markdown' | 'agent_revision'; price_cents?: number; projected: Utility };
 export type ScoreInput = {
   listing_id: string; site: string; as_of: string; floor_cents: number; objective: Objective; plan_choice: PlanChoice;
-  now: Utility; best: Utility; axes: Axis[]; basis: BasisRow[]; params?: ParamStore; person?: string; resolved?: ReturnType<typeof resolve>;
+  now: Utility; best: Utility | null; axes: Axis[]; basis: BasisRow[]; basis_level?: BasisLevel; params?: ParamStore; person?: string; resolved?: ReturnType<typeof resolve>;
   receipt?: { keep_cents: number; refund_cents: number; days: number }; changes?: Change[];
   log: { timed: <T>(name: string, fn: () => T) => T };
 };
@@ -36,9 +37,10 @@ export function successScore(x: ScoreInput) {
       if (!Number.isFinite(receipt.days) || receipt.days < 0 || receipt.refund_cents > receipt.keep_cents) throw new RangeError('invalid sale receipt');
     }
     const now = parts(receipt ? { expected_keep_cents: receipt.keep_cents - receipt.refund_cents, expected_days: receipt.days, holding_cost_cents: x.now.holding_cost_cents } : x.now);
-    const best = parts(x.best);
-    const required = ['financial', 'quality', 'visibility', 'trend'];
-    const hidden = required.some(name => !x.axes.some(a => a.axis === name && a.state === 'shown' && a.value !== null && Number.isFinite(a.value) && !!a.citation_id));
+    const unpriced = x.best !== null && x.best.expected_keep_cents === 0 && x.best.expected_days === 0 && x.best.holding_cost_cents === 0
+      && x.basis.length === 0 && x.basis_level === undefined && x.best.basis_level === undefined;
+    const best = x.best === null || unpriced ? null : parts(x.best);
+    const basis_level = lowestBasis([x.basis_level, x.now.basis_level, x.best?.basis_level, ...x.axes.map(a => a.basis_level)]);
     const store = x.params ?? memoryStore();
     const resolved = x.resolved ?? resolve(store, {site: x.site, person: x.person});
     const versions = resolved.versions;
@@ -50,11 +52,14 @@ export function successScore(x: ScoreInput) {
       rules[entry.name] = read.value; versions[entry.name] = read.version;
     }
     const guardRules = {min_n_eff: rules.proof_min_n_eff, max_age_days: rules.proof_max_age_days};
-    const ratio = (u: number) => Math.round(Math.max(0, Math.min(100, 100 * u / best.utility_cents)));
-    const raw = best.utility_cents > 0 ? ratio(now.utility_cents) : null;
-    const proof = answer(raw ?? 0, x.basis, { metric: 'score.success', filters: { listing_id: x.listing_id, objective: x.objective, plan_choice: x.plan_choice }, table_versions: [], definition_version: 'score.success.U_now/U_best', code_version: 'ss-1', param_versions: versions, model_version: null }, x.as_of);
-    const checked = guard(proof, guardRules);
-    const state = hidden || raw === null || checked.state === 'hidden' ? 'hidden' as const : 'shown' as const;
+    const ratio = (u: number) => {
+      if (best === null) throw new Error('best utility unavailable');
+      if (best.utility_cents === 0 && u === 0) return 100;
+      return Math.round(Math.max(0, Math.min(100, 100 * u / best.utility_cents)));
+    };
+    const raw = best === null ? null : ratio(now.utility_cents);
+    const proof = answer(raw ?? 0, x.basis, { metric: 'score.success', filters: { listing_id: x.listing_id, objective: x.objective, plan_choice: x.plan_choice, basis_level }, table_versions: [], definition_version: 'score.success.U_now/U_best', code_version: 'ss-2', param_versions: versions, model_version: null }, x.as_of);
+    const state = raw === null ? 'hidden' as const : 'shown' as const;
     let band = 'still_learning';
     if (state === 'shown' && resolved.values.score_bands !== null) {
       const model = resolved.values.score_bands as { cuts?: unknown } | null;
@@ -69,8 +74,8 @@ export function successScore(x: ScoreInput) {
         const projected = parts(c.projected);
         return { ...c, projected: { expected_keep_cents: projected.keep_cents, expected_days: projected.days, holding_cost_cents: projected.holding_cost_cents }, points: ratio(projected.utility_cents) - raw!, proof: guard(answer(ratio(projected.utility_cents) - raw!, x.basis, { metric: 'score.change', filters: { kind: c.kind, price_cents: c.price_cents }, table_versions: [], definition_version: 'score.success.U_now/U_best', code_version: 'ss-1', param_versions: versions, model_version: null }, x.as_of), guardRules) };
       }).filter(c => c.points > 0 && c.proof.state === 'shown').sort((a, b) => b.points - a.points || a.kind.localeCompare(b.kind) || (a.price_cents ?? 0) - (b.price_cents ?? 0));
-    return { subject_type: 'listing', subject_id: x.listing_id, site: x.site, axis: 'success', state, value: state === 'shown' ? raw : null,
-      band, hide_reason: state === 'hidden' ? hidden ? 'axis_hidden' : checked.state === 'hidden' ? checked.hide_reason : 'nonpositive_best' : null,
+    return { subject_type: 'listing', subject_id: x.listing_id, site: x.site, axis: 'success', state, value: raw, basis_level,
+      band, hide_reason: state === 'hidden' ? 'best_unavailable' : null,
       provisional: !receipt, parts: { now, best, axes: x.axes }, change: changes[0] ?? null,
       citation_id: proof.ok ? proof.citation.id : null, citation: proof.ok ? { ...proof.citation, param_versions: versions } : null, model_version: null };
   });

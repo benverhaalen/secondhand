@@ -1,6 +1,7 @@
 import { memoryStore, type ParamStore, type Scope, type Declared } from '../param/param.ts';
 export type Entry = Declared & { scopes: (keyof Scope)[]; source: string };
 export const DECLARED: Entry[] = [
+  { name: 'marketing_blend_k', family: 'scalar', prior: 6, guard_lo: Number.MIN_VALUE, scopes: ['site', 'segment'], source: 'spec/engines/valuation.md#3-the-calculation' },
   { name: 'marketing_vis_exponent', family: 'scalar', prior: 0.5, guard_lo: 0, scopes: ['site', 'segment'], source: 'spec/marketing-engine.md#3.4-weights-are-params' },
   { name: 'marketing_holding_cost_balanced', family: 'scalar', prior: 0.002, guard_lo: 0, scopes: ['person'], source: 'spec/marketing-engine.md#3.3-the-objective' },
   { name: 'marketing_holding_cost_quick', family: 'scalar', prior: 0.01, guard_lo: 0, scopes: ['person'], source: 'spec/marketing-engine.md#3.3-the-objective' },

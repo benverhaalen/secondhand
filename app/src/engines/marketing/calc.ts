@@ -1,13 +1,15 @@
 import levers from '../../../../research/list/ben/levers/levers.json' with { type: 'json' };
 import { buildListing, type ItemCard } from '../listing/build.ts';
+import { BASIS_LEVELS, basisLevel, type BasisLevel } from '../listing/basis.ts';
 import { ladder, HORIZON_DAYS, type Objective, type Curve } from '../valuation/path.ts';
-import { answer, guard, basisHash, PROOF_PARAMS, type BasisRow } from '../proof/proof.ts';
+import { answer, guard, basisHash, basisOf, PROOF_PARAMS, type BasisRow } from '../proof/proof.ts';
 import { memoryStore, type ParamStore } from '../param/param.ts';
 import { fact, FACTS, UNKNOWN } from '../../../../spec/sites.mjs';
 
 import { resolve, scalar } from './params.ts';
 import { money, rounded } from './money.ts';
 import type { EndingRule } from '../money/ending.ts';
+import { roundToEnding } from '../money/ending.ts';
 
 export type Site = keyof typeof levers.sites;
 export type MoneyCandidate = {
@@ -20,6 +22,7 @@ export type MarketingInput = {
   item: ItemCard; site: Site; connected: boolean; category_allowed: boolean; fit: 'good' | 'avoid'; category_id: string;
   rows: Parameters<typeof buildListing>[2]['rows']; objective: Objective; floor_cents: number; midpoint_cents: number;
   adjusted_cents: number[]; weights: number[]; sales_12m: number; sales_90d: number;
+  basis_level?: BasisLevel; kind_rung_cents?: number;
   curve: Curve; keep: (price: number, shipping_mode: MoneyCandidate['shipping_mode']) => number;
   shipping_modes: MoneyCandidate['shipping_mode'][]; ship_cents: number; candidates?: MoneyCandidate[];
   presentation?: { visibility: number; views: number; comp_views: number; cover_id: string; cover_style?: string; title_form: string }[];
@@ -88,9 +91,11 @@ function daysAt(k: MoneyCandidate, curve: Curve, q: number, visibility: number):
   return hi;
 }
 
-function candidates(x: MarketingInput): MoneyCandidate[] {
+function candidates(x: MarketingInput, blend_weight: number, kind_rung_cents: number): MoneyCandidate[] {
   const out: MoneyCandidate[] = [];
-  const rungs = ladder(x.adjusted_cents, x.weights, x.ending, x.drift);
+  const local = ladder(x.adjusted_cents, x.weights, x.ending, x.drift);
+  const rungs = [...new Set((local.length ? local : [kind_rung_cents]).map(price =>
+    Math.max(x.floor_cents, roundToEnding(rounded(blend_weight * price + (1 - blend_weight) * kind_rung_cents, 'price_cents'), x.ending) ?? kind_rung_cents)))].sort((a,b) => b-a);
   for (const objective of Object.keys(HORIZON_DAYS) as Objective[]) {
     const horizon_days = HORIZON_DAYS[objective] as 7 | 30 | 90;
     for (const mode of x.shipping_modes) for (const start of [...new Set(rungs)]) {
@@ -115,6 +120,22 @@ function candidates(x: MarketingInput): MoneyCandidate[] {
   return out;
 }
 
+function pooledCandidate(x: MarketingInput, k: MoneyCandidate, blend_weight: number, kind_rung_cents: number): MoneyCandidate {
+  scoreCandidate(k, 1, 0);
+  let survival = 1, expected_days = 0;
+  const path = k.path.map((step, i) => {
+    const price_cents = Math.max(x.floor_cents, roundToEnding(rounded(blend_weight * step.price_cents + (1 - blend_weight) * kind_rung_cents, 'price_cents'), x.ending) ?? kind_rung_cents);
+    const hold = (k.path[i + 1]?.at_day ?? k.horizon_days) - step.at_day;
+    for (let t = 0; t < hold; t += 1) expected_days += survival * (1 - x.curve.p(price_cents, t)) * Math.min(1, hold - t);
+    const p = x.curve.p(price_cents, hold);
+    if (!Number.isFinite(p) || p < 0 || p > 1) throw new RangeError('invalid curve probability');
+    const p_sale = survival * p;
+    survival *= 1 - p;
+    return {...step, price_cents, net_cents:x.keep(price_cents,k.shipping_mode), p_sale};
+  });
+  return {...k, path, expected_days};
+}
+
 export function calculate(x: MarketingInput) {
   return x.log.timed('marketing.calculate', () => {
     if (!Number.isFinite(Date.parse(x.as_of))) throw new RangeError('invalid as_of');
@@ -123,6 +144,9 @@ export function calculate(x: MarketingInput) {
       if (value !== undefined && (!Number.isSafeInteger(value) || value < 0)) throw new RangeError(`${name} must be whole cents, zero or more`);
     }
     money(x.floor_cents, 'floor_cents'); money(x.midpoint_cents, 'midpoint_cents');
+    const basis_level = basisLevel(x.basis_level);
+    const kind_rung_cents = x.kind_rung_cents ?? x.midpoint_cents;
+    money(kind_rung_cents, 'kind_rung_cents');
     x.adjusted_cents.forEach(value => money(value, 'adjusted_cents'));
     if (x.drift !== undefined && !Number.isFinite(x.drift)) throw new RangeError('invalid drift');
     if (!x.cover_style?.trim() || x.position.length !== 2 || !x.position.every(p => Number.isFinite(p) && p > 0) || x.position[0] > x.position[1]) throw new Error('presentation missing basis');
@@ -132,11 +156,12 @@ export function calculate(x: MarketingInput) {
     if (x.item.recall_flag) return skip('recall_or_legal_flag');
     if (!x.category_allowed) return skip('site_bars_category');
     if (x.fit === 'avoid') return skip('fit_avoid');
-    if (x.sales_12m < 6 || x.sales_90d < 2) return skip('too_few');
-    if (!x.adjusted_cents.length || x.adjusted_cents.length !== x.weights.length || x.weights.some(w => !Number.isFinite(w) || w <= 0)) throw new RangeError('invalid comps');
+    if (x.adjusted_cents.length !== x.weights.length || x.weights.some(w => !Number.isFinite(w) || w <= 0)) throw new RangeError('invalid comps');
     const store = x.params ?? memoryStore();
     const {values, versions} = x.resolved ?? resolve(store, { site: x.site, segment: x.category_id, person: x.person });
     const read = (name: string) => scalar(values, `marketing_${name}`);
+    const n_eff = x.weights.length ? basisOf(x.weights.map((weight, i) => ({id:String(i),source:'adjusted_comp',at:x.as_of,weight})), x.as_of, []).n_eff : 0;
+    const blend_weight = n_eff / (n_eff + read('blend_k'));
     const exponent = read('vis_exponent');
     const costs = { quick: read('holding_cost_quick') * x.midpoint_cents, balanced: read('holding_cost_balanced') * x.midpoint_cents, max_return: read('holding_cost_max_return') * x.midpoint_cents };
     const minimum = { quick: read('p_min_quick'), balanced: read('p_min_balanced'), max_return: read('p_min_max_return') };
@@ -153,11 +178,16 @@ export function calculate(x: MarketingInput) {
       rules[entry.name] = r.value; versions[entry.name] = r.version;
     }
     const guardRules = {min_n_eff: rules.proof_min_n_eff, max_age_days: rules.proof_max_age_days};
-    const options = x.candidates ?? candidates(x);
+    const options = x.candidates ?? candidates(x, blend_weight, kind_rung_cents);
     for (const candidate of options) for (const step of candidate.path) { money(step.price_cents, 'price_cents'); money(step.net_cents, 'net_cents'); }
     const scored = options.filter(k => k.path.length && k.path.every(r => Number.isSafeInteger(r.price_cents) && r.price_cents >= x.floor_cents) && x.shipping_modes.includes(k.shipping_mode))
-      .map(k => ({ ...k, ...scoreCandidate(k, multiplier, costs[k.objective], x.curve) })).filter(k => k.p_sale >= minimum[k.objective]);
-    const sorted = (objective: Objective) => scored.filter(k => k.objective === objective).sort((a, b) => b.utility_cents - a.utility_cents || b.p_sale - a.p_sale || a.path[0].price_cents - b.path[0].price_cents || a.candidate_id.localeCompare(b.candidate_id));
+      .map(k => x.candidates ? pooledCandidate(x,k,blend_weight,kind_rung_cents) : k)
+      .map(k => ({ ...k, ...scoreCandidate(k, multiplier, costs[k.objective], x.curve) }));
+    const sorted = (objective: Objective) => {
+      const positive = scored.filter(k => k.objective === objective && k.utility_cents > 0);
+      const preferred = positive.filter(k => k.p_sale >= minimum[objective]);
+      return (preferred.length ? preferred : positive).sort((a, b) => b.utility_cents - a.utility_cents || b.p_sale - a.p_sale || a.path[0].price_cents - b.path[0].price_cents || a.candidate_id.localeCompare(b.candidate_id));
+    };
     const winner = sorted(x.objective)[0];
     if (!winner || winner.utility_cents <= 0) return skip('negative_value');
     const inputs = x.metric_basis;
@@ -170,21 +200,25 @@ export function calculate(x: MarketingInput) {
       return name.startsWith('alternative.') ? [...groups, inputs?.alternatives ?? []] : groups;
     };
     const proofRows = groupsFor('utility').flat();
-    const proof = answer(winner.utility_cents, proofRows, { metric: 'marketing.utility', filters: { item_id: x.item.item_id, site: x.site }, table_versions: [], definition_version: 'marketing.3', code_version: 'mk-1', param_versions: versions, model_version: null }, x.as_of);
-    if (!proof.ok) throw new Error('marketing plan missing basis');
-    if (guard(proof, guardRules).state === 'hidden') return skip('unsupported_basis');
+    const citationInput = { metric: 'marketing.utility', filters: { item_id: x.item.item_id, site: x.site, basis_level, kind_rung_cents, blend_weight }, table_versions: [], definition_version: 'marketing.4', code_version: 'mk-1', param_versions: versions, model_version: null };
+    const proof = answer(winner.utility_cents, proofRows, citationInput, x.as_of);
+    if (!proof.ok && proofRows.length) throw new Error('marketing plan missing basis');
     const metric = (name: string, value: number | {lo:number; hi:number}) => {
       if (typeof value === 'number' ? !Number.isFinite(value) : !Number.isFinite(value.lo) || !Number.isFinite(value.hi)) throw new RangeError(`invalid metric ${name}`);
       const groups = groupsFor(name);
-      const result = answer(value, groups.flat(), {...proof.citation, metric: `marketing.${name}`}, x.as_of);
+      const result = answer(value, groups.flat(), {...citationInput, metric: `marketing.${name}`}, x.as_of);
       if (result.ok) result.citation.id += `:${name}`;
       const checked = guard(result,guardRules);
-      const failed = groups.map(rows => guard(answer(0,rows,{...proof.citation,metric:`marketing.${name}.input`},x.as_of),guardRules)).find(g => g.state === 'hidden');
+      const failed = groups.map(rows => guard(answer(0,rows,{...citationInput,metric:`marketing.${name}.input`},x.as_of),guardRules)).find(g => g.state === 'hidden');
       return { ...checked,...(failed ? {state:'hidden' as const,hide_reason:failed.hide_reason} : {}), citation: result.ok ? result.citation : null };
     };
-    if (metric('utility',winner.utility_cents).state === 'hidden') return skip('unsupported_basis');
     const positionProof = metric('position', {lo:x.position[0],hi:x.position[1]});
     const start = winner.path[0].price_cents;
+    const prices = x.adjusted_cents.length ? x.adjusted_cents : [kind_rung_cents];
+    const low = prices.reduce((a,b) => Math.min(a,b)), high = prices.reduce((a,b) => Math.max(a,b));
+    // Agent proposal: broaden the observed span by the unpooled share and each fallback step.
+    const margin = rounded(Math.max(high - low, kind_rung_cents) * (1 - blend_weight + BASIS_LEVELS.indexOf(basis_level)), 'spread_cents');
+    const spread_cents = {lo: Math.max(x.floor_cents, Math.min(start, low) - margin), hi: rounded(Math.max(start, high) + margin, 'spread_cents')};
     const draft = buildListing(x.item, x.site, { rows: x.rows, price_cents: start, floor_cents: x.floor_cents, posted_before: false, promoted: false });
     const minDiscount = fact('offer.seller.min_off_pct', x.site);
     const offer = minDiscount === null ? null : Math.min(winner.path[1]?.price_cents ?? start, Math.floor(start * (1 - Number(minDiscount) / 100)));
@@ -204,8 +238,8 @@ export function calculate(x: MarketingInput) {
       return [{ name, value: draft.fields[name], source }];
     });
     const suggestions = x.site === 'poshmark' ? [...new Set((x.requested_levers ?? []).map(id => id === 'save' ? 'like' : id === 'relist' ? 'repost' : id))].filter(id => ['share', 'like', 'repost'].includes(id)).sort().map(kind => ({kind, site: 'poshmark' as const, reason: kind === 'share' ? 'Show this listing to your followers.' : kind === 'like' ? 'Save this listing to revisit it.' : 'Offer this item again with a new listing.', handoff: true as const})) : [];
-    return { suggestions, item_id: x.item.item_id, site: x.site, verdict: 'list' as const, skip_reason: undefined, objective: x.objective,
-      price: { start_cents: start, floor_cents: x.floor_cents, horizon_days: winner.horizon_days, path: winner.path.map(r => ({ at: new Date(Date.parse(x.as_of) + r.at_day * 86400e3).toISOString(), price_cents: r.price_cents })) },
+    return { suggestions, item_id: x.item.item_id, site: x.site, verdict: 'list' as const, skip_reason: undefined, objective: x.objective, basis_level, blend_weight,
+      price: { start_cents: start, floor_cents: x.floor_cents, horizon_days: winner.horizon_days, spread_cents, path: winner.path.map(r => ({ at: new Date(Date.parse(x.as_of) + r.at_day * 86400e3).toISOString(), price_cents: r.price_cents })) },
       title: { text: draft.title, form: presentation?.title_form ?? 'site_template', slots: [] }, attributes, category_id: x.category_id,
       photos: { order: draft.photo_ids, cover_id: presentation?.cover_id ?? draft.photo_ids[0] ?? null, cover_style: presentation?.cover_style ?? x.cover_style },
       shipping: { mode: winner.shipping_mode, ship_cents: x.ship_cents, price_includes_ship: winner.shipping_mode === 'free' }, list_at,
@@ -217,6 +251,6 @@ export function calculate(x: MarketingInput) {
         p_sale: Object.fromEntries([7,30,90].map(day => [day, metric(`p_sale.d${day}`, 1 - survivalAt(winner, x.curve, day) ** multiplier)])),
         tts_days: [daysAt(winner,x.curve,.25,multiplier),daysAt(winner,x.curve,.75,multiplier)].map((day,i) => day === null ? null : metric(`tts.${i}`,day)),
         alternatives: (Object.keys(costs) as Objective[]).filter(o => o !== x.objective).flatMap(o => sorted(o).slice(0,1)).map(k => ({candidate_id:k.candidate_id, e_net_cents:metric(`alternative.${k.candidate_id}.expected_keep`,k.e_net_cents), p_sale:metric(`alternative.${k.candidate_id}.p_sale`,1-survivalAt(k,x.curve,30)**multiplier), tts_days:[daysAt(k,x.curve,.25,multiplier),daysAt(k,x.curve,.75,multiplier)].map((day,i) => day === null ? null : metric(`alternative.${k.candidate_id}.tts.${i}`,day))})) },
-      comp_set: { ids: x.comp_rows.map(row => row.id), as_of: x.as_of, fingerprint: basisHash(x.comp_rows) }, citation_id: proof.citation.id, citation: proof.citation, param_versions: versions, preselected: true };
+      comp_set: { ids: x.comp_rows.map(row => row.id), as_of: x.as_of, fingerprint: basisHash(x.comp_rows) }, citation_id: proof.ok ? proof.citation.id : null, citation: proof.ok ? proof.citation : null, param_versions: versions, preselected: true };
   });
 }
