@@ -89,10 +89,13 @@ The written numbers in D1 to D15 are the priors ([real-time weights](../product.
 | D4 site ratios | weekly | recount products sold on both sites | the parent category |
 | D13 discount `d_s,cat` | nightly | the median of `(ask - sold) / ask` on known pairs | 0 |
 
-**The switch rule.** A nightly challenger replaces the champion when all three hold on the D6 backtest over the last three months:
-- every reported cell passes D6, with coverage between 75% and 85%;
-- overall q50 median error improves by at least 1 percentage point;
-- no cell's q50 median error gets worse by more than 2 points.
+**The switch rule.** A nightly challenger replaces the champion when all four hold on the D6 backtest over the last three months (*agent proposal*, the engines lead, 2026-11-15, from the [data-science sweep](../plans/sweep/data-science.md) items 5 and 6; it replaces a rule that a challenger could win by hiding more items, that a calibrated cell failed by chance, and that compared with zero noise):
+- the score is the weighted interval score of the 80% range plus the pinball loss at q50 (Gneiting and Raftery 2007; Bracher et al. 2021), on log price, and an item a contestant hides is charged the best baseline's score on that item;
+- the by-product paired bootstrap 95% lower bound of the challenger's gain is above 0;
+- its hit rate (the share it shows) is not lower than the champion's by more than 2 points;
+- no cell's coverage has a Wilson 95% interval lying wholly outside 75% to 85%.
+
+The winner is chosen by refitting both specifications on the training window, and the winner is then refitted on all rows to serve, so the served model has seen the newest quarter. Both fits are logged.
 
 **Rollback.** One UPDATE of `param_version` restores the champion. It fires on its own when, for a group with 30 or more sales in the trailing 30 days, live coverage leaves 75% to 85%, or the q50 error moves 2 SE past its trailing mean. The anomaly check from [real-time weights](../product.md#real-time-weights-agent-proposal) applies to every per-event update.
 
