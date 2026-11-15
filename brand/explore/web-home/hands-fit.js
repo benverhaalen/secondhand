@@ -24,7 +24,7 @@ window.fitHands = (lockup, word, hands) => {
     }
     if (!isFinite(x0)) return;
     svg.setAttribute('viewBox', `${x0} ${y0} ${x1 - x0} ${y1 - y0}`);
-    Object.assign(svg.style, { display: 'block', height: `${ink}px`, width: `${ink * (x1 - x0) / (y1 - y0)}px`, marginBottom: `${above}px`,
+    Object.assign(svg.style, { display: 'block', height: `${ink}px`, width: `${ink * (x1 - x0) / (y1 - y0)}px`, translate: `0 ${-above}px`,
       marginLeft: i ? `${gap}px` : '0px', marginRight: i ? '0px' : `${gap}px` });
   });
   lockup.style.gap = '0px';
