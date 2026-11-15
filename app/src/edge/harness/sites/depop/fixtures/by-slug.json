@@ -1,0 +1,15 @@
+{
+ "id": 996993405,
+ "brand_id": 1673,
+ "brand_name": "Carhartt",
+ "active_status": "active",
+ "status": "STATUS_ONSALE",
+ "listed_quantity": 13,
+ "user_id": 1000001,
+ "slug": "h01826642-carhartt-black-full-zip-hooded-219a",
+ "seller": {
+  "id": 1000001,
+  "username": "h1e5e334a",
+  "verified": false
+ }
+}

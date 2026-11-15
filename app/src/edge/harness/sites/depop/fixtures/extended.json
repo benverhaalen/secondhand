@@ -1,0 +1,40 @@
+{
+ "is_product_owner": false,
+ "has_free_shipping": false,
+ "like_count": 25,
+ "pricing": {
+  "currency": "USD",
+  "current_price": {
+   "total_price": "64.05",
+   "price_breakdown": {
+    "price": {
+     "amount": "64.05"
+    },
+    "shipping": {
+     "amount": "5.99"
+    }
+   }
+  },
+  "original_price": {
+   "total_price": "64.05",
+   "price_breakdown": {
+    "price": {
+     "amount": "64.05"
+    },
+    "buyer_fee": {
+     "amount": "0.00"
+    },
+    "tax": {
+     "amount": "0.00",
+     "tax_type": "n/a"
+    },
+    "shipping": {
+     "amount": "5.99",
+     "shipping_boundary": "NATIONAL",
+     "shipping_id": "USPS"
+    }
+   }
+  },
+  "is_reduced": false
+ }
+}

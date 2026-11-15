@@ -47,3 +47,11 @@ test('challenger reads firm posture even when low counters score better', () => 
   const d = offer(s, c => c < 7000 ? .98 : .02, 1, 'challenger');
   assert.equal(d.kind, 'counter_offer'); assert.ok(d.amount_cents! >= 7500);
 });
+
+test('an offer state with no usable floor is refused, never accepted (review finding F1, 2026-11-15)', () => {
+  const p = () => 0.5;
+  for (const floor_cents of [NaN, undefined, -5000, 60.5, Infinity]) {
+    const state = { offer_cents: 100, ask_cents: 8000, floor_cents, always_accept_cents: 7200 } as unknown as Parameters<typeof offer>[0];
+    assert.throws(() => offer(state, p, 0.5), /floor_cents must be a whole number/, String(floor_cents));
+  }
+});

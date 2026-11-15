@@ -208,6 +208,37 @@ test('browser-use cloud: the key goes only in its header, never a URL; the brows
   await assert.rejects(bad.persistent('/p', { headless: true }), (e: Error) => !e.message.includes('KEY-123'));
 });
 
+test('browser-use cloud: a dropped connection or a failed set-up stops the browser, and a refused stop is retried and reported (review F1)', async () => {
+  const stops: string[] = [];
+  let stopOk = true;
+  const fetchFn = (async (url: string, init?: RequestInit) => {
+    if (init?.method === 'POST') return new Response(JSON.stringify({ id: 'b-9', cdpUrl: 'wss://cdp.example/y' }), { status: 200 });
+    stops.push(url);
+    return new Response('{}', { status: stopOk ? 200 : 500 });
+  }) as unknown as typeof fetch;
+  const ctx = { pages: () => [], newPage: async () => ({ close: async () => {} }), addCookies: async () => {}, addInitScript: async () => {},
+    storageState: async (): Promise<StorageState> => ({ cookies: [], origins: [] }), close: async () => {} };
+  let drop = () => {};
+  const pw = (newContext: () => Promise<typeof ctx>): CdpPw => ({ chromium: { connectOverCDP: async () => (
+    { contexts: () => [], newContext, close: async () => {}, on(_ev: 'disconnected', fn: () => void) { drop = fn; } }) } });
+  const failed: string[] = [];
+  const source = () => browserUseCloud({ apiKey: 'K', fetchFn, onStopFailed: id => failed.push(id) });
+
+  await cdpLauncher(pw(async () => ctx), source()).anonymous({ headless: true });
+  drop();                                            // the socket drops; nobody called close()
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(stops.length, 1, 'a dropped connection stops the cloud browser');
+
+  await assert.rejects(cdpLauncher(pw(async () => { throw new Error('no context'); }), source()).anonymous({ headless: true }), /no context/);
+  assert.equal(stops.length, 2, 'a set-up failure stops the cloud browser');
+
+  stopOk = false;
+  const c = await cdpLauncher(pw(async () => ctx), source()).anonymous({ headless: true });
+  await c.close();
+  assert.equal(stops.length, 4, 'a refused stop is tried twice');
+  assert.deepEqual(failed, ['b-9'], 'and then reported, not swallowed');
+});
+
 // The real browser-use shape: a local Chrome on a kept profile, reached over CDP; its sign-in survives a relaunch.
 const chrome = [process.env.SECONDHAND_CHROME, 'C:/Program Files/Google/Chrome/Application/chrome.exe'].find(p => p && existsSync(p));
 test('real local Chrome over CDP: state loads, exports, survives a relaunch; warm dispatch is fast', { skip: pw && chrome ? false : 'needs Playwright and Chrome' }, async t => {
