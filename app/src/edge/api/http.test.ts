@@ -1,13 +1,15 @@
 import assert from 'node:assert/strict';
 import { test, beforeEach } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
-import { ApiError, deps, params, paramsOf, route, served } from './http.ts';
+import { ApiError, deps, paramsOf, resetRequestState, route, served, visitorId } from './http.ts';
 import { example } from './examples.ts';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
+import { kv } from '../store/kv.ts';
 
 const sink = memorySink();
 let imports = 0;
@@ -29,7 +31,8 @@ beforeEach(() => {
   sink.lines.length = 0;
   deps.log = createLog({ src: 'test', build: 'test', sink });
   deps.verify = async (t) => (t === 'good' ? 'usr_8f2k' : t === 'other' ? 'usr_other' : null);
-  deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
+  deps.now = () => Date.now();
+  deps.kv = kv(new DatabaseSync(':memory:'), () => deps.now());
   deps.connectingAddress = () => '192.0.2.1';
   deps.started = false;
   deps.visitorPerMinute = 30;
@@ -39,6 +42,25 @@ const call = (h: (r: Request) => Promise<Response>, path: string, init: RequestI
   if (init.token !== null) headers.set('Authorization', `Bearer ${init.token ?? 'good'}`);
   return h(new Request(`http://edge.test${path}`, { ...init, headers }));
 };
+
+test('request reset clears idempotency and visits while preserving other namespaces', () => {
+  deps.kv.set('idem', 'request', { state: 'running' });
+  deps.kv.incr('visit', 'peer', 60000);
+  deps.kv.set('other', 'keep', true);
+  resetRequestState();
+  assert.equal(deps.kv.get('idem', 'request'), undefined);
+  assert.equal(deps.kv.get('visit', 'peer'), undefined);
+  assert.equal(deps.kv.get('other', 'keep'), true);
+});
+
+test('a minted visitor id is accepted unchanged by the route', async () => {
+  const visitor = visitorId();
+  const h = route('GET /v1/search', ctx => ({ status: 200, body: { visitor: ctx.visitor_id } }), { auth: 'visitor' });
+  const response = await call(h, '/v1/search', { token: null, headers: { 'X-Visitor-Id': visitor } });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('X-Visitor-Id'), visitor);
+  assert.deepEqual(await response.json(), { visitor });
+});
 
 test('params come from the endpoint pattern', () => {
   assert.deepEqual(paramsOf('/v1/items/:id/attributes/:name', '/v1/items/it_7c2m/attributes/size'), { id: 'it_7c2m', name: 'size' });
@@ -98,49 +120,10 @@ test('a client changing a header or cookie still hits the visitor limit', async 
   }
 });
 
-test('the visitor limiter map stays bounded under 20000 distinct connecting addresses and evicts oldest', async () => {
-  let address = 0;
-  deps.now = () => 0;
-  deps.connectingAddress = () => `peer-${address}`;
-  const h = route('GET /v1/search', () => ({ status: 200, body: {} }), { auth: 'visitor' });
-  for (; address < 20000; address++) {
-    assert.equal((await call(h, '/v1/search', { token: null })).status, 200);
-    assert.ok(deps.visits.size <= 10000, 'visitor limiter exceeded its declared maximum');
-  }
-  assert.equal(deps.visits.size, 10000);
-  assert.ok(!deps.visits.has('peer-0'), 'oldest address must be evicted');
-  assert.ok(deps.visits.has('peer-19999'));
-  deps.now = () => 60000;
-  await call(h, '/v1/search', { token: null });
-  assert.equal(deps.visits.size, 1, 'entries past their window must be removed');
-});
-
-test('the visitor maximum reads its declared param and never inserts beyond that capacity', async () => {
-  const visits = deps.visits;
-  params.declare({ name: 'visitor_max_entries', family: 'scalar', prior: 2 });
-  deps.visits = new class extends Map<string, { window: number; n: number }> {
-    override set(key: string, value: { window: number; n: number }) {
-      super.set(key, value);
-      assert.ok(this.size <= 2, 'visitor map inserted beyond its param maximum');
-      return this;
-    }
-  }();
-  let address = 0;
-  deps.connectingAddress = () => `peer-${address++}`;
-  const h = route('GET /v1/search', () => ({ status: 200, body: {} }), { auth: 'visitor' });
-  try {
-    for (let i = 0; i < 3; i++) assert.equal((await call(h, '/v1/search', { token: null })).status, 200);
-  } finally {
-    deps.visits = visits;
-    params.declare({ name: 'visitor_max_entries', family: 'scalar', prior: 10000, guard_lo: 1 });
-  }
-});
-
 test('20 visits per minute for five minutes reset even behind a current-window bucket; 31 in one minute is limited', async () => {
   let minute = 1;
   deps.now = () => minute * 60000;
-  deps.visits.set('peer-current', { window: minute, n: 1 });
-  deps.visits.set('192.0.2.1', { window: minute - 1, n: 20 });
+  deps.kv.incr('visit', 'peer-current', 60000);
   const h = route('GET /v1/search', () => ({ status: 200, body: {} }), { auth: 'visitor' });
   for (; minute <= 5; minute++) {
     for (let n = 1; n <= 20; n++) {
@@ -152,36 +135,26 @@ test('20 visits per minute for five minutes reset even behind a current-window b
   }
 });
 
-test('each visit moves its bucket to the end so capacity eviction removes the least recently visited', async () => {
-  deps.now = () => 0;
-  params.declare({ name: 'visitor_max_entries', family: 'scalar', prior: 2 });
-  let address = 'peer-a';
-  deps.connectingAddress = () => address;
-  const h = route('GET /v1/search', () => ({ status: 200, body: {} }), { auth: 'visitor' });
-  try {
-    for (address of ['peer-a', 'peer-b', 'peer-a', 'peer-c']) {
-      assert.equal((await call(h, '/v1/search', { token: null })).status, 200);
-    }
-    assert.deepEqual([...deps.visits.keys()], ['peer-a', 'peer-c'], 'a refreshed bucket kept its old Map position');
-    deps.now = () => 60000;
-    await call(h, '/v1/search', { token: null });
-    assert.deepEqual([...deps.visits.keys()], ['peer-c'], 'expired buckets survived front-of-map cleanup');
-  } finally {
-    params.declare({ name: 'visitor_max_entries', family: 'scalar', prior: 10000, guard_lo: 1 });
-  }
-});
-
-test('without SECONDHAND_PEER_HEADER visitor ids have separate buckets and only the 31st visit is limited', async () => {
+test('without a peer header the issued id keys the limit; forged or dropped ids start fresh buckets', async () => {
   deps.connectingAddress = await connectingAddress(undefined);
   deps.now = () => 0;
   const h = route('GET /v1/search', () => ({ status: 200, body: {} }), { auth: 'visitor' });
   assert.equal(deps.connectingAddress(new Request('http://edge.test', { headers: { 'X-Forwarded-For': '198.51.100.1', 'X-Real-IP': '203.0.113.1', Cookie: 'visitor=shared' } })), null);
-  assert.equal((await call(h, '/v1/search', { token: null, headers: { 'X-Visitor-Id': 'vis_visitor2' } })).status, 200);
-  for (let n = 1; n <= 31; n++) {
-    const response = await call(h, '/v1/search', { token: null, headers: { 'X-Visitor-Id': 'vis_visitor1' } });
-    assert.equal(response.status, n <= 30 ? 200 : 429, `visitor 1 visit ${n}`);
+  const first = await call(h, '/v1/search', { token: null });
+  const visitor = first.headers.get('X-Visitor-Id')!;
+  for (let n = 2; n <= 31; n++) {
+    const response = await call(h, '/v1/search', { token: null, headers: { 'X-Visitor-Id': visitor } });
+    assert.equal(response.status, n <= 30 ? 200 : 429, `issued visitor request ${n}`);
+    if (n === 31) assert.equal((await response.json()).code, 'rate_limited');
   }
-  assert.equal((await call(h, '/v1/search', { token: null, headers: { 'X-Visitor-Id': 'vis_visitor2' } })).status, 200);
+  for (let n = 0; n < 31; n++) {
+    const response = await call(h, '/v1/search', { token: null, headers: { 'X-Visitor-Id': `vis_${String(n).padStart(32, '0')}` } });
+    assert.equal(response.status, 200, 'forged ids are replaced, but without a peer header the new id starts at 1');
+    const issued = response.headers.get('X-Visitor-Id')!;
+    assert.notEqual(issued, `vis_${String(n).padStart(32, '0')}`);
+    assert.equal(deps.kv.get('visit', issued), 1);
+  }
+  assert.equal((await call(h, '/v1/search', { token: null })).status, 200, 'dropping the id also starts a fresh bucket');
 });
 
 test('the configured peer header alone keys the bucket despite rotating visitor ids, forwarding headers and cookies', async () => {
@@ -204,14 +177,16 @@ test('absent or empty configured peer headers return null and fall back to separ
   deps.visitorPerMinute = 1;
   const h = route('GET /v1/search', () => ({ status: 200, body: {} }), { auth: 'visitor' });
   for (const peer of [undefined, '', '   ']) {
-    deps.visits.clear();
+    deps.kv = kv(new DatabaseSync(':memory:'), () => deps.now());
     const headers = new Headers({ 'X-Forwarded-For': '198.51.100.1', 'X-Real-IP': '203.0.113.1', Cookie: 'visitor=shared' });
     if (peer !== undefined) headers.set('X-Host-Peer', peer);
     assert.equal(deps.connectingAddress(new Request('http://edge.test', { headers })), null);
-    for (const [visitor, status] of [['vis_visitor1', 200], ['vis_visitor2', 200], ['vis_visitor1', 429]] as const) {
-      headers.set('X-Visitor-Id', visitor);
-      assert.equal((await call(h, '/v1/search', { token: null, headers })).status, status);
-    }
+    const first = await call(h, '/v1/search', { token: null, headers });
+    const visitor = first.headers.get('X-Visitor-Id')!;
+    assert.equal(first.status, 200);
+    assert.equal((await call(h, '/v1/search', { token: null, headers })).status, 200);
+    headers.set('X-Visitor-Id', visitor);
+    assert.equal((await call(h, '/v1/search', { token: null, headers })).status, 429);
   }
 });
 
@@ -287,4 +262,185 @@ test('served() answers only the ids its examples name; another id is 404 not_fou
   assert.equal((await call(h, '/v1/items/it_7c2m')).status, 200);
   const r = await call(h, '/v1/items/it_someoneelse');
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
+});
+
+
+test('simultaneous requests with one Idempotency-Key reject the running duplicate then replay the finished response', async () => {
+  let release!: () => void, entered!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const started = new Promise<void>(resolve => { entered = resolve; });
+  let calls = 0;
+  const h = route('POST /v1/captures', async () => { calls++; entered(); if (calls === 1) await gate; return { status: 201, body: { id: 'cap_once' } }; });
+  const init = { method: 'POST', headers: { 'Idempotency-Key': 'concurrent' }, body: '{}' };
+  const first = call(h, '/v1/captures', init);
+  await started;
+  let second: Response;
+  try {
+    second = await call(h, '/v1/captures', init);
+    assert.equal(second.status, 409);
+    assert.deepEqual(await second.json(), { code: 'stale', message: 'the same request is still running', failed_step: 'idempotency', retry: { by: 'auto', after_s: 1 } });
+    const mismatch = await call(h, '/v1/captures', { ...init, body: '{"other":true}' });
+    assert.equal((await mismatch.json()).code, 'idempotency_mismatch');
+    assert.equal(calls, 1);
+  } finally { release(); await first; }
+  const third = await call(h, '/v1/captures', init);
+  assert.equal(third.status, 201);
+  assert.equal(third.headers.get('Idempotent-Replayed'), 'true');
+  assert.deepEqual(await third.json(), { id: 'cap_once' });
+  assert.equal(calls, 1);
+});
+
+for (const failure of ['500', 'throw'] as const) test(`${failure} frees the idempotency slot so a retry runs the handler again`, async () => {
+  let calls = 0;
+  const h = route('POST /v1/captures', () => {
+    if (++calls === 1) {
+      if (failure === 'throw') throw new Error('handler failed');
+      return { status: 500, body: {} };
+    }
+    return { status: 201, body: { calls } };
+  });
+  const init = { method: 'POST', headers: { 'Idempotency-Key': failure }, body: '{}' };
+  assert.equal((await call(h, '/v1/captures', init)).status, failure === '500' ? 500 : 503);
+  assert.equal((await call(h, '/v1/captures', init)).status, 201);
+  assert.equal(calls, 2);
+});
+
+test('event streams free the idempotency slot without reading their body', async () => {
+  let calls = 0;
+  const h = route('POST /v1/stream', () => {
+    calls++;
+    const response = new Response(new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode('data: ready\n\n')); } }), { headers: { 'Content-Type': 'text/event-stream; charset=utf-8' } });
+    response.clone = () => { throw new Error('stream body must not be read for idempotency'); };
+    return response;
+  });
+  const init = { method: 'POST', headers: { 'Idempotency-Key': 'stream' }, body: '{}' };
+  const a = await call(h, '/v1/stream', init), b = await call(h, '/v1/stream', init);
+  assert.equal(a.status, 200); assert.equal(b.status, 200); assert.equal(calls, 2);
+  await a.body!.cancel(); await b.body!.cancel();
+});
+
+test('forged and old unsigned visitor ids are replaced; a signed id is retained and matches the client regex', async () => {
+  const h = route('GET /v1/search', ctx => ({ status: 200, body: { visitor: ctx.visitor_id } }), { auth: 'visitor' });
+  for (const forged of ['vis_abcdefghijkl00000000000000000000', 'vis_example01']) {
+    const a = await call(h, '/v1/search', { token: null, headers: { 'X-Visitor-Id': forged } });
+    const issued = a.headers.get('X-Visitor-Id')!;
+    assert.notEqual(issued, forged); assert.equal(issued.length, 36); assert.match(issued, /^vis_[a-z0-9]{8,32}$/);
+    assert.equal((await a.json()).visitor, issued);
+    const b = await call(h, '/v1/search', { token: null, headers: { 'X-Visitor-Id': issued } });
+    assert.equal(b.headers.get('X-Visitor-Id'), issued);
+  }
+});
+
+test('two route bundles and reopened SQLite handles share idempotency slots and visitor buckets', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'http-shared-'));
+  let first = new DatabaseSync(join(dir, 'state.db'));
+  const second = new DatabaseSync(join(dir, 'state.db'));
+  try {
+    const fresh: typeof import('./http.ts') = await import(new URL(`./http.ts?bundle=${++imports}`, import.meta.url).href);
+    deps.kv = kv(first, () => deps.now());
+    Object.assign(fresh.deps, deps, { kv: kv(second, () => deps.now()) });
+    let calls = 0;
+    const handler = () => ({ status: 201, body: { calls: ++calls } });
+    const a = route('POST /v1/captures', handler), b = fresh.route('POST /v1/captures', handler);
+    const init = { method: 'POST', headers: { 'Idempotency-Key': 'shared' }, body: '{}' };
+    const original = await call(a, '/v1/captures', init);
+    const va = route('GET /v1/search', handler, { auth: 'visitor' }), vb = fresh.route('GET /v1/search', handler, { auth: 'visitor' });
+    const visitor = (await call(va, '/v1/search', { token: null })).headers.get('X-Visitor-Id')!;
+    first.close(); first = new DatabaseSync(join(dir, 'state.db'));
+    deps.kv = kv(first, () => deps.now());
+    const replay = await call(b, '/v1/captures', init);
+    assert.equal(replay.headers.get('Idempotent-Replayed'), 'true');
+    assert.deepEqual(await replay.json(), await original.json()); assert.equal(calls, 2, 'one capture handler and one visitor handler ran');
+    for (let i = 1; i <= 30; i++) {
+      const response = await call(i % 2 ? va : vb, '/v1/search', { token: null, headers: { 'X-Visitor-Id': visitor } });
+      assert.equal(response.status, i < 30 ? 201 : 429);
+      assert.equal(response.headers.get('X-Visitor-Id'), visitor, 'both bundles accept the same signed id');
+    }
+  } finally { first.close(); second.close(); rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('finished idempotency slots expire after 24 hours with the injected clock', async () => {
+  let now = 0, calls = 0;
+  deps.now = () => now;
+  const h = route('POST /v1/captures', () => ({ status: 201, body: { calls: ++calls } }));
+  const init = { method: 'POST', headers: { 'Idempotency-Key': 'expiry' }, body: '{}' };
+  await call(h, '/v1/captures', init);
+  now = 86400000 - 1;
+  assert.equal((await call(h, '/v1/captures', init)).headers.get('Idempotent-Replayed'), 'true');
+  now++;
+  assert.equal((await call(h, '/v1/captures', init)).headers.get('Idempotent-Replayed'), null);
+  assert.equal(calls, 2);
+});
+
+test('raw body decoding cannot corrupt invalid UTF-8 or any byte from 0 to 255', async () => {
+  const bytes = Uint8Array.from({ length: 256 }, (_, i) => i);
+  let seen: Uint8Array | undefined;
+  const h = route('PUT /v1/raw', async ctx => { seen = await ctx.readRaw!(); return { status: 204 }; }, { auth: 'none', body: 'raw', max_bytes: 256 });
+  assert.equal((await call(h, '/v1/raw', { method: 'PUT', token: null, body: bytes })).status, 204);
+  assert.deepEqual(seen, bytes);
+});
+
+for (const length of [undefined, '1']) test(`raw body exceeding max_bytes with ${length ? 'lying' : 'no'} Content-Length stops reading and returns 413`, async () => {
+  let handled = false, cancelled = false, pulls = 0;
+  const stream = new ReadableStream<Uint8Array>({
+    pull(c) { pulls++; if (pulls <= 3) c.enqueue(new Uint8Array(3)); else c.close(); },
+    cancel() { cancelled = true; },
+  }, { highWaterMark: 0 });
+  const h = route('PUT /v1/raw', async ctx => { await ctx.readRaw!(); handled = true; return { status: 204 }; }, { auth: 'none', body: 'raw', max_bytes: 4 });
+  const req = new Request('http://edge.test/v1/raw', { method: 'PUT', body: stream, duplex: 'half', headers: length ? { 'Content-Length': length } : {} } as RequestInit);
+  assert.equal((await h(req)).status, 413);
+  assert.equal(handled, false); assert.equal(cancelled, true); assert.equal(pulls, 2);
+});
+
+test('raw Content-Length above max_bytes is rejected before the stream is read', async () => {
+  let pulls = 0;
+  const stream = new ReadableStream<Uint8Array>({ pull(c) { pulls++; c.close(); } }, { highWaterMark: 0 });
+  const h = route('PUT /v1/raw', async ctx => { await ctx.readRaw!(); return { status: 204 }; }, { auth: 'none', body: 'raw', max_bytes: 4 });
+  const req = new Request('http://edge.test/v1/raw', { method: 'PUT', body: stream, duplex: 'half', headers: { 'Content-Length': '5' } } as RequestInit);
+  assert.equal((await h(req)).status, 413); assert.equal(pulls, 0);
+});
+
+test('raw POST cannot claim or replay JSON idempotency slots', async () => {
+  let calls = 0;
+  const h = route('POST /v1/raw', () => ({ status: 200, body: { call: ++calls } }), { auth: 'none', body: 'raw', max_bytes: 4 });
+  for (const byte of [255, 254]) {
+    const r = await call(h, '/v1/raw', { method: 'POST', token: null, body: Uint8Array.of(byte), headers: { 'Idempotency-Key': 'same' } });
+    assert.equal(r.status, 200); assert.equal((await r.json()).call, calls);
+  }
+  assert.equal(calls, 2);
+  assert.equal(deps.kv.get('idem', 'none POST /v1/raw same'), undefined);
+});
+
+test('default JSON body parsing and user_id stripping survive the raw body option', async () => {
+  let seen: unknown;
+  const h = route('POST /v1/json', ctx => { seen = ctx.body; return { status: 204 }; }, { auth: 'none' });
+  assert.equal((await call(h, '/v1/json', { method: 'POST', token: null, body: '{"n":3,"user_id":"ignored"}' })).status, 204);
+  assert.deepEqual(seen, { n: 3 });
+  assert.equal((await call(h, '/v1/json', { method: 'POST', token: null, body: 'invalid' })).status, 400);
+});
+
+for (const declared of [false, true]) test(`raw ${declared ? 'Content-Length' : 'stream'} limit returns 413 even if cancelling the source never resolves`, async () => {
+  let release: (() => void) | undefined;
+  const stream = new ReadableStream<Uint8Array>({
+    pull(c) { c.enqueue(new Uint8Array(5)); },
+    cancel() { return new Promise<void>(resolve => { release = resolve; }); },
+  }, { highWaterMark: 0 });
+  const h = route('PUT /v1/raw', async ctx => { await ctx.readRaw!(); return { status: 204 }; }, { auth: 'none', body: 'raw', max_bytes: 4 });
+  const pending = h(new Request('http://edge.test/v1/raw', { method: 'PUT', body: stream, duplex: 'half', headers: declared ? { 'Content-Length': '5' } : {} } as RequestInit));
+  await new Promise<void>(resolve => setImmediate(resolve));
+  try {
+    const response = await Promise.race([pending, Promise.resolve(undefined)]);
+    assert.equal(response?.status, 413);
+  } finally { release?.(); await pending; }
+});
+
+test('raw handlers can reject a request before reading its body', async () => {
+  let pulls = 0;
+  const stream = new ReadableStream<Uint8Array>({ pull(c) { pulls++; c.enqueue(new Uint8Array(3)); } }, { highWaterMark: 0 });
+  const h = route('PUT /v1/raw', () => ({ status: 404 }), { auth: 'none', body: 'raw', max_bytes: 4 });
+  const req = new Request('http://edge.test/v1/raw', { method: 'PUT', body: stream, duplex: 'half' } as RequestInit);
+  assert.equal((await h(req)).status, 404);
+  assert.equal(pulls, 0);
+  assert.equal(req.bodyUsed, false);
+  await stream.cancel();
 });

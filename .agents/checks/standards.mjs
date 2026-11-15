@@ -17,11 +17,14 @@ export const ONE_INTENT = [
   ['Close', 'Dismiss'],
   ['See all', 'View all', 'Show all'],
   ['Continue', 'Next step', 'Proceed'],
+  ['Retry', 'Try again'],
 ];
 
-// The labels on controls: label="..." on a Press, Pill, Button, ActionRow or Choice, and label: '...' in an action object.
-const ACTS = /^(Press|Pill|Button|IconButton|ActionRow|Choice|Link)$/;
+// The labels on controls: label="..." on a Press, Pill, Button, ActionRow or Choice, label: '...' in an action object,
+// and either quoted side of label={failed ? 'Retry' : ...}.
+const ACTS = /^(Press|Pill|Button|IconButton|FootButton|ActionRow|Choice|Link)$/;
 const LABEL = /\blabel(?:=|:\s*)(?:"([^"\n]+)"|'([^'\n]+)'|\{\s*'([^'\n]+)'\s*\})/g;
+const EITHER = /\blabel=\{[^{}\n]*?\?\s*'([^'\n]+)'\s*:\s*(?:'([^'\n]+)'|[^{}\n]*?)\s*\}/g;
 
 export function standards(root, { files }) {
   const out = [], labels = new Map();
@@ -41,11 +44,11 @@ export function standards(root, { files }) {
     for (const m of text.matchAll(/\bDimensions\.get\(/g)) out.push(err(`${f}:${lineOf(text, m.index)}`, 'N3 Dimensions.get(): use useWindow() from app/src/ui/window.ts, which follows the window (Appllama, Native fidelity law 12)'));
     // ... and only through useWindow(), which is never 0 by 0 on the web's first render (the camera and plan sheet broke on it).
     if (!/\/ui\/window\.ts$/.test(f)) for (const m of text.matchAll(/\buseWindowDimensions\(/g)) out.push(err(`${f}:${lineOf(text, m.index)}`, 'N3 useWindowDimensions(): read the window with useWindow() from app/src/ui/window.ts, which is never 0 by 0 on the web'));
-    for (const m of text.matchAll(LABEL)) {
+    for (const m of [...text.matchAll(LABEL), ...text.matchAll(EITHER)]) {
       // Only a control's label is an intent: a chip or option label names a value ("When: Later"), not a thing to do.
       const tag = text.slice(text.lastIndexOf('<', m.index), m.index).match(/^<(\w+)/)?.[1], before = text.slice(Math.max(0, m.index - 40), m.index);
-      if (!(tag && ACTS.test(tag) && !/\{\{[^}]*$/.test(before)) && !/\b(primary|second|more)\b[^}]*$/.test(before)) continue;
-      const l = m[1] ?? m[2] ?? m[3]; (labels.get(l) ?? labels.set(l, []).get(l)).push(`${f}:${lineOf(text, m.index)}`);
+      if (!(tag && ACTS.test(tag) && !/\{\{[^}]*$/.test(before)) && !/\b(primary|second|more|action)\b[^}]*$/.test(before)) continue;
+      for (const l of m.slice(1).filter(Boolean)) (labels.get(l) ?? labels.set(l, []).get(l)).push(`${f}:${lineOf(text, m.index)}`);
     }
   }
   // N5 one label per intent, across the app.

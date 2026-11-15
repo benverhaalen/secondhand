@@ -1,0 +1,1 @@
+[ {"kill":true}, {"sleep":1500}, {"mark":"launch"}, {"launch":true}, {"wait":{"id":"tab-today"},"timeout":30000}, {"mark":"first_screen"} ]

@@ -1,0 +1,9 @@
+[
+ {"fresh":true}, {"mark":"launch"}, {"launch":true},
+ {"wait":{"id":"signin-email-address-input"},"timeout":30000}, {"mark":"first_screen"}, {"shot":"a01-first-open"},
+ {"tap":"signin-email-address-input"}, {"type":"${EMAIL}"}, {"shot":"a02-email"},
+ {"tap":"signin-email-send"}, {"wait":"Check your email"}, {"shot":"a03-code"},
+ {"tap":"signin-email-code-input"}, {"type":"${CODE}"}, {"tap":"signin-email-verify"},
+ {"wait":"Connect your services"}, {"sleep":1500}, {"shot":"a04-services"},
+ {"tap":"link-ebay"}, {"sleep":4000}, {"shot":"a05-link-ebay"}
+]

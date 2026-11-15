@@ -99,7 +99,8 @@ export function classifyRead<T extends Record<string, unknown>>(
 
 // --- harness.call ---
 
-export type Harness = { call<T = unknown>(site: Site, verb: Verb, args?: CallArgs): Promise<Envelope<T>> };
+export type CallOptions = { signal?: AbortSignal };
+export type Harness = { call<T = unknown>(site: Site, verb: Verb, args?: CallArgs, options?: CallOptions): Promise<Envelope<T>> };
 
 export function createHarness({ adapters, accounts, log, timeoutMs = 20_000, now = () => performance.now(), siteUrl = defaultSiteUrl }: {
   adapters: Adapter[]; accounts?: Accounts; log?: Log; timeoutMs?: number; now?: () => number; siteUrl?: (site: Site, verb: Verb) => string;
@@ -112,7 +113,7 @@ export function createHarness({ adapters, accounts, log, timeoutMs = 20_000, now
   const meta = (a: Adapter | undefined, t0: number, fell_back: boolean, observation_ids: string[] = []): Meta =>
     ({ route_id: a?.route_id ?? 'none', adapter_version: a?.manifest.version ?? '0.0.0', ms: Math.round(now() - t0), fell_back, observation_ids });
 
-  async function call<T>(site: Site, verb: Verb, args: CallArgs = {}): Promise<Envelope<T>> {
+  async function call<T>(site: Site, verb: Verb, args: CallArgs = {}, options: CallOptions = {}): Promise<Envelope<T>> {
     const t0 = now();
     if (!(SITES as readonly string[]).includes(site) || !(VERBS as readonly string[]).includes(verb))
       return { ...fail('no_route', `no route for ${site}.${verb}`, { do: 'handoff', url: '' }), meta: meta(undefined, t0, false) };
@@ -122,7 +123,8 @@ export function createHarness({ adapters, accounts, log, timeoutMs = 20_000, now
     // Linked accounts only: a call on an account the person did not link (or has no stored sign-in for) runs nothing.
     if (accounts) {
       const id = typeof args.account_id === 'string' ? args.account_id : undefined;
-      const a = id ? await accounts.byId(id) : undefined;
+      const person_id = typeof args.person_id === 'string' && args.person_id.length > 0 ? args.person_id : undefined;
+      const a = id && person_id ? await accounts.byId(id, person_id) : undefined;
       const signedIn = (routes.get(`${site}.${verb}`) ?? []).some(r => r.manifest.session === 'signed_in');
       if ((id && (!a || a.site !== site)) || (!id && signedIn))
         return { ...fail('policy_refused', `${id ? `account ${id}` : 'no account'} is not linked on ${site}`, { do: 'raise_decision', kind: 'link_account' }), meta: meta(undefined, t0, false) };
@@ -132,7 +134,7 @@ export function createHarness({ adapters, accounts, log, timeoutMs = 20_000, now
     const chain = routes.get(`${site}.${verb}`) ?? [];
     let last: Envelope<T> | undefined, handoff: Envelope<T> | undefined;
     for (const [i, a] of chain.entries()) {
-      const run = () => runOne<T>(a, verb, args, timeoutMs);
+      const run = () => runOne<T>(a, verb, args, timeoutMs, options.signal);
       const r = log ? await log.call('harness', `${site}.${verb}`, { route_id: a.route_id, operation_id: args.operation_id }, run,
         (o: AdapterResult<T>) => ({ result: { ok: o.ok, code: o.ok ? 'ok' : o.error.code } })) : await run();
       last = { ...r, meta: meta(a, t0, i > 0, r.observation_ids) } as Envelope<T>;
@@ -146,16 +148,21 @@ export function createHarness({ adapters, accounts, log, timeoutMs = 20_000, now
   return { call };
 }
 
-async function runOne<T>(a: Adapter, verb: Verb, args: CallArgs, timeoutMs: number): Promise<AdapterResult<T>> {
+async function runOne<T>(a: Adapter, verb: Verb, args: CallArgs, timeoutMs: number, callerSignal?: AbortSignal): Promise<AdapterResult<T>> {
   const ctl = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<'timeout'>(res => { timer = setTimeout(() => { ctl.abort(); res('timeout'); }, timeoutMs); });
+  const signal = callerSignal ? AbortSignal.any([ctl.signal, callerSignal]) : ctl.signal;
+  const timer = setTimeout(() => ctl.abort(), timeoutMs);
+  let abort!: () => void;
+  const stopped = new Promise<'timeout'>(resolve => { abort = () => resolve('timeout'); });
+  signal.addEventListener('abort', abort, { once: true });
   try {
-    const r = await Promise.race([a.run(args, ctl.signal) as Promise<AdapterResult<T>>, timeout]);
-    if (r !== 'timeout') return r;
+    if (!signal.aborted) {
+      const r = await Promise.race([a.run(args, signal) as Promise<AdapterResult<T>>, stopped]);
+      if (r !== 'timeout' && !signal.aborted) return r;
+    }
   } catch (e) {
-    if (!isWrite(verb)) return fail('page_changed', `adapter threw: ${(e as Error)?.message ?? String(e)}`, { do: 'author', missing: [] });
-  } finally { clearTimeout(timer); }
+    if (!signal.aborted && !isWrite(verb)) return fail('page_changed', `adapter threw: ${(e as Error)?.message ?? String(e)}`, { do: 'author', missing: [] });
+  } finally { clearTimeout(timer); signal.removeEventListener('abort', abort); }
   // A write that timed out or threw may have landed: never replay, reconcile reads the state (rc-1).
   if (isWrite(verb)) return fail('outcome_unknown', 'the write was sent and nothing settled it', { do: 'reconcile', operation_id: args.operation_id ?? '' });
   return fail('rate_limited', 'the site did not answer in time', { do: 'retry_after', after_s: 30 });

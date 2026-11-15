@@ -33,13 +33,17 @@ export const PATHS = {
 
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
-const at = (o: unknown, ...ks: string[]): unknown => ks.reduce<unknown>((v, k) => (isObj(v) ? v[k] : undefined), o);
+const at = (o: unknown, ...ks: string[]): unknown => ks.reduce<unknown>((v, k) => (isObj(v) ? v[k] : Array.isArray(v) ? v[Number(k)] : undefined), o);
 const str = (v: unknown) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : undefined);
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 // "64.05" -> 6405; anything that is not a plain decimal amount is undefined, so classifyRead names it.
 export const cents = (v: unknown) => (typeof v === 'string' && /^\d+(\.\d{1,2})?$/.test(v) ? Math.round(Number(v) * 100) : undefined);
 export const refHash = (v: string) => 'h' + createHash('sha256').update(v).digest('hex').slice(0, 8);
 const objects = (body: unknown) => (Array.isArray(at(body, 'objects')) ? (at(body, 'objects') as unknown[]).filter(isObj) : undefined);
+// The first line of a listing's text, without its hashtags, at most 80 characters.
+export const titleOf = (v: unknown) => (typeof v === 'string' ? v.split(/\r?\n/).map(l => l.replace(/#\S+/g, '').replace(/\s+/g, ' ').trim()).find(Boolean)?.slice(0, 80) : undefined);
+// A slug is "<handle>-<words>-<id>": the words alone, so a seller's handle never stands in for a title.
+export const slugTitle = (slug?: string) => slug?.split('-').slice(1, -1).join(' ') || undefined;
 const listingUrl = (slug: string) => `${WWW}/products/${slug}/`;
 
 // The page is a Next.js app: its data rides in `self.__next_f.push([1,"..."])` parts, joined in order.
@@ -60,7 +64,8 @@ export function extract(html: string, marker: string, ok: (o: Obj) => boolean): 
   const s = flight(html);
   for (let i = s.indexOf(marker); i >= 0; i = s.indexOf(marker, i + 1)) {
     const raw = balanced(s, i);
-    try { const o: unknown = raw && JSON.parse(raw); if (isObj(o) && ok(o)) return o; } catch { /* not this one */ }
+    try { const o: unknown = raw && JSON.parse(raw); if (isObj(o) && ok(o)) return o; }
+    catch (error) { if (!(error instanceof SyntaxError)) throw error; /* not this candidate */ }
   }
 }
 
@@ -117,6 +122,12 @@ async function search(c: Client, a: CallArgs, s: AbortSignal): Promise<AdapterRe
     const slug = str(o.slug);
     return { external_id: str(o.id), slug, url: slug && listingUrl(slug), state: stateOf(o.status), price_cents: cents(at(o, 'pricing', 'current_price', 'price_breakdown', 'price', 'amount')),
       currency: str(at(o, 'pricing', 'currency')), brand: str(o.brand_name), likes: num(o.like_count),
+      // Depop has no title: the first line of the seller's text is what its own cards show (observed 2026-11-15).
+      title: titleOf(o.description) ?? slugTitle(slug), image_url: str(at(o, 'preview', 'formats', 'P0', 'url')) ?? str(at(o, 'pictures', '0', 'formats', 'P0', 'url')),
+      condition: str(at(o, 'attributes', 'condition'))?.replaceAll('_', ' '), size: str(at(o, 'sizes', '0', 'name')), category: str(o.category_name),
+      color: Array.isArray(at(o, 'attributes', 'colour')) ? (at(o, 'attributes', 'colour') as unknown[]).filter(c => typeof c === 'string').join(', ') || undefined : undefined,
+      shipping_cents: cents(at(o, 'pricing', 'current_price', 'price_breakdown', 'shipping', 'amount')),
+      original_price_cents: cents(at(o, 'pricing', 'original_price', 'price_breakdown', 'price', 'amount')), sponsored: o.is_boosted === true || undefined,
       sku: typeof o.sku === 'string' ? o.sku : undefined, // unobserved
       seller_ref_hash: slug && refHash(slug.split('-')[0]) };
   });
@@ -129,7 +140,13 @@ async function getJson(c: Client, path: string, s: AbortSignal): Promise<{ ok: t
 }
 const listingRow = (o: Obj) => {
   const slug = str(o.slug);
-  return { external_id: str(o.id), slug, url: slug && listingUrl(slug), state: stateOf(o.status), currency: str(at(o, 'pricing', 'currency')),
+  const description = typeof o.description === 'string' ? o.description : undefined;
+  const pictures = Array.isArray(o.pictures) ? o.pictures : [];
+  const photos = pictures.flatMap(picture => {
+    const url = typeof picture === 'string' ? picture : str(at(picture, 'url')) ?? str(at(picture, 'formats', 'P0', 'url'));
+    return url && /^https?:\/\//.test(url) ? [url] : [];
+  });
+  return { title: description?.split('\n')[0], description, photos, photo_url: photos[0], external_id: str(o.id), slug, url: slug && listingUrl(slug), state: stateOf(o.status), currency: str(at(o, 'pricing', 'currency')),
     price_cents: cents(at(o, 'pricing', 'current_price', 'price_breakdown', 'price', 'amount')), brand: str(o.brand_name), likes: num(o.like_count),
     listed_at: str(o.created_at), sku: typeof o.sku === 'string' ? o.sku : undefined }; // unobserved
 };
@@ -138,15 +155,30 @@ const listingRow = (o: Obj) => {
 async function readListings(c: Client, a: CallArgs, s: AbortSignal): Promise<AdapterResult> {
   const shop = str(a.shop_id);
   if (!shop) return refuse('missing_input', 'read_listings needs the linked shop_id');
-  // shortcut: the first page of 24 per status only, follow page_info.last as offset when a shop has more.
   const which = a.status === 'sold' ? ['sold'] : a.status === 'active' ? ['products'] : ['products', 'sold'];
-  const rows = [];
+  const rows = new Map<string, ReturnType<typeof listingRow>>();
   for (const w of which) {
-    const r = await getJson(c, w === 'sold' ? PATHS.sold(shop) : PATHS.products(shop), s); if (!r.ok) return r;
-    const objs = objects(r.body); if (!objs) return changed(`${w} objects`);
-    rows.push(...objs.map(listingRow));
+    const base = w === 'sold' ? PATHS.sold(shop) : PATHS.products(shop);
+    let path = base;
+    const cursors = new Set<string>();
+    while (true) {
+      s.throwIfAborted();
+      const r = await getJson(c, path, s); if (!r.ok) return r;
+      const objs = objects(r.body); if (!objs) return changed(`${w} objects`);
+      for (const obj of objs) {
+        const row = listingRow(obj);
+        if (!row.external_id) return changed(`${w} product id`);
+        rows.set(row.external_id, row);
+      }
+      const page = at(r.body, 'page_info');
+      if (at(page, 'has_more') !== true) break; // no page_info, or has_more false: this was the last page
+      const cursor = str(at(page, 'last'));
+      if (!cursor || cursors.has(cursor)) return changed(`${w} pagination cursor`);
+      cursors.add(cursor);
+      path = `${base}&offset=${encodeURIComponent(cursor)}`;
+    }
   }
-  return classifyRead({ challenge: false, rows }, M.read_listings);
+  return classifyRead({ challenge: false, rows: [...rows.values()] }, M.read_listings);
 }
 
 async function shopSeller(c: Client, username: string, s: AbortSignal): Promise<{ ok: true; seller: Obj } | Extract<AdapterResult, { ok: false }>> {
@@ -307,8 +339,8 @@ const WRITES: Record<'post' | 'revise' | 'end' | 'relist' | 'send_message' | 'an
   make_offer: a => {
     const listing = id(a, 'listing_external_id'); if (!listing) return refuse('missing_input', 'make_offer needs listing_external_id');
     // spec/sites.mjs defaults last_sent_at to null, which tsc reads as the only allowed type
-    const r = (sellerOffer as unknown as (site: string, o: Record<string, unknown>) => unknown)('depop', { list_cents: Number(a.list_cents), offer_cents: Number(a.offer_cents), lowest_cents: a.lowest_cents === undefined ? undefined : Number(a.lowest_cents),
-      last_sent_at: a.last_sent_at ? new Date(String(a.last_sent_at)) : null, now: a.now ? new Date(String(a.now)) : new Date(), promised_elsewhere: a.promised_elsewhere === true }) as { ok: boolean; why?: string };
+    const r = sellerOffer('depop', { list_cents: Number(a.list_cents), offer_cents: Number(a.offer_cents), lowest_cents: a.lowest_cents === undefined ? undefined : Number(a.lowest_cents),
+      last_sent_at: a.last_sent_at ? new Date(String(a.last_sent_at)) : null, now: a.now ? new Date(String(a.now)) : new Date(), promised_elsewhere: a.promised_elsewhere === true });
     if (!r.ok) return refuse('seller_offer', r.why ?? 'refused');
     return { dry: true, url: `${WWW}/sellinghub/`, request: { listing_external_id: listing, amount: (Number(a.offer_cents) / 100).toFixed(2) },
       steps: ['open the listing in the selling hub', 'tap Send offer', 'fill the amount', 'stop before Send'] };

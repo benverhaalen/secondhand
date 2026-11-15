@@ -18,7 +18,8 @@ from xml.etree import ElementTree
 from valuation.experiment import FIELDS
 
 EXTRAS = ("description", "retail_cents", "released_at", "region")   # read by the text-only and release tests, not the runner
-COLUMNS = FIELDS + EXTRAS
+# FIELDS also holds retail_cents and released_at: each column once, in the frozen order the bronze schema reads
+COLUMNS = tuple(f for f in FIELDS if f not in EXTRAS) + EXTRAS
 
 csv.field_size_limit(1 << 24)   # Mercari and Grailed descriptions run long
 

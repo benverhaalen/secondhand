@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { read, err, warn, lineOf, withoutComments } from './util.mjs';
 
 const TOKENS = 'brand/tokens.css';
-const APP = f => /^app\/src\/.*\.(tsx?|jsx?)$/.test(f) && !/\.(test|generated)\./.test(f);
+// The server's code (edge, engines) holds no words a person reads on a screen; ui.mjs draws the same line.
+const APP = f => /^app\/src\/.*\.(tsx?|jsx?)$/.test(f) && !/\.(test|generated)\./.test(f) && !/^app\/src\/(edge|engines)\//.test(f);
 
 // Words a person reads: JSX text (also beside an expression or on its own line) and quoted strings.
 // `label` is true when the string names something for a screen reader. `jsx` is true for text between tags.

@@ -1,0 +1,10 @@
+[
+ {"kill":true}, {"launch":true}, {"wait":{"id":"tab-buy"},"timeout":30000},
+ {"tap":"tab-buy"}, {"wait":{"id":"buy-search"}}, {"sleep":800}, {"shot":"b01-buy"},
+ {"tap":"buy-search"}, {"wait":{"id":"shop-bar-input"},"timeout":5000}, {"sleep":1500}, {"wait":{"id":"shop-bar-input"},"timeout":1000}, {"shot":"b02-shop-focused"},
+ {"type":"${Q}"}, {"mark":"tap_search"}, {"key":"return"},
+ {"wait":{"prefix":"float-"},"timeout":20000}, {"mark":"first_frame"}, {"shot":"b03-reach"},
+ {"wait":"for sale now","timeout":30000}, {"mark":"settled"}, {"shot":"b04-results"},
+ {"sleep":6000}, {"shot":"b05-chat"},
+ {"tap":{"prefix":"shop-result-"}}, {"sleep":4000}, {"shot":"b06-listing"}
+]

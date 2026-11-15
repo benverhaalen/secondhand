@@ -38,7 +38,14 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
   assert.ok(r.headers.get('X-Request-Id'));
   for (const [key, value] of Object.entries(e.headers ?? {})) assert.equal(r.headers.get(key), value);
   if (e.response === null) assert.equal(await r.text(), '');
-  else assert.deepEqual(await r.json(), e.response);
+  else {
+    const body = await r.json();
+    if (['accounts.import', 'accounts.unlink'].includes(e.name)) {
+      assert.ok(runtime.store.getJob(body.id), 'the response identifies the stored job');
+      body.id = (e.response as { id: string }).id;
+    }
+    assert.deepEqual(body, e.response);
+  }
 });
 for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor' && (e.endpoint.includes(':id')))) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
@@ -222,4 +229,12 @@ test('successful harness listing reads carry live site provenance', async () => 
     assert.equal(rows.find(row => row.id === 'ls_import_dp-1001')?.data, 'example', 'live reads preserve example provenance');
     assert.equal(rows.find(row => row.id === 'ls_import_dp-1001')?.preview_current, false);
   } finally { runtime.harness.call = original; }
+});
+
+
+test('a real Depop account needs a shop id before preview and never receives example listings', async () => {
+  runtime.store.put('account', { id: 'acc_real', user_id: 'usr_other', site: 'depop' });
+  const response = await call(examples.find(e => e.name === 'accounts.import_preview')!, { token: 'other', path: '/v1/accounts/acc_real/import-preview' });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { account_id: 'acc_real', site: 'depop', needs_username: true, listings: [] });
 });

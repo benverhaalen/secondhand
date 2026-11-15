@@ -1,3 +1,4 @@
+import { withProfileRead } from '../connect/adapters.ts';
 // Rests-on: spec/product.md §3, §5, §6 Harnesses, §7; spec/examples/{items,sell,you}.json.
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
@@ -10,13 +11,15 @@ import { createLog, consoleSink, type Log } from '../../../../log/index.js';
 import { store } from './store.ts';
 import { runtimePorts as searchRuntime } from '../intel/public/search.ts';
 import { createApify } from '../harness/sites/apify/adapter.ts';
-import { example } from './examples.ts';
+import { example, examplesServed } from './examples.ts';
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { fromEngine, pagination, object, integer, invalid } from './captures.ts';
-import { memoryVault, type Accounts, type LinkedAccount } from '../browser/auth.ts';
+import type { AuthVault, Accounts, LinkedAccount } from '../browser/auth.ts';
+import { vault as defaultVault } from '../store/vault.ts';
 import { createHarness, fail, isWrite, type Adapter, type Harness } from '../harness/protocol.ts';
 import { createSiteService } from '../harness/service.ts';
-import { depopAdapters, API, type Client } from '../harness/sites/depop/adapter.ts';
+import { composeSources } from '../harness/compose.ts';
+import { depopAdapters, type Client } from '../harness/sites/depop/adapter.ts';
 import { ebayAdapters, ebayPageAdapters, type PageClient } from '../harness/sites/ebay/adapter.ts';
 import { poshmarkAdapters } from '../harness/sites/poshmark/adapter.ts';
 import { mercariAdapters } from '../harness/sites/mercari/adapter.ts';
@@ -45,6 +48,10 @@ export function seedExamples(st: Store) {
     seed('item', { ...card, id: card.id, user_id: EXAMPLE_USER, tile: tiles.find(row => row.id === card.id), strategy_options: { fast: response('items.strategy').strategies } });
     for (const tile of (response('items.list').data as Row[])) seed('item', { attributes: [], photos: [], listings: [], ...tile, tile });
     for (const listing of card.listings as Row[]) seed('listing', { ...listing, item_id: card.id, account_id: listing.site === 'ebay' ? 'acc_eb1' : 'acc_dp1', required_fields: ['chest_width'] });
+    for (const order of response('orders.list').data as Row[]) {
+      const amounts = Object.fromEntries(['price_cents', 'fees_cents', 'shipping_cents', 'payout_cents'].map(key => [key, object(order[key]) ? order[key].amount_cents : order[key]]));
+      seed('order', { ...order, ...amounts });
+    }
     const preview = response('accounts.import_preview');
     for (const listing of preview.listings as Record<string, unknown>[]) seed('listing', { ...listing, id: `ls_import_${listing.external_id}`, account_id: preview.account_id, site: preview.site, import_preview: true, read_at: preview.read_at });
     for (const account of response('accounts.list').data as Row[]) seed('account', account);
@@ -65,18 +72,19 @@ export function seedExamples(st: Store) {
 }
 
 export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }), options: {
-  adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number;
+  adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number; vault?: AuthVault;
   publicClients?: { ebay: PageClient; depop: Client; close(): Promise<void> }; apifyToken?: string;
 } = {}) {
   const now = options.now ?? Date.now;
-  seedExamples(st);
-  // shortcut: session state is process-local until the Databricks secret-scope AuthVault joins.
-  const vault = memoryVault();
+  if (examplesServed()) seedExamples(st);
+  const vault = options.vault ?? defaultVault();
   const accounts: Accounts & { byId(id: string, person_id?: string): Promise<LinkedAccount | undefined> } = {
     async linked(person_id) {
       const rows = person_id ? st.rows('account', { user_id: person_id }) : st.systemRows('account');
       const linked = await Promise.all(rows.map(async row => {
-        if (row.deleted || typeof row.token_ref !== 'string' || !(SITES as readonly unknown[]).includes(row.site) || !await vault.get(row.token_ref)) return undefined;
+        if (row.deleted || !(SITES as readonly unknown[]).includes(row.site)) return undefined;
+        if (row.profile_id && row.state === 'linked') return { account_id: row.id, person_id: row.user_id, site: row.site, token_ref: `profile:${row.id}` } as LinkedAccount;
+        if (typeof row.token_ref !== 'string' || !await vault.get(row.token_ref)) return undefined;
         return { account_id: row.id, person_id: row.user_id, site: row.site, token_ref: row.token_ref } as LinkedAccount;
       }));
       return linked.filter((row): row is LinkedAccount => row !== undefined);
@@ -86,53 +94,30 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   const personScope = new AsyncLocalStorage<string>();
   const scopedAccounts: Accounts = { ...accounts, byId: id => accounts.byId(id, personScope.getStore()) };
   // A route never receives system accounts.
-  const systemAccounts: Accounts = { linked: () => accounts.linked(), byId: async id => (await accounts.linked()).find(row => row.account_id === id) };
+  const systemAccounts: Accounts = { linked: () => accounts.linked(), byId: async (id, person_id) => (await accounts.linked(person_id)).find(row => row.account_id === id) };
   const liveSites = new Set((process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/));
-  const live = liveSites.has('depop');
-  const client: Client = options.publicClients?.depop ?? {
-    signed_in: false,
-    async doc(url, signal) {
-      if (!live) throw new Error('offline Depop client cannot fetch');
-      const res = await fetch(url, { signal });
-      const html = await res.text();
-      return { status: res.status, html, challenge: /captcha|just a moment|are you a robot/i.test(html.slice(0, 20000)) };
-    },
-    async json(path, signal) {
-      if (!live) throw new Error('offline Depop client cannot fetch');
-      const res = await fetch(API + path, { signal });
-      return { status: res.status, body: res.ok ? await res.json() : null };
-    },
-  };
   const unavailable = async (): Promise<never> => { throw new Error('site session transport is not composed'); };
-  const ebayLive = liveSites.has('ebay');
-  const ebayPageClient: PageClient = options.publicClients?.ebay ?? (ebayLive ? options.ebayPageClient ?? {
-    signed_in: false,
-    async page(url, signal) {
-      const res = await fetch(url, { signal });
-      return { status: res.status, html: await res.text() };
-    },
-  } : { signed_in: false, page: unavailable });
   // shortcut: waiting.md "The harness wired to itself": browser profiles and eBay credentials
   // have no runtime transport yet. Keep their real dry-write adapters and explicit offline reads.
   const offlineClient: Client = { signed_in: false, doc: unavailable, json: unavailable };
   const adapters = options.adapters ?? [
-    ...depopAdapters(client),
+    ...depopAdapters(options.publicClients?.depop ?? offlineClient),
     ...poshmarkAdapters(offlineClient),
     ...mercariAdapters({ signed_in: false, page: unavailable }),
     ...ebayAdapters({ env: 'production', app_token: async () => undefined, user_token: async () => ({ ok: false }), send: unavailable }),
-    ...ebayPageAdapters(ebayPageClient),
-  ].map(adapter => (adapter.manifest.site === 'depop' && (live || !!options.publicClients)) || (adapter.manifest.site === 'ebay' && (ebayLive || !!options.publicClients)) || isWrite(adapter.manifest.verb) ? adapter : {
+    ...ebayPageAdapters(options.publicClients?.ebay ?? { signed_in: false, page: unavailable }),
+  ].map(adapter => ((adapter.manifest.site === 'depop' || adapter.manifest.site === 'ebay') && !!options.publicClients) || isWrite(adapter.manifest.verb) ? adapter : {
     ...adapter, async run() { return fail('no_route', `${adapter.manifest.site} live reads are unavailable`, { do: 'handoff', url: '' }); },
-  });
+  }).map(adapter => withProfileRead(adapter, st));
   const liveMercari = (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/).includes('mercari');
   let mercariPool: ReturnType<typeof createPool<BrowserPage>> | undefined;
   const mercari = linkedSearch({ accounts: scopedAccounts, async read(account_id, url, signal) {
     if (!liveMercari) throw new Error('Mercari live reads are disabled');
     if (!mercariPool) {
-      const executablePath = process.env.SECONDHAND_CHROME_PATH;
-      if (!executablePath) throw new Error('Mercari needs SECONDHAND_CHROME_PATH for its linked browser');
+      const executablePath = process.env.SECONDHAND_CHROME;
+      if (!executablePath) throw new Error('Mercari needs SECONDHAND_CHROME for its linked browser');
       const profileRoot = join(process.env.SECONDHAND_DATA_DIR ?? tmpdir(), 'secondhand-linked-browsers');
-      const pw = createRequire(join(process.cwd(), 'app/package.json'))('playwright-core') as CdpPw;
+      const pw = createRequire(import.meta.url)('playwright-core') as CdpPw;
       const launcher = cdpLauncher(pw, localChrome({ executablePath, scratch: join(profileRoot, 'anonymous') })) as Launcher<BrowserPage>;
       mercariPool = createPool({ launcher, profileRoot, accounts: scopedAccounts, vault, leases: memoryLeases(), log });
     }
@@ -167,7 +152,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     });
   } };
   const routed: typeof searchRuntime.routed = site => site === 'depop' || site === 'ebay'
-    ? liveSites.has(site) || !!options.publicClients
+    ? !!options.publicClients
     : site === 'mercari' && liveMercari;
   Object.assign(searchRuntime, { harness, accounts, routed, apify: options.apifyToken ? createApify({ token: options.apifyToken, log }) : undefined });
   let closing: Promise<void> | undefined;
@@ -272,7 +257,11 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
             const source = st.get('listing', job.user_id, id);
             if (!source || source.account_id !== job.account_id) throw new Error('import listing is outside this account');
             const item_id = typeof source.matches_item_id === 'string' ? source.matches_item_id : `it_${crypto.randomUUID().replaceAll('-', '')}`;
-            if (!st.get('item', job.user_id, item_id)) st.put('item', { id: item_id, user_id: job.user_id, title: source.title ?? '', state: 'live', origin: 'import', data: source.data, quantity: 1, attributes: [], photos: [], created_at: source.read_at, updated_at: source.read_at });
+            const photos = (Array.isArray(source.photos) ? source.photos : source.photo_url ? [source.photo_url] : []).flatMap(photo => {
+              const url = typeof photo === 'string' ? photo : object(photo) && typeof photo.url === 'string' ? photo.url : undefined;
+              return url ? [{ id: `ph_${crypto.randomUUID().replaceAll('-', '')}`, url, file_ref: url, role: 'source', use: 'real', ai_marked: false }] : [];
+            });
+            if (!st.get('item', job.user_id, item_id)) st.put('item', { id: item_id, user_id: job.user_id, title: source.title ?? '', description: source.description, state: source.state === 'sold' ? 'sold' : 'live', origin: 'import', data: source.data, quantity: 1, attributes: Array.isArray(source.attributes) ? source.attributes : [], photos, created_at: source.read_at, updated_at: source.read_at });
             const prior = st.rows('listing', { user_id: job.user_id, account_id: job.account_id, external_id: source.external_id }).find(row => !row.import_preview);
             const listing_id = prior?.id ?? `ls_${crypto.randomUUID().replaceAll('-', '')}`;
             if (!prior) st.put('listing', { ...source, version: undefined, id: listing_id, item_id, import_preview: false });
@@ -308,11 +297,19 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
 }
 
 // Apify is never in the path an answer waits on (Nate, product/words.md 2026-11-15 08:25): it is composed again only as a background fill.
-export const runtime = createRuntime(store);
+const log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink });
+const shared = globalThis as typeof globalThis & { __secondhandSources?: ReturnType<typeof composeSources> };
+const sources = shared.__secondhandSources ??= composeSources({ env: process.env, log, now: Date.now, store });
+export const runtime = createRuntime(store, log, { publicClients: sources.publicClients });
+let closing: Promise<void> | undefined;
+runtime.close = () => closing ??= Promise.resolve().then(() => sources.close());
 
+export function readable(row: Row, user_id: string): boolean {
+  return !row.deleted && row.user_id === user_id && (row.data !== 'example' || user_id === EXAMPLE_USER && examplesServed());
+}
 export function owned(table: Table, ctx: Ctx, id: string): Row {
   const row = runtime.store.get(table, ctx.user_id!, id);
-  if (!row || row.deleted) throw new ApiError('not_found', `no ${table} ${id} for this user`, 'read');
+  if (!row || !readable(row, ctx.user_id!)) throw new ApiError('not_found', `no ${table} ${id} for this user`, 'read');
   return row;
 }
 export function checkVersion(row: Row, expected: unknown) {

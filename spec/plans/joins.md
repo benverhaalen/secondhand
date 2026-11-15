@@ -34,7 +34,7 @@ One item from the camera to the sale, the way the person meets it. A link marked
 
 ## Named fixes, in build order
 
-The queue of [packet 69](../../.agents/team/packets/team/69-integration-handoff.md#3-the-queue-in-order), each one a fix with the measure that says it worked. J0, main green in this area, landed in d81792a8 and 137d9ec8.
+The queue of [packet 69](../../.agents/team/packets/team/69-integration-handoff.md#what-is-left-in-order), each one a fix with the measure that says it worked. J0, main green in this area, landed in d81792a8 and 137d9ec8.
 
 | Fix | What is wrong now | The fix | Measure |
 |---|---|---|---|

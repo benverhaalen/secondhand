@@ -1,0 +1,14 @@
+resources:
+  jobs:
+    export_params:
+      name: secondhand-export-params
+      environments:
+        - environment_key: export
+          spec:
+            environment_version: "3"
+      tasks:
+        - task_key: export_params
+          environment_key: export
+          spark_python_task:
+            python_file: ../../databricks/tasks/export_params.py
+            parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}", "--split-at", "2019-01-01"]

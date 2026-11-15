@@ -107,11 +107,11 @@ test('setup runs layout, tables, provenance migration, then governance', () => {
   });
 });
 
-test('layout is idempotent, commented and split into exactly six complete statements', () => {
+test('layout is idempotent, commented and split into exactly seven complete statements', () => {
   const sql = read('databricks/sql/00_layout.sql');
   const parts = statements(sql);
-  assert.equal(parts.length, 6);
-  assert.equal((sql.match(/;\s*$/gm) ?? []).length, 6);
+  assert.equal(parts.length, 7);
+  assert.equal((sql.match(/;\s*$/gm) ?? []).length, 7);
   for (const part of parts) {
     assert.match(part, /^CREATE (SCHEMA|VOLUME) IF NOT EXISTS secondhand\./);
     assert.match(part, /COMMENT\s+'[^']+'/);
@@ -279,4 +279,40 @@ test('governance query covers direct, tagged and overlapping columns without dou
   } finally {
     db.close();
   }
+});
+
+test('public observation loader runs on demand with serverless version 3 and the synced root', () => {
+  const resource = read('deploy/resources/observations.yml');
+  const job = block(block(resource, 'jobs', 2), 'load_observations', 4);
+  assert.ok(job, 'load_observations job must exist');
+  assert.doesNotMatch(job, /\bschedule:|\btrigger:/);
+  assert.match(job, /environment_version: "3"/);
+  assert.match(job, /spark_python_task:/);
+  assert.match(job, /python_file: \s*\.\.\/\.\.\/databricks\/tasks\/load_observations\.py/);
+  assert.ok(job.includes('parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}"]'));
+});
+
+test('term list is an on-demand serverless job with the synced root and explicit output columns', () => {
+  const resource = read('deploy/resources/term_list.yml');
+  const job = block(block(resource, 'jobs', 2), 'term_list', 4);
+  assert.ok(job, 'term_list job must exist');
+  assert.doesNotMatch(job, /\bschedule:|\btrigger:/);
+  assert.match(job, /environment_version: "3"/);
+  assert.match(job, /spark_python_task:/);
+  assert.match(job, /python_file: \s*\.\.\/\.\.\/databricks\/tasks\/term_list\.py/);
+  assert.ok(job.includes('parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}"]'));
+  const task = read('databricks/tasks/term_list.py');
+  assert.match(task, /INSERT OVERWRITE \{catalog\}\.measures\.term_list \(\{', '\.join\(COLUMNS\)\}\)/);
+  assert.doesNotMatch(task, /INSERT \*|SELECT \*/i);
+});
+
+test('param export is a manual serverless job with the synced root and export volume', () => {
+  const resource = read('deploy/resources/export.yml');
+  const job = block(block(block(resource, 'resources', 0), 'jobs', 2), 'export_params', 4);
+  assert.ok(job, 'export_params job must exist');
+  assert.doesNotMatch(job, /schedule:/);
+  assert.match(job, /environment_version: "3"/);
+  assert.match(job, /python_file: ..\/..\/databricks\/tasks\/export_params.py/);
+  assert.ok(job.includes('parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}", "--split-at", "2019-01-01"]'));
+  assert.match(read('databricks/sql/00_layout.sql'), /CREATE VOLUME IF NOT EXISTS secondhand\.raw\.export COMMENT 'params\/latest\.json and dated copies the server reads on a timer';/);
 });

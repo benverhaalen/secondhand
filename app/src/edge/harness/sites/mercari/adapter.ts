@@ -80,7 +80,8 @@ function op(p: Page, name: string): { ok: true; data: Obj } | Fail {
 // The page's Next.js state: props.pageProps in the __NEXT_DATA__ script.
 export function nextData(html: string): Obj | undefined {
   const m = html.match(/<script id="__NEXT_DATA__" type="application\/json"[^>]*>([\s\S]*?)<\/script>/);
-  try { const pp = m && at(JSON.parse(m[1]), 'props', 'pageProps'); return isObj(pp) ? pp : undefined; } catch { return undefined; }
+  try { const pp = m && at(JSON.parse(m[1]), 'props', 'pageProps'); return isObj(pp) ? pp : undefined; }
+  catch (error) { if (error instanceof SyntaxError) return undefined; throw error; }
 }
 
 // --- manifests ---
@@ -306,8 +307,8 @@ const WRITES: Record<'post' | 'revise' | 'end' | 'relist' | 'send_message' | 'an
     if (!(Number.isInteger(offer) && offer >= MIN_CENTS)) return refuse('seller_offer', `offer_cents is at least ${MIN_CENTS}`);
     const floor = underFloor(a, offer); if (floor) return refuse('under_floor', floor);
     // spec/sites.mjs defaults last_sent_at to null, which tsc reads as the only allowed type
-    const r = (sellerOffer as unknown as (site: string, o: Record<string, unknown>) => unknown)('mercari', { list_cents: Number(a.list_cents), offer_cents: offer, lowest_cents: a.lowest_cents === undefined ? undefined : Number(a.lowest_cents),
-      last_sent_at: a.last_sent_at ? new Date(String(a.last_sent_at)) : null, now: a.now ? new Date(String(a.now)) : new Date(), promised_elsewhere: a.promised_elsewhere === true }) as { ok: boolean; why?: string };
+    const r = sellerOffer('mercari', { list_cents: Number(a.list_cents), offer_cents: offer, lowest_cents: a.lowest_cents === undefined ? undefined : Number(a.lowest_cents),
+      last_sent_at: a.last_sent_at ? new Date(String(a.last_sent_at)) : null, now: a.now ? new Date(String(a.now)) : new Date(), promised_elsewhere: a.promised_elsewhere === true });
     if (!r.ok) return refuse('seller_offer', r.why ?? 'refused');
     return { dry: true, url: ROUTES.item(item), request: { listing_external_id: item, amount_cents: offer },
       steps: ['open the listing', 'tap Offer to likers', 'fill the amount', 'stop before Send offer'] };

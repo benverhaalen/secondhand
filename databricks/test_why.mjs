@@ -138,7 +138,7 @@ test('guard defines every predicate and status reads the latest cross-owner snap
   assert.match(parsed[5], /^CREATE OR REPLACE VIEW secondhand\.measures\.guard_status/)
   const wildcard = branches.find(s => s.includes("'principal_map_unlogged_wildcard' AS rule"))
   assert.ok(wildcard.includes("WHERE m.user_id = '*' AND NOT EXISTS (SELECT 1 FROM secondhand.governance.break_glass b WHERE b.principal = m.principal AND b.ended_at IS NULL)"))
-  assert.equal(branches.length, 8 + tables.filter(([, , body]) => /\bdata STRING/.test(body)).length)
+  assert.equal(branches.length, 16 + tables.filter(([, , body]) => /\bdata STRING/.test(body)).length)
   assert.match(parsed.at(-1), /SELECT violations AS violations_now,[\s\S]*checked_at AS last_checked_at[\s\S]*FROM secondhand\.measures\.guard_snapshot\s+ORDER BY checked_at DESC\s+LIMIT 1$/)
   assert.doesNotMatch(parsed.at(-1), /guard_violations/)
 })
@@ -175,24 +175,25 @@ test('constraint reruns drop existing foreign keys before primary keys, then re-
   assert.equal(constraints.size, 12, 'expected ten primary keys and two foreign keys')
 })
 
-test('the setup resource runs why, constraints and sources on the warehouse, then the Python guard; purge receives catalog and root', () => {
+test('the setup resource runs why, constraints, sources and market on the warehouse, then the Python guard; purge receives catalog and root', () => {
   const resource = read('../deploy/resources/governance.yml')
   assert.match(resource, /governance_setup:\s+name: secondhand-governance-setup/)
   const tasks = [...resource.matchAll(/- task_key: (\w+)([\s\S]*?)(?=\n        - task_key:|$)/g)]
-  assert.equal(tasks.length, 4)
-  tasks.slice(0, 3).forEach((t, i) => {
+  assert.equal(tasks.length, 5)
+  tasks.slice(0, 4).forEach((t, i) => {
     assert.match(t[2], /sql_task:/)
     assert.ok(t[2].includes('warehouse_id: ${var.warehouse_id}'))
     const path = t[2].match(/path: (\S+)/)?.[1]
-    assert.equal(path, `../../databricks/sql/${['07_why.sql', '08_constraints.sql', '11_sources.sql'][i]}`)
+    assert.equal(path, `../../databricks/sql/${['07_why.sql', '08_constraints.sql', '11_sources.sql', '15_market.sql'][i]}`)
     readFileSync(new URL(path, new URL('../deploy/resources/governance.yml', import.meta.url)), 'utf8')
   })
   assert.ok(tasks[1][2].includes(`task_key: ${tasks[0][1]}`), 'constraints must depend on why')
   assert.ok(tasks[2][2].includes(`task_key: ${tasks[1][1]}`), 'sources must depend on constraints')
-  assert.ok(tasks[3][2].includes(`task_key: ${tasks[2][1]}`), 'guard must depend on sources')
+  assert.ok(tasks[3][2].includes(`task_key: ${tasks[2][1]}`), 'market must depend on sources')
+  assert.ok(tasks[4][2].includes(`task_key: ${tasks[2][1]}`), 'guard must depend on sources')
   assert.match(resource, /environments:\s+- environment_key: guard\s+spec:\s+environment_version: "3"/)
-  assert.match(tasks[3][2], /environment_key: guard\s+spark_python_task:\s+python_file: ..\/..\/databricks\/tasks\/guard_job.py/)
-  assert.ok(tasks[3][2].includes('parameters: ["--root", "${workspace.file_path}"]'))
+  assert.match(tasks[4][2], /environment_key: guard\s+spark_python_task:\s+python_file: ..\/..\/databricks\/tasks\/guard_job.py/)
+  assert.ok(tasks[4][2].includes('parameters: ["--root", "${workspace.file_path}"]'))
   const purge = read('../deploy/databricks.yml').split('    purge_user:')[1].split('\ntargets:')[0]
   assert.ok(purge.includes('parameters: ["{{job.parameters.user_id}}", "${var.catalog}", "--root", "${workspace.file_path}"]'))
 })

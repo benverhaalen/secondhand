@@ -84,6 +84,13 @@ const grid = '<div data-part="tile" style="height:200px;width:160px"></div>';
 test('U11: a main tab\'s title row (page-head) is the nav, not lines before the first item', { skip: !pw }, async () => {
   assert.deepEqual(ids(await tab(`${head}${line('Latest All Needs you')}${line('Needs you 8')}${grid}`)), []);
 });
+// Buy's Recent, 11-15: rows of things looked up, each with its photo, come before the first card. A row marked data-item is
+// a thing to open, as brand-check already reads data-item (B9: every item shows its photo), so its lines are not lines before one.
+const thing = s => `<div data-part="list-row-two" data-item style="height:76px"><img alt="${s}" style="width:40px;height:40px">${line(s)}${line('$85 to $115 used')}</div>`;
+test('U11: rows marked as items are the first thing to do; the same rows unmarked are lines before it', { skip: !pw }, async () => {
+  assert.deepEqual(ids(await tab(`${head}${line('Recent')}${thing('Carhartt jacket')}${thing('Grey Nike sneakers')}${line('Looking for')}${grid}`)), []);
+  assert.deepEqual(ids(await tab(`${head}${line('Recent')}${thing('Carhartt jacket').replace(' data-item', '')}${thing('Grey Nike sneakers').replace(' data-item', '')}${grid}`)), ['U11']);
+});
 test('U11: four lines under the title row still fail', { skip: !pw }, async () => {
   assert.deepEqual(ids(await tab(`${head}${line('Since yesterday')}${line('$96.20', 'amount')}${line('Needs you now')}${line('Due first, today at 3 pm')}${grid}`)), ['U11']);
 });

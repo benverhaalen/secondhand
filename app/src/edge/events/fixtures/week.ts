@@ -6,7 +6,7 @@ import { createWatcher, type WatchedListing, type WatcherDeps } from '../watcher
 import type { PipelineLog } from '../pipeline.ts';
 import { memoryStore, memoryParams, memoryLeases, type Store } from '../ports.ts';
 import { ingest } from '../intake.ts';
-import { memoryAccounts, memoryVault } from '../../browser/auth.ts';
+import { memoryAccounts, memoryVault, type Accounts } from '../../browser/auth.ts';
 import { createHarness, fakeManifest, fail, type Adapter, type Harness, type Verb, type CallArgs, type Envelope } from '../../harness/protocol.ts';
 import { depopAdapters, PATHS, type Client } from '../../harness/sites/depop/adapter.ts';
 import type { Site, Snapshot } from '../event.ts';
@@ -40,6 +40,10 @@ export async function weekRig(noLimits = false, options: {
   const rows = sites.map(site => ({ account_id: `acc_${site}`, person_id: 'usr_walk', site, token_ref: `test_${site}` }));
   for (const row of rows) await vault.put(row.token_ref, { cookies: [], origins: [] });
   const accounts = memoryAccounts(rows, vault);
+  const systemAccounts: Accounts = { linked: () => accounts.linked(), async byId(id) {
+    const row = (await accounts.linked()).find(row => row.account_id === id);
+    return row ? accounts.byId(id, row.person_id) : undefined;
+  } };
   for (const row of rows) if (!store.get('account', row.person_id, row.account_id))
     store.put('account', { id: row.account_id, user_id: row.person_id, site: row.site, next_check_at: new Date(start).toISOString() });
   const listings: WatchedListing[] = [...sites, 'facebook' as const].map(site => ({ listing_id: `listing_${site}`, item_id: 'it_walk', site,
@@ -77,7 +81,7 @@ export async function weekRig(noLimits = false, options: {
     if (verb === 'read_offers') return { ok: true, data: active(site, 'quiet').length ? [] : active(site, 'offer').map(s => ({ external_id: s.id, listing_external_id: `ext_${site}`, amount_cents: s.amount_cents, state: 'open' })) };
     return { ok: true, data: [] };
   } });
-  const real = createHarness({ adapters, accounts, now });
+  const real = createHarness({ adapters, accounts: systemAccounts, now });
   const calls: WeekCall[] = [];
   const harness: Harness = { async call<T>(site: Site, verb: Verb, args: CallArgs = {}) {
     assert.ok(rows.some(r => r.site === site && r.account_id === args.account_id), 'every harness call carries its linked account');
@@ -87,7 +91,7 @@ export async function weekRig(noLimits = false, options: {
     return result;
   } };
   const snapshots = new Map<string, Snapshot>();
-  const makeWatcher = () => createWatcher({ store, harness, accounts, leases: memoryLeases(now), params: memoryParams({ watch_cadence_s: 900, job_lease_ttl_ms: 120000, delist_max_attempts: 3 },
+  const makeWatcher = () => createWatcher({ store, harness, accounts: systemAccounts, leases: memoryLeases(now), params: memoryParams({ watch_cadence_s: 900, job_lease_ttl_ms: 120000, delist_max_attempts: 3 },
     Object.fromEntries(sites.flatMap(site => Object.entries({ hot: 90, live: 900, quiet: 3600 }).map(([tier, cadence]) => [`watch_cadence_s@${site}/${tier}`, cadence])))), log, now,
     snapshots, listings: { byExternal: (_u, site, external) => listings.find(l => l.site === site && l.external_id === external), ofItem: () => listings },
     limits: { of: () => noLimits ? undefined : { ask_cents: 6000, floor_cents: 4500, always_accept_cents: 5800 } }, pAccept: options.pAccept ?? pAccept,

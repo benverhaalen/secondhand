@@ -6,26 +6,50 @@ import type { ParamStore } from '../param/param.ts';
 import { SITES } from '../../../../spec/sites.mjs';
 export type { State, Fact } from './select.ts';
 
-export type Question = {
+// One clarifying question, shared by capture and the buying chat (spec/engines/capture.md section 4, "The question block").
+export type Ask = {
   id: string;
   field: string;
-  fields?: string[];
-  kind: AskKind|'shot';
-  options: {value: unknown; proposed: boolean; label?: string}[];
+  kind: AskKind;
+  words: string;
+  options: {value: unknown; proposed: boolean; label?: string; rests_on?: string[]; cites?: string[]}[];
   other: boolean;
+  max_length?: number;
   unit?: string;
   units?: string[];
   parts?: string[];
-  shot?: {step: string; reason: 'retake'|'add'; for?:'studio'; zone?:string; flaw_kind?:string};
   why: 'required'|'confirm'|'value'|'only_you_know';
+  replaces?: string;
+  answer: {method: 'PATCH'|'POST'; path: string};
+};
+// Capture's question is an Ask plus what only capture has.
+export type Question = Omit<Ask, 'kind'> & {
+  kind: AskKind|'shot';
+  fields?: string[];
+  shot?: {step: string; reason: 'retake'|'add'; for?:'studio'; zone?:string; flaw_kind?:string};
   required_by: Target[];
   unlocks: {required: number; ready_after: Target[]};
-  words: string;
-  answer: {method: 'PATCH'|'POST'; path: string};
 };
 type Resolved = {row: FieldRow; resolution: Resolution};
 type Candidate = {question: Question; rows: FieldRow[]};
 type ShotGroup = {shot: NonNullable<Resolution['shot']>; rows: FieldRow[]};
+
+function siteFieldRows(state: State, captureRows: FieldRow[]): FieldRow[] {
+  const rows: FieldRow[] = [];
+  for(const row of state.site_rows ?? []) {
+    if(!state.sites.includes(row.site) || captureRows.some(capture=>capture.field===row.field))continue;
+    const existing=rows.find(candidate=>candidate.field===row.field);
+    if(existing) {
+      const sites=(row.required ? existing.required : existing.recommended) as Target[];
+      if(!sites.includes(row.site))sites.push(row.site);
+      continue;
+    }
+    rows.push({field:row.field,type:row.allowed ? 'enum':'text',...(row.allowed ? {values:[...row.allowed]}:{}),
+      ways:[{way:'asked'}],confirm:'always',required:row.required?[row.site]:[],recommended:row.required?[]:[row.site],
+      ask:{kind:row.allowed?'pick_one':'text',words:row.name}});
+  }
+  return rows;
+}
 
 function usedByLinkedSite(row: FieldRow, state: State): boolean {
   return linked(targets(state),row.required).length > 0 || linked(targets(state),row.recommended).length > 0;
@@ -35,7 +59,7 @@ function invalidForRequiredSite(row: FieldRow, complete: Completeness, state: St
   return linked(targets(state),row.required).some(site => complete[site]!.missing.some(field => field.field === row.field));
 }
 
-function fieldQuestions(resolved: Resolved[], state: State, complete: Completeness, shooting: boolean): Candidate[] {
+function fieldQuestions(resolved: Resolved[], state: State, complete: Completeness, shooting: boolean, siteRows: FieldRow[]): Candidate[] {
   const candidates: Candidate[] = [];
   for (const {row,resolution} of resolved) {
     if (row.field === 'condition' && state.purpose === 'find') continue;
@@ -49,7 +73,9 @@ function fieldQuestions(resolved: Resolved[], state: State, complete: Completene
     const choices = candidatesForField?.length ? candidatesForField : row.values ?? [];
     const values: unknown[] = [...choices];
     const askedOnly = row.ways.every(way => way.way === 'asked');
-    const proposed = !invalidKnown && resolution.state === 'proposed' && !askedOnly ? resolution.fact?.value : undefined;
+    const siteRow = siteRows.includes(row) ? state.site_rows?.find(candidate=>candidate.field===row.field && state.sites.includes(candidate.site)) : undefined;
+    let proposed = !invalidKnown && resolution.state === 'proposed' && !askedOnly ? resolution.fact?.value : undefined;
+    if(siteRow)proposed=siteRow.value!==undefined && (!siteRow.allowed || siteRow.allowed.includes(siteRow.value)) ? siteRow.value : undefined;
     if (row.field === 'type' && proposed !== undefined) {
       const index = values.indexOf(proposed);
       if (index >= 0) values.splice(index,1);
@@ -66,12 +92,14 @@ function fieldQuestions(resolved: Resolved[], state: State, complete: Completene
     const variants=resolution.reason==='variants'?state.variants!.dimensions:undefined;
     if(variants) {kind='pick_one';options=variants.map(variant=>({value:variant.value,label:variant.label,proposed:false}));}
     const required_by = linked(targets(state),row.required);
-    const why = invalidKnown ? 'required' : resolution.state === 'proposed' ? 'confirm' : required_by.length ? 'required' : askedOnly ? 'only_you_know' : 'value';
+    const why = siteRows.includes(row) ? required_by.length ? 'required' : 'value' :
+      invalidKnown ? 'required' : resolution.state === 'proposed' ? 'confirm' : required_by.length ? 'required' : askedOnly ? 'only_you_know' : 'value';
     const question: Question = {
       id:`q_${state.capture_id}_${row.field}`,
       field:row.field,
       kind,
       options,
+      ...(siteRow?.max_length!==undefined ? {max_length:siteRow.max_length} : {}),
       other:!!variants || row.type === 'text' || row.field === 'type',
       ...(row.unit ? {unit:row.unit} : {}),
       ...(row.ask.units ? {units:[...row.ask.units]} : {}),
@@ -146,16 +174,23 @@ function addUnlocks(candidates: Candidate[], resolved: Resolved[], rows: FieldRo
 }
 
 function orderQuestions(candidates: Candidate[], state: State, params: ParamStore): void {
-  const first = (question: Question) => question.field === 'type' ? 0 : question.field === 'lot_count' ? 1 : 2;
+  const first = (candidate: Candidate) => candidate.question.field === 'type' ? 0 : candidate.question.field === 'lot_count' ? 1 : 2;
+  const entropy = (field: string) => {
+    const scores=Object.values(state.candidate_detail?.[field] ?? {}).map(option=>option.c).filter(score=>score>0);
+    const sum=scores.reduce((total,score)=>total+score,0);
+    const bits=scores.reduce((bits,score)=>{const p=score/sum;return bits-p*Math.log2(p);},0);
+    return Math.round(bits*1e9)/1e9;
+  };
   const recommended = (rows: FieldRow[]) => rows.reduce((count,row) => count + linked(targets(state),row.recommended).length,0);
   const effort = (question: Question) => bound(params,`capture_effort_${question.kind}`);
   candidates.sort((a,b) => {
-    const priority = first(a.question) - first(b.question);
+    const priority = first(a) - first(b);
+    const information = entropy(b.question.field) - entropy(a.question.field);
     const required = b.question.unlocks.required - a.question.unlocks.required;
     const ready = b.question.unlocks.ready_after.length - a.question.unlocks.ready_after.length;
     const recommendation = recommended(b.rows) - recommended(a.rows);
     const cost = effort(a.question) - effort(b.question);
-    return priority || required || ready || recommendation || cost || compare(a.question.field,b.question.field);
+    return priority || information || required || ready || recommendation || cost || compare(a.question.field,b.question.field);
   });
 }
 
@@ -182,7 +217,8 @@ export function plan(state: State, params: ParamStore) {
   if (targets(state).length === 0) state = {...state,sites:[...SITES] as State['sites']};
   const selected = select(state,params);
   const keys = selected.process.map(step => step.key);
-  const rows = selected.rows.filter(row => usedByLinkedSite(row,state));
+  const siteRows=siteFieldRows(state,selected.rows);
+  const rows = [...selected.rows,...siteRows].filter(row => usedByLinkedSite(row,state)).sort((a,b)=>compare(a.field,b.field));
   const resolved = rows.map(row => ({row,resolution:fieldState(row,state,keys,params)}));
   const complete = completeness(rows,state,params);
   const fields = resolved.map(({row,resolution}) => ({
@@ -196,7 +232,7 @@ export function plan(state: State, params: ParamStore) {
     recommended_by:linked(targets(state),row.recommended),
   }));
   const shooting = keys.some(key => !state.kept.includes(key));
-  const candidates = fieldQuestions(resolved,state,complete,shooting);
+  const candidates = fieldQuestions(resolved,state,complete,shooting,siteRows);
   const {candidates:shotsToAsk} = shotQuestions(resolved,state,keys,shooting);
   candidates.push(...shotsToAsk);
   if(state.studio?.requested && !shooting)for(const ask of state.studio.asks) {
@@ -210,6 +246,13 @@ export function plan(state: State, params: ParamStore) {
     }});
   }
   addUnlocks(candidates,resolved,rows,state,complete,selected.family,params);
+  for(const {question} of candidates)for(const option of question.options) {
+    const details=state.candidate_detail;
+    const field=details && Object.hasOwn(details,question.field) ? details[question.field] : undefined;
+    const key=String(option.value);
+    const detail=field && Object.hasOwn(field,key) ? field[key] : undefined;
+    if(Array.isArray(detail?.rests_on) && detail.rests_on.length)option.rests_on=[...detail.rests_on];
+  }
   orderQuestions(candidates,state,params);
   const questions = capQuestions(candidates,rows,state,params);
   const process = selected.process.map(step => ({

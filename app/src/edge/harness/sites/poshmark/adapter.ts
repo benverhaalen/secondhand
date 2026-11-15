@@ -52,7 +52,8 @@ const MARK = 'window.__INITIAL_STATE__=';
 export function state(html: string): Obj | undefined {
   const i = html.indexOf(MARK), j = i < 0 ? -1 : html.indexOf('};(function', i);
   if (j < 0) return;
-  try { const o: unknown = JSON.parse(html.slice(i + MARK.length, j + 1)); return isObj(o) ? o : undefined; } catch { return; }
+  try { const o: unknown = JSON.parse(html.slice(i + MARK.length, j + 1)); return isObj(o) ? o : undefined; }
+  catch (error) { if (error instanceof SyntaxError) return undefined; throw error; }
 }
 
 // shortcut: only available and sold_out are observed; any other inventory status reads as ended until recon sees one.

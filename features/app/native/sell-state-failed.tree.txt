@@ -1,62 +1,65 @@
-Attributes: Application, 0x102233680, pid: 83622, label: 'secondhand'
+Attributes: Application, 0x10329cdf0, pid: 19927, label: 'secondhand'
 Element subtree:
- →Application, 0x102233680, pid: 83622, label: 'secondhand'
-    Window (Main), 0x10222af40, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x10223f3c0, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x1022385c0, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x1022381a0, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x102228840, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x102242a00, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x10223c760, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x10223c880, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x10223c9a0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x10223cac0, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10223cbe0, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x10223cd00, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x10223ce20, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x10223cf40, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x10223d060, {{0.0, 0.0}, {402.0, 783.0}}
-                                  Other, 0x10223d180, {{0.0, 0.0}, {402.0, 783.0}}
-                                    Other, 0x10223d2a0, {{0.0, 0.0}, {402.0, 783.0}}
-                                      Other, 0x10223d3c0, {{0.0, 0.0}, {402.0, 783.0}}
-                                        Other, 0x10223d4e0, {{0.0, 0.0}, {402.0, 783.0}}
-                                          Other, 0x10223d600, {{0.0, 0.0}, {402.0, 783.0}}
-                                            Other, 0x10223d720, {{0.0, 0.0}, {402.0, 783.0}}
-                                              Other, 0x10223d840, {{0.0, 0.0}, {402.0, 783.0}}
-                                                ScrollView, 0x10223d960, {{0.0, 0.0}, {402.0, 783.0}}
-                                                  Other, 0x10223da80, {{0.0, 0.0}, {402.0, 783.0}}
-                                                    Other, 0x10223dba0, {{0.0, 0.0}, {402.0, 783.0}}
-                                                      Other, 0x10223dcc0, {{0.0, 0.0}, {402.0, 298.0}}
-                                                      Other, 0x10223dde0, {{20.0, 62.0}, {362.0, 48.0}}
-                                                        StaticText, 0x10223df00, {{20.0, 69.3}, {63.7, 41.3}}, label: 'Sell'
-                                                          StaticText, 0x10223e020, {{20.0, 69.3}, {63.7, 41.3}}, label: 'Sell'
-                                                        Button, 0x10223e140, {{342.0, 66.0}, {40.0, 40.0}}, identifier: 'nav-inbox', label: 'Messages, 4 new'
-                                                      StaticText, 0x10223e260, {{20.0, 169.0}, {362.0, 23.3}}, label: 'Your things didn’t load'
-                                                        StaticText, 0x10223e380, {{20.0, 169.0}, {362.0, 23.3}}, label: 'Your things didn’t load'
-                                                      Button, 0x10223a580, {{20.0, 209.3}, {101.0, 40.0}}, identifier: 'sell-retry', label: 'Try again'
-                                                  Other, 0x10223a6a0, {{369.0, 62.0}, {30.0, 721.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                                    Other, 0x10223a7c0, {{396.0, 65.0}, {3.0, 715.0}}
-                                                  Other, 0x10223a8e0, {{0.0, 750.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                    Other, 0x10213ce40, {{3.0, 777.0}, {396.0, 3.0}}
-                                                  Other, 0x10211c790, {{369.0, 62.0}, {30.0, 721.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                                    Other, 0x1021671b0, {{396.0, 65.0}, {3.0, 715.0}}
-                                                  Other, 0x1072101a0, {{0.0, 750.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                    Other, 0x10710ca20, {{3.0, 777.0}, {396.0, 3.0}}
-                                    Other, 0x102183100, {{0.0, 0.0}, {402.0, 783.0}}
-                                      Other, 0x1021265f0, {{0.0, 0.0}, {402.0, 783.0}}
-                                Other, 0x1021785b0, {{0.0, 783.0}, {402.0, 91.0}}
-                                Other, 0x10217dc20, {{16.0, 791.0}, {370.0, 62.0}}
-                                Button, 0x102180fe0, {{20.0, 791.0}, {72.3, 62.0}}, identifier: 'tab-today', label: 'Today'
-                                Button, 0x10216a5d0, {{92.3, 791.0}, {72.3, 62.0}}, identifier: 'tab-sell', label: 'Sell', Selected
-                                Button, 0x1021194d0, {{177.0, 798.0}, {48.0, 48.0}}, identifier: 'tab-new', label: 'New'
-                                Button, 0x1021633c0, {{237.3, 791.0}, {72.3, 62.0}}, identifier: 'tab-buy', label: 'Buy'
-                                Button, 0x102159550, {{309.7, 791.0}, {72.3, 62.0}}, identifier: 'tab-you', label: 'You'
-                      Other, 0x102151010, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x102181340, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x10329cdf0, pid: 19927, label: 'secondhand'
+    Window (Main), 0x10329c020, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x10324e6e0, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x10329b940, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x103294170, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x103293a70, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x10329aef0, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x103294cb0, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x103292940, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x10324b6f0, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x10324ea80, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x1032855e0, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x1032953a0, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x103295de0, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x103291ea0, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x10329f470, {{0.0, 0.0}, {402.0, 783.0}}
+                                  Other, 0x103278600, {{0.0, 0.0}, {402.0, 783.0}}
+                                    Other, 0x103277530, {{0.0, 0.0}, {402.0, 783.0}}
+                                      Other, 0x103277f40, {{0.0, 0.0}, {402.0, 783.0}}
+                                        Other, 0x1032752c0, {{0.0, 0.0}, {402.0, 783.0}}
+                                          Other, 0x103278960, {{0.0, 0.0}, {402.0, 783.0}}
+                                            Other, 0x103277880, {{0.0, 0.0}, {402.0, 783.0}}
+                                              Other, 0x103274f40, {{0.0, 0.0}, {402.0, 114.0}}
+                                                Button, 0x1032782b0, {{342.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-inbox', label: 'Messages, 4 new'
+                                                StaticText, 0x1032793c0, {{20.0, 75.3}, {118.7, 23.3}}, label: 'secondhand'
+                                                  StaticText, 0x103276e40, {{20.0, 75.3}, {118.7, 23.3}}, label: 'secondhand'
+                                              Other, 0x10324c7c0, {{0.0, 0.0}, {402.0, 783.0}}
+                                                ScrollView, 0x103278d00, {{0.0, 0.0}, {402.0, 783.0}}
+                                                  Other, 0x103275630, {{0.0, 0.0}, {402.0, 783.0}}
+                                                    Other, 0x10324c100, {{0.0, 0.0}, {402.0, 783.0}}
+                                                      Other, 0x1032771e0, {{0.0, 0.0}, {402.0, 298.0}}
+                                                      Other, 0x10329e310, {{20.0, 62.0}, {362.0, 96.0}}
+                                                        StaticText, 0x10324c450, {{20.0, 123.7}, {26.3, 24.3}}, label: 'sell'
+                                                          StaticText, 0x10324cea0, {{20.0, 123.7}, {26.3, 24.3}}, label: 'sell'
+                                                      StaticText, 0x1032a2bc0, {{20.0, 217.0}, {362.0, 23.3}}, label: 'your things didn’t load'
+                                                        StaticText, 0x1032a1df0, {{20.0, 217.0}, {362.0, 23.3}}, label: 'your things didn’t load'
+                                                      Button, 0x1032a0910, {{20.0, 257.3}, {101.0, 40.0}}, identifier: 'sell-retry', label: 'Try again'
+                                                  Other, 0x103293390, {{369.0, 62.0}, {30.0, 721.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                                    Other, 0x103285260, {{396.0, 65.0}, {3.0, 715.0}}
+                                                  Other, 0x1032a0ca0, {{0.0, 750.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                    Other, 0x10329f0f0, {{3.0, 777.0}, {396.0, 3.0}}
+                                                  Other, 0x103299610, {{369.0, 62.0}, {30.0, 721.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                                    Other, 0x1032a1a50, {{396.0, 65.0}, {3.0, 715.0}}
+                                                  Other, 0x10329ff00, {{0.0, 750.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                    Other, 0x103292ff0, {{3.0, 777.0}, {396.0, 3.0}}
+                                    Other, 0x103292ca0, {{0.0, 0.0}, {402.0, 783.0}}
+                                      Other, 0x10329ab90, {{0.0, 0.0}, {402.0, 783.0}}
+                                Other, 0x10329d150, {{0.0, 783.0}, {402.0, 91.0}}
+                                Other, 0x103298f30, {{16.0, 791.0}, {370.0, 62.0}}
+                                Button, 0x10324bdb0, {{20.0, 791.0}, {72.3, 62.0}}, identifier: 'tab-today', label: 'Today'
+                                Button, 0x103298120, {{92.3, 791.0}, {72.3, 62.0}}, identifier: 'tab-sell', label: 'Sell', Selected
+                                Button, 0x10324dc80, {{177.0, 798.0}, {48.0, 48.0}}, identifier: 'tab-new', label: 'New'
+                                Button, 0x103297390, {{237.3, 791.0}, {72.3, 62.0}}, identifier: 'tab-buy', label: 'Buy'
+                                Button, 0x1032976f0, {{309.7, 791.0}, {72.3, 62.0}}, identifier: 'tab-you', label: 'You'
+                      Other, 0x1032a1010, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x1032a2160, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x102233680, pid: 83622, label: 'secondhand'
+ →Application, 0x10329cdf0, pid: 19927, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x102351130, pid: 83622, label: 'secondhand'
+    Application, 0x103472480, pid: 19927, label: 'secondhand'
   }
