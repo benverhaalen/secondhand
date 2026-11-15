@@ -3,7 +3,10 @@ import { ApiFailure } from '@/api/client';
 import { AccountField } from '@/account/field';
 import { accountError } from '@/account/session';
 import { FootButton, Nav, Pill, Screen, Stack, Txt, log } from '@/ui';
-import { emailSignIn, googleSignIn, GoogleSignInUnavailable, type GoogleTokenProvider } from './sign-in-wire';
+import { appleSignIn, emailSignIn, googleSignIn, GoogleSignInUnavailable, type GoogleTokenProvider } from './sign-in-wire';
+import { requestAppleToken } from './apple';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { Platform } from 'react-native';
 import { GoogleSignInButton } from '../ui/parts/google-sign-in';
 import type { ScreenState } from '@/demo/screen';
 
@@ -23,6 +26,13 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [resendAt]);
+  const signInWithApple = async () => {
+    if (busy) return;
+    setGoogleBusy(true); setError(null);
+    try { if (await appleSignIn(requestAppleToken)) await onDone(); }
+    catch (failure) { log.error('sign-in.apple', failure instanceof ApiFailure ? new Error(`Apple sign-in failed (${failure.status})`) : new Error('Apple sign-in failed')); setError(accountError(failure)); }
+    finally { setGoogleBusy(false); }
+  };
   const signInWithGoogle = async () => {
     if (busy || offline) return;
     setGoogleBusy(true); setError(null);
@@ -60,6 +70,7 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
       <Txt role="body" tone="ink-2">{phase === 'email' ? 'Sign in with Google or get a code by email.' : `Enter the code sent to ${email}.`}</Txt>
     </Stack>
     {phase === 'email' ? <>
+      {Platform.OS === 'ios' ? <AppleAuthentication.AppleAuthenticationButton buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN} buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE} cornerRadius={22} style={{ width: 188, height: 44, alignSelf: 'center' }} onPress={() => void signInWithApple()} /> : null}
       <GoogleSignInButton busy={googleBusy} disabled={emailBusy || offline} onPress={signInWithGoogle} />
       <Txt center tone="ink-2">or use your email</Txt>
     </> : null}

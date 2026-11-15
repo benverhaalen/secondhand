@@ -73,3 +73,17 @@ test('a rejected Google ID token never stores a session', async () => {
   await assert.rejects(googleSignIn(async () => 'invalid-test-token', client), (error: unknown) => error instanceof ApiFailure && error.status === 401);
   assert.equal(await vault.get(), null);
 });
+
+test('Apple sends the identity token and the raw nonce, and stores only the issued session; a cancel stores nothing', async () => {
+  const { appleSignIn } = await import('./sign-in-wire.ts');
+  const vault = memoryVault();
+  const client = createClient({ origin: '', vault, fetch: async (url, init) => {
+    assert.ok(url.endsWith('/v1/auth/apple'));
+    assert.deepEqual(JSON.parse(String(init?.body)), { identity_token: 'apple-test-token', nonce: 'raw-nonce' });
+    return new Response(JSON.stringify(issued));
+  } });
+  assert.equal(await appleSignIn(async () => null, client), false);
+  assert.equal(await vault.get(), null);
+  assert.equal(await appleSignIn(async () => ({ identity_token: 'apple-test-token', nonce: 'raw-nonce' }), client), true);
+  assert.equal((await vault.get())?.access_token, issued.access_token);
+});
