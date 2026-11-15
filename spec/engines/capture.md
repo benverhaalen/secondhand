@@ -267,6 +267,17 @@ This is the whole contract, in order. Each response returns the capture with `pl
 
 The screen never decides what to ask or when to stop. Layout, motion and the words around a question are Ben's.
 
+**What the questions read: `intent`.** Packet 92 asked whether the questions read `purpose` or `intent`. They read `intent` (`sell`, `worth`, `track`, `find`; Ben's four jobs, packet 80), and `purpose` becomes the engine's own input derived from it: `sell` gives `sell`, `worth` gives `appraise`, `find` gives `find`, and `track` gives `find`, since tracking an item needs what identifies it (brand, model, size) and never its condition or listing fields, which is the question set `find` already asks. A capture opened with `intent` alone is valid; one that sends both and they disagree is 400; `purpose` alone keeps working until the app stops sending it. *agent proposal*; built in the route join.
+
+**The question block, shared with the buying chat.** Nate ([via the orchestrator](../../.agents/team/packets/team/92-reply-to-80-four-jobs-storage.md)): "I think we can add those clarifying question widgest to the intelligent ui too." So a clarifying question has one shape and one drawn part wherever it appears. The shape is `Ask`, exported from `app/src/engines/capture/plan.ts`:
+
+`{id, field, kind ('pick_one'|'pick_many'|'number_with_unit'|'yes_no'|'text'), words, options: [{value, label?, proposed, rests_on?}], other, max_length?, unit?, units?, parts?, why, answer: {method, path}}`
+
+- Capture's `Question` is `Ask` plus what only capture has: `shot`, `fields`, `required_by`, `unlocks`. A chat answer emits `Ask` with no capture field.
+- `proposed: true` on at most one option of a `pick_one` (any number of a `pick_many`) means the system is fairly sure: the drawn part preselects it, and `rests_on` says why in a few words ("RN 14806 on the tag").
+- The answer is `{answer: {field, value}}` sent with `answer.method` to `answer.path` (capture: `PATCH /v1/captures/:id` with `version`; the chat: the conversation route the engines lead names). The value is what the person picked: an option's `value`, an array of them, a boolean, a trimmed string, or for `number_with_unit` a bare number, or an object of `parts` when `parts` is set.
+- The drawn part is one part in `app/src/ui/parts/` (Ben's), taking an `Ask` and `onAnswer(value)`; capture's sheet and the chat both use it. Its first version is the `Answer` in Ben's `app/src/capture/live.tsx`, which already draws every kind.
+
 **What ends the demo.** The first TestFlight build is the demo. The capture screen stops being the demo when it calls steps 1 to 5 against the live API instead of rendering `spec/examples/captures.json`. It also needs the phone to send real `device` flags and `reads[]` (section 7). Until then every capture in the build is the example capture.
 
 ## 5. Results from the jobs

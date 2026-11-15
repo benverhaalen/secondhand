@@ -100,7 +100,7 @@ export function exampleHandler(endpoint: string, validate: (ctx: Ctx) => void = 
   };
 }
 
-export type CaptureRow = { id: string; user_id: string; item_id: string; version: number; created_at: string; updated_at: string; data: 'example' | 'captured'; state: State; status: 'framing' | 'shooting' | 'uploading' | 'judged'; mode: string; photos: number; replacements: Record<string,number>; phone_suggestion: boolean; studio_plan?: StudioPlan };
+export type CaptureRow = { id: string; user_id: string; item_id: string; version: number; created_at: string; updated_at: string; data: 'example' | 'captured'; state: State; status: 'framing' | 'shooting' | 'uploading' | 'judged'; mode: string; photos: number; replacements: Record<string,number>; phone_suggestion: boolean; studio_plan?: StudioPlan; intent?: 'sell' | 'worth' | 'track' | 'find'; lookup_hidden?: boolean };
 const open = example('captures.open').response as {id: string; item_id: string; created_at: string; picker: string[]};
 const linkedSites = (example('accounts.list').response as {data: {site: string}[]}).data
   .map(account => account.site).filter((site): site is Site => SITES.includes(site));
@@ -143,7 +143,7 @@ function effectiveState(row: CaptureRow): State {
 }
 function view(row: CaptureRow) {
   const next = plan(effectiveState(row), params);
-  return {id: row.state.capture_id, item_id: row.state.item_id, state: row.status, mode: row.mode, purpose: row.state.purpose,
+  return {id: row.state.capture_id, item_id: row.state.item_id, state: row.status, mode: row.mode, purpose: row.state.purpose, intent: row.intent ?? 'sell',
     type: row.state.type, suggested_type: row.state.suggestion?.family ?? null, picker: open.picker,
     process: next.process, coverage: {needed: next.process.map(step => step.key).filter(key => !row.state.kept.includes(key)), kept: [...row.state.kept]},
     created_at: row.created_at, version: row.version, plan: next};
@@ -316,7 +316,7 @@ export const handlers: Record<string, Handler> = {
       {mode:oneOf('shots','scan','talk'),purpose:oneOf('sell','appraise','find')},
       {first_photo_hint:text,item_id:text,device:v=>object(v) && (v.has_lidar===undefined || bool(v.has_lidar)) && (v.object_capture===undefined || bool(v.object_capture)),
         suggestion:v=>object(v) && family(v.family) && probability(v.p) && probability(v.second_p) && v.second_p<=v.p,
-        pieces:v=>integer(v) && v>=1 && v<=12,confirm_mode:oneOf('tap','auto'),extent_cm:positive,extent_conf:probability,rigid:bool});
+        pieces:v=>integer(v) && v>=1 && v<=12,confirm_mode:oneOf('tap','auto'),extent_cm:positive,extent_conf:probability,rigid:bool,intent:oneOf('sell','worth','track','find')});
     const device=ctx.body.device as {has_lidar?:boolean;object_capture?:boolean}|undefined;
     if (device?.object_capture && !device.has_lidar) throw answerError('device.object_capture');
     if (ctx.body.item_id) {
@@ -327,7 +327,7 @@ export const handlers: Record<string, Handler> = {
     if (id===open.id) exampleOpened=true;
     const item_id=ctx.body.item_id as string ?? (id===open.id ? open.item_id : `it_${captureNumber}`);
     const state=initial(ctx.body,id,item_id), created_at=new Date(deps.now()).toISOString();
-    const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined};
+    const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined,intent:(ctx.body.intent as CaptureRow['intent']) ?? 'sell'};
     captureRows.set(id,row);
     ctx.log.event('state.change',{entity:'capture',id,was:null,to:row.status});
     return {status:201,body:view(row)};
