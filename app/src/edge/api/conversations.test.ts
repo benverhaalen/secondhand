@@ -109,6 +109,24 @@ test('conversation reads validate stored incoming messages through handleMessage
   } finally { ports.read_messages = read; }
 });
 
+test('a message without an offer raises no offer decision; a parsed offer raises one with its amount', async () => {
+  const { ports } = await import('./conversations.ts');
+  const { handleMessages, memoryMessageStore } = await import('../messages/messages.ts');
+  const account = { user_id: 'usr_8f2k', account_id: 'acc_depop', site: 'depop', linked: true, health: 'ok', auto_reply: 'off', ask_every_time: true, site_approved: false, promoted: new Set<string>() } as const;
+  const rows = await ports.read_messages(account);
+  const views = (EXAMPLES.find(e => e.name === 'conversations.messages')!.response as { data: { id: string; offer?: { amount_cents: number } }[] }).data;
+  for (const hasOffer of [false, true]) {
+    const row = rows.find(row => Boolean(views.find(view => view.id === row.id)?.offer) === hasOffer)!;
+    assert.ok(row, 'fixture must cover messages with and without offers');
+    const context = await ports.context(account, row);
+    assert.equal(Boolean(context.offer), hasOffer, 'no parsed offer must produce no offer context');
+    const result = await handleMessages(account, { ...ports, read_messages: async () => [row] }, memoryMessageStore(), deps.log);
+    const decisions = result.filter(row => row.kind === 'decision');
+    assert.equal(decisions.length, hasOffer ? 1 : 0, 'a message without an offer must raise no decision');
+    if (hasOffer) assert.equal(decisions[0].amount_cents, views.find(view => view.id === row.id)!.offer!.amount_cents);
+  }
+});
+
 test('reply: unsupported claim writes no event; a repeated acknowledgment writes one approved event', async () => {
   const store = replyPorts.store;
   const e = examples.find(e => e.name === 'conversations.reply')!;

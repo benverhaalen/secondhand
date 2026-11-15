@@ -26,8 +26,10 @@ def plan(existing_columns_by_table: dict[str, str], tables, *, basis_level_exist
             statements.append(f"ALTER TABLE {name} ADD COLUMNS (data STRING COMMENT '{COMMENT}')")
         statements.append(f"UPDATE {name} SET data = 'example' WHERE data IS NULL")
         statements.append(f'ALTER TABLE {name} ALTER COLUMN data SET NOT NULL')
-    if 'guarded_number' in tables and not basis_level_exists:
-        statements.append(f"ALTER TABLE secondhand.core.guarded_number ADD COLUMNS (basis_level STRING COMMENT '{BASIS_COMMENT}')")
+    if 'guarded_number' in tables:
+        if not basis_level_exists:
+            statements.append(f"ALTER TABLE secondhand.core.guarded_number ADD COLUMNS (basis_level STRING COMMENT '{BASIS_COMMENT}')")
+        statements.append("UPDATE secondhand.core.guarded_number SET basis_level = CASE WHEN basis_count > 0 THEN 'product' ELSE 'prior' END WHERE basis_level IS NULL AND metric LIKE 'valuation.%'")
     return statements
 
 
