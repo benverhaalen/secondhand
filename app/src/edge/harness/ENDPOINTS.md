@@ -71,8 +71,8 @@ Reads the account's listings and their state.
 | depop | `/depop/listings` | GET | yes | unknown |
 | poshmark | `/poshmark/listings` | GET | yes | unknown |
 | mercari | `/mercari/listings` | GET | yes | unknown |
-| offerup | `/offerup/listings` | GET | no: OfferUp is search and price only for now (spec/product.md route table: n/a) | unknown |
-| grailed | `/grailed/listings` | GET | no: Grailed is search and price only for now (spec/product.md route table: n/a) | unknown |
+| offerup | `/offerup/listings` | GET | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
+| grailed | `/grailed/listings` | GET | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
 
 ## /inbox (`read_inbox`)
 
@@ -85,8 +85,8 @@ Reads message threads.
 | depop | `/depop/inbox` | GET | yes | unknown |
 | poshmark | `/poshmark/inbox` | GET | yes | unknown |
 | mercari | `/mercari/inbox` | GET | yes | unknown |
-| offerup | `/offerup/inbox` | GET | no: OfferUp is search and price only for now (spec/product.md route table: n/a) | unknown |
-| grailed | `/grailed/inbox` | GET | no: Grailed is search and price only for now (spec/product.md route table: n/a) | unknown |
+| offerup | `/offerup/inbox` | GET | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
+| grailed | `/grailed/inbox` | GET | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
 
 ## /send-message (`send_message`)
 
@@ -99,8 +99,8 @@ Sends a message in a thread.
 | depop | `/depop/send-message` | POST | yes | unknown |
 | poshmark | `/poshmark/send-message` | POST | yes | unknown |
 | mercari | `/mercari/send-message` | POST | yes | unknown |
-| offerup | `/offerup/send-message` | POST | no: OfferUp is search and price only for now (spec/product.md route table: n/a) | unknown |
-| grailed | `/grailed/send-message` | POST | no: Grailed is search and price only for now (spec/product.md route table: n/a) | unknown |
+| offerup | `/offerup/send-message` | POST | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
+| grailed | `/grailed/send-message` | POST | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
 
 ## /offers (`read_offers`)
 
@@ -113,8 +113,8 @@ Reads open offers.
 | depop | `/depop/offers` | GET | yes | unknown |
 | poshmark | `/poshmark/offers` | GET | yes | unknown |
 | mercari | `/mercari/offers` | GET | yes | unknown |
-| offerup | `/offerup/offers` | GET | no: OfferUp is search and price only for now (spec/product.md route table: n/a) | unknown |
-| grailed | `/grailed/offers` | GET | no: Grailed is search and price only for now (spec/product.md route table: n/a) | unknown |
+| offerup | `/offerup/offers` | GET | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
+| grailed | `/grailed/offers` | GET | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
 
 ## /answer-offer (`answer_offer`)
 
@@ -127,8 +127,8 @@ Accepts, counters or declines an offer.
 | depop | `/depop/answer-offer` | POST | yes | unknown |
 | poshmark | `/poshmark/answer-offer` | POST | yes | unknown |
 | mercari | `/mercari/answer-offer` | POST | yes | unknown |
-| offerup | `/offerup/answer-offer` | POST | no: OfferUp is search and price only for now (spec/product.md route table: n/a) | unknown |
-| grailed | `/grailed/answer-offer` | POST | no: Grailed is search and price only for now (spec/product.md route table: n/a) | unknown |
+| offerup | `/offerup/answer-offer` | POST | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
+| grailed | `/grailed/answer-offer` | POST | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
 
 ## /make-offer (`make_offer`)
 
@@ -155,8 +155,8 @@ Reads sales and orders.
 | depop | `/depop/orders` | GET | yes | unknown |
 | poshmark | `/poshmark/orders` | GET | yes | unknown |
 | mercari | `/mercari/orders` | GET | yes | unknown |
-| offerup | `/offerup/orders` | GET | no: OfferUp is search and price only for now (spec/product.md route table: n/a) | unknown |
-| grailed | `/grailed/orders` | GET | no: Grailed is search and price only for now (spec/product.md route table: n/a) | unknown |
+| offerup | `/offerup/orders` | GET | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
+| grailed | `/grailed/orders` | GET | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
 
 ## /stats (`read_stats`)
 
@@ -174,7 +174,7 @@ Reads per-listing figures.
 
 ## /storefront (`read_storefront`)
 
-Reads the shop's own figures: followers, rating, totals.
+Reads the shop’s own figures: followers, rating, totals.
 
 | site | endpoint | method | available | session |
 |---|---|---|---|---|
@@ -183,8 +183,8 @@ Reads the shop's own figures: followers, rating, totals.
 | depop | `/depop/storefront` | GET | yes | unknown |
 | poshmark | `/poshmark/storefront` | GET | yes | unknown |
 | mercari | `/mercari/storefront` | GET | yes | unknown |
-| offerup | `/offerup/storefront` | GET | no: OfferUp is search and price only for now (spec/product.md route table: n/a) | unknown |
-| grailed | `/grailed/storefront` | GET | no: Grailed is search and price only for now (spec/product.md route table: n/a) | unknown |
+| offerup | `/offerup/storefront` | GET | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
+| grailed | `/grailed/storefront` | GET | no: This site is search and price only for now (spec/product.md route table: n/a) | unknown |
 
 ## /search (`search`)
 

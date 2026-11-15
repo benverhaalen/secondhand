@@ -46,7 +46,7 @@ export function matchRecall(l: Listing, r: RecallRow): Match {
   const mine = modelTokens(own);
   for (const t of modelTokens(recallText)) if (mine.has(t)) return 'exact';
   const rw = words(`${r.Title} ${(r.Products ?? []).map((p) => p.Name ?? '').join(' ')}`), lw = words(`${l.title} ${l.description ?? ''}`);
-  const nameHit = [...rw].filter((w) => lw.has(w)).length >= 2;
+  const nameHit = Array.from(rw).filter((w) => lw.has(w)).length >= 2;
   if (!nameHit) return 'none';
   const range = dateCodes(r.Description).sort(), seen = dateCodes(own);
   if (range.length > 0 && seen.some((d) => d >= range[0] && d <= range[range.length - 1])) return 'exact'; // a date code in the recalled run

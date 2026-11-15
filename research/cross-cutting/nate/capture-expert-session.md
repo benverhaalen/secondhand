@@ -1,4 +1,5 @@
 # Capture engine: expert session
+Researched 2026-11-14 by Nate (session ex-cap).
 
 Status: *agent proposal*, research note for Nate. Written 2026-11-14 by session `ex-cap`. Read against [engines/capture](../../../spec/engines/capture.md) (§1, §3, §9), [features/capture](../../../spec/features/capture.md) (step table, processes, follow-ups, Open 2, Open 7) and [capture-shots](../../../spec/determinations/capture-shots.md#default-plans-by-kind).
 

@@ -1,7 +1,7 @@
 // The fixed hard rules (spec/engines/trust.md §2 "Scam: hard rules", §3 step 3). Never learned, never weighted.
 // Two kinds of outcome: a thread rule blocks the thread (no draft, no one-tap commit); a locked kind stops only the agent's own act and
 // the thread carries on to the score (the worked example's "share_address is locked and the agent will not give it").
-import type { Site } from '../../edge/harness/protocol.ts';
+import type { Site } from '../listing/crosslist.ts';
 
 export type LockedKind = 'move_off_site' | 'share_address' | 'identity_claim';
 export type HardInput = {

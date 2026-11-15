@@ -7,8 +7,8 @@ import { fileSink } from '../../../../log/node.js';
 import { readPublicPage } from './sold.ts';
 
 const [url, file = 'logs/sd-1-run.jsonl'] = process.argv.slice(2);
-if (!url) { console.error('usage: node app/src/edge/sold/run.ts <public listing url> [logfile]'); process.exit(2); }
 const log = createLog({ src: 'sold.run', build: 'local', sink: fileSink(file) });
+if (!url) { log.note('usage: node app/src/edge/sold/run.ts <public listing url> [logfile]'); process.exit(2); }
 const page = await log.call('http', 'public.listing', { host: new URL(url).host }, async () => {
   const r = await fetch(url, { headers: { 'user-agent': 'Mozilla/5.0 (compatible; secondhand-check/1.0)' }, redirect: 'follow' });
   return { status: r.status, text: await r.text() };
@@ -16,5 +16,5 @@ const page = await log.call('http', 'public.listing', { host: new URL(url).host 
 const t0 = performance.now();
 const read = readPublicPage(page.text, page.status);
 log.event('note', { msg: `public read: ${read.state}`, state: read.state, why: read.why, ms: Math.round(performance.now() - t0) }, 'info');
+log.note('sold.read', { status: page.status, ...read });
 log.end?.();
-console.log(JSON.stringify({ status: page.status, ...read }));

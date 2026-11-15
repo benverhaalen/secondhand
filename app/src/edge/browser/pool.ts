@@ -6,7 +6,9 @@
 // "Per user, we only run the systems for what they link and store auth for"). Their sign-in loads at lease start and is exported at lease end.
 // No code here solves a CAPTCHA or defeats a challenge: a challenge pauses the session and the person clears it in the live browser.
 import { join } from 'node:path';
-import type { Log } from '../../../../log/index.js';
+import { createLog, consoleSink, type Log } from '../../../../log/index.js';
+let defaultLog: Log | undefined;
+const fallbackLog = () => defaultLog ??= createLog({ src: 'browser.pool', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 import type { Accounts, AuthVault, StorageState } from './auth.ts';
 import { PROFILES } from '../harness/platform.ts';
 import type { Site } from '../harness/protocol.ts';
@@ -90,7 +92,7 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
 
   async function runOn<T>(ctx: Promise<PoolContext<P>>, task: Task<P, T>): Promise<T> {
     const page = await (await ctx).newPage();
-    try { return await task.run(page); } finally { await page.close().catch(() => undefined); }
+    try { return await task.run(page); } finally { await page.close().catch(e => { (log ?? fallbackLog()).error('pool.page.close', e); }); }
   }
 
   async function dispatch<T>(task: Task<P, T>): Promise<Dispatched<T>> {

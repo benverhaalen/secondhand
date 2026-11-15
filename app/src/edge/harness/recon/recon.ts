@@ -1,3 +1,5 @@
+import { createLog, consoleSink } from '../../../../../log/index.js';
+const log = createLog({ src: 'app.src.edge.harness.recon.recon', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 // hp-7 The recon agent: record how the site's own client does each verb (spec/engines/protocol-and-adapters.md §3.3, §3.7).
 // Server only. It drives one page from the pool and keeps, per verb, what an author needs to write a deterministic command:
 // the JSON the site's own client fetched (redacted), the state embedded in the page (__NEXT_DATA__, ld+json, initial-state
@@ -33,8 +35,8 @@ function inPage(): { embedded: { source: string; text: string }[]; controls: { r
   document.querySelectorAll('script#__NEXT_DATA__, script[type="application/ld+json"], script[type="application/json"]').forEach((s, i) =>
     embedded.push({ source: s.id ? `script#${s.id}` : `script[type="${s.getAttribute('type')}"]:${i}`, text: s.textContent ?? '' }));
   for (const k of ['__INITIAL_STATE__', '__PRELOADED_STATE__', '__APOLLO_STATE__', '__NUXT__']) {
-    const v = (window as unknown as Record<string, unknown>)[k];
-    if (v !== undefined) try { embedded.push({ source: `window.${k}`, text: JSON.stringify(v) }); } catch { /* not serialisable */ }
+    const v = Reflect.get(window, k);
+    if (v !== undefined) try { embedded.push({ source: `window.${k}`, text: JSON.stringify(v) }); } catch (e) { embedded.push({ source: `window.${k}`, text: JSON.stringify({ error: e instanceof Error ? e.message : String(e) }) }); }
   }
   const controls = [...document.querySelectorAll('a[href], button, input, select, textarea, [role="button"]')].slice(0, 400).map((el, i) => {
     const e = el as HTMLElement & { name?: string; type?: string; href?: string };
@@ -52,12 +54,12 @@ export async function recordVerb({ page, site, verb, url, account, nate_go = fal
   const t0 = Date.now(), pending: Promise<NetworkCapture | undefined>[] = [];
   // Only the site's own client calls count (its registrable domain and subdomains); trackers and ad pixels are not the site.
   const own = new URL(url).hostname.split('.').slice(-2).join('.');
-  const firstParty = (u: string) => { try { const h = new URL(u).hostname; return h === own || h.endsWith(`.${own}`); } catch { return false; } };
+  const firstParty = (u: string) => { try { const h = new URL(u).hostname; return h === own || h.endsWith(`.${own}`); } catch (e) { log.error('recon.firstParty', e); return false; } };
   page.on('response', r => {
     const kind = r.request().resourceType(), type = r.headers()['content-type'] ?? '';
     if (pending.length >= MAX_CAPTURES || !(kind === 'xhr' || kind === 'fetch') || !/json/.test(type) || !firstParty(r.url())) return;
     pending.push(r.text().then(text => text.length > MAX_BODY ? undefined
-      : redact({ url: r.url(), method: r.request().method(), status: r.status(), headers: { 'content-type': type }, response: text }), () => undefined));
+      : redact({ url: r.url(), method: r.request().method(), status: r.status(), headers: { 'content-type': type }, response: text }), e => { log.error('recon.response', e); return undefined; }));
   });
   const res = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
   const load = Date.now() - t0;
@@ -68,7 +70,7 @@ export async function recordVerb({ page, site, verb, url, account, nate_go = fal
     return { ok: false, paused: 'challenge', ask: `${site} showed a check page ("${title.slice(0, 60)}"); the person clears it in the live browser, then recon resumes` };
   if (LOGIN_WALL.test(title) && account !== 'public') return { ok: false, paused: 'login_wall', ask: `${site} asked to sign in; relink the account` };
   const network = (await Promise.all(pending)).filter((c): c is NetworkCapture => !!c);
-  const embedded = seen.embedded.flatMap(e => { try { return [{ source: e.source, json: (redact({ url, response: e.text }).response) }]; } catch { return []; } });
+  const embedded = seen.embedded.flatMap(e => { try { return [{ source: e.source, json: (redact({ url, response: e.text }).response) }]; } catch (e) { log.error('recon.embedded', e); return []; } });
   const controls = seen.controls.filter(c => !isForbidden(c));
   return { ok: true, bundle: { site, verb, url, recorded_at: now().toISOString(), status: res?.status() ?? 0, title, network, embedded, controls, ms: { load, total: Date.now() - t0 } } };
 }

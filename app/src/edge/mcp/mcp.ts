@@ -14,7 +14,7 @@ export const TOOLS = {
       ships_from: { type: 'string' }, max_delivered_cents: { type: 'integer' }, in_stock_only: { type: 'boolean' } } } } } },
   product: { endpoint: 'GET /v1/products/:id', description: 'A product: identity, price history across retail and used markets, trend, and its offers. Every number is guarded and cited.',
     inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
-  compare: { endpoint: 'POST /v1/compare', description: "One listing against the product's other offers.",
+  compare: { endpoint: 'POST /v1/compare', description: "One listing against the product’s other offers.",
     inputSchema: { type: 'object', properties: { url: { type: 'string' } }, required: ['url'] } },
   history: { endpoint: 'GET /v1/products/:id/history', description: 'Price history for a product.',
     inputSchema: { type: 'object', properties: { id: { type: 'string' }, range: { type: 'string' } }, required: ['id'] } },

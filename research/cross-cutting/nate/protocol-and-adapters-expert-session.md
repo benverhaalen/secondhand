@@ -1,4 +1,5 @@
 # Protocol and adapters engine: expert session
+Researched 2026-11-14 by Nate (session ex-hp).
 
 Status: *agent proposal*, research note for Nate. Written 2026-11-14 by session `ex-hp`. Read against [engines/protocol-and-adapters](../../../spec/engines/protocol-and-adapters.md) (all of it; §1 is "what it decides"), [product.md, The harness protocol](../../../spec/product.md#the-harness-protocol) and [protocol.ts](../../../app/src/edge/harness/protocol.ts).
 

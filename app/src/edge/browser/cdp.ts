@@ -1,3 +1,5 @@
+import { createLog, consoleSink } from '../../../../log/index.js';
+const log = createLog({ src: 'app.src.edge.browser.cdp', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 // The pool's browser-use launcher (Nate, product/words.md 2026-11-14 "use browser-use", "store auth through browser-use"). Server only.
 // Every browser is reached over CDP, as browser-use reaches it: a local Chrome on a kept profile directory, or a Browser Use Cloud
 // browser (POST /api/v4/browsers, then connect to its cdpUrl; https://github.com/browser-use/browser-use/blob/main/CLOUD.md).
@@ -39,8 +41,8 @@ export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage>
       async close() {
         closed = true;
         // Browser.close lets Chrome flush its cookie store to the profile; a bare kill loses the last sign-in.
-        await browser.newBrowserCDPSession?.().then(c => c.send('Browser.close')).catch(() => undefined);
-        await browser.close().catch(() => undefined);
+        await browser.newBrowserCDPSession?.().then(c => c.send('Browser.close')).catch(e => { log.error('browser.close', e); });
+        await browser.close().catch(e => { log.error('browser.close', e); });
         await ep.stop();
         closers.forEach(f => f());
       },
@@ -83,7 +85,7 @@ export function localChrome({ executablePath, scratch, headless, spawnFn = spawn
         try {
           const [port, path] = readFileSync(join(dir, 'DevToolsActivePort'), 'utf8').split(/\r?\n/);
           if (port && path) return { cdpUrl: `ws://127.0.0.1:${port}${path}`, stop };
-        } catch { /* not written yet */ }
+        } catch (e) { if (!(e instanceof Error && 'code' in e && e.code === 'ENOENT')) { await stop(); throw e; } }
         if (child.exitCode !== null) break;
         await new Promise(r => setTimeout(r, 50));
       }
@@ -113,7 +115,7 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
       const id = o.id, cdpUrl = o.cdpUrl ?? o.cdp_url;
       if (typeof id !== 'string' || typeof cdpUrl !== 'string') throw new Error('browser-use cloud create returned no id or cdpUrl');
       const live_url = typeof (o.liveUrl ?? o.live_url) === 'string' ? String(o.liveUrl ?? o.live_url) : undefined;
-      return { cdpUrl, live_url, stop: async () => { await fetchFn(`${base}/browsers/${encodeURIComponent(id)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).catch(() => undefined); } };
+      return { cdpUrl, live_url, stop: async () => { await fetchFn(`${base}/browsers/${encodeURIComponent(id)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).catch(e => { log.error('browser.close', e); }); } };
     },
   };
 }

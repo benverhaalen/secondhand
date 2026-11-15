@@ -1,6 +1,7 @@
 # Run trace: fr-1
+Researched 2026-11-15 by Nate (original agent not recorded).
 
-Logs: fr1.jsonl, fr1b.jsonl. 89 lines, 3 session(s), first line 2026-11-15T03:57:08.565Z.
+*Observed in the recorded local run:* Logs: fr1.jsonl, fr1b.jsonl. 89 lines, 3 session(s), first line 2026-11-15T03:57:08.565Z.
 Total: 260629 ms.
 
 ## Steps
