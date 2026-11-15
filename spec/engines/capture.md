@@ -127,6 +127,100 @@ Phone code in the Swift capture module, job code under `jobs/capture/`, each tas
 
 The Swift module's runner of `process[]`, the tutorial flag and the on-device classifier are planned with the module; their check is test 1 and test 6 on the phones.
 
+## 11. The deterministic plan
+
+*agent proposal*, written 2026-11-15 by the capture lead, for Nate's ask: "deterministically selecting by product type and dimensions, all needed fields and information determined and ascertained, with the intelligent ui generating any needed clarifying questions" ([words](../../product/words.md#2026-11-15-nate-opus-team-leads-that-send-out-to-codex)). It turns sections 1 to 3 into one pure function, `plan(state)`: given what is known about an item so far, it returns the process, the fields and their state, the next questions and, per linked site, ready or what is missing. Same state in, same plan out. No model runs inside it; models only write the facts it reads, as proposals with evidence. Section 3's worth and cost arithmetic (steps 4 and 6) stays the learned layer on top: it can only add an extra shot past the bar, never change what is required or the order below.
+
+### The one table
+
+`jobs/capture/process.json` (version 2) is the one table. It keeps `types` (the shot lists above) and adds:
+
+| Part | Holds |
+|---|---|
+| `family_class` | each family's default dimension class |
+| `classes` | per class: its measurements (one `dimensions` field with its parts, unit `cm`, and how it is taken), its condition checks (what the flaw pass looks for), its default shipping weight tier, and any fields the class adds |
+| `fields` | per family, plus `root` for every item: the field rows below |
+
+**Dimension classes.** Selection is by family and by size, because a scan, a tape and a lookup suit different sizes.
+
+| Class | Families by default | Dimensions and how | Condition checks | Weight tier |
+|---|---|---|---|---|
+| `flat_garment` | apparel | pit to pit, length; depth on the front still laid flat, else asked | stains, holes, pilling, fading, print cracking | under 1 lb |
+| `footwear` | shoes | none; the size is the label | sole wear, creasing, heel drag, scuffs | 1 to 3 lb |
+| `bag` | bags | width, height, depth; from the scan, else the matched product, else asked | corner wear, handle darkening, hardware scratches, lining stains | 1 to 3 lb |
+| `small_hard` | jewellery_watches, phones and laptops, media, cards_collectibles | none; the matched product's spec | scratches, dents, cracks | under 1 lb |
+| `medium_hard` | electronics, lighting_home, appliances_tools, toys_lego | width, height, depth; scan, product, asked | scratches, dents, missing parts | 3 to 10 lb |
+| `large_bulky` | furniture, bikes_sports, baby_gear | width, depth, height; scan, product, asked. Required on every site: nobody collects a sofa without them | stains, scratches, tears, loose joints | over 10 lb |
+| `soft_goods` | other, when not rigid | width, height; asked | stains, holes, fading | under 1 lb |
+| `set_bundle` | any family, when two or more pieces are in the frame | the family's, per piece | the family's | the family's |
+
+**Selection** is `select(state)`, in this order:
+1. **The family.** `capture.type` when the person picked it or `capture_judge` swapped it. Otherwise the phone's suggestion, used for the process only, when it passes card 7's margin (top at least 0.5, lead at least 0.2). Otherwise the fallback: family `other`, `fallback: type_unsure`, and the type is the first question.
+2. **The class.** The family's default, then size: a rigid item whose longest side is 120 cm or more is `large_bulky`; a `medium_hard` item under 10 cm is `small_hard`. `other` takes its class from size: rigid and 120 cm or more `large_bulky`, rigid and 10 cm or more `medium_hard`, rigid and smaller `small_hard`, not rigid `soft_goods`. Two or more pieces wrap the result in `set_bundle`.
+3. **The process.** The family's (or kind's) shot list as section 3 step 2 builds it today, with the no-LiDAR ring and capture-shots card 1 step 3 (soft, under 10 cm: stills, not a scan). A bundle starts with one `group` still of every piece together, and each step of the family's list is taken once per piece (`frames` = the piece count).
+4. **The fields.** `root`, then the family's rows, then the class's, with a family row replacing a root row of the same name. In a bundle every row marked `per_piece` becomes one field per piece (`size_label#1`, `size_label#2`), and `lot_count` is added.
+
+Every bound here (0.5, 0.2, 10 cm, 120 cm) is a `param` row with that prior.
+
+### A field row
+
+| Column | Meaning |
+|---|---|
+| `field`, `type`, `unit` or `values` | as the `requirement` row ([product §3](../product.md#3-the-data-model)) |
+| `ways[]` | the ordered ways it gets a value: `photo` (a kept view), `label` (text or a code on the item), `measured` (depth), `derived` (from the type, the class or the profile), `lookup` (the matched product), `asked`. Each way names its `view` or source and the confidence it needs (`min_conf`) |
+| `confirm` | `auto`: a value past `min_conf` is known. `tap`: a model's value is a proposal until the person taps it, except that with `capture.confirm_mode = auto` a `label`, `measured` or `lookup` value at 0.95 or more is accepted and marked `auto_accepted`. `always`: only the person settles it, whatever the mode. Condition, function and anything that bears on authenticity are `always`; size and accessories are `tap` |
+| `required`, `recommended` | the sites that need it to post, and those it helps. A site not linked is ignored |
+| `site_names` | per site: the form's name and `max_length` where it differs. Condition values map per site through `CONDITION` in [spec/sites.mjs](../sites.mjs) |
+| `ask` | the question: its kind, its options when they are fixed, and its words |
+| `per_piece` | the row repeats per piece in a bundle |
+
+**When a field is known** (`known(row, fact, confirm_mode)`): a `you_said` value or a confirmed one always is; under `confirm: always` nothing else is; under `tap` only an auto-accepted value is; under `auto` a value at or past its way's `min_conf` is. A field's state is then one of `known`, `proposed` (a value the person has not settled), `waiting` (a process step not yet kept, or a lookup still running, can fill it), `missing` (only asking is left), `unobtainable` (no way left, and asking is not one of its ways), or `refused`.
+
+**Per-site form.** `formValue(row, site, value)` maps an enum through the site's table, shortens text to the site's `max_length` on a word boundary (as `buildListing` does), and says `invalid` when a value has no place on that site. An invalid value counts as missing for that site.
+
+### The questions
+
+A question is data the UI renders with no logic of its own:
+
+```
+{ id, field, kind, options: [{value, proposed}], other, unit?, units?, parts?, shot?: {step, frame?, reason},
+  why, required_by: [site], unlocks: {required, ready_after: [site]}, words, answer: {method, path} }
+```
+
+- `kind` is one of `pick_one`, `pick_many`, `number_with_unit` (with `parts` for dimensions, Nate's drag grid), `yes_no`, `text`, `shot` (a retake or one more view). `other: true` adds "Something else" with a text box.
+- `proposed` marks the option the photos or a lookup gave. Never on `confirm: always` fields with no photo evidence (function), and never when card 7's margin fails.
+- `why` is a code the screen turns into words: `required` (a linked site needs it), `confirm` (a proposal to settle), `value` (it changes the price or the match), `only_you_know`.
+- `unlocks.required` counts the linked (site, required field) pairs it settles; `ready_after` lists the sites that become ready if it is answered and nothing else changes.
+- `answer` is the call that answers it: `PATCH /v1/items/:id/attributes/:name` for a value, `PATCH /v1/captures/:id` for the type, `POST /v1/captures/:id/photos` for a shot.
+- `words` come from the row's `ask` text, fixed per field and checked by `scripts/copy-lint.mjs` in the table's test. An eBay aspect with no row ([aspects.ts](../../app/src/engines/listing/aspects.ts)) gets `"<Aspect name>?"`. No model writes a question; if one ever rewrites `words`, the field, kind and options stay as planned and the result passes the same lint.
+
+**Which questions, in which order.** A field gets a question when it is `proposed`, or `missing` with `asked` among its ways, or when its next way is a view: a kept view that failed to read it gets a `shot` retake (at most 2, card 17), and a view outside the process gets a `shot` only when a linked site requires the field. Never asked: a `known` or `waiting` field, a `refused` one, condition when the purpose is `find`. The order is a total sort:
+1. `unlocks.required`, most first;
+2. `ready_after`, most sites first;
+3. the recommended (site, field) pairs it settles, most first;
+4. effort, least first: `yes_no` and `pick_one` 1, `pick_many` 2, `number_with_unit` and `text` 3, `shot` 4;
+5. the field name.
+
+**The cap.** A field a linked site requires is always asked until it is known or refused (Nate: every needed field gets its own select, [words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). Questions for fields no linked site requires stop at 3 per item, counting those already answered; `capture_question_cap` is a `param` row with prior 3.
+
+**The stop.** `status` is `shooting` while a process step is not kept, `asking` while a question remains, and `done` when none does. At `done` every field not known keeps its state as the reason the item card shows.
+
+### Ready per site
+
+`completeness(rows, facts, sites, confirm_mode)` returns, for each linked site, `{ready, missing: [{field, state}]}` over the fields that site requires, using `known` and `formValue`. The planner computes `unlocks` with it, and the listing step must use the same function in place of its own check in `buildListing`, so capture and listing cannot disagree. A recalled item is never ready, whatever its fields.
+
+### What Ben's screens get
+
+Every capture route returns `plan` beside the capture: `{family, kind, dimension_class, fallback, process[] (each step with its state: pending, kept, retake), checks[], fields[] (field, state, value, source, required_by, recommended_by), questions[], complete {site: {ready, missing[]}}, status}`. `GET /v1/captures/:id` returns the same. A screen shows the current step, renders `questions[0]` with the widget its `kind` names, sends `answer`, and reads the next plan; it never decides what to ask or when to stop. The layout, the words around the question, the motion and the drag grid stay Ben's.
+
+### Build and proof
+
+| Task | Owns | Proves with |
+|---|---|---|
+| cap-7 The table, selection, known, form and completeness | `jobs/capture/process.json` v2, `app/src/engines/capture/table.ts`, `select.ts`, `fields.ts`, `complete.ts` and their tests; `CONDITION` in `spec/sites.mjs` | `node --test app/src/engines/capture/select.test.ts` and the same for `fields`, `complete` |
+| cap-8 The question planner and the walk | `app/src/engines/capture/plan.ts`, `plan.test.ts`, `walk.test.ts` | `node --test app/src/engines/capture/walk.test.ts`: six types (a T-shirt, sneakers, a handbag, a phone, a chair, a bundle of three) from the first photo to `done`, asserting the class, the process, each question in order and the stop, run twice with identical output |
+| cap-9 The routes | `app/src/edge/api/captures.ts` and its test, `spec/examples/captures.json` | `node --test app/src/edge/api/captures.test.ts` |
+
 ## Worked example
 
 All numbers are examples.
