@@ -2466,3 +2466,9 @@ Nate, the orchestrator's session, 2026-11-15, about 14:20 UTC.
 > Ensure all main pushes and fixes dont just live on the mac, but sync, that it regularly pushes the working code, we are being way too slow when audits and just full review to develop with you and opuses would fix this
 
 Read by the orchestrator as: work that passes lands on main at once instead of waiting on Mac branches for review rounds; an audit and one full review, then the orchestrator and the Opus leads write the code directly; Codex workers for bulk and for driving tests. Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate stop agents merging on top of each other; halt at good points; full focus on the needed fixes
+Nate, the orchestrator's session, 2026-11-15, about 14:24 UTC.
+> we need to stop agents from merging and working on top of eachother. ensure they halt at good poitns and we full focus on developing and carving out the needed fixes
+
+Acted on at once: every lead told to finish the step it is in, park the rest on its branch, write its handoff and stop; from then the orchestrator is the only one who merges to main, one change at a time.
