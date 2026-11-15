@@ -263,7 +263,7 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
         {tracked === 'with' ? (
           <Stack>
             <Guess id="self-carrier" name="Carrier" value={carrier} onChange={setCarrier} />
-            <Blank id="self-number" name="Tracking number" value={tracking} onChange={setTracking} />
+            <Blank id="self-number" live name="Tracking number" value={tracking} onChange={setTracking} />
           </Stack>
         ) : <Txt role="body">{NO_TRACKING}</Txt>}
         <Approve id="self-save" does={tracked === 'with' ? 'Mark shipped' : 'Mark shipped without tracking'} status={saving ? 'working' : 'ready'} step="Saving" onApprove={markShipped} />

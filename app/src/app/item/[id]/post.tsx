@@ -182,7 +182,7 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
               <ListingPreview site={s.site} photo={cover} off={!isOn}
                 title={own[s.site]?.title ?? listingTitle(s.site, item.title, item.attributes)} price={priceOn(s.site)} keep={youKeep(s.site, priceOn(s.site))}
                 photos={`${shown < photos ? `First ${shown} of ${photos} photos` : `${photos} ${photos === 1 ? 'photo' : 'photos'}`}, ${form.cover === '1:1' ? 'square' : 'cropped taller'}${look === 'ai' ? ', AI cover marked' : ''}${form.title === 'description_line_1' ? '. The name opens the description' : ''}`}
-                needs={missing && isOn ? <Line><Blank id={`needs-${s.site}`} name={missing.name} value={blank} onChange={setBlank} look="body" /></Line> : undefined}
+                needs={missing && isOn ? <Line><Blank id={`needs-${s.site}`} live name={missing.name} value={blank} onChange={setBlank} look="body" /></Line> : undefined}
                 toggle={<Switch id={`post-${s.site}`} label="Post here" on={isOn} disabled={status === 'working'} onChange={o => setOn(x => (o ? [...x, s.site] : x.filter(y => y !== s.site)))} />} />
               {isOn && status === 'ready' ? (
                 editing === s.site ? (

@@ -598,7 +598,7 @@ function SoldElsewhere({ open, live, onClose, onDone }: { open: boolean; live: n
     <Sheet open={open} title="Sold elsewhere" onClose={onClose}>
       <Stack gap="tight">
         <Txt role="caption">What it sold for, if you want it in your records</Txt>
-        <Line><Blank id="elsewhere-price" name="Price" value={price} onChange={setPrice} numeric /></Line>
+        <Line><Blank id="elsewhere-price" live name="Price" value={price} onChange={setPrice} numeric /></Line>
       </Stack>
       <Approve id="elsewhere-done" does={live ? `Mark sold and end ${live === 1 ? 'the listing' : `${live} listings`}` : 'Mark sold'}
         onApprove={() => onDone(live ? `Marked sold. Took down ${live === 1 ? 'the listing' : `${live} listings`}.` : 'Marked sold.')} />
