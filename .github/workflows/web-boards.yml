@@ -38,10 +38,14 @@ jobs:
           fi
       - name: Draw the boards
         run: node brand/explore/web-home/boards/render.mjs brand/explore/web-home/boards/*/
+      - name: Check the hero on every screen, and record it
+        run: |
+          node brand/explore/web-home/hero/photos.mjs
+          node brand/explore/web-home/hero/check.mjs || echo "::warning::the hero check found a screen that breaks; see hero/out/audit.json"
       - name: Commit the renders
         run: |
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
-          git add brand/explore/web-home/boards
+          git add brand/explore/web-home/boards brand/explore/web-home/hero
           git commit -m "test(web): section boards drawn in the brand faces" || exit 0
           git pull --no-rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"

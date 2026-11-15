@@ -2,12 +2,85 @@
   "why": "The hero's wall: real photos of real things people resell, many kinds, so a visitor sees their own stuff in it. Open licences only (CC0, public domain, CC BY, CC BY-SA), credited on the site's credits page. Listing photos from marketplaces belong to their sellers, so none are used.",
   "per_query": 6,
   "queries": {
-    "clothes": ["denim jacket", "leather jacket", "hoodie", "flannel shirt", "jeans", "summer dress", "wool sweater", "baseball cap", "scarf", "vintage t-shirt"],
-    "shoes": ["sneakers", "running shoes", "leather boots", "high heels", "sandals"],
-    "bags and accessories": ["handbag", "backpack", "sunglasses", "wristwatch", "jewelry necklace"],
-    "tech": ["wireless earbuds", "headphones", "smartphone", "laptop", "game controller", "video game console", "mechanical keyboard", "digital camera"],
-    "home": ["armchair", "wooden chair", "desk lamp", "coffee table", "ceramic vase", "houseplant pot", "mirror", "rug"],
-    "hobbies": ["vinyl records", "record player", "film camera", "acoustic guitar", "skateboard", "bicycle", "books stack", "board game", "lego"],
-    "kitchen": ["cast iron pan", "coffee mug", "espresso machine", "teapot"]
-  }
+    "clothes": [
+      "denim jacket",
+      "leather jacket",
+      "hoodie",
+      "flannel shirt",
+      "folded jeans",
+      "summer dress",
+      "wool sweater",
+      "baseball cap",
+      "scarf",
+      "t-shirt",
+      "trench coat",
+      "puffer jacket"
+    ],
+    "shoes": [
+      "sneakers",
+      "running shoes",
+      "leather boots",
+      "cowboy boots",
+      "high heels",
+      "sandals",
+      "loafers"
+    ],
+    "bags and accessories": [
+      "handbag",
+      "backpack",
+      "tote bag",
+      "sunglasses",
+      "wristwatch",
+      "necklace"
+    ],
+    "tech": [
+      "wireless earbuds",
+      "airpods",
+      "headphones",
+      "smartphone",
+      "laptop",
+      "tablet computer",
+      "game controller",
+      "nintendo switch",
+      "mechanical keyboard",
+      "digital camera",
+      "smartwatch"
+    ],
+    "home": [
+      "armchair",
+      "wooden chair",
+      "mid century chair",
+      "desk lamp",
+      "coffee table",
+      "ceramic vase",
+      "houseplant",
+      "mirror",
+      "bookshelf",
+      "rug"
+    ],
+    "hobbies": [
+      "vinyl records",
+      "record player",
+      "film camera",
+      "polaroid camera",
+      "acoustic guitar",
+      "electric guitar",
+      "skateboard",
+      "bicycle",
+      "books",
+      "board game",
+      "lego",
+      "typewriter",
+      "tennis racket",
+      "snowboard"
+    ],
+    "kitchen": [
+      "cast iron pan",
+      "coffee mug",
+      "espresso machine",
+      "teapot",
+      "stand mixer"
+    ]
+  },
+  "judge": "openai/gpt-4o-mini"
 }
