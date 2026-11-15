@@ -23,7 +23,7 @@ Replay has no tab and no button. The person sees its effect:
 | Which verbs replay | all; only small frequent ones ([crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#the-sold--delist-pipeline)) | `end`, `revise` (price), `read_stats`, `read_offers`, `read_orders`, `read_inbox`, and the release step of `post` | frequent and time-critical; photo upload and form shape change most | drift rate per verb |
 | What a recording holds | the raw capture; a scrubbed template | a template: method, URL with slots, allowed header names, body with slots, the expected status and response shape hash | no cookies, `Authorization`, buyer text or addresses ever stored; Kernel's telemetry shows such headers do appear in captures | none |
 | Drift detection | wait for a person to notice; check each call's `expect` and read back | `expect` on every call, then read-back | a call can be accepted and change nothing | none |
-| Which provider | Browser Use; Browserbase (Session Logs `GET /v1/sessions/{id}/logs`); Kernel (`POST /browsers/{id}/curl`) ([§1.2](../../research/replay/nate/cloud-browsers-and-detection.md#12-comparison-table)) | Browser Use, decided for every harness ([decisions](../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)) | one provider, one profile per account | the capture check failing on Browser Use while another passes |
+| Which provider | Browser Use; Browserbase (Session Logs `GET /v1/sessions/{id}/logs`); Kernel (`POST /browsers/{id}/curl`) ([§1.2](../../research/replay/nate/cloud-browsers-and-detection.md#12-comparison-table)) | our own hosted headless browser, one per account with a steady US address; Nate moved hosting off Browser Use ([Nate](../../product/words.md#2026-11-14-nate-host-all-engines-ourselves-and-can-the-persons-own-device-do-the-work), replacing the provider in [decisions](../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)) | no browser vendor; the CDP attach and the recorded calls are ours | our own browser failing the capture check |
 
 ## Data flow
 
@@ -65,7 +65,7 @@ The listing moves through the same [lifecycle.mjs](../lifecycle.mjs) states what
 | Piece | What it does here |
 |---|---|
 | Harness per site | owns its recordings; picks replay or browser per verb |
-| Browser Use cloud V4 | the session, `cdpUrl`, the saved profile on a stable US IP |
+| Our hosted headless browser | the session, `cdpUrl`, the saved profile on a stable US IP |
 | CDP client | attaches first, records `Network.requestWillBeSent` and responses for the task |
 | Scrub and template (plain code) | strips cookies, `Authorization`, personal values; turns ids and prices into slots; hashes response shape |
 | Runner | `Runtime.evaluate` of `fetch` in the page; checks each `expect` |

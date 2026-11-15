@@ -142,9 +142,9 @@ The build covers five sites: eBay, Facebook Marketplace, Depop, Poshmark and Mer
 | `read_offers` | adapter, endpoint; GetBestOffers | offers arrive as messages, read by `read_inbox` | adapter, page (no list-offers endpoint) | adapter, page | adapter, page | link-out | link-out |
 | `answer_offer` | adapter, endpoint; RespondToBestOffer | a reply by `send_message` | adapter, page | adapter, page | adapter, page | link-out | link-out |
 | `make_offer` | adapter, page (a Best Offer binds the buyer) | a message to the seller | adapter, page | adapter, page | adapter, page | link-out | link-out |
-| `read_orders` | adapter, endpoint; Fulfillment plus Notification | adapter, page | adapter, endpoint; orders plus webhooks | adapter, page; sale email | adapter, page; sale email | n/a | n/a |
+| `read_orders` | adapter, endpoint; Fulfillment plus Notification | adapter, page | adapter, endpoint | adapter, page; public-page check first | adapter, page; public-page check first | n/a | n/a |
 | `read_stats` | adapter, endpoint (views, watchers) | adapter, page | adapter, endpoint (likes, bag counts) | adapter, page | adapter, page | adapter, page | adapter, page |
-| `search` | adapter, endpoint; Browse | adapter, endpoint; ScrapeCreators, measured | adapter, endpoint | adapter, endpoint | adapter, endpoint | adapter, endpoint; Firecrawl; Apify last | adapter, endpoint; Firecrawl; Apify last |
+| `search` | adapter, endpoint; Browse | adapter, endpoint; ScrapeCreators, measured | adapter, endpoint | adapter, endpoint | adapter, endpoint | adapter, endpoint; Firecrawl | adapter, endpoint; Firecrawl |
 | `save` | adapter, endpoint (watch) | adapter, page | adapter, endpoint (like) | adapter, page; runs on the person's tap (likes are named in the guidelines) | adapter, page | adapter, page | adapter, page |
 
 The site terms behind each column are facts on record in the canon table and become `rights` tags. They are not limits on this design ([licences](../product.md#licences-terms-and-the-rules-that-protect-people)).
@@ -156,7 +156,7 @@ Asked by [Nate](../../product/words.md#2026-11-14-nate-hooks-for-every-app-event
 | Source | How it is caught | Delay |
 |---|---|---|
 | The app | each `/v1` route writes its event in the same transaction as its change (an outbox), so no event is lost if the job runner is down | none |
-| A site's own push | a signed webhook to the edge: eBay notifications (order, offer, message, listing ended), Depop order webhooks where partner access is granted. Verified by signature, answered in under 1 s, used as a trigger only | seconds |
+| A site's own push | a signed webhook to the edge: eBay notifications (order, offer, message, listing ended). Verified by signature, answered in under 1 s, used as a trigger only | seconds |
 | The site's live channel | where a site's own web client receives messages and offers over a held connection, a leased session keeps that connection open for an account during a hot window (an open negotiation, the hour after posting) and turns each frame into an event | seconds |
 | Our watchers, signed in | one sweep per linked account reads the pages the site already builds for the person: the notification feed, the inbox, offers, orders, the listings list with its counts. The sweep keeps the last normalised snapshot and emits an event per difference (`offer.received`, `message.received`, `listing.sold`, `listing.ended`, `like.added`, `price.changed`) | by tier: 1 to 2 min while hot, 15 min live, hourly quiet, through the night |
 | Our watchers, public | a server fetch of the public listing page for the cheap "is it still up" check ([Ben's prototype](../../research/sold/ben/cheap-sale-detection.md)); a hit triggers the signed-in read | 1 to 2 min |

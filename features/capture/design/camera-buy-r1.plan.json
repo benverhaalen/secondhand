@@ -1,0 +1,133 @@
+{
+ "max": 3,
+ "load": 0.7,
+ "ramp": 1,
+ "swap": 10,
+ "timeout": 600,
+ "jobs": [
+  {
+   "id": "cam-clearing",
+   "prompt": "Job: one iPhone screen of secondhand, an app that sells a person's used things on five marketplaces for them. This is the camera. The person photographs one item, and while they do, the app reads what it is (brand, kind, material, size, flaws) so they type nothing. It asks for the few views it needs (for clothes: front, back, tag), takes each shot by itself once it is sharp, and shows what it has read and what it still needs.\nDesign this for someone who wants a pile of their own things gone this week and would rather give one away than answer ten messages about it.\nYou are the designer. Decide what this person sees first, what the screen shows and where. Do not reproduce a camera or scanner app you know: work out what this person needs while holding the thing in one hand.\nFixed: a full-screen live camera with no tab bar, a way to close, and a shutter that is always there. The look is in attached image 1.\nIt fails if:\n- the item is drawn or 3D in place of a real photo of a real used thing in daylight\n- the person must read more than a few words to know what to do next\n- a fact the app has read cannot be told apart from a fact it still needs\n- a marketplace is named in words, or any text is misspelled or too small to read on a phone\n- a meaning is carried by color alone, or text sits on the camera view with no ground under it\n- anything is decoration that says nothing true about the work being done\n- it makes more than one bold move, or a bold move with no purpose you could state\nPortrait, 1170 by 2532. The screen only: no phone frame, no caption, no notes.",
+   "inputs": [
+    {
+     "file": "inputs/today-light.jpg",
+     "take": "The app's look on another screen: its type, pill buttons, hairline cards, soft gradient, wordmark and tab bar. Match this look.",
+     "leave": "Its layout and its content. You are designing a different screen."
+    }
+   ]
+  },
+  {
+   "id": "cam-minimum",
+   "prompt": "Job: one iPhone screen of secondhand, an app that sells a person's used things on five marketplaces for them. This is the camera. The person photographs one item, and while they do, the app reads what it is (brand, kind, material, size, flaws) so they type nothing. It asks for the few views it needs (for clothes: front, back, tag), takes each shot by itself once it is sharp, and shows what it has read and what it still needs.\nDesign this for someone selling one thing they know the worth of, who will wait for their price and wants to see at once that nothing went below it.\nYou are the designer. Decide what this person sees first, what the screen shows and where. Do not reproduce a camera or scanner app you know: work out what this person needs while holding the thing in one hand.\nFixed: a full-screen live camera with no tab bar, a way to close, and a shutter that is always there. The look is in attached image 1.\nIt fails if:\n- the item is drawn or 3D in place of a real photo of a real used thing in daylight\n- the person must read more than a few words to know what to do next\n- a fact the app has read cannot be told apart from a fact it still needs\n- a marketplace is named in words, or any text is misspelled or too small to read on a phone\n- a meaning is carried by color alone, or text sits on the camera view with no ground under it\n- anything is decoration that says nothing true about the work being done\n- it makes more than one bold move, or a bold move with no purpose you could state\nPortrait, 1170 by 2532. The screen only: no phone frame, no caption, no notes.",
+   "inputs": [
+    {
+     "file": "inputs/today-light.jpg",
+     "take": "The app's look on another screen: its type, pill buttons, hairline cards, soft gradient, wordmark and tab bar. Match this look.",
+     "leave": "Its layout and its content. You are designing a different screen."
+    }
+   ]
+  },
+  {
+   "id": "cam-testing",
+   "prompt": "Job: one iPhone screen of secondhand, an app that sells a person's used things on five marketplaces for them. This is the camera. The person photographs one item, and while they do, the app reads what it is (brand, kind, material, size, flaws) so they type nothing. It asks for the few views it needs (for clothes: front, back, tag), takes each shot by itself once it is sharp, and shows what it has read and what it still needs.\nDesign this for someone who would keep this unless the price is right, and mostly wants to know what it would fetch.\nYou are the designer. Decide what this person sees first, what the screen shows and where. Do not reproduce a camera or scanner app you know: work out what this person needs while holding the thing in one hand.\nFixed: a full-screen live camera with no tab bar, a way to close, and a shutter that is always there. The look is in attached image 1.\nIt fails if:\n- the item is drawn or 3D in place of a real photo of a real used thing in daylight\n- the person must read more than a few words to know what to do next\n- a fact the app has read cannot be told apart from a fact it still needs\n- a marketplace is named in words, or any text is misspelled or too small to read on a phone\n- a meaning is carried by color alone, or text sits on the camera view with no ground under it\n- anything is decoration that says nothing true about the work being done\n- it makes more than one bold move, or a bold move with no purpose you could state\nPortrait, 1170 by 2532. The screen only: no phone frame, no caption, no notes.",
+   "inputs": [
+    {
+     "file": "inputs/today-light.jpg",
+     "take": "The app's look on another screen: its type, pill buttons, hairline cards, soft gradient, wordmark and tab bar. Match this look.",
+     "leave": "Its layout and its content. You are designing a different screen."
+    }
+   ]
+  },
+  {
+   "id": "buy-hunting",
+   "prompt": "Job: one iPhone screen of secondhand, an app that sells a person's used things for them and also helps them buy used. This is the Buy tab: one search across five used marketplaces and official stores. The person types, photographs a thing or pastes a link. The app works out what the thing is and what a fair price is, and keeps looking after they leave. The tab also holds what the app found since last time, what the person is watching, and what they bought.\nDesign this for someone looking for one specific thing used, who wants to be told when it turns up and not to search again.\nYou are the designer. Decide what this person sees first, what the screen shows and where. Do not reproduce a shopping app you know: work out what this person needs.\nFixed: the header with the wordmark and the tab bar from attached image 1, unchanged, with Buy selected. The look is in attached image 1.\nIt fails if:\n- an item has no real photo, or its photo is not the largest thing in its group\n- a marketplace is named in words in place of its small square logo\n- a price does not say what it is (delivered, fair range, asking), or a number appears that a stranger could not explain\n- the person must read more than a few words to know what to do next\n- any text is misspelled or too small to read on a phone, or a meaning is carried by color alone\n- the gradient sits behind more than the one thing that matters most\n- it makes more than one bold move, or a bold move with no purpose you could state\nPortrait, 1170 by 2532. The screen only: no phone frame, no caption, no notes.",
+   "inputs": [
+    {
+     "file": "inputs/today-light.jpg",
+     "take": "The app's look on another screen: its type, pill buttons, hairline cards, soft gradient, wordmark and tab bar. Match this look.",
+     "leave": "Its layout and its content. You are designing a different screen."
+    }
+   ]
+  },
+  {
+   "id": "buy-price",
+   "prompt": "Job: one iPhone screen of secondhand, an app that sells a person's used things for them and also helps them buy used. This is the Buy tab: one search across five used marketplaces and official stores. The person types, photographs a thing or pastes a link. The app works out what the thing is and what a fair price is, and keeps looking after they leave. The tab also holds what the app found since last time, what the person is watching, and what they bought.\nDesign this for someone who found one used thing and wants to know in seconds whether the price is fair before they buy it.\nYou are the designer. Decide what this person sees first, what the screen shows and where. Do not reproduce a shopping app you know: work out what this person needs.\nFixed: the header with the wordmark and the tab bar from attached image 1, unchanged, with Buy selected. The look is in attached image 1.\nIt fails if:\n- an item has no real photo, or its photo is not the largest thing in its group\n- a marketplace is named in words in place of its small square logo\n- a price does not say what it is (delivered, fair range, asking), or a number appears that a stranger could not explain\n- the person must read more than a few words to know what to do next\n- any text is misspelled or too small to read on a phone, or a meaning is carried by color alone\n- the gradient sits behind more than the one thing that matters most\n- it makes more than one bold move, or a bold move with no purpose you could state\nPortrait, 1170 by 2532. The screen only: no phone frame, no caption, no notes.",
+   "inputs": [
+    {
+     "file": "inputs/today-light.jpg",
+     "take": "The app's look on another screen: its type, pill buttons, hairline cards, soft gradient, wordmark and tab bar. Match this look.",
+     "leave": "Its layout and its content. You are designing a different screen."
+    }
+   ]
+  },
+  {
+   "id": "buy-browsing",
+   "prompt": "Job: one iPhone screen of secondhand, an app that sells a person's used things for them and also helps them buy used. This is the Buy tab: one search across five used marketplaces and official stores. The person types, photographs a thing or pastes a link. The app works out what the thing is and what a fair price is, and keeps looking after they leave. The tab also holds what the app found since last time, what the person is watching, and what they bought.\nDesign this for someone with ten spare minutes who likes finding good used things in their size and has nothing particular in mind.\nYou are the designer. Decide what this person sees first, what the screen shows and where. Do not reproduce a shopping app you know: work out what this person needs.\nFixed: the header with the wordmark and the tab bar from attached image 1, unchanged, with Buy selected. The look is in attached image 1.\nIt fails if:\n- an item has no real photo, or its photo is not the largest thing in its group\n- a marketplace is named in words in place of its small square logo\n- a price does not say what it is (delivered, fair range, asking), or a number appears that a stranger could not explain\n- the person must read more than a few words to know what to do next\n- any text is misspelled or too small to read on a phone, or a meaning is carried by color alone\n- the gradient sits behind more than the one thing that matters most\n- it makes more than one bold move, or a bold move with no purpose you could state\nPortrait, 1170 by 2532. The screen only: no phone frame, no caption, no notes.",
+   "inputs": [
+    {
+     "file": "inputs/today-light.jpg",
+     "take": "The app's look on another screen: its type, pill buttons, hairline cards, soft gradient, wordmark and tab bar. Match this look.",
+     "leave": "Its layout and its content. You are designing a different screen."
+    }
+   ]
+  },
+  {
+   "id": "cam-critic",
+   "role": "critic",
+   "makes": "critique.json",
+   "after": [
+    "cam-clearing",
+    "cam-minimum",
+    "cam-testing"
+   ],
+   "prompt": "You are a senior product designer reviewing three designs of one iPhone screen: the camera of secondhand, where a person photographs one used item and the app reads what it is so they type nothing. You did not make them.\nImage 1 was designed for: someone who wants a pile of their own things gone this week and would rather give one away than answer ten messages about it.\nImage 2 was designed for: someone selling one thing they know the worth of, who will wait for their price and wants to see at once that nothing went below it.\nImage 3 was designed for: someone who would keep this unless the price is right, and mostly wants to know what it would fetch.\nThe third person's want is only named by the founder, not yet seen in what people do. Say so where a design leans on it.\nDo three things.\n1. Fail a design only for these, and tie each failure to a place in the image:\n- the item is drawn or 3D in place of a real photo of a real used thing in daylight\n- the person must read more than a few words to know what to do next\n- a fact the app has read cannot be told apart from a fact it still needs\n- a marketplace is named in words, or any text is misspelled or too small to read on a phone\n- a meaning is carried by color alone, or text sits on the camera view with no ground under it\n- anything is decoration that says nothing true about the work being done\n- it makes more than one bold move, or a bold move with no purpose you could state\n2. For each design say how and why it serves its person: which element answers which of their wants, and what that costs the other two people.\n3. Write the merge: what to keep from each design so that one screen serves all three. Keep what serves one person and costs nobody. Do not average. Where two people's wants conflict, say so and resolve it for the person who wants their things gone or found with the least work, or turn it into one setting.\nThen split what must change into exact fixes (a size, a gap, a color, a word) and feel notes.\nWrite critique.json in this folder: {\"images\":[{\"file\":\"\",\"person\":\"\",\"verdict\":\"pass or fail\",\"failures\":[{\"rule\":\"\",\"place\":\"\",\"issue\":\"\"}],\"serves\":[{\"element\":\"\",\"want\":\"\"}],\"costs\":[{\"person\":\"\",\"issue\":\"\"}]}],\"merge\":{\"keep\":[{\"from\":\"\",\"what\":\"\",\"why\":\"\"}],\"conflicts\":[{\"between\":\"\",\"resolved\":\"\"}]},\"exact_fixes\":[\"\"],\"feel_notes\":[\"\"],\"best\":\"\"}. Reply with one line.",
+   "inputs": [
+    {
+     "job": "cam-clearing",
+     "take": "Design 1."
+    },
+    {
+     "job": "cam-minimum",
+     "take": "Design 2."
+    },
+    {
+     "job": "cam-testing",
+     "take": "Design 3."
+    },
+    {
+     "file": "inputs/today-light.jpg",
+     "take": "The app's look that all three should match."
+    }
+   ]
+  },
+  {
+   "id": "buy-critic",
+   "role": "critic",
+   "makes": "critique.json",
+   "after": [
+    "buy-hunting",
+    "buy-price",
+    "buy-browsing"
+   ],
+   "prompt": "You are a senior product designer reviewing three designs of one iPhone screen: the Buy tab of secondhand, one search across five used marketplaces and official stores. You did not make them.\nImage 1 was designed for: someone looking for one specific thing used, who wants to be told when it turns up and not to search again.\nImage 2 was designed for: someone who found one used thing and wants to know in seconds whether the price is fair before they buy it.\nImage 3 was designed for: someone with ten spare minutes who likes finding good used things in their size and has nothing particular in mind.\nThe second and third people's wants are not yet seen in what people do. Say so where a design leans on them.\nDo three things.\n1. Fail a design only for these, and tie each failure to a place in the image:\n- an item has no real photo, or its photo is not the largest thing in its group\n- a marketplace is named in words in place of its small square logo\n- a price does not say what it is (delivered, fair range, asking), or a number appears that a stranger could not explain\n- the person must read more than a few words to know what to do next\n- any text is misspelled or too small to read on a phone, or a meaning is carried by color alone\n- the gradient sits behind more than the one thing that matters most\n- it makes more than one bold move, or a bold move with no purpose you could state\n2. For each design say how and why it serves its person: which element answers which of their wants, and what that costs the other two people.\n3. Write the merge: what to keep from each design so that one screen serves all three. Keep what serves one person and costs nobody. Do not average. Where two people's wants conflict, say so and resolve it for the person who wants their things gone or found with the least work, or turn it into one setting.\nThen split what must change into exact fixes (a size, a gap, a color, a word) and feel notes.\nWrite critique.json in this folder: {\"images\":[{\"file\":\"\",\"person\":\"\",\"verdict\":\"pass or fail\",\"failures\":[{\"rule\":\"\",\"place\":\"\",\"issue\":\"\"}],\"serves\":[{\"element\":\"\",\"want\":\"\"}],\"costs\":[{\"person\":\"\",\"issue\":\"\"}]}],\"merge\":{\"keep\":[{\"from\":\"\",\"what\":\"\",\"why\":\"\"}],\"conflicts\":[{\"between\":\"\",\"resolved\":\"\"}]},\"exact_fixes\":[\"\"],\"feel_notes\":[\"\"],\"best\":\"\"}. Reply with one line.",
+   "inputs": [
+    {
+     "job": "buy-hunting",
+     "take": "Design 1."
+    },
+    {
+     "job": "buy-price",
+     "take": "Design 2."
+    },
+    {
+     "job": "buy-browsing",
+     "take": "Design 3."
+    },
+    {
+     "file": "inputs/today-light.jpg",
+     "take": "The app's look that all three should match."
+    }
+   ]
+  }
+ ]
+}
