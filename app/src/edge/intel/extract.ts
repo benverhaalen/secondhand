@@ -1,3 +1,5 @@
+import { createLog, consoleSink } from '../../../../log/index.js';
+const log = createLog({ src: 'app.src.edge.intel.extract', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 // The extraction ladder (spec/engines/intelligence-api.md §3.2, §9 Extraction). Each page takes the first rung that yields valid rows:
 //   1 structured data on the page (JSON-LD, microdata, OpenGraph, embedded state JSON), no model
 //   2 a cached extractor_schema for the page's template_key (CSS selectors), no model
@@ -79,8 +81,8 @@ const requiredOf = (f: FactsSchema): string[] => Object.entries(f.fields).filter
 
 // ---- prompt-injection screen
 const INJECTION = [
-  /ignore (?:all |any |the )?(?:previous|prior|above|earlier|preceding) (?:instructions|prompts?|messages|rules)/i,
-  /disregard (?:all |any |the )?(?:previous|prior|above|earlier|your) (?:instructions|prompts?|rules)/i,
+  /ignore (any |all |the )?(?:previous|prior|above|earlier|preceding) (?:instructions|prompts?|messages|rules)/i,
+  /disregard (any |all |the )?(?:previous|prior|above|earlier|your) (?:instructions|prompts?|rules)/i,
   /(?:reveal|print|show|repeat) (?:your |the )?(?:system prompt|hidden instructions)/i,
   /<\|im_start\|>|<\|system\|>|\[INST\]|<<SYS>>/i,
   /new instructions?\s*:/i,
@@ -154,7 +156,7 @@ function balanced(s: string, from: number): string | undefined {
   }
   return undefined;
 }
-const parseJson = (s: string): Json => { try { return JSON.parse(s); } catch { return undefined; } };
+const parseJson = (s: string): Json => { try { return JSON.parse(s); } catch (e) { log.error('extract.json', e); return undefined; } };
 function microdata(root: El): Json[] {
   const read = (scope: El): Record<string, Json> => {
     const o: Record<string, Json> = {};
@@ -202,7 +204,7 @@ function rung1(root: El, facts: FactsSchema): Row[] {
 
 // ---- rungs 2-3: selector schemas
 function parseSchema(raw: unknown, facts: FactsSchema): ExtractorSchemaDef {
-  if (!isObj(raw) || typeof raw.baseSelector !== 'string' || !raw.baseSelector.trim() || !Array.isArray(raw.fields)) throw new Error('schema must be {"baseSelector": string, "fields": [...]}');
+  if (!isObj(raw) || typeof raw.baseSelector !== 'string' || !raw.baseSelector.trim() || !Array.isArray(raw.fields)) throw new Error('schema must be {"baseSelector": string, "fields": […]}');
   const fields: SchemaField[] = [];
   for (const f of raw.fields) {
     if (!isObj(f) || typeof f.name !== 'string' || !(f.name in facts.fields)) continue; // a field the facts schema does not name is ignored
@@ -332,7 +334,7 @@ async function rung4(pages: Pending[], c: Ctx, out: ExtractResult[]): Promise<vo
     batches[batches.length - 1].push(p); used += tokens(p.text);
   }
   for (const batch of batches.filter(b => b.length)) {
-    const prompt = ['Read each page below and return every item on it as a row with these fields (omit a field you cannot read; do not guess):', factsDescription(c.facts), 'Prices as integer cents. Return {"pages":[{"index": n, "rows": [...]}]} with the page numbers given.', DATA_RULE,
+    const prompt = ['Read each page below and return every item on it as a row with these fields (omit a field you cannot read; do not guess):', factsDescription(c.facts), 'Prices as integer cents. Return {"pages":[{"index": n, "rows": […]}]} with the page numbers given.', DATA_RULE,
       'BEGIN PAGE DATA', ...batch.map((p, n) => `[page ${n}]\n${p.text}`), 'END PAGE DATA'].join('\n');
     const calls0 = c.llmCalls;
     let raw: unknown;

@@ -19,7 +19,7 @@ export function createPasswords({ scope, audit, prompt, now = () => new Date() }
   return {
     // The person turns it on; nothing is kept before this.
     async optIn(account_id: string, site: Site, password: string): Promise<{ ok: true; token_ref: string } | { ok: false; reason: string }> {
-      if (site === 'ebay') return { ok: false, reason: 'eBay links by OAuth; its licence bans storing passwords' };
+      if (site === 'ebay') return { ok: false, reason: 'This site links by OAuth; its licence bans storing passwords' };
       if (!password) return { ok: false, reason: 'empty password' };
       await scope.put(key(account_id), password);
       line(account_id, 'person', 'store');

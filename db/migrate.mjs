@@ -1,3 +1,5 @@
+import { createLog, consoleSink } from '../log/index.js';
+const log = createLog({ src: 'db.migrate', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 // The one migration runner. Only db-1 writes db/migrations. Idempotent: applied files are skipped; an applied file whose bytes changed is an error.
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -43,12 +45,12 @@ export async function migrate(client, dir = DIR) {
 
 if (process.argv[1]?.endsWith('migrate.mjs')) {
   const url = process.argv[process.argv.indexOf('--url') + 1];
-  if (!url || !process.argv.includes('--url')) { console.error('usage: node db/migrate.mjs --url <postgres url>'); process.exit(2); }
+  if (!url || !process.argv.includes('--url')) { log.note('usage: node db/migrate.mjs --url <postgres url>'); process.exit(2); }
   const { default: pg } = await import('pg'); // lazy: only the CLI needs a driver
   const c = new pg.Client({ connectionString: url });
   await c.connect();
   try {
     const applied = await migrate({ query: (s, p) => c.query(s, p), exec: s => c.query(s) });
-    console.log(applied.length ? `applied: ${applied.join(', ')}` : 'up to date');
+    log.note(applied.length ? `applied: ${applied.join(', ')}` : 'up to date');
   } finally { await c.end(); }
 }

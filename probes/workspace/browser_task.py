@@ -4,6 +4,11 @@ import os
 import resource
 import subprocess
 import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "log"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from secondhand_log import create_log, stdout_sink
+log = create_log('probe.browser', 'dev', stdout_sink)
 import tempfile
 import time
 import urllib.request
@@ -38,4 +43,5 @@ for name, url in {"ebay": "https://api.ebay.com", "anthropic": "https://api.anth
         out[f"egress_{name}"] = f"reached (HTTP {e.code})"
     except Exception as e:  # noqa: BLE001
         out[f"egress_{name}"] = f"blocked: {type(e).__name__}"
-print(json.dumps(out))
+log.note('probe.browser.result', result=out)
+log.end()

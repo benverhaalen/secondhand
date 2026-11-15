@@ -1,4 +1,5 @@
 # msg-1 target run
+Researched 2026-11-15 by Nate (original agent not recorded).
 
 Status: not observed. The worker was instructed to use no network, server or browser. No marketplace page or signed-in session was opened, and no target measurements were collected.
 

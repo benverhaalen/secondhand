@@ -19,7 +19,7 @@ const SAYS: Record<Verb, string> = {
   relist: 'Puts an ended listing back up as a new listing.', read_listings: 'Reads the account\'s listings and their state.',
   read_inbox: 'Reads message threads.', send_message: 'Sends a message in a thread.', read_offers: 'Reads open offers.',
   answer_offer: 'Accepts, counters or declines an offer.', make_offer: 'Sends an offer to a buyer or a seller.',
-  read_orders: 'Reads sales and orders.', read_stats: 'Reads per-listing figures.', read_storefront: "Reads the shop's own figures: followers, rating, totals.", search: 'Searches the market.', save: 'Saves or likes a listing.',
+  read_orders: 'Reads sales and orders.', read_stats: 'Reads per-listing figures.', read_storefront: "Reads the shop’s own figures: followers, rating, totals.", search: 'Searches the market.', save: 'Saves or likes a listing.',
 };
 
 export type Endpoint = { site: Site; verb: Verb; path: string; method: 'GET' | 'POST'; write: boolean; available: true | string;

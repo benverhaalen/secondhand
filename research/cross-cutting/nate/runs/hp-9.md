@@ -1,4 +1,5 @@
 # hp-9: the fallback, observed runs
+Researched 2026-11-15 by Nate (original agent not recorded).
 
 ## Run 1, 2026-11-15: the Jev rung on a real Poshmark search state
 

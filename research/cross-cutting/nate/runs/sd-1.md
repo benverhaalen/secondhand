@@ -1,6 +1,7 @@
 # Run trace: sd-1
+Researched 2026-11-15 by Nate (original agent not recorded).
 
-Logs: sd-1-run.jsonl. 5 lines, 1 session(s), first line 2026-11-15T03:59:47.418Z.
+*Observed in the recorded local run:* Logs: sd-1-run.jsonl. 5 lines, 1 session(s), first line 2026-11-15T03:59:47.418Z.
 Total: 449 ms.
 
 ## Steps

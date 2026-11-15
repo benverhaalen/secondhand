@@ -4,7 +4,7 @@
 import { FORGET_DAYS, lineage, scopeKey, Unknown, VersionConflict } from './param.ts';
 import type { Declared, Param, ParamStore, Read, Scope } from './param.ts';
 
-export type Tx = { query(sql: string, params?: unknown[]): Promise<{ rows: any[] }> };
+export type Tx = { query(sql: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }> };
 
 // ParamStore with Promise returns; declare stays synchronous (priors live in memory).
 type Async<T> = { [K in keyof T]: T[K] extends (...a: infer A) => infer R ? (K extends 'declare' ? T[K] : (...a: A) => Promise<R>) : T[K] };
@@ -13,11 +13,15 @@ export type AsyncParamStore = Async<ParamStore>;
 const json = (s: Scope) => JSON.stringify(s); // undefined keys drop out
 const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
 const iso = (v: unknown) => (v === null || v === undefined ? null : v instanceof Date ? v.toISOString() : String(v));
-const toParam = (r: any): Param => ({
-  name: r.name, scope: r.scope, family: r.family, value_or_hyperparams: r.value_or_hyperparams, prior: r.prior, version: Number(r.version),
-  fitted_on_ids_hash: r.fitted_on_ids_hash, n_eff: Number(r.n_eff), metric: r.metric, held_out_score: num(r.held_out_score),
-  guard_lo: num(r.guard_lo), guard_hi: num(r.guard_hi), status: r.status, frozen: r.frozen, promoted_at: iso(r.promoted_at),
-});
+const toParam = (row: Record<string, unknown>): Param => {
+  if (typeof row.name !== 'string' || !row.scope || typeof row.scope !== 'object' || Array.isArray(row.scope) || !['scalar', 'beta', 'normal', 'gamma', 'model_ref'].includes(String(row.family)) || !['champion', 'challenger', 'retired'].includes(String(row.status)) || typeof row.frozen !== 'boolean') throw new Error('invalid param row');
+  const r = row;
+  return {
+  name: r.name as string, scope: r.scope as Scope, family: r.family as Param['family'], value_or_hyperparams: r.value_or_hyperparams, prior: r.prior, version: Number(r.version),
+  fitted_on_ids_hash: typeof r.fitted_on_ids_hash === 'string' ? r.fitted_on_ids_hash : null, n_eff: Number(r.n_eff), metric: typeof r.metric === 'string' ? r.metric : null, held_out_score: num(r.held_out_score),
+  guard_lo: num(r.guard_lo), guard_hi: num(r.guard_hi), status: r.status as Param['status'], frozen: r.frozen as boolean, promoted_at: iso(r.promoted_at),
+  };
+};
 
 export function sqlStore(tx: Tx): AsyncParamStore {
   const declared = new Map<string, Declared>();

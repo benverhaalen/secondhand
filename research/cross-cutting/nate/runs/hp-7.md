@@ -1,4 +1,5 @@
 # hp-7: recon, observed runs
+Researched 2026-11-15 by Nate (original agent not recorded).
 
 ## Run 1, 2026-11-15: signed-out search on Poshmark and Depop
 

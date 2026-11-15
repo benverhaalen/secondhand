@@ -19,13 +19,14 @@ const COLOR = /^(?:#[0-9a-f]{3,8}|rgba?\(|hsla?\(|oklch\()/i;
 // app/assets/fonts/ where the app reads them (both gitignored). CI unpacks them from a secret (.github/workflows/check.yml).
 // A file named for Clofie is the display face at 600; ppneuemontreal-book or text-400 is the text face at 400, and
 // ppneuemontreal-medium or text-500 at 500.
-export function brandFaces(tokensCss, dir = process.env.BRAND_FONTS || [join(root, 'fonts'), join(root, 'app/assets/fonts')].find(existsSync) || '') {
+const fontDir = () => process.env.BRAND_FONTS || [join(root, 'fonts'), join(root, 'app/assets/fonts')].find(existsSync) || '';
+export function brandFaces(tokensCss, dir = fontDir()) {
   if (!existsSync(dir)) return null;
   const family = v => tokensCss.match(new RegExp(`--font-${v}:\\s*"([^"]+)"`))?.[1], text = family('text'), display = family('display');
   const kinds = [[/clofie|display-600/i, display, 600], [/ppneuemontreal-medium|text-500/i, text, 500], [/ppneuemontreal-book|text-400/i, text, 400]];
   const rules = readdirSync(dir).filter(f => /\.(woff2?|otf|ttf)$/i.test(f)).flatMap(f => { const k = kinds.find(([re]) => re.test(f)); if (!k || !k[1]) return [];
     const type = { woff2: 'woff2', woff: 'woff', otf: 'opentype', ttf: 'truetype' }[f.split('.').pop().toLowerCase()];
-    return [`@font-face { font-family: "${k[1]}"; font-weight: ${k[2]}; font-style: normal; src: url(data:font/${type};base64,${readFileSync(join(dir, f)).toString('base64')}) format("${type}"); }`]; });
+    return [`@font-face { font-family: "${k[1]}"; font-weight: ${k[2]}; font-style: normal; src: url("https://secondhand-fonts.invalid/${encodeURIComponent(f)}") format("${type}"); }`]; });
   return rules.length ? rules.join('\n') : null;
 }
 
@@ -226,7 +227,13 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
   for (const canvas of sheet.canvas) {
     const page = await browser.newPage({ viewport: { width: canvas[0], height: canvas[1] }, deviceScaleFactor: 1 });
     await page.goto(/^https?:\/\//.test(file) ? file : pathToFileURL(resolve(file)).href);
-    if (faces) { await page.addStyleTag({ content: faces }); await page.evaluate(() => Promise.all([...document.fonts].map(f => f.load().catch(() => null)))); }
+    if (faces) {
+      await page.route('https://secondhand-fonts.invalid/**', async route => {
+        const name = decodeURIComponent(new URL(route.request().url()).pathname.slice(1));
+        if (!readdirSync(fontDir()).includes(name)) return route.abort();
+        await route.fulfill({ path: join(fontDir(), name), headers: { 'access-control-allow-origin': '*' } });
+      });
+      await page.addStyleTag({ content: faces }); await page.evaluate(() => Promise.all([...document.fonts].map(f => f.load().catch(() => null)))); }
     await page.evaluate(() => document.fonts.ready);
     // Pictures that have not arrived yet are not judged as missing: wait for each to load or fail, three seconds at most.
     await page.evaluate(() => Promise.race([Promise.all([...document.images].filter(i => !i.complete).map(i => new Promise(r => { i.addEventListener('load', r); i.addEventListener('error', r); }))), new Promise(r => setTimeout(r, 3000))]));

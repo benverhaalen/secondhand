@@ -1,3 +1,5 @@
+import { createLog, consoleSink } from '../../../../log/index.js';
+const log = createLog({ src: 'app.src.edge.harness.primitives', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 import { fail, isWrite } from './protocol.ts';
 import type { AdapterResult, FieldType, Manifest } from './protocol.ts';
 import type { Log } from '../../../../log/index.js';
@@ -131,7 +133,7 @@ export function isFieldType(value: unknown, type: FieldType): boolean {
     case 'cents': return typeof value === 'number' && Number.isSafeInteger(value);
     case 'boolean': return typeof value === 'boolean';
     case 'datetime': return typeof value === 'string' && /^\d{4}-\d\d-\d\dT/.test(value) && Number.isFinite(Date.parse(value));
-    case 'url': { if (typeof value !== 'string') return false; try { return ['http:', 'https:'].includes(new URL(value).protocol); } catch { return false; } }
+    case 'url': { if (typeof value !== 'string') return false; try { return ['http:', 'https:'].includes(new URL(value).protocol); } catch (e) { log.error('primitives.url', e); return false; } }
     case 'string[]': return Array.isArray(value) && value.every(v => typeof v === 'string');
     case 'object': return value !== null && typeof value === 'object' && !Array.isArray(value);
     case 'object[]': return Array.isArray(value) && value.every(v => v !== null && typeof v === 'object' && !Array.isArray(v));

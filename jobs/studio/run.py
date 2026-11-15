@@ -9,6 +9,10 @@ import json
 import os
 import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "log"))
+from secondhand_log import create_log, stdout_sink
+log = create_log('jobs.studio.run', 'dev', stdout_sink)
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from studio import openrouter  # noqa: E402
 
@@ -27,7 +31,7 @@ def cmd_smoke(out_dir: str) -> None:
             open(os.path.join(out_dir, m.split("/")[1] + ".jpg"), "wb").write(raw)
         rows.append({"model": m, "image": bool(raw), **info})
     json.dump(rows, open(os.path.join(out_dir, "smoke.json"), "w"), indent=1)
-    print(json.dumps(rows, indent=1)[:3000])
+    log.note('studio.smoke', rows=rows)
 
 
 def cmd_models(out_path: str) -> None:
@@ -41,7 +45,7 @@ def cmd_models(out_path: str) -> None:
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     with open(out_path, "w") as f:
         json.dump({"picked": picked, "image_out": image_out, "vision_in": rows}, f, indent=1)
-    print(json.dumps({"picked": picked, "image_out": image_out}, indent=1))
+    log.note('studio.models', picked=picked, image_out=image_out)
 
 
 if __name__ == "__main__":
@@ -54,4 +58,4 @@ if __name__ == "__main__":
         from studio import slides_run
         slides_run.main(*rest)
     else:
-        print(__doc__)
+        log.note('studio.usage', usage=__doc__)
