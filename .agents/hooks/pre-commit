@@ -1,0 +1,3 @@
+#!/bin/sh
+# Refuses a commit that puts back an older copy of a file. See .agents/hooks/stale-copy.mjs.
+exec node "$(git rev-parse --show-toplevel)/.agents/hooks/stale-copy.mjs"
