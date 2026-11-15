@@ -1,6 +1,7 @@
 // wk-1: fixture walk, no network. Check: node --test --test-concurrency=1 scripts/walk.test.mjs
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -36,9 +37,10 @@ result = {'products': products, 'action': action(products),
           'labels': {p: label(p, c, data['confirmed']) for p in products}}`,
 };
 
+const PYTHON = existsSync(new URL('../.venv/bin/python', import.meta.url)) ? './.venv/bin/python' : (process.env.PYTHON ?? 'python');
 function python(stage, input, log) {
   return log.call('process', `jobs.${stage}`, input, () => {
-    const result = spawnSync('./.venv/bin/python', ['-c',
+    const result = spawnSync(PYTHON, ['-c',
       `import json, sys\ndata = json.load(sys.stdin)\n${pythonStages[stage]}\njson.dump(result, sys.stdout)`], {
       cwd: root, input: JSON.stringify(input), encoding: 'utf8', timeout: 5000, killSignal: 'SIGKILL',
       env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' }, maxBuffer: 1024 * 1024,
