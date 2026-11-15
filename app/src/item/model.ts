@@ -6,7 +6,7 @@ import {
   type AnyWorld, type Attribute, type Cents, type Decision, type Item, type Listing, type Offer, type Order, type Site, type World,
 } from '../demo/index.ts';
 import { MORE_SHOTS } from '../demo/item-shots.ts';
-import { LISTING_FORMS, RETURNS, fitOf, listingTitle, titleOn } from '../demo/listing-forms.ts';
+import { LISTING_FORMS, RETURNS, VERDICT_RANK, fitOf, listingTitle, titleOn, type Verdict } from '../demo/listing-forms.ts';
 
 // The five moments of one item (pages.md §6.6), with drafting split in two because its top differs: Researching fills in,
 // Review asks for the four facts. Offer is Live with an offer waiting. Done is shipped and paid; Kept and Unsold end it.
@@ -14,7 +14,7 @@ export type Moment = 'researching' | 'review' | 'live' | 'offer' | 'sold' | 'don
 
 // The item and the world it lives in. A named world wins; otherwise the first world that holds the id, the person we
 // build for first, so /item/it_f003 opens the flipper's item without a ?world.
-const ORDER: AnyWorld[] = ['clearing', 'flipper', 'buyer', 'new', 'edge', 'one'];
+const ORDER: AnyWorld[] = ['clearing', 'flipper', 'buyer', 'new', 'edge', 'one', 'stage'];
 export function find(id: string, world?: string): { w: World; item: Item } | null {
   const names = world && world in WORLDS ? [world as AnyWorld, ...ORDER] : ORDER;
   for (const n of names) { const w = WORLDS[n]; const item = w.items.find(i => i.id === id); if (item) return { w, item }; }
@@ -270,18 +270,25 @@ export function priceFor(it: Item, c: Choice): Cents | null {
 export type PlanSite = { site: Site; on: boolean; can: boolean; why: string; keep: Cents | null; avoid: boolean; returns: string };
 export function planSites(w: World, it: Item, price: Cents, flipped: Site[] = []): PlanSite[] {
   const listed = new Set(it.listings.map(l => l.site));
-  return w.connections.map(c => {
+  const rows = w.connections.map(c => {
     const linked = !!c.account && c.account.health !== 'broken' && !c.error;
-    const fit = fitOf(it.category, c.site);
+    const fit = fitOf(it, c.site);
     const blocked = fit?.verdict === 'blocked', avoid = fit?.verdict === 'avoid';
     const can = linked && !blocked;
     const on = can && listed.has(c.site) !== flipped.includes(c.site);
+    const keep = `You keep ${usd(youKeep(c.site, price))}`;
+    // A site that posts says why it was picked for this kind of thing, then what lands in the account there.
     const why = blocked ? `Not allowed here. ${fit!.why}` : !c.account ? 'Not linked' : !linked ? 'Signed out'
-      : on ? `Posts at ${usd(price)}. You keep ${usd(youKeep(c.site, price))}`
+      : on ? (fit ? `${PICKED[fit.verdict]}: ${lower(fit.why)}. ${keep}` : `Posts at ${usd(price)}. ${keep}`)
       : listed.has(c.site) ? 'You skipped it' : avoid ? fit!.why : 'Not posting here';
-    return { site: c.site, on, can, why, keep: can ? youKeep(c.site, price) : null, avoid: avoid && !on, returns: RETURNS[c.site] };
+    return { site: c.site, on, can, why, keep: can ? youKeep(c.site, price) : null, avoid: avoid && !on, returns: RETURNS[c.site], rank: fit ? VERDICT_RANK[fit.verdict] : 2 };
   });
+  return rows.sort((a, b) => a.rank - b.rank).map(({ rank: _, ...r }) => r);
 }
+
+// The verdict a posting site was picked on, as the plan says it (platform-fit.json, verdicts).
+const PICKED: Record<Verdict, string> = { best: 'Best for this', good: 'Sells well', ok: 'Reach', avoid: 'Added by you', blocked: '' };
+const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 // The price drops the plan will make (money.md D15, its age table): the next rung at the plan's median days, the one
 // after at twice that, then it asks. Never under the lowest; a step that would cross it asks instead (decision 11-14).
