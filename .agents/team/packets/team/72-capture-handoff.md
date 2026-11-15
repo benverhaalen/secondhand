@@ -25,6 +25,7 @@ Nate ([words](../../../../product/words.md#2026-11-15-nate-wrap-up-the-sessions-
 - The item card shows every captured confidence as 0 (F16, integration's `items.ts`).
 - The first real run asked 6 and 7 questions where the walks ask 3 (F3), because the recorded reads carry no confidences.
 - A scan's size stays a proposal (`extent_conf` 0) until the box check passes.
+- Found by audit after the wrap-up, now F18 to F22 in capture.md section 8: lookups never finish without a job runner, so lookup fields are never asked and `done` can come with a required field missing (F18, the most serious); no linked site means no questions at all, appraise included (F19); nothing sets `recall_flag` (F20); photo uploads go to a placeholder URL (F21); talk mode is an example handler (F22).
 - `node .agents/check.mjs` flags `captures.ts:29` as a swallowed error; the fix is in brief 2.
 
 **Left, in order** (who can test it)
