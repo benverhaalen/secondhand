@@ -40,7 +40,7 @@ test('--once counts watcher and route jobs separately', t => {
     const at = new Date().toISOString();
     const event = runtime.store.insertEvent({ user_id: 'usr_watch', source: 'watcher_signed_in', action: 'account_stale', actor: 'site', dedupe_key: 'stale', observed_at: at, effective_at: at, trace_id: 'test' }).row;
     for (const kind of ['relink', 'import']) runtime.store.insertJob({ user_id: event.user_id, event_id: event.id, kind, state: 'queued', idempotency_key: kind, args: { listing_ids: [] }, stages: [], attempts: 0, trace_id: 'test', created_at: at });`);
-  const child = spawnSync(process.execPath, ['--import', preload, 'scripts/watch.mjs', '--once'], {
+  const child = spawnSync(process.execPath, ['--import', pathToFileURL(preload).href, 'scripts/watch.mjs', '--once'], {
     env: { ...process.env, SECONDHAND_DATA_DIR: dir, SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
   });
   assert.equal(child.status, 0, child.stderr);
@@ -73,7 +73,7 @@ test('one --once runs jobs enqueued by the import and unlink routes', t => {
     }));
     assert.equal(res.status, 202, await res.clone().text());
     assert.equal(runtime.store.jobs().length, 3);`);
-  const child = spawnSync(process.execPath, ['--import', preload, 'scripts/watch.mjs', '--once'], {
+  const child = spawnSync(process.execPath, ['--import', pathToFileURL(preload).href, 'scripts/watch.mjs', '--once'], {
     env: { ...process.env, SECONDHAND_DATA_DIR: dir, SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
   });
   assert.equal(child.status, 0, child.stderr);
@@ -101,7 +101,7 @@ test('--once drains follow-up reconcile work created while running a route job',
     const at = new Date().toISOString();
     const event = runtime.store.insertEvent({ user_id: 'usr_8f2k', source: 'app', action: 'app.list', actor: 'user', dedupe_key: 'post', observed_at: at, effective_at: at, trace_id: 'test' }).row;
     runtime.store.insertJob({ user_id: event.user_id, event_id: event.id, kind: 'post', account_id: 'acc_dp1', site: 'depop', state: 'queued', idempotency_key: 'post', args: {}, stages: [], attempts: 0, trace_id: 'test', created_at: at });`);
-  const child = spawnSync(process.execPath, ['--import', preload, 'scripts/watch.mjs', '--once'], {
+  const child = spawnSync(process.execPath, ['--import', pathToFileURL(preload).href, 'scripts/watch.mjs', '--once'], {
     env: { ...process.env, SECONDHAND_DATA_DIR: dir, SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
   });
   assert.equal(child.status, 0, child.stderr);
@@ -121,7 +121,7 @@ test('--once stops draining when remaining route jobs are delayed or cannot take
     runtime.leases.take('acc_busy', 'other-worker', 60000);
     runtime.store.insertJob({ ...base, kind: 'import', idempotency_key: 'later', next_run_at: new Date(Date.now() + 3600000).toISOString() });
     runtime.store.insertJob({ ...base, kind: 'import', idempotency_key: 'ready', args: { listing_ids: [] } });`);
-  const child = spawnSync(process.execPath, ['--import', preload, 'scripts/watch.mjs', '--once'], {
+  const child = spawnSync(process.execPath, ['--import', pathToFileURL(preload).href, 'scripts/watch.mjs', '--once'], {
     env: { ...process.env, SECONDHAND_DATA_DIR: dir, SECONDHAND_LIVE_SITES: '' }, encoding: 'utf8', timeout: 10000,
   });
   assert.equal(child.status, 0, child.stderr);
@@ -139,7 +139,7 @@ test('invalid loop cadence exits with a logged error', t => {
   assert.match(child.stderr, /"event":"error"/);
 });
 
-test('SIGTERM during a loop tick finishes that tick before exiting 0', { timeout: 10000 }, async t => {
+test('SIGTERM during a loop tick finishes that tick before exiting 0', { timeout: 10000, skip: process.platform === 'win32' && 'Windows delivers no SIGTERM: kill() ends the process at once' }, async t => {
   const dir = temp(t), preload = join(dir, 'slow-tick.mjs');
   // A preload holds the real composition's tick at an observable barrier; no test-only CLI mode.
   writeFileSync(preload, `import { Console } from 'node:console';
@@ -153,7 +153,7 @@ test('SIGTERM during a loop tick finishes that tick before exiting 0', { timeout
       process.stderr.write('tick-finished\\n');
       return result;
     };`);
-  const child = spawn(process.execPath, ['--import', preload, 'scripts/watch.mjs', '--every-s', '0.01'], {
+  const child = spawn(process.execPath, ['--import', pathToFileURL(preload).href, 'scripts/watch.mjs', '--every-s', '0.01'], {
     env: { ...process.env, SECONDHAND_DATA_DIR: dir, SECONDHAND_LIVE_SITES: '' }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   t.after(() => { if (child.exitCode === null) child.kill('SIGKILL'); });

@@ -299,7 +299,7 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 4. **One focal point per view** (E1), then the next action.
 5. **Alignment is on one start edge** per column (left in left-to-right scripts, right in right-to-left; use logical properties). Centered text only for the wordmark (C1), single-line headings on posts and end cards.
 6. **True scale.** App mockups are 390 × 844 pt and are judged at that size on Ben's MacBook (1512 × 982 pt, Retina). Generated UI at 1.5× scale is the most common image-model failure; attach a true-scale render as the anchor.
-7. **A pill is balanced at its icon** (agent decision A9; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "the padding for the live little sticker over the patagonia vest feels a little off"). At an icon end the padding is one step less than at a text end: `--s-3` and `--s-4` in a button, `--s-1` and `--s-2` in a tag. A tag is 20 tall with a 12 icon, so the icon is 4 from the top, the bottom and the near end, and its word ends 8 from the far end.
+7. **A pill is balanced at its icon** (agent decision A9; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "the padding for the live little sticker over the patagonia vest feels a little off"). At an icon end the padding is one step less than at a text end: `--s-3` and `--s-4` in a button, `--s-1` and `--s-2` in a tag. A tag is 24 tall with a 16 icon and its word at 15, so the icon is 4 from the top, the bottom and the near end, and its word ends 8 from the far end (Ben, 09:59: the tags were "just too small").
 8. **One kind, one size** (L37; Ben, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "the spacing i like", "i want you to ensure that there are primitives of it all"; L46). Every part below has one size on a 390 screen, whatever is in it. Sizes are in `tokens.css`. A tile in the grid is a square photo the width of its column, 8, a 20 line, 4, a 20 line.
 
    | Part | Size | Corner | Inside |
@@ -308,7 +308,7 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
    | A card for an item | 350 by 104 | 36 | 16 padding; a 72 row |
    | A photo in a card | 72 by 72 | 20, the card's 36 less its 16 | |
    | A site's logo on a photo | 24: a 20 logo and a 2 ring in the card's color | 12 | on the photo's bottom right corner, 4 outside it |
-   | A tag | 20 tall | 10 | a 12 icon 4 from the near end, text at 13, 8 at the far end |
+   | A tag | 24 tall | 12 | a 16 icon 4 from the near end, text at 15, 8 at the far end |
    | A notice | 350 by 56 | 28 | 16 left, 12 right; a 24 icon, text at 15, a 20 chevron |
    | A button in a card | 40 tall, in a 44 touch area | 20 | 20 at each text end |
    | An icon button in a card | 40 by 40, in a 44 touch area | 20 | |

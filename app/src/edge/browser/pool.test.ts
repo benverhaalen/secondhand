@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createPool, type Launcher, type LaunchOptions, type PoolContext, type PoolPage } from './pool.ts';
 import { loadPlaywright, playwrightLauncher } from './playwright.ts';
-import { memoryAccounts, memoryVault, type Accounts, type StorageState } from './auth.ts';
+import { memoryAccounts, memoryVault, memoryProfileRegistry, type Accounts, type StorageState } from './auth.ts';
 import { browserUseCloud, cdpLauncher, localChrome, type CdpPw } from './cdp.ts';
 import { memoryLeases } from '../events/ports.ts';
 import { createLog } from '../../../../log/index.js';
@@ -397,7 +397,8 @@ test('F2: scheduler pool work inherits its account lease without releasing it ea
   const { memoryParams } = await import('../events/ports.ts');
   const leases = memoryLeases(), f = fakeLauncher(0);
   const pool = createPool({ leases, launcher: f.launcher, profileRoot: '/profiles', accounts: allLinked });
-  const scheduler = createScheduler({ leases, params: memoryParams({ watch_cadence_s: 60 }), now: Date.now,
+  let now = 0;
+  const scheduler = createScheduler({ leases, params: memoryParams({ watch_cadence_s: 60 }), now: () => now,
     accounts: () => [{ account_id: 'a', site: 'ebay', user_id: 'p1' }], stateOf: () => 'live', onStale: () => {},
     runSweep: async () => {
       const r = await pool.dispatch({ account_id: 'a', job_id: 'adapter', run: async () => 1 });
@@ -405,6 +406,8 @@ test('F2: scheduler pool work inherits its account lease without releasing it ea
       assert.equal(leases.take('a', 'signin', 1000).ok, false, 'pool released the outer sweep lease');
       return { ok: true };
     } });
+  // 9d1d4719 staggers new accounts: reach the reported due time without resume.
+  await scheduler.tick(); now = scheduler.nextDue().a;
   await scheduler.tick(); assert.equal(f.launched.length, 1); await pool.close();
 });
 
@@ -451,4 +454,29 @@ test('F2: an inherited lease also refuses success after ownership is lost', asyn
     });
     assert.equal(inner.ok, false, 'nested protected work reported success after losing the account');
   });
+});
+
+test('cloud profiles omit state import/export while local CDP retains both', async () => {
+  let loaded = 0, exported = 0, stopped = 0;
+  const ctx = { pages: () => [], newPage: async () => ({ close: async () => {} }), close: async () => {},
+    addCookies: async () => { loaded++; }, addInitScript: async () => {},
+    storageState: async () => { exported++; return { cookies: [], origins: [] }; } };
+  const pw: CdpPw = { chromium: { connectOverCDP: async () => ({ contexts: () => [ctx], newContext: async () => ctx, close: async () => {}, on() {} }) } };
+  for (const kind of ['local', 'cloud'] as const) {
+    const launcher = cdpLauncher(pw, { kind, open: async () => ({ cdpUrl: 'https://cdp.invalid', cloudProfile: kind === 'cloud', stop: async () => { stopped++; } }) });
+    const context = await launcher.persistent('/unused', { headless: true });
+    if (kind === 'cloud') { assert.equal(context.loadState, undefined); assert.equal(context.exportState, undefined); }
+    else { await context.loadState!({ cookies: [{ name: 'synthetic', value: 'example', domain: '.invalid', path: '/', expires: -1, httpOnly: true, secure: true, sameSite: 'Lax' }], origins: [] }); await context.exportState!(); }
+    await context.close();
+  }
+  assert.equal(loaded, 1); assert.equal(exported, 1); assert.equal(stopped, 2);
+});
+
+
+test('registry warming skips legacy account lookup and unowned profile launches', async () => {
+  const f = fakeLauncher(0); let lookups = 0;
+  const pool = createPool({ leases: memoryLeases(), launcher: f.launcher, profileRoot: '/profiles', registry: memoryProfileRegistry(),
+    accounts: { byId: async id => { lookups++; return allLinked.byId(id); }, linked: async () => { lookups++; return [{ account_id: 'a', person_id: 'p1', site: 'ebay', token_ref: 'ref' }]; } } });
+  await pool.warm(['a'], 0); await pool.warmLinked('p1', 0);
+  assert.equal(lookups, 0); assert.equal(f.launched.length, 0); await pool.close();
 });

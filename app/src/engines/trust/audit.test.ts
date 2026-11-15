@@ -14,7 +14,7 @@ const at = '2026-11-14T10:00:00Z';
 const setup = () => { const store = memoryStore(); declareTrust(store); return store; };
 const context = (store: ReturnType<typeof setup>): Ctx => ({ buyer: { age_days: 90, ratings: 2, good_purchases: 0 }, banner: false, urgent: false, price_usd: 48, printHits: { sellers: 0, buyers: 0 }, sameTextListings10m: 0, p: n => store.read(n, {}).value as number });
 const input = (store: ReturnType<typeof setup>) => ({ msg: { id: 'm', thread_id: 't', site: 'ebay' as const, n: 3, text: 'hello', at }, ctx: context(store), group: 'ebay' as const, checkout: true, orderPaid: false, local: false, refund_asked_cents: 0 });
-const promote = (store: ReturnType<typeof setup>, name: string, value: unknown, scope = { site: 'ebay' }) => {
+const promote = (store: ReturnType<typeof setup>, name: string, value: unknown, scope: Record<string, string> = { site: 'ebay' }) => {
   const v = store.rows(name, scope).length;
   store.propose({ name, scope, family: name === 'trust_calib' ? 'model_ref' : 'scalar', value_or_hyperparams: value, prior: null, n_eff: 400, metric: null, fitted_on_ids_hash: null, held_out_score: v + 1, guard_lo: null, guard_hi: null }, v);
   store.promote(name, scope, v + 1, 0, at);

@@ -91,11 +91,11 @@ test('searchAll queries approved public sources in parallel and maps outcomes pe
   };
   const t0 = performance.now();
   const r = await searchAll('levi 501', { fetchPage, sources: [...SOURCES.filter(s => s.id !== 'dupe'),
-    { id: 'offerup', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true }] });
+    { pace: { per_minute: 20, min_gap_ms: 3000 }, id: 'offerup', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true }] });
   assert.equal(peak, 2);
   assert.ok(performance.now() - t0 < 40 * 3);
   const by = Object.fromEntries(r.searched.map(s => [s.site, s]));
-  assert.deepEqual(Object.keys(by).sort(), ['depop', 'offerup', 'poshmark']);
+  assert.deepEqual(Object.keys(by).sort(), ['depop', 'ebay', 'offerup', 'poshmark']);
   assert.deepEqual(requested.map(url => SITES.find(site => url.startsWith(BASE[site]))).sort(), ['offerup', 'poshmark']);
   assert.equal(by.facebook, undefined);
   assert.equal(by.depop!.outcome, 'failed');
@@ -118,17 +118,14 @@ test('individual readers retain blocked, timeout and OfferUp hit outcomes outsid
   assert.equal(hit.rows.length, 2);
 });
 
-test('eBay stays present and off with its reason, even for a person asking directly', async () => {
-  const ebay = SOURCES.find(source => source.id === 'ebay');
-  assert.ok(ebay);
-  assert.equal(ebay.on, false);
-  assert.equal(ebay.reason, 'page lane not built');
-  const fetchPage = async (): Promise<PageResult> => { assert.fail('disabled eBay must not fetch'); };
+test('eBay active search is enabled only through its browser harness', async () => {
+  const ebay = SOURCES.find(source => source.id === 'ebay')!;
+  assert.equal(ebay.on, true); assert.equal(ebay.lane, 'harness'); assert.equal(ebay.needs_ask, false);
+  const fetchPage = async (): Promise<PageResult> => { assert.fail('eBay never uses anonymous page fetch'); };
   const direct = await searchSource(ebay, 'levi 501', 'search', { caller: 'person', fetchPage });
   assert.deepEqual(direct.rows, []);
-  assert.equal(direct.searched.outcome, 'blocked');
-  assert.equal(direct.searched.reason, ebay.reason);
-  assert.deepEqual(await searchAll('levi 501', { sources: [ebay], caller: 'person', sites: ['ebay'], fetchPage }), { results: [], searched: [] });
+  assert.equal(direct.searched.outcome, 'failed');
+  assert.equal(direct.searched.error_code, 'no_route');
 });
 
 test('Mercari uses only the asking person’s linked account and never anonymous page fetch', async () => {
@@ -166,7 +163,8 @@ test('searchAll with search+sold never fetches Depop pages and reports its unava
   const urls: string[] = [];
   const r = await searchAll('levi 501', { sites: ['depop', 'poshmark', 'ebay'], kinds: ['search', 'sold'], fetchPage: async u => { urls.push(u); return page(fx('poshmark.html')); } });
   assert.deepEqual(urls.sort(), [searchUrl('poshmark', 'levi 501', 'search'), searchUrl('poshmark', 'levi 501', 'sold')].sort());
-  assert.ok(r.searched.every(s => s.site !== 'ebay'));
+  assert.equal(r.searched.find(s => s.site === 'ebay' && s.kind === 'search')!.error_code, 'no_route');
+  assert.equal(r.searched.find(s => s.site === 'ebay' && s.kind === 'sold')!.outcome, 'needs_account');
   assert.equal(r.searched.find(s => s.site === 'poshmark' && s.kind === 'sold')!.outcome, 'hit');
   const d = r.searched.find(s => s.site === 'depop' && s.kind === 'sold')!;
   assert.equal(d.outcome, 'failed');
