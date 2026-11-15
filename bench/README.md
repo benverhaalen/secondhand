@@ -2,6 +2,17 @@
 
 The open benchmark's runner and scorer ([spec/benchmark.md](../spec/benchmark.md)). Owner: the integration lead.
 
+## Where the benchmark's parts live
+
+| Part | Holds |
+|---|---|
+| [scripts/bench/](../scripts/bench/) | the backtest, gate, photo, seasons, cadence and roi benchmarks; its `out/` holds their results |
+| [spec/items/manifest.json](../spec/items/manifest.json) | the fixed item set the runner asks about |
+| [spec/benchmark.md](../spec/benchmark.md) | the open benchmark: rows, method and raw answers |
+| [spec/plans/backtest/](../spec/plans/backtest/) | the backtest plan: claims, datasets, how we price, the money statistic |
+| [databricks/parity/](../databricks/parity/) | one calculation in two languages, checked for equality |
+| [deploy/resources/bench.yml](../deploy/resources/bench.yml) | the bundle job that loads benchmark results into the workspace |
+
 | Command | Does |
 |---|---|
 | `node bench/run.mjs` | asks our `/v1` API (in process, through the same contract layer a phone hits) every question for every item in `spec/items/manifest.json`; writes `bench/out/<run_id>/records.jsonl` and the raw answers under `raw/` |
