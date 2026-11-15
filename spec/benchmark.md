@@ -106,6 +106,54 @@ The views:
 
 Every view links to the raw records and the rerun command, lists tools alphabetically, shows the rows we lose, and states the date and item count in its own caption.
 
+## Speed that means something, and what the lakehouse adds
+
+Nate ([words](../product/words.md#2026-11-15-nate-benchmark-numbers-that-mean-something-and-graphics-that-show-what-we-build-on-databricks)): "position how we can benchmark numbers that mean something how fast it is, start to imagine designs for graphics that also exhibit how we build on databricks leverage and really expand the potential of the platform". *Agent proposal*; how it is drawn is Ben's.
+
+### What Browser Use's own pages do that we take
+
+Read 2026-11-15: its [shopping benchmark](https://browser-use.com/benchmarks/consumer), the [eBay page](https://browser-use.com/benchmarks/consumer/sites/ebay) and its [showcase](https://browser-use.com/showcase).
+
+| They do | Why it works | Ours |
+|---|---|---|
+| A stock baseline in the same table: their browser 95.8% of 500 sites, stock Chromium 5.0% | a number means something only beside what you would get without the product | every speed and coverage figure sits beside two baselines run on the same items the same day: a person doing it by hand with a stopwatch, and a single plain request with no harness |
+| One page per site with a pass or fail per provider, dated | the reader checks the site they care about | one row per marketplace and per verb: proved live, proved on a recorded page, signed-in only, or refused, with the date and the run behind it |
+| The task list, the results and the method as three files at fixed addresses | anyone can rerun or audit | `bench/out/<run_id>/records.jsonl`, `results.json`, the item manifest with its hash, and the method, published together |
+| Recorded runs with the exact prompt and the clip's length ("39 recorded runs · exact prompts") | watching it happen is the proof | one search replayed against a clock: each marketplace's results landing on a timeline, from the records' own `first_at` and `full_at` |
+| One number in the title ("Clear 100 Tetris Lines in 17s") | a claim a person can repeat | one sentence per run made only of counted things: marketplaces, listings, cited numbers, seconds |
+| Their caveats on the page (self-graded rows, gaps in records) | it reads as measured, not sold | every figure carries its count, its interval and what was not run |
+
+### The speed figures
+
+Each is a row of the runner's records, reported as p50 and p95 with the count, never an average.
+
+| Figure | What it is | Baseline beside it |
+|---|---|---|
+| Time to the first answer | from the request to the first marketplace's results on screen | a person opening the first site and typing the search |
+| Time to the full answer | to the last marketplace, with what is still coming shown meanwhile | a person doing the same search on every site, by stopwatch |
+| Seconds per cited fact | full-answer time over the number of facts that open to their evidence | the same for a rival's answer, where it shows sources at all |
+| Per-site read time by lane | plain request, cloud browser, the person's own browser, an official interface | the same page loaded in an ordinary browser |
+| Cold against warm | the first read after nothing was running, and a read on a session already open | none: it is our own cost of starting |
+| Cost per answer | browser time, proxy bytes and model calls for one full answer, in cents | none stated by rivals; ours is published |
+| Sale to delist | from a sale on one site to the listing being down on the others | a crosslister on its top plan |
+| Capture: questions to done, and the time to plan them | how many questions a person is asked per kind of item, and the planner's time | a marketplace's own listing form: its count of required fields |
+
+Measured so far, each on one machine and a handful of runs, so they are first readings and not yet benchmark rows: Depop search by plain request 1.8 s, one listing 0.78 s, a still-listed check 0.29 s; Poshmark search by cloud browser about 2.5 s; Mercari 5 to 6 s, 4 s of it a fixed wait we set; eBay search by cloud browser 9.6 s from a cold start, 4.2 s in a local browser; Dupe's published interface 1.4 to 5.4 s for 40 rows; the capture planner 0.10 ms at p50 and 0.29 ms at p95 over 47 states, asking 2 to 9 questions depending on the kind of item. The bench's own baseline is 0 of 20 items covered, recorded before the streaming search existed.
+
+### What the lakehouse lets us show that a scraper cannot
+
+Each is drawn from tables that already exist or are being built in Nate's workspace ([databricks build](databricks-build.md)); none needs a figure invented for it.
+
+| Graphic | Shows | From |
+|---|---|---|
+| One number, opened | a price on screen, the citation under it, the sold listings under that, and the same number recomputed live from the table's own history | `measures.why(number_id)` over `core.guarded_number`, `core.citation`, `core.observation`, with Delta versions |
+| The weight that learned | one tunable from its starting value: each observation that moved it, each promotion with its held-out score, a rollback, and the value served today | `core.param` history through change data feed |
+| Which level answered | for every shown number, whether it came from the item's own comparables, the product, the family, the kind or the starting value, and that mix shifting toward the item's own as data arrives | `basis_level` on `core.guarded_number`, by week |
+| The pipeline as a funnel with real counts | raw rows in, rows kept by each expectation, rows allowed into modelling: 207,203 in, 207,185 kept, 99,956 modelled (2026-11-15), and which sources are excluded and why | the `secondhand-market` pipeline's expectation results and `market.comp_for_model` |
+| Ours beside the platform's | each safety rule in two columns: what Unity Catalog, lineage, row filters and masks give out of the box, and what our layer adds on top (a number's lineage down to its rows, a guard state as governed data, held-out promotion recorded like a model registry) | [the architect's table](plans/sweep/databricks.md) and the live policies |
+| What was never done | every action the system refused or held, by rule: 480 policy answers checked, all 32 never-automated actions refused on every site | the policy sweep and `core.decision` |
+| The benchmark, inside the workspace | a run's records landing as a table, the scorer's result beside it, and a question asked of it in plain words | `measures` tables for the bench, a dashboard and a Genie space |
+
 ## How it is built
 
 | Part | Owns | Proves with |

@@ -1681,3 +1681,10 @@ Nate, build session (orchestrator), 2026-11-15 about 09:00 Central. Two messages
 > https://browser-use.com/benchmarks/consumer
 
 Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
+
+## 2026-11-15 nate benchmark numbers that mean something, and graphics that show what we build on databricks
+Nate, build session (orchestrator), 2026-11-15 about 09:20 Central, with a link to Browser Use's showcase.
+> account as well for these and more ways to utilize browser use as inspiration to optimize and then position how we can benchmark numbers that mean something how fast it is, start to imagine designs for graphics that also exhibit how we build on databricks leverage and really expand the potential of the platform
+> https://browser-use.com/showcase
+
+Used in: [the open benchmark, speed that means something](../spec/benchmark.md#speed-that-means-something-and-what-the-lakehouse-adds).
