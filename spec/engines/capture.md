@@ -157,10 +157,10 @@ The Swift module's runner of `process[]`, the tutorial flag and the on-device cl
 **Selection** is `select(state)`, in this order:
 1. **The family.** `capture.type` when the person picked it or `capture_judge` swapped it. Otherwise the phone's suggestion, used for the process only, when it passes card 7's margin (top at least 0.5, lead at least 0.2). Otherwise the fallback: family `other`, `fallback: type_unsure`, and the type is the first question.
 2. **The class.** The family's default, then size: a rigid item whose longest side is 120 cm or more is `large_bulky`; a `medium_hard` item under 10 cm is `small_hard`. `other` takes its class from size: rigid and 120 cm or more `large_bulky`, rigid and 10 cm or more `medium_hard`, rigid and smaller `small_hard`, not rigid `soft_goods`. Two or more pieces wrap the result in `set_bundle`.
-3. **The process.** The family's (or kind's) shot list as section 3 step 2 builds it today, with the no-LiDAR ring and capture-shots card 1 step 3 (soft, under 10 cm: stills, not a scan). A bundle starts with one `group` still of every piece together, and each step of the family's list is taken once per piece (`frames` = the piece count).
-4. **The fields.** `root`, then the family's rows, then the class's, with a family row replacing a root row of the same name. In a bundle every row marked `per_piece` becomes one field per piece (`size_label#1`, `size_label#2`), and `lot_count` is added.
+3. **The process.** The family's (or kind's) shot list as section 3 step 2 builds it today, with the no-LiDAR ring and capture-shots card 1 step 3 (soft, under 10 cm: stills, not a scan). A bundle starts with one `group` still of every piece together, then the family's list once per piece, piece by piece, each step keyed `tag.1`, `tag.2`.
+4. **The fields.** `root`, then the family's rows, then the class's, with a family row replacing a root row of the same name. In a bundle every row marked `per_piece` becomes one field per piece (`size_label.1`, `size_label.2`, the way `flaw.<n>` is named), and `lot_count` is added.
 
-Every bound here (0.5, 0.2, 10 cm, 120 cm) is a `param` row with that prior.
+Every bound here (0.5, 0.2, 10 cm, 120 cm), the 0.95 auto-accept and the cap below are `param` rows with those priors.
 
 ### A field row
 
@@ -168,7 +168,7 @@ Every bound here (0.5, 0.2, 10 cm, 120 cm) is a `param` row with that prior.
 |---|---|
 | `field`, `type`, `unit` or `values` | as the `requirement` row ([product §3](../product.md#3-the-data-model)) |
 | `ways[]` | the ordered ways it gets a value: `photo` (a kept view), `label` (text or a code on the item), `measured` (depth), `derived` (from the type, the class or the profile), `lookup` (the matched product), `asked`. Each way names its `view` or source and the confidence it needs (`min_conf`) |
-| `confirm` | `auto`: a value past `min_conf` is known. `tap`: a model's value is a proposal until the person taps it, except that with `capture.confirm_mode = auto` a `label`, `measured` or `lookup` value at 0.95 or more is accepted and marked `auto_accepted`. `always`: only the person settles it, whatever the mode. Condition, function and anything that bears on authenticity are `always`; size and accessories are `tap` |
+| `confirm` | `auto`: a value past `min_conf` is known. `tap`: a model's value is a proposal until the person taps it, except that with `capture.confirm_mode = auto` a value at 0.95 or more is accepted and marked `auto_accepted`; for `type` the bound is the suggestion's own auto-accept (top at least 0.9, lead at least 0.5, [suggest.py](../../jobs/capture/suggest.py)). `always`: only the person settles it, whatever the mode. Condition, function and anything that bears on authenticity are `always`; size and accessories are `tap` |
 | `required`, `recommended` | the sites that need it to post, and those it helps. A site not linked is ignored |
 | `site_names` | per site: the form's name and `max_length` where it differs. Condition values map per site through `CONDITION` in [spec/sites.mjs](../sites.mjs) |
 | `ask` | the question: its kind, its options when they are fixed, and its words |
@@ -195,11 +195,12 @@ A question is data the UI renders with no logic of its own:
 - `words` come from the row's `ask` text, fixed per field and checked by `scripts/copy-lint.mjs` in the table's test. An eBay aspect with no row ([aspects.ts](../../app/src/engines/listing/aspects.ts)) gets `"<Aspect name>?"`. No model writes a question; if one ever rewrites `words`, the field, kind and options stay as planned and the result passes the same lint.
 
 **Which questions, in which order.** A field gets a question when it is `proposed`, or `missing` with `asked` among its ways, or when its next way is a view: a kept view that failed to read it gets a `shot` retake (at most 2, card 17), and a view outside the process gets a `shot` only when a linked site requires the field. Never asked: a `known` or `waiting` field, a `refused` one, condition when the purpose is `find`. The order is a total sort:
-1. `unlocks.required`, most first;
-2. `ready_after`, most sites first;
-3. the recommended (site, field) pairs it settles, most first;
-4. effort, least first: `yes_no` and `pick_one` 1, `pick_many` 2, `number_with_unit` and `text` 3, `shot` 4;
-5. the field name.
+1. `type`, then `lot_count`: their answers change which fields exist;
+2. `unlocks.required`, most first;
+3. `ready_after`, most sites first;
+4. the recommended (site, field) pairs it settles, most first;
+5. effort, least first: `yes_no` and `pick_one` 1, `pick_many` 2, `number_with_unit` and `text` 3, `shot` 4;
+6. the field name.
 
 **The cap.** A field a linked site requires is always asked until it is known or refused (Nate: every needed field gets its own select, [words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). Questions for fields no linked site requires stop at 3 per item, counting those already answered; `capture_question_cap` is a `param` row with prior 3.
 
