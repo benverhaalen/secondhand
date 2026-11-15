@@ -1,0 +1,9 @@
+{
+  "_": "Each source's own colour, which its bubble fills the page with before its site opens (Nate, words.md 2026-11-15: \"the bubble fills the page white, blue, red, purple, and light blue\"), and the address of its own results for a query. The colours are the platforms' identity, like their logos (C5), so they live as data beside the logos and never as brand tokens. shortcut: the search addresses copy app/src/edge/intel/public/readers.ts searchUrl; drop them once every settled searched[] entry carries its url (asked of the search lead).",
+  "dupe": { "colour": "#FFFFFF", "search": "https://dupe.com/" },
+  "ebay": { "colour": "#0064D2", "search": "https://www.ebay.com/sch/i.html?_nkw={q}" },
+  "depop": { "colour": "#FF2300", "search": "https://www.depop.com/search/?q={q}" },
+  "poshmark": { "colour": "#7F0353", "search": "https://poshmark.com/search?query={q}" },
+  "mercari": { "colour": "#4DC4FF", "search": "https://www.mercari.com/search/?keyword={q}" },
+  "facebook": { "colour": "#1877F2", "search": "https://www.facebook.com/marketplace/search/?query={q}" }
+}

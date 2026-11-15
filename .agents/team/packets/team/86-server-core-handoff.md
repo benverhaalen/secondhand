@@ -41,7 +41,11 @@ With no `SECONDHAND_DATA_DIR`, every dev server on a machine shares `secondhand-
 
 ## On the Mac (`~/dev/projects/secondhand-wt/<name>`, branch `w/<name>`)
 
-Every server worker branch is merged to main: srv-store-1, srv-entry-1, int-byid-2, srv-runtime-1, srv-auth-1, srv-jobs-1, srv-host-1, srv-fix-1, srv-proof-1, srv-http-1. Their worktrees can be removed. Not started (briefs in the notes folder): srv-vault-1, srv-obs-1, srv-fix-2.
+Merged to main, worktrees removable: srv-store-1, srv-entry-1, int-byid-2, srv-runtime-1, srv-auth-1, srv-jobs-1, srv-host-1, srv-fix-1, srv-proof-1, srv-http-1, srv-restore-1.
+
+**Running at hand-off, unmerged** (started 13:35 UTC from main at ff56bbda, gpt-6.1-sol high, on Nate's "fix everything to be fast"): **srv-fix-2** (the NODE_ENV gates, keep.ts failing closed, the email lockout, the per-code generator, vendor error text), **srv-vault-1** (encrypted vault, the examples gate in the runtime, push tokens), **srv-obs-1** (SV7). Their files do not overlap. For each: read WORKER_REPORT.md, rerun its checks, merge main in its worktree, push it to main, then a fresh Opus reviewer (sign-in, the vault and observations are all the reviewed kind). Briefs in `server-core-briefs/`; srv-obs-1 has an addendum on how `may_model` is set.
+
+**A regression, fixed:** 8560d836 (the search lead's) also committed stale copies of 18 server files (http, decisions, today, kv, ports, server/main, five tests; it deleted secrets.ts), undoing SV10. Restored at ff56bbda, keeping that commit's search.ts and route changes; on the Mac search 71, http 26, decisions 8, server/main 8, proof 1 pass. Watch for it again: compare a commit's `--stat` with what it claims.
 
 - **srv-http-1**, round 3 running: idempotency slot taken before the handler (409 `stale` on a concurrent duplicate), the visitor bucket in `kv`, server-signed visitor ids (`vis_` + 12 + 20 hex mac, matching the app's regex), decision key from `secret('decision')` and versions on the row, last open in `kv`, `secrets.ts` with `requireProduction()`, `'late'` in `Stage`, the entry calling `requireProduction()`, callers' test resets. The search lead allowed edits to the visitor fixtures and reset lines only in `search.test.ts`. Land it, rerun `server/main.test.ts` and `bash server/container-check.sh` on the Mac (Docker Desktop must be running: `open -a Docker`).
 - **srv-proof-1**: landed (ff31ae39); a fresh reviewer reran it on the Mac (exit 0) and marked SV0 done, SV1's sign-in half done, SV3 done against its proof (8e359f7b).
@@ -77,3 +81,5 @@ The email sender's vendor (none composed; `configureSender` is ready). Each Fly 
 - Never put backticks inside a double-quoted shell string: on 2026-11-15 one ran `node server/main.ts` on Windows and pasted log lines (with a local path) into finalization.md (48988617, fixed in 1ed63e8e; flagged for the history rewrite). Write text through a file.
 - A dev server with no `SECONDHAND_DATA_DIR` now shares `secondhand-dev/secondhand.db` in the temp folder with every dev server on the machine; another session held it open, so do not delete it.
 - `search-latency.test.ts` failed 3 on main for search's own changes; the search lead is fixing it.
+
+**Last note (13:45 UTC):** the search lead's own restore (eaa2d679) and mine (ff56bbda) agree: on main the 18 files equal 125a56bb and `store/secrets.ts` is present. The search lead saw `server/main.test.ts` fail one test ("one Node server shares sign-in state, rows and streams across route wrappers") in their run; on the Mac at ff56bbda it passed 8 of 8. Rerun it on the Mac at current main first; if it fails only on Windows, suspect a port or a shared temp database held by a running dev server.

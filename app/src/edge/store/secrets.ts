@@ -1,6 +1,6 @@
 // Rests-on: spec/plans/server-store.md (SV0), review-server.md B5 and B7.
 import { randomBytes } from 'node:crypto';
-import { db } from './db.ts';
+import { db, development } from './db.ts';
 import { kv } from './kv.ts';
 
 const variables = { visitor: 'SECONDHAND_VISITOR_KEY', decision: 'DECISION_SIGNING_KEY', vault: 'SECONDHAND_VAULT_KEY' } as const;
@@ -8,12 +8,12 @@ const variables = { visitor: 'SECONDHAND_VISITOR_KEY', decision: 'DECISION_SIGNI
 export function secret(name: keyof typeof variables, env: Record<string, string | undefined> = process.env): string {
   const variable = variables[name];
   const value = env[variable];
-  if (env.NODE_ENV === 'production') {
+  if (!development(env)) {
     if (name === 'vault') {
-      if (!value || !/^[a-f0-9]{64}$/i.test(value)) throw new Error(`${variable} must contain 64 hex characters in production`);
+      if (!value || !/^[a-f0-9]{64}$/i.test(value)) throw new Error(`${variable} must contain 64 hex characters unless NODE_ENV=development`);
       return value;
     }
-    if (!value || value.length < 32) throw new Error(`${variable} must contain at least 32 characters in production`);
+    if (!value || value.length < 32) throw new Error(`${variable} must contain at least 32 characters unless NODE_ENV=development`);
     return value;
   }
   if (value) return value;
@@ -25,7 +25,7 @@ export function secret(name: keyof typeof variables, env: Record<string, string 
 }
 
 export function requireProduction(env: Record<string, string | undefined> = process.env): void {
-  if (env.NODE_ENV !== 'production') return;
+  if (development(env)) return;
   const missing = ['SECONDHAND_DATA_DIR', 'SECONDHAND_PEER_HEADER', ...Object.values(variables)].filter(name => !env[name]);
   if (missing.length) throw new Error(`Missing production variables: ${missing.join(', ')}`);
 }
