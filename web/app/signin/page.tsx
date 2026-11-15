@@ -6,5 +6,5 @@ import './account.css';
 export const metadata: Metadata = { title: 'Sign in | secondhand' };
 
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string | string[] }> }) {
-  return <AccountForm destination={workspaceDestination((await searchParams).next)} mode="signin" googleClientId={process.env.NEXT_PUBLIC_SECONDHAND_GOOGLE_CLIENT_ID} appleClientId={process.env.NEXT_PUBLIC_SECONDHAND_APPLE_CLIENT_ID} />;
+  return <AccountForm destination={workspaceDestination((await searchParams).next)} googleClientId={process.env.NEXT_PUBLIC_SECONDHAND_GOOGLE_CLIENT_ID} />;
 }

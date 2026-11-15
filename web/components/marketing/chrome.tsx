@@ -16,8 +16,7 @@ const pages = [
 ] as const;
 
 export function AccountAccess({ label, className = '' }: { label: string; className?: string }) {
-  const href = label === 'Sign in' ? '/signin' : '/signup';
-  return <Link className={`marketing-pill ${className}`} href={href}>{label}</Link>;
+  return <Link className={`marketing-pill ${className}`} href="/signin">{label}</Link>;
 }
 
 function GitHubMark() {
@@ -104,5 +103,5 @@ export function MarketingFooter() {
 }
 
 export function isMarketingRoute(path: string) {
-  return ['/', '/how-it-works', '/features', '/engine', '/data-use', '/faq', '/whats-next', '/signin', '/signup', '/account', '/buy'].includes(path);
+  return ['/', '/how-it-works', '/features', '/engine', '/data-use', '/faq', '/whats-next', '/signin', '/account', '/buy'].includes(path);
 }

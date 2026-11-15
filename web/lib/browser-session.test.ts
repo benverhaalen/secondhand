@@ -77,7 +77,7 @@ test('expired refresh clears authentication and protected calls do not reach use
   assert.equal(requests, 1);
 });
 
-test('account verification waits for an earlier refresh before changing the account', async t => {
+test('a Google sign-in waits for an earlier refresh before changing the account', async t => {
   const session = await sessionModule();
   let finishRefresh!: (response: Response) => void;
   const pending = new Promise<Response>(resolve => { finishRefresh = resolve; });
@@ -87,11 +87,11 @@ test('account verification waits for an earlier refresh before changing the acco
     return path === '/v1/auth/refresh' ? pending : tokens('new_owner');
   });
   const refresh = session.getSession();
-  const verification = session.authRequest('email/verify', { email: 'fixture@example.invalid', code: '123456' });
+  const verification = session.authRequest('google', { id_token: 'fixture-token' });
   assert.deepEqual(requests, ['/v1/auth/refresh']);
   finishRefresh(tokens());
   await refresh;
   await session.rememberSession(await verification, { name: 'New account' });
-  assert.deepEqual(requests, ['/v1/auth/refresh', '/v1/auth/email/verify']);
+  assert.deepEqual(requests, ['/v1/auth/refresh', '/v1/auth/google']);
   assert.equal(session.sessionSnapshot()?.profile.name, 'New account');
 });

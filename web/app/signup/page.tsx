@@ -1,10 +1,7 @@
-import { workspaceDestination } from '../../lib/auth-navigation';
-import type { Metadata } from 'next';
-import { AccountForm } from '../../components/marketing/account-form';
-import '../signin/account.css';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = { title: 'Create an account | secondhand' };
-
+// One page signs in and signs up (Google creates the account), so old sign-up links go to it.
 export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ next?: string | string[] }> }) {
-  return <AccountForm destination={workspaceDestination((await searchParams).next)} mode="signup" googleClientId={process.env.NEXT_PUBLIC_SECONDHAND_GOOGLE_CLIENT_ID} appleClientId={process.env.NEXT_PUBLIC_SECONDHAND_APPLE_CLIENT_ID} />;
+  const next = (await searchParams).next;
+  redirect(typeof next === 'string' ? `/signin?next=${encodeURIComponent(next)}` : '/signin');
 }

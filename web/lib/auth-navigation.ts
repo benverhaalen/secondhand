@@ -7,7 +7,3 @@ export function workspaceDestination(next: string | string[] | undefined) {
       ? destination.pathname + destination.search + destination.hash : '/app';
   } catch { return '/app'; }
 }
-
-export function accountDestination(mode: 'signin' | 'signup', next: string) {
-  return `/${mode}?next=${encodeURIComponent(workspaceDestination(next))}`;
-}

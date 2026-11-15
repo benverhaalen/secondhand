@@ -35,8 +35,8 @@
 .account-primary:not(:disabled):hover { background: var(--ink-press); }
 .account-options { display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--s-2); }
 .account-options button, .account-options-button { background: transparent; text-decoration: underline; padding-inline: 0; }
-.google-account-button { min-height: 44px; }
-.apple-account-button { height: 44px; cursor: pointer; }
+/* Google's button is a light-scheme frame; on our dark page a browser paints a mismatched frame white unless the container matches it. */
+.google-account-button { min-height: 44px; color-scheme: light; }
 .account-divider { display: flex; align-items: center; gap: var(--s-3); color: var(--ink-2); }
 .account-divider::before, .account-divider::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
 .account-quiet { color: var(--ink-2); }
