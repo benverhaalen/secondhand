@@ -7,7 +7,9 @@
 // Every word is in WORDS for the designer; every number is a field of a frame or a count of its rows.
 import { useCallback, useState } from 'react';
 import { Burst, Card, ChatFrame, EmptyState, IconButton, List, Message, money, Pill, Rail, SearchField, SITES, SourceFloat, Stack, Txt, type Point, type Site } from '@/ui';
-import { AppState, View } from 'react-native';
+import { AppState, StyleSheet, View } from 'react-native';
+import { useColors } from '@/ui/theme';
+import { markdown } from './markdown';
 import { Chip } from '@/ui/parts/chip';
 import { space } from '@/ui/tokens.generated';
 import { ListRow } from '@/ui/parts/list-row';
@@ -107,6 +109,36 @@ function Found({ reach, query, onOpen }: { reach: Reach; query: string; onOpen: 
   );
 }
 
+// The answer's words, drawn from its own markdown: a heading at the headline size, lists with their marks, a table as
+// rows under a caption header row, hairlines between (Nate, words.md 2026-11-15: "headers, tables, and such").
+function Prose({ text }: { text: string }) {
+  const c = useColors();
+  return (
+    <Stack gap="tight">
+      {markdown(text).map((b, i) => b.type === 'heading' ? <Txt key={i} role="headline">{b.text}</Txt>
+        : b.type === 'para' ? <Txt key={i} role="body">{b.text}</Txt>
+        : b.type === 'list' ? (
+          <Stack key={i} gap="tight">
+            {b.items.map((item, n) => (
+              <View key={n} style={{ flexDirection: 'row', gap: space.s2 }}>
+                <Txt role="body" tone="ink-2" tabular>{b.ordered ? `${n + 1}.` : '•'}</Txt>
+                <View style={{ flex: 1 }}><Txt role="body">{item}</Txt></View>
+              </View>
+            ))}
+          </Stack>
+        ) : (
+          <View key={i}>
+            {[b.head, ...b.rows].map((row, r) => (
+              <View key={r} style={{ flexDirection: 'row', gap: space.s2, paddingVertical: space.s2, ...(r > 0 ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.rule } : {}) }}>
+                {row.map((cell, k) => <View key={k} style={{ flex: 1 }}><Txt role={r === 0 ? 'caption' : 'body'} tabular={r > 0}>{cell}</Txt></View>)}
+              </View>
+            ))}
+          </View>
+        ))}
+    </Stack>
+  );
+}
+
 function Answer({ reply }: { reply: Reply }) {
   const running = reply.state === 'running';
   return (
@@ -114,8 +146,8 @@ function Answer({ reply }: { reply: Reply }) {
       {running ? reply.tools.map(t => (
         <Txt key={t.id} role="caption">{[WORDS.tool[t.tool] ?? t.tool, t.phase === 'end' ? Object.values(t.counts)[0] : null].filter(v => v != null).join(' · ')}</Txt>
       )) : null}
-      {reply.blocks ? reply.blocks.map((b, i) => b.type === 'text' ? <Txt key={i} role="body">{b.text}</Txt> : <Widget key={i} result={reply.results[b.result_id]} widget={b.widget} />)
-        : reply.text ? <Txt role="body">{reply.text}</Txt> : null}
+      {reply.blocks ? reply.blocks.map((b, i) => b.type === 'text' ? <Prose key={i} text={b.text} /> : <Widget key={i} result={reply.results[b.result_id]} widget={b.widget} />)
+        : reply.text ? <Prose text={reply.text} /> : null}
       {reply.state === 'failed' || reply.error ? <Txt role="caption">{reply.error === 'cap_daily' ? WORDS.capDaily : WORDS.answerFailed}</Txt> : null}
     </Stack>
   );
