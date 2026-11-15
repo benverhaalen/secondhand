@@ -117,7 +117,7 @@ const GIFT = /\b(?:pay|paying|paid|payment|send|sending|use|using|buy)\b[^.?!]{0
 
 // Step 1 of §3: every code and adapter signal for one message. The model reads the rest.
 export function codeSignals(m: Msg, c: Ctx): Reading[] {
-  const price_cents = cents(c.price_cents, 'price_cents');
+  const price_cents = c.price_cents === undefined ? undefined : cents(c.price_cents, 'price_cents');
   const g = guardLinks(m.text, m.site);
   const young = c.buyer.age_days === null || c.buyer.age_days < c.p('trust_new_days') || c.buyer.ratings === 0;
   const gift = m.text.match(GIFT);
@@ -127,7 +127,7 @@ export function codeSignals(m: Msg, c: Ctx): Reading[] {
     code('gift_crypto_wire', gift !== null, gift?.[0] ?? ''),
     code('new_account', young), code('good_history', c.buyer.good_purchases >= c.p('trust_good_buys')),
     code('site_banner', c.banner),
-    code('urgency_no_question', c.urgent && price_cents > c.p('trust_urgent_cents')),
+    code('urgency_no_question', c.urgent && price_cents !== undefined && price_cents > c.p('trust_urgent_cents')),
     code('script_print_hit', c.printHits.sellers >= c.p('trust_print_min') && c.printHits.buyers >= c.p('trust_print_min')),
     code('burst_same_text', c.sameTextListings10m >= c.p('trust_burst_n')),
   ];

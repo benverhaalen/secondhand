@@ -124,3 +124,169 @@ test('warn uses the fixed fallback when a reversed good_history weight has no WH
   assert.equal(out.action, 'warn');
   assert.deepEqual(out.reasons, ['Don’t open links from buyers.']);
 });
+
+// Follow-up: D17, D5's no-show sibling, and card 5's message action.
+import { codeSignals } from './signals.ts';
+import { counterfeit } from './counterfeit.ts';
+import { priors, numeric, resolve, SCORED_NAMES, SCORED, STRENGTH } from './params.ts';
+
+const fitted = (store: ReturnType<typeof setup>, name: string, value: unknown) => {
+  store.propose({ name, scope: {}, family: 'model_ref', value_or_hyperparams: value, prior: null, n_eff: 2, metric: null, fitted_on_ids_hash: null, held_out_score: 1, guard_lo: null, guard_hi: null }, 0);
+  store.promote(name, {}, 1, 0, '2026-11-14T10:00:00Z');
+};
+
+test('D17: missing price and keep asks with the minimum loss and names the unknown price', async () => {
+  const t = thread();
+  delete t.ctx.price_cents;
+  const out = await decideThread({ model: async () => [] }, { ...t, refund_asked_cents: 5000 });
+  assert.equal(out.action, 'ask');
+  assert.equal(out.loss_cents, priors().trust_loss_min_cents);
+  assert.match(out.reasons[0], /price.*(?:not known|unknown)/i);
+});
+test('D17: missing listing price still uses an available keep valuation', async () => {
+  const t = thread();
+  delete t.ctx.price_cents;
+  const out = await decideThread({}, { ...t, keep_q50_cents: 4800 });
+  assert.equal(out.loss_cents, 4800);
+  assert.equal(out.action, 'none');
+});
+test('D17: urgency without a price is absent and code hard rules still run', async () => {
+  const t = thread("I'll pay with an Apple gift card");
+  delete t.ctx.price_cents;
+  t.ctx.urgent = true;
+  const readings = codeSignals(t.msg, { ...t.ctx, p: numeric(priors()) });
+  assert.equal(readings.find(r => r.signal === 'urgency_no_question')?.present, false);
+  assert.equal((await decideThread({}, t)).action, 'block');
+});
+for (const missing of ['price_cents', 'q50_cents'] as const) {
+  test(`D17: counterfeit with missing ${missing} asks without throwing`, () => {
+    const input = { proofPhoto: true, site: 'other' as const, shoes: false, stockPhoto: false, price_cents: 30000, q50_cents: 31000 };
+    delete (input as Partial<typeof input>)[missing];
+    const out = counterfeit(input);
+    assert.equal(out.action, 'ask');
+    assert.equal(out.price, null);
+    assert.equal(out.typical, null);
+    assert.ok(out.reasons.length > 0);
+  });
+}
+test("D17: partial fitted weights use each missing name's prior and log each missing name", async () => {
+  const store = setup();
+  fitted(store, 'trust_weights', { uri: 'fixture', b: -3, weights: { off_platform: 2.5 } });
+  fitted(store, 'trust_q.new_account', { alpha: 20, beta: 1 });
+  fitted(store, 'trust_calib', { kind: 'platt', a: 1, b: 0, n: 400, positives: 40, ece: .01, score_model_version: 1 });
+  const resolved = resolve(store, {});
+  const weights = (resolved.values.trust_weights as { weights: Record<string, number> }).weights;
+  for (const name of SCORED_NAMES) assert.equal(weights[name], name === 'off_platform' ? 2.5 : SCORED[name].w, name);
+  const missing = SCORED_NAMES.filter(name => name !== 'off_platform');
+  assert.equal(resolved.errors.length, missing.length);
+  for (const name of missing) assert.equal(resolved.errors.filter(error => error.message.includes(name)).length, 1, name);
+  assert.equal(resolved.values.trust_b, -3);
+  assert.equal(resolved.versions.trust_weights, 1);
+  const entries: { event: string }[] = [], events: Record<string, unknown>[] = [];
+  const logger = createLog({ src: 'test', build: 'fixture', sink: entry => { entries.push(JSON.parse(entry)); } });
+  const t = thread();
+  t.ctx.buyer.age_days = 1;
+  const out = await decideThread({ store, logger, log: e => events.push(e), model: async () => [{ signal: 'off_platform', confidence: .9, span: 'off site' }] }, t);
+  assert.equal(out.s, 2.5 + SCORED.new_account.w);
+  assert.notEqual(out.p, null, 'partial weights preserve compatible calibration');
+  assert.equal(entries.filter(e => e.event === 'error').length, missing.length);
+  const failures = events.filter(e => e.kind === 'trust_params_failed');
+  assert.equal(failures.length, missing.length);
+  for (const name of missing) assert.equal(failures.filter(e => String(e.error).includes(name)).length, 1, name);
+});
+for (const invalid of [NaN, Infinity, -Infinity, '2', null, undefined]) {
+  test(`D17: nonfinite or nonnumeric fitted weight ${String(invalid)} uses only that name's prior`, async () => {
+    const store = setup();
+    fitted(store, 'trust_weights', { uri: 'fixture', b: -4, weights: { ...Object.fromEntries(SCORED_NAMES.map(name => [name, .8])), off_platform: invalid } });
+    const resolved = resolve(store, {});
+    const weights = (resolved.values.trust_weights as { weights: Record<string, number> }).weights;
+    assert.equal(weights.off_platform, SCORED.off_platform.w);
+    assert.equal(weights.new_account, .8);
+    assert.equal(resolved.errors.length, 1);
+    assert.match(resolved.errors[0].message, /off_platform/);
+    const out = await decideThread({ store, model: async () => [{ signal: 'off_platform', confidence: .9, span: 'off site' }] }, thread());
+    assert.equal(out.s, SCORED.off_platform.w);
+  });
+}
+test('D17: a complete fitted weights row is accepted', async () => {
+  const store = setup();
+  fitted(store, 'trust_weights', { uri: 'fixture', b: -4, weights: Object.fromEntries(SCORED_NAMES.map(s => [s, .8])) });
+  const t = thread();
+  t.ctx.buyer.age_days = 1;
+  assert.equal((await decideThread({ store }, t)).s, .8);
+});
+
+for (const [positive, negative, bounded] of [[1, 1, true], [30, 29, true], [29, 30, true], [30, 30, false]] as const) {
+  for (const [signal, prior, learned] of [['past', 2, -2], ['paid', -3, 2]] as const) {
+    test(`D5: no-show ${signal}, ${positive} positive/${negative} negative labels ${bounded ? 'stays in' : 'leaves'} the prior band`, () => {
+      const store = setup();
+      const total = STRENGTH + positive + negative;
+      const qt = STRENGTH + positive;
+      fitted(store, `trust_ns_q.${signal}`, { alpha: qt * .1 * Math.exp(learned), beta: qt * (1 - .1 * Math.exp(learned)) });
+      fitted(store, `trust_ns_r.${signal}`, { alpha: total * .1, beta: total * .9 });
+      const value = numeric(resolve(store, {}).values)(`trust_ns_${signal}_weight`);
+      assert.ok(Math.abs(value - (bounded ? prior - Math.sign(prior) * Math.abs(prior) * .5 : learned)) < 1e-12);
+    });
+  }
+}
+test('D5: live scam weights share the low-support band', async () => {
+  const store = setup();
+  fitted(store, 'trust_q.new_account', { alpha: 20, beta: 1 });
+  const t = thread();
+  t.ctx.buyer.age_days = 1;
+  const out = await decideThread({ store }, t);
+  assert.ok(Math.abs(out.s - SCORED.new_account.w * 1.5) < 1e-12);
+});
+
+for (const [action, scam_warning, hold_commits, reason] of [
+  ['block', true, true, 'first reason'], ['ask', false, true, 'first reason'],
+  ['warn', false, false, 'warn line'], ['none', false, false, null],
+] as const) {
+  test(`card 5: messageAction maps ${action}`, async () => {
+    const { messageAction } = await import('./action.ts');
+    const base = await decideThread({}, thread());
+    const decision = { ...base, action, reasons: action === 'warn' ? ['warn line'] : ['first reason', 'second reason'] };
+    assert.deepEqual(messageAction(decision), { scam_warning, hold_commits, reason });
+  });
+}
+test('card 5: gift-card code rule creates a scam warning with a successful empty extractor', async () => {
+  const { messageAction } = await import('./action.ts');
+  const out = messageAction(await decideThread({ model: async () => [] }, thread("I'll pay with an Apple gift card")));
+  assert.equal(out.scam_warning, true);
+  assert.equal(out.hold_commits, true);
+  assert.match(out.reason ?? '', /gift.card/i);
+});
+test('card 5: a new-account-only thread creates no scam warning', async () => {
+  const { messageAction } = await import('./action.ts');
+  const t = thread();
+  t.ctx.buyer.age_days = 1;
+  const out = messageAction(await decideThread({ model: async () => [] }, t));
+  assert.equal(out.scam_warning, false);
+});
+
+test('D17: a nonfinite fitted intercept withholds calibration without throwing', async () => {
+  const store = setup();
+  fitted(store, 'trust_weights', { uri: 'fixture', b: NaN, weights: { off_platform: 2.5 } });
+  fitted(store, 'trust_calib', { kind: 'platt', a: 1, b: 20, n: 400, positives: 40, ece: .01, score_model_version: 0 });
+  const out = await decideThread({ store }, thread());
+  assert.equal(out.p, null);
+  assert.equal(out.percent, null);
+  assert.equal(out.action, 'none');
+});
+
+test('card 5: warn maps its warning line after any locked-action reasons', async () => {
+  const { messageAction } = await import('./action.ts');
+  const out = await decideThread({}, thread());
+  assert.equal(messageAction({ ...out, action: 'warn', reasons: ['Locked action reason.', 'Check before you reply: the account is new.'] }).reason,
+    'Check before you reply: the account is new.');
+});
+
+import { observeAppointment, nsScore, type NsIn } from './noshow.ts';
+test('D5: two actual no-show labels cannot move the paid signal more than half its prior', () => {
+  const store = setup();
+  const input: NsIn = { pastNoShows: 0, paidInApp: true, exactTimeConfirmed24h: false, vagueTime: false,
+    newNoRatings: false, hardHaggle: false, rescheduledOnce: false, repliedConfirm30: false };
+  for (let i = 0; i < 2; i++) observeAppointment(store, {}, input, 1, '2026-11-14T10:00:00Z');
+  const score = nsScore(input, resolve(store, {}).values);
+  assert.ok(Math.abs(score - numeric(priors())('trust_ns_paid_weight')) <= 1.5);
+});

@@ -12,6 +12,9 @@ export function counterfeit(i: CfIn, input?: ParamInput, versions?: Record<strin
   const values = input ?? priors();
   const paramVersions = versions ?? (input === undefined ? priorVersions() : {});
   const p = numeric(values), read = (name: string) => typeof values === 'function' ? values(name) : values[name];
+  if (i.price_cents === undefined || i.q50_cents === undefined) {
+    return { action: 'ask', reasons: [i.price_cents === undefined ? 'The price is not known.' : 'The comparable sale price is not known.'], price: null, typical: null };
+  }
   const price_cents = cents(i.price_cents, 'price_cents');
   const q50_cents = cents(i.q50_cents, 'q50_cents');
   const brands = read('trust_cf_brands');

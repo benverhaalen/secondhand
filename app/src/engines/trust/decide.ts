@@ -3,7 +3,7 @@ import type { ParamStore, Scope } from '../param/param.ts';
 import { evaluateHard, type LockedKind } from './hard.ts';
 import { codeSignals, readModel, SCORED, SCORED_NAMES, type Ctx, type Group, type Msg, type Reading } from './signals.ts';
 
-import { resolve, numeric, priors, priorVersions, type ParamInput } from './params.ts';
+import { resolve, numeric, priors, priorVersions, liveWeight, type Scored, type ParamInput } from './params.ts';
 import { cents } from './money.ts';
 import { calibrate, type Calib } from './calibration.ts';
 import { publish, type Proof, type Published } from './publication.ts';
@@ -55,13 +55,12 @@ const WHY: Record<string, string> = {
   site_banner: 'the site flagged this buyer', script_print_hit: 'the same message went to other sellers', burst_same_text: 'the same text went to many listings',
 };
 
-const weight = (values: Record<string, unknown>, s: string) => {
+const weight = (values: Record<string, unknown>, s: Scored) => {
   const model = values.trust_weights as { uri: string; weights: Record<string, number> };
   if (model.uri !== 'none') return numeric(model.weights)(s);
   const q = values[`trust_q.${s}`] as { alpha: number; beta: number };
   const r = values[`trust_r.${s}`] as { alpha: number; beta: number };
-  if (![q?.alpha, q?.beta, r?.alpha, r?.beta].every(x => Number.isFinite(x) && x > 0)) throw new RangeError(`trust_q/r.${s}`);
-  return Math.log(q.alpha / (q.alpha + q.beta) / (r.alpha / (r.alpha + r.beta)));
+  return liveWeight(q, r, SCORED[s].w, values);
 };
 
 async function withTimeout<T>(f: () => Promise<T>, ms: number): Promise<T> {
@@ -74,11 +73,17 @@ async function withTimeout<T>(f: () => Promise<T>, ms: number): Promise<T> {
 export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
   const scope: Scope = t.person ? { site: t.group, person: t.person } : { site: t.group };
 
-  const resolved = d.store ? resolve(d.store, scope) : { values: priors(), versions: priorVersions() };
+  const resolved = d.store ? resolve(d.store, scope) : { values: priors(), versions: priorVersions(), errors: [] };
+  for (const error of resolved.errors) {
+    d.logger?.error('trust.params', error);
+    d.log?.({ kind: 'trust_params_failed', thread_id: t.msg.thread_id, error: error.message });
+  }
   const p = numeric(resolved.values);
-  const keep_cents = t.keep_q50_cents !== undefined ? cents(t.keep_q50_cents, 'keep_q50_cents') : cents(t.ctx.price_cents, 'price_cents');
+  const priceUnknown = t.keep_q50_cents === undefined && t.ctx.price_cents === undefined;
+  const keep_cents = t.keep_q50_cents !== undefined ? cents(t.keep_q50_cents, 'keep_q50_cents') : t.ctx.price_cents === undefined ? 0 : cents(t.ctx.price_cents, 'price_cents');
   const refund_cents = t.refund_asked_cents === undefined ? 0 : cents(t.refund_asked_cents, 'refund_asked_cents');
-  const L = loss(keep_cents, refund_cents, p), F = friction(L, p), line = askLine(L, p);
+  const L = priceUnknown ? cents(p('trust_loss_min_cents'), 'trust_loss_min_cents') : loss(keep_cents, refund_cents, p);
+  const F = friction(L, p), line = askLine(L, p);
   const calib = resolved.values.trust_calib as Calib;
   calibrate(p('trust_b'), calib);
 
@@ -120,6 +125,7 @@ export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
   const reasons = [...hard.reasons];
   let action: Action = 'none';
   if (hard.action === 'block') action = 'block';
+  else if (priceUnknown) { action = 'ask'; reasons.unshift('The price is not known.'); }
   else if (modelFailed) { action = 'ask'; reasons.push('The check did not finish, so every commit waits for you.'); }
   else if (passed && prob >= p('trust_p_block')) { action = 'block'; reasons.push('This looks like a known scam.'); }
   else if (hard.action === 'ask' || s >= line) action = 'ask';

@@ -35,7 +35,7 @@ export const BASE: Declared[] = [
   num('trust_seller_cap', 0.05), num('trust_label_sellers', 3),
   num('trust_print_hamming', 3), num('trust_print_min', 3), num('trust_print_tokens', 8),
   num('trust_burst_n', 5), num('trust_new_days', 30), num('trust_good_buys', 10), num('trust_urgent_cents', 20000),
-  num('trust_weight_band', 0.5), num('trust_isotonic_n', 1000),
+  num('trust_weight_band', 0.5), num('trust_weight_support', 30), num('trust_isotonic_n', 1000),
   num('trust_retention_days', 30),
   // no-show (card 6)
   beta('trust_ns_b', 1, 4), num('trust_ns_confirm', 1.0), num('trust_ns_ask', 3.0), num('trust_ns_wait_min', 15),
@@ -67,16 +67,37 @@ export function priorVersions(): Record<string, number> { return Object.fromEntr
 export function resolve(store: ParamStore, scope: Scope) {
   const values: Values = {}, versions: Record<string, number> = {};
   for (const d of DECLARED) { store.declare(d); const r = store.read(d.name, scope); values[d.name] = r.value; versions[d.name] = r.version; }
+  const errors: Error[] = [];
   if (versions.trust_weights) {
-    const model = values.trust_weights as { b: number; weights: Record<string, number> };
-    if (!Number.isFinite(model.b) || !model.weights) throw new RangeError('trust_weights');
-    values.trust_b = model.b;
+    const model = values.trust_weights as { b?: unknown; weights?: Record<string, unknown> } | null;
+    if (!model || typeof model.b !== 'number' || !Number.isFinite(model.b)) {
+      errors.push(new RangeError('trust_weights: nonfinite b'));
+      const prior = priors();
+      values.trust_weights = prior.trust_weights;
+      values.trust_b = prior.trust_b;
+      values.trust_calib = prior.trust_calib;
+      versions.trust_calib = 0;
+      versions.trust_weights = 0;
+      versions.trust_b = 0;
+    } else {
+      const weights: Record<string, number> = {};
+      for (const name of SCORED_NAMES) {
+        const fitted = model.weights?.[name];
+        if (typeof fitted === 'number' && Number.isFinite(fitted)) weights[name] = fitted;
+        else {
+          weights[name] = SCORED[name].w;
+          errors.push(new RangeError(`trust_weights: missing or nonfinite ${name}`));
+        }
+      }
+      values.trust_weights = { ...model, weights };
+      values.trust_b = model.b;
+    }
   }
   for (const k of ['past', 'paid', 'exact', 'vague', 'new', 'haggle', 'reschedule', 'reply']) {
     const q = values[`trust_ns_q.${k}`] as { alpha: number; beta: number }, r = values[`trust_ns_r.${k}`] as { alpha: number; beta: number };
-    if (versions[`trust_ns_q.${k}`] || versions[`trust_ns_r.${k}`]) values[`trust_ns_${k}_weight`] = Math.log(q.alpha / (q.alpha + q.beta) / (r.alpha / (r.alpha + r.beta)));
+    if (versions[`trust_ns_q.${k}`] || versions[`trust_ns_r.${k}`]) values[`trust_ns_${k}_weight`] = liveWeight(q, r, numberParam(priors(), `trust_ns_${k}_weight`), values);
   }
-  return { values, versions };
+  return { values, versions, errors };
 }
 export function numberParam(values: Values, name: string): number {
   const n = values[name];
@@ -86,4 +107,15 @@ export function numberParam(values: Values, name: string): number {
 export type ParamInput = Values | ((name: string) => unknown);
 export function numeric(input: ParamInput = priors()): (name: string) => number {
   return name => numberParam({ [name]: typeof input === 'function' ? input(name) : input[name] }, name);
+}
+
+// D5: both classes need support before a live likelihood ratio can leave the prior band.
+export function liveWeight(q: { alpha: number; beta: number }, r: { alpha: number; beta: number }, prior: number, values: Values): number {
+  if (![q?.alpha, q?.beta, r?.alpha, r?.beta].every(x => Number.isFinite(x) && x > 0)) throw new RangeError('trust_q/r');
+  const positive = q.alpha + q.beta - STRENGTH;
+  const negative = r.alpha + r.beta - STRENGTH - positive;
+  const learned = Math.log(q.alpha / (q.alpha + q.beta) / (r.alpha / (r.alpha + r.beta)));
+  if (Math.min(positive, negative) >= numberParam(values, 'trust_weight_support')) return learned;
+  const band = Math.abs(prior) * numberParam(values, 'trust_weight_band');
+  return Math.max(prior - band, Math.min(prior + band, learned));
 }
