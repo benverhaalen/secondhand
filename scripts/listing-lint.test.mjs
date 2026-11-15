@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTitle, lint, sites } from './listing-lint.mjs';
+import { buildTitle, coverage, lint, sites } from './listing-lint.mjs';
 
 const fleece = {
   brand: 'Patagonia', line: 'Better Sweater', detail: '1/4 Zip', type: 'Fleece Pullover', department: "Men's",
@@ -94,3 +94,25 @@ test('description limits', () => {
   assert.ok(ids('poshmark', { title: 'Patagonia Fleece', body: 'Nice. #fleece' }, fleece).includes('D3'));
   assert.ok(ids('grailed', { title: 'Rick Owens Geobasket', body: 'Worn.', tags: ['rickowens', 'geobasket', 'fw14'] }, boots).includes('D4'));
 });
+
+// Buyer searches for the item, each with a weight (how much of the demand it carries).
+const searches = [
+  { q: 'carhartt detroit jacket', w: 5 }, { q: 'carhartt j97', w: 3 }, { q: 'vintage carhartt jacket large', w: 3 },
+  { q: 'blanket lined chore coat', w: 2 }, { q: 'carhartt jacket brown l', w: 2 },
+];
+const jacket = { brand: 'Carhartt', model: 'Detroit', type: 'Jacket', mpn: 'J97', era: 'Vintage', color: 'Brown', size: 'L', material: 'Duck Canvas', department: "Men's", category: 'Jackets', condition: 'good', keywords: ['Blanket Lined', 'Chore Coat', 'Large', 'Workwear'] };
+
+test('coverage is the share of buyer searches whose every word the site can match', () => {
+  const c = coverage('ebay', { title: 'Carhartt Detroit Jacket Brown', body: 'Blanket lined chore coat, J97.' }, jacket, searches);
+  assert.equal(c.share, 7 / 15);
+  assert.deepEqual(c.missed.map(m => m.q), ['carhartt j97', 'vintage carhartt jacket large', 'blanket lined chore coat']);
+  assert.equal(coverage('mercari', { title: 'Carhartt Detroit Jacket Brown', body: 'Blanket lined chore coat, J97.' }, jacket, searches).share, 10 / 15);
+});
+
+test('with buyer searches, spare title room goes to the words that unlock the most demand', () => {
+  const plain = buildTitle('ebay', jacket), aimed = buildTitle('ebay', jacket, searches);
+  assert.ok(coverage2(aimed) > coverage2(plain));
+  assert.ok(aimed.length <= 80);
+  assert.ok(!/workwear/i.test(aimed), 'a word no search uses is left out');
+});
+const coverage2 = title => coverage('ebay', { title, body: '' }, jacket, searches).share;
