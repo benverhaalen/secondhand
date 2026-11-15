@@ -202,8 +202,8 @@ export default function Worth() {
       {glance ? null : (
         <Stack gap="tight">
           <List>
-            <Choice id="worth-price" icon="money-03" label="Have a price in mind?" line={mine ? `Yours: ${usd(mine)}` : undefined} onPress={() => setPricing(true)} />
-            <Choice id="worth-model" icon="edit-02" label="Not this one? Type the model number" onPress={() => setTyping(true)} />
+            <Choice id="worth-price" icon="money-03" label="Set your price" line={mine ? `Yours: ${usd(mine)}` : undefined} onPress={() => setPricing(true)} />
+            <Choice id="worth-model" icon="edit-02" label="Type the model number" onPress={() => setTyping(true)} />
             <Choice id="worth-deep" icon="search-01" label={deep ? 'Looking deeper' : 'Look deeper'} line={deep ? 'It lands on Today when it’s done.' : 'More sites and older sales. Takes a few minutes.'} disabled={deep} onPress={() => setDeep(true)} />
           </List>
           {typing ? <Blank id="worth-model-field" name="Model number" onChange={named} /> : null}

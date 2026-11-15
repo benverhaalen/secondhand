@@ -109,7 +109,7 @@
       "at": "/worth?stage=unsure"
     },
     {
-      "control": "Have a price in mind?",
+      "control": "Set your price",
       "on_tap": "opens a field for the person's own price",
       "id": "worth-price",
       "does": "opens a field for the person's own price",
