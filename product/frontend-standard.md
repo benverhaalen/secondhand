@@ -167,14 +167,14 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: no sentence explains something a pill, badge, number or photo already shows.
 - [ ] Flag: more than one sentence on a card.
 - [ ] Block: a decision card names what it is about before its title, with a tag: a word and an icon ("Offer", "Sold"). Which color each kind's tag takes is open in the brand ledger. A deadline sits on the card whose buttons meet it, never in a banner of its own ([note §2](../research/today/ben/today-wants-alerts-and-clickability.md#2-what-today-shows-in-order)).
-- [ ] Flag: in a card's detail line only the money the person keeps is in ink; the rest is secondary ink. Weight stays Book (medium is for buttons, brand Art. 6).
+- [ ] Flag: in a card's detail line only the money the person keeps is in ink; the rest is secondary ink. The money stands out by ink, never by a heavier weight than the line around it (text is 500 throughout, [Ben, 03:45](words.md#2026-11-15-text-at-500-and-a-pill-behind-the-current-tab)).
 
 ### Attention
 - [ ] Block: the blur test passes (focal point first, next action second).
 - [ ] Block: color appears only as state fills, one field and the brick alert (brand constitution Art. 5, C2, C6).
 - [ ] Flag: more than three actions visible on a card. Choice overload is conditional ([psychology §3](../research/cross-cutting/ben/psychology.md)), so justify it rather than ban it.
 - [ ] Block: nothing sits in a corner's curve. In a box with radius r and padding p, content in a corner keeps p from the arc only at an inset x ≥ r − (r − p)/√2, measured on the ink, not the line box. On a decision card a top-right countdown sits 24 from the right edge. Shapes concentric with the box (the photo, radius r − p) already hold ([Ben, 02:46](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready), [note §1](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md#1-where-content-sits-in-a-rounded-corner)).
-- [ ] Block: the tab you are on is marked by a pill behind its icon and an ink label, never by a darker ink alone ([Ben, 03:22](words.md#2026-11-15-faded-stacks-with-depth-connect-every-site-the-tab-you-are-on-the-wash-as-an-accent-above-the-first-card), [note §6](../research/today/ben/today-feed-and-card-states.md#6-the-tab-you-are-on)).
+- [ ] Block: the tab you are on has a pill behind its icon (ink at 8% in light, white at 14% in dark) and an ink label; the others are secondary ink with no pill. The label keeps its weight in every state ([Ben's pick, 03:45](words.md#2026-11-15-text-at-500-and-a-pill-behind-the-current-tab), [note §6](../research/today/ben/today-feed-and-card-states.md#6-the-tab-you-are-on)).
 - [ ] Block: the same kind of thing looks the same everywhere. An item is a photo tile, a decision is a card with buttons, a platform is its logo.
 
 ### Honesty

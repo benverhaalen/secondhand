@@ -1,0 +1,278 @@
+{
+ "version": 1,
+ "source": "spec/determinations/capture-shots.md#default-plans-by-kind, spec/features/capture.md#the-process-for-each-type",
+ "no_lidar": {
+  "kind": "series",
+  "role": "side",
+  "frames": 8,
+  "needs_lidar": false,
+  "measured_to": "lookup"
+ },
+ "types": {
+  "apparel": [
+   {
+    "step": "front",
+    "kind": "series",
+    "role": "front",
+    "needs_lidar": false,
+    "seconds": 5
+   },
+   {
+    "step": "back",
+    "kind": "series",
+    "role": "back",
+    "needs_lidar": false,
+    "seconds": 10
+   },
+   {
+    "step": "tag",
+    "kind": "series",
+    "role": "tag",
+    "needs_lidar": false,
+    "seconds": 8
+   }
+  ],
+  "shoes": [
+   {
+    "step": "scan",
+    "kind": "scan",
+    "role": "spin",
+    "needs_lidar": true,
+    "seconds": 30
+   },
+   {
+    "step": "size_label",
+    "kind": "series",
+    "role": "tag",
+    "needs_lidar": false,
+    "seconds": 8
+   },
+   {
+    "step": "soles",
+    "kind": "series",
+    "role": "sole",
+    "needs_lidar": false,
+    "seconds": 8
+   }
+  ],
+  "bags": [
+   {
+    "step": "scan",
+    "kind": "scan",
+    "role": "spin",
+    "needs_lidar": true,
+    "seconds": 30
+   },
+   {
+    "step": "inside_tab",
+    "kind": "series",
+    "role": "inside",
+    "needs_lidar": false,
+    "seconds": 10
+   }
+  ],
+  "jewellery_watches": [
+   {
+    "step": "front",
+    "kind": "series",
+    "role": "front",
+    "needs_lidar": false,
+    "seconds": 6
+   },
+   {
+    "step": "back_or_stamp",
+    "kind": "series",
+    "role": "tag",
+    "needs_lidar": false,
+    "seconds": 8
+   }
+  ],
+  "electronics": [
+   {
+    "step": "scan",
+    "kind": "scan",
+    "role": "spin",
+    "needs_lidar": true,
+    "seconds": 25
+   },
+   {
+    "step": "model_plate",
+    "kind": "series",
+    "role": "tag",
+    "needs_lidar": false,
+    "seconds": 8
+   }
+  ],
+  "electronics.phones_laptops": [
+   {
+    "step": "about_screenshot",
+    "kind": "series",
+    "role": "screenshot",
+    "needs_lidar": false,
+    "seconds": 15
+   },
+   {
+    "step": "front_screen_on",
+    "kind": "series",
+    "role": "front",
+    "needs_lidar": false,
+    "seconds": 6
+   },
+   {
+    "step": "back",
+    "kind": "series",
+    "role": "back",
+    "needs_lidar": false,
+    "seconds": 6
+   }
+  ],
+  "furniture": [
+   {
+    "step": "scan",
+    "kind": "scan",
+    "role": "spin",
+    "needs_lidar": true,
+    "seconds": 40
+   }
+  ],
+  "lighting_home": [
+   {
+    "step": "scan",
+    "kind": "scan",
+    "role": "spin",
+    "needs_lidar": true,
+    "seconds": 25
+   },
+   {
+    "step": "base",
+    "kind": "series",
+    "role": "tag",
+    "needs_lidar": false,
+    "seconds": 8
+   }
+  ],
+  "media": [
+   {
+    "step": "front_cover",
+    "kind": "instant",
+    "role": "front",
+    "needs_lidar": false,
+    "seconds": 5
+   },
+   {
+    "step": "back_barcode",
+    "kind": "instant",
+    "role": "back",
+    "needs_lidar": false,
+    "seconds": 6
+   }
+  ],
+  "cards_collectibles": [
+   {
+    "step": "front",
+    "kind": "instant",
+    "role": "front",
+    "needs_lidar": false,
+    "seconds": 5
+   },
+   {
+    "step": "back",
+    "kind": "instant",
+    "role": "back",
+    "needs_lidar": false,
+    "seconds": 5
+   }
+  ],
+  "toys_lego": [
+   {
+    "step": "box_or_set_front",
+    "kind": "instant",
+    "role": "front",
+    "needs_lidar": false,
+    "seconds": 6,
+    "when": "not_rigid"
+   },
+   {
+    "step": "scan",
+    "kind": "scan",
+    "role": "spin",
+    "needs_lidar": true,
+    "seconds": 25,
+    "when": "rigid"
+   }
+  ],
+  "appliances_tools": [
+   {
+    "step": "scan",
+    "kind": "scan",
+    "role": "spin",
+    "needs_lidar": true,
+    "seconds": 25
+   },
+   {
+    "step": "rating_plate",
+    "kind": "series",
+    "role": "tag",
+    "needs_lidar": false,
+    "seconds": 8
+   }
+  ],
+  "bikes_sports": [
+   {
+    "step": "scan",
+    "kind": "scan",
+    "role": "spin",
+    "needs_lidar": true,
+    "seconds": 25
+   },
+   {
+    "step": "serial",
+    "kind": "series",
+    "role": "tag",
+    "needs_lidar": false,
+    "seconds": 8
+   }
+  ],
+  "baby_gear": [
+   {
+    "step": "scan",
+    "kind": "scan",
+    "role": "spin",
+    "needs_lidar": true,
+    "seconds": 25
+   },
+   {
+    "step": "model_date_label",
+    "kind": "series",
+    "role": "tag",
+    "needs_lidar": false,
+    "seconds": 8
+   }
+  ],
+  "other": [
+   {
+    "step": "front",
+    "kind": "instant",
+    "role": "front",
+    "needs_lidar": false,
+    "seconds": 5
+   },
+   {
+    "step": "scan",
+    "kind": "scan",
+    "role": "spin",
+    "needs_lidar": true,
+    "seconds": 25,
+    "when": "rigid"
+   },
+   {
+    "step": "back",
+    "kind": "series",
+    "role": "back",
+    "needs_lidar": false,
+    "seconds": 5,
+    "when": "not_rigid"
+   }
+  ]
+ }
+}

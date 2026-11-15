@@ -216,6 +216,7 @@ On the card "How far should buying go?" in the same session, Nate picked "Also n
 ## 2026-11-14 nate frameworks and goals
 Nate, same session, 2026-11-14, sent while cards on demo scope, the backend's front door, the buying side and disclosure were open. Nate said Ben was beside him.
 > Where there arent official connections, sources of information, harnesses to allow automated actions on each platform, we will build frameworks to allow for perfectly optimized actions and behaviors, a cloud based browser use system where login auth is persisted, the users actions open up their profiles with this cloud, and an api framework is built to allow for everything to work across the needed platforms, and additional sites of information, databases for sales and finance data, fully extend out how the internet serves us as sources of information to strenghten our analytics, accuracy and credibility of calculations on prices. We are in a way a highly intelligent analysis tool of second hand shopping, built to drive the best selling and management experience for users. There are incentives like money goals for the month, how many sales you've had, tracks progress
+||||||| 6693ac2
 
 Note: the line above ("||||||| 6693ac2") is a leftover merge marker from an agent's merge, not anyone's words.
 
@@ -896,6 +897,18 @@ Nate, build session (orchestrator), 2026-11-14 about 22:00 Central, asked "Which
 ## 2026-11-15 the text weight is 500
 Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:23 UTC, after a side by side of Book, Medium on titles and a weight near 450. Recorded by the brand thread, which owns Article 6.
 > i think with font weights i like 500 unless you have a researched back reason to choose 450. what do you think
+
+## 2026-11-15 text at 500, and a pill behind the current tab
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:45 UTC. Just before it he picked "A pill behind the icon" on the decision card "Pick how the tab bar shows which tab you're on", over keeping round 10's filled icon with dimmer others, and a filled icon with a dot. At 03:23 he had written "i think with font weights i like 500 unless you have a researched back reason to choose 450".
+> also ensure font goes 500
+
+## 2026-11-14 nate the computer crashed under stale node processes; every stream keeps working without overloading it
+Nate, build session (orchestrator), 2026-11-14 about 21:50 to 22:00 Central, three messages after a restart.
+> Everything crashed, but I restarted the computer and started it backc up, we had alot of stale node processes just stiing not running, and then a whole load of them all at once crashing it
+
+> plus now my gpu is on
+
+> Well no dont limit so we have any streams waiting, ensure all streams are working and the most we can develop we are, just account to ensure that we dont super overload it with both our sessions and massive codex orchestrators also dispatching
 
 ## 2026-11-15 writing changes by medium, the right fonts, showing not telling, and general rules first
 Ben, thread "Build the brand system for everything", 03:43 UTC.
