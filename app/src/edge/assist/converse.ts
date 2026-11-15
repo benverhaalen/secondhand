@@ -3,6 +3,7 @@ import type { ContentBlockParam, Message, MessageCreateParamsBase, MessageParam,
 import type { Log } from '../../../../log/index.js';
 import { sha256Hex } from '../../engines/proof/sha256.ts';
 import { gate } from '../gate/gate.ts';
+import type { LateUpdate } from './tools.ts';
 import { SYSTEM } from './prompt.ts';
 import { resolveTags, stripTags } from './widgets.ts';
 import type { Answer, AssistEvent, ToolCallInfo, ToolName, ToolResult, Usage, WebSource } from './types.ts';
@@ -33,6 +34,8 @@ export interface ConverseOptions {
   text: string;
   image?: { media_type: 'image/jpeg' | 'image/png' | 'image/webp'; data_base64: string };
   history?: MessageParam[];
+  seed?: ToolResult[];
+  late?: { on(fn: (update: LateUpdate) => void): () => void };
   effort: 'low' | 'medium';
   max_cost_usd: number;
   model: string;
@@ -379,12 +382,38 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
   const toolEvent = (call: ToolCallInfo, phase: 'start' | 'end') => o.onEvent?.({ event: 'assist.tool', data: { ...publicCall(call), phase } });
   let resultId = 0, early = false;
   const pendingWeb: PendingWeb = new Map();
+  const queued: LateUpdate[] = [];
+  let settled = false;
+  const offLate = o.late?.on(update => {
+    if (settled) o.log.note('assist.late.after_settle', { site: update.site });
+    else queued.push(update);
+  });
+  const renderResult = (result: ToolResult, id: string) => JSON.stringify({ ...result, id });
+  const addResult = (result: ToolResult) => {
+    const id = `r${++resultId}`;
+    answer.results[id] = result;
+    return { id, rendered: renderResult(result, id) };
+  };
+  const drainLate = () => queued.splice(0).map(update => {
+    const result: ToolResult = { tool: 'search_market', ok: true, rows: update.rows,
+      counts: { rows: update.rows.filter(row => row.kind !== 'site_summary').length, sites_pending: update.sites_pending.length },
+      citation_ids: update.rows.map(row => String(row.citation_id ?? row.id)),
+      as_of: new Date(o.now()).toISOString(), basis: 'search job rows', not_built: [], widgets: ['listings'], ms: 0 };
+    const { id, rendered } = addResult(result);
+    return { type: 'text' as const, text: `late result ${id}: ${update.site}
+${rendered}` };
+  });
   try {
     o.log.input('buy', 'assist', { length: o.text.length, image_attached: Boolean(o.image), text_hash: sha256Hex(o.text) });
     o.signal.throwIfAborted();
     const content: ContentBlockParam[] = [];
     if (o.image) content.push({ type: 'image', source: { type: 'base64', media_type: o.image.media_type, data: o.image.data_base64 } });
     content.push({ type: 'text', text: o.text });
+    for (const result of o.seed ?? []) {
+      const { id, rendered } = addResult(result);
+      content.push({ type: 'text', text: `seed result ${id}:
+${rendered}` });
+    }
     const messages: MessageParam[] = [...(o.history ?? []), { role: 'user', content }];
     const maxRounds = o.max_rounds ?? 6;
     if (!Number.isInteger(maxRounds) || maxRounds < 1) throw new Error('max_rounds must be a positive integer');
@@ -395,6 +424,8 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
         answer.reason = 'cost_cap';
         break;
       }
+      const lateNotes = drainLate();
+      if (lateNotes.length) messages.push({ role: 'user', content: lateNotes });
       const roundStart = o.now();
       const max_tokens = Math.max(1024, Math.min(16000,
         Math.floor((o.max_cost_usd * 1e6 - answer.usage.cost_usd * 1e6) / PRICE_TABLE.output_per_million)));
@@ -434,7 +465,10 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
       for (const key of ['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'web_searches', 'cost_usd'] as const) answer.usage[key] += usage[key];
       if (usage.cost_source === 'provider') answer.usage.cost_source = 'provider';
       await collectWeb(final, answer, o, toolEvent, pendingWeb, roundStart);
+      const previous = answer.blocks, tags_removed = answer.gate.tags_removed;
       await checkedDraft(final, answer, o.text, o.log, o.now());
+      answer.blocks = [...previous, ...answer.blocks];
+      answer.gate.tags_removed += tags_removed;
       if (final.stop_reason === 'refusal') {
         answer.state = 'refused';
         answer.reason = final.stop_details?.category ?? 'refusal';
@@ -444,6 +478,11 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
         if (final.stop_reason === 'max_tokens' || final.stop_reason === 'model_context_window_exceeded') {
           early = true;
           answer.reason = final.stop_reason;
+        }
+        if (!early && queued.length) {
+          if (round + 1 === maxRounds) { early = true; answer.reason = 'max_rounds'; break; }
+          messages.push({ role: 'assistant', content: final.content });
+          continue;
         }
         break;
       }
@@ -479,7 +518,7 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
           answer.results[id] = result;
           Object.assign(call, { ok: result.ok, counts: result.counts, ms: o.now() - toolStart }, result.reason ? { reason: result.reason } : {});
           toolEvent(call, 'end');
-          return { type: 'tool_result', tool_use_id: use.id, content: JSON.stringify({ ...result, id }),
+          return { type: 'tool_result', tool_use_id: use.id, content: renderResult(result, id),
             ...(!result.ok ? { is_error: true } : {}) } satisfies ToolResultBlockParam;
         }));
         o.signal.throwIfAborted();
@@ -487,7 +526,17 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
       }
     }
     await closeWeb(pendingWeb, answer.reason ?? 'missing_result', o, toolEvent);
-    if (early) answer.blocks.push({ type: 'text', text: 'The answer stopped early.' });
+    if (early) {
+      const previous = answer.blocks, tags_removed = answer.gate.tags_removed;
+      const text = await checkedDraft({ content: [{ type: 'text', text: 'The answer stopped early.', citations: null }] } as Message,
+        answer, o.text, o.log, o.now());
+      answer.blocks = [...previous, ...answer.blocks];
+      answer.gate.tags_removed += tags_removed;
+      if (text) {
+        if (answer.ms.first_text === null) answer.ms.first_text = o.now() - started;
+        o.onEvent?.({ event: 'assist.text', data: { delta: stripTags(text) } });
+      }
+    }
     o.log.note('assist.gate', { ...answer.gate, cut_sentences: undefined, early_count: early ? 1 : 0 });
   } catch (error) {
     answer.state = 'failed';
@@ -495,6 +544,8 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
     o.log.error('assist.converse', safeError(error, o));
     await closeWeb(pendingWeb, 'failed', o, toolEvent);
   }
+  settled = true;
+  offLate?.();
   answer.ms.done = o.now() - started;
   o.log.event('state.change', { entity: 'assist', id: 'assist', to: answer.state, reason: answer.reason, ms: answer.ms.done });
   o.onEvent?.({ event: 'assist.settled', data: { ...answer, gate: { ...answer.gate, cut_sentences: [] }, calls: answer.calls.map(publicCall) } });

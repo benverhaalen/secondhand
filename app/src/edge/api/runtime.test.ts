@@ -15,6 +15,140 @@ import type { composeSources } from '../harness/compose.ts';
 import { memoryVault } from '../browser/auth.ts';
 import { DatabaseSync } from 'node:sqlite';
 import { sqliteVault, vault as defaultVault } from '../store/vault.ts';
+import { wantsOn } from './wants.ts';
+import { deps, route } from './http.ts';
+
+const wantAsk = async (_state: object, questions: Record<string, unknown>) => ({ ok: true as const,
+  answers: Object.fromEntries(Object.keys(questions).map(key => [key, { choice: key.startsWith('m') ? 'exact' : 'keep' }])), ms: 0 });
+
+test('a saved want runs on its next due watcher tick, stores matches once and uses its cadence after restart', async t => {
+  const before = process.env.SECONDHAND_EXAMPLES;
+  process.env.SECONDHAND_EXAMPLES = '0';
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = before; });
+  let clock = Date.parse('2026-11-15T12:00:00Z');
+  const st = memoryStore();
+  const reads: string[] = [];
+  const adapter: Adapter = { ...fakeAdapter('depop', 'search'), async run(args) {
+    reads.push(String(args.q));
+    return { ok: true, data: [{ external_id: 'fresh', title: String(args.q), url: 'https://www.depop.com/products/fresh/', price_cents: 4000, shipping_cents: 500, currency: 'USD', size: 'XL', state: 'live' }] };
+  } };
+  const r = createRuntime(st, log(), { vault: memoryVault(), now: () => clock, adapters: [adapter], wantAsk });
+  deps.verify = async () => 'usr_watch'; deps.log = log(); deps.idem.clear();
+  const endpoint = 'POST /v1/wants';
+  const response = await route(endpoint, wantsOn(st)[endpoint])(new Request('http://edge.test/v1/wants', { method: 'POST', headers: { Authorization: 'Bearer test' }, body: JSON.stringify({ text: 'Carhartt J97', sites: ['depop'], alert: 'under', max_total_cents: { amount_cents: 6000, currency: 'USD' } }) }));
+  assert.equal(response.status, 201);
+  const created = await response.json();
+  r.params.set('watch_cadence_s', 60);
+  await r.watcher.tick();
+  assert.deepEqual(reads, ['Carhartt J97'], 'the existing watcher tick must search the saved want');
+  const matches = st.rows('match', { user_id: 'usr_watch', want_id: created.id });
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].state, 'alerted');
+  assert.deepEqual(st.get('want', 'usr_watch', created.id)?.checked, { depop: new Date(clock).toISOString() });
+  assert.equal(st.get('want', 'usr_watch', created.id)?.next_check_at, new Date(clock + 60000).toISOString());
+  clock += 1000;
+  await r.watcher.tick();
+  assert.equal(reads.length, 1, 'a want before next_check_at must not be read again');
+  assert.deepEqual(st.rows('match', { user_id: 'usr_watch', want_id: created.id }), matches);
+  const restarted = createRuntime(st, log(), { vault: memoryVault(), now: () => clock, adapters: [adapter], wantAsk });
+  await restarted.watcher.tick();
+  assert.equal(reads.length, 1, 'recreating runtime must preserve the stored next check');
+  clock += 60000;
+  await restarted.watcher.tick();
+  assert.equal(reads.length, 2);
+  assert.equal(st.rows('match', { user_id: 'usr_watch', want_id: created.id }).length, 1, 'a later due check must not duplicate a match');
+});
+
+test('want ticks skip paused, ended and deleted wants and never share one person’s search results', async t => {
+  const before = process.env.SECONDHAND_EXAMPLES;
+  process.env.SECONDHAND_EXAMPLES = '0';
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = before; });
+  const st = memoryStore(), reads: string[] = [];
+  for (const [user_id, id, state, deleted] of [['usr_first', 'want_first', 'active', false], ['usr_second', 'want_second', 'active', false], ['usr_first', 'want_paused', 'paused', false], ['usr_first', 'want_ended', 'ended', false], ['usr_first', 'want_deleted', 'active', true]] as const)
+    st.put('want', { id, user_id, state, deleted, text: id, sites: ['depop'], alert: 'available', checked: {}, behind: [] });
+  const untouched = ['want_paused', 'want_ended', 'want_deleted'].map(id => st.get('want', 'usr_first', id));
+  const adapter: Adapter = { ...fakeAdapter('depop', 'search'), async run(args) {
+    reads.push(String(args.q));
+    return { ok: true, data: [{ external_id: args.q, title: args.q, url: `https://www.depop.com/products/${args.q}/`, currency: 'USD', price_cents: 1000, shipping_cents: 0, state: 'live' }] };
+  } };
+  const r = createRuntime(st, log(), { vault: memoryVault(), adapters: [adapter], wantAsk });
+  await r.watcher.tick();
+  assert.deepEqual(reads.sort(), ['want_first', 'want_second']);
+  for (const [user_id, id] of [['usr_first', 'want_first'], ['usr_second', 'want_second']]) {
+    const matches = st.rows('match', { user_id });
+    assert.equal(matches.length, 1);
+    assert.equal(matches[0].want_id, id);
+    assert.equal(matches[0].url, `https://www.depop.com/products/${id}/`);
+  }
+  assert.deepEqual(['want_paused', 'want_ended', 'want_deleted'].map(id => st.get('want', 'usr_first', id)), untouched);
+});
+
+test('unavailable want sources report behind without inventing matches or successful checks', async t => {
+  const before = process.env.SECONDHAND_EXAMPLES;
+  process.env.SECONDHAND_EXAMPLES = '0';
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = before; });
+  const st = memoryStore();
+  st.put('want', { id: 'want_unavailable', user_id: 'usr_watch', state: 'active', text: 'Carhartt J97', sites: ['ebay', 'facebook'], alert: 'available', checked: {}, behind: [] });
+  const r = createRuntime(st, log(), { vault: memoryVault() });
+  await r.watcher.tick();
+  deps.verify = async () => 'usr_watch'; deps.log = log();
+  const endpoint = 'GET /v1/wants/:id';
+  const response = await route(endpoint, wantsOn(st)[endpoint])(new Request('http://edge.test/v1/wants/want_unavailable', { headers: { Authorization: 'Bearer test' } }));
+  assert.equal(response.status, 200);
+  const want = await response.json();
+  assert.deepEqual(want.behind, ['ebay', 'facebook']);
+  assert.deepEqual(want.checked, {});
+  assert.deepEqual(st.rows('match', { user_id: 'usr_watch' }), []);
+});
+
+test('a malformed stored cadence reports an error after letting another person’s due want run', async t => {
+  const before = process.env.SECONDHAND_EXAMPLES;
+  process.env.SECONDHAND_EXAMPLES = '0';
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = before; });
+  const st = memoryStore();
+  st.put('want', { id: 'want_invalid', user_id: 'usr_invalid', state: 'active', text: 'Jacket', sites: ['ebay'], alert: 'available', schedule: { every_min: 0 }, checked: {}, behind: [] });
+  st.put('want', { id: 'want_later', user_id: 'usr_later', state: 'active', text: 'Jacket', sites: ['ebay'], alert: 'available', checked: {}, behind: [] });
+  const sink = memorySink();
+  const r = createRuntime(st, createLog({ src: 'test', build: 'test', sink }), { vault: memoryVault() });
+  await assert.rejects(r.watcher.tick(), AggregateError);
+  assert.ok(st.get('want', 'usr_later', 'want_later')?.next_check_at, 'one broken cadence must not starve a later person');
+  assert.deepEqual(st.get('want', 'usr_later', 'want_later')?.behind, ['ebay']);
+  assert.ok(sink.lines.some(line => JSON.parse(line).where === 'watch.want'));
+});
+
+test('want matching refuses foreign or unknown currency rather than turning it into USD', async t => {
+  const before = process.env.SECONDHAND_EXAMPLES;
+  process.env.SECONDHAND_EXAMPLES = '0';
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = before; });
+  for (const currency of ['GBP', undefined]) {
+    const st = memoryStore();
+    st.put('want', { id: 'want_currency', user_id: 'usr_watch', state: 'active', text: 'Jacket', sites: ['depop'], alert: 'under', max_total_cents: { amount_cents: 5000, currency: 'USD' }, checked: {}, behind: [] });
+    const adapter: Adapter = { ...fakeAdapter('depop', 'search'), async run() {
+      return { ok: true, data: [{ external_id: 'fresh', title: 'Jacket', url: 'https://www.depop.com/products/fresh/', price_cents: 4000, shipping_cents: 0, currency, state: 'live' }] };
+    } };
+    const r = createRuntime(st, log(), { vault: memoryVault(), adapters: [adapter], wantAsk });
+    await r.watcher.tick();
+    assert.deepEqual(st.rows('match', { user_id: 'usr_watch' }), [], String(currency));
+    assert.deepEqual(st.get('want', 'usr_watch', 'want_currency')?.behind, ['depop']);
+    assert.deepEqual(st.get('want', 'usr_watch', 'want_currency')?.checked, {});
+  }
+});
+
+test('want matching merges cross-posts across sites before storing a match', async t => {
+  const before = process.env.SECONDHAND_EXAMPLES;
+  process.env.SECONDHAND_EXAMPLES = '0';
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = before; });
+  const st = memoryStore();
+  st.put('want', { id: 'want_crosspost', user_id: 'usr_watch', state: 'active', text: 'Jacket', sites: ['depop', 'ebay'], alert: 'available', checked: {}, behind: [] });
+  const adapters = (['depop', 'ebay'] as const).map(site => ({ ...fakeAdapter(site, 'search'), async run() {
+    return { ok: true as const, data: [{ external_id: 'fresh', title: 'Jacket', url: `https://www.${site}.com/products/fresh/`, price_cents: site === 'depop' ? 4000 : 4200, shipping_cents: 0, currency: 'USD', seller_ref_hash: 'same-crossposter', state: 'live' }] };
+  } }));
+  const r = createRuntime(st, log(), { vault: memoryVault(), adapters, wantAsk });
+  await r.watcher.tick();
+  const matches = st.rows('match', { user_id: 'usr_watch' });
+  assert.equal(matches.length, 1, 'one physical item must not trigger two matches');
+  assert.deepEqual(matches[0].also_on, ['ebay']);
+});
 
 test('a session linked through one route vault is found by runtime accounts over another database handle', async t => {
   const dir = mkdtempSync(join(tmpdir(), 'secondhand-route-vault-'));

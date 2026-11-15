@@ -1,0 +1,10 @@
+[
+ {"kill":true}, {"launch":true}, {"wait":{"id":"tab-you"},"timeout":30000},
+ {"tap":"tab-you"}, {"sleep":1500}, {"tap":{"label":"Settings"}}, {"wait":{"id":"signout-row"}}, {"tap":"signout-row"},
+ {"wait":{"id":"signout-confirm"}}, {"shot":"e01-signout-sheet"}, {"tap":"signout-confirm"},
+ {"wait":{"id":"signin-email-address-input"},"timeout":15000}, {"shot":"e02-signed-out"},
+ {"kill":true}, {"launch":true}, {"wait":{"id":"signin-email-address-input"},"timeout":30000}, {"shot":"e03-still-out-after-reopen"},
+ {"tap":"signin-email-address-input"}, {"type":"${EMAIL}"}, {"tap":"signin-email-send"}, {"wait":"Check your email"},
+ {"tap":"signin-email-code-input"}, {"type":"${CODE}"}, {"tap":"signin-email-verify"},
+ {"wait":{"id":"tab-today"},"timeout":20000}, {"sleep":1500}, {"shot":"e04-back-in"}
+]

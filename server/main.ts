@@ -23,7 +23,9 @@ export async function start({
   deps.log = log.child({}, 'edge.api');
   const table = await discover(undefined, log);
   if ('recover' in runtime.store && typeof runtime.store.recover === 'function') {
-    const requeued = await runtime.store.recover();
+    const { exampleJobIds } = await import('../app/src/edge/api/jobs.ts');
+    const examples = exampleJobIds();
+    const requeued = await runtime.store.recover((job: { id: string }) => examples.has(job.id));
     log.note('server.recover', { requeued });
   }
   const active = new Map<IncomingMessage, AbortController>();

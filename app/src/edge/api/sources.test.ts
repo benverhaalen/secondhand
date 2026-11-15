@@ -1,127 +1,152 @@
 import assert from 'node:assert/strict';
-import { beforeEach, test } from 'node:test';
+import { afterEach, beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
-import { EXAMPLES, type Example } from './examples.ts';
+import { example } from './examples.ts';
 import { handlers, manifest } from './sources.ts';
-import { readLedger } from '../harness/read-ledger.ts';
-import { createSiteService } from '../harness/service.ts';
-import { fail, fakeManifest, type Adapter } from '../harness/protocol.ts';
-import { memoryStore } from '../events/ports.ts';
+import { createReadLedger, readLedger } from '../harness/read-ledger.ts';
+import { createHarness, fakeAdapter } from '../harness/protocol.ts';
+import { memoryStore } from '../../engines/param/param.ts';
+import { routeId, sourcesFor } from '../intel/public/sources.ts';
+import { runtimePorts } from '../intel/public/search.ts';
 
-const prefixes = ["sources"];
-const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
+const contract = example('sources.health');
+const originalLedger = { ...readLedger };
+const originalRuntime = { ...runtimePorts };
+const readAt = Date.parse('2026-11-15T13:54:00Z');
+type HealthRow = {
+  source_id: string; route_id: string; site: string; group: string; lane: string;
+  composed: boolean; paused_until: string | null;
+};
+type HealthBody = { routes: HealthRow[]; reads: { site: string; day: string; classes: Record<string, number>; paused_until: string | null }[] };
+
 beforeEach(() => {
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
-  deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
+  deps.idem.clear(); deps.visits.clear(); deps.now = () => readAt;
+  Object.assign(readLedger, createReadLedger({ now: () => readAt, log: deps.log, params: memoryStore() }));
+  Object.assign(runtimePorts, { accounts: undefined, harness: undefined, dupe: undefined, apify: undefined,
+    apifyRuns: undefined, shopping: undefined, routed: () => false });
 });
-const call = (e: Example, options: { body?: unknown; raw?: string; path?: string; token?: string | null; headers?: Record<string, string> } = {}) => {
-  const token = options.token === undefined ? (e.auth === 'visitor' ? null : 'good') : options.token;
-  const entry = manifest.find(m => m.endpoint === e.endpoint)!;
-  return route(e.endpoint, handlers[e.endpoint], { auth: entry.auth })(new Request('http://edge.test' + (options.path ?? e.path), {
-    method: e.endpoint.split(' ')[0],
-    headers: { ...(token ? { Authorization: 'Bearer ' + token } : {}), ...e.request?.headers, ...options.headers },
-    body: options.raw ?? (options.body !== undefined ? JSON.stringify(options.body) : e.request?.body === undefined ? undefined : JSON.stringify(e.request.body)),
+afterEach(() => {
+  Object.assign(readLedger, originalLedger);
+  Object.assign(runtimePorts, originalRuntime);
+});
+const call = (path = '/v1/sources/health', token: string | null = 'other') => {
+  const entry = manifest.find(m => m.endpoint === contract.endpoint)!;
+  return route(contract.endpoint, handlers[contract.endpoint], { auth: entry.auth })(new Request('http://edge.test' + path, {
+    headers: token ? { Authorization: 'Bearer ' + token } : {},
   }));
 };
-test('sources: every specified endpoint is registered and declares its answer source', () => {
-  assert.deepEqual(Object.keys(handlers).sort(), [...new Set(examples.filter(e => e.status < 400).map(e => e.endpoint))].sort());
-  assert.deepEqual(manifest.map(m => m.endpoint).sort(), Object.keys(handlers).sort());
-  for (const m of manifest) assert.ok(['example', 'engine'].includes(m.source));
-});
-for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response equals its contract example', async () => {
-  const r = await call(e);
-  assert.equal(r.status, e.status);
-  assert.ok(r.headers.get('X-Request-Id'));
-  for (const [key, value] of Object.entries(e.headers ?? {})) assert.equal(r.headers.get(key), value);
-  if (e.response === null) assert.equal(await r.text(), '');
-  else assert.deepEqual(await r.json(), e.response);
-});
-for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
-  const r = await call(e, { token: 'other' });
-  assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
-});
-for (const e of examples.filter(e => e.status < 400 && e.endpoint.includes(':id'))) test(e.name + ': unknown resource is 404', async () => {
-  const pattern = e.endpoint.split(' ')[1].split('/'), parts = e.path.split('?')[0].split('/');
-  parts[pattern.indexOf(':id')] = 'not_mine';
-  const r = await call(e, { path: parts.join('/') });
-  assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
-});
-for (const e of examples.filter(e => e.status < 400 && ['POST', 'PATCH', 'PUT'].includes(e.endpoint.split(' ')[0]))) test(e.name + ': malformed body is 400 with code', async () => {
-  for (const raw of ['{', '[]', 'null']) {
-    const r = await call(e, { raw }); assert.equal(r.status, 400); assert.equal((await r.json()).code, 'invalid');
-  }
-  if (e.request?.body && Object.keys(e.request.body).length) {
-    const r = await call(e, { body: {} }); assert.equal(r.status, 400); assert.equal((await r.json()).code, 'invalid');
-  }
-});
-for (const e of examples.filter(e => e.status < 400 && e.endpoint.startsWith('POST '))) test(e.name + ': reconnect replays same action and rejects changed body', async () => {
-  const headers = { 'Idempotency-Key': 'test_reconnect', ...(e.auth === 'visitor' ? { 'X-Visitor-Id': 'vis_worker01' } : {}) };
-  const first = await call(e, { headers }), again = await call(e, { headers });
-  assert.equal(again.status, first.status); assert.equal(await again.text(), await first.text());
-  assert.equal(again.headers.get('Idempotent-Replayed'), 'true');
-  const changed = await call(e, { headers, body: { ...((e.request?.body ?? {}) as object), changed: true } });
-  assert.equal(changed.status, 409); assert.equal((await changed.json()).code, 'idempotency_mismatch');
-});
-
-for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': no bearer is 401', async () => {
-  assert.equal((await call(e, { token: null })).status, 401);
-});
-for (const e of examples.filter(e => e.status < 400 && e.request?.body && typeof e.request.body === 'object' && 'version' in e.request.body)) test(e.name + ': stale version cannot act', async () => {
-  const body = e.request!.body as Record<string, unknown>;
-  const r = await call(e, { body: { ...body, version: Number(body.version) + 100 } });
-  assert.equal(r.status, 409); const error = await r.json(); assert.equal(error.code, 'stale'); assert.equal(error.current.version, body.version);
-});
-test('sources: limit over 100 is refused', async () => {
-  const e = examples.find(e => e.status < 400)!;
-  const r = await call(e, { path: e.path + (e.path.includes('?') ? '&' : '?') + 'limit=101' });
-  assert.equal(r.status, 400); assert.equal((await r.json()).code, 'invalid');
-});
-
-test('sources: owned Expo files bind auth and export the contract method', async () => {
-  const { readFileSync } = await import('node:fs');
-  for (const entry of manifest) {
-    const [method, pattern] = entry.endpoint.split(' '), parts = pattern.split('/').slice(2);
-    if (parts[0] !== 'sources') continue;
-    const relative = parts.map(p => p.startsWith(':') ? '[' + p.slice(1) + ']' : p).join('/') + (parts.length === 1 || parts.at(-1)!.startsWith(':') ? '/index+api.ts' : '+api.ts');
-    const source = readFileSync(new URL('../../app/v1/' + relative, import.meta.url), 'utf8');
-    assert.ok(source.includes("import '@/edge/auth'"), relative);
-    assert.ok(source.includes("export const " + method + " = route('" + entry.endpoint + "'"), relative);
-    if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
-  }
-});
-
-test('source health reads the router engine rather than freezing its success rate', async () => {
-  const { ports } = await import('./sources.ts');
-  const health = ports.health;
-  try {
-    ports.health = (...args) => ({ ...health(...args), success: .5 });
-    const response = await call(examples.find(e => e.name === 'sources.health')!);
-    assert.equal((await response.json()).routes[0].success, .5);
-  } finally { ports.health = health; }
-});
-
-test('source health always includes reads before a read is recorded', async () => {
-  const response = await call(examples.find(e => e.name === 'sources.health')!);
-  assert.deepEqual((await response.json()).reads, [], 'empty ledger omitted reads');
-});
-
-test('source health omits shared service read counts or the active pause and changes the routes contract', async () => {
-  readLedger.record('ebay', 'search', 'empty', 1);
-  const adapter: Adapter = { route_id: 'health.challenge', manifest: fakeManifest('depop', 'search'),
-    run: async () => fail('blocked', 'bot check', { do: 'pause_session', site: 'depop' }) };
-  const service = createSiteService('depop', [adapter], { concurrency: 1, store: memoryStore(), data: 'synthetic', log: deps.log });
-  await service.call('search', { query: 'private-test-query' });
-  const response = await call(examples.find(e => e.name === 'sources.health')!, { path: '/v1/sources/health' });
+const body = async (path?: string, token?: string): Promise<HealthBody> => {
+  const response = await call(path, token);
   assert.equal(response.status, 200);
-  const body = await response.json();
-  assert.deepEqual(body.routes, (examples.find(e => e.name === 'sources.health')!.response as { routes: unknown[] }).routes);
-  assert.deepEqual(body.reads, readLedger.counts().map(row => ({ ...row,
-    paused_until: readLedger.paused(row.site) ? new Date(readLedger.paused(row.site)!.until_ms).toISOString() : null })));
-  const depop = body.reads.find((row: { site: string }) => row.site === 'depop');
-  assert.equal(depop.day, new Date().toISOString().slice(0, 10));
-  assert.deepEqual(depop.classes, { answered: 0, empty: 0, refused: 0, challenged: 1, shape_changed: 0, timed_out: 0, failed: 0 });
-  assert.equal(depop.paused_until, new Date(readLedger.paused('depop')!.until_ms).toISOString());
-  assert.equal(body.reads.find((row: { site: string }) => row.site === 'ebay').paused_until, null);
+  return response.json();
+};
+
+test('sources: health keeps its signed-in engine manifest entry and Expo binding', async () => {
+  assert.deepEqual(manifest, [{ endpoint: contract.endpoint, source: 'engine', auth: 'user' }]);
+  const { readFileSync } = await import('node:fs');
+  const source = readFileSync(new URL('../../app/v1/sources/health+api.ts', import.meta.url), 'utf8');
+  assert.ok(source.includes("import '@/edge/auth'"));
+  assert.ok(source.includes("export const GET = route('GET /v1/sources/health'"));
+});
+
+test('sources.health: response equals its contract example', async () => {
+  const response = await call(contract.path, 'good');
+  assert.equal(response.status, contract.status);
+  assert.ok(response.headers.get('X-Request-Id'));
+  assert.deepEqual(await response.json(), contract.response);
+});
+
+test('source health returns every person source instead of 404 for a non-example person', async () => {
+  const result = await body();
+  assert.deepEqual(result.routes.map(row => row.source_id), sourcesFor('person').map(source => source.id));
+  for (const source of sourcesFor('person')) {
+    const row = result.routes.find(row => row.source_id === source.id)!;
+    assert.equal(row.route_id, routeId(source));
+    assert.equal(row.site, source.site);
+    assert.equal(row.group, source.group);
+    assert.equal(row.lane, source.lane);
+    assert.equal(Object.hasOwn(row, 'checked_at'), false);
+    assert.equal(row.paused_until, null);
+  }
+  assert.deepEqual(result.reads, []);
+});
+
+test('source health route rows contain exactly the approved keys', async () => {
+  const result = await body();
+  for (const row of result.routes) {
+    assert.deepEqual(Object.keys(row).sort(), [
+      'source_id', 'route_id', 'site', 'group', 'lane', 'composed', 'paused_until',
+    ].sort());
+  }
+});
+
+test('source health refuses a visitor with 401', async () => {
+  const response = await call(undefined, null);
+  assert.equal(response.status, 401);
+  assert.equal((await response.json()).code, 'unauthenticated');
+});
+
+test('source health composition follows runtime ports and the harness route', async () => {
+  const initial = await body();
+  for (const row of initial.routes) {
+    assert.equal(row.composed, row.lane === 'mcp' || row.lane === 'public_page');
+  }
+  runtimePorts.harness = createHarness({ adapters: [fakeAdapter('ebay', 'search')], log: deps.log });
+  assert.equal((await body()).routes.find(row => row.site === 'ebay')!.composed, false);
+  runtimePorts.routed = site => site === 'ebay';
+  const composed = await body();
+  assert.equal(composed.routes.find(row => row.site === 'ebay')!.composed, true);
+  assert.equal(composed.routes.find(row => row.site === 'depop')!.composed, false);
+  runtimePorts.shopping = { search: async () => ({ ok: true, data: { rows: [], dropped: 0, total: 0, keep_until: '2026-11-16T00:00:00Z' } }) };
+  assert.equal((await body()).routes.find(row => row.site === 'google_shopping')!.composed, true);
+});
+
+test('source health exposes a refusal pause on its route and the unchanged read counts', async () => {
+  readLedger.record('depop', 'search', 'refused', 1);
+  readLedger.record('ebay', 'search', 'empty', 1);
+  const result = await body();
+  const until = new Date(readLedger.paused('depop')!.until_ms).toISOString();
+  assert.equal(result.routes.find(row => row.site === 'depop')!.paused_until, until);
+  assert.equal(result.routes.find(row => row.site === 'ebay')!.paused_until, null);
+  assert.deepEqual(result.reads, readLedger.counts().map(row => ({ ...row,
+    paused_until: row.site === 'depop' ? until : null })));
+  assert.equal(result.reads.find(row => row.site === 'depop')!.classes.refused, 1);
+});
+
+test('source health site filter applies to routes and reads and need is ignored', async () => {
+  readLedger.record('depop', 'search', 'refused', 1);
+  readLedger.record('ebay', 'search', 'empty', 1);
+  const filtered = await body('/v1/sources/health?site=ebay');
+  assert.deepEqual(filtered.routes.map(row => row.source_id), ['ebay']);
+  assert.deepEqual(filtered.reads.map(row => row.site), ['ebay']);
+  for (const need of ['sold', 'search', 'unknown']) {
+    assert.deepEqual(await body('/v1/sources/health?site=ebay&need=' + need), filtered);
+  }
+  for (const source of sourcesFor('person')) {
+    assert.deepEqual((await body('/v1/sources/health?site=' + source.site)).routes.map(row => row.source_id), [source.id]);
+  }
+});
+
+test('source health rejects an unknown or empty site with 400 invalid', async () => {
+  for (const site of ['nope', '']) {
+    const response = await call('/v1/sources/health?site=' + site);
+    assert.equal(response.status, 400);
+    assert.equal((await response.json()).code, 'invalid');
+  }
+});
+
+test('source health contains no query, person id or account and is the same for every person', async () => {
+  const path = '/v1/sources/health?query=private-test-query&person_id=usr_other&account=private-account';
+  const result = await body(path);
+  assert.deepEqual(await body(path, 'good'), result);
+  assert.doesNotMatch(JSON.stringify(result), /private-test-query|private-account|usr_|query|person_id|user_id|account/);
+});
+
+test('sources: limit over 100 is refused', async () => {
+  const response = await call('/v1/sources/health?limit=101');
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).code, 'invalid');
 });

@@ -38,7 +38,7 @@ export function ListingPreview({ site, photo, title, price, keep, photos, audien
       <View style={{ flexDirection: 'row', height: size.photoCard, gap: space.s3 }}>
         <View>
           <Photo src={photo} label={title} faded={off} />
-          <View style={{ position: 'absolute', right: -4, bottom: -4 }}><SiteBadge site={site} /></View>
+          <View style={{ position: 'absolute', right: -space.s2, bottom: -space.s1 }}><SiteBadge site={site} prominent /></View>
         </View>
         <View style={{ flex: 1, justifyContent: 'space-between' }}>
           <Txt role="body" lines={2} tone={off ? 'ink-2' : 'ink'}>{title}</Txt>

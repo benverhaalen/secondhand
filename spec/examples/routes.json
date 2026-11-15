@@ -417,10 +417,10 @@
           },
           {
             "endpoint": "POST /v1/assist",
-            "source": "example",
-            "auth": "user",
+            "source": "engine",
+            "auth": "visitor",
             "method": "POST",
-            "needs_session": true
+            "needs_session": false
           },
           {
             "endpoint": "POST /v1/auth/apple",

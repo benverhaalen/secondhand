@@ -24,13 +24,14 @@ export function Count({ n }: { n: number }) {
 // Where a listing is: the site's own square icon, unaltered (C5), 20 on a 2 ring in the color of what it sits on, on the
 // photo's bottom right corner, 4 outside it (Art. 7.8). The site's name is its accessibility label, never written words.
 // The ring is the ground showing around the logo inset 2, not a border: a color is a ground, never a line (Art. 5.1, B7).
-export function SiteBadge({ site }: { site: Site }) {
+export function SiteBadge({ site, prominent = false }: { site: Site; prominent?: boolean }) {
   const c = useColors(), ground = useGround();
+  const diameter = prominent ? size.siteBadge + space.s3 : size.siteBadge;
   return (
     <View
       {...mark('site-badge')}
       accessibilityLabel={SITES[site].name}
-      style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: ground === 'card' ? c.surface : c.page }}>
+      style={{ width: diameter, height: diameter, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: ground === 'card' ? c.surface : c.page }}>
       <View style={{ position: 'absolute', top: 2, left: 2, right: 2, bottom: 2, borderRadius: radius.pill, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: c.surface }}>
         <Image source={SITES[site].logo} alt={SITES[site].name} accessibilityLabel={SITES[site].name} style={{ width: '100%', height: '100%' }} contentFit="cover" />
       </View>

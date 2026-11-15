@@ -226,7 +226,7 @@ function DemoCamera() {
             {/* Found first, so what is left to fill is where the line runs on. */}
             {lamp ? (kind && kind !== DONT_KNOW ? LAMP.facts.map(f => (
               <FactChip key={f.key} id={`fact-${f.key}`} name={f.name} value={lampFacts[f.key]} by={mine.includes(f.key) ? 'person' : 'agent'} onChange={v => typedLamp(f.key, v)} />
-            )) : null) : [...factsFor(mode)].sort((a, b) => Number(!facts[a.key]) - Number(!facts[b.key])).map(f => (
+            )) : null) : [...factsFor(mode)].filter(f => phase === 'done' || !!facts[f.key]).sort((a, b) => Number(!facts[a.key]) - Number(!facts[b.key])).map(f => (
               <FactChip key={f.key} id={`fact-${f.key}`} name={f.name} value={facts[f.key]} by={mine.includes(f.key) ? 'person' : 'agent'} onChange={v => typed(f.key, v)} />
             ))}
             {phase === 'done' && !sized ? <CamNote icon="information-circle" text={lidar ? 'Scan it to use AI' : 'AI needs a phone with LiDAR'} /> : null}

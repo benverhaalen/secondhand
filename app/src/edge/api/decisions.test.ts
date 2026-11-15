@@ -42,6 +42,42 @@ test('act: the right answer moves the decision to acting and makes one job throu
   assert.match(b.event_id, /^ev_/);
 });
 
+test('act: an unmapped kind stays byte-identical, with no job, event or answer log', async () => {
+  const sink = memorySink();
+  deps.log = createLog({ src: 'test', build: 'test', sink });
+  const d = raise('usr_a', 'studio_approve');
+  const before = JSON.stringify(store.decisions({ user_id: d.user_id }).find(row => row.id === d.id));
+  const events = store.events({ user_id: d.user_id }).length, jobs = store.jobs({ user_id: d.user_id }).length;
+  const body = { option_id: 'opt_yes', signature: sign(d, 'opt_yes'), version: 1 };
+  const key = crypto.randomUUID();
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await ACT(req(`/v1/decisions/${d.id}/act`, 'a', body, key));
+    assert.equal(response.status, 503, 'unmapped actions must be refused on every attempt');
+    assert.deepEqual(await response.json(), { code: 'unavailable', message: 'This decision action is not available yet', failed_step: 'act', retry: { by: 'none' } });
+    assert.equal(JSON.stringify(store.decisions({ user_id: d.user_id }).find(row => row.id === d.id)), before);
+    assert.equal(store.events({ user_id: d.user_id }).length, events);
+    assert.equal(store.jobs({ user_id: d.user_id }).length, jobs);
+  }
+  assert.ok(!sink.lines.some(line => JSON.parse(line).event === 'decision.answer'));
+});
+
+test('act: a mapped request replay returns its first answer and makes only one event and job', async () => {
+  const d = raise('usr_a', 'accept_offer');
+  const key = crypto.randomUUID(), body = { option_id: 'opt_yes', signature: sign(d, 'opt_yes'), version: 1 };
+  const first = await ACT(req(`/v1/decisions/${d.id}/act`, 'a', body, key));
+  assert.equal(first.status, 200);
+  const answer = await first.text();
+  const again = await ACT(req(`/v1/decisions/${d.id}/act`, 'a', body, key));
+  assert.equal(again.status, 200);
+  assert.equal(await again.text(), answer);
+  assert.equal(again.headers.get('Idempotent-Replayed'), 'true');
+  assert.equal(store.events({ user_id: d.user_id }).filter(row => row.payload?.decision_id === d.id).length, 1);
+  assert.equal(store.jobs({ user_id: d.user_id }).filter(row => row.id === store.decisions({ user_id: d.user_id }).find(row => row.id === d.id)?.job_id).length, 1);
+  const changed = await ACT(req(`/v1/decisions/${d.id}/act`, 'a', { ...body, option_id: 'opt_no' }, key));
+  assert.equal(changed.status, 409);
+  assert.equal((await changed.json()).code, 'idempotency_mismatch');
+});
+
 test('act refuses: a foreign decision 404, a stale version 409, a forged or expired signature 400, a rule on a locked kind 403', async () => {
   const theirs = raise('usr_b', 'accept_offer');
   assert.equal((await ACT(req(`/v1/decisions/${theirs.id}/act`, 'a', { option_id: 'opt_yes', signature: sign(theirs, 'opt_yes'), version: 1 }))).status, 404);
@@ -57,10 +93,10 @@ test('act refuses: a foreign decision 404, a stale version 409, a forged or expi
   assert.equal(r.status, 403); assert.equal((await r.json()).code, 'locked');
 });
 
-test('act on an answered decision is 409 stale; a missing field is 400 invalid with fields', async () => {
-  const d = raise('usr_a', 'studio_approve');
+test('act on an acting decision is 409 stale; a missing field is 400 invalid with fields', async () => {
+  const d = raise('usr_a', 'accept_offer');
   const ok = await ACT(req(`/v1/decisions/${d.id}/act`, 'a', { option_id: 'opt_yes', signature: sign(d, 'opt_yes'), version: 1 }));
-  assert.equal((await ok.json()).decision.state, 'answered');
+  assert.equal((await ok.json()).decision.state, 'acting');
   const again = await ACT(req(`/v1/decisions/${d.id}/act`, 'a', { option_id: 'opt_yes', signature: sign(d, 'opt_yes'), version: 2 }));
   assert.equal(again.status, 409);
   const bad = await ACT(req(`/v1/decisions/${d.id}/act`, 'a', { option_id: 'opt_yes' }));
@@ -84,7 +120,7 @@ test('decision signatures and row versions survive a restart; acting with the ol
   `;
   const run = (code: string) => JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', setup + code], { env, encoding: 'utf8' }).trim().split('\n').at(-1)!);
   try {
-    const signed = run(`store.raiseDecision({ user_id: 'usr_restart', kind: 'studio_approve', subject: 'it_restart', why: 'test', options: [{ id: 'opt_yes', label: 'Yes' }] });
+    const signed = run(`store.raiseDecision({ user_id: 'usr_restart', kind: 'accept_offer', subject: 'it_restart', item_id: 'it_restart', why: 'test', options: [{ id: 'opt_yes', label: 'Yes' }] });
       const response = await route('GET /v1/decisions', list)(request('/v1/decisions'));
       process.stdout.write(JSON.stringify((await response.json()).data[0]));`);
     const body = { option_id: 'opt_yes', signature: signed.options[0].signature, version: signed.version };
@@ -118,7 +154,7 @@ test('a failed decision update rolls back the answer event, job, state and versi
 
 test('decision signing reads the environment lazily after import and signs the persisted row version', async () => {
   const { createHmac, randomBytes } = await import('node:crypto');
-  const d = raise('usr_a', 'studio_approve', { version: 7 });
+  const d = raise('usr_a', 'accept_offer', { version: 7 });
   const previous = process.env.DECISION_SIGNING_KEY;
   const key = randomBytes(32).toString('hex');
   process.env.DECISION_SIGNING_KEY = key;
