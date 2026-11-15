@@ -105,7 +105,7 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
     if (!seen) continue;
     // What has been done to the letters: a transform, a filter or a fade anywhere above them, and a shadow, stroke, outline or motion on them.
     const fx = []; for (let a = p; a && a !== document.body && !a.hasAttribute('data-view'); a = a.parentElement) { const s = getComputedStyle(a);
-      if (s.transform !== 'none') fx.push('transformed'); if (s.filter !== 'none') fx.push('filtered'); if (Number(s.opacity) < 1) fx.push('faded'); if (s.animationName !== 'none') fx.push('moving'); }
+      if (s.transform !== 'none' && !/^matrix\(1, 0, 0, 1, 0, 0\)$|^matrix3d\(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1\)$/.test(s.transform)) fx.push('transformed'); if (s.filter !== 'none') fx.push('filtered'); if (Number(s.opacity) < 1) fx.push('faded'); if (s.animationName !== 'none') fx.push('moving'); }
     if (cs.textShadow !== 'none') fx.push('shadowed'); if (parseFloat(cs.webkitTextStrokeWidth) > 0) fx.push('stroked'); if (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0) fx.push('outlined');
     const family = first(cs.fontFamily);
     // An amount is alone when no words sit with it: in its own box, or in the row or block that holds it, up to three boxes out and never the whole view.
@@ -119,7 +119,9 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
       display: family === faces.display, textFace: family === faces.text, color: cs.webkitTextFillColor || cs.color, upper: cs.textTransform === 'uppercase',
       caps: cs.textTransform === 'capitalize' ? 'capitalized by CSS' : cs.fontVariantCaps !== 'normal' ? 'set in small capitals' : null, italic: cs.fontStyle !== 'normal', stroked: parseFloat(cs.webkitTextStrokeWidth) > 0,
       lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control, controlAt, disabled, lead, opacity: alpha,
-      cut: all.some(r => r.cut), dots: all.some(r => r.dots), fill: p.closest('[data-fill]')?.dataset.fill ?? null, full: rel(range.getBoundingClientRect()),
+      cut: all.some(r => r.cut), dots: all.some(r => r.dots), fill: p.closest('[data-fill]')?.dataset.fill ?? null, full: rel(range.getBoundingClientRect()), ink: (() => { const f = rel(range.getBoundingClientRect()), g = document.createElement('canvas').getContext('2d'); g.font = cs.font; const m = g.measureText(n.data);
+        // The range box is the font's content area; the letters sit inside it. A thing holds its ink, which is what a person sees.
+        return m.fontBoundingBoxAscent ? [f[0], f[1] + Math.max(0, m.fontBoundingBoxAscent - m.actualBoundingBoxAscent), f[2], f[3] - Math.max(0, m.fontBoundingBoxDescent - m.actualBoundingBoxDescent)] : f; })(),
       alone: !/\p{L}/u.test((group.innerText ?? '').replace(n.data, '')) });
   }
   return { index, w: vw, h: vh, els, texts };
@@ -183,6 +185,40 @@ async function under({ png, boxes }) {
     return { lo, hi }; });
 }
 
+// The same pixels as page.screenshot({ clip }) (checked on every render fixture), taken through Chromium's own call with its fast PNG
+// setting, about twice as fast on a full slide. Its clip is measured from the top of the document, page.screenshot's from the viewport.
+async function snap(page, clip) {
+  const cdp = await page.context().newCDPSession(page);
+  const [x, y] = await page.evaluate(() => [scrollX, scrollY]);
+  const { data } = await cdp.send('Page.captureScreenshot', { format: 'png', clip: { ...clip, x: clip.x + x, y: clip.y + y, scale: 1 }, optimizeForSpeed: true });
+  await cdp.detach();
+  return `data:image/png;base64,${data}`;
+}
+
+// The tokens as the browser reads them depend only on tokens.css and the theme, so each browser reads them once.
+const tokenReads = new WeakMap();
+function readTokens(browser, tokensCss, theme, names) {
+  const reads = tokenReads.get(browser) ?? tokenReads.set(browser, new Map()).get(browser), key = `${theme}\n${tokensCss}`;
+  if (!reads.has(key)) reads.set(key, probeTokens(browser, tokensCss, theme, names));
+  return reads.get(key).then(structuredClone);
+}
+async function probeTokens(browser, tokensCss, theme, names) {
+  const probe = await browser.newPage(); await probe.setContent(`<html><style>${tokensCss}</style><body><i id="p"></i>`); await probe.evaluate(t => { if (t) document.documentElement.dataset.theme = t; }, theme);
+  const got = await probe.evaluate(({ names, grads, lengths }) => { const p = document.getElementById('p'), cs = getComputedStyle(p), out = { colors: {}, faces: {}, lengths: [], named: {}, grads: {} }; p.style.display = 'block';
+    const read = () => { const o = {}; for (const n of [...new Set(names)]) { p.style.color = 'rgb(1, 2, 3)'; p.style.color = `var(--${n})`; const a = cs.color; p.parentElement.style.color = 'rgb(3, 2, 1)'; p.style.color = `var(--${n})`; if (cs.color === a) o[n] = a; p.parentElement.style.color = ''; } return o; };
+    // The light palette too: a state gradient and a state tag stay light in dark (Art. 5), so what sits on them is read in light.
+    const root = document.documentElement, was = root.dataset.theme; out.colors = read(); root.dataset.theme = 'light'; out.light = read(); if (was) root.dataset.theme = was; else delete root.dataset.theme;
+    out.calmMax = parseFloat(getComputedStyle(root).getPropertyValue('--field-calm-max')) / 100 || null;
+    // The gradients the tokens hold (the field, the wash), as the browser writes them, so a page's gradient can be told from one it rebuilt.
+    for (const n of grads) { p.style.background = `var(--${n})`; if (/gradient\(/.test(cs.backgroundImage)) out.grads[n] = { raw: cs.backgroundImage, base: cs.backgroundColor }; p.style.background = ''; }
+    for (const [k, v] of lengths) { p.style.width = `var(--${k})`; out.lengths.push(parseFloat(cs.width) || v); out.named[k] = parseFloat(cs.width) || v; }
+    for (const f of ['text', 'display']) { p.style.fontFamily = `var(--font-${f})`; out.faces[f] = cs.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase(); }
+    out.textWeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--w-text')) || 400;
+    return out; }, { names, grads: [...new Set([...tokensCss.matchAll(/--([\w-]+)\s*:/g)].map(m => m[1]))], lengths: [...tokensCss.matchAll(/--((?!s-|t-|r-|lh-|tr-)[\w-]+)\s*:\s*(\d+(?:\.\d+)?)px\s*;/g)].map(m => [m[1], Number(m[2])]) });
+  await probe.close();
+  return got;
+}
+
 export async function collect(file, { medium, sheet, tokensCss, browser, cases = [], kinds = [] }) {
   const faces = brandFaces(tokensCss);
   const names = [...tokensCss.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].filter(m => COLOR.test(m[2].trim()) || /^var\(--/.test(m[2].trim())).map(m => m[1]);
@@ -193,19 +229,8 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
     if (faces) { await page.addStyleTag({ content: faces }); await page.evaluate(() => Promise.all([...document.fonts].map(f => f.load().catch(() => null)))); }
     await page.evaluate(() => document.fonts.ready);
     const theme = await page.evaluate(() => document.documentElement.dataset.theme ?? '');
-    const probe = await browser.newPage(); await probe.setContent(`<html><style>${tokensCss}</style><body><i id="p"></i>`); await probe.evaluate(t => { if (t) document.documentElement.dataset.theme = t; }, theme);
-    const got = await probe.evaluate(({ names, grads, lengths }) => { const p = document.getElementById('p'), cs = getComputedStyle(p), out = { colors: {}, faces: {}, lengths: [], named: {}, grads: {} }; p.style.display = 'block';
-      const read = () => { const o = {}; for (const n of [...new Set(names)]) { p.style.color = 'rgb(1, 2, 3)'; p.style.color = `var(--${n})`; const a = cs.color; p.parentElement.style.color = 'rgb(3, 2, 1)'; p.style.color = `var(--${n})`; if (cs.color === a) o[n] = a; p.parentElement.style.color = ''; } return o; };
-      // The light palette too: a state gradient and a state tag stay light in dark (Art. 5), so what sits on them is read in light.
-      const root = document.documentElement, was = root.dataset.theme; out.colors = read(); root.dataset.theme = 'light'; out.light = read(); if (was) root.dataset.theme = was; else delete root.dataset.theme;
-      out.calmMax = parseFloat(getComputedStyle(root).getPropertyValue('--field-calm-max')) / 100 || null;
-      // The gradients the tokens hold (the field, the wash), as the browser writes them, so a page's gradient can be told from one it rebuilt.
-      for (const n of grads) { p.style.background = `var(--${n})`; if (/gradient\(/.test(cs.backgroundImage)) out.grads[n] = { raw: cs.backgroundImage, base: cs.backgroundColor }; p.style.background = ''; }
-      for (const [k, v] of lengths) { p.style.width = `var(--${k})`; out.lengths.push(parseFloat(cs.width) || v); out.named[k] = parseFloat(cs.width) || v; }
-      for (const f of ['text', 'display']) { p.style.fontFamily = `var(--font-${f})`; out.faces[f] = cs.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase(); }
-      out.textWeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--w-text')) || 400;
-      return out; }, { names, grads: [...new Set([...tokensCss.matchAll(/--([\w-]+)\s*:/g)].map(m => m[1]))], lengths: [...tokensCss.matchAll(/--((?!s-|t-|r-|lh-|tr-)[\w-]+)\s*:\s*(\d+(?:\.\d+)?)px\s*;/g)].map(m => [m[1], Number(m[2])]) });
-    await probe.close(); colors = got.colors; lightColors = got.light; calmMax = got.calmMax; lengths = got.lengths; named = got.named; grads = got.grads; textWeight = got.textWeight;
+    const got = await readTokens(browser, tokensCss, theme, names);
+    colors = got.colors; lightColors = got.light; calmMax = got.calmMax; lengths = got.lengths; named = got.named; grads = got.grads; textWeight = got.textWeight;
     // A face is here when text set in it measures differently from the same text in two generic fallbacks. document.fonts.check() says yes to a face it has never heard of.
     fontsLoaded &&= await page.evaluate(f => { const g = document.createElement('canvas').getContext('2d'), w = font => { g.font = font; return g.measureText('secondhand $46.95 Wag').width; };
       return [f.text, f.display].every(face => ['monospace', 'serif'].some(fb => w(`40px "${face}", ${fb}`) !== w(`40px ${fb}`)) && ['monospace', 'serif'].every(fb => w(`40px "${face}", ${fb}`) === w(`40px "${face}", ${fb === 'serif' ? 'monospace' : 'serif'}`))); }, got.faces);
@@ -233,12 +258,12 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
       view.layout = marked ? await page.evaluate(i => document.querySelectorAll('[data-view]')[i].dataset.layout ?? null, i) : null;
       if (old) view.share = old.share;
       else { const clip = { x: Math.max(0, rect[0]), y: Math.max(0, rect[1]), width: Math.min(rect[2], canvas[0]), height: Math.min(rect[3], tall ? Math.ceil(rect[3]) : canvas[1]) };
-        const png = `data:image/png;base64,${(await page.screenshot({ clip })).toString('base64')}`;
+        const png = await snap(page, clip);
         view.share = await page.evaluate(share, { png, photos: view.els.filter(e => e.photo).map(e => e.rect), w: clip.width, h: clip.height });
         // Text over a gradient has no one color behind it, so its ground is read from the pixels, with the text hidden (Ben, 03:22: "how do you ensure when you layer colors whether its readable or not").
         const over = view.texts.map((t, k) => t.ground.some(g => g.kind === 'gradient') ? k : -1).filter(k => k >= 0);
         if (over.length) { const hide = await page.addStyleTag({ content: '*, *::before, *::after { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important; transition: none !important; }' });
-          const bare = `data:image/png;base64,${(await page.screenshot({ clip })).toString('base64')}`; await hide.evaluate(e => e.remove());
+          const bare = await snap(page, clip); await hide.evaluate(e => e.remove());
           const got = await page.evaluate(under, { png: bare, boxes: over.map(k => view.texts[k].rect) }); over.forEach((k, j) => { view.texts[k].under = got[j]; }); } }
       if (tall) await page.setViewportSize({ width: canvas[0], height: canvas[1] });
       return { ...view, canvas, medium };

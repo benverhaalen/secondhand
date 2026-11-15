@@ -117,12 +117,13 @@ export function machine(pids = new Set()) {
   return { load1: loadavg()[0], cpu: mine.reduce((n, r) => n + r[2], 0), mem: mine.reduce((n, r) => n + r[3], 0) / 1024, swap: swapped() };
 }
 
-export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2000, cores = cpus().length, base = '.', pids = new Set() } = {}) {
+export async function run(plan, { exec = codex, probe = machine, log, cores = cpus().length, base = '.', pids = new Set() } = {}) {
   const problems = check(plan);
   if (problems.length) throw new Error(problems.join('\n'));
   const out = resolve(plan.out), repo = insideRepo(out);
   if (repo) throw new Error(`${out} is inside ${repo}: Codex would read that tree's AGENTS.md into every call. Put out somewhere outside a repo`);
-  const { max = 24, load = 0.7, ramp = 2, swap = 10, timeout = 600, model = 'gpt-6-astra' } = plan;
+  const { max = 24, load = 0.7, ramp = 2, swap = 10, timeout = 600, model = 'gpt-6-astra', tick = 2 } = plan;
+  const tickMs = tick * 1000;
   const jobs = plan.jobs.map(j => ({ id: j.id, role: j.role ?? 'generator', state: 'waiting', after: j.after ?? [], makes: j.makes ?? 'image', job: j }));
   const byId = new Map(jobs.map(j => [j.id, j]));
   const folderOf = id => join(out, id), running = new Set();
@@ -197,7 +198,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const sink = line => { const e = JSON.parse(line); if (e.event === 'job.state') consoleSink(`${e.ts.slice(11, 19)} ${e.state.padEnd(7)} ${e.job}${e.reason ? `  ${e.reason}` : ''}`); };
   process.env.CODEX_HOME ??= cleanHome(join(out, '.codex-home'));
   const session = `s_${Date.now().toString(36)}`, file = join(out, 'logs', `job.image-${session}.jsonl`);
-  const log = createLog({ src: 'job.image', build: `image-gen+${sha}`, session, sink: teeSink(fileSink(file), sink), config: { max: plan.max, load: plan.load, ramp: plan.ramp, swap: plan.swap, timeout: plan.timeout, model: plan.model, jobs: plan.jobs?.length } });
+  const log = createLog({ src: 'job.image', build: `image-gen+${sha}`, session, sink: teeSink(fileSink(file), sink), config: { max: plan.max, load: plan.load, ramp: plan.ramp, swap: plan.swap, tick: plan.tick, timeout: plan.timeout, model: plan.model, jobs: plan.jobs?.length } });
   // A runner that is stopped takes its calls with it, so none is left running on its own.
   const pids = new Set();
   for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.once(signal, async () => {

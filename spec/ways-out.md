@@ -65,7 +65,10 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
-| "I'll answer buyers myself" | Min, Test | Every thread is fully writable. You > Messages: Answer for me (default), Draft for me (`answer_fact` replies become drafts that wait for a tap), or Off. Per site, too. Offers are not messages: they follow the Plan's accept mode and floor whatever this says, and the screen says so. The automatic dibs message still goes, because it only tells a buyer the item is spoken for | your own text specced (`actor: user`); the setting *new* (`user.auto_reply`) |
+| "I'll answer buyers myself" | Min, Test | Every thread is fully writable. You > Messages: Draft for me (the default for a new person: every reply waits as exact text for a tap), Answer for me (earned per kind of question after 3 replies sent unedited, the same way rules are promoted), or Off. Per site, too. Offers are not messages: they follow the Plan's accept mode and floor. The automatic dibs message still goes, because it only tells a buyer the item is spoken for | your own text specced (`actor: user`); the setting and drafts-first *new*: `answer_fact` is `auto` in the canon, so this asks Nate to make it promotable |
+| "Let me approve replies fast" | Min, Clear | Messages opens on "4 replies to send": each shows the buyer's words, the exact reply, and chips for the facts it used with where each came from. Send, Edit, or Take over, one at a time like a queue card, or Send all for replies that only state confirmed facts | *new* (Ben, [05:18](../product/words.md#2026-11-15-who-judges-it-guarantees-the-buyer-side-messages-you-approve-meetups-audit-every-site-and-no-fixed-pickup-schedule)) |
+| "This one needs me" | Min | Take over stops automatic replies in that thread until the person hands it back. The agent hands over by itself, with the reason on top, when a buyer is angry, asks to pay or meet off the site, raises a return or claim, asks about a fact that is not confirmed, or names a price outside the plan | *new* (the list); `scam_warning`, `move_off_site` specced |
+| "What has it been saying?" | Min, Resell | Each message in a thread says who wrote it: You, Sent for you, or Drafted and sent by you. You > Messages lists every automatic send across sites with its thread, the facts used and Why? | labels *new*; events specced |
 | "It told a buyer something wrong" | Min | Each automatic message is marked "Sent for you" with Why?. It cannot be unsent on any site, so Correct it fixes the fact on the item and drafts a follow-up as a `reply_other` card the person sends, through `claim_check` | `reply_other` and `claim_check` specced; Correct it *new* |
 | "They want more photos or a video" | Min | The agent sends any photo already on the item; for anything else the thread shows Take a photo, which opens the camera and attaches it | *new* |
 | "I don't want to haggle" | Clear, Fire | No offers in the Plan, or the floor and Always accept answer for you | specced |
@@ -169,6 +172,7 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 | "Forget what you learned about my style" | Browse | Your style shows what it learned; edit or clear it | specced (`GET`, `PATCH /v1/me/style`) |
 | "Don't test things on my listings" | Min | Experiments off | specced (`experiments_consent`) |
 | "I won't tell you what I paid" | Clear | Cost is never asked; it is only offered to resellers | specced |
+| "What's happening on Depop right now?" | Resell, Min | You > Sites: one page per site with what we read there last (each listing, its price and state, open offers, messages, orders) and when, everything we did there with its read-back, anything changed on the site that we did not do, and Open on the site beside each line. A mismatch is on top | events and reconcile specced; the per-site page *new* |
 
 ## §6.17 The website
 

@@ -4,10 +4,19 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
-  Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Guess, IconButton, ItemCard, Line, Nav, Notice, Pill,
-  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type TabKey, type TagState,
+  Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Nav, Notice, Pill,
+  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
   Feed, QueueView,
 } from '@/ui';
+import { GoalBar } from '@/ui/parts/goal-bar';
+import { ListRow } from '@/ui/parts/list-row';
+import { Switch } from '@/ui/parts/switch';
+import { TabNav } from '@/ui/parts/tab-nav';
+import { WeekBars } from '@/ui/parts/week-bars';
+import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
+import { Shelf, Tile } from '@/ui/parts/tile';
+import { KeepRow, Range } from '@/ui/parts/worth';
+import { photo } from '@/demo/photos';
 
 const HOUR = 3600000;
 // Deadlines are fixed offsets from the moment the sheet opens, so each strength of a state gradient shows.
@@ -32,6 +41,7 @@ function Sheetful() {
   const [tab, setTab] = useState<TabKey>('index');
   const [sheet, setSheet] = useState(false);
   const [size, setSize] = useState('');
+  const [on, setOn] = useState(true);
   const [fed, setFed] = useState(['f-a', 'f-b']);
   const [queued, setQueued] = useState<string[] | null>(null);
   return (
@@ -146,6 +156,37 @@ function Sheetful() {
         <Amount value={46.95} what="You keep, after fees" />
       </Section>
 
+      <Section title="Grid tile, shelf, filter row (Sell)">
+        <FilterRow>
+          <Chip id="c-sort" icon="sorting-01" label="Latest" onPress={() => {}} />
+          <Chip id="c-all" label="All" picked onPress={() => {}} />
+          <Chip id="c-need" label="Needs you" count={8} onPress={() => {}} />
+          <Chip id="c-ebay" site="ebay" onPress={() => {}} />
+        </FilterRow>
+        <Shelf id="p-need" title="Needs you" count={8} onAll={() => {}}>
+          <Grid columns={2}>
+            <Tile id="p-t-idle" title="Carhartt Detroit jacket" photo={photo('carhartt-jacket') as PhotoSrc} state="need" word="Offer" sites={['ebay', 'depop']} fact={{ label: 'Offered', amount: '$85' }} onPress={() => {}} />
+            <Tile id="p-t-faded" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} state="ended" word="Unsold" faded fact={{ label: 'Worth', amount: '$60 to $80' }} onPress={() => {}} />
+            <Tile id="p-t-on" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} state="live" sites={['poshmark']} select="on" fact={{ label: 'Listed at', amount: '$58' }} onPress={() => {}} />
+            <Tile id="p-t-picked" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} state="paid" word="Paid" select="picked" fact={{ label: 'In your bank' }} onPress={() => {}} />
+          </Grid>
+        </Shelf>
+        <Shelf id="p-kept" title="Kept" count={3} folded onOpen={() => {}} />
+      </Section>
+
+      <Section title="Range, keep rows, choices (What's it worth)">
+        <Range low="$60" high="$80" what="What similar ones sold for lately" />
+        <List>
+          <KeepRow site="ebay" keep="$52 to $70" line="Sells in about 6 days" />
+          <KeepRow site="poshmark" line="Too few sales here" note="Not linked" />
+        </List>
+        <List>
+          <Choice id="p-c-pick" label="Price, high" picked onPress={() => {}} />
+          <Choice id="p-c-leads" icon="store-01" label="See the sales" leads onPress={() => {}} />
+          <Choice id="p-c-off" icon="search-01" label="Looking deeper" line="It lands on Today when it’s done." disabled onPress={() => {}} />
+        </List>
+      </Section>
+
       <Section title="Sheet, toast">
         <Line><Pill id="s-open" kind="second" label="Open a sheet" onPress={() => setSheet(true)} /></Line>
         <UndoToast id="t-undo" text="Offer accepted" onUndo={() => {}} />
@@ -164,6 +205,23 @@ function Sheetful() {
 
       <Section title="Top slot, a new person">
         <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: 'Connect a site' }} />
+      </Section>
+
+      <Section title="You: tab nav, list rows, switch, goal, week bars">
+        <TabNav title="You" inbox={{ count: 2 }} />
+        <List>
+          <ListRow id="lr-plain" lead="money-03" label="Payouts" onPress={() => {}} />
+          <ListRow id="lr-value" label="On its way" value="$132.33" tabular onPress={() => {}} />
+          <ListRow id="lr-fact" label="Money" value="US dollars" />
+          <ListRow id="lr-switch" label="Pause selling" detail="Sites use their own away mode. The rest end and come back on your date" trail={<Switch id="sw-1" label="Pause selling" on={on} onChange={setOn} />} />
+          <ListRow id="lr-off" label="Buy shipping labels" detail="Asks you first. Approved 2 of 3 times without a change" trail={<Switch id="sw-2" label="Buy shipping labels" on={false} disabled />} />
+          <ListRow id="lr-site" site="depop" label="Linked" detail="Checked 5m ago" onPress={() => {}} />
+          <ListRow id="lr-link" site="mercari" label="Not linked" trail={<Pill id="lr-link-p" kind="second" label="Link" />} />
+          <ListRow id="lr-linking" site="ebay" label="Signing in" trail={<Pill id="lr-linking-p" kind="second" label="Link" state="working" />} />
+          <ListRow id="lr-error" site="poshmark" tone="brick" label="Didn’t link" trail={<Pill id="lr-error-p" kind="second" label="Try again" icon="refresh" />} />
+        </List>
+        <GoalBar label="November goal" kept={132.33} target={300} />
+        <WeekBars weeks={[{ label: 'Sep 22', amount: 31.3 }, { label: '29', amount: 0 }, { label: 'Oct 6', amount: 64 }, { label: '13', amount: 12.5 }, { label: '20', amount: 0 }, { label: '27', amount: 88.1 }, { label: 'Nov 3', amount: 40 }, { label: '10', amount: 132.33, now: true }]} />
       </Section>
 
       <Section title="Tab bar">

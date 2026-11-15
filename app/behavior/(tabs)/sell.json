@@ -1,16 +1,243 @@
 {
   "screen": "(tabs)/sell",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "Everything the person sells, as photo tiles in shelves by state (spec/pages.md §6.10), filtered by one row.",
+  "frame": {
+    "who": "Clearing out (primary, 11 things on 3 sites) checks it a few times a day; the flipper (64 things) lives in it; a new person sees it empty once.",
+    "came_to": "See where each thing is (needs me, live, sold) at a glance and open the one they mean; the flipper also narrows by site and sorts.",
+    "mistake_costs_most": "A bulk change that ends listings or deletes items: it is public and slow to undo, so it hands off with exactly what it will do written on the button.",
+    "ways_out": "Select many and change them at once (Keep, Donated, Sold elsewhere, Delete; ways-out §6.10 and §6.6); Pause selling from the foot of the page (ways-out, Everywhere); the empty page leads straight to the camera.",
+    "in_the_loop": "The agent never acts from this page; the tile shows where it is (Researching, Needs you), and a bulk change waits for one tap on a button that says what it does."
+  },
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "empty",
+      "route": "/sell?world=new",
+      "shows": "Nothing for sale"
+    },
+    {
+      "state": "typical",
+      "route": "/sell?world=clearing",
+      "shows": "Needs you"
+    },
+    {
+      "state": "one",
+      "route": "/sell?world=one",
+      "shows": "Live"
+    },
+    {
+      "state": "dense",
+      "route": "/sell?world=flipper",
+      "shows": "See all"
+    },
+    {
+      "state": "filtered",
+      "route": "/sell?world=flipper&filter=live",
+      "shows": "Live"
+    },
+    {
+      "state": "select",
+      "route": "/sell?world=clearing",
+      "shows": "Select items"
     }
   ],
   "controls": [
     {
       "control": "Inbox",
-      "on_tap": "opens Messages"
+      "on_tap": "opens Messages",
+      "id": "nav-inbox",
+      "does": "opens Messages",
+      "goes": "/messages",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "Select",
+      "on_tap": "turns tiles into checkboxes for a change to many at once",
+      "id": "sell-select",
+      "does": "turns tiles into checkboxes for a change to many at once",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "Sort",
+      "on_tap": "opens the sort sheet",
+      "id": "filter-sort",
+      "does": "opens the sort sheet",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "All",
+      "on_tap": "shows every shelf",
+      "id": "filter-all",
+      "does": "shows every shelf",
+      "at": "/sell?world=flipper&filter=live"
+    },
+    {
+      "control": "Needs you",
+      "on_tap": "shows only what needs the person",
+      "id": "filter-needs_you",
+      "does": "shows only what needs the person",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "Live",
+      "on_tap": "shows only live things",
+      "id": "filter-live",
+      "does": "shows only live things",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "eBay logo in the filter row",
+      "on_tap": "shows only things listed on that site",
+      "id": "filter-site-ebay",
+      "does": "shows only things listed on that site",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "See all on a shelf",
+      "on_tap": "shows the whole Needs you shelf",
+      "id": "shelf-needs_you-all",
+      "does": "shows the whole Needs you shelf",
+      "at": "/sell?world=flipper"
+    },
+    {
+      "control": "Kept, folded",
+      "on_tap": "opens the folded Kept shelf",
+      "id": "shelf-kept-fold",
+      "does": "opens the folded Kept shelf",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "A tile",
+      "on_tap": "opens the item",
+      "id": "tile-it_jacket",
+      "does": "opens the item",
+      "goes": "/item/it_jacket",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "Pause selling",
+      "on_tap": "opens Pause selling",
+      "id": "sell-pause",
+      "does": "opens Pause selling",
+      "goes": "/you/pause",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "Sell something",
+      "on_tap": "opens the camera to sell the first thing",
+      "id": "sell-empty-camera",
+      "does": "opens the camera to sell the first thing",
+      "goes": "/camera",
+      "at": "/sell?world=new"
+    }
+  ],
+  "flows": [
+    {
+      "flow": "sort",
+      "steps": [
+        "filter-sort",
+        "sort-price_high"
+      ],
+      "then": "tiles are ordered by price, highest first, and the sort button reads its pick"
+    },
+    {
+      "flow": "select and keep",
+      "steps": [
+        "sell-select",
+        "tile-it_lamp",
+        "select-act",
+        "bulk-keep",
+        "bulk-approve"
+      ],
+      "then": "the lamp leaves its shelf for Kept and a toast says Kept with Undo"
+    },
+    {
+      "flow": "undo",
+      "steps": [
+        "sell-select",
+        "tile-it_lamp",
+        "select-act",
+        "bulk-keep",
+        "bulk-approve",
+        "bulk-undo"
+      ],
+      "then": "the lamp is back in its shelf"
+    },
+    {
+      "flow": "delete refused",
+      "steps": [
+        "sell-select",
+        "tile-it_kindle",
+        "select-act",
+        "bulk-delete"
+      ],
+      "then": "the sheet says one has an open order and stays, and the approve button counts none"
+    },
+    {
+      "flow": "cancel select",
+      "steps": [
+        "sell-select",
+        "select-done"
+      ],
+      "then": "tiles open items again"
+    }
+  ],
+  "back": "Sell is a tab: no back. Android back leaves the app from here.",
+  "decisions": [
+    {
+      "decision": "Two columns of square tiles, everywhere",
+      "why": "The round 11 Sell Ben reacted to was two columns; at two the title and the money line fit, and the tag and site logos sit on a photo big enough to read them (Depop and Instagram grids, copy.md). Pinch density in sell/grid.ts is left for the phone build."
+    },
+    {
+      "decision": "One row of filters: sort, All, each shelf with its count, then each site as its logo",
+      "why": "Ben, round 11: \"you only needed one horizontal y value for the filtering\"; round 10: stage and marketplace are the same primitive. The row scrolls sideways under the gutter so its end shows it continues."
+    },
+    {
+      "decision": "Sort is the first chip and says its pick (\"Latest\", \"Price, high\")",
+      "why": "A sort hidden in an icon has to be remembered; a chip that names it shows the order the grid is in, as Vinted and Depop filter rows do."
+    },
+    {
+      "decision": "The state tag on the photo's top left, the site badges on its bottom right corner, 4 apart",
+      "why": "Ben, round 11: \"where the icon is on the image\", as the dark Today draws it (Art. 7.8). Badges never overlap, so every logo shows whole (C5)."
+    },
+    {
+      "decision": "Shelves are sections of the grid, two rows each, with See all; no sideways shelves",
+      "why": "pages §6.10 says each shelf scrolls sideways, but a sideways shelf under a sideways filter row is two horizontal gestures stacked, and the decided Sell is a photo grid. Two rows and See all keep the flipper's 64 things to one screen a shelf."
+    },
+    {
+      "decision": "Unsold and Kept are folded: their header and count, and a chevron that opens them",
+      "why": "pages §6.10: \"Unsold and Kept folded at the bottom\". They are not for sale, so they never push live things down."
+    },
+    {
+      "decision": "Needs you is in Today's order, not newest first",
+      "why": "An offer that runs out tonight must not sit behind 40 fresh drafts (pages §5: what ignoring it costs, then the deadline). Any sort the person picks wins."
+    },
+    {
+      "decision": "On Needs you, a tile whose pill only says where it is shows what is asked (\"Question\", \"Scam\", \"Price\")",
+      "why": "A Live tag under the \"Needs you\" heading contradicts it; the decision kind is what the person has to do."
+    },
+    {
+      "decision": "The second line is one fact: Listed at, Offered, You keep, Worth (a range in whole dollars), Pricing",
+      "why": "pages §3, what each persona looks at first: clearing wants \"is it gone yet\" and the money; the line never repeats the tag."
+    },
+    {
+      "decision": "Sold things show the money's word: On its way, Ready on the site, In your bank (the tag turns Paid)",
+      "why": "spec/edge-cases.md §2 (Ben and a mentor, 05:05). The dates and instant payout with its fee sit on the order, on the item page, never as a default."
+    },
+    {
+      "decision": "Select is a gray pill beside the heading; the change is picked in a sheet and waits for a button that says exactly what it does",
+      "why": "ways-out §6.10 \"200 items: select many, then one change for all\"; iOS Photos puts Select there. Ending listings is public, so it hands off with its count of listings on the button (ui-build hand-off rule)."
+    },
+    {
+      "decision": "Keep, Donated and Sold elsewhere act with Undo; Delete has none and skips anything with an open order, saying so in the row",
+      "why": "ways-out §6.6: Keep or Donated sets kept with its reason; Sold elsewhere closes it; Delete is refused while an order is open and cannot be undone."
+    },
+    {
+      "decision": "Pause selling is a plain ruled row at the foot",
+      "why": "Art. 7.9: what a person can do to the page's subject that is not today's decision sits in ruled rows at the end; ways-out \"I'm away for two weeks\" lives in You > Pause selling."
+    },
+    {
+      "decision": "Empty: one line, \"Nothing for sale\", and Sell something, which opens the camera",
+      "why": "copy.md C11 and pages §6.10 (\"the ＋ is the only thing to point to\"); one display heading per view, so the page title gives way to it."
     }
   ]
 }

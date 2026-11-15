@@ -13,11 +13,27 @@ Watch lives in the Buy tab on the Watching shelf ([decision](../../product/decis
 |---|---|---|
 | 1 | Types, photographs or pastes a link in the Buy search box ([words](../../product/words.md#2026-11-14-search-box)). | The product identified first, then live results ([buy.md](buy.md)), and a Watch button. |
 | 2 | Taps Watch. Assist marks only the inputs that change which listings match, and stops by its stop rule ([assist](assist.md), [card 9](../determinations/asking-and-intent.md#9-when-inputs-leave-and-when-to-stop)): size, condition floor, ship or pickup radius, variant. | Chips prefilled from the search and their profile. Each is stated plainly as confirmed (read from a label, measured) or marked "you said". |
-| 3 | Sets the most they would pay, delivered (`max_total_cents`, the one ceiling). | One number with the guarded fair range under it ("from 41 sales in 90 days"). |
+| 3 | Drags a two-thumb price range over the sold prices ("around $60" opens at $50 to $70), delivered. The top thumb is `max_total_cents`, the one ceiling for alerts; the bottom one only ranks (a suspiciously cheap one is flagged, not hidden). | The sold prices as dots on the track and the guarded fair range ("from 41 sales in 90 days"). |
 | 4 | Leaves. | The want on Watching, with "checked 4 min ago" per site; a site that is behind says so. |
 | 5 | Gets an alert. | One card per physical item: photo, delivered total, site, "also on", why it fits, the match's score axes from `score.md` and its guarded fair range, Open on site. |
 | 6 | Taps "Not the same" or "Not for me" on a card. | The card goes; the answer becomes a label. |
 | 7 | Pauses or ends the want, or sets quiet hours. | Alerts during quiet hours arrive as one digest. |
+
+**Building a want by touch** (Ben, 05:20: "i want a brewers jersey and i want it around a price. i can adjust my range etc. i can say shipped or pickup or both etc. color. the dynamic ui is really helpful here", [words](../../product/words.md#2026-11-15-a-want-built-by-touch-that-runs-while-you-are-away)). The words become chips through [assist](assist.md), each chip a widget from its catalog, and only the chips that change which listings match appear:
+
+| The person says or taps | Chip | Widget | Default |
+|---|---|---|---|
+| "Brewers jersey" | what it is: product or kind, with variants (home, away, City Connect, a player) | candidate chips with photos | the kind, any variant |
+| "around $60" | price | `RangeSlider` (58) over the sold dots | 20% either side of the number |
+| "shipped or pickup or both" | how it gets to me | three-way toggle Ship, Pickup, Both; pickup shows a radius on a map | Both, 15 miles |
+| "blue" | colour | `ColourSwatches` (61) from the colours the listings actually come in | any |
+| size | size | `SizePicker` (60), or the measurements of a jersey they own | from the style profile |
+| condition | how worn | four chips, new with tags to fair | good or better |
+| sites | where to look | the five logos plus official stores | all |
+
+Every chip can be changed later from the want, and a change re-runs the search at once. A word the parser cannot place stays as plain text in the want and is matched as words.
+
+**While the person is away.** The want is a background job with a visible state: "Looking on 5 sites", then per site "checked 4 min ago", "Facebook: behind". The first full pass shows "Found 12 so far" as results arrive, and the person can close the app at any point. Matches come back as cards in Today and New matches, one per physical item, with a push only for one under the price they set. Coming back shows what is new since they last looked, at the top of the want.
 
 For clothes, fit is measured. The person picks a garment they own and like (captured on the Sell side, or entered once). A listing fits when its stated measurements are within tolerance of that garment, not only when the size label matches ([analytics note §5](../../research/data/nate/analytics-and-recommendations.md#5-recommendations-how-marketplaces-personalise-and-cold-start), *asserted*). A listing with no measurements shows "size only".
 
