@@ -4,6 +4,11 @@ export const DEFAULT_ENDING: EndingRule = { above_cents: 2000, digits: [5, 8] };
 const DOLLAR = 100; // Fixed unit: cents per dollar.
 const CYCLE = 10 * DOLLAR; // Fixed decimal ending cycle.
 
+export function signedMoney(value: number, field: string): number {
+  if (!Number.isSafeInteger(value)) throw new RangeError(`${field} must be a whole number of cents`);
+  return value;
+}
+
 export function money(value: number, field: string): number {
   if (!Number.isSafeInteger(value) || value < 0) throw new RangeError(`${field} must be a whole number of cents, zero or more`);
   return value;

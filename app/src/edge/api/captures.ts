@@ -1,14 +1,19 @@
-// Rests-on: spec/product.md §7 Resources; spec/engines/capture.md §1; spec/examples/captures.json.
+// Rests-on: spec/product.md §7 Resources; spec/engines/capture.md §§2,5,6,8,11; spec/examples/captures.json.
 // Upload signing and realtime credentials remain contract examples.
 // The shared example boundary stays here until the contract layer's owner can move it to http.ts.
-import { ApiError, paramsOf, served, type Ctx, type Handler, type Reply } from './http.ts';
+import { ApiError, deps, paramsOf, served, type Ctx, type Handler, type Reply } from './http.ts';
 import { EXAMPLES, example, type Example } from './examples.ts';
 import { FAMILIES, type Family } from '../../engines/capture/process.ts';
 import { plan, type State, type Fact } from '../../engines/capture/plan.ts';
 import { select } from '../../engines/capture/select.ts';
-import type { FieldRow, Site } from '../../engines/capture/table.ts';
+import type { StudioAsk } from '../../engines/capture/select.ts';
+import { fieldState, viewsFor } from '../../engines/capture/fields.ts';
+import { table, type FieldRow, type Site } from '../../engines/capture/table.ts';
+import { mergeAttribute, type Attribute } from '../card/card.ts';
+import type { AttributeEvidence } from '../../engines/proof/proof.ts';
 import { memoryStore } from '../../engines/param/param.ts';
 import { SITES } from '../../../../spec/sites.mjs';
+import slides from '../../../../jobs/studio/slides.json' with { type: 'json' };
 
 export const invalid = (message: string, fields?: string[]) => new ApiError('invalid', message, 'validate', { by: 'user' }, fields ? { fields } : {});
 export const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -94,43 +99,65 @@ export function exampleHandler(endpoint: string, validate: (ctx: Ctx) => void = 
   };
 }
 
-type CaptureRow = { user_id: string; version: number; state: State; status: string; mode: string; photos: number };
+export type CaptureRow = { id: string; user_id: string; item_id: string; version: number; created_at: string; updated_at: string; data: 'example' | 'captured'; state: State; status: 'framing' | 'shooting' | 'uploading' | 'judged'; mode: string; photos: number; replacements: Record<string,number>; phone_suggestion: boolean; studio_plan?: StudioPlan };
 const open = example('captures.open').response as {id: string; item_id: string; created_at: string; picker: string[]};
 const linkedSites = (example('accounts.list').response as {data: {site: string}[]}).data
   .map(account => account.site).filter((site): site is Site => SITES.includes(site));
 const params = memoryStore();
-const captures = new Map<string, CaptureRow>();
-function initial(body: Record<string, unknown>): State {
+params.declare({name:'capture_label_sharp_min', family:'scalar', prior:.5});
+export const captureRows = new Map<string, CaptureRow>();
+let captureNumber = 0;
+let exampleOpened = false;
+function initial(body: Record<string, unknown>, id: string, item_id: string): State {
   const device = body.device as {has_lidar?: boolean; object_capture?: boolean} | undefined;
-  const has_lidar = device?.has_lidar ?? true;
-  return { capture_id: open.id, item_id: body.item_id as string ?? open.item_id,
+  const has_lidar = device?.has_lidar ?? false;
+  return { capture_id: id, item_id,
     purpose: body.purpose as State['purpose'], confirm_mode: body.confirm_mode as State['confirm_mode'] ?? 'tap',
-    has_lidar, object_capture: device?.object_capture ?? has_lidar, sites: [...linkedSites], type: null,
+    has_lidar, object_capture: device?.object_capture ?? false, sites: [...linkedSites], type: null,
     ...(body.suggestion === undefined ? {} : {suggestion: structuredClone(body.suggestion) as State['suggestion']}),
     ...(body.pieces === undefined ? {} : {pieces: body.pieces as number}),
     kept: [], retakes: {}, facts: {}, lookups: 'none', refused: [] };
 }
 export function resetCaptures() {
-  captures.clear();
-  captures.set(open.id, {user_id: 'usr_8f2k', version: 1, state: initial(example('captures.open').request!.body as Record<string, unknown>), status: 'framing', mode: 'shots', photos: 0});
+  captureRows.clear();
+  captureNumber = 0; exampleOpened = false;
+  const state=initial(example('captures.open').request!.body as Record<string, unknown>,open.id,open.item_id);
+  captureRows.set(open.id, {id:open.id,user_id:'usr_8f2k',item_id:state.item_id,version:1,created_at:open.created_at,updated_at:open.created_at,data:'example',state,status:'framing',mode:'shots',photos:0,replacements:{},phone_suggestion:true});
 }
 resetCaptures();
 function read(ctx: Ctx): CaptureRow {
-  const row = captures.get(ctx.params.id);
-  if (!row || row.user_id !== ctx.user_id) throw new ApiError('not_found', 'capture not found', 'read');
+  return ownedCapture(ctx.user_id!,ctx.params.id);
+}
+function ownedCapture(user_id: string, capture_id: string): CaptureRow {
+  const row = captureRows.get(capture_id);
+  if (!row || row.user_id !== user_id) throw new ApiError('not_found', 'capture not found', 'read');
   return row;
 }
-async function versionOf(ctx: Ctx) { return read(ctx).version; }
 function view(row: CaptureRow) {
   const next = plan(row.state, params);
   return {id: row.state.capture_id, item_id: row.state.item_id, state: row.status, mode: row.mode, purpose: row.state.purpose,
     type: row.state.type, suggested_type: row.state.suggestion?.family ?? null, picker: open.picker,
     process: next.process, coverage: {needed: next.process.map(step => step.key).filter(key => !row.state.kept.includes(key)), kept: [...row.state.kept]},
-    created_at: open.created_at, version: row.version, plan: next};
+    created_at: row.created_at, version: row.version, plan: next};
 }
-function write(ctx: Ctx, row: CaptureRow, status: string) {
-  row.status = status; row.version++;
-  ctx.log.event('state.change', {entity: 'capture', id: row.state.capture_id, to: status});
+function write(ctx: Pick<Ctx,'log'>, row: CaptureRow, status: CaptureRow['status'], detail: Record<string,unknown> = {}) {
+  const was=row.status;
+  row.status = status; row.version++; row.updated_at = new Date(deps.now()).toISOString();
+  if (was!==status) ctx.log.event('state.change', {entity: 'capture', id: row.state.capture_id, was, to: status, ...detail});
+}
+function writable(row: CaptureRow) {
+  if (row.status === 'judged') throw new ApiError('stale', 'capture is finished', 'state_check', {by:'none'}, {current:{version:row.version}});
+}
+function checkVersion(ctx: Ctx, row: CaptureRow) {
+  if (ctx.body.version !== row.version) throw new ApiError('stale', 'the resource changed', 'version_check', {by:'user'}, {current:{version:row.version}});
+}
+function captureHandler(endpoint: string, run: Handler): Handler {
+  return fromEngine(async (ctx, req) => {
+    if (ctx.params.id) read(ctx);
+    pagination(ctx);
+    ctx.log.input('api',endpoint,{fields:Object.keys(ctx.body),query_fields:[...ctx.query.keys()]});
+    return ctx.log.call('tool','api.engine',{endpoint},()=>run(ctx,req),()=>({result:{source:'engine'}}));
+  });
 }
 const probability = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1;
 const number = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
@@ -141,87 +168,218 @@ function validValue(row: FieldRow, value: unknown): boolean {
   switch(row.type) {
     case 'text': return text(value);
     case 'enum': return !!row.values?.includes(value as string | number);
-    case 'number': return number(value);
+    case 'number': return number(value) && (row.values ? row.values.includes(value) : !['cm','mm','m','in','ft','%'].includes(row.unit ?? '') || value>=0);
     case 'bool': return bool(value);
-    case 'dimensions': return object(value) && (row.ask?.parts ?? []).every(part => number(value[part]));
-    case 'list': return Array.isArray(value) && new Set(value).size === value.length &&
-      (row.values ? value.length <= row.values.length && value.every(v => row.values!.includes(v)) : value.every(text));
+    case 'dimensions': {
+      const parts=row.ask?.parts ?? [];
+      return object(value) && Object.keys(value).length===parts.length && parts.every(part=>Object.hasOwn(value,part) && number(value[part]) && value[part]>0);
+    }
+    case 'list': return Array.isArray(value) && value.length>0 && new Set(value).size===value.length &&
+      value.length<=(row.field.split('.')[0]==='colour'?2:row.values?.length ?? Infinity) &&
+      (row.values ? value.every(v=>row.values!.includes(v)) : value.every(text));
   }
 }
 type PhotoRead = {field: string; value: unknown; source?: 'seen'|'label'|'measured'; confidence?: number; unknown_reason?: 'not_read'};
 type Photo = {role: string; step: string; key?: string; reads?: PhotoRead[]};
 function validRead(v: unknown): boolean {
   return object(v) && text(v.field) && Object.hasOwn(v, 'value') && (v.value === null
-    ? v.unknown_reason === 'not_read'
-    : oneOf('seen', 'label', 'measured')(v.source) && probability(v.confidence));
+    ? v.unknown_reason === 'not_read' && v.source === undefined && v.confidence === undefined
+    : v.unknown_reason === undefined && oneOf('seen', 'label', 'measured')(v.source) && probability(v.confidence));
 }
 const rank: Record<Fact['source'], number> = {seen: 0, label: 1, measured: 2, derived: 3, lookup: 4, you_said: 5};
 
+export type IdentifyResult = {kind:'identify';action:'confirm'|'pick'|'ask';set:{product_id:string;family:Family;brand?:string;model?:string;c:number;label?:string;dimensions?:Record<string,number>}[]};
+export type StudioPlan = {kind:string;asks:StudioAsk[]};
+export type JobResult = IdentifyResult | {kind:'studio_plan';plan:StudioPlan} | {kind:'photo_score';photos:{key:string;role:string;score:number;parts:{sharpness:number;exposure:number;clipping:number;[part:string]:number}}[]};
+const positiveDimensions = (v:unknown): v is Record<string,number> => object(v) && Object.keys(v).length>0 && Object.values(v).every(n=>number(n) && n>0);
+function validateJobResult(result: unknown): asserts result is JobResult {
+  if (!object(result)) throw invalid('result is not valid',['result']);
+  fields(result,{kind:oneOf('identify','studio_plan','photo_score')});
+  if (result.kind==='identify') {
+    fields(result,{action:oneOf('confirm','pick','ask'),set:Array.isArray});
+    let previous=1;
+    for (const [index,member] of (result.set as unknown[]).entries()) {
+      if (!object(member)) throw invalid(`set.${index} is not valid`,[`set.${index}`]);
+      fields(member,{product_id:text,family,c:probability},{brand:text,model:text,label:text,dimensions:positiveDimensions});
+      if (Number(member.c)>previous) throw invalid(`set.${index}.c must be descending`,['c']);
+      previous=member.c as number;
+    }
+  } else if (result.kind==='studio_plan') {
+    fields(result,{plan:object});
+    const p=result.plan as Record<string,unknown>;
+    fields(p,{kind:text,asks:Array.isArray});
+    for (const ask of p.asks as unknown[]) {
+      if (!object(ask)) throw invalid('asks is not valid',['asks']);
+      fields(ask,{type:oneOf('cover','back','tag','graphic','flaw','measure'),text},{zone:text,kind:text,name:text});
+    }
+  } else {
+    fields(result,{photos:Array.isArray});
+    for (const photo of result.photos as unknown[]) {
+      if (!object(photo)) throw invalid('photos is not valid',['photos']);
+      fields(photo,{key:text,role:text,score:v=>number(v) && v>=0 && v<=100,parts:object});
+      const parts=photo.parts as Record<string,unknown>;
+      fields(parts,{sharpness:probability,exposure:probability,clipping:probability});
+      for (const [part,value] of Object.entries(parts)) if (!probability(value)) throw invalid(`${part} is not valid`,[part]);
+    }
+  }
+}
+function studioPlan(row:CaptureRow, p:StudioPlan) {
+  const kinds:Record<string,{measurements:string[]}> = slides.kinds;
+  row.state.studio={requested:true, asks:structuredClone(p.asks), measurements:Object.hasOwn(kinds,p.kind)?[...kinds[p.kind].measurements]:[]};
+}
+export function applyJobResult(user_id:string, capture_id:string, result:unknown) {
+  const current=ownedCapture(user_id,capture_id);
+  const log=deps.log.child({user:user_id,capture:capture_id});
+  log.input('api','capture.job_result',{kind:object(result)?result.kind:undefined});
+  try {
+    writable(current);
+    validateJobResult(result);
+    if (result.kind==='photo_score') for (const photo of result.photos)
+      if (!current.state.kept.includes(photo.key)) throw invalid(`${photo.key} was not kept`,[photo.key]);
+    const row=structuredClone(current);
+    const state=row.state;
+    if (result.kind==='identify') {
+      const first=result.set[0];
+      if (!row.phone_suggestion && first) state.suggestion={family:first.family,p:first.c,second_p:result.set[1]?.c ?? 0};
+      state.candidates={...state.candidates};
+      for (const field of ['brand','model'] as const) {
+        state.candidates[field]=[...new Set(result.set.flatMap(member=>member[field]===undefined?[]:[member[field]]))];
+      }
+      const dimensions=result.set.flatMap(member=>member.dimensions?[{label:member.label ?? member.product_id,value:structuredClone(member.dimensions),p:member.c}]:[]);
+      state.variants={...state.variants,dimensions:dimensions.length>=2?dimensions:[]};
+      if (dimensions.length===1 && result.action==='confirm' && state.facts.dimensions?.source!=='you_said')
+        state.facts.dimensions={value:dimensions[0].value,source:'lookup',confidence:dimensions[0].p};
+      state.lookups='done';
+    } else if (result.kind==='studio_plan') {
+      row.studio_plan=structuredClone(result.plan);
+      if (state.studio?.requested) studioPlan(row,result.plan);
+    } else {
+      const selected=select(state,params);
+      const keys=selected.process.map(step=>step.key);
+      const minimum=params.read('capture_label_sharp_min',{}).value as number;
+      for (const photo of result.photos) {
+        if (!['tag','care_label','screenshot'].includes(photo.role) || photo.parts.sharpness>=minimum) continue;
+        for (const field of selected.rows) if (!state.facts[field.field] && field.ways.some(way=>way.way==='label' && way.view && viewsFor(way.view,keys).includes(photo.key)))
+          state.facts[field.field]={value:null,source:'label',confidence:0,unknown_reason:'not_read',step:photo.key};
+        state.retakes[photo.key]=row.replacements[photo.key] ?? 0;
+      }
+    }
+    row.version++; row.updated_at=new Date(deps.now()).toISOString();
+    const body=view(row);
+    captureRows.set(capture_id,row);
+    if (current.status!==row.status) log.event('state.change',{entity:'capture',id:capture_id,was:current.status,to:row.status,kind:result.kind});
+    return body;
+  } catch (error) {
+    log.error('capture.job_result',error);
+    throw error;
+  }
+}
+
 export const handlers: Record<string, Handler> = {
-  'POST /v1/captures': fromEngine(exampleHandler('POST /v1/captures', c => fields(c.body,
-    {mode: oneOf('shots', 'scan', 'talk'), purpose: oneOf('sell', 'appraise', 'find')},
-    {first_photo_hint: text, item_id: text, device: v => object(v) && bool(v.has_lidar) && (v.object_capture === undefined || bool(v.object_capture)),
-      suggestion: v => object(v) && family(v.family) && probability(v.p) && probability(v.second_p) && v.second_p <= v.p,
-      pieces: v => integer(v) && v >= 1 && v <= 12, confirm_mode: oneOf('tap', 'auto')}), undefined, async (ctx, seed) => {
-    const row: CaptureRow = {user_id: ctx.user_id!, version: 1, state: initial(ctx.body), status: 'framing', mode: ctx.body.mode as string, photos: 0};
-    captures.set(open.id, row);
-    ctx.log.event('state.change', {entity: 'capture', id: open.id, to: row.status});
-    return {...seed, body: view(row)};
-  })),
-  'GET /v1/captures/:id': fromEngine(exampleHandler('GET /v1/captures/:id', c => {read(c);}, undefined, async ctx => ({status: 200, body: view(read(ctx))}))),
-  'POST /v1/captures/:id/photos': fromEngine(exampleHandler('POST /v1/captures/:id/photos', c => {
-    read(c);
-    fields(c.body, {photos: v => Array.isArray(v) && v.length > 0 && v.every(p => object(p) && text(p.role) && text(p.step) &&
-      oneOf('image/heic', 'image/jpeg', 'image/png')(p.content_type) && version(p.bytes) &&
-      (p.key === undefined || text(p.key)) && (p.reads === undefined || Array.isArray(p.reads) && p.reads.every(validRead)))});
-  }, undefined, async (ctx, seed) => {
-    const row = read(ctx);
-    const uploads = (example('captures.photos').response as {photos: {upload: {expires_at: string}}[]}).photos;
-    const photos = (ctx.body.photos as Photo[]).map(photo => {
-      const key = photo.key ?? photo.step;
-      const kept = row.state.kept.includes(key);
-      if (kept && photo.reads?.some(read => read.unknown_reason === 'not_read')) row.state.retakes[key] = (row.state.retakes[key] ?? 0) + 1;
+  'POST /v1/captures': captureHandler('POST /v1/captures', async ctx => {
+    fields(ctx.body,
+      {mode:oneOf('shots','scan','talk'),purpose:oneOf('sell','appraise','find')},
+      {first_photo_hint:text,item_id:text,device:v=>object(v) && (v.has_lidar===undefined || bool(v.has_lidar)) && (v.object_capture===undefined || bool(v.object_capture)),
+        suggestion:v=>object(v) && family(v.family) && probability(v.p) && probability(v.second_p) && v.second_p<=v.p,
+        pieces:v=>integer(v) && v>=1 && v<=12,confirm_mode:oneOf('tap','auto')});
+    const device=ctx.body.device as {has_lidar?:boolean;object_capture?:boolean}|undefined;
+    if (device?.object_capture && !device.has_lidar) throw answerError('device.object_capture');
+    if (ctx.body.item_id) {
+      const {ports}=await import('./items.ts');
+      if (!await ports.read(ctx.user_id!,ctx.body.item_id as string)) throw new ApiError('not_found','item not found','read');
+    }
+    const id=ctx.user_id==='usr_8f2k' && !exampleOpened ? open.id : `cap_${++captureNumber}`;
+    if (id===open.id) exampleOpened=true;
+    const item_id=ctx.body.item_id as string ?? (id===open.id ? open.item_id : `it_${captureNumber}`);
+    const state=initial(ctx.body,id,item_id), created_at=new Date(deps.now()).toISOString();
+    const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined};
+    captureRows.set(id,row);
+    ctx.log.event('state.change',{entity:'capture',id,was:null,to:row.status});
+    return {status:201,body:view(row)};
+  }),
+  'GET /v1/captures/:id': captureHandler('GET /v1/captures/:id', ctx=>({status:200,body:view(read(ctx))})),
+  'POST /v1/captures/:id/photos': captureHandler('POST /v1/captures/:id/photos', ctx=> {
+    const row=read(ctx); writable(row);
+    fields(ctx.body,{photos:v=>Array.isArray(v) && v.length>0 && v.every(p=>object(p) && text(p.role) && text(p.step) &&
+      oneOf('image/heic','image/jpeg','image/png')(p.content_type) && version(p.bytes) &&
+      (p.key===undefined || text(p.key)) && (p.reads===undefined || Array.isArray(p.reads) && p.reads.every(validRead)))});
+    const uploads=(example('captures.photos').response as {photos:{upload:{expires_at:string}}[]}).photos;
+    const photos=(ctx.body.photos as Photo[]).map(photo=> {
+      const key=photo.key ?? photo.step;
+      const kept=row.state.kept.includes(key);
+      row.replacements[key]=(row.replacements[key] ?? 0)+(kept?1:0);
+      if (kept && photo.reads?.some(read=>read.unknown_reason==='not_read')) row.state.retakes[key]=row.replacements[key];
       if (!kept) row.state.kept.push(key);
-      if (row.state.lookups === 'none') row.state.lookups = 'running';
+      if (row.state.lookups==='none') row.state.lookups='running';
       for (const read of photo.reads ?? []) {
-        const old = row.state.facts[read.field];
-        const source = read.source ?? 'label';
-        if (!old || old.source !== 'you_said' && rank[source] >= rank[old.source]) row.state.facts[read.field] = {
-          value: read.value, source, confidence: read.confidence ?? 0, step: key,
-          ...(read.unknown_reason ? {unknown_reason: read.unknown_reason} : {}),
+        const old=row.state.facts[read.field];
+        const source=read.source ?? 'label';
+        if (!old || old.source!=='you_said' && read.unknown_reason!=='not_read' && (old.unknown_reason==='not_read' || rank[source]>=rank[old.source])) row.state.facts[read.field]={
+          value:read.value,source,confidence:read.confidence ?? 0,step:key,
+          ...(read.unknown_reason?{unknown_reason:read.unknown_reason}:{}),
         };
       }
-      const id = `ph_a${++row.photos}`;
-      return {id, role: photo.role, step: photo.step, upload: {url: `https://uploads.example/v/${id}?sig=example`, method: 'PUT', expires_at: uploads[0].upload.expires_at}};
+      const id=`ph_a${++row.photos}`;
+      return {id,role:photo.role,step:photo.step,upload:{url:`https://uploads.example/v/${id}?sig=example`,method:'PUT',expires_at:uploads[0].upload.expires_at}};
     });
-    write(ctx, row, 'uploading');
-    return {...seed, body: {photos, capture: view(row)}};
-  })),
-  'PATCH /v1/captures/:id': fromEngine(exampleHandler('PATCH /v1/captures/:id', c => {
-    read(c); fields(c.body, {version}, {type: family, answer: v => object(v) && text(v.field) && Object.hasOwn(v,'value'), refuse: text});
-    if (['type', 'answer', 'refuse'].filter(key => c.body[key] !== undefined).length !== 1) throw invalid('choose exactly one of type, answer or refuse', ['type','answer','refuse']);
-  }, c => c.body.answer ? 'captures.answer' : c.body.refuse ? 'captures.refuse' : 'captures.set_type', async (ctx, seed) => {
-    const row = read(ctx);
-    if (ctx.body.type !== undefined) row.state.type = ctx.body.type as Family;
-    else {
-      const answer = ctx.body.answer as {field: string; value: unknown} | undefined;
-      const field = answer?.field ?? ctx.body.refuse as string;
-      const current = plan(row.state, params);
-      if (!current.questions.some(q => q.field === field && q.kind !== 'shot')) throw answerError(field);
+    write(ctx,row,'uploading');
+    return {status:201,body:{photos,capture:view(row)}};
+  }),
+  'PATCH /v1/captures/:id': captureHandler('PATCH /v1/captures/:id', ctx=> {
+    const row=read(ctx); writable(row);
+    fields(ctx.body,{version},{type:family,answer:v=>object(v) && text(v.field) && Object.hasOwn(v,'value'),refuse:text,generate:v=>v===true});
+    if (['type','answer','refuse','generate'].filter(key=>ctx.body[key]!==undefined).length!==1) throw invalid('choose exactly one of type, answer, refuse or generate',['type','answer','refuse','generate']);
+    checkVersion(ctx,row);
+    let field:string|undefined;
+    if (ctx.body.type!==undefined) row.state.type=ctx.body.type as Family;
+    else if (ctx.body.generate) {
+      row.state.studio={requested:true,measurements:[],asks:[]};
+      if (row.studio_plan) studioPlan(row,row.studio_plan);
+    } else {
+      const answer=ctx.body.answer as {field:string;value:unknown}|undefined;
+      field=answer?.field ?? ctx.body.refuse as string;
+      const current=plan(row.state,params);
+      if (!current.questions.some(q=>q.field===field && q.kind!=='shot')) throw answerError(field);
       if (answer) {
-        const definition = select(row.state,params).rows.find(r => r.field === field)!;
-        if (!validValue(definition, answer.value)) throw answerError(field);
-        row.state.facts[field] = {value: structuredClone(answer.value), source: 'you_said', confidence: 1, confirmed: true};
-        if (field === 'type') row.state.type = answer.value as Family;
+        const definition=select(row.state,params).rows.find(r=>r.field===field)!;
+        if (!validValue(definition,answer.value)) throw answerError(field);
+        row.state.facts[field]={value:structuredClone(answer.value),source:'you_said',confidence:1,confirmed:true};
+        if (field==='type') row.state.type=answer.value as Family;
       } else row.state.refused.push(field);
     }
-    write(ctx, row, 'shooting');
-    return {...seed, body: {...view(row), item: {id: row.state.item_id, category: row.state.type}}};
-  }, versionOf)),
-  'POST /v1/captures/:id/finish': fromEngine(exampleHandler('POST /v1/captures/:id/finish', c => {read(c); fields(c.body, {version}, {note: text});}, undefined, async (ctx, seed) => {
-    const row = read(ctx); write(ctx, row, 'judged');
-    return {...seed, body: {...seed.body as Record<string, unknown>, capture: view(row), item: {id: row.state.item_id, state: 'researching'}}};
-  }, versionOf)),
-  'POST /v1/captures/:id/talk': exampleHandler('POST /v1/captures/:id/talk', c => fields(c.body, {voice: bool})),
+    if (field) ctx.log.note('capture field updated',{field});
+    write(ctx,row,plan(row.state,params).status==='shooting'?'shooting':row.status,field?{field}:{});
+    return {status:200,body:{...view(row),item:{id:row.state.item_id,category:row.state.type}}};
+  }),
+  'POST /v1/captures/:id/finish': captureHandler('POST /v1/captures/:id/finish', async ctx=> {
+    const {runtime}=await import('./runtime.ts');
+    const row=read(ctx); writable(row); fields(ctx.body,{version},{note:text}); checkVersion(ctx,row);
+    const at=new Date(deps.now()).toISOString();
+    const selected=select(row.state,params), keys=selected.process.map(step=>step.key);
+    const sources:Record<Fact['source'],Attribute['source']>={label:'label',measured:'measured',lookup:'spec',you_said:'you_said',seen:'inferred',derived:'inferred'};
+    const kinds:Record<Fact['source'],AttributeEvidence['kind']>={you_said:'owner',label:'label_text',measured:'depth',lookup:'lookup',seen:'image_region',derived:'image_region'};
+    await ctx.log.call('db','capture.finish_item',{item_id:row.item_id},()=> {
+      runtime.store.tx(st=> {
+        const current=st.get('item',row.user_id,row.item_id);
+        const attributes=[...(current?.attributes as Attribute[] ?? [])];
+        for (const field of selected.rows) {
+          if (field.field==='type' || field.field==='lot_count') continue;
+          const resolution=fieldState(field,row.state,keys,params);
+          if (resolution.state!=='known') continue;
+          const fact=resolution.fact!;
+          const next:Attribute={name:field.field,value:structuredClone(fact.value),source:sources[fact.source],confidence:fact.confidence,
+            confirmed:fact.confirmed===true || fact.source==='you_said',method:fact.source,at,
+            evidence:[{kind:kinds[fact.source],ref:`${row.id}/${fact.step ?? field.field}`,captured_at:at,extractor_version:`capture.v${table.version}`}]};
+          const index=attributes.findIndex(attribute=>attribute.name===next.name);
+          const merged=mergeAttribute(index<0?next:attributes[index],next,next.source==='you_said'?'user':'auto');
+          if (index<0) attributes.push(merged); else attributes[index]=merged;
+        }
+        st.put('item',current?{...current,attributes,updated_at:at}:{id:row.item_id,user_id:row.user_id,title:'',state:'researching',origin:'capture',data:'captured',quantity:row.state.pieces ?? 1,attributes,photos:[],created_at:at,updated_at:at});
+      });
+      write(ctx,row,'judged');
+    },()=>({item_id:row.item_id}));
+    return {status:202,body:{...structuredClone(example('captures.finish').response as Record<string,unknown>),capture:view(row),item:{id:row.state.item_id,state:'researching'}}};
+  }),
+  'POST /v1/captures/:id/talk': exampleHandler('POST /v1/captures/:id/talk', c=>fields(c.body,{voice:bool})),
 };
 export const manifest = manifestFor(handlers);

@@ -52,6 +52,25 @@ def test_spark_adapter_matches_csv_loader_timestamps_flags_and_fields(tmp_path):
     assert set(b.to_runner_rows([spark_row])[0]) == set(e.FIELDS)
 
 
+@pytest.mark.parametrize('source, timestamps', [
+    ('stockx_2019', ('2019-01-01', '2019-01-02', '2018-12-01')),
+    ('synthetic', ('2019-01-01T00:00:00Z', '2019-01-02T00:00:00Z', '2018-12-01T00:00:00Z')),
+])
+def test_spark_timestamps_match_csv_and_hash(tmp_path, source, timestamps):
+    keys = ('listed_at', 'at', 'released_at')
+    raw = {'row_id': 'one', 'source': source, **dict(zip(keys, timestamps))}
+    path = tmp_path / 'rows.csv'
+    with path.open('w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=list(raw))
+        writer.writeheader()
+        writer.writerow(raw)
+    loaded = e.load(str(path))
+    spark_row = {**raw, **dict(zip(keys, (datetime(2019, 1, 1), datetime(2019, 1, 2), datetime(2018, 12, 1))))}
+    converted = b.to_runner_rows([spark_row])
+    assert converted == loaded
+    assert b.rows_hash(converted) == b.rows_hash(loaded)
+
+
 def test_float_money_never_leaves_backtest_tables():
     rows, est = sample()
     records = b.estimates_table([est], rows, 'run')
@@ -91,7 +110,10 @@ def test_hidden_comp_estimate_keeps_basis_but_not_display_citation():
     assert guarded[0]['state'] == 'hidden'
     assert guarded[0]['citation_id'] is None
     assert guarded[0]['hide_reason'] == 'too_few'  # baseline never hides a nonempty basis: ambiguous reason
-    assert b.guarded_rows([{**est, 'contestant': 'model', 'comp_ids': []}], rows, basis_hash, citation_id, 'run', '2019-02-01') == ([], [])
+    no_basis, no_citations = b.guarded_rows([{**est, 'contestant': 'model', 'shown': False, 'comp_ids': []}], rows, basis_hash, citation_id, 'run', '2019-02-01')
+    assert no_basis[0]['state'] == 'hidden' and no_basis[0]['basis_level'] == 'prior'
+    assert no_basis[0]['basis_count'] == 0 and no_basis[0]['citation_id'] is None
+    assert no_citations == []
     for key in ['c', 'd', 'e']:
         rows[key] = sale(key, '2018-12-04')
     random_hidden = {**est, 'contestant': 'random_comps', 'shown': False, 'comp_ids': ['a', 'b', 'c', 'd', 'e']}
@@ -254,6 +276,34 @@ def test_serverless_bundle_passes_workspace_root_to_both_jobs():
         assert '--contestants' not in job
 
 
+@pytest.mark.parametrize('option, expected', [([], '/Shared/secondhand/valuation-backtest'),
+                                              (['--experiment', '/Shared/custom backtest'], '/Shared/custom backtest')])
+def test_experiment_argument_reaches_mlflow(monkeypatch, option, expected):
+    from unittest.mock import MagicMock
+    class Stop(Exception):
+        pass
+    spark = MagicMock()
+    spark.sql.return_value.first.return_value = {'version': 1}
+    spark.table.return_value.where.return_value.collect.return_value = []
+    sql = MagicMock()
+    sql.SparkSession.getActiveSession.return_value = spark
+    mlflow = MagicMock()
+    mlflow.set_experiment.side_effect = Stop
+    monkeypatch.setitem(sys.modules, 'pyspark.sql', sql)
+    monkeypatch.setitem(sys.modules, 'mlflow', mlflow)
+    with pytest.raises(Stop):
+        b.main(option)
+    mlflow.set_experiment.assert_called_once_with(expected)
+
+
+def test_bundle_passes_experiment_resources():
+    import re
+    bundle = (ROOT / 'deploy/resources/learning.yml').read_text()
+    for job, resource in [('valuation_backtest', 'valuation_backtest_experiment'), ('param_walk', 'param_walk_experiment')]:
+        section = re.search(rf'^    {job}:\n(.*?)(?=^    \w+:|\Z)', bundle, re.M | re.S)[1]
+        assert f'--experiment, "${{resources.experiments.{resource}.name}}"' in section
+
+
 def test_current_market_model_cited_hides_distinguish_count_from_width():
     rows, est = sample()
     for i in range(8):
@@ -264,3 +314,61 @@ def test_current_market_model_cited_hides_distinguish_count_from_width():
     rows = {k: v for k, v in rows.items() if k in ('a', 'b', 'test')}
     guards, _ = b.guarded_rows([cited], rows, basis_hash, citation_id, 'run', '2019-02-01')
     assert guards[0]['hide_reason'] == 'too_few'
+
+
+@pytest.mark.parametrize('contestant', [e.PRIMARY, 'last_sale', 'model'])
+def test_product_contestants_name_their_basis_and_preserve_engine_levels(contestant):
+    rows, est = sample()
+    guards, _ = b.guarded_rows([{**est, 'contestant': contestant}], rows, basis_hash, citation_id, 'run', '2019-02-01')
+    assert guards[0]['basis_level'] == 'product'
+    guards, _ = b.guarded_rows([{**est, 'contestant': contestant, 'basis_level': 'family'}], rows, basis_hash, citation_id, 'run', '2019-02-01')
+    assert guards[0]['basis_level'] == 'family'
+
+
+@pytest.mark.parametrize('fault, expected', [({'basis_level': 'unknown'}, 'guarded_number_basis_level'),
+                                          ({'citation_id': 'missing'}, 'guarded_number_citation_fk')])
+def test_backtest_refuses_entire_append_and_audits_each_violation(monkeypatch, fault, expected):
+    from types import SimpleNamespace as NS
+    from guard import GuardRefused
+    from secondhand_log import create_log, memory_sink
+
+    rows, est = sample()
+    guards, _ = b.guarded_rows([est], rows, basis_hash, citation_id, 'run', '2019-02-01')
+    writes = []
+
+    class Spark:
+        def sql(self, query):
+            return NS(collect=lambda: [{'id': guards[0]['citation_id']}])
+        def createDataFrame(self, records, schema):
+            return NS(write=NS(mode=lambda mode: NS(saveAsTable=lambda table: writes.append((table, records)))))
+
+    def frame(spark, table, records):
+        return spark.createDataFrame(records, 'fixture')
+
+    monkeypatch.setattr(b, 'table_frame', frame)
+    log = create_log(src='job.backtest_test', build='fixture', sink=memory_sink())
+    with pytest.raises(GuardRefused) as refused:
+        b.append_rows(Spark(), log, 'secondhand.core.guarded_number', guards + [{**guards[0], 'id': 'bad', **fault}])
+    assert expected in {v['rule'] for v in refused.value.violations}
+    assert [table for table, _ in writes] == ['secondhand.measures.guard_refusals'], 'good rows leaked out of a refused batch'
+    refusal, = writes[0][1]
+    assert refusal['job'] == 'valuation_backtest' and refusal['row_id'] == 'bad'
+    assert refusal['data'] == 'synthetic' and refusal['refused_at']
+
+
+def test_backtest_checks_all_batches_before_writing_citations(monkeypatch):
+    from guard import GuardRefused
+    from secondhand_log import create_log, memory_sink
+
+    rows, est = sample()
+    guards, citations = b.guarded_rows([est], rows, basis_hash, citation_id, 'run', '2019-02-01')
+    writes = []
+    class Spark:
+        def createDataFrame(self, records, schema):
+            from types import SimpleNamespace as NS
+            return NS(write=NS(mode=lambda mode: NS(saveAsTable=lambda table: writes.append(table))))
+    log = create_log(src='job.backtest_test', build='fixture', sink=memory_sink())
+    with pytest.raises(GuardRefused):
+        b.write_batches(Spark(), log, [('secondhand.core.citation', citations),
+                                     ('secondhand.core.guarded_number', [{**guards[0], 'basis_level': 'unknown'}])])
+    assert writes == ['secondhand.measures.guard_refusals'], 'backtest wrote citations before validating the numbers'

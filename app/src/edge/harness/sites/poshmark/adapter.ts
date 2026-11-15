@@ -97,15 +97,15 @@ function manifest(verb: Verb, o: { session: Manifest['session']; route_kind: Man
   };
 }
 const LISTING = [F('external_id', 'string'), F('url', 'url'), F('state', 'string'), F('price_cents', 'cents'), F('currency', 'string'),
-  F('title', 'string', { opt: true }), F('brand', 'string', { opt: true }), F('likes', 'number', { opt: true }), F('comments', 'number', { opt: true }),
+  F('condition', 'string', { opt: true }), F('size', 'string', { opt: true }), F('title', 'string', { opt: true }), F('brand', 'string', { opt: true }), F('likes', 'number', { opt: true }), F('comments', 'number', { opt: true }),
   F('shares', 'number', { opt: true })];
 const PLAN = [F('dry', 'boolean'), F('url', 'url'), F('steps', 'string[]'), F('request', 'object')];
 
 // A search, closet or listing row: the same keys in all three.
-const listingRow = (o: Obj) => {
+export const listingRow = (o: Obj) => {
   const id = str(o.id);
   return { external_id: id, url: id && URLS.listing(id), state: stateOf(at(o, 'inventory', 'status')), price_cents: cents(at(o, 'price_amount', 'val')),
-    currency: str(at(o, 'price_amount', 'currency_code')), title: str(o.title), brand: str(o.brand), likes: num(o.like_count),
+    condition: str(o.condition), size: str(o.size), currency: str(at(o, 'price_amount', 'currency_code')), title: str(o.title), brand: str(o.brand), likes: num(o.like_count),
     comments: num(o.comment_count), shares: num(o.share_count), listed_at: str(o.first_published_at) };
 };
 

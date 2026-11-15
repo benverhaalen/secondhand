@@ -6,6 +6,14 @@ import type { JevResult } from './jev.ts';
 const r = (o: Partial<Result> & { id: string }): Result => ({ site: 'ebay', listing_id: o.id, title: 'levi 501 jeans 32x32', price_cents: 4000, route_id: 'com.ebay.search', url: `https://x/${o.id}`, ...o });
 const target = { title: 'Levi 501 Original Fit 32x32', ids: { mpn: '00501-0114' } };
 
+for (const code of ['036000291453', '036000291452']) {
+  test(`a bad GTIN has no shared code or clash with ${code}`, async () => {
+    const [judged] = await sameProduct({ title: 'same product', ids: { gtin: code } },
+      [r({ id: 'bad', ids: { gtin: '036000291453' } })], async () => ({ ok: false, reason: 'timeout', ms: 1 }));
+    assert.deepEqual([judged.match, judged.keep, judged.by], ['unresolved', 'keep', 'default']);
+  });
+}
+
 test('identifiers and the score ends settle without Jev; the band goes to Jev in batches of 20', async () => {
   const calls: number[] = [];
   const ask = async (_s: object, q: Record<string, unknown>): Promise<JevResult> => {

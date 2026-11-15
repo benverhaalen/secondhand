@@ -129,20 +129,21 @@
     const a = xh({ weight: cs.fontWeight, family: cs.fontFamily }), b = xh({ weight: hl.fontWeight, family: hl.fontFamily });
     if (a && b) html.style.setProperty('--hl-fit', (a / b).toFixed(3));
   }
-  // The hands as tall as the wordmark's ink and on its baseline, in the header and on either side of "secondhand" in the
-  // line (hands-fit.js; Ben, 07:34 and 08:31). The line's size follows the width, so they fit again on a resize.
-  // On a narrow screen "secondhand" with its hands can be wider than the column. The hands first close in to the
-  // smallest gap, 4; if it still does not fit, the line drops to the next size on the type scale, 36.
+  // The hands as tall as the wordmark's ink and on its baseline, in the header (hands-fit.js; Ben, 07:34 and 08:31). The line
+  // has no hands since 10:23 ("remove the hands in the hero with the wordmark text").
   const fitLockup = () => {
-    if (!window.fitHands) return;
-    const head = document.querySelector('header .lockup'), lock = document.querySelector('.hl-lock'), h1 = document.querySelector('.hero-t');
-    const line = most => fitHands(lock, lock.querySelector('.hl'), lock.querySelectorAll('.hand'), most);
-    const fits = () => lock.getBoundingClientRect().width <= h1.clientWidth + 1;
-    if (head) fitHands(head, head.querySelector('.wordmark'), head.querySelectorAll('.hand'));
-    h1.style.fontSize = ''; line();
-    if (!fits()) line(4);
-    if (!fits()) { h1.style.fontSize = 'var(--t-36)'; fit(); line(); }
+    const head = document.querySelector('header .lockup'), hl = document.querySelector('.hero-t .hl'), h1 = document.querySelector('.hero-t');
+    if (window.fitHands && head) fitHands(head, head.querySelector('.wordmark'), head.querySelectorAll('.hand'));
+    // No phrase breaks; if one is wider than the column, the line drops to the next size on the type scale, 36.
+    const room = h1.parentElement.clientWidth, fits = () => [...h1.querySelectorAll('.ph')].every(p => p.getBoundingClientRect().width <= room + 1);
+    h1.style.fontSize = '';
+    h1.classList.remove('tight');
+    if (!fits()) { h1.style.fontSize = 'var(--t-36)'; fit(); }
+    if (!fits()) h1.classList.add('tight');
   };
+  // The header's fade comes in once the page has scrolled, and goes at the top (L60; actions.md).
+  const scrolled = () => html.classList.toggle('scrolled', scrollY > 0);
+  addEventListener('scroll', scrolled, { passive: true }); scrolled();
   document.fonts.ready.then(() => { fit(); fitLockup(); });
   addEventListener('resize', () => requestAnimationFrame(fitLockup));
 

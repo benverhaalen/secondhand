@@ -266,8 +266,11 @@ export const CHOICES: { id: Choice; label: string }[] = [
   { id: 'reserve', label: 'Only at my price' }, { id: 'check', label: 'Just checking' },
 ];
 const whole = (c: number) => Math.round(c / 100) * 100;
-// The price a choice starts at, from what similar ones sold for, never under the lowest the person takes.
+// The price a choice starts at: the engine's mode price when the Check set one (valuation.modes, the slider's mark),
+// else the sold range's low, middle or high, never under the lowest the person takes.
 export function priceFor(it: Item, c: Choice): Cents | null {
+  const mode = c === 'fast' || c === 'sell' || c === 'best' ? it.valuation?.modes?.[c] : null;
+  if (mode) return Math.max(mode.list_cents, it.limits?.floor_cents ?? 0);
   const v = it.valuation?.state === 'shown' ? it.valuation.range : null;
   const floor = it.limits?.floor_cents ?? 0;
   if (!v) return null;
@@ -306,7 +309,7 @@ export function sitePrices(it: Item, price: Cents, sites: Site[], spread: Spread
 // showing what each of these toggles is meant to show?"). Each is a mark on the price slider (valuation.md, The price
 // slider; posture.ts MARKS): Gone fast is quick (0.15), Sell it is balanced (0.5), Best price is max_return (0.85).
 // For each, what the person would see on the Plan: the price, what they get on the best site the plan posts to, and how
-// fast it sells when the engine has a sale curve for the item (valuation.pace). No curve, no days: none is made up.
+// fast it sells when the engine has a sale curve for the item (valuation.modes). No curve, no days: none is made up.
 export const PRICE_MODES = ['fast', 'sell', 'best'] as const;
 export type PriceMode = typeof PRICE_MODES[number];
 export type ModeRow = { choice: PriceMode; label: string; price: Cents; get: Cents | null; days: number | null; p30: number | null; line: string };
@@ -314,13 +317,14 @@ export function priceModes(w: World, it: Item, flipped: Site[] = []): ModeRow[] 
   return PRICE_MODES.flatMap(choice => {
     const price = priceFor(it, choice);
     if (price === null) return [];
+    const mode = it.valuation?.modes?.[choice] ?? null;
     const on = planSites(w, it, price, flipped).filter(s => s.on && s.keep !== null);
-    const get = on.length ? Math.max(...on.map(s => s.keep ?? 0)) : null;
-    const pace = it.valuation?.pace?.[choice] ?? null;
-    const days = pace?.days_t50 != null ? Math.max(1, Math.round(pace.days_t50)) : null;
+    const get = mode ? mode.keep_cents : on.length ? Math.max(...on.map(s => s.keep ?? 0)) : null;
+    const days = mode?.days_t50 != null ? Math.max(1, Math.round(mode.days_t50)) : null;
+    const p30 = mode?.p_sale_30 ?? null;
     const line = [get !== null ? `You get ${usd(get)}` : null, days !== null ? `Sells in about ${days} ${days === 1 ? 'day' : 'days'}` : null,
-      pace ? `${Math.round(pace.p_sale_30 * 10)} in 10 sell within 30 days` : null].filter(Boolean).join('. ');
-    return [{ choice, label: CHOICES.find(c => c.id === choice)?.label ?? choice, price, get, days, p30: pace?.p_sale_30 ?? null, line }];
+      p30 !== null ? `${Math.round(p30 * 10)} in 10 sell within 30 days` : null].filter(Boolean).join('. ');
+    return [{ choice, label: CHOICES.find(c => c.id === choice)?.label ?? choice, price, get, days, p30, line }];
   });
 }
 

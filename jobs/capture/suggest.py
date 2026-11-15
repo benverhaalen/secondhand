@@ -7,8 +7,14 @@ assign_arm splits sessions 50/50 so tap and auto can be compared on the same ite
 from __future__ import annotations
 
 import hashlib
+import json
+from pathlib import Path
+
+from param.registry import MemoryStore
 
 from .process import FAMILIES
+
+PRIORS = json.loads(Path(__file__).with_name("process.json").read_text())["params"]
 
 EPS = 1e-9  # a score of exactly 0.5 must not fall under the floor by rounding
 
@@ -18,8 +24,18 @@ def assign_arm(capture_id: str) -> str:
 
 
 def suggest(class_scores: dict[str, float], person_counts: dict[str, float] | None = None, prior_weight: float = 5,
-            floor: float = 0.5, margin: float = 0.2, auto_top: float = 0.9, auto_margin: float = 0.5,
-            temperature: float = 1.0, arm: str | None = None) -> dict:
+            floor: float | None = None, margin: float | None = None, auto_top: float | None = None, auto_margin: float | None = None,
+            temperature: float = 1.0, arm: str | None = None, params: MemoryStore | None = None) -> dict:
+    store = params if params is not None else MemoryStore()
+
+    def bound(name: str) -> float:
+        store.declare({"name": name, "family": "scalar", "prior": PRIORS[name]})
+        return store.read(name, {})["value"]
+
+    floor = bound("capture_preselect_floor") if floor is None else floor
+    margin = bound("assist_preselect_margin") if margin is None else margin
+    auto_top = bound("capture_type_auto_floor") if auto_top is None else auto_top
+    auto_margin = bound("capture_type_auto_margin") if auto_margin is None else auto_margin
     if temperature <= 0:
         raise ValueError("temperature must be positive")
     for d in (class_scores, person_counts or {}):

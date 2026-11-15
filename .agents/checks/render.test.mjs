@@ -179,7 +179,7 @@ CASES.push(['B15', 'text that taps pass through, in a face that is not ours', de
   ['B14', 'two lines at the peak size on an app screen', app('<div style="padding:0 20px"><p style="font-size:50px">Big words</p><p style="font-size:50px">More big words</p></div>'), /B14 .*one peak number/, 'app'],
   ['B3', 'a story wordmark at the top of its end card', STORY('<p class="m" style="font-size:120px;align-self:start;margin-top:250px">secondhand</p>'), /B3 .*goes center/, 'story']);
 // Ben's notes on the dark mode render, 02:18: color blindness, countdowns, and what looks pressable.
-const TAG = (c, w) => `<span data-part="tag-kind" style="display:inline-block;font-size:13px;background:var(--${c});color:var(--on-color);padding:4px 8px;border-radius:var(--r-photo);margin:16px 0 0 20px">${w}</span>`;
+const TAG = (c, w) => `<span data-part="tag-kind" style="display:inline-block;font-size:13px;background:var(--${c});color:var(--on-color);padding:1px 8px;border-radius:var(--r-photo);margin:16px 0 0 20px">${w}</span>`;
 CASES.push(['U4', 'a dark ground that reads as brown', app('<div style="margin:16px 20px;height:64px;background:#432E02"></div>'), /U4 .*reads as brown/, 'app'],
   ['U4', 'a tag that is color alone', app('<span data-part="tag-kind" style="display:inline-block;width:32px;height:20px;background:var(--mint);margin:16px 20px"></span>'), /U4 .*color alone/, 'app'],
   ['U2', 'a countdown past a day in hours', app('<p style="font-size:13px;padding:16px 20px">Ends in 26h</p>'), /U2 .*26 hours/, 'app'],
@@ -189,7 +189,7 @@ CASES.push(['U4', 'a dark ground that reads as brown', app('<div style="margin:1
   ['U1', 'a button that is bare words', app('<button style="font:500 15px var(--font-text);background:none;border:0;margin:16px 20px;color:var(--ink)">Send a counter</button>'), /U1 .*no fill and no outline/, 'app'],
   ['B36', 'two lines that start two pixels apart', app('<p style="font-size:15px;margin:16px 0 0 20px">Carhartt jacket</p><p style="font-size:15px;margin:16px 0 0 22px">Nike Dunks</p>'), /B36 .*start 20 and 22 px/, 'app'],
   ['B31', 'a notice that is not the height the tokens give a notice', app('<div data-part="notice" style="margin:16px 20px;height:64px;background:var(--gray)"></div>'), /B31 view 1 \[notice\] is 64 px tall: a \[notice\] is --notice-h, 56 px/, 'app'],
-  ['B31', 'a kind tag that is not the height the tokens give a tag', app(TAG('mint', 'Live')), /B31 view 1 \[tag-kind\] is \d+ px tall: a \[tag-kind\] is --tag-h, 20 px/, 'app'],
+  ['B31', 'a kind tag that is not the height the tokens give a tag', app(TAG('mint', 'Live')), /B31 view 1 \[tag-kind\] is \d+ px tall: a \[tag-kind\] is --tag-h, 24 px/, 'app'],
   ['B31', 'one kind of thing with two corners', deck('<div data-part="tile" style="height:160px;background:var(--gray);border-radius:var(--mr-card)"></div><div data-part="tile" style="height:160px;background:var(--gray);border-radius:var(--mr-photo);margin-top:32px"></div>'), /B31 .*corners of \d+px and \d+px/]);
 test('render: seen with no red or no green cones, the four state fills stay apart, and two tints of near hues do not', () => {
   const d = (a, b, k) => Math.hypot(...seenAs(a, k).map((v, i) => v - seenAs(b, k)[i])), sky = [165, 225, 254], mint = [161, 234, 203], lime = [235, 240, 143], marigold = [245, 210, 151];
@@ -235,6 +235,10 @@ browserTest('render: a Locked ledger row waives the checks it names, only where 
   const over = led => deck(`<div style="position:relative"${led}><img alt="A jacket" src="${PX}" style="width:800px;height:400px;display:block"><p class="b" style="position:absolute;top:32px;left:32px">Carhartt jacket</p></div>`);
   assert.deepEqual((await ids(over(' data-ledger="L56"'))).filter(f => /sits on a photo/.test(f)), []);
   assert.ok((await ids(over(' data-ledger="A1"'))).some(f => /sits on a photo/.test(f)));
+  // L60: the site's wall runs up under the header's wordmark; only the marked wall may come that close.
+  const under = led => `<section class="s" data-view><p class="m" style="position:relative;z-index:1">secondhand</p><div style="position:absolute;top:0;left:0;width:320px;height:200px"${led}><img data-photo alt="A jacket" src="${PX}" style="width:320px;height:200px;display:block"></div></section>`;
+  assert.deepEqual((await ids(under(' data-ledger="L60"'))).filter(f => f.startsWith('B32')), []);
+  assert.ok((await ids(under(''))).some(f => /^B32 .*sits within/.test(f)));
 });
 
 browserTest('render: a photo that a box clips away above it does not crowd the wordmark', { skip: !pw }, async () => {
@@ -332,8 +336,8 @@ const toward = (hex, t, to = '#FFFFFF') => '#' + [1, 3, 5].map(i => Math.round(p
 const DEEP = t => STATE(0, ['#0A4C65', '#03523B', '#025050'].map(c => toward(c, t, '#1A1D20')));
 const STATE = (t, [c1, c2, c3] = ['#F5D297', '#EBF08F', '#FECCAA'].map(c => toward(c, t))) => `background-color:${c1};background-image:radial-gradient(at 30% 100%, ${c2}, ${c2}00 60%), radial-gradient(at 100% 100%, ${c3}, ${c3}00 65%)`;
 const NEED = (style, inner = '') => app(`<div role="button" data-part="card-decision" style="cursor:pointer;margin:64px 20px 0;height:156px;border-radius:36px;padding:16px 24px;border:1px solid var(--card-edge);${style}">${inner}</div>`);
-const ON_DEEP = `<p style="font-size:15px;color:var(--on-field)">Nike Dunk Low</p><p style="font-size:13px;color:var(--on-field-2)">Mon 10 AM</p><span data-part="tag" style="display:inline-block;height:20px;padding:0 8px;border-radius:999px;font-size:13px;background:#F5D297;color:#0A0A0A">Offer</span>`;
-const ON_NEED = `<p style="font-size:15px;color:#0A0A0A">Nike Dunk Low</p><p style="font-size:13px;color:rgb(10 10 10 / .65)">Mon 10 AM</p><span data-part="tag" style="display:inline-block;height:20px;padding:0 8px;border-radius:999px;font-size:13px;background:#EFF1F2;color:#0A0A0A">Offer</span>`;
+const ON_DEEP = `<p style="font-size:15px;color:var(--on-field)">Nike Dunk Low</p><p style="font-size:13px;color:var(--on-field-2)">Mon 10 AM</p><span data-part="tag" style="display:inline-block;height:24px;padding:0 8px;border-radius:999px;font-size:13px;background:#F5D297;color:#0A0A0A">Offer</span>`;
+const ON_NEED = `<p style="font-size:15px;color:#0A0A0A">Nike Dunk Low</p><p style="font-size:13px;color:rgb(10 10 10 / .65)">Mon 10 AM</p><span data-part="tag" style="display:inline-block;height:24px;padding:0 8px;border-radius:999px;font-size:13px;background:#EFF1F2;color:#0A0A0A">Offer</span>`;
 const WASH_IN_CODE = (page, w1, w2) => `<header style="position:absolute;left:0;right:0;top:0;height:var(--wash-h);background-color:${w1};background-image:linear-gradient(180deg, ${page}00 0%, ${page}40 45%, ${page}cc 80%, ${page} 100%), linear-gradient(105deg, ${w1}, ${w2})"><p style="font-size:15px;position:absolute;top:120px;left:20px">Today</p></header>`;
 browserTest('render: the wash and a state gradient written out in code pass, in light and dark, with a tag in a card pressed as a whole', { skip: !pw }, async () => {
   for (const t of [0, .3, .58]) assert.deepEqual(await ids(NEED(STATE(t), ON_NEED), 'app'), [], `light at ${t}`);
@@ -345,7 +349,7 @@ CASES.push(['B5', 'a state gradient whose colors are mixed by two amounts', NEED
   ['B5', 'a state gradient paler than two days out', NEED(STATE(.8)), /B5 .*\[card-decision\] is a gradient built by hand/, 'app'],
   ['B6', 'black text on the deep state field in dark', NEED(DEEP(.3), '<p style="font-size:15px;color:#0A0A0A">Nike Dunk Low</p>'), /B6 .*"Nike Dunk Low" is .* on a state gradient: text on it is --on-field or --on-field-2, the ink of its mode/, 'app', 'dark'],
   ['B5', 'a light state gradient in dark', NEED(STATE(.3), ON_NEED), /B5 .*\[card-decision\] is a light state gradient in dark/, 'app', 'dark'],
-  ['U1', 'a tag that is its own button inside a card', NEED(STATE(0), '<button data-part="tag" style="height:20px;padding:0 8px;border:0;border-radius:999px;font:500 13px var(--font-text);background:var(--marigold-tint);color:var(--on-color)">Offer</button>'), /U1 .*\[tag\] that looks pressable/, 'app']);
+  ['U1', 'a tag that is its own button inside a card', NEED(STATE(0), '<button data-part="tag" style="height:24px;padding:0 8px;border:0;border-radius:999px;font:500 13px var(--font-text);background:var(--marigold-tint);color:var(--on-color)">Offer</button>'), /U1 .*\[tag\] that looks pressable/, 'app']);
 // From the kit (rollout thread, 05:31): a Press wrapper whose pill is its one child that fills it, and a large amount whose
 // line height is shorter than the face's content area, so the range box pokes out of its part while the ink stays in.
 browserTest('render: a pill drawn on the child of its pressable, and a large amount whose ink stays in its part, pass', { skip: !pw }, async () => {
@@ -354,7 +358,7 @@ browserTest('render: a pill drawn on the child of its pressable, and a large amo
 });
 CASES.push(['U1', 'a pressable whose child fill covers only part of it', app('<div role="button" style="margin:16px 20px;width:160px;height:48px;cursor:pointer"><div style="width:80px;height:24px;background:var(--gray)"><span style="font-size:15px">Counter</span></div></div>'), /U1 .*no fill and no outline/, 'app']);
 // From the Sell builder (05:47): a grid of tiles with a hot tag on two of them under one decision card, and a logo on each tile.
-const HOT = '<span data-part="tag" style="display:inline-block;height:20px;padding:0 8px;border-radius:999px;font-size:13px;color:var(--on-color);background:var(--hot-2) linear-gradient(120deg,var(--hot-1),var(--hot-2))">Hot</span>';
+const HOT = '<span data-part="tag" style="display:inline-block;height:24px;padding:0 8px;border-radius:999px;font-size:13px;color:var(--on-color);background:var(--hot-2) linear-gradient(120deg,var(--hot-1),var(--hot-2))">Hot</span>';
 test('render: tag gradients on tiles under a field are not more fields, and logos on separate tiles are not one row', { skip: !pw }, async () => {
   const tile = `<div style="width:167px;height:96px;padding:12px;background:var(--gray);border-radius:20px">${HOT}${HOT.replace('var(--hot-2) linear-gradient(120deg,var(--hot-1),var(--hot-2))', 'linear-gradient(var(--sky),var(--mint))')}<img alt="eBay" data-logo src="${pathToFileURL(join(root, 'assets/platforms/square/ebay.png')).href}" style="width:20px;height:20px;display:block;margin-top:12px"></div>`;
   const found = await ids(app(`<div class="f" style="margin:16px 20px;height:96px"></div><div style="display:flex;gap:16px;margin:0 20px">${tile}${tile}</div>`), 'app');

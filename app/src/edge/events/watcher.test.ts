@@ -37,20 +37,26 @@ test('seven days: limits, drafts, stale sessions, confirmed sale, quiet cadence 
   assert.equal(answers.length, 1, 'only the 5900 rule answer reaches a site');
   assert.equal(answers[0].site, 'depop'); assert.equal(answers[0].dry, true);
   assert.equal(a.store.jobs({ kind: 'send_message' }).length, 1); assert.equal(a.calls.filter(c => c.verb === 'send_message').length, 0);
-  assert.deepEqual(a.store.decisions({ state: 'open' }).map(d => d.kind).sort(), ['counter_offer', 'price_below_floor', 'reply_other']);
+  assert.deepEqual(a.store.decisions({ state: 'open' }).map(d => d.kind).sort(), ['accept_offer', 'counter_offer', 'delist_after_sale', 'delist_after_sale', 'price_below_floor', 'reply_other']);
   assert.equal(a.store.events().filter(e => e.action === 'offer.received').length, 3, 'identical reads emit no duplicate offers');
   assert.equal(a.calls.filter(c => c.site === 'ebay' && c.minute > atMinute('ebay', 'auth_expired') && c.minute < atMinute('ebay', 'relinked')).length, 0, 'no calls during stale interval');
   const delists = a.store.jobs({ kind: 'delist' }).filter(j => j.item_id === 'it_walk');
   assert.deepEqual(delists.map(j => j.site).sort(), ['ebay', 'poshmark']);
   const ends = a.calls.filter(c => c.verb === 'end' && c.args.item_id === 'it_walk');
   assert.deepEqual(ends.map(c => c.site).sort(), ['ebay', 'poshmark']);
+  for (const job of delists) {
+    assert.equal(job.stages[0].state, 'planned');
+    assert.equal(a.snapshots.get(job.account_id!)?.listings?.[0].state, 'live');
+  }
+  assert.equal(a.store.events().filter(e => e.action === 'listing.ended').length, 0, 'dry ends must not fabricate ended observations');
   const confirmations = a.store.jobs({ kind: 'poll_orders' }).map(j => j.result as { order?: { id: string } });
   assert.equal(new Set(confirmations.map(r => r.order?.id).filter(Boolean)).size, 1, 'one order from listing and order observations');
   assert.equal(a.store.jobs({ state: 'failed' }).length, 0);
   for (const site of ['depop', 'poshmark', 'ebay']) {
     const times = a.calls.filter(c => c.site === site && c.verb === 'read_offers').map(c => c.minute);
     const quiet = times.filter(m => m >= 8640);
-    assert.ok(quiet.length >= 23 && quiet.length <= 25, `${site}: final day hourly quiet sweeps`);
+    const expected = site === 'depop' ? 24 : 96;
+    assert.ok(Math.abs(quiet.length - expected) <= 1, `${site}: final-day sweeps reflect the observed listing state`);
     const sweeps = a.sweeps.filter(s => s.site === site);
     for (let i = 1; i < sweeps.length; i++) {
       if (site === 'ebay' && sweeps[i].minute === atMinute('ebay', 'relinked')) continue;
@@ -59,8 +65,8 @@ test('seven days: limits, drafts, stale sessions, confirmed sale, quiet cadence 
       assert.equal(sweeps[i].minute - prior.minute, cadenceMinutes, `${site}: ${prior.tier} cadence at minute ${prior.minute}`);
     }
   }
-  assert.deepEqual(counts(a).sweeps, { depop: 3124, poshmark: 2475, ebay: 403 });
-  assert.equal(counts(a).events, 11); assert.equal(counts(a).jobs, 11);
+  assert.deepEqual(counts(a).sweeps, { depop: 3124, poshmark: 2648, ebay: 576 });
+  assert.equal(counts(a).events, 9); assert.equal(counts(a).jobs, 9);
   const b = await week(); assert.deepEqual(counts(a), counts(b), 'same week has identical counts');
   t.diagnostic(JSON.stringify(counts(a)));
   assert.ok(performance.now() - began < 20000, 'two simulated weeks finish under 20 seconds');
@@ -751,4 +757,51 @@ test('a fresh caller order book cannot overwrite a different durable order after
   assert.equal(rows.length, 2, 'ordinal ids from a fresh caller book must not replace an older order');
   assert.equal(r.store.get('order', 'usr_walk', 'ord_1')?.external_order_id, 'old');
   assert.equal(rows.find(o => o.external_order_id === 'confirmed_order')?.id, orders.all()[0]?.id);
+});
+
+
+test('confirm owns order persistence: each poll_orders job saves its order once', async () => {
+  const r = saleRig(memoryStore());
+  await r.watcher.tick(); r.sell(); r.advance(900000); await r.watcher.tick();
+  const confirmations = r.store.jobs({ kind: 'poll_orders', state: 'done' });
+  assert.ok(confirmations.length > 0);
+  const rows = r.store.rows('order', { user_id: 'usr_walk' });
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].version, confirmations.length, "watcher must not persist confirm's order a second time");
+});
+
+for (const contextualPort of [true, false]) test(`two sites negotiate against newly observed listing prices (listing-aware port: ${contextualPort}), including the write-time check`, async () => {
+  const r = smallRig(async () => ({ ok: true, data: [] }));
+  const accounts = ['depop', 'poshmark'].map(site => ({ account_id: `acc_${site}`, person_id: 'usr_walk', site: site as Site, token_ref: 'fixture' }));
+  const listings = accounts.map((a, i) => ({ listing_id: `listing_${a.site}`, item_id: 'it_walk', site: a.site,
+    account_id: a.account_id, external_id: `ext_${a.site}`, state: 'live', price_cents: i === 0 ? 6000 : 8000 }));
+  for (const a of accounts) r.store.put('account', { id: a.account_id, user_id: a.person_id, site: a.site, next_check_at: new Date(start).toISOString() });
+  const contexts: string[] = [], writes: string[] = [];
+  let offered = false;
+  const watcher = createWatcher({ ...r,
+    accounts: { async linked() { return accounts; }, async byId(id) { return accounts.find(a => a.account_id === id); } },
+    listings: { byExternal: (_u, site, id) => listings.map(l => ({ ...l, price_cents: l.price_cents - 1000 })).find(l => l.site === site && l.external_id === id),
+      ofItem: () => listings.map(l => ({ ...l, price_cents: l.price_cents - 1000 })) },
+    limits: { of(_user, _item, listing) {
+      if (listing) contexts.push(listing.listing_id);
+      return { ask_cents: contextualPort ? listing?.price_cents ?? 5000 : 5000, floor_cents: 4500, always_accept_cents: 5800 };
+    } },
+    harness: { async call<T>(site: Site, verb: Verb) {
+      const listing = listings.find(l => l.site === site)!;
+      if (verb === 'answer_offer') writes.push(site);
+      const data = verb === 'read_listings' ? [{ external_id: listing.external_id, price_cents: listing.price_cents, state: 'live' }]
+        : verb === 'read_offers' && offered ? [{ external_id: `offer_${site}`, listing_external_id: listing.external_id, amount_cents: listing.price_cents - 100, state: 'open' }] : [];
+      return { ok: true, data: data as T, meta: { route_id: 'fixture', adapter_version: 'fixture', ms: 0, fell_back: false, observation_ids: [] } };
+    } },
+  });
+  await watcher.tick();
+  offered = true; r.advance(900000); await watcher.tick();
+  const offers = r.store.events().filter(e => e.action === 'offer.received');
+  assert.equal(offers.length, 2);
+  for (const listing of listings) {
+    const event = offers.find(e => e.listing_id === listing.listing_id)!;
+    assert.equal(event.payload?.ask_cents, listing.price_cents, 'negotiation used the item price instead of the site listing price');
+    assert.equal(contexts.filter(id => id === listing.listing_id).length, 2, 'listing context must reach both decision and write-time limits');
+  }
+  assert.deepEqual(writes.sort(), ['depop', 'poshmark'], 'both offers are inside their own listing limits');
 });

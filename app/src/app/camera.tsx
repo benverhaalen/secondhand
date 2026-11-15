@@ -17,6 +17,7 @@
 // without LiDAR: the Measure stage finds no sizes, and AI stays off.
 //
 // What the camera or a model filled sits on the lilac tint; what the person typed is plain (Ben, 08:12).
+// one at a time: cam-close (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { Stack, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';

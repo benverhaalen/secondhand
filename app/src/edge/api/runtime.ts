@@ -1,4 +1,10 @@
 // Rests-on: spec/product.md §3, §5, §6 Harnesses, §7; spec/examples/{items,sell,you}.json.
+import { createRequire } from 'node:module';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { cdpLauncher, localChrome, type CdpPw } from '../browser/cdp.ts';
+import { createPool, type Launcher } from '../browser/pool.ts';
+import { linkedSearch, readSearchPage, type BrowserPage } from '../harness/sites/mercari/linked.ts';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createLog, consoleSink, type Log } from '../../../../log/index.js';
 import { store } from './store.ts';
@@ -9,7 +15,7 @@ import { memoryVault, type Accounts, type LinkedAccount } from '../browser/auth.
 import { createHarness, fail, isWrite, type Adapter, type Harness } from '../harness/protocol.ts';
 import { createSiteService } from '../harness/service.ts';
 import { depopAdapters, API, type Client } from '../harness/sites/depop/adapter.ts';
-import { ebayAdapters } from '../harness/sites/ebay/adapter.ts';
+import { ebayAdapters, ebayPageAdapters, type PageClient } from '../harness/sites/ebay/adapter.ts';
 import { poshmarkAdapters } from '../harness/sites/poshmark/adapter.ts';
 import { mercariAdapters } from '../harness/sites/mercari/adapter.ts';
 import { memoryLeases, memoryParams, type Row, type Table, type Store, type JobRow } from '../events/ports.ts';
@@ -57,7 +63,7 @@ export function seedExamples(st: Store) {
 }
 
 export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }), options: {
-  adapters?: Adapter[]; now?: () => number;
+  adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number;
 } = {}) {
   const now = options.now ?? Date.now;
   seedExamples(st);
@@ -91,6 +97,14 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     },
   };
   const unavailable = async (): Promise<never> => { throw new Error('site session transport is not composed'); };
+  const ebayLive = liveSites.has('ebay');
+  const ebayPageClient: PageClient = ebayLive ? options.ebayPageClient ?? {
+    signed_in: false,
+    async page(url, signal) {
+      const res = await fetch(url, { signal });
+      return { status: res.status, html: await res.text() };
+    },
+  } : { signed_in: false, page: unavailable };
   // shortcut: waiting.md "The harness wired to itself": browser profiles and eBay credentials
   // have no runtime transport yet. Keep their real dry-write adapters and explicit offline reads.
   const offlineClient: Client = { signed_in: false, doc: unavailable, json: unavailable };
@@ -99,9 +113,27 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     ...poshmarkAdapters(offlineClient),
     ...mercariAdapters({ signed_in: false, page: unavailable }),
     ...ebayAdapters({ env: 'production', app_token: async () => undefined, user_token: async () => ({ ok: false }), send: unavailable }),
-  ].map(adapter => (adapter.manifest.site === 'depop' && live) || isWrite(adapter.manifest.verb) ? adapter : {
+    ...ebayPageAdapters(ebayPageClient),
+  ].map(adapter => (adapter.manifest.site === 'depop' && live) || (adapter.manifest.site === 'ebay' && ebayLive) || isWrite(adapter.manifest.verb) ? adapter : {
     ...adapter, async run() { return fail('no_route', `${adapter.manifest.site} live reads are unavailable`, { do: 'handoff', url: '' }); },
   });
+  const liveMercari = (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/).includes('mercari');
+  let mercariPool: ReturnType<typeof createPool<BrowserPage>> | undefined;
+  const mercari = linkedSearch({ accounts, async read(account_id, url, signal) {
+    if (!liveMercari) throw new Error('Mercari live reads are disabled');
+    if (!mercariPool) {
+      const executablePath = process.env.SECONDHAND_CHROME_PATH;
+      if (!executablePath) throw new Error('Mercari needs SECONDHAND_CHROME_PATH for its linked browser');
+      const profileRoot = join(process.env.SECONDHAND_DATA_DIR ?? tmpdir(), 'secondhand-linked-browsers');
+      const pw = createRequire(join(process.cwd(), 'app/package.json'))('playwright-core') as CdpPw;
+      const launcher = cdpLauncher(pw, localChrome({ executablePath, scratch: join(profileRoot, 'anonymous') })) as Launcher<BrowserPage>;
+      mercariPool = createPool({ launcher, profileRoot, accounts, vault, leases: memoryLeases(), log });
+    }
+    const result = await mercariPool.dispatch({ account_id, job_id: crypto.randomUUID(), run: page => readSearchPage(page, url, signal, log) });
+    if (!result.ok) throw new Error(result.message);
+    return result.value;
+  } });
+  adapters.push(mercari);
   const harnessLog: Log = { ...log, call(kind, name, input, fn, describe) { return log.call(kind === 'harness' ? 'tool' : kind, name, input, fn, describe); } };
   const services = new Map(SITES.map(site => [site, createSiteService(site, adapters.filter(a => a.manifest.site === site), {
     concurrency: 1, store: st, data: liveSites.has(site) ? `live:${site}` : 'synthetic', log: harnessLog, now,
@@ -117,6 +149,10 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     const account = typeof args.account_id === 'string' ? await accounts.byId(args.account_id) : undefined;
     if (account && args.user_id !== undefined && args.user_id !== account.person_id)
       return { ...fail('policy_refused', 'account belongs to another person', { do: 'raise_decision', kind: 'link_account' }), meta: admitted.meta };
+    if (isWrite(verb) && !liveSites.has(site)) {
+      args = { ...args, dry: true };
+      log.note('marketplace write forced dry', { site, verb, operation_id: args.operation_id });
+    }
     return services.get(site)!.call(verb, { ...args,
       ...(isWrite(verb) && account && { user_id: account.person_id }),
     });
@@ -163,7 +199,16 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       return false;
     });
   }
-  const watcherStore: Store = { ...st, claimJobs: (limit, worker) => claimJobs(limit, worker, true) };
+  const watcherStore: Store = { ...st, claimJobs: (limit, worker) => claimJobs(limit, worker, true),
+    raiseDecision(decision) {
+      const job = decision.job_id ? st.getJob(decision.job_id) : undefined;
+      const midpoint = job?.kind === 'answer_offer' && job.args.decided_by === 'negotiation' && job.args.response === 'counter'
+        && (decision.kind === 'counter_offer' || decision.kind === 'price_below_floor');
+      return st.raiseDecision({ ...decision, ...(midpoint && {
+        why: 'No acceptance model weighed this; the counter is the midpoint inside your limits.',
+      }) });
+    },
+  };
   const watcher = createWatcher({ store: watcherStore, harness, accounts, leases, params, log, now, snapshots,
     listings: {
       byExternal: (user_id, site, external_id) => listings(user_id).find(row => row.site === site && row.external_id === external_id),
@@ -186,8 +231,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       return ask_cents !== undefined && floor_cents !== undefined && always_accept_cents !== undefined
         ? { ask_cents, floor_cents, always_accept_cents } : undefined;
     } },
-    // No production acceptance model exists: choose.ts documents NaN as p_accept_invalid,
-    // which uses the champion and asks when waiting value is hidden. Never invent a probability.
+    // shortcut: replace NaN with pAccept({site, kind, ask_cents, offer_cents, days_listed, buyer_tier, round?}, store) -> {p, basis_level, param_versions} from the engines lead.
     pAccept: () => NaN,
     // Hazard omitted until the engines lead supplies its port; the watcher's tier cadence applies.
     readArgs(account) {

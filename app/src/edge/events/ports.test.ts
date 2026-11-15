@@ -1,9 +1,56 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { memoryStore, memoryLeases, memoryParams, fakeHarness, JOB_FOR, type JobRow, type Row } from './ports.ts';
+import { memoryStore, memoryLeases, memoryParams, fakeHarness, JOB_FOR, TABLES, type JobRow, type Row } from './ports.ts';
 import { EVENT_KINDS } from './event.ts';
 
 const ev = { user_id: 'u1', source: 'app', action: 'app.list', dedupe_key: 'k1', actor: 'user', observed_at: 'x', effective_at: 'x', trace_id: 't' } as const;
+
+test('deleteUser removes every tenant row and claim while preserving the other tenant exactly', () => {
+  const s = memoryStore();
+  for (const user_id of ['u1', 'u2']) {
+    for (const table of TABLES) s.put(table, { id: 'shared', user_id });
+    s.insertEvent({ ...ev, user_id });
+    s.insertJob({ kind: 'post', user_id, event_id: 'e', idempotency_key: 'k', args: {}, state: 'queued', stages: [], attempts: 0, trace_id: 't', created_at: 'x' });
+    s.raiseDecision({ user_id, kind: 'first_post', subject: 'shared', why: 'approval', options: [] });
+  }
+  s.claimJobs(2, 'worker');
+  const before = s.dump(), other = s.exportUser('u2');
+  assert.deepEqual(s.deleteUser('u1'), { events: 1, jobs: 1, decisions: 1, rows: Object.fromEntries(TABLES.map(table => [table, 1])) });
+  assert.deepEqual(s.exportUser('u2'), other, 'other tenant rows and versions remain unchanged');
+  assert.deepEqual(s.events(), before.events.filter(row => row.user_id === 'u2'));
+  assert.deepEqual(s.jobs(), before.jobs.filter(row => row.user_id === 'u2'));
+  assert.deepEqual(s.decisions(), before.decisions.filter(row => row.user_id === 'u2'));
+  for (const table of TABLES) assert.deepEqual(s.systemRows(table), other.rows[table], table);
+  assert.deepEqual([...s.claims.keys()], other.jobs.map(row => row.id));
+  assert.deepEqual(s.deleteUser('u1'), { events: 0, jobs: 0, decisions: 0, rows: Object.fromEntries(TABLES.map(table => [table, 0])) });
+});
+
+test('exportUser is an isolated snapshot of all rows belonging to the requested tenant', () => {
+  const s = memoryStore();
+  for (const user_id of ['u1', 'u2']) {
+    for (const table of TABLES) s.put(table, { id: 'shared', user_id, nested: { value: user_id } });
+    s.insertEvent({ ...ev, user_id });
+    s.insertJob({ kind: 'post', user_id, event_id: 'e', idempotency_key: 'k', args: {}, state: 'queued', stages: [], attempts: 0, trace_id: 't', created_at: 'x' });
+    s.raiseDecision({ user_id, kind: 'first_post', subject: 'shared', why: 'approval', options: [] });
+  }
+  const before = s.dump(), exported = s.exportUser('u1');
+  assert.deepEqual(exported, {
+    events: before.events.filter(row => row.user_id === 'u1'), jobs: before.jobs.filter(row => row.user_id === 'u1'),
+    decisions: before.decisions.filter(row => row.user_id === 'u1'), rows: Object.fromEntries(TABLES.map(table => [table, before.rows[table]!.filter(row => row.user_id === 'u1')])),
+  });
+  exported.rows.item![0].nested = { value: 'changed' }; exported.jobs[0].args.changed = true;
+  assert.deepEqual(s.dump(), before, 'export mutations cannot change stored data');
+});
+
+test('deleteUser participates in transaction rollback including worker claims', () => {
+  const s = memoryStore();
+  s.put('operation', { id: 'op_1', user_id: 'u1' }); s.insertEvent(ev);
+  const j = s.insertJob({ kind: 'post', user_id: 'u1', event_id: 'e', idempotency_key: 'k', args: {}, state: 'queued', stages: [], attempts: 0, trace_id: 't', created_at: 'x' }).row;
+  s.claimJobs(1, 'worker');
+  const before = s.dump();
+  assert.throws(() => s.tx(tx => { tx.deleteUser('u1'); throw new Error('abort deletion'); }), /abort deletion/);
+  assert.deepEqual(s.dump(), before); assert.equal(s.claims.get(j.id), 'worker');
+});
 
 test('product rows: table-scoped ids, equality filters, versions and tenant isolation', () => {
   const s = memoryStore();
