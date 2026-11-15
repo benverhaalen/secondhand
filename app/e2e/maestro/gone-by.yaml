@@ -1,0 +1,34 @@
+# The gone-by screen (app/behavior/gone-by.json) on a phone or simulator: the plan state, a tile's sheet and the
+# approve tap, as in app/e2e/gone-by.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/gone-by.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand://gone-by app/e2e/maestro/gone-by.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081/--/gone-by
+---
+- launchApp
+- openLink: ${URL}
+# The plan state: the foot button says what the tap does.
+- extendedWaitUntil:
+    visible: "Post 2 and lower 1"
+    timeout: 30000
+# A tile opens a sheet for its thing, with a row per choice (the row ids start with the tile's id and a dash).
+- tapOn: { id: "thing-it_switch" }
+- extendedWaitUntil:
+    visible: { id: "thing-it_switch-.*" }
+    timeout: 5000
+- assertVisible: "Nintendo Switch OLED, white, with dock"
+# Start again so the plan is as it was, without choosing anything in the sheet.
+- stopApp
+- launchApp
+- openLink: ${URL}
+- extendedWaitUntil:
+    visible: "Post 2 and lower 1"
+    timeout: 30000
+# The approve tap posts the plan once, and Undo sits beside the result.
+- tapOn: { id: "approve" }
+- extendedWaitUntil:
+    visible: "Posted 2, lowered 1"
+    timeout: 15000
+- assertVisible: { id: "approve-undo" }
