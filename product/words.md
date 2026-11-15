@@ -563,3 +563,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate a harness api on jev ultrafast or firecrawl, a pipeline on every event
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > It should be easy, we basically create a harness api, powered by jev ultrafast or firecrawl, to efficiently grab from our prestablished and optimally wired sites. every app event, databricks action, etc. Has a pipeline attached to an agent driving the platform. Then for the aggregated market intelligence, we utilize the systems we build, or if we can't which we defintily should be able to, we should just utilzie treg or something
+
+## 2026-11-14 nate assess what failed, what is settled, where agents are confused, and any better architecture
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> assess all failed tests, ensure we are outperforming what we documented competitors do, lets fully assess and address what needs no further researching, whats in the middle of unanswered questions. Where agents intelligent and fully focused on the vision of the project are confused, where they can see a better architecture
