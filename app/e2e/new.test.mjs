@@ -136,3 +136,15 @@ test('new: no tap goes to a control the table does not list', async () => {
 });
 
 controlTests(test, table, c => app.open(c.sheet ? `/new?sheet=${c.sheet}&what=A%20blue%20sofa` : '/new'));
+
+// The ＋ turns into × in place: New's close button has the tab bar's New button's frame, to the point, so nothing jumps when
+// New opens (the phone capture, 2026-11-15 11:09: it was 56 at y 801 over a 48 at 798, and ran into the home bar).
+test('new: the close button lands exactly on the + it replaces', async () => {
+  const s = await app.open('/');
+  const frame = id => s.page.getByTestId(id).evaluate(e => { const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map(Math.round); });
+  await s.page.getByTestId('tab-new').waitFor();
+  const plus = await frame('tab-new');
+  await s.tap('tab-new'); await s.page.getByTestId('new-close').waitFor({ timeout: WAIT });
+  await s.page.waitForTimeout(400);
+  assert.deepEqual(await frame('new-close'), plus);
+});

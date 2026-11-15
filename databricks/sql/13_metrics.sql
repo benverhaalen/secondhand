@@ -4,7 +4,7 @@
 CREATE OR REPLACE VIEW secondhand.measures.valuation_metrics
 WITH METRICS
 LANGUAGE YAML
-COMMENT 'Backtest accuracy of our price and its baselines on the same held-out sales, latest run per source. Historical public sales, not accuracy on live data.'
+COMMENT 'Backtest accuracy of the nightly market model (not the engine the app serves; see measures.engine_ablation) and its baselines on the same held-out sales, latest run per source. Historical public sales, not accuracy on live data.'
 AS $$
 version: 1.1
 comment: "Latest backtest per source. Every rate is null when fewer than 30 estimates were shown in the cell."
@@ -18,9 +18,9 @@ source: |
   ) r ON r.run_id = e.run_id AND r.rank = 1
 dimensions:
   - name: Price from
-    expr: CASE contestant WHEN 'model' THEN 'Our price' WHEN 'last_sale' THEN 'Last sale' WHEN 'product_90d_median' THEN '90-day median' ELSE contestant END
-    comment: "Who made the estimate: our model, or a baseline on the same sale."
-    synonyms: [contestant, method, baseline]
+    expr: CASE contestant WHEN 'model' THEN 'Market model' WHEN 'last_sale' THEN 'Last sale' WHEN 'product_90d_median' THEN '90-day median' ELSE contestant END
+    comment: "Who made the estimate: the nightly market model (jobs/valuation/market.py), which the app does not serve, or a baseline on the same sale. The engine the app serves is in measures.engine_ablation."
+    synonyms: [contestant, method, baseline, market model, nightly model]
   - name: Week
     expr: DATE_TRUNC('WEEK', as_of)
     comment: "Week of the estimate's freeze date."

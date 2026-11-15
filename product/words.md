@@ -2096,3 +2096,56 @@ Ben, website thread, 2026-11-15 11:07 UTC.
 > for the desktop screen, make the sans font smaller and a less prominent color and align the wordmark to be centered and choose the size of the text for it super carefully and the color too.
 
 Used in: [ledger L62](../brand/ledger.md), [the first screen's actions](../brand/explore/web-home/hero/actions.md).
+## 2026-11-15 nate wrap up the sessions, review the whole project, then the presentation
+Nate, orchestrator's session, 2026-11-15, about 10:00 Central.
+> Lets wrap up models as they stand when finished on whats currently happening. End all extra sessions and ill archive. We'll review through all of the project. The ios build, website, backend system and every feature. Fully launch with the /goal to fully complete all aspects. Focus then on the presentation, highlighting everything, Which in a way will depend on how we market the site. I know ben did alot of work on that, and we'll get to it after everything wraps currently, we assess what works, what doesnt, whats left. Ensure every aspect of our half is finished, then wait on ben or help, then one will focus on finishing the site, the other testing the ui/ux, capture, and all app stuff. But the mac can test things humans dont need to do
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `spec/plans/completion.md` (the review).
+
+## 2026-11-15 nate if it is not in the repo, ben has not worked on it
+Nate, orchestrator's session, 2026-11-15, about 10:20 Central, asked where Ben's site and marketing work lives.
+> If its not in the repo then he hasnt worked on it. Now talk through all questions you have for me
+
+Used in: [packet 78](../.agents/team/packets/team/78-assist-handoff.md) (the site is built from what the repo holds).
+
+## 2026-11-15 nate answers at the wrap-up: assess, archive, spec the finalizations, then new leads
+Nate, orchestrator's session, 2026-11-15, about 10:45 Central, answering the orchestrator's numbered questions.
+> Sure delete the raw files from the benchmark. Its science fair style judging. Which valuation? we aren't done yet. I wanted us to assess where we were. archive the running leads. fully spec out and decide on finalizations, then launch new leads to see it through. for 4. it should be hourly until after judging. Yes we can host with fly.io, i also have a hetzner box. for the website, since bens busy i wnated us to work on it, but lets ensure the system and all features work. We are getting hosting to work, but can realtime test on the dev server. forget apple sign in. We probably need other modules right. Apples object capture kit, or no? Have apify replace fb marketplace and ebay for now. planned that when approved we get ebay, and hopefully fb. we wont be able to wait on ebay. for depop its ok if working but ensure we can perfectly evaluate the amount of times we catch it, identify why, if its because we get rejected, we can build a system to auto detect if we;re on the right page or someting, and immediately start a new one. Think through a solution, perhaps not that unless its the only/best way. Lets not do paid vector search. Lets utilize mercari data the best way we can
+
+Used in: `spec/plans/finalization.md`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate apify where it is better; monitor a person's listings instead of posting for them; market-research tools as a fallback
+Nate, orchestrator's session, 2026-11-15, about 11:25 Central, three messages in a row.
+> if the browser harness doesn't work, we at least need to be able to gather mass swarm intelligence on products and such, /research any open source repos that can aggregate all realtime product info from storefronts, not paid just hosted, and recently updated with a great amount of stars
+
+> if apify is better at ebay in general and fills all gaps then great. instead of automatically posting the listings, we can still at least harness the monitoring of alerts and messages and stuff, how many people are interested in the listing. We deliver all that data and track and tell them about it on the app
+
+> not so much agents, but just like ai intelligence gatherers or tools for searching that people have built for buisiness market research. If they require api's we fill gaps with apify and only automate reading user data for monitoring and such
+
+Also, on the buying assistant: "Wait, can genie ai be the buying ai people talk to?", "Like or some sort of ai model we build on it, combining databricks backend storage we do, with ai stuff like that", "or is that not recommended".
+
+Used in: `spec/plans/finalization.md`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate audit our own code first, then read Ben's plan
+Nate, orchestrator's session, 2026-11-15, about 05:25 Central (the session's earlier "Central" times were written six hours late; the machine clock is the source here).
+> Great, when data bricks closes out, compact, lets first fully audit and review through the codebase, then look at bens sessions new plan called whats left. But only after we get our own opinion of the fresh codebase
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate every search shows how far it reaches while it loads; scaffold the screens with everything wired so design can pass over
+Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
+> In some way we need to deliver in every search, responsive ui for loading states that shows how broad we reach, how thorough and credible and impressive the search is, technical the computation is. Just a needed feature, there are im sure many examples of this type of ui being practiced with many professional sites now, even as animations on their site for marketing. Ben right now is working on the views and such, but its important we plan to integrate all working technologies and such, like we did for lidar, we can build out and template the needed views and screens, Utilize professional ui and ux skills, and expo skills to send a team lead and codex builder to fully understand and perfectly scaffold with everything integrated, that design can pass over.
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), the app-wiring lead's brief.
+
+## 2026-11-15 nate a $5 visitor cap that points to the repo, visitor photos allowed, and yes on vercel
+Nate, buying-conversation lead's session, 2026-11-15, about 07:45 Central.
+> yes $5 a spend cap, but also then indicate they go to the repo, with a responsive github logo widget popping in, we also have github and our linkedin's available. visitor photos can be sent sure, ideally no, maybe the system we built can pass over it. that'd be cool for safety reasons. but then again, isnt our system that checks images read by claude and other things that drive the image classification for capture. Did we confirm hetzner? and yes on vercel. You have vercel cli logged in no?
+
+Used in: `features/assist/README.md` (the cap and photos), `features/buy/README.md` (the cap's repo widget, the deploy).
+
+## 2026-11-15 nate wire more than search; finish the audit with expert reviewers, then Ben's list, then our own spec
+Nate, orchestrator's session, 2026-11-15, about 05:55 Central.
+> Wire more than that, we'll have you finish auditing the app right now, of course sending out expert subagent reviewers to capture every aspect, followed by checking in on bens to do list for additional understanding, and we formulate for ourselves whats needed, and spec out
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), `spec/plans/finalization.md`, the app-wiring lead's brief.

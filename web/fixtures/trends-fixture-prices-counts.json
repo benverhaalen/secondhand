@@ -1,0 +1,209 @@
+[
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r6",
+      "tool": "market_store",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r6",
+      "tool": "market_store",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "count": 14
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r7",
+      "tool": "market_store",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r7",
+      "tool": "market_store",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "count": 1
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.text",
+    "data": {
+      "delta": "Separating style reports fro"
+    }
+  },
+  {
+    "event": "assist.text",
+    "data": {
+      "delta": "m marketplace asking prices."
+    }
+  },
+  {
+    "event": "assist.settled",
+    "data": {
+      "state": "answered",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "From the web: this imaginary style report pairs relaxed denim with fitted layers. This recording is an example, not a current trend report."
+        },
+        {
+          "type": "widget",
+          "widget": "sources",
+          "result_id": "r7"
+        },
+        {
+          "type": "text",
+          "text": "Measured by us: the table below is a recorded example of asking prices. One read cannot show whether a style is rising."
+        },
+        {
+          "type": "widget",
+          "widget": "table",
+          "result_id": "r6"
+        },
+        {
+          "type": "text",
+          "text": "Our rows contain no buyer ages. A platform audience would only be a stand-in for a generation, and would need a cited audience report."
+        }
+      ],
+      "results": {
+        "r6": {
+          "tool": "market_store",
+          "ok": true,
+          "rows": [
+            {
+              "style": "Work pants",
+              "site": "poshmark",
+              "count": 14,
+              "median_ask": "$79",
+              "sql": "SELECT style, site, count, median_ask FROM fixture_asks"
+            },
+            {
+              "style": "Carpenter pants",
+              "site": "depop",
+              "count": 9,
+              "median_ask": "$53",
+              "sql": "SELECT style, site, count, median_ask FROM fixture_asks"
+            }
+          ],
+          "counts": {
+            "count": 14
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "Fixture rows only; not connected to the market store.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "table"
+          ],
+          "ms": 1200
+        },
+        "r7": {
+          "tool": "market_store",
+          "ok": true,
+          "rows": [
+            {
+              "site": "example.invalid",
+              "title": "Fixture style report",
+              "url": "https://example.invalid/fixture-report",
+              "date": "2026-11-15"
+            }
+          ],
+          "counts": {
+            "count": 1
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "Recorded source rows; imaginary report, not web evidence.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "sources"
+          ],
+          "ms": 1200
+        }
+      },
+      "sources": [
+        {
+          "url": "https://example.invalid/fixture-report",
+          "title": "Fixture style report",
+          "page_age": "2026-11-15"
+        }
+      ],
+      "calls": [
+        {
+          "id": "r6",
+          "tool": "market_store",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "count": 14
+          },
+          "ms": 1200
+        },
+        {
+          "id": "r7",
+          "tool": "market_store",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "count": 1
+          },
+          "ms": 1200
+        }
+      ],
+      "gate": {
+        "checked": 8,
+        "cut": 1,
+        "cut_sentences": [],
+        "tags_removed": 0
+      },
+      "model": "recorded-fixture",
+      "effort": "low",
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "web_searches": 0,
+        "cost_usd": 0,
+        "cost_source": "provider"
+      },
+      "ms": {
+        "first_text": 1800,
+        "done": 6200
+      }
+    }
+  }
+]
