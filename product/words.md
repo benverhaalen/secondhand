@@ -567,3 +567,19 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate assess what failed, what is settled, where agents are confused, and any better architecture
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > assess all failed tests, ensure we are outperforming what we documented competitors do, lets fully assess and address what needs no further researching, whats in the middle of unanswered questions. Where agents intelligent and fully focused on the vision of the project are confused, where they can see a better architecture
+
+## 2026-11-15 round 9 picks
+Ben, on the round 9 picks page, saved 2026-11-15 00:55 UTC; he wrote "alright my brand picks are done" in the thread "Set the secondhand brand identity" at 00:55. He tapped one thing, "None of these" under where Clofie goes, and left the item box, the spacing rule, the gradient lab and deeper colors untapped. The lab was left as it opened: sky, mint and lime, depth 50, softness 55, drift 26 s. The quotes are the notes he typed.
+
+**Where Clofie goes** (None of these).
+> im fine with whatever you think is best, but i feel like text of the same size should end up being the same font and weight and share characteristics. use research to see if this is true or investigate the nuance in this question. i think the font adds character
+
+**Locked: the palette, three steps each** (a note, no pick asked).
+> the design system needs to identify when things feel like they blend together or merge essentially. like look at pink or lilac they kind of blend into whatever background type thing you had there. ensuring something in the system acts as a separator or if we already have rules like this with like adding the black outlines essentially. much bigger fan of this palette. i do wonder how you are going to use the general principles for specifically designing ui for our product to determine what color goes where. like the psychology analysis of it all and decision making should be engrained somewhere in the constitution and it should be backed by research - whether youve done the research already or not
+
+**Anything off on all of it.**
+> i am scared of having no brand. i am scared of having ai tells. we need some sort of unique human touches to how the ui is designed rather than it being sort of stock. take inspiration from the references and help along side me to brainstorm. dont use image gen now start using code to mock but make sure the mocks are completely accurate to the decisions so far so i can fairly critique them
+
+## 2026-11-15 engineer around the neue montreal digits
+Ben, thread "Set the secondhand brand identity", 00:50 UTC, after being told his Neue Montreal file has no fixed-width digits.
+> find a way to engineer around the neue montreal thing. use research if/when you get stuck.
