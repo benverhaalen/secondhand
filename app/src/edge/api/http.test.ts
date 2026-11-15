@@ -7,6 +7,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const sink = memorySink();
 let imports = 0;
@@ -249,7 +250,7 @@ test('request start and end carry req and the matched route, and the logged HTTP
     writeFileSync(file, sink.text());
     const { checkLog } = await import('../../../../spec/log.mjs');
     assert.deepEqual(checkLog([[file, readFileSync(file, 'utf8')]]).problems, []);
-    execFileSync(process.execPath, [new URL('../../../../spec/log.mjs', import.meta.url).pathname, file]);
+    execFileSync(process.execPath, [fileURLToPath(new URL('../../../../spec/log.mjs', import.meta.url)), file]);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
