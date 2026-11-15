@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { usd } from '../demo/index.ts';
-import { autoList, counters, deleteBlocked, drops, fields, find, headline, momentOf, photoCount, planSites, postWords, priceFor, scanned, siteRows } from './model.ts';
+import { autoList, counters, deleteBlocked, drops, fields, find, headline, momentOf, photoCount, planSites, postWords, priceFor, priceModes, scanned, siteRows } from './model.ts';
 
 const get = (id: string, world?: string) => { const f = find(id, world); assert.ok(f, id); return f; };
 
@@ -152,4 +152,15 @@ test('only a LiDAR measurement lets the AI redraw run: a typed or published size
   assert.equal(scanned(typed), false);
   const published = { ...it, attributes: it.attributes.map(a => (a.source === 'measured' ? { ...a, source: 'spec' as const } : a)) };
   assert.equal(scanned(published), false);
+});
+
+test('the three ways to price side by side: price rises from Gone fast to Best price, with what you get, and days only from a curve', () => {
+  const { w, item } = find('it_stage', 'stage')!;
+  const rows = priceModes(w, item);
+  assert.deepEqual(rows.map(r => r.label), ['Gone fast', 'Sell it', 'Best price']);
+  assert.ok(rows[0].price < rows[1].price && rows[1].price < rows[2].price);
+  assert.ok(rows.every(r => r.get !== null && r.get < r.price && r.line.startsWith('You get')));
+  assert.ok(rows.every(r => r.days === null), 'no sale curve, no days');
+  const paced = { ...item, valuation: { ...item.valuation!, pace: { fast: { days_t50: 3.6, p_sale_30: 0.91 } } } };
+  assert.match(priceModes(w, paced)[0].line, /^You get \$[\d.]+\. Sells in about 4 days\. 9 in 10 sell within 30 days$/);
 });

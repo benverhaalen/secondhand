@@ -269,6 +269,28 @@ export function priceFor(it: Item, c: Choice): Cents | null {
   return Math.max(whole(at), floor);
 }
 
+// The three ways to price (Ben, 09:09: "our algorithm can price to sell. it can price to the market ... shouldnt it end up
+// showing what each of these toggles is meant to show?"). Each is a mark on the price slider (valuation.md, The price
+// slider; posture.ts MARKS): Gone fast is quick (0.15), Sell it is balanced (0.5), Best price is max_return (0.85).
+// For each, what the person would see on the Plan: the price, what they get on the best site the plan posts to, and how
+// fast it sells when the engine has a sale curve for the item (valuation.pace). No curve, no days: none is made up.
+export const PRICE_MODES = ['fast', 'sell', 'best'] as const;
+export type PriceMode = typeof PRICE_MODES[number];
+export type ModeRow = { choice: PriceMode; label: string; price: Cents; get: Cents | null; days: number | null; p30: number | null; line: string };
+export function priceModes(w: World, it: Item, flipped: Site[] = []): ModeRow[] {
+  return PRICE_MODES.flatMap(choice => {
+    const price = priceFor(it, choice);
+    if (price === null) return [];
+    const on = planSites(w, it, price, flipped).filter(s => s.on && s.keep !== null);
+    const get = on.length ? Math.max(...on.map(s => s.keep ?? 0)) : null;
+    const pace = it.valuation?.pace?.[choice] ?? null;
+    const days = pace?.days_t50 != null ? Math.max(1, Math.round(pace.days_t50)) : null;
+    const line = [get !== null ? `You get ${usd(get)}` : null, days !== null ? `Sells in about ${days} ${days === 1 ? 'day' : 'days'}` : null,
+      pace ? `${Math.round(pace.p_sale_30 * 10)} in 10 sell within 30 days` : null].filter(Boolean).join('. ');
+    return [{ choice, label: CHOICES.find(c => c.id === choice)?.label ?? choice, price, get, days, p30: pace?.p_sale_30 ?? null, line }];
+  });
+}
+
 // What a listing at this price would keep on each site the plan uses, and what a site that is left out says. `flipped`
 // holds the sites the person switched from the agent's pick: a site it picked, skipped; a linked one it left out, added.
 // Which sites this kind of thing fits (edge-cases §11): a blocked site can't be added and says why; an avoided one is
