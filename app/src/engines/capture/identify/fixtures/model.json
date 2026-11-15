@@ -1,0 +1,11 @@
+{
+  "header": {
+    "source": "spec/items/capture-real/2026-11-15.json: carhartt-pants state.type; research/studio/ben/slides/runs/20261115-0800-43692434630/carhartt-pants/manifest.json: read.name",
+    "mark": "schema projection of a recorded garment read; no recorded identify-model-port reply exists",
+    "date": "2026-11-15"
+  },
+  "reply": {
+    "family": "apparel",
+    "brand": "Carhartt"
+  }
+}

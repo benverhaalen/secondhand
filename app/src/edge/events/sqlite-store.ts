@@ -55,7 +55,7 @@ function checkOperationEnvelope(value: unknown, seen = new Set<object>()): void 
   }
 }
 
-export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; recover(): number } {
+export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; recover(skip?: (job: JobRow) => boolean): number } {
   migrate(db, 'store-1', `
     CREATE TABLE rows (tbl TEXT, user_id TEXT, id TEXT, version INTEGER, body TEXT, PRIMARY KEY(tbl, user_id, id));
     CREATE TABLE events (id TEXT PRIMARY KEY, user_id TEXT, dedupe_key TEXT, item_id TEXT, account_id TEXT,
@@ -85,7 +85,7 @@ export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; rec
     row.account_id ?? null, row.item_id ?? null, row.site ?? null, row.paused ?? null, JSON.stringify(row)];
   const decisionValues = (row: DecisionRow): SQLInputValue[] => [row.id, row.user_id, row.kind, row.subject, row.state, JSON.stringify(row)];
 
-  const s: Store & { dump(): StoreState; recover(): number } = {
+  const s: Store & { dump(): StoreState; recover(skip?: (job: JobRow) => boolean): number } = {
     dump() {
       return tx(db, () => ({
         events: s.events(), jobs: s.jobs(), decisions: s.decisions(),
@@ -199,9 +199,9 @@ export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; rec
       });
     },
     release(id) { db.prepare('DELETE FROM claims WHERE job_id = ?').run(id); },
-    recover() {
+    recover(skip = () => false) {
       return tx(db, () => {
-        const running = s.jobs({ state: 'running' });
+        const running = s.jobs({ state: 'running' }).filter(job => !skip(job));
         for (const job of running) s.updateJob(job.id, { state: 'queued' });
         db.exec('DELETE FROM claims');
         return running.length;

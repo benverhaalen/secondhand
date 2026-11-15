@@ -85,6 +85,6 @@ Prepared on main 2026-11-15; no build or submit runs without Nate's word.
 | Native modules declared | done: `expo-sqlite`, `expo-secure-store`, `expo-file-system`, `expo-dev-client`; the LiDAR module is the capture lead's | `app/package.json`, `app/app.json` plugins |
 | Development pages out of a release, a not-found page | done (AP4) | `app/src/app/dev/_layout.tsx`, `app/src/app/+not-found.tsx` |
 | Identity | `com.bnvg.secondhand`, `usesNonExemptEncryption: false`, version 1.0.0, build numbers from EAS (`appVersionSource: remote`) | `app/app.json`, `app/eas.json` |
-| The simulator check | **waits on Nate's go**: on the Mac, create a device (none exist; runtimes 18.6, 26.0 and 26.3 are installed), build `preview-sim`, open `/dev/health` (it should name Databricks' state through the dev server) and `/shop?q=levi%20501` | the Mac |
+| The simulator check | **done 2026-11-15** (Release, iPhone 17 Pro, iOS 26.4, against `node server/main.ts`): one command on the Mac, `zsh scripts/ios-sim.sh <worktree name> [api origin]`, then the walks in [app/e2e/sim](../../app/e2e/sim/README.md). Results in [finalization §6](finalization.md#the-native-walks-2026-11-15-the-apps-native-walks-lead) | the Mac |
 
 What Nate decides: the production API host, his Apple team and EAS sign-in for the build, and the go for the first `preview-sim` and `development` builds.

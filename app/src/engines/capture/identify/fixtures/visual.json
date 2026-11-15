@@ -1,0 +1,29 @@
+{
+  "header": {
+    "source": "app/src/demo/market.ts: cheaper titles, dunk default title, women’s variant, Switch Lite title",
+    "mark": "example replay assembled from repo demo titles; no recorded visual-service reply exists",
+    "date": "2026-11-15"
+  },
+  "reply": [
+    {
+      "title": "Nike Court Vision Low, grey",
+      "rank": 1
+    },
+    {
+      "title": "Nike Dunk Low Grey Fog, men’s 10",
+      "rank": 2
+    },
+    {
+      "title": "Nike Dunk Low Grey Fog, women’s 11.5",
+      "rank": 3
+    },
+    {
+      "title": "Adidas Campus 00s, grey",
+      "rank": 4
+    },
+    {
+      "title": "Switch Lite, used",
+      "rank": 5
+    }
+  ]
+}
