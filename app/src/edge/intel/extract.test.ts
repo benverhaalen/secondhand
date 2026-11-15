@@ -21,8 +21,7 @@ const norm = (s: unknown): unknown => (typeof s === 'string' ? s.replace(/[’]/
 type Fake = Llm & { schemaCalls: number; rowCalls: number };
 // A fake model: writes the given schema for schema prompts, answers rows prompts with `rows`, and counts both.
 function fake(schema: () => unknown, rows: () => unknown = () => ({ pages: [] })): Fake {
-  const f = (async (prompt: string) => { if (isSchemaPrompt(prompt)) { f.schemaCalls++; return schema(); } f.rowCalls++; return rows(); }) as Fake;
-  f.schemaCalls = 0; f.rowCalls = 0;
+  const f: Fake = Object.assign(async (prompt: string) => { if (isSchemaPrompt(prompt)) { f.schemaCalls++; return schema(); } f.rowCalls++; return rows(); }, { schemaCalls: 0, rowCalls: 0 });
   return f;
 }
 

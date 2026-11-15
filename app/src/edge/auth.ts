@@ -94,7 +94,7 @@ const unauth = (message: string, step: string) => new ApiError('unauthenticated'
 export type Claims = { subject: string; email?: string; email_verified?: boolean };
 type Jwk = JsonWebKey & { kid?: string };
 type VerifierOpts = { fetch?: typeof globalThis.fetch; now?: () => number; audiences?: () => string[]; log?: () => Log };
-const ids = (name: string) => () => (process.env[name] ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+const ids = (name: string) => () => (process.env[name] ?? '').split(',').map((s: string) => s.trim()).filter(Boolean);
 const dec = (s: string) => Buffer.from(s, 'base64url').toString('utf8');
 
 function idTokenVerifier(o: VerifierOpts & { name: string; jwks: string; issuers: string[]; audiences: () => string[] }) {
