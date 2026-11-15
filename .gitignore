@@ -24,3 +24,14 @@ scripts/out/
 .venv/
 .browser-scratch/
 WORKER_REPORT.md
+
+# Keys and credentials never belong in this public repo.
+*.p8
+*.pem
+*.p12
+*.mobileprovision
+AuthKey_*
+.env
+.env.*
+!.env.example
+*storage-state*.json
