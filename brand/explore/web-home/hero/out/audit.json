@@ -74,7 +74,7 @@
       "problems": [],
       "contrast_floor": 8.05,
       "photos_in_a_minute": {
-        "shown": 102,
+        "shown": 103,
         "pool": 380,
         "kinds": 7
       }
@@ -111,7 +111,7 @@
       "sideways": 0,
       "headline_lines": 3,
       "headline_px": 33.15,
-      "button_bottom": 354,
+      "button_bottom": 353,
       "first_screen": 390,
       "menu": true,
       "links": false,
@@ -247,7 +247,7 @@
       "off_center": 0,
       "problems": [],
       "header_fade_scrolled": 1,
-      "contrast_floor": 8.05
+      "contrast_floor": 7.92
     },
     {
       "w": 1920,
