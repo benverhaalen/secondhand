@@ -2143,3 +2143,19 @@ Nate, orchestrator's session, 2026-11-15, about 05:55 Central.
 > Wire more than that, we'll have you finish auditing the app right now, of course sending out expert subagent reviewers to capture every aspect, followed by checking in on bens to do list for additional understanding, and we formulate for ourselves whats needed, and spec out
 
 Used in: [the audit](../spec/plans/audit-2026-11-15.md), `spec/plans/finalization.md`, the app-wiring lead's brief.
+
+## 2026-11-15 nate the camera takes each type's shots, then the system processes, then the generative ui asks with prefilled selects
+Nate, capture lead's session, 2026-11-15, night Central.
+> Fix that too, please get everything working, review what I've stated we need the camera to capture. it should be able to identify the product, take input and save the color, item classification from its types, enough to drive perhaps a search officially, a search for similar, with clarifying questions. even if something requiring an identifer like a picture of the tag as well as front or back, might need to know condition with further input, or something like that
+
+> The camera doesnt the system takes the capture or amount the way each is intended per product type and told to them, then they finish that up, the system processes what it can, and then the generative intelligent ui pops in the generative clarifying question widgets to ask questions and get answers to what it is, with prepopulated selects and such fields when there are certain possible matches, that the system feels certain on based on a number of factors, like brand, design found with reverse image search, many opensource tools, treg also has google lens and treg has alot we could pay to use
+
+Used in: `spec/engines/capture.md` section 9, `.agents/team/packets/team/72-capture-handoff.md` section 0.
+
+## 2026-11-15 nate address every fix, then fully realize the system; how capture should run
+Nate, orchestrator's session, 2026-11-15, about 06:20 Central. The middle of the message is what he sent the capture lead, quoted by him.
+> Lets address all fixes, and then also fully realize the system. im working on capture right now, and sent The camera doesnt the system takes the capture or amount the way each is intended per product type and told to them, then they finish that up, the system processes what it can, and then the generative intelligent ui pops in the generative clarifying question widgets to ask questions and get answers to what it is, with prepopulated selects and such fields when there are certain possible matches, that the system feels certain on based on a number of factors, like brand, design found with reverse image search, many opensource tools, treg also has google lens and treg has alot we could pay to use
+>
+>  to it, which it updated the spec and pushed. So address everything to fix to work and also perform at its best.
+
+Used in: [the finalization spec](../spec/plans/finalization.md), [the audit](../spec/plans/audit-2026-11-15.md).

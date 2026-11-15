@@ -31,3 +31,4 @@ Nate: "a dedicated page, and on our homepage top hero as a fun visitable demonst
 
 ## Research
 Research for this feature is filed under [research/watch/](../../research/watch/) (no folder of its own yet).
+- [How a many-source search shows its reach while it runs](../../research/buy/nate/search-in-progress.md): every source a row from the first frame, counts not percents, rows usable before the end and marked so far, the record kept after.
