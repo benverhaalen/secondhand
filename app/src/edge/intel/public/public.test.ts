@@ -138,3 +138,12 @@ test('depop: a marked-down card reads the discounted price, not the full one (se
   const read = readPage('depop', '<ol>' + card + '</ol>', 'search');
   assert.equal(read.ok && read.data[0].price_cents, 1900);
 });
+
+test('offerup reader never passes on a price too long to be whole cents: the field gate reports the page', () => {
+  const page = `<script id="__NEXT_DATA__" type="application/json">${JSON.stringify({ props: { pageProps: { searchFeedResponse: { looseTiles: [
+    { listing: { listingId: 'big', title: 'x', price: '9'.repeat(400), conditionText: null, image: null } },
+    { listing: { listingId: 'ok', title: 'y', price: '12.50', conditionText: null, image: null } },
+  ] } } } })}</script>`;
+  const r = readPage('offerup', page);
+  assert.ok(!r.ok && r.error.code === 'page_changed', JSON.stringify(r).slice(0, 200)); // before: ok, with price_cents Infinity
+});
