@@ -18,5 +18,5 @@ export const fresh: World = {
   connections: SITES.map(site => ({ site, account: null, linking: null, error: null })),
   items: [], offers: [], orders: [], appointments: [], conversations: [], messages: [], decisions: [], notices: [], events: [], rules: [],
   limits: { handover: ['ship', 'pickup'], pickup_windows: [], saved_spot: null, ask_every_time: true },
-  goal: null, style: [], wants: [], matches: [], products: PRODUCTS, searches: [], retail: RETAIL,
+  goal: null, style: [], wants: [], matches: [], products: PRODUCTS, searches: [], retail: RETAIL, lookups: [],
 };

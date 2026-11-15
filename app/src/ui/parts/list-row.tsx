@@ -1,7 +1,9 @@
 // A row in a list of settings, sites, sales or log entries: the row every phone's Settings app uses, so a person already
 // knows how to read it (copy.md, Jakob's law). Why a part: the You pages, first launch and any later settings list need the
 // same row, and hand-built rows drift (README, "one kind, one size").
-//   lead    what the row is about: an icon, or a site's own logo (the name is its label, never words, C5).
+//   lead    what the row is about: an icon, or a site's own logo (the name is its label, never words, C5), or the thing's
+//           photo at 40, round as the logo is (photos lead, C3): a thing looked up, in Buy's Recent. A row with a photo
+//           is marked data-item: it is a thing to open, as a card is (composition U11, brand-check B9).
 //   label   the thing, one line. detail: what it means or changes, up to two lines, in the second ink.
 //   value   a short fact on the right ("$31.30", "Right away"). trail: a control instead (a Switch, a Pill).
 //   onPress the whole row opens something; it ends in a chevron so it reads as pressable (U1).
@@ -10,6 +12,7 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { Icon, type IconName } from '../icon';
+import { Photo, type PhotoSrc } from '../photo';
 import { Press } from '../press';
 import { Txt } from '../text';
 import { useColors } from '../theme';
@@ -20,12 +23,14 @@ import { Image } from 'expo-image';
 // 56 = the notice height; 76 = 56 and one more caption line (18) plus the 2 between them, rounded to the 4 grid.
 const ONE = size.noticeH, TWO = size.noticeH + space.s5;
 
-export function ListRow({ id, label, detail, lead, site, value, tabular = false, trail, onPress, tone = 'ink' }: {
+export function ListRow({ id, label, detail, lead, site, photo, value, tabular = false, trail, onPress, tone = 'ink' }: {
   id: string;
   label: string;
   detail?: string;
   lead?: IconName;
   site?: Site;
+  // The thing's photo; null draws the empty photo slot.
+  photo?: PhotoSrc | null;
   value?: string;
   // Amounts in a column keep their width (Art. 6.7).
   tabular?: boolean;
@@ -37,9 +42,9 @@ export function ListRow({ id, label, detail, lead, site, value, tabular = false,
   const c = useColors();
   const body = (pressed: boolean) => (
     <View
-      {...mark(detail ? 'list-row-two' : 'list-row')}
+      {...mark(detail ? 'list-row-two' : 'list-row', photo === undefined ? {} : { item: '' })}
       style={{ height: detail ? TWO : ONE, flexDirection: 'row', alignItems: 'center', gap: space.s3, backgroundColor: pressed ? c.gray : undefined, ...(onPress ? {} : FLAT) }}>
-      {site ? <Logo site={site} /> : lead ? <Icon name={lead} tone={tone === 'brick' ? 'brick' : 'ink'} /> : null}
+      {photo !== undefined ? <Photo src={photo} label={label} fit="row" /> : site ? <Logo site={site} /> : lead ? <Icon name={lead} tone={tone === 'brick' ? 'brick' : 'ink'} /> : null}
       <View style={{ flex: 1 }}>
         <Txt role="body" lines={1}>{label}</Txt>
         {detail ? <Txt role="caption" lines={2}>{detail}</Txt> : null}

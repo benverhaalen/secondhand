@@ -1,7 +1,7 @@
 // What the buy side's pages read from the demo world: no rendering here, so it loads in node tests (read.test.ts).
 // Names follow spec/product.md (want, match, match label) and spec/features/buy.md.
-import { product, SEARCH_DUNKS, SEARCH_EMPTY, SEARCH_SLOW, usd } from '../demo/index.ts';
-import type { Cut, Match, Product, SearchResult, Site, Want } from '../demo/index.ts';
+import { ms, product, range, SEARCH_DUNKS, SEARCH_EMPTY, SEARCH_SLOW, usd } from '../demo/index.ts';
+import type { Cut, Lookup, Match, Product, SearchResult, Site, Want, World } from '../demo/index.ts';
 import colourData from './colours.json' with { type: 'json' };
 
 const dollars = (cents: number) => cents / 100;
@@ -72,6 +72,22 @@ export function cover(site: Site, pickup: boolean): string {
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 // "2026-06" is "Jun".
 export const monthLabel = (month: string) => MONTHS[Number(month.slice(5, 7)) - 1] ?? month;
+
+// ---- Recent: the person's last lookups (spec/redesign/new-results.md, What Recent is; GET /v1/lookups?limit=20) ----
+// 20 kept, 90 days before one falls off, 3 on Buy before See all. Agent proposal, ours to tune (the same section).
+export const RECENT_KEEP = 20, RECENT_DAYS = 90, RECENT_SHOWN = 3;
+export type RecentRow = Lookup & { key: Product['key']; says: string; opens: string };
+
+// Newest first. An appraisal says what the thing sells for used now and opens the value page again; a find says what the
+// thing turned out to be and opens its product page.
+export function recent(w: Pick<World, 'now' | 'lookups' | 'products'>): RecentRow[] {
+  const since = ms(w.now) - RECENT_DAYS * 864e5;
+  return w.lookups.filter(l => ms(l.at) > since).sort((a, b) => ms(b.at) - ms(a.at)).slice(0, RECENT_KEEP).map(l => {
+    const p = w.products.find(x => x.id === l.product_id)!;
+    return { ...l, key: p.key, says: l.kind === 'worth' ? `${range(p.used_price.range)} used` : `${p.brand} ${p.model}`,
+      opens: l.kind === 'worth' ? `/worth?product=${p.id}` : `/product/${p.id}` };
+  });
+}
 
 // ---- A want built by touch (spec/features/watch.md, "Building a want by touch"; Ben, words.md 2026-11-15) ----
 // Each chip changes which listings match; anything else stays words. The demo's Want row has no low end, no ship or

@@ -2204,3 +2204,5 @@ Nate, orchestrator's session, 2026-11-15, about 07:40 Central, answering "Run th
 > After judging
 
 Used in: [the finalization spec](../spec/plans/finalization.md#11-the-history-rewrite-after-judging).
+
+Note, 2026-11-15, 12:20 UTC, by the orchestrator: the Central times on this session's entries from "address every fix" to "the history rewrite runs after judging" were written late by its own miscount. By the machine clock those messages arrived between about 05:52 and 06:15 Central.
