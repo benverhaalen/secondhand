@@ -1,5 +1,5 @@
 {
-  "screen": "index",
+  "screen": "dev/health",
   "what": "Development placeholder until the first real screen lands. It shows whether the backend answers.",
   "states": [
     { "state": "loading", "shows": "the name and \"Checking Databricks\"" },

@@ -27,7 +27,7 @@ export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage>
     const ep = await source.open(profileDir, opts);
     let browser: CdpBrowser;
     try { browser = await pw.chromium.connectOverCDP(ep.cdpUrl, { timeout: 30_000 }); }
-    catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/wss?:\/\/\S+/g, '[cdp]')}`); }
+    catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/(wss?|https?):\/\/\S+/g, '[cdp]')}`); }
     const ctx = browser.contexts()[0] ?? await browser.newContext();
     let closed = false;
     const closers: (() => void)[] = [];
