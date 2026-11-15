@@ -6,13 +6,10 @@
     {
       "390": {
         "words": 20,
-        "pill_y": 463,
+        "pill_y": 460,
         "headline_lines": 4,
         "photos": 0,
-        "fonts": [
-          "Clofie 600",
-          "PP Neue Montreal 500"
-        ],
+        "fonts": [],
         "animated": [
           "transform"
         ],
@@ -24,19 +21,16 @@
       },
       "1440": {
         "words": 29,
-        "pill_y": 470,
-        "headline_lines": 3,
+        "pill_y": 557,
+        "headline_lines": 4,
         "photos": 32,
-        "fonts": [
-          "Clofie 600",
-          "PP Neue Montreal 500"
-        ],
+        "fonts": [],
         "animated": [
           "transform"
         ],
         "compositor_only": true,
         "fastest_px_s": 11,
-        "clothing_share": 0.22,
+        "clothing_share": 0.2,
         "contrast_floor": 9.5,
         "moves_under_reduce_motion": 0
       },
@@ -48,13 +42,10 @@
     {
       "390": {
         "words": 20,
-        "pill_y": 463,
+        "pill_y": 460,
         "headline_lines": 4,
         "photos": 8,
-        "fonts": [
-          "Clofie 600",
-          "PP Neue Montreal 500"
-        ],
+        "fonts": [],
         "animated": [
           "transform"
         ],
@@ -66,19 +57,16 @@
       },
       "1440": {
         "words": 29,
-        "pill_y": 470,
-        "headline_lines": 3,
+        "pill_y": 557,
+        "headline_lines": 4,
         "photos": 8,
-        "fonts": [
-          "Clofie 600",
-          "PP Neue Montreal 500"
-        ],
+        "fonts": [],
         "animated": [
           "transform"
         ],
         "compositor_only": true,
         "fastest_px_s": 333,
-        "clothing_share": 0.11,
+        "clothing_share": 0.1,
         "contrast_floor": 9.5,
         "moves_under_reduce_motion": 0
       },
@@ -90,13 +78,10 @@
     {
       "390": {
         "words": 20,
-        "pill_y": 603,
+        "pill_y": 600,
         "headline_lines": 4,
         "photos": 0,
-        "fonts": [
-          "Clofie 600",
-          "PP Neue Montreal 500"
-        ],
+        "fonts": [],
         "animated": [
           "strokeDashoffset",
           "transform"
@@ -109,13 +94,10 @@
       },
       "1440": {
         "words": 29,
-        "pill_y": 629,
-        "headline_lines": 3,
+        "pill_y": 672,
+        "headline_lines": 4,
         "photos": 0,
-        "fonts": [
-          "Clofie 600",
-          "PP Neue Montreal 500"
-        ],
+        "fonts": [],
         "animated": [
           "strokeDashoffset",
           "transform"
