@@ -1820,3 +1820,11 @@ Nate, build session (orchestrator), 2026-11-15 about 14:55 Central. His name is 
 > its [his own name] my apple account, the testflight build is the demo for us to test and improve continously before we finalize. I expect we can continously improve the ui/ux and strive to fit the perfect presentation to ensure us winning the compeition
 
 Used in: [production readiness](../spec/plans/sweep/round-2/production-readiness.md), decisions 1 and 5.
+
+## 2026-11-15 the website one part at a time, with Ben's feedback turned into checks
+Ben, website thread, 2026-11-15 10:05 and 10:11 UTC.
+> no work through it with me in this chat one by one give me options to pick from and explain each. everything needs to pass anti ai skill. like for every decision, given how the designer for the webpage reference would design it, given our design system and all the edits ever since the messup with the iphone ui, how would you then come up with how it should be designed. you can kind of mirror the rhythm and pattern they had and translate tokens and colors and hierarchy. dont do a dynamic workflow just try to get images of the part of the screen in front of my face and the options for the next one both describing text as well as how it looks and the why based on expert opinion. and then end up repeating until we have it all done. think of what an expert would say the purpose of the landing page is and how that would apply in the best way to our product
+
+> i trigger the repeats in the chat. so once you get my hitl feedback you adjust and learn and create checks and then continue on with the same philosophy for it all
+
+Used in: [web.md W15](constitutions/web.md).
