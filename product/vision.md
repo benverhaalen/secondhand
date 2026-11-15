@@ -1,6 +1,6 @@
 # Vision
 
-The shared picture of secondhand. It changes as Ben and Nate shape it. Every line names who said it and links to their words in [words.md](words.md), or is marked *agent proposal*. Move a line to **Decided** only when both of you agree, and log the move in [decisions.md](decisions.md).
+The shared picture of secondhand. It changes as Ben and Nate shape it. Every line names who said it and links to their words in [words.md](words.md), or is marked *agent proposal*. A line moves to **Decided** when Ben or Nate decides it, logged in [decisions.md](decisions.md). Either can reopen the other's line ([decision](decisions.md#2026-11-15-one-of-ben-or-nate-can-decide-the-other-can-reopen)).
 
 ## Decided
 

@@ -1,8 +1,8 @@
 // Decisions trace to a person's words, and those words are never edited.
 import { read, err } from './util.mjs';
 
-// Who can agree to a decision. Agents never can. How many must agree is DECIDERS_NEEDED:
-// product/vision.md says both; until Ben settles whether that holds while Nate is away, the check needs one.
+// Who can agree to a decision. Agents never can. One of them is enough, and the other can reopen it
+// (Ben, 2026-11-15 00:14, product/decisions.md).
 export const DECIDERS = ['Ben', 'Nate'];
 export const DECIDERS_NEEDED = 1;
 
