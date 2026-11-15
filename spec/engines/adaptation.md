@@ -27,7 +27,7 @@ The full table, per site, verb and field with the line that extracts each, is [r
 | Shipping price | no | no | no | one listing (live) | no |
 | Rank, promoted mark, photo count, category, price-drop history | **not extracted on any site** | | | | |
 
-What the terms let us do (*sourced*, quoted in the full table): eBay's API licence bars using its content "to suggest or model prices", so eBay API rows never train a weight; eBay page reads run under Nate's ruling; Poshmark's terms bar automated collection and share, like and repost are only suggested; Mercari is read only on a person's own request; Dupe may be displayed.
+What the terms let us do (*sourced*, quoted in the full table): eBay's API licence bars using its content "to suggest or model prices", so eBay API rows never train a weight; eBay page reads run under Nate's ruling; every site is read ([Nate](../../product/words.md#2026-11-15-nate-we-read-everything-the-poshmark-rule-is-only-about-share-like-and-repost): "We read everything"), and the one Poshmark rule is that share, like and repost are suggestions the person taps; Dupe may be displayed but its rows are not kept.
 
 Four facts shape everything below (*inferred* from the table):
 
@@ -107,7 +107,7 @@ Where rows carry them, the same comparison is made for time to sell (A1's hazard
 
 **How it is proved, on current data only.**
 
-1. *Development reading, now:* the benchmark's 20 market items, branded rows from the composed product's public search (Poshmark and Dupe), off-brand rows from the same search with the attribute query and the brand left out, per item and kind, with counts and intervals. Labelled a development reading. Four items are left out as brand-locked or excluded: the iPhone 13, the Switch OLED, the Kindle Paperwhite, and the LEGO set.
+1. *Development reading, now:* the benchmark's 20 market items, branded rows from the composed product's search over every source it reaches (Dupe read live and shown, never kept, so not counted), off-brand rows from the same search with the attribute query and the brand left out, per item and kind, with counts and intervals. Labelled a development reading. Four items are left out as brand-locked or excluded: the iPhone 13, the Switch OLED, the Kindle Paperwhite, and the LEGO set.
 2. *Stability:* the same reading repeated on a later day. A measure whose sign flips from one day to the next for the same item and cell is not a measure; it is dropped for that kind. Bar: the second day's `θ` lies inside the first day's interval for at least 80% of item-cells with both sides above the guard.
 3. *Asks against sales:* the premium on Poshmark's sold search (sold at the last ask) against the premium on live asks. If they differ beyond both intervals, the live-ask premium is reported as what sellers hope, not what sells.
 4. *Use (L3):* in the panel, for branded items with a thin basis, does adding off-brand comps divided by `e^θ̃` lower the error of the valuation on listings that later sell, against the valuation without them? Paired, with its interval. Only this rung lets `θ` change a price a person sees.
@@ -144,7 +144,7 @@ On today's market, not on old data ([Nate](../../product/words.md#2026-11-15-nat
 
 **S0: the code, on synthetic markets.** Each estimator recovers a known truth within its interval: a two-kind market with hazards 0.02 and 0.10 a day; interval-censored sales from reads 1 to 7 days apart; listings first met part-way through their life; a competing "ended unsold" risk; offers that take exactly 20% on half of sales. A listing still live at the end of observation is censored there, never dropped. This proves the arithmetic, not the market.
 
-**P1: the live panel (needs Nate's decision on which sites, [credibility.md](credibility.md#decisions-that-are-nates)).** Every listing the product's own searches return for the [benchmark's](../benchmark.md) fixed items enters the panel at its first read, with its ask, listed date, likes or watchers, the seller's sold count, and our valuation frozen at that moment. It is re-read with the site's still-up read every two to three days, at the site's pace, until it is sold, ended or gone, or 60 days pass. What it gives today: A1 by site, kind and age; A2; A7, the only source with likes over time; A10; the price drops sellers make; and, as a by-product, a score of our own valuation against what happened (credibility exhibit 3). What it cannot give: the price a buyer paid on Poshmark, Mercari or Depop (only the last ask), so not A3 or A4.
+**P1: the live panel, on every site ([Nate](../../product/words.md#2026-11-15-nate-we-read-everything-the-poshmark-rule-is-only-about-share-like-and-repost): "We read everything").** Every listing the product's own searches return for the [benchmark's](../benchmark.md) fixed items enters the panel at its first read, with its ask, listed date, likes or watchers, the seller's sold count, and our valuation frozen at that moment. It is re-read with the site's still-up read every two to three days, at the site's pace, until it is sold, ended or gone, or 60 days pass. What it gives today: A1 by site, kind and age; A2; A7, the only source with likes over time; A10; the price drops sellers make; and, as a by-product, a score of our own valuation against what happened (credibility exhibit 3). What it cannot give: the price a buyer paid on Poshmark, Mercari or Depop (only the last ask), so not A3 or A4.
 
 - *Design.* Listings entering in the first two weeks fit; listings entering in weeks three and four are tested, with follow-up to day 60 of the panel. Contestants on the same test listings: B0, one hazard for every site; B1, per site and kind, unpooled; A1, pooled by site, kind and age; then A1 with A2, A7 and A10 added one at a time.
 - *Primary score:* log loss of "sold within 14 days of first read", weighted by the inverse probability of censoring. Brier, the 30-day horizon once follow-up allows, and a 10-bin calibration table are reported beside it. Valuation's D10 bar (AUC of at least 0.6, calibration within 5 points; [valuation.md §9](valuation.md#9-proof)) is reported too, since AD2 replaces D10's curve only if A1 meets it.
@@ -186,7 +186,7 @@ Sent to the orchestrator for each owning lead; this page does not edit their cod
 ## 7. What is proved first
 
 1. **S0** for A1, A3, A4, A5 and A6: the synthetic markets above, written as failing tests first. Needs nothing but the repo.
-2. **P1**, once Nate decides which sites may be re-read and AD8 lands: A1 against B0 and B1, then A2, A7 and A10 one at a time.
+2. **P1**, once AD8 lands: A1 against B0 and B1, then A2, A7 and A10 one at a time.
 3. **P2**, once one account is linked: A3, A4, A5, A6.
 4. **A11, development reading**, today, on the benchmark's market items from public Poshmark and Dupe rows; then its stability on a second day.
 
