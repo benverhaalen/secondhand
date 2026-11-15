@@ -2403,3 +2403,9 @@ Nate, the Databricks lead's session, 2026-11-15, about 13:40 UTC, while the lead
 Read by the Databricks lead: an Apify row is a Facebook Marketplace row; a line from any other site through Apify has no rights row and is refused. eBay rows come through treg and our own page reads; eBay content still never fits a model, by any route ([data use](../spec/data-use.md)).
 
 Used in: [finalization.md DB11](../spec/plans/finalization.md), the rights brief `brief-dbx-rights-1`.
+
+## 2026-11-15 nate the clarifying question widgets belong in the intelligent ui too
+Nate, the orchestrator's session, 2026-11-15, about 13:50 UTC.
+> I think we can add those clarifying question widgest to the intelligent ui too
+
+Read by the orchestrator as: the generative clarifying-question widgets built for capture (prepopulated selects when the system is fairly sure) also appear in the buying chat's answers; one block shape and one drawn part for both. Sent to the capture lead and the engines lead.
