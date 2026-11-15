@@ -95,7 +95,7 @@ function Layers({ waiting, children }: { waiting: number; children: ReactNode })
   return (
     <View {...mark('queue-stack', { waiting: String(waiting), fit: 'content' })} style={{ paddingBottom: space.s3 * layers }}>
       {Array.from({ length: layers }, (_, n) => layers - 1 - n).map(i => (
-        <View key={i} pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: space.s3 * (i + 1), aspectRatio: 1, borderRadius: radius.photo,
+        <View key={i} pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: space.s3 * (i + 1), aspectRatio: 1, borderRadius: radius.photo, borderCurve: 'continuous',
           backgroundColor: c.surface, opacity: i === 0 ? 0.75 : 0.4, transform: [{ scale: i === 0 ? 0.97 : 0.93 }],
           ...(scheme === 'dark' ? { borderWidth: 1, borderColor: c.cardEdge } : { boxShadow: `0 6px 14px ${c.stackShade}` }) }} />
       ))}

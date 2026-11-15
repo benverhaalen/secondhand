@@ -64,7 +64,7 @@ function PillBody({ label, kind, icon, state, step, pressed }: { label: string; 
   return (
     <View
       {...mark('pill-card', { kind, state, fit: 'content' })}
-      style={[{ height: size.pillCardH, minWidth: 88, paddingLeft: icon ? space.s4 : size.pillCardPad, paddingRight: size.pillCardPad, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' }, f.box]}>
+      style={[{ height: size.pillCardH, minWidth: 88, paddingLeft: icon ? space.s4 : size.pillCardPad, paddingRight: size.pillCardPad, borderRadius: radius.pill, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center' }, f.box]}>
       <Label label={label} step={step} tone={f.tone} state={state} icon={icon} />
     </View>
   );
@@ -87,7 +87,7 @@ export function IconButton({ id, icon, label, look = 'fill', onPress, children }
       {({ pressed }) => (
         <View
           {...mark('icon-button')}
-          style={{ width: size.pillCardH, height: size.pillCardH, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center',
+          style={{ width: size.pillCardH, height: size.pillCardH, borderRadius: radius.pill, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center',
             backgroundColor: look === 'plain' ? (pressed ? c.gray : 'transparent') : ground === 'field' ? (pressed ? c.surface : c.secOnField) : pressed ? c.grayPress : c.gray }}>
           <Icon name={icon} />
           {children ? <View style={{ position: 'absolute', top: -4, right: -4 }}>{children}</View> : null}
@@ -116,7 +116,7 @@ export function FootButton({ id, label, kind = 'primary', icon, state = 'idle', 
 function FootBody({ label, kind, icon, state, step, pressed }: { label: string; kind: PillKind; icon?: IconName; state: PillState; step?: string; pressed: boolean }) {
   const f = useFill(kind, pressed, state);
   return (
-    <View {...mark('button', { kind, state })} style={[{ height: size.buttonH, width: '100%', borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' }, f.box]}>
+    <View {...mark('button', { kind, state })} style={[{ height: size.buttonH, width: '100%', borderRadius: radius.pill, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center' }, f.box]}>
       <Label label={label} step={step} tone={f.tone} state={state} icon={icon} />
     </View>
   );

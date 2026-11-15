@@ -74,7 +74,7 @@ function Sites() {
         <Stack>
           <Txt role="body" tone="ink-2">Point the camera at something you want gone. One photo is enough to start the listing.</Txt>
           <Line>
-            <Pill id="onboarding-later" kind="second" label="Later" onPress={() => finish('/')} />
+            <Pill id="onboarding-later" kind="second" label="Not now" onPress={() => finish('/')} />
           </Line>
         </Stack>
       </Screen>

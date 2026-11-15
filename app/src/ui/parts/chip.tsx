@@ -51,11 +51,11 @@ export function Chip({ id, label, count, icon, site, picked = false, onPress }: 
       {({ pressed }) => (
         <View
           {...mark('chip', { picked: picked ? 'true' : 'false', fit: 'content' })}
-          style={{ height: size.pillCardH, minWidth: size.pillCardH, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s2,
+          style={{ height: size.pillCardH, minWidth: size.pillCardH, borderRadius: radius.pill, borderCurve: 'continuous', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s2,
             paddingLeft: site ? 0 : icon ? space.s3 : space.s4, paddingRight: site ? 0 : space.s4,
             backgroundColor: picked ? c.ink : pressed ? c.grayPress : c.gray }}>
           {site ? (
-            <View style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, overflow: 'hidden', borderWidth: picked ? 2 : 0, borderColor: c.page }}>
+            <View style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, borderCurve: 'continuous', overflow: 'hidden', borderWidth: picked ? 2 : 0, borderColor: c.page }}>
               <Image source={SITES[site].logo} alt={SITES[site].name} accessibilityLabel={SITES[site].name} style={{ width: '100%', height: '100%' }} contentFit="cover" />
             </View>
           ) : null}
