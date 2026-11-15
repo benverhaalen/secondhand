@@ -70,7 +70,8 @@ Mac facts learned: the shared `app/node_modules` is stale (it lacks `@anthropic-
    - `value_item` calls `valuate`, one call behind both the money and what is visible;
    - `search_market` reads the search job as a stream (the contract is in the shared notes `eng-bc3-search-frames.md`): it answers from the first `answer.partial` frames, and later frames become new result ids;
    - `POST /v1/assist`, in the shape agreed with the app-wiring lead (below), with a two-person test and the daily visitor cap.
-8. **BC4**: the first scored run on Windows, low then medium effort (`OPENROUTER_API_KEY` is set there), recording each run's cost before the second starts.
+8. **Vocabulary** (orchestrator, for the Databricks judges at 19:00 UTC). When writing or revising `spec/engines/valuation.md` and `spec/engines/adaptation.md`, use Databricks' own terms where they name the same thing: a target sales curve as the baseline, adjusted in real time by named signals (demand, competition, customer sensitivity, timing, season and outside events, digital behavior, history). The mapping is in [databricks-retail-solutions.md](../../../../research/data/nate/databricks-retail-solutions.md). On 2026-11-15 a served valuation read only history live, and timing only as age decay. The data lead has the list for `databricks/RETAIL.md`.
+9. **BC4**: the first scored run on Windows, low then medium effort (`OPENROUTER_API_KEY` is set there), recording each run's cost before the second starts.
 
 ## Agreed with other leads
 
