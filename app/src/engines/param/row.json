@@ -18,5 +18,6 @@
   "promoted_at": null,
   "origin": "fit",
   "previous_version": null,
-  "keep": null
+  "keep": null,
+  "days_since_last": null
 }

@@ -19,7 +19,7 @@ const toParam = (row: Record<string, unknown>): Param => {
   return {
   name: r.name as string, scope: r.scope as Scope, family: r.family as Param['family'], value_or_hyperparams: r.value_or_hyperparams, prior: r.prior, version: Number(r.version),
   fitted_on_ids_hash: typeof r.fitted_on_ids_hash === 'string' ? r.fitted_on_ids_hash : null, n_eff: Number(r.n_eff), metric: typeof r.metric === 'string' ? r.metric : null, held_out_score: num(r.held_out_score),
-  guard_lo: num(r.guard_lo), guard_hi: num(r.guard_hi), origin: r.origin as Param['origin'], previous_version: num(r.previous_version), keep: num(r.keep), status: r.status as Param['status'], frozen: r.frozen as boolean, promoted_at: iso(r.promoted_at),
+  guard_lo: num(r.guard_lo), guard_hi: num(r.guard_hi), origin: r.origin as Param['origin'], previous_version: num(r.previous_version), keep: num(r.keep), days_since_last: num(r.days_since_last), status: r.status as Param['status'], frozen: r.frozen as boolean, promoted_at: iso(r.promoted_at),
   };
 };
 
@@ -38,10 +38,10 @@ export function sqlStore(tx: Tx): AsyncParamStore {
     tx.query('update param set status = $4, promoted_at = coalesce($5::timestamptz, promoted_at), updated_at = now() where name = $1 and scope = $2::jsonb and version = $3', [n, json(s), version, status, at]);
 
   const insertEvent = (p: Param) => tx.query(
-    `insert into param (user_id, name, scope, family, value_or_hyperparams, prior, version, fitted_on_ids_hash, n_eff, metric, held_out_score, guard_lo, guard_hi, origin, status, promoted_at, previous_version, keep)
-     values ($1, $2, $3::jsonb, $4, $5::jsonb, $6::jsonb, $7, $8, $9, $10, $11, $12, $13, 'event', 'champion', $14::timestamptz, $15, $16)`,
+    `insert into param (user_id, name, scope, family, value_or_hyperparams, prior, version, fitted_on_ids_hash, n_eff, metric, held_out_score, guard_lo, guard_hi, origin, status, promoted_at, previous_version, keep, days_since_last)
+     values ($1, $2, $3::jsonb, $4, $5::jsonb, $6::jsonb, $7, $8, $9, $10, $11, $12, $13, 'event', 'champion', $14::timestamptz, $15, $16, $17)`,
     [p.scope.person ?? null, p.name, json(p.scope), p.family, JSON.stringify(p.value_or_hyperparams), JSON.stringify(p.prior), p.version,
-      p.fitted_on_ids_hash, p.n_eff, p.metric, p.held_out_score, p.guard_lo, p.guard_hi, p.promoted_at, p.previous_version, p.keep]);
+      p.fitted_on_ids_hash, p.n_eff, p.metric, p.held_out_score, p.guard_lo, p.guard_hi, p.promoted_at, p.previous_version, p.keep, p.days_since_last]);
 
   const store: AsyncParamStore = {
     declare(d) { declared.set(d.name, d); },
@@ -133,7 +133,7 @@ export function sqlStore(tx: Tx): AsyncParamStore {
       const keep = forget(elapsed(base, at, days));
       // Explicit caller forgetting wins for this update: restoring full prior mass would pin recovery.
       const next = step(structuredClone(days === undefined ? evidence(d.family, start, prior) : start), keep);
-      if (days === undefined) next.value = withPrior(d.family, next.value, prior);
+      if (days === undefined) next.value = withPrior(d.family, next.value, prior, start, keep);
       const mean = summary(d.family, next.value);
       const lo = base?.guard_lo ?? d.guard_lo ?? null, hi = base?.guard_hi ?? d.guard_hi ?? null;
       const anomaly = mean !== undefined && ((lo !== null && mean < lo) || (hi !== null && mean > hi));
@@ -141,7 +141,7 @@ export function sqlStore(tx: Tx): AsyncParamStore {
       if (base) await setStatus(n, s, base.version, 'retired', null);
       await insertEvent({ name: n, scope: s, family: d.family, value_or_hyperparams: next.value, prior, version,
         fitted_on_ids_hash: null, n_eff: (base?.n_eff ?? 0) * keep + next.weight, metric: d.metric ?? null,
-        held_out_score: base?.held_out_score ?? null, guard_lo: lo, guard_hi: hi, origin: 'event', previous_version: base?.version ?? null, keep, status: 'champion', frozen: false, promoted_at: at });
+        held_out_score: base?.held_out_score ?? null, guard_lo: lo, guard_hi: hi, origin: 'event', previous_version: base?.version ?? null, keep, days_since_last: days ?? null, status: 'champion', frozen: false, promoted_at: at });
       return { applied: true, reason: anomaly ? 'clamped' : 'updated', ...(anomaly ? { anomaly: true } : {}), read: await store.read(n, s) };
     },
   };

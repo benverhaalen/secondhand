@@ -272,17 +272,19 @@ def test_repeated_explicit_gamma_forgetting_retains_small_positive_rate():
     for _ in range(60):
         s.observe('sale_rate', SCOPE, {'count': 1, 'exposure': 0, 'weight': 1, 'days_since_last': 30}, AT)
     assert s.read('sale_rate', SCOPE)['value']['rate'] == 4 * 0.5 ** 60
+    assert s.read('sale_rate', SCOPE, as_of=AT)['value']['rate'] == 4 * 0.5 ** 60
+    assert s.observe('sale_rate', SCOPE, {'count': 0, 'exposure': 0, 'weight': 0}, AT)['read']['value']['rate'] == 4 * 0.5 ** 60
 
 
-def test_retained_explicit_forgetting_keeps_positive_fitted_beta_and_discounted_n_eff():
+def test_retained_explicit_observations_keep_fitted_snapshot_without_subtracting_prior():
     s = MemoryStore()
     s.declare({'name': 'assist_span_open', 'family': 'beta', 'prior': {'alpha': 8, 'beta': 2}})
     s.propose(fit(name='assist_span_open', family='beta', prior={'alpha': 8, 'beta': 2}, value_or_hyperparams={'alpha': 1, 'beta': 9}, n_eff=20), 0)
     s.promote('assist_span_open', SCOPE, 1, 0, AT)
-    r = s.observe('assist_span_open', SCOPE, {'success': 0, 'weight': 1, 'days_since_last': 30}, AT)
+    s.observe('assist_span_open', SCOPE, {'success': 0, 'weight': 1, 'days_since_last': 30}, AT)
     kept = s.rollback('assist_span_open', SCOPE, AT, keep_evidence=True)
-    assert kept['value_or_hyperparams'] == r['read']['value'] == {'alpha': 0.5, 'beta': 5.5}
-    assert kept['n_eff'] == 11
+    assert kept['value_or_hyperparams'] == {'alpha': 1, 'beta': 10}
+    assert kept['n_eff'] == 21
     assert s.history('assist_span_open', SCOPE)[0]['value_or_hyperparams'] == {'alpha': 1, 'beta': 9}
 
 
@@ -299,6 +301,27 @@ def test_guard_keeps_all_counts_and_recovers():
     for _ in range(60):
         s.observe('assist_span_open', SCOPE, {'success': 0, 'weight': 1}, '2026-01-01')
     assert s.read('assist_span_open', SCOPE)['value'] == {'alpha': 68, 'beta': 62}
+
+
+@pytest.mark.parametrize('name,family,prior,value,first,second,empty,expected', [
+    ('assist_span_open', 'beta', {'alpha': 8, 'beta': 2}, {'alpha': 1, 'beta': 9},
+     {'success': 1}, {'success': 0}, {'success': 0}, {'alpha': 1.25, 'beta': 9.75}),
+    ('sale_rate', 'gamma', {'shape': 2, 'rate': 4}, {'shape': 1, 'rate': 9},
+     {'count': 1, 'exposure': 0}, {'count': 0, 'exposure': 1}, {'count': 0, 'exposure': 0}, {'shape': 1.25, 'rate': 9.75}),
+])
+def test_retained_evidence_follows_mixed_clocks_without_aging_fit(name, family, prior, value, first, second, empty, expected):
+    s = MemoryStore()
+    s.declare({'name': name, 'family': family, 'prior': prior})
+    s.propose(fit(name=name, family=family, prior=prior, value_or_hyperparams=value, n_eff=40), 0)
+    s.promote(name, SCOPE, 1, 0, '2026-01-01')
+    s.observe(name, SCOPE, {**first, 'weight': 2, 'days_since_last': 0}, '2026-01-31')
+    s.observe(name, SCOPE, {**second, 'weight': 3, 'days_since_last': 30}, '2026-01-31')
+    s.observe(name, SCOPE, {**empty, 'weight': 0}, '2026-03-02')
+    kept = s.rollback(name, SCOPE, '2026-04-01', keep_evidence=True)
+    assert kept['value_or_hyperparams'] == expected, 'retain observed evidence through explicit decay, calendar decay and idle rollback'
+    assert kept['n_eff'] == 41, 'restore fitted 40 plus observed 2/8 + 3/4'
+    assert s.history(name, SCOPE)[0]['value_or_hyperparams'] == value, 'fitted snapshot stays immutable'
+    assert s.read(name, SCOPE, '2126-01-01')['value'] == prior, 'an idle scope returns to its prior'
 
 
 def test_rollback_restores_fit_not_event_and_keeps_only_active_evidence():

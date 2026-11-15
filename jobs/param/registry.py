@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from dataclasses import dataclass, field
 
 FIELDS = ("name", "scope", "family", "value_or_hyperparams", "prior", "version", "fitted_on_ids_hash", "n_eff", "metric",
-          "held_out_score", "guard_lo", "guard_hi", "status", "frozen", "promoted_at", "origin", "previous_version", "keep")
+          "held_out_score", "guard_lo", "guard_hi", "status", "frozen", "promoted_at", "origin", "previous_version", "keep", "days_since_last")
 FAMILIES = {"scalar", "beta", "normal", "gamma", "model_ref"}
 SCOPE_KEYS = ("kind", "site", "segment", "state", "person")
 FORGET_DAYS = 30
@@ -77,10 +77,10 @@ def _evidence(family, value, prior):
     return {k: value[k] - prior[k] for k in prior}
 
 
-def _with_prior(family, value, prior):
+def _with_prior(family, value, prior, start, keep):
     if family not in {"beta", "gamma"}:
         return value
-    return {k: prior[k] + value[k] for k in prior}
+    return {k: start[k] * keep + prior[k] * (1 - keep) + (value[k] - (start[k] - prior[k]) * keep) for k in prior}
 
 
 def _decay(row, as_of=None):
@@ -89,8 +89,7 @@ def _decay(row, as_of=None):
     keep = forget(_elapsed(row, as_of, None))
     value = row["value_or_hyperparams"]
     if row["family"] in {"beta", "gamma"}:
-        old = _evidence(row["family"], value, row["prior"])
-        value = _with_prior(row["family"], {k: v * keep for k, v in old.items()}, row["prior"])
+        value = {k: value[k] * keep + p * (1 - keep) for k, p in row["prior"].items()}
     return {**row, "value_or_hyperparams": value, "n_eff": row["n_eff"] * keep}
 
 
@@ -176,7 +175,7 @@ class MemoryStore:
         # Explicit caller forgetting wins for this update: restoring full prior mass would pin recovery.
         next_value = step(copy.deepcopy(_evidence(d["family"], start, prior) if days_since_last is None else start), keep)
         if days_since_last is None:
-            next_value["value"] = _with_prior(d["family"], next_value["value"], prior)
+            next_value["value"] = _with_prior(d["family"], next_value["value"], prior, start, keep)
         mean = _summary(d["family"], next_value["value"])
         lo = base.get("guard_lo") if base else None
         hi = base.get("guard_hi") if base else None
@@ -187,7 +186,7 @@ class MemoryStore:
         if base:
             base["status"] = "retired"
         row = {"name": name, "scope": dict(scope), "family": d["family"], "value_or_hyperparams": copy.deepcopy(next_value["value"]),
-               "prior": copy.deepcopy(prior), "origin": "event", "previous_version": base["version"] if base else None, "keep": keep, "version": max((r["version"] for r in rows), default=0) + 1,
+               "prior": copy.deepcopy(prior), "origin": "event", "previous_version": base["version"] if base else None, "keep": keep, "days_since_last": days_since_last, "version": max((r["version"] for r in rows), default=0) + 1,
                "fitted_on_ids_hash": None, "n_eff": (base["n_eff"] if base else 0) * keep + next_value["weight"],
                "metric": d.get("metric"), "held_out_score": base["held_out_score"] if base else None,
                "guard_lo": lo, "guard_hi": hi, "status": "champion", "frozen": False, "promoted_at": at}
@@ -212,7 +211,7 @@ class MemoryStore:
         latest = max((r["version"] for r in rows), default=0)
         if latest != expect_version:
             raise VersionConflict(f"{row['name']} is at v{latest}, fit expected v{expect_version}")
-        new = {**{k: row.get(k) for k in FIELDS}, "version": latest + 1, "status": "challenger", "origin": "fit", "previous_version": None, "keep": None, "frozen": False, "promoted_at": None}
+        new = {**{k: row.get(k) for k in FIELDS}, "version": latest + 1, "status": "challenger", "origin": "fit", "previous_version": None, "keep": None, "days_since_last": None, "frozen": False, "promoted_at": None}
         rows.append(new)
         return copy.deepcopy(new)
 
@@ -256,9 +255,21 @@ class MemoryStore:
             return copy.deepcopy(prev)
         if cur["family"] not in {"beta", "gamma"}:
             raise ValueError("keep_evidence supports beta or gamma")
-        retained = _decay(events[0], at) if events else prev
+        value = copy.deepcopy(prev["value_or_hyperparams"])
+        n_eff = prev["n_eff"]
+        factor = forget(_elapsed(events[0], at, None)) if events else 1
+        for row in events:
+            if row["keep"] is None:
+                raise ValueError("event history lacks decay metadata for keep_evidence")
+            base = by_version.get(row["previous_version"])
+            start = base["value_or_hyperparams"] if base else row["prior"]
+            old = start if row["days_since_last"] is not None else _evidence(row["family"], start, row["prior"])
+            next_value = row["value_or_hyperparams"] if row["days_since_last"] is not None else _evidence(row["family"], row["value_or_hyperparams"], row["prior"])
+            value = {k: v + (next_value[k] - old[k] * row["keep"]) * factor for k, v in value.items()}
+            n_eff += (row["n_eff"] - (base["n_eff"] if base else 0) * row["keep"]) * factor
+            factor *= row["keep"]
         restored = {**copy.deepcopy(prev), "version": max(r["version"] for r in rows) + 1, "origin": "event", "status": "champion",
-                    "previous_version": prev["version"], "keep": 1, "value_or_hyperparams": copy.deepcopy(retained["value_or_hyperparams"]), "n_eff": retained["n_eff"], "promoted_at": at}
+                    "previous_version": prev["version"], "keep": 1, "days_since_last": None, "value_or_hyperparams": value, "n_eff": n_eff, "promoted_at": at}
         cur["status"] = "retired"
         rows.append(restored)
         return copy.deepcopy(restored)

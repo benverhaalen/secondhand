@@ -10,6 +10,7 @@ end $$;
 alter table param add column origin text not null default 'fit' check (origin in ('event', 'fit'));
 alter table param add column previous_version integer;
 alter table param add column keep double precision check (keep >= 0 and keep <= 1);
+alter table param add column days_since_last double precision;
 update param set origin = 'event' where status <> 'challenger' and fitted_on_ids_hash is null and held_out_score is null;
 
 with history as (

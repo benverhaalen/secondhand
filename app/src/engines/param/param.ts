@@ -23,6 +23,7 @@ export type Param = {
   origin: 'event' | 'fit';
   previous_version: number | null;
   keep: number | null;
+  days_since_last: number | null;
   status: Status;
   frozen: boolean;
   promoted_at: string | null;
@@ -76,7 +77,7 @@ export interface ParamStore {
   rows(name: string, scope: Scope): Param[];
   readPooled(name: string, scope: Scope, as_of?: string): Read | Pooled;
   // A fit writes a challenger; it must carry its held-out score. expectVersion guards a race between two fits.
-  propose(p: Omit<Param, 'version' | 'status' | 'promoted_at' | 'frozen' | 'origin' | 'previous_version' | 'keep'>, expectVersion: number): Param;
+  propose(p: Omit<Param, 'version' | 'status' | 'promoted_at' | 'frozen' | 'origin' | 'previous_version' | 'keep' | 'days_since_last'>, expectVersion: number): Param;
   // Promote a challenger when it beats the champion's held-out score by more than the noise (higher is better).
   promote(name: string, scope: Scope, version: number, noise: number, at: string, champion_score?: number): { promoted: boolean; reason: string };
   rollback(name: string, scope: Scope, at: string, keep_evidence?: boolean): Param;
@@ -123,25 +124,24 @@ export function observationStep(d: Declared, o: Observation): Step {
   throw new Error(`observe supports beta success or gamma count/exposure; ${d.name} is ${d.family}`);
 }
 
-// For conjugate families Step receives evidence (value minus prior) and returns updated evidence.
 export function evidence(family: Family, value: unknown, prior: unknown): unknown {
   if (family !== 'beta' && family !== 'gamma') return value;
   const v = value as Record<string, number>, p = prior as Record<string, number>;
   return Object.fromEntries(Object.keys(p).map((k) => [k, v[k] - p[k]]));
 }
 
-export function withPrior(family: Family, value: unknown, prior: unknown): unknown {
+export function withPrior(family: Family, value: unknown, prior: unknown, start: unknown, keep: number): unknown {
   if (family !== 'beta' && family !== 'gamma') return value;
-  const v = value as Record<string, number>, p = prior as Record<string, number>;
-  return Object.fromEntries(Object.keys(p).map((k) => [k, p[k] + v[k]]));
+  const v = value as Record<string, number>, p = prior as Record<string, number>, old = start as Record<string, number>;
+  return Object.fromEntries(Object.keys(p).map((k) => [k, old[k] * keep + p[k] * (1 - keep) + (v[k] - (old[k] - p[k]) * keep)]));
 }
 
 export function decay(row: Param, as_of?: string): Param {
   if (as_of === undefined) return row;
   const keep = forget(elapsed(row, as_of));
-  const old = evidence(row.family, row.value_or_hyperparams, row.prior) as Record<string, number>;
+  const value = row.value_or_hyperparams as Record<string, number>, prior = row.prior as Record<string, number>;
   return { ...row, n_eff: row.n_eff * keep, value_or_hyperparams: row.family === 'beta' || row.family === 'gamma'
-    ? withPrior(row.family, Object.fromEntries(Object.entries(old).map(([k, v]) => [k, v * keep])), row.prior)
+    ? Object.fromEntries(Object.keys(prior).map((k) => [k, value[k] * keep + prior[k] * (1 - keep)]))
     : row.value_or_hyperparams };
 }
 
@@ -176,10 +176,22 @@ export function rollbackRow(rows: Param[], cur: Param, at: string, keep_evidence
   if (!prev) throw new Error(`${cur.name} has no earlier promoted fitted version`);
   if (!keep_evidence) return { ...prev, status: 'champion', promoted_at: at };
   if (cur.family !== 'beta' && cur.family !== 'gamma') throw new Error('keep_evidence supports beta or gamma');
-  const retained = events.length ? decay(events[0], at) : prev;
+  const value = { ...(prev.value_or_hyperparams as Record<string, number>) };
+  let n_eff = prev.n_eff;
+  let factor = events.length ? forget(elapsed(events[0], at)) : 1;
+  for (const row of events) {
+    if (row.keep === null) throw new Error('event history lacks decay metadata for keep_evidence');
+    const base = row.previous_version === null ? undefined : byVersion.get(row.previous_version);
+    const start = base?.value_or_hyperparams ?? row.prior;
+    const old = (row.days_since_last !== null ? start : evidence(row.family, start, row.prior)) as Record<string, number>;
+    const next = (row.days_since_last !== null ? row.value_or_hyperparams : evidence(row.family, row.value_or_hyperparams, row.prior)) as Record<string, number>;
+    for (const k of Object.keys(value)) value[k] += (next[k] - old[k] * row.keep) * factor;
+    n_eff += (row.n_eff - (base?.n_eff ?? 0) * row.keep) * factor;
+    factor *= row.keep;
+  }
   // Keep the fitted snapshot immutable; retained evidence is a new event version linked to it.
   return { ...prev, version: Math.max(...rows.map((r) => r.version)) + 1, origin: 'event', status: 'champion',
-    previous_version: prev.version, keep: 1, value_or_hyperparams: structuredClone(retained.value_or_hyperparams), n_eff: retained.n_eff, promoted_at: at };
+    previous_version: prev.version, keep: 1, days_since_last: null, value_or_hyperparams: value, n_eff, promoted_at: at };
 }
 
 // Fold only the supplied lineage, including its prior: a person never climbs beyond its shared scope.
@@ -227,7 +239,7 @@ export function memoryStore(): ParamStore {
         throw new Error(`a fit wrote ${p.name} without its held-out score`);
       const v = latest(p.name, p.scope);
       if (v !== expectVersion) throw new VersionConflict(`${p.name} is at v${v}, fit expected v${expectVersion}`);
-      const row: Param = { ...p, origin: 'fit', previous_version: null, keep: null, version: v + 1, status: 'challenger', promoted_at: null, frozen: false };
+      const row: Param = { ...p, origin: 'fit', previous_version: null, keep: null, days_since_last: null, version: v + 1, status: 'challenger', promoted_at: null, frozen: false };
       table.set(key(p.name, p.scope), [...(table.get(key(p.name, p.scope)) ?? []), row]);
       return { ...row };
     },
@@ -274,14 +286,14 @@ export function memoryStore(): ParamStore {
       const keep = forget(elapsed(base, at, days));
       // Explicit caller forgetting wins for this update: restoring full prior mass would pin recovery.
       const next = step(structuredClone(days === undefined ? evidence(d.family, start, prior) : start), keep);
-      if (days === undefined) next.value = withPrior(d.family, next.value, prior);
+      if (days === undefined) next.value = withPrior(d.family, next.value, prior, start, keep);
       const mean = summary(d.family, next.value);
       const lo = base?.guard_lo ?? d.guard_lo, hi = base?.guard_hi ?? d.guard_hi;
       const anomaly = mean !== undefined && ((lo != null && mean < lo) || (hi != null && mean > hi));
       const rows = table.get(key(n, s)) ?? [];
       if (base) base.status = 'retired';
       const row: Param = {
-        name: n, scope: { ...s }, family: d.family, value_or_hyperparams: next.value, prior: structuredClone(prior), origin: 'event', previous_version: base?.version ?? null, keep, version: latest(n, s) + 1,
+        name: n, scope: { ...s }, family: d.family, value_or_hyperparams: next.value, prior: structuredClone(prior), origin: 'event', previous_version: base?.version ?? null, keep, days_since_last: days ?? null, version: latest(n, s) + 1,
         fitted_on_ids_hash: null, n_eff: (base?.n_eff ?? 0) * keep + next.weight, metric: d.metric ?? null, held_out_score: base?.held_out_score ?? null,
         guard_lo: lo ?? null, guard_hi: hi ?? null, status: 'champion', frozen: false, promoted_at: at,
       };

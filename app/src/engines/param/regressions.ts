@@ -44,6 +44,7 @@ export const regressions: Record<string, (s: Store) => Promise<void>> = {
     assert.equal(r.read.n_eff, 2);
     const row = (await s.rows(declaration.name, scope)).at(-1)!;
     assert.deepEqual(row.prior, declaration.prior, 'the idle anchor stays intact');
+    assert.equal(row.days_since_last, 30, 'rollback needs the explicit caller clock');
     const idle = await s.read(declaration.name, scope, '2126-01-01');
     assert.deepEqual(idle.value, declaration.prior);
     const update = await s.observe(declaration.name, scope, { success: 0, weight: 0 }, '2126-01-01');
@@ -66,17 +67,37 @@ export const regressions: Record<string, (s: Store) => Promise<void>> = {
     const v = (await s.read('sale_rate', scope)).value as { shape: number; rate: number };
     assert.equal(v.rate, 4 * 0.5 ** 60, 'subtracting and restoring the prior must not erase a positive rate');
     assert.ok(Number.isFinite(v.shape / v.rate));
+    assert.deepEqual((await s.read('sale_rate', scope, at)).value, v, 'a read at the same instant must keep the positive rate');
+    const r = await s.observe('sale_rate', scope, { count: 0, exposure: 0, weight: 0 }, at);
+    assert.deepEqual(r.read.value, v, 'an implicit update at the same instant must keep the positive rate');
   },
-  'B5 retained explicit forgetting preserves positive fitted beta counts and discounts fitted n_eff': async (s) => {
+  'B5 retained explicit observations preserve the fitted snapshot without subtracting its prior': async (s) => {
     s.declare(declaration);
     await s.propose(fit({ alpha: 1, beta: 9 }), 0);
     await s.promote(declaration.name, scope, 1, 0, at);
-    const r = await s.observe(declaration.name, scope, { success: 0, weight: 1, days_since_last: 30 }, at);
+    await s.observe(declaration.name, scope, { success: 0, weight: 1, days_since_last: 30 }, at);
     const kept = await s.rollback(declaration.name, scope, at, true);
-    assert.deepEqual(kept.value_or_hyperparams, r.read.value, 'rollback must compose forgetting with the fitted snapshot');
-    assert.deepEqual(kept.value_or_hyperparams, { alpha: 0.5, beta: 5.5 });
-    assert.equal(kept.n_eff, 11);
+    assert.deepEqual(kept.value_or_hyperparams, { alpha: 1, beta: 10 }, 'retain the observation, not the explicit discount of the prior');
+    assert.equal(kept.n_eff, 21);
     assert.deepEqual((await s.rows(declaration.name, scope))[0].value_or_hyperparams, { alpha: 1, beta: 9 });
+  },
+  'B5 retained beta and gamma evidence follows mixed clocks without aging the fitted snapshot': async (s) => {
+    for (const d of [
+      { name: 'assist_span_open', family: 'beta' as const, prior: { alpha: 8, beta: 2 }, value: { alpha: 1, beta: 9 }, expected: { alpha: 1.25, beta: 9.75 } },
+      { name: 'sale_rate', family: 'gamma' as const, prior: { shape: 2, rate: 4 }, value: { shape: 1, rate: 9 }, expected: { shape: 1.25, rate: 9.75 } },
+    ]) {
+      s.declare(d);
+      await s.propose({ ...fit(d.value), name: d.name, family: d.family, prior: d.prior, n_eff: 40 }, 0);
+      await s.promote(d.name, scope, 1, 0, at);
+      await s.observe(d.name, scope, { ...(d.family === 'beta' ? { success: 1 } : { count: 1, exposure: 0 }), weight: 2, days_since_last: 0 }, '2026-01-31');
+      await s.observe(d.name, scope, { ...(d.family === 'beta' ? { success: 0 } : { count: 0, exposure: 1 }), weight: 3, days_since_last: 30 }, '2026-01-31');
+      await s.observe(d.name, scope, { ...(d.family === 'beta' ? { success: 0 } : { count: 0, exposure: 0 }), weight: 0 }, '2026-03-02');
+      const kept = await s.rollback(d.name, scope, '2026-04-01', true);
+      assert.deepEqual(kept.value_or_hyperparams, d.expected, `${d.family}: retain observed evidence through explicit decay, calendar decay and idle rollback`);
+      assert.equal(kept.n_eff, 41, `${d.family}: restore fitted 40 plus observed 2/8 + 3/4`);
+      assert.deepEqual((await s.rows(d.name, scope))[0].value_or_hyperparams, d.value, `${d.family}: fitted snapshot stays immutable`);
+      assert.deepEqual((await s.read(d.name, scope, '2126-01-01')).value, d.prior, `${d.family}: an idle scope returns to its prior`);
+    }
   },
   'B1 unknown scope keys are rejected on reads and writes': async (s) => {
     s.declare(declaration);
@@ -189,8 +210,8 @@ export const regressions: Record<string, (s: Store) => Promise<void>> = {
     await s.rollback(declaration.name, scope, '2026-01-31');
     await s.observe(declaration.name, scope, { success: 0, weight: 2, days_since_last: 30 }, '2026-01-01');
     const next = await s.rollback(declaration.name, scope, '2026-01-01', true);
-    assert.deepEqual(next.value_or_hyperparams, { alpha: 9, beta: 3 }, 'retain the explicit forgetting of the fitted snapshot and later evidence');
-    assert.equal(next.n_eff, 12);
+    assert.deepEqual(next.value_or_hyperparams, { alpha: 18, beta: 4 });
+    assert.equal(next.n_eff, 22);
   },
   'B5 rollback skips event versions and optionally retains only later event evidence': async (s) => {
     s.declare(declaration);
