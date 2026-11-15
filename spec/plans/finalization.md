@@ -156,7 +156,9 @@ The gate and the type check on every merge; the Python suites (after DB5); the p
 ## 9. Waiting on Nate
 
 1. The posting question with Ben (section 1).
-2. A sender for sign-in emails. *Agent proposal:* Resend on his account, its key set as a host secret by him.
+0. **First, 2026-11-15 13:50 UTC: a card on the Fly account.** The server is deployed ([packet 86](../../.agents/team/packets/team/86-server-core-handoff.md)) and healthy when started, but Fly's trial stops the machine five minutes after each start (the server lead, *observed*), so it does not answer from outside. Until then nothing hosted can be walked or shown.
+2. A sender for sign-in emails. *Agent proposal:* Resend on his account, its key set as a host secret by him. Since Ben's onboarding merged (80fbe2d8) the client needs `RESEND_API_KEY` and `SECONDHAND_EMAIL_FROM` on the host: without them nobody signs in on the hosted server (the development code is refused in production).
+2a. A model key with a daily cap on the host (`OPENROUTER_API_KEY`), which the chat needs there; the deploy review held it back until the cap exists (packet 86).
 3. One marketplace account linked through the live view (SV9).
 4. His own sign-in on Fly.io, and his yes before anything is deployed.
 5. Whether the served-engine figure stays on the judges' dashboard before Ben has seen it.
