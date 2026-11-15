@@ -34,7 +34,7 @@ export function useSearch(client: Client = api) {
 
   const stop = useCallback(() => { run$.current?.abort(); run$.current = null; }, []);
 
-  const run = useCallback((text: string) => {
+  const run = useCallback((text: string, sources?: string[]) => {
     stop();
     const q = text.trim();
     dispatch({ type: 'reset' });
@@ -42,7 +42,7 @@ export function useSearch(client: Client = api) {
     const ctl = new AbortController(); run$.current = ctl;
     log.input('search', 'search-box', { query_length: q.length });
     (async () => {
-      const start = await client.search(q);
+      const start = await client.search(q, undefined, sources);
       if (ctl.signal.aborted) return;
       dispatch({ type: 'start', start });
       await client.jobFrames(start.id, { signal: ctl.signal, onFrame: (frame: SseFrame) => {

@@ -2496,3 +2496,11 @@ Nate, the orchestrator's session, 2026-11-15, between about 14:30 and 14:45 UTC 
 > account for our benchmarks without ebay
 
 Acted on: four keys that exist on Nate's Windows machine were set on the Fly app by name through standard input (OPENROUTER_API_KEY, BROWSER_USE_API_KEY, TREG_TOKEN, APIFY_TOKEN), no value printed or written; the leads were put back to work as testers and fixers who do not merge; the benchmark is run with and without eBay.
+
+## 2026-11-15 nate every source by default, with a toggle to select; the env vars are in place
+Nate, the orchestrator's session, 2026-11-15, about 14:50 UTC by the machine clock, two messages.
+> default to all sources but have the toggle to select
+
+> all env vars are in place, all is great and prepared
+
+Used in: [the shop view](../app/src/buy/chat/shop-view.tsx) (one chip per source before the first ask, all picked; a tap leaves that source out of the search).
