@@ -1,0 +1,41 @@
+{
+ "site": "ebay",
+ "items": [
+  {
+   "id": "100000000",
+   "title": "Levi 501 jeans 32x30 blue",
+   "price_cents": 3999,
+   "url": "/itm/100000000"
+  },
+  {
+   "id": "100007919",
+   "title": "Vintage Levis 501 Made in USA",
+   "price_cents": 6500,
+   "url": "/itm/100007919"
+  },
+  {
+   "id": "100015838",
+   "title": "Levi 501 original fit W34",
+   "price_cents": 2450,
+   "url": "/itm/100015838"
+  },
+  {
+   "id": "100023757",
+   "title": "Levis 501 shrink-to-fit dark",
+   "price_cents": 1899,
+   "url": "/itm/100023757"
+  },
+  {
+   "id": "100031676",
+   "title": "Levi 501 90s straight 29",
+   "price_cents": 4200,
+   "url": "/itm/100031676"
+  },
+  {
+   "id": "100039595",
+   "title": "Levi 501 distressed light wash",
+   "price_cents": 2999,
+   "url": "/itm/100039595"
+  }
+ ]
+}
