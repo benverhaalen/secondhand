@@ -17,9 +17,9 @@ const operation = { id: 'op_1', user_id: 'u1', site: 'ebay', verb: 'post', data:
 function fixture(t: TestContext) {
   const dir = mkdtempSync(join(tmpdir(), 'secondhand-sqlite-'));
   const path = join(dir, 'secondhand.db'), handles: DatabaseSync[] = [];
-  t.after(() => { for (const handle of handles) handle.close(); rmSync(dir, { recursive: true, force: true }); });
+  t.after(() => { for (const handle of handles) if (handle.isOpen) handle.close(); rmSync(dir, { recursive: true, force: true }); });
   const connect = () => { const handle = new DatabaseSync(path); handles.push(handle); return handle; };
-  return { path, connect, reopen: () => sqliteStore(connect()) };
+  return { path, handles, connect, reopen: () => sqliteStore(connect()) };
 }
 
 test('late search stages survive insertion, updates and getJob after reopening', t => {
@@ -76,8 +76,9 @@ test('independent route connections cannot overwrite each other with stale snaps
 });
 
 test('cached route handles see other Store writes immediately without reopening', t => {
-  const { path } = fixture(t), handle = openDb(path);
-  t.after(() => handle.close());
+  // Closed by the fixture before it removes the folder: Windows refuses to delete an open database.
+  const { path, handles } = fixture(t), handle = openDb(path);
+  handles.push(handle);
   const a = sqliteStore(handle), b = sqliteStore(openDb(path));
   const account = a.put('account', { id: 'acc_1', user_id: 'u1' });
   const itemB = b.put('item', { id: 'it_b', user_id: 'u1' });
