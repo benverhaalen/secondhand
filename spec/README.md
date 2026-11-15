@@ -18,6 +18,9 @@ Everything under `spec/` that is not code is an *agent proposal* for Ben and Nat
 | [parity.md](parity.md) | Every capability a rival tool has, whether we adopt its method or use a better one, and where that lives |
 | [databricks.md](databricks.md) | How the platform works, where it is strong and weak for us, and how each feature is built on it |
 | [coverage.md](coverage.md) | Which research backs which feature, and the gaps |
+| [plans/board.md](plans/board.md) | The build board: every piece as a box with its proving command, ticked to completion |
+| [plans/workstreams.md](plans/workstreams.md) | The build piece by piece: the sessions, what each owns and delivers, the seams |
+| [plans/start-now.md](plans/start-now.md) | Every task that can begin this minute |
 | [plans/](plans/README.md) | How the build is organised: stages, task shape, test layers, the first tasks |
 | [open-questions.md](open-questions.md) | What only Ben or Nate can settle, each with a recommendation |
 | [../docs/how-it-works/](../docs/how-it-works/README.md) | The same system explained for people, not for the agents that build it |

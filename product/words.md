@@ -853,3 +853,15 @@ Ben, thread "Make gradients and colors carry meaning", 2026-11-15 02:59 UTC, aft
 ## 2026-11-14 nate every platform gets an expert team, codex builds beside claude, and a fresh orchestrator launches the sessions
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > codex wont be used for any portion of the models driving the working product, at least not planned, more so to parallel handle development, effectively and perfectly stay on task while saving us hours. They could do research and calculate the proper way systems weigh gathered infromation, all platform harnesses should be built to account for everything. Searching all listings on the platform, viewing and managing the users listings, thier notifications, messages, etc. Every platform is understood, a small team of experts build each custom api / harness to drive the app actions with the authenticated sessions. The system for the mass swarm intelligence layers we need for additional insight and data for things outside what just the platforms tell us. Then understanding how to credibly weigh and realtime score everything, the databricks and such. Again I will begin building in a fresh session. But lets fully plan out piece by piece everything, get a fresh orchestrator driving it, launching out seperate sessions, sessions with codex being orchestrated by one of your opus or fable models,
+
+## 2026-11-14 nate five sites, offerup and grailed are a future idea, and ebay's push only if it beats our harness
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> ebay, facebook marketplace, depop, poshmark, mercari, do not focus on offer up or grailed for this , leave as future idea. If ebay sales trigger is better than what our full platform harness can establish, then sure, but I believe we can create an optimized token spend platform harness to handle every possible capability we can think of
+
+## 2026-11-14 nate launch the plans with skills and connectors, and track everything to completion
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Launch out plans for fresh session with the proper skilsl and connectors invoked to begin optimally and efficiently building, developing, testing, and finalizing each portion, task tracking and organizing context against the global spec in the read me and repo. Track all progress so we can check off to full completion.
+
+## 2026-11-14 nate codex sessions review, test and fix while the build goes on
+Nate, same session, 2026-11-14.
+> Codex can also have sessions review and test and fix as we continously keep building things that are ok to parallel build and specced to connect

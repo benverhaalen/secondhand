@@ -159,7 +159,7 @@ flowchart LR
 | 3 batches a day beat hourly and none (Fitz et al. 2019, CHB 101:84-94) | [seller-metrics-and-notifications.md](../../research/today/nate/seller-metrics-and-notifications.md), asserted | |
 | Time Sensitive is for events within the hour, never marketing (Apple HIG) | same note, observed | App Store review checks it |
 | Depop stats arrive the next day | same note, observed | |
-| Poshmark offers last 24 h; Depop offers 14 days | [platform-levers.md](../../research/list/nate/platform-levers.md), observed | |
+| Poshmark offers last 24 h; Depop offers last 24 h | [platform-levers.md](../../research/list/nate/platform-levers.md), observed; Depop's 24 h from [levers-and-signals](../../research/list/ben/levers-and-signals.md), correcting the 14 days | |
 | Undo limits differ per site; Poshmark cannot relist | [product.md Undo](../product.md#undo) | |
 | SSE through the Apps proxy is untested | [product.md §7](../product.md#jobs-and-the-event-stream) | |
 | Risk to a real account is shown per site (`site_warning`) | [platform-access.md](../../research/connect/nate/platform-access.md) | binds now |

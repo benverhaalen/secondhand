@@ -65,7 +65,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | A7 | Where Clofie goes: the wordmark, the screen title, the headline of a moment, web and post headlines. Never a number, never words a person wrote. Ben asked for the classing in [round 8](../product/words.md#2026-11-15-round-8-picks) | constitution Art. 6, [the reasons](explore/round-9/clofie-use.md) |
 | A8 | Type is centered by its ink: a label is trimmed to its cap height and baseline, and Clofie moves down .12 em where text cannot be trimmed. Ben asked for the tailoring in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 6.10, [the numbers](../research/cross-cutting/ben/brand-round-11.md) |
 | A9 | A pill is balanced at its icon: one step less padding at an icon end, and a tag is 20 with a 12 icon. Ben saw the imbalance in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 7.7 |
-| A10 | Four states by color and no fifth: state fills stay .05 apart in Oklab under simulated protan and deutan vision. Ben is color blind ([dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks)) | constitution Art. 5, Four states by color |
+| A10 | State fills are checked under simulated protan and deutan vision. Closer than .05 in Oklab is a warning, not a failure: Ben is color blind, and he also wrote "dont weight to colorblindness too much" ([his words](../product/words.md#2026-11-15-do-not-weight-color-blindness-too-much)) | constitution Art. 5, State colors and color blindness |
 
 ## Open (Ben picks; round 11)
 
@@ -91,6 +91,7 @@ Round 10 picks and notes are in [words.md](../product/words.md#2026-11-15-round-
 | R39 | A device beyond the drifting gradient. Ben: "a drifting gradient is a bit standard as a device". Now with the thread "Make gradients and colors carry meaning" | Four on the picks page | Ben picks |
 | R40 | What the app optimizes for. Ben: "what are we optimizing for in the long run" | A: decisions answered. B: time from photo to paid. C: money kept. For Ben and Nate | A (agent) |
 | R41 | Where the wordmark sits in the app. Changes L3 | A: centered at the top, as locked. B: left, with the inbox on the right, as the Today mock Ben liked draws it | A (agent) until Ben says |
+| R42 | The weight of the text. Ben, 2026-11-15 02:46: "the fonts are a bit lighter", "a middle ground would be good". Changes L38 | A: PP Neue Montreal Book, as locked (stroke 65). B: the older Neue Montreal 1.0 Regular (stroke 80) until PP's own Regular is in hand. C: Book, with Medium (98) for titles and money | B (agent) |
 
 Small calls the mocks forced, each one line in [screens.css](explore/round-11/mock/screens.css): a filter chip is 36 tall, which is in no scale; buttons in a box are 44 and the bar at the foot of a sale is 48; the + in the tab bar is a gray circle with no label. The mocks run through the brand checker with `node scripts/brand-check.mjs brand/explore/round-11/mock/check.html --medium app`.
 

@@ -88,7 +88,7 @@
   const sum = (lead, rows, total, big) => `<div class="slip"><div class="sum paper">${lead ? `<div class="t13 i2">${lead}</div>${V(8)}` : ''}
     ${rows.map(([l, a]) => `<div class="ln t15"><span class="ln mid">${l}</span><span class="lead"></span><span class="num">${a}</span></div>`).join(V(8))}
     ${V(12)}<hr>${V(12)}<div class="ln ${big ? 't15' : 't18'}"><span>${total[0]}</span><span class="lead"></span><span class="${big ? 'a50' : 'num'}">${total[1]}</span></div></div></div>`;
-  const fee = `Fee${H(8)}${logo('ebay')}`;
+  const fee = `<span>Fee<img class="logo inl" src="${A.logos}ebay.png" alt="eBay"></span>`;       // the logo is set in the line, on the middle of the capitals
 
   // The item page. One number is shown (what you keep); the sum behind it opens on a tap. The things you can do to a listing
   // that are not today's decision sit at the foot of the page as plain rows, with the one that cannot be undone last.
