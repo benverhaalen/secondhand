@@ -1,0 +1,23 @@
+{
+  "route": "product/[id]",
+  "screen": "product",
+  "states": [
+    "typical",
+    "new",
+    "empty",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "one: a product page is one product, with no list in it to hold one or many; dense: the same",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}

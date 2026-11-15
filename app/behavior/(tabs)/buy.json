@@ -1,16 +1,288 @@
 {
   "screen": "(tabs)/buy",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "The Buy tab (spec/pages.md §6.12): one search box, then the shelves Needs you, New matches, Looking for, Watching and Bought. Nothing here commits the person without a tap.",
+  "frame": [
+    "Who: the hunter (personas: Hunting one thing), opening it when an alert lands or a few times a week; the person clearing out, with one want running.",
+    "Came to do: see what turned up for what they want and act before it is gone, or start a new search.",
+    "Where a mistake costs most: an offer that binds them on eBay once accepted, and a good match missed because it was buried.",
+    "Ways out (spec/ways-out.md §6.12): every listing opens on its site; offers ask every time; a want pauses from its page; Not my size from the listing.",
+    "In the loop: the agent's offer waits on the card with its amount on the button, and after the tap it holds for 5 s with Undo before it goes."
+  ],
+  "decisions": [
+    "No wash: the wash holds no control (constitution Art. 5, The wash), and the search box is this page's first control.",
+    "Needs you shows only the buy-side asks (the waiting offer and a match over the most); did-you-buy and sign-in warnings stay on Today, where every card already is.",
+    "The waiting offer is the lead card: it is the one thing on the page that waits on the person, and its button says the amount it sends.",
+    "Send holds the offer 5 s in the toast with Undo before it goes (Gmail's Undo Send), because a sent offer cannot be pulled back on the site.",
+    "A found listing is a MatchCard, not an ItemCard: it has no state of the person's to tag, and its read of the price is words with an icon because no state color means fair (round-2 call).",
+    "Each want is an item card whose tag says how its search stands: '3 of 4 sites' while one is still answering, 'Searching' when all are in, 'Paused'; its fact says what it found under the most, or 'Nothing yet'.",
+    "A want with no product photo takes the photo of the newest thing it found, else the empty photo slot: never a made-up picture.",
+    "Over your most: the primary act is Walk away, the agent's suggestion; raising the most is the second and is the person's own limit, so it saves with Undo.",
+    "Worlds: ?world=buyer is the hunter; no world is clearing (one want, nothing found); ?world=new is empty. Every link keeps the world.",
+    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
+  ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "typical",
+      "route": "/buy?world=buyer",
+      "shows": "Needs you",
+      "also": [
+        "New matches",
+        "Looking for",
+        "Bought",
+        "3 of 4 sites",
+        "Send $65"
+      ]
+    },
+    {
+      "state": "one",
+      "route": "/buy",
+      "shows": "Looking for",
+      "also": [
+        "Nothing yet under $150",
+        "2 of 3 sites"
+      ]
+    },
+    {
+      "state": "empty",
+      "route": "/buy?state=empty",
+      "shows": "Nothing on your list"
+    },
+    {
+      "state": "new",
+      "route": "/buy?state=new",
+      "shows": "Search five sites at once"
+    },
+    {
+      "state": "dense",
+      "route": "/buy?state=dense",
+      "shows": "Needs you",
+      "also": [
+        "New matches",
+        "Looking for"
+      ]
+    },
+    {
+      "state": "failed",
+      "route": "/buy?state=failed",
+      "shows": "Couldn’t load your list",
+      "also": [
+        "Try again"
+      ]
+    },
+    {
+      "state": "offline",
+      "route": "/buy?state=offline",
+      "shows": "Waiting for signal. This is the last copy."
     }
   ],
   "controls": [
     {
       "control": "Inbox",
-      "on_tap": "opens Messages"
+      "on_tap": "opens Messages",
+      "id": "nav-inbox",
+      "in": "typical",
+      "does": "opens Messages",
+      "goes": "/messages"
+    },
+    {
+      "control": "Search",
+      "on_tap": "opens the search box for typing",
+      "id": "buy-search",
+      "in": "typical",
+      "does": "opens the search box for typing",
+      "then": "buy-search-input"
+    },
+    {
+      "control": "Search camera",
+      "on_tap": "opens the camera to search with a photo",
+      "id": "buy-search-camera",
+      "in": "typical",
+      "does": "opens the camera to search with a photo",
+      "goes": "/camera"
+    },
+    {
+      "control": "Dec_bo send",
+      "on_tap": "sends the agent's $65 offer after a 5 s Undo",
+      "id": "dec_bo-send",
+      "in": "typical",
+      "does": "sends the agent's $65 offer after a 5 s Undo",
+      "shows": "Offer of $65 sent"
+    },
+    {
+      "control": "Undo dec_bo",
+      "on_tap": "takes the offer back before it goes",
+      "id": "undo-dec_bo",
+      "in": "typical",
+      "after": [
+        "dec_bo-send"
+      ],
+      "does": "takes the offer back before it goes",
+      "shows": "Send $65"
+    },
+    {
+      "control": "Dec_bo change",
+      "on_tap": "opens the offer picker with three amounts and Something else",
+      "id": "dec_bo-change",
+      "in": "typical",
+      "does": "opens the offer picker with three amounts and Something else",
+      "shows": "Something else"
+    },
+    {
+      "control": "Offer amount other",
+      "on_tap": "chooses Something else and shows a blank amount",
+      "id": "buy-offer-amount-other",
+      "in": "typical",
+      "after": [
+        "dec_bo-change"
+      ],
+      "does": "chooses Something else and shows a blank amount",
+      "then": "buy-offer-other"
+    },
+    {
+      "control": "Offer send",
+      "on_tap": "sends the picked amount",
+      "id": "buy-offer-send",
+      "in": "typical",
+      "after": [
+        "dec_bo-change"
+      ],
+      "does": "sends the picked amount",
+      "shows": "Offer of $65 sent"
+    },
+    {
+      "control": "Dec_bo more",
+      "on_tap": "opens the rest of the card's acts",
+      "id": "dec_bo-more",
+      "in": "typical",
+      "does": "opens the rest of the card's acts",
+      "then": "buy-more-skip"
+    },
+    {
+      "control": "More skip",
+      "on_tap": "skips this offer, with Undo",
+      "id": "buy-more-skip",
+      "in": "typical",
+      "after": [
+        "dec_bo-more"
+      ],
+      "does": "skips this offer, with Undo",
+      "shows": "Skipped"
+    },
+    {
+      "control": "More open",
+      "on_tap": "opens the listing",
+      "id": "buy-more-open",
+      "in": "typical",
+      "after": [
+        "dec_bo-more"
+      ],
+      "does": "opens the listing",
+      "goes": "/listing/mt_d2"
+    },
+    {
+      "control": "Dec_bo open",
+      "on_tap": "opens the listing the offer is for",
+      "id": "dec_bo-open",
+      "in": "typical",
+      "does": "opens the listing the offer is for",
+      "goes": "/listing/mt_d2"
+    },
+    {
+      "control": "Dec_ceil walk",
+      "on_tap": "hides the listing over the most, with Undo",
+      "id": "dec_ceil-walk",
+      "in": "typical",
+      "does": "hides the listing over the most, with Undo",
+      "shows": "Hidden"
+    },
+    {
+      "control": "Dec_ceil raise",
+      "on_tap": "raises the most to $97, with Undo",
+      "id": "dec_ceil-raise",
+      "in": "typical",
+      "does": "raises the most to $97, with Undo",
+      "shows": "Your most is $97"
+    },
+    {
+      "control": "Dec_ceil more",
+      "on_tap": "opens the rest of the card's acts",
+      "id": "dec_ceil-more",
+      "in": "typical",
+      "does": "opens the rest of the card's acts",
+      "then": "buy-more-skip"
+    },
+    {
+      "control": "Dec_ceil open",
+      "on_tap": "opens that listing",
+      "id": "dec_ceil-open",
+      "in": "typical",
+      "does": "opens that listing",
+      "goes": "/listing/mt_k1"
+    },
+    {
+      "control": "Match mt_d1",
+      "on_tap": "opens the new match",
+      "id": "match-mt_d1",
+      "in": "typical",
+      "does": "opens the new match",
+      "goes": "/listing/mt_d1"
+    },
+    {
+      "control": "Match mt_d3",
+      "on_tap": "opens the pickup match",
+      "id": "match-mt_d3",
+      "in": "typical",
+      "does": "opens the pickup match",
+      "goes": "/listing/mt_d3"
+    },
+    {
+      "control": "Want want_dunk",
+      "on_tap": "opens the want",
+      "id": "want-want_dunk",
+      "in": "typical",
+      "does": "opens the want",
+      "goes": "/want"
+    },
+    {
+      "control": "Want want_kin",
+      "on_tap": "opens the paused want",
+      "id": "want-want_kin",
+      "in": "typical",
+      "does": "opens the paused want",
+      "goes": "/want"
+    },
+    {
+      "control": "Want want_oven",
+      "on_tap": "opens the want with one site still answering",
+      "id": "want-want_oven",
+      "in": "typical",
+      "does": "opens the want with one site still answering",
+      "goes": "/want"
+    },
+    {
+      "control": "Want want_desk",
+      "on_tap": "opens the want that found nothing yet",
+      "id": "want-want_desk",
+      "in": "one",
+      "does": "opens the want that found nothing yet",
+      "goes": "/want"
+    },
+    {
+      "control": "Bought ord_bfl",
+      "on_tap": "opens the thing they bought",
+      "id": "bought-ord_bfl",
+      "in": "typical",
+      "does": "opens the thing they bought",
+      "goes": "/item/it_bfl"
+    },
+    {
+      "control": "Retry",
+      "on_tap": "loads the page afresh",
+      "id": "buy-retry",
+      "in": "failed",
+      "does": "loads the page afresh",
+      "goes": "/buy"
     }
-  ]
+  ],
+  "back": "a tab: no Back"
 }

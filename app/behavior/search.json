@@ -1,16 +1,180 @@
 {
   "screen": "search",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "Search results (spec/pages.md §6.13): what it is and what it sold for used, where the search looked and what each site answered, then one list across the sites. Visitors can search.",
+  "frame": [
+    "Who: the hunter and the person checking a price (personas), from the Buy tab's box or a product page; a visitor from the website.",
+    "Came to do: see every copy for sale in one list and which one is the best buy delivered.",
+    "Where a mistake costs most: a cheap row that is the wrong size or not the same thing, and a site that is still answering read as 'nothing there'.",
+    "Ways out (spec/ways-out.md §6.12 to §6.17): every row opens its listing and the site; Watch this search; a visitor watches only after signing in, asked at that moment.",
+    "In the loop: nothing here acts for the person; Watch this search opens the want with every value guessed and waiting on their tap."
+  ],
+  "decisions": [
+    "One list, ranked by how sure the match is, then by the delivered total: a wrong size above the right one wastes the hunter's look (spec buy.md Ranking puts the label second; this puts it first, agent proposal).",
+    "Where the search looked is a strip of five site logos with each one's count, a spinner where a site is still answering and 'None' where it answered with nothing: a sentence would hide which site is late.",
+    "The summary says the used range and the price new in one sentence in words a person says back; the range bar is kept for the listing, where there is a price to place on it.",
+    "The official option is in the summary sentence (new, and delivered) and not a row: in this data it never beats the used range, and spec says it sits beside a used one only when it wins.",
+    "Price history is one Notice with a chevron, because it leads to its own page.",
+    "Watch this search is the nav's one action (a bell), as eBay's saved search is, and the empty state's one act.",
+    "Demo states by address: ?at=slow has only one site in so far; a query with no product finds nothing.",
+    "While a site is still answering, a spinner takes the camera's place in the box, so nothing moves; the camera comes back when every site is in.",
+    "Each row's fact line says its condition before what it costs ('Like new, delivered $72.50'): rows under one product share a title, so the condition tells them apart (break-ui).",
+    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
+  ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "typical",
+      "route": "/search?q=nike%20dunk%20low%20grey%2010",
+      "shows": "Nike Dunk Low, Grey Fog, men’s 10",
+      "also": [
+        "Price history and recent sales",
+        "Fair, pickup 4 mi $60",
+        "Other size or color"
+      ]
+    },
+    {
+      "state": "loading",
+      "route": "/search?q=nike%20dunk&at=slow",
+      "shows": "Nike Dunk Low, Grey Fog, men’s 10",
+      "also": [
+        "High price"
+      ],
+      "absent": [
+        "Fair, pickup 4 mi $60"
+      ]
+    },
+    {
+      "state": "empty",
+      "route": "/search?q=banjo%20case",
+      "shows": "Nothing for sale right now"
+    },
+    {
+      "state": "new",
+      "route": "/search",
+      "shows": "Type what you want, paste a link, or take a photo. It looks on five sites at once."
+    },
+    {
+      "state": "one",
+      "route": "/search?state=one",
+      "shows": "Fair, pickup 4 mi $60"
+    },
+    {
+      "state": "failed",
+      "route": "/search?state=failed",
+      "shows": "Couldn’t load this search",
+      "also": [
+        "Try again"
+      ]
+    },
+    {
+      "state": "offline",
+      "route": "/search?state=offline",
+      "shows": "Waiting for signal. This is the last copy."
     }
   ],
   "controls": [
     {
       "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "on_tap": "goes back to where the search started",
+      "id": "nav-back",
+      "in": "typical",
+      "does": "goes back to where the search started"
+    },
+    {
+      "control": "Watch",
+      "on_tap": "starts a want from this search, every value guessed",
+      "id": "search-watch",
+      "in": "typical",
+      "does": "starts a want from this search, every value guessed",
+      "goes": "/want"
+    },
+    {
+      "control": "Box",
+      "on_tap": "opens the box to change the search",
+      "id": "search-box",
+      "in": "typical",
+      "does": "opens the box to change the search",
+      "then": "search-box-input"
+    },
+    {
+      "control": "Box camera",
+      "on_tap": "searches with a photo",
+      "id": "search-box-camera",
+      "in": "empty",
+      "does": "searches with a photo",
+      "goes": "/camera"
+    },
+    {
+      "control": "Product",
+      "on_tap": "opens the product's price history and recent sales",
+      "id": "search-product",
+      "in": "typical",
+      "does": "opens the product's price history and recent sales",
+      "goes": "/product/pr_dunk"
+    },
+    {
+      "control": "Result mt_d3",
+      "on_tap": "opens the cheapest listing",
+      "id": "result-mt_d3",
+      "in": "typical",
+      "does": "opens the cheapest listing",
+      "goes": "/listing/mt_d3"
+    },
+    {
+      "control": "Result mt_d1",
+      "on_tap": "opens the good-price listing",
+      "id": "result-mt_d1",
+      "in": "typical",
+      "does": "opens the good-price listing",
+      "goes": "/listing/mt_d1"
+    },
+    {
+      "control": "Result mt_d2",
+      "on_tap": "opens the fair-price listing",
+      "id": "result-mt_d2",
+      "in": "typical",
+      "does": "opens the fair-price listing",
+      "goes": "/listing/mt_d2"
+    },
+    {
+      "control": "Result mt_d4",
+      "on_tap": "opens the likely match",
+      "id": "result-mt_d4",
+      "in": "typical",
+      "does": "opens the likely match",
+      "goes": "/listing/mt_d4"
+    },
+    {
+      "control": "Result mt_d5",
+      "on_tap": "opens the listing priced high",
+      "id": "result-mt_d5",
+      "in": "typical",
+      "does": "opens the listing priced high",
+      "goes": "/listing/mt_d5"
+    },
+    {
+      "control": "Result mt_d6",
+      "on_tap": "opens the listing in another size",
+      "id": "result-mt_d6",
+      "in": "typical",
+      "does": "opens the listing in another size",
+      "goes": "/listing/mt_d6"
+    },
+    {
+      "control": "Empty watch",
+      "on_tap": "watches the search that found nothing",
+      "id": "search-empty-watch",
+      "in": "empty",
+      "does": "watches the search that found nothing",
+      "goes": "/want"
+    },
+    {
+      "control": "Retry",
+      "on_tap": "loads the page afresh",
+      "id": "search-retry",
+      "in": "failed",
+      "does": "loads the page afresh",
+      "goes": "/search"
     }
-  ]
+  ],
+  "back": "the screen it came from"
 }

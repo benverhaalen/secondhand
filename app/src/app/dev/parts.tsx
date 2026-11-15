@@ -9,6 +9,7 @@ import {
   BarPill, CamButton, CamNote, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
   Feed, QueueView,
 } from '@/ui';
+import { ChoiceChips, ColourSwatches, Gallery, MatchCard, OfferSheet, PriceChart, PriceRange, RangeSlider, SearchField, SiteStrip, SizePicker } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
@@ -19,6 +20,7 @@ import { Shelf, Tile } from '@/ui/parts/tile';
 import { KeepRow, Range } from '@/ui/parts/worth';
 import { photo } from '@/demo/photos';
 import { ItemParts } from '@/ui/parts/item-parts-sheet';
+import colourData from '@/buy/colours.json' with { type: 'json' };
 
 const HOUR = 3600000;
 // Deadlines are fixed offsets from the moment the sheet opens, so each strength of a state gradient shows.
@@ -230,6 +232,7 @@ function Sheetful() {
         <TimeSpan id="ts-dark" day="Fri 20" words="6 to 8 pm" value={{ start: 36, end: 40 }} onChange={() => {}} note="Ends after dark" />
       </Section>
 
+      <BuySide />
       <Section title="New and the camera (on the bar)">
         <FeedSwatch>
           <ChoiceCapsule id="nc-sell" label="Sell this" icon="tag-01" lead index={0} shown />
@@ -278,5 +281,79 @@ function Sheetful() {
         <TabBar current={tab} badges={{ buy: true }} onTab={k => k !== 'new' && setTab(k)} />
       </Section>
     </Screen>
+  );
+}
+
+// The buy side's parts, every state: the search box, a found listing, where a search looked, a price against its range,
+// the history, the photos, one answer of a few, and the offer sheet.
+function BuySide() {
+  const [offer, setOffer] = useState(false);
+  return (
+    <>
+      <Section title="Search field: empty, filled, working">
+        <SearchField id="sf-empty" placeholder="Find an item or paste a link" onCamera={() => {}} />
+        <SearchField id="sf-filled" value="nike dunk low grey 10" placeholder="Find an item or paste a link" onCamera={() => {}} />
+        <SearchField id="sf-working" value="nike dunk low grey 10" placeholder="Find an item or paste a link" working />
+      </Section>
+      <Section title="Match card: good, fair, high, not the same, gone">
+        <MatchCard id="m-good" title="Nike Dunk Low Grey Fog, men’s 10" photo="nike-dunks" site="mercari" verdict="good" what="Delivered" amount="$72.50" when="12m ago" />
+        <MatchCard id="m-fair" title="Nike Dunk Low Grey Fog, men’s 10" photo="nike-dunks" site="ebay" verdict="fair" what="Delivered" amount="$76.50" />
+        <MatchCard id="m-high" title="Nike Dunk Low Grey Fog, men’s 10" photo="nike-dunks" site="ebay" verdict="high" what="Delivered" amount="$119" />
+        <MatchCard id="m-like" title="Kindle Paperwhite, 16 GB, signature edition" photo="kindle" site="mercari" verdict="high" likeness="likely_same_model" what="Delivered" amount="$96.50" />
+        <MatchCard id="m-gone" title="Nike Dunk Low Grey Fog, men’s 10" photo="nike-dunks" site="depop" verdict="fair" what="Delivered" amount="$93" gone />
+      </Section>
+      <Section title="Site strip: in, waiting, none, behind, off; as toggles">
+        <SiteStrip id="ss" slots={[{ site: 'ebay', state: 'in', note: '41' }, { site: 'mercari', state: 'waiting' }, { site: 'depop', state: 'in', note: '4m' }, { site: 'facebook', state: 'none' }, { site: 'poshmark', state: 'off' }]} />
+        <SiteStrip id="ss2" slots={[{ site: 'ebay', state: 'in', note: '4m ago' }, { site: 'mercari', state: 'behind' }, { site: 'depop', state: 'in', note: 'Just now' }, { site: 'facebook', state: 'waiting' }, { site: 'poshmark', state: 'off' }]} />
+        <SiteStrip id="ss3" onToggle={() => {}} slots={[{ site: 'ebay', state: 'in', note: '4m ago' }, { site: 'mercari', state: 'behind' }, { site: 'depop', state: 'in', note: 'Just now' }, { site: 'facebook', state: 'waiting' }, { site: 'poshmark', state: 'off' }]} />
+      </Section>
+      <Section title="Price range, with a price and without">
+        <PriceRange low={65} high={95} at={76.5} words="The same one sold for" />
+        <PriceRange low={65} high={95} at={119} words="The same one sold for" />
+        <PriceRange low={65} high={95} />
+      </Section>
+      <Section title="Price chart">
+        <PriceChart id="pc" points={[{ label: 'Jun', value: 98 }, { label: 'Jul', value: 94 }, { label: 'Aug', value: 90 }, { label: 'Sep', value: 86 }, { label: 'Oct', value: 82 }, { label: 'Nov', value: 79 }]} reference={{ label: 'New', value: 115 }} />
+      </Section>
+      <Section title="Gallery, three photos">
+        <Gallery id="gal" photos={['nike-dunks', 'levis-501', 'kindle']} label="Nike Dunk Low" />
+      </Section>
+      <Section title="Offer sheet">
+        <Line><Pill id="os-open" kind="second" label="Make an offer" onPress={() => setOffer(true)} /></Line>
+        <OfferSheet id="os" open={offer} amounts={[60, 65, 68]} notes={{ 65: 'Your most' }} pick={65} onSend={() => setOffer(false)} onClose={() => setOffer(false)} />
+      </Section>
+      <WantByTouch />
+    </>
+  );
+}
+
+// A want set by touch (spec/features/watch.md): the range over the sales, the toggle and chips, the swatches, the sizes.
+function WantByTouch() {
+  const [range, setRange] = useState<[number, number]>([64, 80]);
+  const [how, setHow] = useState('both');
+  const [cond, setCond] = useState('good');
+  const [colours, setColours] = useState<string[]>(['navy']);
+  const [size, setSize] = useState<[string, string | null]>(['mens', '10']);
+  const sold = [68, 70, 71, 72, 74, 75, 75, 76, 77, 78, 78, 79, 80, 80, 81, 82, 83, 84, 86, 88, 90, 92];
+  return (
+    <>
+      <Section title="Range slider: with sales, without">
+        <RangeSlider id="rs" label="Price, delivered" min={35} max={125} low={range[0]} high={range[1]} dots={sold} caption={`Each dot is a sale of the same one: ${sold.length} sold`} onChange={(a, b) => setRange([a, b])} />
+        <RangeSlider id="rs-none" label="Price, delivered" min={25} max={95} low={48} high={72} caption="Not enough sales yet to show" onChange={() => {}} />
+      </Section>
+      <Section title="Chips: a three-way toggle, a wrapping row">
+        <ChoiceChips id="chips-how" label="How it gets to you" value={how} onChange={setHow} options={[{ id: 'ship', label: 'Ship' }, { id: 'pickup', label: 'Pickup' }, { id: 'both', label: 'Both' }]} />
+        <ChoiceChips id="chips-cond" label="Condition, at least" value={cond} onChange={setCond} options={[{ id: 'new', label: 'New with tags' }, { id: 'like-new', label: 'Like new' }, { id: 'good', label: 'Good' }, { id: 'fair', label: 'Fair' }]} />
+      </Section>
+      <Section title="Colour swatches: any, one picked">
+        <ColourSwatches id="cs" value={colours} onChange={c => setColours(c === 'any' ? [] : colours.includes(c) ? colours.filter(k => k !== c) : [...colours, c])}
+          swatches={colourData.jersey} />
+      </Section>
+      <Section title="Size picker: two systems, one">
+        <SizePicker id="sp" system={size[0]} value={size[1]} onChange={(a, b) => setSize([a, b])}
+          systems={[{ id: 'mens', label: 'Men’s US', sizes: ['8', '8.5', '9', '9.5', '10', '10.5', '11', '12'] }, { id: 'womens', label: 'Women’s US', sizes: ['6', '7', '8', '9', '10'] }]} />
+        <SizePicker id="sp-one" system="letter" value={null} onChange={() => {}} systems={[{ id: 'letter', label: 'Letter', sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'] }]} />
+      </Section>
+    </>
   );
 }
