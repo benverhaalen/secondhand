@@ -2277,3 +2277,14 @@ Nate, orchestrator's session, 2026-11-15, about 07:50 Central.
 > Very important, see how we can utilize these, or build our engines and features on top https://www.databricks.com/solutions/industries/retail-industry-solutions to show we truly extend databricks
 
 Used in: `research/data/nate/databricks-retail-solutions.md`, [the finalization spec](../spec/plans/finalization.md).
+
+
+## 2026-11-15 the main points across the site, Devpost and video
+
+Ben, Codex, on what the presentation should convey:
+
+> here are the central points to make across the whole thing. we price to the market and it works. we help you sell faster by listing across all platforms. we help you create the best listings faster than anything else. our services are cheaper than any competing products with more features. we leveraged the databricks platform exceptionally and we were creative with the tools they have. a human in the loop is central to all ai decisions. we built cost effective and fast solutions with ai and really engineered new unique ways of interaction. we thought of everything you thought of and have reasons behind all our decisions.
+
+> but our website (public), the devpost, or any video should all convey these in a different way. oh also, for the website and devpost especially have a section about digging in.
+
+These are the intended selling points. The [pitch evidence map](pitch.md#what-we-want-people-to-remember) records the proof and pending comparisons for each.
