@@ -4,6 +4,48 @@ Status: *agent proposal* for Nate and Ben, written 2026-11-15. Asked by [Nate](.
 
 No public benchmark exists for secondhand intelligence in anything we researched ([parity](parity.md)); the one published test is a vendor's and is not sound ([published price tests and their flaws](../research/price/nate/published-price-tests-and-their-flaws.md)). So we run our own, in the open, against named tools, and publish the items, the date, the method and every raw answer.
 
+## In one paragraph
+
+We take 200 real secondhand items, ask every tool the same questions about each on the same day, save every raw answer, and score ten things: how many items get an answer, how much comes back per answer, whether the numbers show their sources, sold prices across sites, exact matches, freshness, price accuracy, speed, what happens when evidence is thin, and how fast a sale delists everywhere. The website shows each as an amount with its count, lists the tools alphabetically, shows the rows we lose, and links every figure to its records and to the command that reruns it.
+
+## The tools and what each does
+
+From [parity](parity.md) and the teardowns it cites ([search and similar-item finders](../research/watch/nate/teardown-search-and-similar-finders.md), [price tools and registries](../research/data/nate/teardown-price-tools-and-registries.md), [Dupe.com observed](../research/watch/nate/dupe-observed-in-browser.md), [seller analytics](../research/data/nate/shopify-analytics-and-seller-analytics.md)). The marks there apply: much of this is what a tool says of itself (*asserted*), not something we ran. The benchmark is what turns each line into an observed result.
+
+| Tool | What it is | What it does | What it does not do, as recorded | Rows it is run on |
+|---|---|---|---|---|
+| ThriftX | an iOS app, not a repo; no open source found | live search across six secondhand marketplaces, cheapest copy first, duplicates collapsed | no sold prices, no valuation, no selling side | 1, 2, 3, 5, 8, 9 |
+| Dupe.com | a site, extension and chat agent over a large retail catalog | finds similar new items from a photo, link or chat; published research method with sources per claim | used market lightly; no sold prices | 1, 2, 3, 5, 8, 9 |
+| Phia | a shopping app and extension | a price label on a listing | no sources per number | 2, 3, 7 |
+| Croissant | a resale-value tool with a sold-price data set | a resale value for an item | method not published | 2, 3, 7 |
+| Gem | a search and alert tool for vintage and secondhand | daily alerts for new listings | one check a day | 1, 6 |
+| Terapeak (eBay Product Research) | eBay's own seller research | eBay sold history, sell-through, accepted offer prices | eBay only; looks back only | 2, 4, 6, 7 |
+| 130point | a sold-price lookup | accepted Best Offer prices on eBay | eBay only | 4, 7 |
+| PriceCharting, Card Ladder, WatchCharts | price guides for games, cards and watches | price history and an index for one kind of item | one kind each | 2, 6, 7 on their own kind |
+| Keepa, camelcamelcamel | Amazon price trackers | price history and drop alerts | Amazon only, new goods | 2, 6 |
+| Vendoo, List Perfectly, Nifty, Flyp | crosslisting tools for sellers | crosslist, detect a sale, delist, bulk offers, profit by site | no valuation with evidence; no market data | 10, and 2 for what they return |
+| Shopify catalog and analytics | a product catalog across merchants and store metrics | one product across stores; sessions, conversion, order value | new goods, one store | 2 |
+| Lyst | a fashion search site | brand rankings | weights not published | 2 |
+
+A paid data provider is not in this table because none has been run or read closely; adding one is an open question below.
+
+## What we expect to show, and what would prove us wrong
+
+These are predictions written before any run, so the page cannot be fitted to the result.
+
+| Row | We expect | We are wrong if |
+|---|---|---|
+| 1 Coverage | an answer for more of the 200 than any one tool, because we read five marketplaces, official stores and Amazon | a single-site tool answers more items than we do |
+| 2 Breadth | eight or more of the twelve kinds of fact per item, against at most three from any other tool | another tool returns six or more |
+| 3 Sources | every number opens to its evidence | any number of ours has none behind it: that is a build fault and blocks the page |
+| 4 Sold across sites | sold prices from three or more marketplaces for most apparel and electronics | Depop shows no sold state publicly and it drags the share under half |
+| 5 Exact match | higher than a cheapest-first or looks-alike ranking, since exact is never decided from the image alone | the judges mark a look-alike tool as more exact |
+| 6 Freshness | minutes, against a day or more | our warm cache serves older data than a rival's live fetch |
+| 7 Price accuracy | the stated share of sales inside the range, per family, checked by our backtest | a family lands well under its stated share: we widen the range or hide the number there |
+| 8 Speed | a first answer in about a second and a full one inside ten | a live-scrape tool is faster to a full answer |
+| 9 Thin evidence | more evidence after a wider search, on the 20 rarest items | we return nothing where a rival returns a sourced answer |
+| 10 Sale to delist | under two minutes at the 95th percentile | a crosslister on its top plan is faster |
+
 ## The rules
 
 1. One fixed set of real items, chosen before any tool is run and never changed after: the [real-item set](items/manifest.json), grown to 200 across the product families, half of them with a known later sale.
@@ -75,6 +117,17 @@ Every view links to the raw records and the rerun command, lists tools alphabeti
 
 Likely to break it, each with its test: an item swapped after a run (the manifest hash is in every record); a rival's answer scored by a different rule than ours (one scorer, no tool-specific branch); a number with no saved evidence (refused by the scorer); a sale price that the tool could have seen (the sale date must be after the answer's time).
 
+## Running it
+
+1. Freeze the item set: the manifest's hash goes in every record.
+2. Run ours through the public API with the runner, once, with the time recorded.
+3. The same day, two people ask each tool about each item the way a normal person would, and save the answer and a screenshot into that tool's record. A tool with a public interface is asked through it.
+4. Wait for the sales: the 100 items with a known later sale are scored for row 7 only against sales dated after the answers.
+5. Run the scorer. It writes the results file and refuses any number without a record.
+6. Publish the page, the records, the manifest and the rerun command together. A rerun is dated and added to a changelog; an old run is never overwritten.
+
+The first run is small on purpose: 20 items across five families against three tools, to prove the runner, the record shape and the scorer before the 200.
+
 ## What may not be claimed
 
 - Anything about a paid enterprise data provider until the same items have been run through one.
@@ -86,3 +139,5 @@ Likely to break it, each with its test: an item swapped after a run (the manifes
 - Which rivals are named on the website, and whether they are named at all or shown as "Tool A".
 - Whether a paid plan of any rival is bought for the run.
 - Who the two judges for row 5 are.
+- Whether a paid data provider is run, and which.
+- Whether the item set's photos are published with it or only their descriptions.

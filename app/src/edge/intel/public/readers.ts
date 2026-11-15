@@ -43,12 +43,14 @@ const SPECS: Record<Exclude<Site, 'offerup'>, Spec> = {
       Object.assign(r, price(strip(grab(c, /tile-grid-redesign__price-current[^>]*>([\s\S]*?)<\/span>/) ?? '')));
       put(r, 'image_url', image(c)); if (/tile-grid-redesign__condition-nwt/.test(c)) r.condition = 'NWT'; return r; },
   },
+  // Seen live 2026-11-15: each card is a div carrying the item id, its price in cents and its status; the link wraps the rest.
   mercari: {
-    start: /<div[^>]+data-testid="ItemContainer"/g, anchor: /href="\/us\/item\/m\d+/g,
+    start: /<div id="m\d+" data-itemprice="\d+"/g, anchor: /href="\/us\/item\/m\d+/g,
     card: c => { const r: Row = {}; const href = grab(c, /href="(\/us\/item\/[^"]+)"/);
-      put(r, 'url', href); put(r, 'id', grab(href ?? '', /\/us\/item\/(m\d+)/));
-      put(r, 'title', strip(grab(c, /data-testid="ItemName"[^>]*>([\s\S]*?)<\/p>/) ?? ''));
-      Object.assign(r, price(strip(grab(c, /data-testid="ItemPrice"[^>]*>([\s\S]*?)<\/span>/) ?? '')));
+      put(r, 'url', href); put(r, 'id', grab(c, /^<div id="(m\d+)"/));
+      put(r, 'title', decode(strip(grab(c, /data-testid="ItemName"[^>]*>([\s\S]*?)<\/p>/) ?? '')));
+      const cents = Number(grab(c, /data-itemprice="(\d+)"/)); if (cents > 0) { r.price_cents = cents; r.currency = 'USD'; }
+      if (grab(c, /data-itemstatus="([a-z_]+)"/) === 'sold_out') r.sold = true;
       put(r, 'image_url', image(c)); return r; },
   },
   depop: {
