@@ -10,7 +10,7 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 
 **What ours adds.** Faults found by running the server and by line review, none of them in Ben's list:
 - Nobody can sign in: the email code is sent nowhere (SV3).
-- The dev server loses every search unless one variable is set (SV1).
+- Routes do not share memory: a search's job could not be read back until the app-wiring lead shared the job store across routes today (87252eeb); every other store is still one per route (SV0).
 - Dupe's rows are written to disk on every search, against Dupe's condition (SV2).
 - Wiring the Apify token as the code stands would break two of Nate's rulings (SR3).
 - A fit would write parameters to an ungoverned table and may read rows it must not model on (DB1); a purge can record "done" with rows left (DB2).
