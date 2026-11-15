@@ -65,8 +65,9 @@ Then answer, in order:
 
    What this found for secondhand's user, and how an expert designer for this app would think about them, is in [user-wants.md](../research/cross-cutting/ben/user-wants.md) (*agent proposal*, twelve principles with sources). In short:
    - For cheap things they want the stuff gone, so Donate is a finished outcome.
+   - The number they open the app for is what they kept, so Today leads with it. Uber drivers kept a notebook of every fare before the app showed earnings ([today note](../research/today/ben/today-wants-alerts-and-clickability.md#1-who-opens-the-app-next-to-what-they-already-use)).
    - The number that decides is "You keep", not market value.
-   - They want to be needed rarely: one question at listing ("lowest you'd take"), and a push only for money, a deadline or a pickup.
+   - They want to be needed rarely: one question at listing ("lowest you'd take"), and a push only when they'd be glad of the interruption: money moving toward them, a deadline, a pickup, or something they asked us to watch. Likes, views and promotions never push ([today note §3](../research/today/ben/today-wants-alerts-and-clickability.md#3-alerts-a-person-perks-up-at)).
    - They hand over the writing and keep the facts: what it is, condition, price, shipping.
    - The crosslisting promise is "never sold twice".
    - An approve tap is weak evidence. An edit is the signal.
