@@ -1155,3 +1155,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-15 nate show the benchmark as amounts, not tables of checks and crosses
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15.
 > exemplify and take reference from other public benchmarks and products that are of similar nature and compete, what do they show, tables with x's and check marks? we dont want that when it doesnt show enough, we want amount of items compared graphically shown, amount of time, price, accuracy or capability could be the x's and checkmarks
+
+## 2026-11-15 nate write the benchmark up in full and push it
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15.
+> write up a full md detailing it and push it in the repo
