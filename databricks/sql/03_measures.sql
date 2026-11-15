@@ -1,11 +1,11 @@
 -- spec/databricks-build.md §§3–5,7: stored checks and the views opened by the proof dashboard.
 CREATE TABLE IF NOT EXISTS secondhand.measures.term_list (
   kind STRING COMMENT 'Source kind shared by the counted rows.',
-  term STRING COMMENT 'Distinct title word per source row; null for a brand count.',
-  brand STRING COMMENT 'Normalised source brand; null for a title-word count.',
+  term STRING COMMENT 'Distinct title word per source row, null for a brand count.',
+  brand STRING COMMENT 'Normalised source brand, null for a title-word count.',
   n_rows BIGINT COMMENT 'Source rows containing this word or brand within this kind.',
-  n_brands BIGINT COMMENT 'Distinct known brands for a word; one for a brand count.'
-) COMMENT 'DB20 Mercari competition word lists and structure only; never a current-price claim. Counts below market_min_n are omitted.';
+  n_brands BIGINT COMMENT 'Distinct known brands for a word, one for a brand count.'
+) COMMENT 'DB20 Mercari competition word lists and structure only, never a current-price claim. Counts below market_min_n are omitted.';
 
 CREATE TABLE IF NOT EXISTS secondhand.measures.recompute_check (
   citation_id STRING COMMENT 'The core.citation row checked.',
