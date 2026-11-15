@@ -65,7 +65,7 @@ export function Notifications() {
         <Txt role="caption">A kind you never open 3 times in a row moves to the summary, and the summary says so.</Txt>
       </Section>
 
-      <Section title="Grouping">
+      <Section>
         <List>
           <ListRow id="group-row" label="Group by item"
             detail={byItem ? `3 offers on the jacket come as one: 3 offers, best ${cash(4500)}` : 'Each offer and message comes on its own'}
@@ -73,7 +73,7 @@ export function Notifications() {
         </List>
       </Section>
 
-      <Section title="Quiet hours">
+      <Section>
         <List>
           <ListRow id="quiet-row" label="Quiet hours"
             detail={quiet ? 'Only a pickup you approved gets through. A deadline inside them comes first' : 'Alerts can come at any hour'}
