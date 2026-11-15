@@ -18,6 +18,12 @@ export type Example = {
 };
 export type Frame = { id?: string; event?: string; data?: Record<string, unknown>; comment?: string };
 
+export function examplesServed(env: Record<string, string | undefined> = process.env): boolean {
+  if (env.SECONDHAND_EXAMPLES === '1') return true;
+  if (env.SECONDHAND_EXAMPLES === '0') return false;
+  return env.NODE_ENV !== 'production';
+}
+
 export const EXAMPLES: Example[] = [auth, buy, captures, errors, items, jobs, me, sell, today, you, routes].flatMap((f) => (f as { examples: Example[] }).examples);
 export const STREAMS: Record<string, Frame[]> = Object.fromEntries((jobs as { streams: { name: string; frames: Frame[] }[] }).streams.map((s) => [s.name, s.frames]));
 
