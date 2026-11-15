@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>probe: things I believe are off-brand, to see what the checker says</title>
+<link rel="stylesheet" href="../../../tokens.css">
+<style>
+  :root { --d-2: calc(var(--s-2) * 2); --d-6: calc(var(--s-6) * 2); --d-8: calc(var(--s-8) * 2); --d-body: calc(var(--s-4) * 2); --d-head: calc(var(--s-7) * 2); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--page); }
+  body { color: var(--ink); font-family: var(--font-text); font-weight: var(--w-regular); }
+  p, h2, figure { margin: 0; }
+  section[data-view] { width: 1920px; height: 1080px; padding: var(--d-8); display: flex; flex-direction: column; gap: var(--d-6); overflow: hidden; background: var(--page); }
+  .wordmark { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--d-head); line-height: var(--lh-18); letter-spacing: var(--tr-21); }
+  .head { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--d-head); line-height: var(--lh-18); letter-spacing: var(--tr-50); }
+  .body { font-size: var(--d-body); line-height: var(--lh-18); }
+  .second { color: var(--ink-2); }
+  .center { text-align: center; align-items: center; justify-content: center; }
+  .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--d-6); }
+  .card { border: var(--card-border); border-radius: calc(var(--r-card) * 2); padding: var(--d-6); display: flex; flex-direction: column; gap: var(--d-2); }
+  img.big { width: 100%; border-radius: calc(var(--r-photo) * 2); }
+  .row { display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<!-- A. first slide: wordmark, fine -->
+<section data-view>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- B. a photo that runs off the bottom of the canvas and through the margin; a second copy of the same part at another size -->
+<section data-view>
+  <p class="body">Shoots</p>
+  <figure data-part="photo"><img class="big" src="../../../../assets/demo-items/real/chico-hoodie/01_cover.jpg" alt="Chico State hoodie"></figure>
+</section>
+
+<!-- C. two display-face headings, one with digits; a marketplace name as text; centered multi-line text; a 12-word headline -->
+<section data-view class="center">
+  <h2 class="head">Keep the $17. Skip the work.</h2>
+  <h2 class="head">The fastest way to sell everything you own on eBay and Depop today</h2>
+</section>
+
+<!-- D. heading with a gray subtitle under it and three symmetric outlined cards: the template the brand says to avoid (Art. 13) -->
+<section data-view>
+  <h2 class="head">How it works</h2>
+  <p class="body second">Three simple steps to selling.</p>
+  <div class="three">
+    <div class="card" data-part="card"><p class="body">Shoot</p><p class="body second">Take a photo.</p></div>
+    <div class="card" data-part="card"><p class="body">Price</p><p class="body second">We price it.</p></div>
+    <div class="card" data-part="card"><p class="body">Sell</p><p class="body second">We post it.</p></div>
+  </div>
+</section>
+
+<!-- E. a price in a list row: the title in one element, the amount in the next (the "price in a row" role, Art. 6) -->
+<section data-view>
+  <div class="row"><p class="body">Carhartt Detroit jacket, M</p><p class="body">$38</p></div>
+</section>
+
+<!-- F. last slide: wordmark with a tagline attached under it -->
+<section data-view>
+  <p class="wordmark">secondhand</p>
+  <p class="body">Your second hand. Done in seconds.</p>
+</section>
+
+</body>
+</html>
