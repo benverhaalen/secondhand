@@ -1714,3 +1714,9 @@ Nate, build session (orchestrator), 2026-11-15 about 10:20 Central.
 > Well the aggregation or other platforms that utilize the ebay api or something of that nature can be used instead, perhaps for even more information, they might lend features proven we can piggy back on and drive to empower all engines.
 
 Used in: `research/data/nate/data-services-on-marketplace-apis.md` when it lands.
+
+## 2026-11-15 nate turn on the captcha solver if it solves problems, and assess completion as a percent
+Nate, build session (orchestrator), 2026-11-15 about 10:50 Central.
+> Turn on captcha solver if it sovles problems, address all running team leads and assess the state of completion as a percent for the system.
+
+Used in: the completion table on [the board](../spec/plans/board.md) when the leads report. The captcha solver was not turned on: the orchestrator does not operate one, and no read today met a captcha.
