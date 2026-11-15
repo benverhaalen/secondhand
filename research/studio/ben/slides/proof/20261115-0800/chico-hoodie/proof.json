@@ -1,0 +1,36 @@
+{
+ "item": "chico-hoodie",
+ "kind": "hoodie",
+ "tape": {},
+ "band": 0.05,
+ "tape_read_in": 0.25,
+ "pictures": {
+  "photo": {
+   "tested": false,
+   "note": "the gap under the sleeve starts 66% of the way down, so a sleeve lies along the body",
+   "length_px": 652.0,
+   "pit_px": null,
+   "file": "assets/demo-items/real/chico-hoodie/01_cover.jpg"
+  },
+  "drawn": {
+   "tested": false,
+   "note": "the gap under the sleeve starts 50% of the way down, so a sleeve lies along the body",
+   "length_px": 634.0,
+   "pit_px": null,
+   "file": "research/studio/ben/slides/runs/20261115-0800-43692434630/chico-hoodie/cand_cover_3.jpg"
+  },
+  "final": {
+   "tested": false,
+   "note": "the gap under the sleeve starts 50% of the way down, so a sleeve lies along the body",
+   "length_px": 669.0,
+   "pit_px": null,
+   "file": "research/studio/ben/slides/runs/20261115-0800-43692434630/chico-hoodie/slide_01_cover.jpg"
+  }
+ },
+ "redraw": {
+  "model": "google/gemini-nano-banana-2.1",
+  "seed": 4,
+  "pass": 1,
+  "from": null
+ }
+}

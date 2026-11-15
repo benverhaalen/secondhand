@@ -165,6 +165,29 @@ def paste_print(ren: np.ndarray, hit: dict, box=None) -> np.ndarray:
     return (warped * f + ren * (1 - f)).astype(np.uint8)
 
 
+PRESS = 0.35  # share of the fold shading taken out. 60% (run 20261115-0836) left blotches that could read as stains; 35% did not
+
+
+def press(img: np.ndarray, mask: np.ndarray, k: float = PRESS) -> np.ndarray:
+    """The last of the wrinkles, without a model: take out a share of the fold-sized shading ripples (the same band
+    lay.wrinkle measures) on plain cloth only. Prints, tags and anything not the cloth's color are left alone, and only
+    lightness moves, never hue, so nothing can be drawn in. Coarser tone (fading across a panel) is outside the band.
+    Used on tops only: on faded denim and canvas the fading itself sits in this band."""
+    lab = cv2.cvtColor(img, cv2.COLOR_RGB2LAB).astype(np.float32)
+    s = max(img.shape[:2]) / 1080
+    m = cv2.erode(mask.astype(np.uint8), np.ones((int(9 * s) | 1,) * 2, np.uint8)).astype(bool)
+    if m.sum() < 500:
+        return img
+    med = np.median(lab[m], axis=0)
+    off = (np.hypot(lab[..., 1] - med[1], lab[..., 2] - med[2]) > 14) | (np.abs(lab[..., 0] - med[0]) > 60)
+    off = cv2.dilate(off.astype(np.uint8), np.ones((int(15 * s) | 1,) * 2, np.uint8)).astype(bool)
+    L = lab[..., 0]
+    band = cv2.GaussianBlur(L, (0, 0), 7 * s) - cv2.GaussianBlur(L, (0, 0), 45 * s)
+    w = cv2.GaussianBlur((m & ~off).astype(np.float32), (0, 0), 6 * s)
+    lab[..., 0] = L - k * band * w
+    return cv2.cvtColor(np.clip(lab, 0, 255).astype(np.uint8), cv2.COLOR_LAB2RGB)
+
+
 def _scale_once(ren, mr, s):
     """Wider by s about the centre, if the item still fits the frame; else shorter by 1/s with the floor mirrored into
     the gap, only when the rows mirrored are bare floor. None when neither is possible."""
@@ -281,6 +304,7 @@ Compare the last image with the real photos and answer one JSON object:
  "text_seen": the printed text you can read in the last image,
  "invented": anything in the last image that is not on the real item (a tag, label, text, logo, button, pocket, pattern), or [],
  "lost": anything on the real item missing from the last image (a print, a logo, a patch, a stain or other flaw: {flaws}), or [],
+ "wear_kept": true if the fading, discoloration, pilling, thinning and stains on the real item are still there in the same places and at the same strength, false if the item looks newer, darker or more evenly colored than the real one,
  "color": "same", "lighter", "darker" or "different hue",
  "flat": 0 still crumpled to 3 smooth and flat like an ironed garment,
  "laid": 0 messy to 3 straight, symmetric and complete like a catalog flat lay,
@@ -307,6 +331,8 @@ def judge_blocks(j: dict | None) -> list[str]:
         r.append("judge: invented " + ", ".join(map(str, j["invented"]))[:120])
     if j.get("lost"):
         r.append("judge: lost " + ", ".join(map(str, j["lost"]))[:120])
+    if j.get("wear_kept") is False:
+        r.append("judge: wear or fading removed")
     if j.get("color") == "different hue":
         r.append("judge: different hue")
     return r

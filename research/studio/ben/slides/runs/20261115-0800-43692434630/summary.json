@@ -1,0 +1,360 @@
+[
+ {
+  "item": "carhartt-pants",
+  "kind": "pants",
+  "seconds": 629.5,
+  "cost": 0.9162,
+  "slides": [
+   "cover:relay",
+   "back:relay",
+   "detail:level0",
+   "graphic:level0",
+   "tag:level0"
+  ],
+  "asks": [
+   "Lay a tape straight across the waist and take a photo where the numbers are readable."
+  ],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented extra whitish fading and brownish smudge on the upper leg thigh and knee",
+     "judge: wear or fading removed"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented back patch pockets, Carhartt logo patch, side utility pockets",
+     "judge: lost front slash pockets, waistband button, front fly"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: printed text changed"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "back",
+    "gemini-3-pro-image",
+    false,
+    [
+     "print 0 not found as it is in the real photo",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front fly and button, slanted front pockets, heavy knee fading, dashed black outline",
+     "judge: lost Carhartt logo patch, back patch pockets, hammer loop, side utility pockets",
+     "judge: wear or fading removed"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: printed text changed"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: printed text changed"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: printed text changed"
+    ]
+   ]
+  ]
+ },
+ {
+  "item": "chico-hoodie",
+  "kind": "hoodie",
+  "seconds": 272.6,
+  "cost": 0.4744,
+  "slides": [
+   "cover:relay",
+   "graphic:level0",
+   "tag:level0",
+   "detail:level0",
+   "detail:level0",
+   "detail:level0"
+  ],
+  "asks": [
+   "Turn it over where it lies and take the same photo.",
+   "Get close to the front pocket print so the letters fill the screen.",
+   "Lay a tape straight across the pit to pit and take a photo where the numbers are readable."
+  ],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented Russell Athletic neck tag inside collar"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ]
+  ]
+ },
+ {
+  "item": "marquette-tee",
+  "kind": "tee",
+  "seconds": 469.9,
+  "cost": 0.7764,
+  "slides": [
+   "cover:relay",
+   "back:level0",
+   "graphic:level0",
+   "graphic:level0",
+   "graphic:level0",
+   "tag:level0",
+   "measure:level0",
+   "measure:level0",
+   "extra:level0"
+  ],
+  "asks": [],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    false,
+    [
+     "proportions -20% against the tape",
+     "judge: not the same item",
+     "judge: invented black dashed outline around the entire garment, dark smudge above the chest logo"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: lost legible micro-text inside the 74 numerals"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented scooped front crew neckline with visible inner back collar and inner tag",
+     "judge: lost high back-of-neck collar cut, tiny printed text inside the number 74 (turned into illegible texture)"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: lost legible micro-text inside the number 74"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front crew-neck collar opening and inner neck tag on the graphic side, illegible garbled marks replacing the small text ",
+     "judge: lost back neckline construction, legible small roster and score text inside the numbers 74"
+    ]
+   ],
+   [
+    "back",
+    "gemini-3-pro-image",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front crew neckline, Fruit of the Loom neck tag"
+    ]
+   ]
+  ]
+ }
+]
