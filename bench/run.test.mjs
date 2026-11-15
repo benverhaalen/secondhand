@@ -16,18 +16,18 @@ test('recorded endpoint responses map only carried facts', async () => {
 test('missing query, hash, 404 and visitor authentication are recorded', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'bench-')); const path = join(dir, 'manifest.json'); const bytes = JSON.stringify({items:[{id:'missing'},{id:'one',query:'coat'}]}); await writeFile(path, bytes);
   const ask = async (endpoint) => endpoint === '/v1/search' ? reply({product_id:'pr_missing',results:[]}) : endpoint.startsWith('/v1/products/') ? reply({code:'not_found'},404) : reply({code:'unauthenticated'},401);
-  const records = await run({manifestPath:path, outRoot:dir, ask});
+  const records = await run({set:'owned',manifestPath:path, outRoot:dir, ask});
   assert.equal(records.find(r=>r.item_id==='missing').error,'no_query'); assert.equal(records.find(r=>r.question==='product').error,'not_found'); assert.equal(records.find(r=>r.question==='value').error,'needs_user');
   assert.ok(records.every(r=>r.manifest_sha256===createHash('sha256').update(bytes).digest('hex')));
 });
 test('unfinished job times out with no full time', async () => {
   const dir=await mkdtemp(join(tmpdir(),'bench-')); const path=join(dir,'manifest.json'); await writeFile(path, JSON.stringify({items:[{id:'one',query:'coat'}]}));
-  const records=await run({manifestPath:path,outRoot:dir,timeoutS:0,ask:async endpoint=>endpoint==='/v1/search'?reply({id:'job_1',kind:'search',state:'running',stages:[]} ,202):reply({code:'unauthenticated'},401)});
+  const records=await run({set:'owned',manifestPath:path,outRoot:dir,timeoutS:0,ask:async endpoint=>endpoint==='/v1/search'?reply({id:'job_1',kind:'search',state:'running',stages:[]} ,202):reply({code:'unauthenticated'},401)});
   assert.equal(records[0].error,'timeout'); assert.equal(records[0].full_at,null);
 });
 test('429 retries once after the stated delay then records error', async () => {
   const dir=await mkdtemp(join(tmpdir(),'bench-')); const path=join(dir,'manifest.json'); await writeFile(path, JSON.stringify({items:[{id:'one',query:'coat'}]})); let calls=0; const waits=[];
-  const records=await run({manifestPath:path,outRoot:dir,sleep:async ms=>waits.push(ms),ask:async endpoint=>{if(endpoint==='/v1/search'){calls++;return reply({code:'rate_limited',retry:{after_s:3}},429)} return reply({code:'unauthenticated'},401)}});
+  const records=await run({set:'owned',manifestPath:path,outRoot:dir,sleep:async ms=>waits.push(ms),ask:async endpoint=>{if(endpoint==='/v1/search'){calls++;return reply({code:'rate_limited',retry:{after_s:3}},429)} return reply({code:'unauthenticated'},401)}});
   assert.equal(calls,2); assert.deepEqual(waits,[3000]); assert.equal(records[0].error,'rate_limited');
 });
 test('in-process and HTTP use the same contract for a canned answer', async () => {
@@ -39,6 +39,15 @@ test('in-process and HTTP use the same contract for a canned answer', async () =
 
 test('default transport invokes the public search and job routes', async () => {
   const dir=await mkdtemp(join(tmpdir(),'bench-')); const path=join(dir,'manifest.json'); await writeFile(path,JSON.stringify({items:[{id:'one',query:'carhartt j97 xl'}]}));
-  const records=await run({manifestPath:path,outRoot:dir,timeoutS:5});
+  const records=await run({set:'owned',manifestPath:path,outRoot:dir,timeoutS:5});
   assert.equal(records[0].error,null); assert.equal(records.find(r=>r.question==='value').error,'needs_user');
+});
+
+test('runner selects owned items and rejects an unknown set', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-set-')); const path=join(dir,'manifest.json');
+  await writeFile(path,JSON.stringify({items:[{id:'owned',query:'owned query'}],market_items:[{id:'market',query:'market query'}]}));
+  const asked=[]; const ask=async (endpoint,init)=>{if(endpoint==='/v1/search') asked.push(JSON.parse(init.body).text); return reply({results:[]});};
+  const records=await run({manifestPath:path,outRoot:dir,set:'owned',ask});
+  assert.deepEqual(asked,['owned query']); assert.ok(records.every(r=>r.item_id==='owned'));
+  await assert.rejects(run({manifestPath:path,outRoot:dir,set:'other',ask}),/invalid set/);
 });
