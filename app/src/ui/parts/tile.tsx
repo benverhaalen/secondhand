@@ -7,6 +7,11 @@
 // over each other, so every logo shows whole (C5: unaltered, one gap). The whole tile is its target and opens the item.
 // States: idle, pressed (the Press spring), faded (an ended thing loses its color, R30), selecting (an empty check
 // circle on the photo's top right) and selected (a 2 px ink ring and a filled check: Art. 5, Selected, "Grid photos").
+// No state: nothing about the thing is news, so no tag. The second line is a money fact, or, when the screen passes
+// children, the screen's own line (a price the person may change is a Guess): that line sits outside the tile's button,
+// since a control never nests in another, and keeps the fact line's 20 height so every tile in a grid is one size.
+// One tile for every grid of things (Sell, a room's plan, Buy's shelves): the proof page "Gone by Friday" first drew its
+// own, and two tiles of one kind would drift (Art. 7.8).
 //
 // Shelf: why it exists. Sell's shelves (pages §6.10) each need a header with their count and a way to see them all;
 // Section's title is a plain headline with no count and nothing to press. States: open with See all, open without
@@ -21,7 +26,7 @@ import { Press, slop } from '../press';
 import type { TagState } from '../states';
 import { Txt } from '../text';
 import { useColors } from '../theme';
-import { radius, size, space } from '../tokens.generated';
+import { radius, size, space, type } from '../tokens.generated';
 import { FLAT, mark, type Site } from './mark';
 import { SiteBadge } from './small';
 import { Tag } from './tag';
@@ -29,32 +34,36 @@ import { Tag } from './tag';
 // The second line: what the number is, in secondary ink, then the number in ink ("Listed at $95", "You keep $62").
 export type TileFact = { label: string; amount?: string };
 
-export function Tile({ id, title, photo, state, word, sites = [], fact, faded = false, select, price, onPress }: {
+export function Tile({ id, title, photo, state, word, sites = [], fact, faded = false, select, price, onPress, children }: {
   id: string;
   title: string;
   photo?: PhotoSrc | null;
-  state: TagState;
+  state?: TagState;
   // The tag's word when the kind says more than the state: "Offer", "Ship by Tue".
   word?: string;
   sites?: Site[];
-  fact: TileFact;
+  fact?: TileFact;
   faded?: boolean;
   // Select mode: 'off' opens the item; 'on' is a checkbox, unticked; 'picked' is ticked.
   select?: 'off' | 'on' | 'picked';
   // The price in cents the grid sorted by, for tests that read the order (data-price).
   price?: number | null;
   onPress?: () => void;
+  // The screen's own second line, in place of fact.
+  children?: ReactNode;
 }) {
   const c = useColors();
   const picking = select === 'on' || select === 'picked', picked = select === 'picked';
-  return (
+  const tile = (
     <Press id={id} label={picking ? `${title}, ${picked ? 'selected' : 'not selected'}` : title} selected={picking ? picked : undefined} onPress={onPress} round={false}>
-      <View {...mark('tile', { price: price == null ? '' : String(price), sites: sites.join(' '), state })} style={{ gap: space.s1 }}>
+      <View {...mark('tile', { price: price == null ? '' : String(price), sites: sites.join(' '), state: state ?? 'none' })} style={{ gap: space.s1 }}>
         <View style={{ marginBottom: space.s1 }}>
           <Photo src={photo} label={title} fit="fill" faded={faded} />
-          <View style={{ position: 'absolute', top: space.s2, left: space.s2, right: picking ? space.s2 * 2 + size.siteBadge : space.s2 }}>
-            <Tag state={state} word={word} place="photo" />
-          </View>
+          {state ? (
+            <View style={{ position: 'absolute', top: space.s2, left: space.s2, right: picking ? space.s2 * 2 + size.siteBadge : space.s2 }}>
+              <Tag state={state} word={word} place="photo" />
+            </View>
+          ) : null}
           {sites.length ? (
             <View style={{ position: 'absolute', right: -space.s1, bottom: -space.s1, flexDirection: 'row', gap: space.s1 }}>
               {sites.map(s => <SiteBadge key={s} site={s} />)}
@@ -69,11 +78,20 @@ export function Tile({ id, title, photo, state, word, sites = [], fact, faded = 
           ) : null}
         </View>
         <Txt role="body" lines={1}>{title}</Txt>
-        <Txt role="body" tone="ink-2" lines={1}>
-          {fact.label}{fact.amount ? ' ' : ''}{fact.amount ? <Txt role="body" tone="ink">{fact.amount}</Txt> : null}
-        </Txt>
+        {fact && children == null ? (
+          <Txt role="body" tone="ink-2" lines={1}>
+            {fact.label}{fact.amount ? ' ' : ''}{fact.amount ? <Txt role="body" tone="ink">{fact.amount}</Txt> : null}
+          </Txt>
+        ) : null}
       </View>
     </Press>
+  );
+  if (children == null) return tile;
+  return (
+    <View style={{ gap: space.s1 }}>
+      {tile}
+      <View style={{ height: type.t15.lineHeight, justifyContent: 'center' }}>{children}</View>
+    </View>
   );
 }
 

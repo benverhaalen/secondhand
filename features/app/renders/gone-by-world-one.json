@@ -1,0 +1,26 @@
+{
+  "route": "gone-by?world=one",
+  "screen": "gone-by",
+  "states": [
+    "one",
+    "new",
+    "empty",
+    "typical",
+    "dense",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "",
+  "catalog": false,
+  "wash": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}

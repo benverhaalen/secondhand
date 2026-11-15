@@ -19,6 +19,7 @@ import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
 import { Shelf, Tile } from '@/ui/parts/tile';
 import { KeepRow, Range } from '@/ui/parts/worth';
 import { photo } from '@/demo/photos';
+import { GuessPick } from '@/ui/parts/pick';
 import { ItemParts } from '@/ui/parts/item-parts-sheet';
 import colourData from '@/buy/colours.json' with { type: 'json' };
 
@@ -62,9 +63,9 @@ function Sheetful() {
       <Section title="Decision card, the lead (state gradients, by time left)">
         <DecisionCard id="d-need" kind="need" word="Offer" title="Carhartt Detroit jacket" photo="carhartt-jacket" site="depop" fact={{ label: 'You keep', amount: 33.44 }}
           due={at(3.67)} lead primary={{ id: 'd-need-accept', label: 'Accept $38' }} second={{ id: 'd-need-counter', label: 'Counter' }} more={{ id: 'd-need-more', label: 'More' }} />
-        <DecisionCard id="d-ship" kind="ship" word="Ship" title="Nike Dunk Low, 10.5" photo="nike-dunks" site="ebay" fact={{ label: 'You keep', amount: 31.4 }}
+        <DecisionCard id="d-ship" kind="ship" word="Ship" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} site="ebay" fact={{ label: 'You keep', amount: 31.4 }}
           due={at(30)} lead primary={{ id: 'd-ship-print', label: 'Print label' }} second={{ id: 'd-ship-spots', label: 'Drop-off spots' }} />
-        <DecisionCard id="d-live" kind="live" word="Price" title="Patagonia Synchilla, L" photo="patagonia-fleece" site="poshmark" fact={{ label: 'Lower to', amount: 52 }}
+        <DecisionCard id="d-live" kind="live" word="Price" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} site="poshmark" fact={{ label: 'Lower to', amount: 52 }}
           lead primary={{ id: 'd-live-lower', label: 'Lower to $52' }} second={{ id: 'd-live-keep', label: 'Keep $58' }} />
         <DecisionCard id="d-paid" kind="paid" word="Paid" title="Levi’s 501, 32 × 32" photo="levis-501" site="poshmark" fact={{ label: 'You keep', amount: 44.1 }}
           due={at(47)} lead primary={{ id: 'd-paid-out', label: 'Cash out' }} second={{ id: 'd-paid-later', label: 'Later' }} />
@@ -73,7 +74,7 @@ function Sheetful() {
       <Section title="Decision card, every state">
         <DecisionCard id="d-open" kind="need" word="Offer" title="Brass desk lamp" photo="brass-lamp" site="ebay" fact={{ label: 'You keep', amount: 28.9 }}
           due={at(20)} primary={{ id: 'd-open-accept', label: 'Accept $32' }} second={{ id: 'd-open-counter', label: 'Counter' }} />
-        <DecisionCard id="d-working" kind="ship" word="Ship" title="Nike Dunk Low, 10.5" photo="nike-dunks" site="ebay" fact={{ label: 'You keep', amount: 31.4 }}
+        <DecisionCard id="d-working" kind="ship" word="Ship" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} site="ebay" fact={{ label: 'You keep', amount: 31.4 }}
           due={at(21)} status="working" step="Printing" primary={{ id: 'd-working-print', label: 'Print label' }} second={{ id: 'd-working-spots', label: 'Drop-off spots' }} />
         <DecisionCard id="d-failed" kind="ship" word="Ship" title="Switch OLED" photo="switch-oled" site="mercari" fact={{ label: 'You keep', amount: 210 }}
           status="failed" step="The label did not print" primary={{ id: 'd-failed-print', label: 'Print label' }} second={{ id: 'd-failed-help', label: 'Get help' }} />
@@ -86,7 +87,7 @@ function Sheetful() {
           due={at(22)} form="batch" primary={{ id: 'd-batch-print', label: 'Print 3 labels' }} second={{ id: 'd-batch-each', label: 'One by one' }} />
         <DecisionCard id="d-batch-run" kind="ship" word="Ship 3" title="3 sold today" photo="brass-lamp" site="ebay" fact={{ label: 'You keep', amount: 104.2 }}
           due={at(22)} form="batch" status="working" step="2 of 3" primary={{ id: 'd-batch-run-print', label: 'Print 3 labels' }} second={{ id: 'd-batch-run-each', label: 'One by one' }} />
-        <DecisionCard id="d-queue" kind="need" word="Offer" title="Kindle Paperwhite" photo="kindle" site="ebay" fact={{ label: 'You keep', amount: 51 }}
+        <DecisionCard id="d-queue" kind="need" word="Offer" title="Kindle Paperwhite" photo={photo('kindle') as PhotoSrc} site="ebay" fact={{ label: 'You keep', amount: 51 }}
           due={at(6)} form="queue" waiting={4} primary={{ id: 'd-queue-accept', label: 'Accept $58' }} second={{ id: 'd-queue-counter', label: 'Counter' }} />
       </Section>
 
@@ -113,8 +114,8 @@ function Sheetful() {
       </Section>
 
       <Section title="Item card">
-        <ItemCard id="i-live" title="Patagonia Synchilla, L" photo="patagonia-fleece" site="poshmark" state="live" fact={{ label: 'Listed at', amount: 58 }} />
-        <ItemCard id="i-hot" title="Nike Dunk Low, 10.5" photo="nike-dunks" site="depop" state="hot" fact={{ label: '14 watching' }} />
+        <ItemCard id="i-live" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} site="poshmark" state="live" fact={{ label: 'Listed at', amount: 58 }} />
+        <ItemCard id="i-hot" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} site="depop" state="hot" fact={{ label: '14 watching' }} />
         <ItemCard id="i-ship" title="Brass desk lamp" photo="brass-lamp" site="ebay" state="ship" word="Ship by Tue" fact={{ label: 'You keep', amount: 31.12 }} due={at(40)} />
         <ItemCard id="i-ended" title="IKEA Poäng chair" photo="ikea-chair" site="facebook" state="ended" fact={{ label: 'Listed at', amount: 40 }} />
         <ItemCard id="i-nophoto" title="A very long title that runs on past the edge of the card" state="draft" fact={{ label: 'Pricing' }} />
@@ -166,6 +167,20 @@ function Sheetful() {
         <Approve id="a-working" does="Post at $45 on 2 sites" status="working" step="Posting, 1 of 2" />
         <Approve id="a-done" does="Post at $45 on 2 sites" status="done" done="Posted at $45 on 2 sites" onUndo={() => {}} />
         <Approve id="a-failed" does="Post at $45 on 2 sites" status="failed" failed="A site did not answer. Nothing was posted." />
+      </Section>
+
+      <Section title="Guess among choices, tile">
+        <Stack gap="tight">
+          <Txt role="caption">Picked by the agent, not yet touched; then by the person</Txt>
+          <GuessPick id="gp-agent" name="What’s left Thursday" value="free" choices={[{ id: 'free', label: 'What’s left goes up free', does: 'Free for pickup at your spot.' }, { id: 'keep', label: 'What’s left gets packed', does: 'Comes with you.' }]} />
+          <GuessPick id="gp-person" name="What’s left Thursday" value="keep" changed choices={[{ id: 'free', label: 'What’s left goes up free' }, { id: 'keep', label: 'What’s left gets packed' }]} />
+        </Stack>
+        <Grid columns={3}>
+          <Tile id="t-live" title="Patagonia Retro-X fleece" photo={photo('patagonia-fleece') as PhotoSrc} state="hot"><Txt role="caption">For $110</Txt></Tile>
+          <Tile id="t-none" title="Nike Dunk Low" photo={photo('nike-dunks') as PhotoSrc}><Txt role="caption">Still wear them</Txt></Tile>
+          <Tile id="t-gone" title="Kindle Paperwhite" photo={photo('kindle') as PhotoSrc} state="sold" faded><Txt role="caption">You keep $61.12</Txt></Tile>
+          <Tile id="t-empty" title="Still looking" state="working"><Txt role="caption">Pricing</Txt></Tile>
+        </Grid>
       </Section>
 
       <Section title="Amount">
