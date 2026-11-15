@@ -2055,3 +2055,9 @@ Nate, orchestrator's session, 2026-11-15, about 10:20 Central, asked where Ben's
 > If its not in the repo then he hasnt worked on it. Now talk through all questions you have for me
 
 Used in: [packet 78](../.agents/team/packets/team/78-assist-handoff.md) (the site is built from what the repo holds).
+
+## 2026-11-15 nate answers at the wrap-up: assess, archive, spec the finalizations, then new leads
+Nate, orchestrator's session, 2026-11-15, about 10:45 Central, answering the orchestrator's numbered questions.
+> Sure delete the raw files from the benchmark. Its science fair style judging. Which valuation? we aren't done yet. I wanted us to assess where we were. archive the running leads. fully spec out and decide on finalizations, then launch new leads to see it through. for 4. it should be hourly until after judging. Yes we can host with fly.io, i also have a hetzner box. for the website, since bens busy i wnated us to work on it, but lets ensure the system and all features work. We are getting hosting to work, but can realtime test on the dev server. forget apple sign in. We probably need other modules right. Apples object capture kit, or no? Have apify replace fb marketplace and ebay for now. planned that when approved we get ebay, and hopefully fb. we wont be able to wait on ebay. for depop its ok if working but ensure we can perfectly evaluate the amount of times we catch it, identify why, if its because we get rejected, we can build a system to auto detect if we;re on the right page or someting, and immediately start a new one. Think through a solution, perhaps not that unless its the only/best way. Lets not do paid vector search. Lets utilize mercari data the best way we can
+
+Used in: `spec/plans/finalization.md`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
