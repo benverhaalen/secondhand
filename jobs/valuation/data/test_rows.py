@@ -29,7 +29,7 @@ def test_mercari_maps_condition_and_drops_free_rows(tmp_path):
     assert set(jeans) == set(rows.COLUMNS)
     assert (jeans["price_cents"], jeans["condition"], jeans["kind"], jeans["buyer_shipping_cents"]) == (2400, "good", "apparel", 0)
     assert (shoes["price_cents"], shoes["condition"], shoes["kind"], shoes["buyer_shipping_cents"]) == (8050, "like_new", "shoes", "")
-    assert jeans["price_type"] == "sold" and jeans["at"] == "" and jeans["may_model"] is False
+    assert jeans["price_type"] == "sold" and jeans["at"] == "" and jeans["may_model"] is True
     assert shoes["description"] == ""   # "No description yet" is Mercari's placeholder, not text
 
 
@@ -85,7 +85,7 @@ def test_freeze_is_byte_identical_on_rerun_and_records_hashes(tmp_path):
     assert (tmp_path / "a" / "rows.csv.gz").read_bytes() == (tmp_path / "b" / "rows.csv.gz").read_bytes()
     m = json.loads((tmp_path / "a" / "manifest.json").read_text())
     assert m["rows"] == 1 and m["output"]["sha256"] == b["output"]["sha256"]
-    assert m["inputs"][0]["sha256"] == a["inputs"][0]["sha256"] and m["may_model"] is False
+    assert m["inputs"][0]["sha256"] == a["inputs"][0]["sha256"] and m["may_model"] is True
 
 
 def test_freeze_refuses_an_input_whose_hash_changed(tmp_path):

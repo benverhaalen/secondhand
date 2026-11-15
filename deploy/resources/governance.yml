@@ -1,0 +1,18 @@
+resources:
+  jobs:
+    governance_setup:
+      name: secondhand-governance-setup
+      tasks:
+        - task_key: why
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../../databricks/sql/07_why.sql
+              source: WORKSPACE
+        - task_key: constraints
+          depends_on: [{ task_key: why }]
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../../databricks/sql/08_constraints.sql
+              source: WORKSPACE
