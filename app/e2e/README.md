@@ -24,3 +24,24 @@ The tests are written from the table before the behavior exists, and fail until 
 [maestro/](maestro/) holds one flow per screen, the same states as the web test. They run on Ben's Mac with a simulator or a phone, not in the cloud: start the app with `npx expo start`, then `maestro test app/e2e/maestro/index.yaml`. A development build takes `-e APP_ID=<bundle id> -e URL=secondhand://`.
 
 - A test that taps everything and asserts no unlisted tap counts only taps whose `screen` is the page's own path: once Back or a link leaves the page, later taps belong to another table.
+## A demo video
+
+`node scripts/app-demo.mjs <flow> [--dark] [--captions] [--frame] [--out file]` records a flow as a short clip, the kind a launch post on X shows: the web build at 390 x 844 driven by the demo worlds, no phone. It writes `features/app/demos/<flow>.mp4` (H.264, 2x; the raw webm when ffmpeg is missing) and `<flow>.png`, the last frame, for a poster. `--dark` and `--frame` add `-dark` and `-framed` to the name.
+
+A flow is data: [demos/](demos/)`<flow>.json`, a list of steps, each one key. A soft dot shows where each tap lands, and a tap is followed by 600 ms so a viewer can follow it.
+
+| Step | Does |
+|---|---|
+| `{ "go": "/?world=clearing" }` | Opens a path. The first one starts the clip; a later one holds the last frame and fades into the new page |
+| `{ "tap": "<testID>" }` | Scrolls to the part if the thumb could not reach it, shows the dot, presses it |
+| `{ "type": ["<testID>", "text"] }` | Presses a field and types into it at a person's speed, then Enter |
+| `{ "wait": 1200 }` | Holds, in ms, while the screen does something worth watching |
+| `{ "caption": "Short words" }` | With `--captions`, a line in a band under the screen, never on the app. `""` clears it |
+
+`--frame` puts the screen in a plain rounded outline on a neutral ground, 1080 x 1350, for an X post. The script prints each step's time, so a flow is tuned to 10 to 25 s by its waits. `node --test scripts/app-demo.test.mjs` checks every flow: the step schema, every testID it presses is in `app/src/`, and every path it opens is a page.
+
+| Flow | Shows |
+|---|---|
+| `today` | Accepting an offer on the jacket, Undo, then countering instead |
+| `new` | ＋ opens the camera; a still reads Carhartt and asks Same thing?; the lamp that could be two things, and the maker's mark that stops the quick sale |
+| `sell` | Sell filtered to Needs you and Live, then ＋, What's it worth, three stills, and the jacket's value |
