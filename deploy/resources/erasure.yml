@@ -1,0 +1,43 @@
+resources:
+  jobs:
+    erasure_setup:
+      name: secondhand-erasure-setup
+      tasks:
+        - task_key: erasure
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../../databricks/sql/12_erasure.sql
+              source: WORKSPACE
+    vacuum_core:
+      name: secondhand-vacuum-core
+      schedule:
+        quartz_cron_expression: "0 0 4 * * ?"
+        timezone_id: America/Chicago
+        pause_status: UNPAUSED
+      max_concurrent_runs: 1
+      environments:
+        - environment_key: erasure
+          spec:
+            environment_version: "3"
+      tasks:
+        - task_key: vacuum_core
+          environment_key: erasure
+          spark_python_task:
+            python_file: ../tasks/purge.py
+            parameters: ["--vacuum", "--catalog", "${var.catalog}", "--root", "${workspace.file_path}"]
+
+targets:
+  dev:
+    resources:
+      jobs:
+        vacuum_core:
+          schedule:
+            pause_status: UNPAUSED
+  # Prod keeps it UNPAUSED too because deletion depends on it.
+  prod:
+    resources:
+      jobs:
+        vacuum_core:
+          schedule:
+            pause_status: UNPAUSED
