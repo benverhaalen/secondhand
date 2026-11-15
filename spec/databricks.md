@@ -264,7 +264,7 @@ Each block gives the pieces, the data path, what the official skills say, what w
 - **Test first:** keep an event stream open across a Lakebase suspend.
 
 ### 4.7 Studio ([spec](features/studio.md))
-- **Pieces:** Seedream 5.5 (Ben's pick), with Nano Banana 2.1 only as a fallback; a loop that prepares, renders, checks and repairs, with at most 2 repair rounds; render records as files in the volume and rows in Delta; photo tweaks without generation (brightness, contrast and the like), as Ben asked ([words](../product/words.md#2026-11-14-photo-tweaks-without-generation-and-a-photo-score)).
+- **Pieces:** Nano Banana 2.1 (Ben's pick, 2026-11-15), Seedream 5.5 if it becomes reachable; a loop that prepares, renders, checks and repairs, with at most 2 repair rounds; render records as files in the volume and rows in Delta; photo tweaks without generation (brightness, contrast and the like), as Ben asked ([words](../product/words.md#2026-11-14-photo-tweaks-without-generation-and-a-photo-score)).
 - **Data path:** each render keeps a pointer to its source frames and its check result. A render is never used as identification evidence. The photo score feeds the Quality axis (§5.2).
 - **What the skills say:** databricks-unity-gateway fronts external model providers. Whether it fronts these two image models is unverified. If it does not, the job calls them directly and logs each call as a trace span (*inferred*).
 - **Test first:** register one image model as a Gateway endpoint.

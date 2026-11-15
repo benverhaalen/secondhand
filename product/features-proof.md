@@ -218,7 +218,7 @@ The quantified internal version, with the why behind each rule, the math, the hu
 
 **29. What it costs.**
 - *What:* about 2 to 8 cents to list an item, 27 to 33 cents with studio photos; watching for sales costs about $0 a day except on Depop. Keeping a browser open would cost about $170 a month.
-- *Proof now:* estimated from observed prices; nothing billed yet ([numbers](numbers.md#what-it-costs-us)). Studio as built costs $0.54 an item (10 candidates for 2 slides); revenue streams, break-even and scale are in [roi.md](roi.md).
+- *Proof now:* estimated from observed prices; nothing billed yet ([numbers](numbers.md#what-it-costs-us)). Studio as built costs $0.63 an item (10 Nano Banana and Gemini 3 Pro candidates for 2 slides, plus judge reads); revenue streams, break-even and scale are in [roi.md](roi.md).
 - *Say:* "Cents an item, because we read public pages instead of keeping a browser open."
 
 ## What to show, ranked

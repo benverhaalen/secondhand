@@ -1,6 +1,6 @@
 // Rows 1, 2, 3, 8 and 10 of spec/benchmark.md.
 // Prove: node --test --test-concurrency=1 bench/score.test.mjs
-// Run: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json]
+// Run: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json] [--set market|owned]
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -151,13 +151,15 @@ function delists(records) {
   }) };
 }
 
-function scoreTool(tool, records, manifest) {
+function scoreTool(tool, records, itemsToScore) {
   const all = refs(records);
-  const answered = manifest.items.map(item => {
+  const carriesAnswer = record => record.facts.some(fact=>fact.count>=1) || record.numbers.length>0;
+  const empty = records.filter(record=>record.ok && !carriesAnswer(record));
+  const answered = itemsToScore.map(item => {
     const matches = records.filter(r=>r.item_id===item.id);
     return { item_id:item.id, matches, ok:matches.filter(r=>r.ok) };
   });
-  const covered = answered.filter(item=>item.ok.length);
+  const covered = answered.filter(item=>item.ok.some(carriesAnswer));
   const sites = covered.map(item=>({
     item_id:item.item_id,
     sites:metric(new Set(item.ok.flatMap(r=>r.sites)).size,item.ok.length,item.matches.length,refs(item.ok)),
@@ -175,38 +177,47 @@ function scoreTool(tool, records, manifest) {
   const numbers = records.flatMap(record=>record.numbers.map(number=>({record,number})));
   return { tool, rows: {
     '1': {
-      coverage:share(covered.length,manifest.items.length,all),
-      sites:{ median:metric(median(sites.map(s=>s.sites.value)),sites.length,manifest.items.length,covered.length ? refs(covered.flatMap(i=>i.ok)) : all), items:sites },
+      coverage:share(covered.length,itemsToScore.length,all),
+      empty:{ n:empty.length, of:records.length, records:empty.length ? refs(empty) : all },
+      sites:{ median:metric(median(sites.map(s=>s.sites.value)),sites.length,itemsToScore.length,covered.length ? refs(covered.flatMap(i=>i.ok)) : all), items:sites },
     },
-    '2': { items, median:metric(median(items.map(i=>i.kinds.value)),items.length,manifest.items.length,all), max:metric(Math.max(...items.map(i=>i.kinds.value)),items.length,manifest.items.length,all) },
+    '2': { items, median:metric(median(items.map(i=>i.kinds.value)),items.length,itemsToScore.length,all), max:metric(Math.max(...items.map(i=>i.kinds.value)),items.length,itemsToScore.length,all) },
     '3':share(numbers.filter(n=>text(n.number.citation_id) || n.number.evidence.length>0).length,numbers.length,numbers.length ? refs(numbers.map(n=>n.record)) : all),
     '8':{ first:timings(records,'first_at'), full:timings(records,'full_at') },
     '10':delists(records),
   } };
 }
 
-export function scoreRun(runDir, manifestPath = MANIFEST) {
+export function scoreRun(runDir, manifestPath = MANIFEST, set = 'market') {
+  if (!['market','owned'].includes(set)) throw new Error('invalid set: '+set);
   const bytes = fs.readFileSync(manifestPath);
   const manifest = JSON.parse(bytes);
   const bad = problems(manifest);
   if (bad.length) throw new Error(`manifest rejected: ${bad.join('; ')}`);
-  if (!Array.isArray(manifest.items) || !manifest.items.length || manifest.items.some(i=>!text(i.id)) || new Set(manifest.items.map(i=>i.id)).size !== manifest.items.length) throw new Error('manifest rejected: items need unique nonempty ids');
+  const itemsToScore = manifest[set === 'market' ? 'market_items' : 'items'];
+  if (!Array.isArray(itemsToScore) || !itemsToScore.length || itemsToScore.some(i=>!text(i?.id)) || new Set(itemsToScore.map(i=>i.id)).size !== itemsToScore.length) throw new Error('manifest rejected: items need unique nonempty ids');
   const hash = createHash('sha256').update(bytes).digest('hex');
-  const records = readRecords(runDir,hash,new Set(manifest.items.map(i=>i.id)));
+  const records = readRecords(runDir,hash,new Set(itemsToScore.map(i=>i.id)));
   return {
     run_id:records[0].run_id,
     manifest_sha256:hash,
-    tools:[...new Set(records.map(r=>r.tool))].sort().map(tool=>scoreTool(tool,records.filter(r=>r.tool===tool),manifest)),
+    tools:[...new Set(records.map(r=>r.tool))].sort().map(tool=>scoreTool(tool,records.filter(r=>r.tool===tool),itemsToScore)),
   };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const log = createLog({ src:'bench.score', build:'benchmark-rows-1-2-3-8-10', sink:line=>process.stderr.write(line+'\n') });
   try {
-    const [runDir, flag, manifestPath, ...extra] = process.argv.slice(2);
-    if (!runDir || (flag !== undefined && (flag !== '--manifest' || !manifestPath)) || extra.length) throw new Error('usage: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json]');
-    log.note('score input', { run_dir:runDir, manifest:manifestPath ?? MANIFEST });
-    const result = log.timed('bench.score',()=>scoreRun(runDir,manifestPath));
+    const [runDir, ...args] = process.argv.slice(2);
+    let manifestPath, set='market';
+    if (!runDir || runDir.startsWith('--')) throw new Error('usage: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json] [--set market|owned]');
+    for (let i=0; i<args.length; i++) {
+      if (args[i]==='--manifest' && args[i+1] && !args[i+1].startsWith('--')) manifestPath=args[++i];
+      else if (args[i]==='--set' && args[i+1] && !args[i+1].startsWith('--')) set=args[++i];
+      else throw new Error(`unknown or incomplete argument: ${args[i]}`);
+    }
+    log.note('score input', { run_dir:runDir, manifest:manifestPath ?? MANIFEST, set });
+    const result = log.timed('bench.score',()=>scoreRun(runDir,manifestPath,set));
     const output = path.join(runDir,'results.json');
     fs.writeFileSync(output,JSON.stringify(result,null,2)+'\n');
     log.note('results written', { run_id:result.run_id, output });

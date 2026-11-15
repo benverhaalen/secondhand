@@ -31,7 +31,7 @@ Real secondhand photos are wrinkled, badly lit and framed differently every time
 
 **F6. A template per kind of garment, and a fixed slide order.** Tee, long sleeve, sweatshirt, pants: what slide 1, 2, 3 show, where graphics sit, and how the defect photo stays real ([06:01](../words.md#2026-11-15-the-photo-templates-demos-that-let-the-magic-talk-and-monitors-and-manages-markets-for-you), [23:01](../words.md#2026-11-14-garment-templates-a-reference-set-and-reading-c2pa)).
 
-**F7. The image model is Seedream 5.5.** "use whatever image model is not the chatgpt one use seedream 5.5" ([18:32](../words.md#2026-11-14-tools-and-capture)); "ensure you are using the 5.5 model i was talking about. rather than nano banana" ([08:09](../words.md#2026-11-15-quantify-everything-a-why-for-every-rule-ranked-identify-and-revenue-streams)). If OpenRouter doesn't carry it, reach it another way before falling back, and say so.
+**F7. The image model is Nano Banana, through OpenRouter.** Ben first asked for Seedream 5.5 ([18:32](../words.md#2026-11-14-tools-and-capture), [08:09](../words.md#2026-11-15-quantify-everything-a-why-for-every-rule-ranked-identify-and-revenue-streams)); OpenRouter doesn't carry it, and he chose to "stay on nanobanana" ([08:33](../words.md#2026-11-15-nano-banana-stays-app-store-coming-soon-the-voice-waits)). Retires if OpenRouter adds Seedream 5.5 and Ben asks again.
 
 **F8. A score decides when to stop.** A decision model scores each photo against what sells on each site and tweaks until it stops improving ([22:23](../words.md#2026-11-14-photo-tweaks-without-generation-and-a-photo-score)).
 
@@ -41,6 +41,5 @@ Real secondhand photos are wrinkled, badly lit and framed differently every time
 
 ## Open
 
-- The studio code prefers Nano Banana because Seedream 5.5 was not on OpenRouter's list on 2026-11-15 (`jobs/studio/openrouter.py`). F7 needs another route to Seedream or Ben's OK to stay.
 - Ben saw the redraw removing fewer wrinkles than he expected (07:51). Whether to push the wrinkle level is a taste call.
 - The defect photo has no tested method yet.

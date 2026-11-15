@@ -174,6 +174,7 @@ test('Poshmark rules: relist is never a fallback, Offer to Likers is 10% under w
   assert.equal(code(await run('post', { listing: { ...LISTING, price_cents: 299 }, floor_cents: 100, operation_id: 'op' })).hint.kind, 'invalid_listing');
   assert.equal(code(await run('send_message', { listing_external_id: 'x', text: ' ', operation_id: 'op' })).code, 'policy_refused');
   const dm = await run('send_message', { order_id: 'r1', text: 'Shipped today.', operation_id: 'op' });
+  assert.ok(dm.ok, JSON.stringify(dm));
   assert.match((dm.data as { url: string }).url, /\/order\/sales\/r1$/);
 });
 

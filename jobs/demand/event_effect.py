@@ -1,4 +1,7 @@
-"""How much one dated event moved demand for a group of items, measured from sales instead of hand-set.
+"""PARKED, 2026-11-15 08:31: Ben took hot items and seasons out of scope ("i dont care about hot items and seasons anymore.
+stop that."). No job runs this and no plan or pitch claims it; it stays only so the record in product/words.md resolves.
+
+How much one dated event moved demand for a group of items, measured from sales instead of hand-set.
 
 Why this design. An event (a team wins the World Series, move-out week, the first cold week) is a date, so the
 tempting design is a regression discontinuity in time: compare the weeks just before with the weeks just after.

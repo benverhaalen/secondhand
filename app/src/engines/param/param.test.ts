@@ -112,3 +112,100 @@ test('the shared row fixture has exactly the fields of a Param, so the Python si
   const written = s.propose(fit(), 0);
   assert.deepEqual(Object.keys(row).sort(), Object.keys(written).sort());
 });
+
+const DAY0 = '2026-01-01T00:00:00Z';
+const DAY30 = '2026-01-31T00:00:00Z';
+
+test('implicit elapsed time halves old counts; explicit elapsed time wins; out-of-order applies without decay', () => {
+  const s = store();
+  s.observe('assist_span_open', {}, { success: 1, weight: 2 }, DAY0);
+  const r = s.observe('assist_span_open', {}, { success: 0, weight: 1 }, DAY30);
+  assert.deepEqual(r.read.value, { alpha: 5, beta: 2 });
+  assert.equal(r.read.n_eff, 2);
+  assert.deepEqual(s.observe('assist_span_open', {}, { success: 1, weight: 1 }, DAY0).read.value, { alpha: 6, beta: 2 });
+  assert.deepEqual(s.observe('assist_span_open', {}, { success: 0, weight: 1, days_since_last: 0 }, DAY30).read.value, { alpha: 6, beta: 3 });
+});
+
+test('gamma sold comps update shape and exposure, freeze and guards refuse writes', () => {
+  const s = memoryStore();
+  s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 }, guard_hi: 2 });
+  for (let i = 0; i < 3; i++) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, DAY0);
+  assert.deepEqual(s.read('velocity', {}).value, { shape: 2, rate: 1 });
+  assert.equal(s.read('velocity', {}).version, 2, 'third update breaches the rate guard');
+});
+
+test('gamma apply and observe share the update path; frozen gamma stays unchanged', () => {
+  const s = memoryStore();
+  s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 } });
+  for (let i = 0; i < 3; i++) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, DAY0);
+  assert.deepEqual(s.read('velocity', {}).value, { shape: 2 * 0.5 ** 3 + 1.75, rate: 0.5 });
+  s.freeze('velocity', {}, true);
+  assert.equal(s.observe('velocity', {}, { count: 1, exposure: 1, weight: 1 }, DAY30).reason, 'frozen');
+  assert.equal(s.read('velocity', {}).version, 3);
+});
+
+test('model apply inherits shared value without mutating it, accumulates local weight and skips scalar guards', () => {
+  const s = memoryStore();
+  s.declare({ name: 'P_accept', family: 'model_ref', prior: { term: 0 }, guard_hi: 0 });
+  s.apply('P_accept', { site: 'ebay' }, () => ({ value: { term: 4 }, weight: 8 }), DAY0);
+  const person = { site: 'ebay', person: 'usr_1' };
+  s.apply('P_accept', person, (v) => ({ value: { term: (v as { term: number }).term + 1 }, weight: 1 }), DAY0);
+  s.apply('P_accept', person, (v, keep) => ({ value: { term: (v as { term: number }).term * keep }, weight: 2 }), DAY30);
+  assert.deepEqual(s.read('P_accept', person).value, { term: 2.5 });
+  assert.equal(s.read('P_accept', person).n_eff, 2.5);
+  assert.deepEqual(s.read('P_accept', { site: 'ebay' }).value, { term: 4 });
+  assert.throws(() => s.observe('P_accept', person, { success: 1, weight: 1 }, DAY30), /beta|gamma/);
+});
+
+test('promote compares the same held-out set and writes the score only on a win', () => {
+  const s = store();
+  s.propose(fit({ held_out_score: 0.9 }), 0);
+  s.promote('p_min_quick', { site: 'depop' }, 1, 0, AT);
+  s.propose(fit({ held_out_score: 0.5 }), 1);
+  assert.equal(s.promote('p_min_quick', { site: 'depop' }, 2, 0.01, AT, 0.6).promoted, false);
+  assert.equal(s.rows('p_min_quick', { site: 'depop' })[0].held_out_score, 0.9);
+  assert.equal(s.promote('p_min_quick', { site: 'depop' }, 2, 0.01, AT, 0.4).promoted, true);
+  assert.equal(s.rows('p_min_quick', { site: 'depop' })[0].held_out_score, 0.4);
+});
+
+test('pooled beta and gamma shrink sparse people toward shared data; kappa is a global param', () => {
+  for (const family of ['beta', 'gamma'] as const) {
+    const s = memoryStore();
+    const value = (m: number) => family === 'beta' ? { alpha: m * 10, beta: (1 - m) * 10 } : { shape: m * 10, rate: 10 };
+    s.declare({ name: 'velocity', family, prior: value(0.8) });
+    const seed = (scope: Param['scope'], m: number, n_eff: number) => {
+      s.propose(fit({ name: 'velocity', family, scope, prior: value(0.8), value_or_hyperparams: value(m), n_eff }), 0);
+      s.promote('velocity', scope, 1, 0, AT);
+    };
+    seed({ site: 'ebay' }, 0.8, 200);
+    seed({ site: 'ebay', person: 'usr_1' }, 0.2, 3);
+    seed({ site: 'ebay', person: 'usr_2' }, 0.1, 200);
+    const sparse = s.readPooled('velocity', { site: 'ebay', person: 'usr_1' });
+    assert.ok('mean' in sparse);
+    assert.ok(Math.abs(sparse.mean - (3 * 0.2 + 20 * 0.8) / 23) < 1e-12);
+    assert.deepEqual(sparse.versions, [1, 1]);
+    const dense = s.readPooled('velocity', { site: 'ebay', person: 'usr_2' });
+    assert.ok('mean' in dense && Math.abs(dense.mean - 0.1) < 0.07);
+    const absent = s.readPooled('velocity', { site: 'ebay', state: 'listed', person: 'usr_3' });
+    assert.ok('mean' in absent && absent.mean === 0.8 && absent.versions.length === 0);
+    assert.equal(s.read('param_pool_kappa', {}).value, 20);
+    s.propose(fit({ name: 'param_pool_kappa', scope: {}, value_or_hyperparams: 40 }), 0);
+    s.promote('param_pool_kappa', {}, 1, 0, AT);
+    const changed = s.readPooled('velocity', { site: 'ebay', person: 'usr_1' });
+    assert.ok('mean' in changed && Math.abs(changed.mean - (3 * 0.2 + 40 * 0.8) / 43) < 1e-12);
+  }
+});
+
+test('pooling recursively weighs every permitted ancestor and the prior, skipping absent scopes', () => {
+  const s = memoryStore();
+  s.declare({ name: 'sale_rate', family: 'gamma', prior: { shape: 2, rate: 10 } });
+  for (const [scope, shape, n_eff] of [[{}, 8, 20], [{ kind: 'shoes' }, 4, 40], [{ kind: 'shoes', site: 'ebay', segment: 'boots' }, 9, 3]] as const) {
+    s.propose(fit({ name: 'sale_rate', family: 'gamma', scope, value_or_hyperparams: { shape, rate: 10 }, n_eff }), 0);
+    s.promote('sale_rate', scope, 1, 0, AT);
+  }
+  const r = s.readPooled('sale_rate', { kind: 'shoes', site: 'ebay', segment: 'boots', state: 'listed' });
+  const global = (20 * 0.8 + 20 * 0.2) / 40;
+  const kind = (40 * 0.4 + 20 * global) / 60;
+  assert.ok('mean' in r && Math.abs(r.mean - (3 * 0.9 + 20 * kind) / 23) < 1e-12);
+  assert.ok('versions' in r && r.versions.length === 3 && r.n_eff === 3);
+});

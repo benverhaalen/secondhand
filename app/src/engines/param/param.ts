@@ -58,25 +58,75 @@ export function lineage(s: Scope): Scope[] {
 export class VersionConflict extends Error {}
 export class Unknown extends Error {}
 
+export type Observation = ({ success: number } | { count: number; exposure: number }) & { weight: number; days_since_last?: number };
+export type Step = (value: unknown, keep: number) => { value: unknown; weight: number };
+export type Applied = { applied: boolean; reason: string; read: Read };
+export type Pooled = { mean: number; n_eff: number; versions: number[] };
+
 export interface ParamStore {
   declare(d: Declared): void;
   read(name: string, scope: Scope): Read;
   rows(name: string, scope: Scope): Param[];
+  readPooled(name: string, scope: Scope): Read | Pooled;
   // A fit writes a challenger; it must carry its held-out score. expectVersion guards a race between two fits.
   propose(p: Omit<Param, 'version' | 'status' | 'promoted_at' | 'frozen'>, expectVersion: number): Param;
   // Promote a challenger when it beats the champion's held-out score by more than the noise (higher is better).
-  promote(name: string, scope: Scope, version: number, noise: number, at: string): { promoted: boolean; reason: string };
+  promote(name: string, scope: Scope, version: number, noise: number, at: string, champion_score?: number): { promoted: boolean; reason: string };
   rollback(name: string, scope: Scope, at: string): Param;
   freeze(name: string, scope: Scope, on: boolean): void;
   // A conjugate update in the same transaction as the outcome that informs it; weight is how sure the observation is.
-  observe(name: string, scope: Scope, outcome: { success: number; weight: number; days_since_last?: number }, at: string): { applied: boolean; reason: string; read: Read };
+  observe(name: string, scope: Scope, outcome: Observation, at: string): Applied;
+  apply(name: string, scope: Scope, step: Step, at: string, days_since_last?: number): Applied;
 }
 
 // Forgetting at a 30-day half-life (marketing-engine §3.5, negotiation §4): after 30 days an old count weighs half.
 export const FORGET_DAYS = 30;
+export const forget = (days: number): number => 0.5 ** (days / FORGET_DAYS);
+
+// spec/marketing-engine.md#35-update-rules
+export const POOL_KAPPA: Declared = { name: 'param_pool_kappa', family: 'scalar', prior: 20 };
+
+export function elapsed(base: Param | undefined, at: string, days?: number): number {
+  if (days !== undefined) return days;
+  // Out-of-order observations still apply, with zero decay.
+  return base?.promoted_at ? Math.max(0, (Date.parse(at) - Date.parse(base.promoted_at)) / 86_400_000) : 0;
+}
+
+export function summary(family: Family, value: unknown): number | undefined {
+  if (family === 'beta') {
+    const v = value as { alpha: number; beta: number };
+    return v.alpha / (v.alpha + v.beta);
+  }
+  if (family === 'gamma') {
+    const v = value as { shape: number; rate: number };
+    return v.shape / v.rate;
+  }
+  return undefined;
+}
+
+export function observationStep(d: Declared, o: Observation): Step {
+  if (d.family === 'beta' && 'success' in o) return (value, keep) => {
+    const v = value as { alpha: number; beta: number };
+    return { value: { alpha: v.alpha * keep + o.weight * o.success, beta: v.beta * keep + o.weight * (1 - o.success) }, weight: o.weight };
+  };
+  if (d.family === 'gamma' && 'count' in o) return (value, keep) => {
+    const v = value as { shape: number; rate: number };
+    return { value: { shape: v.shape * keep + o.weight * o.count, rate: v.rate * keep + o.weight * o.exposure }, weight: o.weight };
+  };
+  throw new Error(`observe supports beta success or gamma count/exposure; ${d.name} is ${d.family}`);
+}
+
+// Fold only the supplied lineage, including its prior: a person never climbs beyond its shared scope.
+export function pool(d: Declared, rows: (Param | undefined)[], kappa: number): Pooled {
+  let mean = summary(d.family, d.prior)!;
+  for (const row of [...rows].reverse()) {
+    if (row) mean = (row.n_eff * summary(d.family, row.value_or_hyperparams)! + kappa * mean) / (row.n_eff + kappa);
+  }
+  return { mean, n_eff: rows.find((row) => row !== undefined)?.n_eff ?? 0, versions: rows.flatMap((row) => row ? [row.version] : []) };
+}
 
 export function memoryStore(): ParamStore {
-  const declared = new Map<string, Declared>();
+  const declared = new Map<string, Declared>([[POOL_KAPPA.name, POOL_KAPPA]]);
   const table = new Map<string, Param[]>(); // key name|scope -> every version
   const key = (n: string, s: Scope) => `${n}#${scopeKey(s)}`;
   const decl = (n: string) => {
@@ -99,6 +149,11 @@ export function memoryStore(): ParamStore {
       }
       return { value: d.prior, version: 0, n_eff: 0, from: 'prior', scope: {} };
     },
+    readPooled(n, s) {
+      const d = decl(n);
+      if (d.family !== 'beta' && d.family !== 'gamma') return store.read(n, s);
+      return pool(d, lineage(s).map((scope) => champion(n, scope)), store.read(POOL_KAPPA.name, {}).value as number);
+    },
     propose(p, expectVersion) {
       decl(p.name);
       if (p.held_out_score === null || p.held_out_score === undefined || Number.isNaN(p.held_out_score))
@@ -109,15 +164,19 @@ export function memoryStore(): ParamStore {
       table.set(key(p.name, p.scope), [...(table.get(key(p.name, p.scope)) ?? []), row]);
       return { ...row };
     },
-    promote(n, s, version, noise, at) {
+    promote(n, s, version, noise, at, champion_score) {
       const rows = table.get(key(n, s)) ?? [];
       const ch = rows.find((p) => p.version === version && p.status === 'challenger');
       if (!ch) return { promoted: false, reason: 'no such challenger' };
       const cur = rows.find((p) => p.status === 'champion');
       if (cur?.frozen) return { promoted: false, reason: 'frozen' };
-      if (cur && cur.held_out_score !== null && (ch.held_out_score ?? -Infinity) - cur.held_out_score <= noise)
+      const score = champion_score ?? cur?.held_out_score;
+      if (cur && score !== null && score !== undefined && (ch.held_out_score ?? -Infinity) - score <= noise)
         return { promoted: false, reason: 'lost held-out' };
-      if (cur) cur.status = 'retired';
+      if (cur) {
+        cur.status = 'retired';
+        if (champion_score !== undefined) cur.held_out_score = champion_score;
+      }
       ch.status = 'champion';
       ch.promoted_at = at;
       return { promoted: true, reason: cur ? `beat v${cur.version}` : 'first champion' };
@@ -135,22 +194,24 @@ export function memoryStore(): ParamStore {
     },
     freeze(n, s, on) { for (const p of table.get(key(n, s)) ?? []) p.frozen = on; },
     observe(n, s, o, at) {
+      return store.apply(n, s, observationStep(decl(n), o), at, o.days_since_last);
+    },
+    apply(n, s, step, at, days) {
       const d = decl(n);
-      if (d.family !== 'beta') throw new Error(`observe supports beta params; ${n} is ${d.family}`);
       const base = champion(n, s);
       if (base?.frozen) return { applied: false, reason: 'frozen', read: store.read(n, s) };
-      const start = (base?.value_or_hyperparams ?? store.read(n, s).value) as { alpha: number; beta: number };
-      const keep = 0.5 ** ((o.days_since_last ?? 0) / FORGET_DAYS);
-      const next = { alpha: start.alpha * keep + o.weight * o.success, beta: start.beta * keep + o.weight * (1 - o.success) };
-      const mean = next.alpha / (next.alpha + next.beta);
+      const start = base?.value_or_hyperparams ?? store.read(n, s).value;
+      const keep = forget(elapsed(base, at, days));
+      const next = step(structuredClone(start), keep);
+      const mean = summary(d.family, next.value);
       const lo = base?.guard_lo ?? d.guard_lo, hi = base?.guard_hi ?? d.guard_hi;
-      if ((lo !== undefined && lo !== null && mean < lo) || (hi !== undefined && hi !== null && mean > hi))
+      if (mean !== undefined && ((lo !== undefined && lo !== null && mean < lo) || (hi !== undefined && hi !== null && mean > hi)))
         return { applied: false, reason: 'guard', read: store.read(n, s) };
       const rows = table.get(key(n, s)) ?? [];
       if (base) base.status = 'retired';
       const row: Param = {
-        name: n, scope: { ...s }, family: 'beta', value_or_hyperparams: next, prior: d.prior, version: latest(n, s) + 1,
-        fitted_on_ids_hash: null, n_eff: (base?.n_eff ?? 0) * keep + o.weight, metric: d.metric ?? null, held_out_score: base?.held_out_score ?? null,
+        name: n, scope: { ...s }, family: d.family, value_or_hyperparams: next.value, prior: d.prior, version: latest(n, s) + 1,
+        fitted_on_ids_hash: null, n_eff: (base?.n_eff ?? 0) * keep + next.weight, metric: d.metric ?? null, held_out_score: base?.held_out_score ?? null,
         guard_lo: lo ?? null, guard_hi: hi ?? null, status: 'champion', frozen: false, promoted_at: at,
       };
       table.set(key(n, s), [...rows, row]);
