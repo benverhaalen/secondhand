@@ -1,6 +1,6 @@
 # 86: server core handoff
 
-Updated: 2026-11-15, about 08:30 Central. Owner: Nate. Agent: Claude Code, the server-core lead (Opus 5.5), handing off at about half context per [packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills). Area: [finalization §2](../../../../spec/plans/finalization.md#2-server-core-lead-server), rows SV0 to SV10. Nothing was deployed, nothing was created on Fly, no secret was set anywhere.
+Updated: 2026-11-15, about 08:15 Central (13:15 UTC), at hand-off. Owner: Nate. Agent: Claude Code, the server-core lead (Opus 5.5), handing off at about half context per [packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills). Area: [finalization §2](../../../../spec/plans/finalization.md#2-server-core-lead-server), rows SV0 to SV10. Nothing was deployed, nothing was created on Fly, no secret was set anywhere.
 
 ## What is true on main
 
@@ -17,7 +17,31 @@ Updated: 2026-11-15, about 08:30 Central. Owner: Nate. Agent: Claude Code, the s
 
 Reviews: a fresh Opus review of the store, entry and account scoping found six faults, five fixed in fdff15a1 and verified closed by the same reviewer (F4, carrying `store.json`, not needed). A second fresh review of sign-in and jobs was running at handoff.
 
+Verified independently: the orchestrator reran SV0, SV1's sign-in half and SV3 on Windows at 12:55 UTC (`node server/main.ts`, a scratch folder, the dev code: sign-in across routes, token, job stages and 13 frames across a restart, another visitor refused, nothing of Dupe's on disk), recorded in the spec's §12. Request state (SV1 rest, SV10 parts) landed at bab7994d: idempotency slot before the handler, signed visitor ids, decision key required and versions on the row, last open in `kv`, `requireProduction()` at boot. Seventeen older route tests still call `deps.idem.clear()` / `deps.visits.clear()`; a two-line seam in `http.ts` keeps them working (marked `shortcut:`); new tests call `resetRequestState()`, and a hand-made visitor id must become `visitorId()`.
+
+## Does not work (found by the orchestrator's gate at 041f7ffe, 13:00 UTC; not yet diagnosed)
+
+- `scripts/walk.test.mjs`: "one fixture item runs all fifteen stages and finishes sold once with delists planned elsewhere" and "a watch prefix reports its completed nested sale without claiming the whole walk finished". `scripts/walk.mjs` builds its own `fileStore` in a temp folder (walk.mjs:68) while the modules it drives now use the SQLite default store from `api/store.ts`, so the walk's file store and the runtime's store are probably two stores: start there (make the walk pass its store into what it drives, or run it on a `sqliteStore` over the temp folder).
+- "Mercari linked search refuses another person and loads only the asking account" (in `app/src/edge/api/search.test.ts`, the search lead's file): likely SV5 meeting `harness/sites/mercari/linked.ts:8`, which calls `accounts.byId(args.account_id)` with no person and now gets undefined from `memoryAccounts`; the fix is one argument there (`byId(id, args.person_id)`), in the search lead's file: settle with them. `search.test.ts` also fails 11 on clean main for search's own changes (seen at 44591128).
+- `search-latency.test.ts` fails 3 on main (the search lead is fixing it).
+- Security gates open when `NODE_ENV` is unset (item 1a below): fly.toml and the Dockerfile set `production`, so the hosted path is safe; a hand-run host is not.
+
+## Agreements with other leads (each confirmed by message, 2026-11-15)
+
+- Search: `composeSources({ env, log, now, store })` in `app/src/edge/harness/compose.ts` (theirs), called once per process by the `runtime` singleton (done); no plain-fetch site clients, `SECONDHAND_CHROME` (done); rows carry `may_store` and `keep_until` (theirs, next round); `fill_until` on a search job keeps its stream open until `answer.late` (mine, jobs round 2); Apify caps as `kv` counters behind `apifyRuns.reserve` (mine); the search lead was asked to log `storable(answer)` in search.ts.
+- Engines: SV6 is theirs (EN6), and `valuate(item, ctx)` is on main (EN1, 9d0f91f2) with an `ObservationPort { read(q), write(rows, meta) }` whose one marked line waits for SV7. Observation reads: `show` (valuation) drops rows whose `keep_until` passed; `model` (fits) also needs `may_model` true at both levels; `use_scope` carried, not read. Nate changed the Apify rule since ("Yes, Apify too": Apify rows may fit models, eBay content stays out); the engines lead asked the data lead how to set `may_model` for Apify rows, so the reader stays as agreed and only the rows' flag changes.
+- Data: the DB3 landing line shape (notes folder); a re-upload is safe, a landed file is never rewritten.
+- Capture: the `Blobs` port and `PUT /v1/uploads/:id` (item 5 below), with `onUploaded`, GPS and face-region metadata stripped, type from the magic number, 25 MB; the identify job may run in-process for now with its row through `jobsOn`.
+- Buying conversation: `buy.test.ts` uses `visitorId()`; it waits for the hosted origin to set `SECONDHAND_API_ORIGIN` on Vercel.
+- The orchestrator: a subagent is building Ben's packet 80 (`capture.intent`, `GET`/`DELETE /v1/lookups`, a want keeping `product_id` and `capture_id`) and will touch `wants.ts` and a store declaration; the orchestrator merges it.
+
+## The shared development database
+
+With no `SECONDHAND_DATA_DIR`, every dev server on a machine shares `secondhand-dev/secondhand.db` in the temp folder; another session held it open at 12:35 UTC. Do not delete it while a dev server runs. For a benchmark or a persistence test, set a scratch `SECONDHAND_DATA_DIR` and delete it after.
+
 ## On the Mac (`~/dev/projects/secondhand-wt/<name>`, branch `w/<name>`)
+
+Every server worker branch is merged to main: srv-store-1, srv-entry-1, int-byid-2, srv-runtime-1, srv-auth-1, srv-jobs-1, srv-host-1, srv-fix-1, srv-proof-1, srv-http-1. Their worktrees can be removed. Not started (briefs in the notes folder): srv-vault-1, srv-obs-1, srv-fix-2.
 
 - **srv-http-1**, round 3 running: idempotency slot taken before the handler (409 `stale` on a concurrent duplicate), the visitor bucket in `kv`, server-signed visitor ids (`vis_` + 12 + 20 hex mac, matching the app's regex), decision key from `secret('decision')` and versions on the row, last open in `kv`, `secrets.ts` with `requireProduction()`, `'late'` in `Stage`, the entry calling `requireProduction()`, callers' test resets. The search lead allowed edits to the visitor fixtures and reset lines only in `search.test.ts`. Land it, rerun `server/main.test.ts` and `bash server/container-check.sh` on the Mac (Docker Desktop must be running: `open -a Docker`).
 - **srv-proof-1**: landed (ff31ae39); a fresh reviewer reran it on the Mac (exit 0) and marked SV0 done, SV1's sign-in half done, SV3 done against its proof (8e359f7b).
@@ -25,7 +49,7 @@ Reviews: a fresh Opus review of the store, entry and account scoping found six f
 
 ## Next, in order (every brief this lead wrote is in the shared notes folder `server-core-briefs/` (outside the repo); write fresh ones from these lines if it is gone)
 
-1. Land srv-http-1; rerun `server/main.test.ts`, `server/proof.test.ts` and `bash server/container-check.sh` on the Mac; a fresh reviewer for it (idempotency, visitor ids and the signing key are security), then mark SV1 and the SV10 parts.
+1. Done: srv-http-1 landed (bab7994d); on the Mac at that commit `server/main.test.ts` 8, `server/proof.test.ts` 1, `server/host.test.ts` 11, `http.test.ts` 26, `decisions.test.ts` 8 pass, and `bash server/container-check.sh` passes every step including the refusal without `DECISION_SIGNING_KEY`. Still to do: a fresh reviewer on bab7994d (idempotency, visitor ids, signing key are security), and an independent rerun of the container check to mark SV4 done.
 1a. **srv-fix-2** (brief written, `server-core-briefs/brief-srv-fix-2.txt`; start after srv-http-1): the second fresh review (of 1ce5c2a3 and dbbf817e) found gates open when `NODE_ENV` is unset. The development code must need `NODE_ENV=development`; `examplesServed()` must default off unless development or test; `keep.ts` must treat any object with `site`, `may_store` or `keep_until` as a row; no email lockout when no sender exists; the code generator chosen per code; a vendor's error text never logged. Also from it: `prune` reads every job and frame inside a write transaction after each search (move it to a timer and select only expiring rows), and the SV2 proof has no end-to-end "after a finished search" test yet. The search lead was asked to log `storable(answer)` instead of the whole answer in search.ts (its `answer.*` log events carry Dupe rows into the host's logs).
 2. **srv-vault-1** (after srv-http-1, it extends `secrets.ts`): `store/vault.ts` AES-256-GCM vault in SQLite with the ref as AAD, `SECONDHAND_VAULT_KEY` in production; `createRuntime` takes `options.vault`; seeding only when `examplesServed()`; push tokens into the vault under `push/<user_id>` (B12, me.ts).
 3. **srv-obs-1** (SV7, after srv-http-1, it touches `ports.ts`): the writer refuses any row whose `may_store` is not true (Dupe as a second guard), requires top-level `may_store`, `may_model`, `use_scope`, `keep_until`, `channel` agreeing with `rights`, refuses seller handles and places finer than a city; reader `show` drops expired rows, `model` also needs `may_model` true at both levels; `use_scope` carried, never filtered; `PUBLIC = 'sys_public'` rows survive `deleteUser`. Agreed with the engines lead (valuation reads `show`, fits read `model`) and the data lead.
