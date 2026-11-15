@@ -1103,3 +1103,15 @@ Ben, project chat, 05:37:
 > if i tell you about a skill and its not in the repo i probably want you to fetch it
 
 Used in: [AGENTS.md](../AGENTS.md#how-to-work-here), [.agents/vendor/poteto/](../.agents/vendor/poteto/SOURCE.md), [.agents/skills/hillclimb](../.agents/skills/hillclimb/SKILL.md).
+
+## 2026-11-15 cross-list existing depop listings and price any product with quant techniques
+
+Ben, project chat, 05:47 UTC.
+> how as it scales we can effectively price literally any product along the market and heres how we propose using quant techniques to do so. we could possibly even implement this too.
+
+> another feature to create, i can use my existing depop listings and automated cross list them on all these platforms automated to them.
+
+Ben, thread "Cross-list Depop listings and price with quant", 05:54 UTC.
+> hey stop using my personal dpop
+
+Used in: [features/list](../features/list/README.md#built-agent-proposal-not-yet-decided), [features/price](../features/price/README.md#built-agent-proposal-not-yet-decided), [packet 52](../.agents/team/packets/price/52-market-model-and-crosslist.md).
