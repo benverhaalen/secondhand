@@ -15,6 +15,8 @@ The one-public-tool comparison that motivated the range rule: a vendor's 80% ran
 
 ## 2. The pricing logic, step by step
 
+*Observed:* [Pricing modes](pricing-modes.md) compares each objective, its numeric rationale, the current toggle display and the tests that wait for the backend.
+
 There are two engines. The one the app serves is the comps engine; the Python model is the nightly challenger it is checked against.
 
 **The comps engine** ([app/src/engines/valuation/comps.ts](../../../app/src/engines/valuation/comps.ts), money D1 to D5, *observed*):

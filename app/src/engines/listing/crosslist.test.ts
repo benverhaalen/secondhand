@@ -43,8 +43,9 @@ test('product type routes by what the listing says', () => {
 test('a missing size is asked once across the sites that require it, and those drafts are not ready', () => {
   const plan = planItem(tee({ size: undefined }), { rows, linked: LINKED });
   const ask = plan.asks.find(a => a.field === 'size_label');
-  assert.ok(ask && ask.sites.includes('ebay'));
-  assert.equal(plan.sites.find(d => d.site === 'ebay')?.listing?.ready, false);
+  assert.deepEqual(ask?.sites, ['poshmark']);
+  assert.equal(plan.sites.find(d => d.site === 'poshmark')?.listing?.ready, false);
+  assert.equal(plan.sites.find(d => d.site === 'ebay')?.listing?.ready, true);
 });
 
 test('posting runs only for ready, approved drafts, with one operation id per listing and site', async () => {
@@ -105,7 +106,15 @@ test('each spread prices the other sites its own way, keeps the same floor, and 
     assert.deepEqual(p.sites.map(d => d.floor_cents), keepSame.sites.map(d => d.floor_cents));
     for (const d of p.sites.filter(d => d.price_cents !== undefined)) {
       assert.ok(!/\$|\d/.test(d.why!.says), `the reason is words, not numbers: ${d.why!.says}`);
-      assert.match(d.why!.numbers, /you get \$/);
+      assert.equal(d.why!.numbers, '', 'arithmetic hides until a fresh basis is supplied');
     }
+  }
+});
+
+test('a low market ask cannot lower the transferred floor', () => {
+  const plan = planItem(tee(), {rows, linked: LINKED, spread: 'site_market', site_market: () => 100});
+  for (const d of plan.sites.filter(d => d.price_cents !== undefined)) {
+    assert.ok(d.price_cents! >= d.floor_cents!);
+    assert.ok(keep(d.site as Parameters<typeof keep>[0], d.floor_cents!).keep_cents >= keep('depop',2400).keep_cents);
   }
 });

@@ -8,8 +8,9 @@
 // When the studio has already run on the photos, the cover sits on top with its two switches, Clean up and Enhance with
 // AI, and every site's preview changes with them as they are flipped, so the difference is seen live before anything
 // posts (Ben, 08:12: "photos before after done already ... quickly toggle on off the beautification (both the non ai and
-// the ai one) and showing that live before going into a posting"). Enhance with AI waits for a measurement, since a
-// redraw is only held to its real size by the tape (Ben, 08:09; jobs/studio/check.py).
+// the ai one) and showing that live before going into a posting"). Enhance with AI waits for the LiDAR scan's
+// measurement, since a redraw is only held to its real size by it (Ben, 08:09; 09:09: "only allow this from lidar flow
+// too"; jobs/studio/check.py).
 import * as Linking from 'expo-linking';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -75,8 +76,8 @@ function Post({ w, item, price, flipped, offline }: { w: World; item: Item; pric
   const photos = M.photoCount(item);
   const key = item.photos[0]?.key;
   const lookable = !!key && hasStudio(key);
-  // A redraw is held to the tape, so it needs one measurement of the thing (pit to pit, length, a height).
-  const measured = item.attributes.some(a => a.source === 'measured' && a.value !== null);
+  // A redraw is held to the scan, so it needs a LiDAR measurement of the thing (M.scanned).
+  const measured = M.scanned(item);
   const [clean, setClean] = useState(lookable);
   const [ai, setAi] = useState(lookable && measured);
   const look: Look = ai && measured ? 'ai' : clean ? 'clean' : 'original';
@@ -116,7 +117,7 @@ function Post({ w, item, price, flipped, offline }: { w: World; item: Item; pric
             </Row>
             <Row trail={<Switch id="look-ai" label="Enhance with AI" on={ai && measured} disabled={!measured || status === 'working'} onChange={setAi} />}>
               <Txt role="body" tone={measured ? 'ink' : 'ink-2'}>Enhance with AI</Txt>
-              <Txt role="caption">{measured ? 'Redrawn, then checked against your photos and tape' : 'Measure it first'}</Txt>
+              <Txt role="caption">{measured ? 'Redrawn, then checked against your photos and scan' : 'Scan it with LiDAR first'}</Txt>
             </Row>
           </List>
         </Stack>

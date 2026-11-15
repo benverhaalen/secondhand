@@ -72,7 +72,19 @@ test('an offer without item limits raises a decision and never writes an answer'
   assert.equal(r.store.decisions({ kind: 'accept_offer', state: 'open' }).length, 0);
   const offers = r.store.events().filter(e => e.action === 'offer.received');
   assert.equal(offers.length, 3);
-  assert.ok(offers.every(e => e.payload.decision_kind === 'counter_offer' && e.payload.negotiation_ask === true));
+  const payloads = offers.flatMap(e => e.payload ? [e.payload] : []);
+  assert.equal(payloads.length, offers.length, 'every received offer has its payload');
+  assert.ok(payloads.every(payload => payload.decision_kind === 'counter_offer' && payload.negotiation_ask === true));
+});
+
+for (const [label, response] of [['wrong type', 7], ['missing', undefined]] as const) test(`a watcher job with a ${label} response never reaches the marketplace adapter`, async () => {
+  const rig = smallRig(async () => ({ ok: true, data: [] }));
+  const stamp = new Date(start).toISOString();
+  ingest(rig.store, rig.log, { user_id: 'usr_walk', source: 'watcher_signed_in', site: 'depop', account_id: 'acc_depop',
+    action: 'offer.received', item_id: 'it_walk', listing_id: 'listing_depop', actor: 'auto', dedupe_key: `bad-response-${label}`, trace_id: 'guard',
+    observed_at: stamp, effective_at: stamp, payload: { ...decidedFixture(), ...(response !== undefined && { response }), external_id: 'ext' } });
+  await rig.watcher.tick();
+  assert.equal(rig.calls.includes('answer_offer'), false, 'response shape is checked before adapter execution');
 });
 
 test('seven days on fileStore with a day 4 restart has the same final counts as memoryStore', async t => {
@@ -422,7 +434,7 @@ test('an unlinked confirmation job pauses with a relink decision for its own per
 for (const after_s of [undefined, NaN, Infinity]) test(`confirmation retry_after ${after_s} defaults to 60 seconds`, async () => {
   let throttle = true;
   const rig = smallRig(async a => a.verb === 'read_orders' && throttle
-    ? fail('rate_limited', 'fixture throttle', { do: 'retry_after', after_s } as Parameters<typeof fail>[2]) : { ok: true, data: [] });
+    ? fail('rate_limited', 'fixture throttle', { do: 'retry_after', after_s: after_s as number }) : { ok: true, data: [] });
   const job = queueRead(rig, 'usr_walk', 'acc_depop', 'poll_orders');
   await rig.watcher.tick();
   const saved = rig.store.getJob(job.id) as typeof job & { next_run_at?: string };
@@ -481,9 +493,9 @@ test("Nate's Mercari rule: wants, follows and matches never sweep; only the pers
     const calls: { site: string; verb: string; account_id: unknown }[] = [];
     const watcher = createWatcher({ ...rig,
       accounts: { async linked() { return linked ? [mercari] : []; }, async byId(id) { return linked && id === mercari.account_id ? mercari : undefined; } },
-      harness: { async call<T>(site, verb, args = {}) {
+      harness: { async call<T>(site: Site, verb: Verb, args: CallArgs = {}) {
         calls.push({ site, verb, account_id: args.account_id });
-        return { ok: true, data: [] as T, meta: { route_id: 'fake.mercari', ms: 0, fell_back: false } };
+        return { ok: true, data: [] as T, meta: { route_id: 'fake.mercari', adapter_version: 'fixture', ms: 0, fell_back: false, observation_ids: [] } };
       } },
     });
     for (let minute = 0; minute < 1440; minute++) { await watcher.tick(); rig.advance(60000); }

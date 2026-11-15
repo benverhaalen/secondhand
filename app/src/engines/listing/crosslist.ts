@@ -1,3 +1,5 @@
+import { money } from './money.ts';
+import type { PriceProof } from './spreads.ts';
 /**
  * Cross-list: listings the person already has on one site become drafts for every other site they linked.
  * One target payout for every site: what the source listing keeps today (money D9), so each site's price is the one
@@ -153,6 +155,7 @@ export type ItemPlan = {
 };
 
 export type PlanOptions = {
+  proof?: PriceProof;
   rows: Parameters<typeof buildListing>[2]['rows'];
   linked: Site[];                                    // the sites the person linked; nothing is drafted for any other
   reach?: boolean;                                   // also post to the "ok" platforms
@@ -165,6 +168,8 @@ export type PlanOptions = {
 };
 
 export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
+  money(l.price_cents, 'price_cents');
+  if (l.floor_cents !== undefined) money(l.floor_cents, 'floor_cents');
   const type = productType(l);
   const r = route(type, { reach: opts.reach ?? false });
   const source = feeSite(l.site);
@@ -186,15 +191,16 @@ export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
     const fs = feeSite(site);
     if (opts.live_on?.(l, site)) return { ...base, action: 'live' };
     if (e.action === 'never' || !fs) return base;
-    const { price: price_cents, why } = sitePrice(spread, l.site, fs, target, sticker, opts.site_market?.(l, site));
     // The person's floor carries over as the same keep on every site (decisions: "you set the lowest you'd take").
-    const floor_cents = floorKeep === undefined ? undefined : Math.min(price_cents, priceForKeep(fs, floorKeep));
+    const floor_cents = floorKeep === undefined ? undefined : priceForKeep(fs, floorKeep);
+    const priced = sitePrice(spread, l.site, fs, target, sticker, opts.site_market?.(l, site), {...opts.proof, minimum_price_cents:floor_cents});
+    const {price:price_cents,why} = priced;
     const built = buildListing(card, site, {
       rows: opts.rows, price_cents, floor_cents: floor_cents ?? 0,
       posted_before: opts.posted_before?.(site) ?? false, promoted: opts.promoted ?? false,
     });
     const listing = floor_cents === undefined ? { ...built, missing: [...built.missing, 'floor'], ready: false } : built;
-    return { ...base, price_cents, floor_cents, keep_cents: keep(fs, price_cents).keep_cents, why, listing };
+    return { ...base, price_cents, floor_cents, keep_cents: keep(fs, price_cents).keep_cents, why, proof:priced.proof, param_versions:priced.param_versions, listing };
   });
 
   const asks = new Map<string, { kind: 'clarify'; field: string; sites: Site[] }>();

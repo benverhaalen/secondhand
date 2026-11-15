@@ -270,7 +270,7 @@ def mercari_apify_ccby(path: Path, dropped: dict):
 
 
 LICENCE = {
-    "mercari_kaggle": "Kaggle Mercari Price Suggestion Challenge, Specific Rules A: competition use only (public search index, read 2026-11-15)",
+    "mercari_kaggle": "Kaggle Mercari Price Suggestion Challenge, Specific Rules A: competition use only (public search index, read 2026-11-15); used for the hackathon demo on Ben's call, 2026-11-15 09:09",
     "stockx_2019": "StockX Data Contest 2019, released by StockX for public analysis; no licence stated",
     "grailed_2021": "third-party scrape, no licence; Grailed's terms bar scraping and ML extraction",
     "nber_ebay_bo": "cleared for public release by eBay.com, research purposes (NBER); cite Backus et al. 2020 QJE",
@@ -278,8 +278,8 @@ LICENCE = {
     "goodwill_cc0": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); ShopGoodwill buyer API; terms (Ownership, License, Acceptable Use) restrict reuse and automated extraction (read 2026-11-15)",
     "mercari_apify_ccby": "CC BY 4.0, attribution malekoweis/resale-market-data; collected from Mercari by a scraping actor",
 }
-# True only for marketplace-released rows whose terms allow this research use (sold-datasets.md, follow-up).
-MAY_MODEL = {"mercari_kaggle": False, "stockx_2019": True, "nber_ebay_bo": True, "grailed_2021": False,
+# True for marketplace-released rows whose terms allow this research use, and for Kaggle Mercari on Ben's call (sold-datasets.md, follow-up).
+MAY_MODEL = {"mercari_kaggle": True, "stockx_2019": True, "nber_ebay_bo": True, "grailed_2021": False,
              "ebay_comps_cc0": False, "goodwill_cc0": False, "mercari_apify_ccby": False}
 
 READERS = {"mercari_kaggle": mercari_kaggle, "stockx_2019": stockx_2019, "grailed_2021": grailed_2021,

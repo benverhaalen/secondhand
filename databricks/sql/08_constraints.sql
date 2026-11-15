@@ -1,7 +1,7 @@
--- Enforced guards and informational keys (spec/plans/sweep/databricks.md rows 1 and 4).
+-- Informational keys (spec/plans/sweep/databricks.md rows 1 and 4).
 -- Run: node databricks/run-sql.mjs databricks/sql/08_constraints.sql
--- CHECK rules validate existing rows and every later write. PK/FK describe joins;
--- Unity Catalog does not enforce uniqueness or referential integrity for them.
+-- PK/FK describe joins; Unity Catalog does not enforce them.
+-- Guard rules run in 09_guard.sql because row-filtered tables cannot have CHECK constraints.
 
 CREATE TABLE IF NOT EXISTS secondhand.governance.break_glass (
   id STRING NOT NULL, principal STRING NOT NULL, reason STRING NOT NULL,
@@ -50,23 +50,6 @@ ALTER TABLE secondhand.core.event ADD CONSTRAINT event_pk PRIMARY KEY (id);
 ALTER TABLE secondhand.core.job ADD CONSTRAINT job_pk PRIMARY KEY (id);
 ALTER TABLE secondhand.core.decision ADD CONSTRAINT decision_pk PRIMARY KEY (id);
 ALTER TABLE secondhand.core.storefront_snapshot ADD CONSTRAINT storefront_snapshot_pk PRIMARY KEY (id);
-
-ALTER TABLE secondhand.core.guarded_number ADD CONSTRAINT guarded_number_state CHECK (state IN ('shown','hidden','not_found'));
-ALTER TABLE secondhand.core.guarded_number ADD CONSTRAINT guarded_number_shown_citation CHECK (state <> 'shown' OR citation_id IS NOT NULL);
-ALTER TABLE secondhand.core.guarded_number ADD CONSTRAINT guarded_number_hidden_reason CHECK (state <> 'hidden' OR hide_reason IS NOT NULL);
-ALTER TABLE secondhand.core.claim_check ADD CONSTRAINT claim_check_verdict CHECK (verdict IN ('pass','hold','abstain'));
-ALTER TABLE secondhand.core.decision ADD CONSTRAINT decision_policy_mode CHECK (policy_mode IN ('auto','ask','locked','never'));
-
-ALTER TABLE secondhand.core.observation ADD CONSTRAINT observation_data CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$');
-ALTER TABLE secondhand.core.evidence ADD CONSTRAINT evidence_data CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$');
-ALTER TABLE secondhand.core.citation ADD CONSTRAINT citation_data CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$');
-ALTER TABLE secondhand.core.guarded_number ADD CONSTRAINT guarded_number_data CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$');
-ALTER TABLE secondhand.core.claim_check ADD CONSTRAINT claim_check_data CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$');
-ALTER TABLE secondhand.core.event ADD CONSTRAINT event_data CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$');
-ALTER TABLE secondhand.core.job ADD CONSTRAINT job_data CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$');
-ALTER TABLE secondhand.core.decision ADD CONSTRAINT decision_data CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$');
-ALTER TABLE secondhand.core.storefront_snapshot ADD CONSTRAINT storefront_snapshot_data CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$');
-ALTER TABLE secondhand.core.log_event ADD CONSTRAINT log_event_data CHECK (data RLIKE '^(synthetic|example|dataset:.+|live:.+)$');
 
 ALTER TABLE secondhand.core.guarded_number ADD CONSTRAINT guarded_number_citation_fk FOREIGN KEY (citation_id) REFERENCES secondhand.core.citation (id);
 ALTER TABLE secondhand.core.observation ADD CONSTRAINT observation_evidence_fk FOREIGN KEY (evidence_id) REFERENCES secondhand.core.evidence (id);

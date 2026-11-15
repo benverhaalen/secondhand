@@ -182,3 +182,7 @@ Every row is in the runner's schema. The rows live in project files under `secon
 *observed* - Verification: the Mercari row and freeze-manifest assertions were changed to require false and failed against the old gate. After the gate change, `cd jobs && python -m pytest valuation/data` passed: 5 tests. Only this note, `jobs/valuation/data/rows.py` and `jobs/valuation/data/test_rows.py` were edited. No commit or push was made.
 
 *observed* - `node .agents/check.mjs` failed outside the edited files: missing vendor documents and spec anchors, the published-words check, Node 20 rejecting TypeScript imports, and an eBay offer-clock check. These failures were not repaired because other repo files are outside this task. The generated check log was kept out of the repo. `git diff --check` passed. A fresh helper could not start because the collaboration service failed to load its thread context; review was not independent.
+
+## Ben's call on Kaggle Mercari, 2026-11-15 09:09
+
+Ben: "so there is no public way to access mercari data? if its there lets use it its for a hackathon demo". It is public in three GitHub mirrors of Kaggle's original file (*observed*, above), so `mercari_kaggle` is back to `may_model` true for the demo. Its licence column keeps both facts: Kaggle's "only for the purposes of the Competition" and Ben's decision. Any page that shows a Mercari number names the source and the year (*inferred*: a judge who knows the competition will ask).
