@@ -106,7 +106,7 @@ The gate and the type check on every merge; the Python suites (after DB5); the p
 3. One marketplace account linked through the live view (SV9).
 4. His own sign-in on Fly.io, and his yes before anything is deployed.
 5. Whether the served-engine figure stays on the judges' dashboard before Ben has seen it.
-6. Whether Apify rows may ever be counted in a measure (today: shown only).
+6. Whether a row marked `may_model: false` (Apify rows today, eBay interface rows later) may enter the comps a shown price range is computed from. [The valuation spec](../engines/valuation.md) says such a row can be shown and cited as a comp and never fit a weight; the ruling on Apify says shown and never modelled on. Until he rules, the engines lead keeps those rows out of every price basis and out of the observation store; they are still shown as listings.
 7. Real items photographed and measured, eight to ten for the stopwatch and twenty for the benchmark.
 
 ## 10. Done, as one condition
