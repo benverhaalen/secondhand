@@ -22,8 +22,10 @@ export type Act =
   | { do: 'amount'; option: string; name: string; cents: number; verb: string; done: string; floor?: number }
   | { do: 'later' }
   | { do: 'split' }
-  | { do: 'compare' };
-export type Action = { id: string; label: string } & Act;
+  | { do: 'compare' }
+  | { do: 'site'; url: string };
+// icon: a More row may lead with one (link-01 for the way back to the site).
+export type Action = { id: string; label: string; icon?: 'link-01' } & Act;
 
 export type Card = {
   key: string;
@@ -66,7 +68,10 @@ const kept = (w: World, d: Decision): number | null => {
   const c = o ? o.price_cents - o.fees_cents - o.shipping_cents : d.money?.you_keep_cents ?? null;
   return c && c > 0 ? c : null;
 };
-const keeps = (c: number | null | undefined, otherwise: string) => (c && c > 0 ? { label: 'You keep', cents: c } : { label: otherwise });
+// The money that reaches the person, in one form on every card: "You get $81.55", after fees and shipping (Ben 06:19: "you
+// keep this much money. There's probably a better way to word that"). The amount on the pill is the buyer's price.
+export const GETS = 'You get';
+const keeps = (c: number | null | undefined, otherwise: string) => (c && c > 0 ? { label: GETS, cents: c } : { label: otherwise });
 // Where the item lives, or where the decision is answered when it has no item.
 const itemPath = (d: Decision) => (d.item_id ? `/item/${d.item_id}` : d.account_id ? '/you/accounts' : '/sell');
 const chatPath = (d: Decision) => (d.conversation_id ? `/messages/${d.conversation_id}` : null);
@@ -99,8 +104,12 @@ export function single(w: World, d: Decision): Card {
   const chat = chatPath(d);
   // Every card's More ends with the ways around it (ways-out, Today): I did this already (it closes and the site is read to
   // confirm), and the way to its chat and its item.
+  // Always a way back to the site (Ben 06:19: "you should always have a way to go back to the site"), with the site's
+  // badge on the card saying which one.
+  const url = it?.listings.find(l => l.site === d.site)?.url;
   const ways = [
     act(d, 'elsewhere', 'I did this already', 'Checking the site', 'Closed, checking the site'),
+    url ? ({ id: `${d.id}-site`, label: 'Open on the site', icon: 'link-01', do: 'site', url } as Action) : null,
     chat ? open(d.id, 'Open the chat', chat) : null, d.item_id ? open(d.id, 'Open the item', itemPath(d)) : null,
   ].filter((a): a is Action => !!a);
 
@@ -129,23 +138,24 @@ export function single(w: World, d: Decision): Card {
       };
     }
     case 'share_address': {
-      // An address is shared only on the person's tap (decision 2026-11-14, locked). The safe choice is the black pill.
+      // An address is shared only on the person's tap (decision 2026-11-14, locked). The safe choice leads. Each pill says
+      // what happens (Ben 06:19: "I don't really know what keep the lot means").
       const buyer = w.conversations.find(c => c.id === d.conversation_id)?.buyer ?? 'The buyer';
       const ap = w.appointments.find(a => a.order_id === d.order_id);
       return {
         ...base, tag: 'need', word: 'Pickup', fact: { label: `${buyer} wants your address` },
         due: ap ? ms(ap.window.start) : base.due,
-        primary: act(d, 'spot', 'Keep the lot', 'Sending', 'Pickup stays at the lot'),
-        second: act(d, 'share', 'Share address', 'Sending', `Address sent to ${buyer}`),
+        primary: act(d, 'spot', 'Meet in public', 'Sending', 'Asked to meet in public'),
+        second: act(d, 'share', 'Send address', 'Sending', `Address sent to ${buyer}`),
         more: [later(d.id), ...ways],
       };
     }
     case 'scam_warning': {
       const buyer = w.conversations.find(c => c.id === d.conversation_id)?.buyer ?? 'them';
       return {
-        ...base, tag: 'need', word: 'Careful', fact: { label: 'Wants to pay off the site' },
+        ...base, tag: 'need', word: 'Possible scam', fact: { label: 'Wants to pay off the site' },
         primary: act(d, 'block', `Block ${buyer}`, 'Blocking', `Blocked ${buyer}`),
-        second: act(d, 'safe', 'Reply safely', 'Sending', 'Sent the safety line'),
+        second: act(d, 'safe', 'Say no', 'Sending', 'Said no, pay on the site'),
         more: [act(d, 'ignore', 'Ignore', 'Closing', 'Left unanswered'), ...ways],
       };
     }
@@ -162,8 +172,8 @@ export function single(w: World, d: Decision): Card {
     case 'buy_label': {
       const label = d.money?.label_cents ?? 0;
       return {
-        ...base, tag: 'ship', word: 'Ship', fact: keeps(kept(w, d), asLabel(d.why)),
-        primary: act(d, 'buy', label ? `Buy label ${usd(label)}` : 'Get the label', 'Buying', label ? 'Label bought' : 'Label ready'),
+        ...base, tag: 'ship', word: 'Sold', fact: keeps(kept(w, d), asLabel(d.why)),
+        primary: act(d, 'buy', label ? `Buy label ${usd(label)}` : 'Print label', label ? 'Buying' : 'Printing', label ? 'Label bought' : 'Label printed'),
         second: act(d, 'own', 'Own label', 'Saving', 'You’ll add the tracking'),
         more: [later(d.id), ...ways], open: d.item_id ? `/item/${d.item_id}/ship` : base.open,
       };
@@ -217,9 +227,9 @@ export function single(w: World, d: Decision): Card {
       const two = sales(w, d);
       return {
         ...base, tag: 'need', word: 'Sold twice', fact: { label: two.length === 2 ? `Both paid, ${usd(two[0].price)} and ${usd(two[1].price)}` : asLabel(d.why) },
-        primary: act(d, 'first', 'Keep the first', 'Cancelling the other', 'Kept the first sale'),
+        primary: act(d, 'first', 'Keep first buyer', 'Cancelling the other', 'Kept the first sale'),
         second: { id: `${d.id}-compare`, label: 'Compare', do: 'compare' },
-        more: [act(d, 'second', 'Keep the second', 'Cancelling the other', 'Kept the second sale'), ...ways],
+        more: [act(d, 'second', 'Keep second buyer', 'Cancelling the other', 'Kept the second sale'), ...ways],
       };
     }
     case 'retake': case 'missing_shot': case 'clarify': case 'unbacked_claim': case 'site_changed_listing': case 'measure_review': case 'confirm_flaw': {
@@ -320,14 +330,15 @@ export function cards(w: World): Card[] {
   return groups(w).map(g => fit(g.cards.length === 1 ? single(w, g.cards[0]) : g.form === 'queue' ? queue(w, g.cards) : g.form === 'batch' ? batch(w, g.cards) : single(w, g.cards[0])));
 }
 
-// The three tiers. A label shows only where two tiers meet: the first tier on the screen goes unlabeled (pages §5).
-export const TIER_LABEL: Record<Feed, string> = { now: 'Now', when_you_can: 'When you can', good_to_know: 'Good to know' };
+// The three tiers, each under its header, always, as Sell's shelves are (Ben 06:19: "the sell one seems very organized and
+// it's very easy to see like needs you in progress"). The risk order holds inside each (pages §5).
+export const TIER_LABEL: Record<Feed, string> = { now: 'Needs you now', when_you_can: 'When you can', good_to_know: 'Good to know' };
 export function tiers(list: Card[]): { tier: Feed; label: string | null; cards: Card[] }[] {
   const out: { tier: Feed; label: string | null; cards: Card[] }[] = [];
   for (const c of list) {
     const last = out.at(-1);
     if (last && last.tier === c.tier) last.cards.push(c);
-    else out.push({ tier: c.tier, label: out.length ? TIER_LABEL[c.tier] : null, cards: [c] });
+    else out.push({ tier: c.tier, label: TIER_LABEL[c.tier], cards: [c] });
   }
   return out;
 }
@@ -342,7 +353,12 @@ export function top(w: World) {
     const later = w.decisions.filter(d => d.kind === 'double_sale' && d.state === 'open').flatMap(d => sales(w, d).slice(1))
       .filter(o => ms(w.orders.find(x => x.id === o.id)?.created_at ?? w.now) > since);
     const cents = h.value - sum(later.map(o => o.keep)), n = Number(h.sub.split(' ')[0]) - later.length;
-    return cents > 0 ? { kind: 'news' as const, since: h.label, cents, line: later.length ? `${n} sold, after fees` : h.sub } : null;
+    // What sold, so the good news is the things themselves: each one's photo and the site it sold on (Ben 06:19: "the money
+    // sold thing ... is kind of like less"; say it "besides just text").
+    const skip = new Set(later.map(o => o.id));
+    const sold = w.orders.filter(o => o.kind === 'sale' && ms(o.created_at) > since && !skip.has(o.id)).sort((a, b) => ms(b.created_at) - ms(a.created_at))
+      .map(o => { const it = itemById(w, o.item_id); return { id: o.id, title: it?.title ?? 'Sold', photo: itemPhoto(it), site: o.site }; });
+    return cents > 0 ? { kind: 'news' as const, since: h.label, cents, line: later.length ? `${n} sold, after fees` : h.sub, sold } : null;
   }
   return { kind: 'setup' as const, step: h.label, to: '/onboarding' };
 }
