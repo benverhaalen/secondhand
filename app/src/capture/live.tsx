@@ -92,6 +92,7 @@ export function LiveCapture({ mode }: { mode: string }) {
     const current = capture ?? await start();
     const next = await uploadStills(current, photos);
     setCapture(next); setPending([]);
+    return next;
   };
   const shoot = () => run('Checking photo', async () => {
     if (!camera.current) throw new Error('Allow the camera or choose a photo.');
@@ -118,8 +119,10 @@ export function LiveCapture({ mode }: { mode: string }) {
     void run('Saving answer', async () => { setCapture(await answerCapture(capture, question, value)); setQuestion(null); });
   };
   const finish = () => run(studio ? 'Preparing photos' : 'Saving item', async () => {
-    if (!capture || capture.plan.status !== 'done' || pending.length) return;
-    const result = await api.call<{ jobs?: CaptureJob[] }>(`POST /v1/captures/${encodeURIComponent(capture.id)}/finish`, { body: { version: capture.version } });
+    // Photos still waiting go up first, so finish never does nothing; finish then reads the capture they produced.
+    const current = pending.length ? await send(pending) : capture;
+    if (!current || current.plan.status !== 'done') return;
+    const result = await api.call<{ jobs?: CaptureJob[] }>(`POST /v1/captures/${encodeURIComponent(current.id)}/finish`, { body: { version: current.version } });
     setJobs(result.jobs ?? []);
     setFinished(true);
   });
@@ -155,7 +158,7 @@ export function LiveCapture({ mode }: { mode: string }) {
       </CameraFoot>}>
       {coaching ? <View pointerEvents="none" style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}><ShotGuide step={guideStep} family={family} words={shotQuestion?.words} /></View> : null}
       {needsPhoto && !permission?.granted && !error ? <CameraOff title="Use your camera" line="Take each photo when you are ready." acts={[{ id: 'camera-permission', label: 'Allow camera', onPress: () => permission?.canAskAgain === false ? void Linking.openSettings().catch(failure => setError(captureMessage(failure))) : void askPermission() }, { id: 'camera-library', label: 'Choose photos', onPress: library }]} /> : null}
-      {error ? <CameraOff title="Could not continue" line={error} acts={[{ id: 'capture-retry', label: 'Try again', onPress: () => pending.length ? void run('Uploading photos', () => send(pending)) : refresh() }, { id: 'capture-error-close', label: 'Close', onPress: close }]} /> : null}
+      {error ? <CameraOff title="Could not continue" line={error} acts={[{ id: 'capture-retry', label: 'Try again', onPress: () => pending.length ? void run('Uploading photos', async () => { await send(pending); }) : refresh() }, { id: 'capture-error-close', label: 'Close', onPress: close }]} /> : null}
     </Viewfinder>
     <Sheet open={!!question} title={question?.words} onClose={() => setQuestion(null)}>
       {question ? <Answer key={question.id} question={question} busy={!!busy} onAnswer={answer} /> : null}

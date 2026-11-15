@@ -82,7 +82,11 @@ export function createClient(options: Options) {
   const listeners = new Set<() => void>();
   const subscribe = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
   const store = options.vault ?? platformVault;
-  const keep = async (t: Tokens | null) => { session.token = t?.access_token ?? null; session.refresh = t?.refresh_token ?? null; await store.set(t); listeners.forEach(listener => listener()); };
+  // The memory tokens and the listeners always move, even when the keychain write fails, so a sign-out never sticks.
+  const keep = async (t: Tokens | null) => {
+    session.token = t?.access_token ?? null; session.refresh = t?.refresh_token ?? null;
+    try { await store.set(t); } catch (e) { logger.error('api.vault.write', e); } finally { listeners.forEach(listener => listener()); }
+  };
   const ready = store.get().then(t => { if (t) { session.token = t.access_token; session.refresh = t.refresh_token; } },
     e => { logger.error('api.vault.read', e); });
 
@@ -94,6 +98,8 @@ export function createClient(options: Options) {
     if (!session.refresh || origin === null) return false;
     try {
       const r = await options.fetch(origin.replace(/\/+$/, '') + '/v1/auth/refresh', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: session.refresh }) });
+      // Only the server saying the token is no good ends the session; a 5xx, a 429 or a gateway page keeps the tokens for the next try.
+      if (!r.ok && ![400, 401, 403].includes(r.status)) { logger.note('refresh deferred', { status: r.status }); return false; }
       const t: unknown = r.ok ? await r.json() : null;
       if (!tokensOk(t)) { await keep(null); logger.event('state.change', { entity: 'api.session', id: 'session', to: 'signed_out', status: r.status }); return false; }
       await keep(t);
@@ -217,7 +223,8 @@ export function createClient(options: Options) {
       if (signal?.aborted) return;
       if (jobId !== undefined && reconnects === 3) throw new ApiFailure(0, 'stream_lost', 'Job event stream was lost', { cause });
       logger.note('reconnecting event stream', { endpoint, job: jobId, frame_id: lastId, attempt: reconnects + 1 });
-      if (jobId === undefined) { try { await abortable(() => new Promise(resolve => setTimeout(resolve, 1500)), signal); } catch { return; } }
+      // A phone between networks needs a moment: every reconnect waits, a little longer each time.
+      try { await abortable(() => new Promise(resolve => setTimeout(resolve, 1500 * Math.min(reconnects + 1, 3))), signal); } catch { return; }
     }
   }
 

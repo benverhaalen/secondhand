@@ -36,7 +36,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (request !== generation.current) return;
       log.error('account.read', error);
       if (error instanceof ApiFailure && error.status === 401) {
-        await api.signOut();
+        await api.signOut().catch(e => log.error('account.signout', e));
       } else setState({ status: 'failed', user: null, error: accountError(error) });
     }
   }, []);
@@ -56,9 +56,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try { if (api.session.refresh) await api.call('POST /v1/auth/signout', { body: { refresh_token: api.session.refresh } }); }
     catch (error) { log.error('account.revoke', error); }
     finally {
-      await api.signOut();
       signingOut.current = false;
       setState({ status: 'guest', user: null, error: null });
+      await api.signOut().catch(e => log.error('account.signout', e));
     }
   };
   return <Context.Provider value={{ ...state, reload, finishSetup, signOut }}>{children}</Context.Provider>;
