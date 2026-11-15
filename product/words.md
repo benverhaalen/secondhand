@@ -1546,3 +1546,16 @@ Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages
 > or let everything go its cool if they can benchmark at the same time
 
 Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/waiting.md).
+
+## 2026-11-15 stop hot items and seasons; stay on Nano Banana; Depop's API is a proposal, not a claim
+
+Ben, project chat, 08:31 to 08:34 UTC (excerpts that concern product scope; the rest of the 08:31 message is about the website).
+> also, the 5.5 model i wanted is right. i dont care about hot items and seasons anymore. stop that.
+
+> propose in roi propostion being in the depop api thing but right now dont claim that we are
+
+> stay on nanobanana for 1. 2. coming soon. 3. wait on the voice, plan for later.
+
+> ensure to instruct research flows to not use opus subagents
+
+Used in: [decisions.md](decisions.md), [roi.md](roi.md), [feature-breakdown.md](feature-breakdown.md#10-hot-and-seasons-dropped), [jobs/studio/slides_run.py](../jobs/studio/slides_run.py). Note: the event-effect estimator listed under the 08:09 entry is parked since 08:31, run by nothing.
