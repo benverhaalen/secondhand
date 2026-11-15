@@ -31,8 +31,8 @@ export default function Onboarding() {
     {session.status === 'failed' ? <FootButton id="account-retry" label="Try again" onPress={session.reload} /> : null}
   </Screen>;
   if (step === 'photo') return <Screen name="onboarding-photo" state={busy ? 'loading' : error ? 'failed' : 'new'} nav={<Nav back={() => setStep('services')} />}>
-    <Stack gap="tight"><Txt role="caption">2 of 2</Txt><Txt role="heading">First photo</Txt></Stack>
-    <Txt role="body" tone="ink-2">One photo starts the listing.</Txt>
+    <Stack gap="tight"><Txt role="caption">2 of 2</Txt><Txt role="heading">First photo</Txt>
+      <Txt role="body" tone="ink-2">One photo starts the listing.</Txt></Stack>
     <Stack gap="group">
       <FootButton id="onboarding-camera" label="Take a photo" icon="camera-01" state={busy ? 'working' : 'idle'} onPress={() => void finish('/camera?mode=sell')} />
       <Pill id="onboarding-buy" kind="second" label="Start with shopping chat" state={busy ? 'disabled' : 'idle'} onPress={() => void finish('/shop')} />
