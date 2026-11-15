@@ -5,10 +5,10 @@
 //                search icon; its kept count under it. It comes in (sourceIn) when asked, is faded while still asking,
 //                and drifts a few points (float) so it reads as live and pressable. A press hands back where it is
 //                on the screen, so the page can grow the burst from it. Reduce Motion: no drift, no entrance.
-//   Burst        the site's colour, a circle that grows from the pressed logo until it covers the page (burst). It
-//                starts at the logo's own size, so it grows out of the logo, and calls onCovered at three fifths of the
-//                way, when most of the page is covered, so the site starts to open before the fill ends; given closing,
-//                it shrinks back to the logo and calls onGone.
+//   Burst        the site's colour, a circle that grows from the pressed logo until it fills the screen (burst; Nate,
+//                words.md 2026-11-15: "have it expand and fill the screen"). It starts at the logo's own size, so it
+//                grows out of the logo, and calls onCovered once the screen is filled; it stays filled until the page
+//                sets closing, then shrinks back to the logo and calls onGone. onBack: a tap on the colour.
 import { useEffect, useRef, type ComponentRef } from 'react';
 import { View } from 'react-native';
 import Animated, { FadeIn, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
@@ -61,19 +61,19 @@ export function SourceFloat({ sources, onOpen }: {
   );
 }
 
-export function Burst({ at, colour, closing, onCovered, onGone }: { at: Point; colour: string; closing: boolean; onCovered: () => void; onGone: () => void }) {
+export function Burst({ at, colour, closing, onCovered, onGone, onBack }: { at: Point; colour: string; closing: boolean; onCovered: () => void; onGone: () => void; onBack?: () => void }) {
   const { width, height } = useWindow();
   const r = Math.hypot(Math.max(at.x, width - at.x), Math.max(at.y, height - at.y));
   const from = D / 2 / r, scale = useSharedValue(from), ms = MOTIONS.burst.ms as number;
   useEffect(() => {
     if (closing) { scale.set(withTiming(from, { duration: ms, reduceMotion: ReduceMotion.System })); const t = setTimeout(onGone, ms); return () => clearTimeout(t); }
     scale.set(withTiming(1, { duration: ms, reduceMotion: ReduceMotion.System }));
-    const t = setTimeout(onCovered, ms * 0.6);
+    const t = setTimeout(onCovered, ms);
     return () => clearTimeout(t);
   }, [closing, ms, from, scale, onCovered, onGone]);
   const grow = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }] }));
   return (
-    <View {...mark('burst', { state: closing ? 'closing' : 'open' })} pointerEvents="auto" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+    <View {...mark('burst', { state: closing ? 'closing' : 'open' })} pointerEvents="auto" onStartShouldSetResponder={() => !!onBack} onResponderRelease={onBack} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
       {/* An absolutely placed circle with no children: it grows by transform only (E1). */}
       <Animated.View style={[{ position: 'absolute', left: at.x - r, top: at.y - r, width: 2 * r, height: 2 * r, borderRadius: r, borderCurve: 'continuous', backgroundColor: colour }, grow]} />
     </View>
