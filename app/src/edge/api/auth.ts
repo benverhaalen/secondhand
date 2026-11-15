@@ -16,7 +16,7 @@ const REFRESH_SECONDS = 30 * 24 * 60 * 60;
 function browserRequest(req: Request): boolean {
   const origin = req.headers.get('Origin');
   if (!origin) return false;
-  const allowed = [new URL(req.url).origin, ...(process.env.SECONDHAND_WEB_ORIGINS ?? '').split(',').map(value => value.trim()).filter(Boolean)];
+  const allowed = [new URL(req.url).origin, ...(process.env.SECONDHAND_WEB_ORIGINS ?? '').split(',').map((value: string) => value.trim()).filter(Boolean)];
   if (!allowed.includes(origin)) throw new ApiError('locked', 'This sign-in request came from another site', 'origin');
   return true;
 }

@@ -27,7 +27,7 @@ export const searchJobs = Object.assign(jobs, { pendingSearches: new Map<string,
 export type SearchAnswer = Omit<Answer, 'searched'> & { searched: (Pick<Source, 'group'> & Omit<Answer['searched'][number], 'outcome'> & Pick<SiteSearched, 'site' | 'outcome' | 'error_code' | 'reason' | 'pace' | 'dropped' | 'fallback' | 'cost_usd_est'>)[] };
 export type SearchStage = { group: Source['group']; name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found; error?: { code: string; message: string } };
 type JudgedRow = { row: SearchRow; judged: Judged };
-type PublicOffer = BuyOffer & Pick<SearchRow, 'via' | 'actor' | 'may_model' | 'use_scope'> & { converted?: boolean; host?: string; match: Judged['match']; currency?: string; image_url?: string; external_id: string; data: `live:${SourceSite}`; commercial_link?: true; attribution?: 'Dupe.com'; source_site?: string; secondhand?: boolean; keep_until?: string; may_store: boolean };
+type PublicOffer = BuyOffer & Pick<SearchRow, 'via' | 'actor' | 'may_model' | 'use_scope'> & { converted?: boolean; host?: string; match: Judged['match']; currency?: string; image_url?: string; external_id: string; data: `live:${SourceSite}`; commercial_link?: true; attribution?: SearchRow['attribution']; source_site?: string; secondhand?: boolean; keep_until?: string; may_store: boolean };
 type Batch = { searched: SiteSearched; rows: JudgedRow[]; offers: PublicOffer[]; ranked: BuyRow[]; found: Found; cached?: boolean };
 
 const matchOrder: Record<Judged['match'], number> = { exact: 0, likely_same_model: 1, same_family_other_variant: 2, comparable: 3, unresolved: 4 };
@@ -37,6 +37,8 @@ const planOutcome = (outcome: SiteSearched['outcome']): Answer['searched'][numbe
 
 const inDollars = (offer: PublicOffer) => offer.currency === 'USD' && !offer.converted;
 function listingKey(offer: Pick<PublicOffer, 'url' | 'site' | 'source_site'>): string {
+  // Shopping redirects can identify different products entirely in their query strings.
+  if (offer.site === 'google_shopping') return `google_shopping:${offer.url}`;
   const url = new URL(offer.url);
   url.search = ''; url.hash = ''; url.pathname = url.pathname.replace(/\/+$/, '');
   return `${(offer.source_site ?? offer.site).toLowerCase()}:${url.host.toLowerCase()}${url.pathname}`;
@@ -96,7 +98,9 @@ function rank(source: Source, rows: JudgedRow[], searched: SiteSearched, filters
     if (judged.keep !== 'keep') { drop(judged.keep); continue; }
     const offer: PublicOffer = { ...candidates(source, [row], searched.route_id)[0], external_id: row.id!, currency: row.currency, ...(row.host ? { host: row.host } : {}), ...(row.converted ? { converted: true } : {}), data: `live:${site}`, may_store: row.may_store === true, ...(row.keep_until ? { keep_until: row.keep_until } : {}),
       ...(row.via ? { via: row.via, actor: row.actor, may_model: row.may_model, use_scope: row.use_scope } : {}),
-      ...('commercial_link' in row ? { commercial_link: row.commercial_link, attribution: row.attribution, source_site: row.source_site, secondhand: row.secondhand } : {}),
+      ...(row.may_model === false ? { may_model: false } : {}),
+      ...(row.attribution ? { attribution: row.attribution, source_site: row.source_site, secondhand: row.secondhand } : {}),
+      ...(row.commercial_link ? { commercial_link: row.commercial_link } : {}),
       ...(row.image_url ? { image_url: row.image_url } : {}), condition: row.condition ?? 'unknown',
       match: judged.match, relation: judged.match === 'comparable' ? 'functional_equivalent' : 'same_product',
       shipping_cents: null, tax_rate: 0, source_kind: 'marketplace', sold: row.sold, stock: row.stock };
@@ -132,7 +136,9 @@ function offerView(row: BuyRow) {
     ...(offer.host ? { host: offer.host } : {}), ...(offer.converted ? { converted: true } : {}), shipping_estimated: offer.shipping_estimated, also_on: offer.also_on,
     ...(offer.image_url ? { image_url: offer.image_url } : {}),
     ...(offer.via ? { via: offer.via, actor: offer.actor, may_model: offer.may_model, use_scope: offer.use_scope } : {}),
-    ...(offer.commercial_link ? { commercial_link: offer.commercial_link, attribution: offer.attribution, source_site: offer.source_site, secondhand: offer.secondhand } : {}) };
+    ...(offer.may_model === false ? { may_model: false } : {}),
+    ...(offer.attribution ? { attribution: offer.attribution, source_site: offer.source_site, secondhand: offer.secondhand } : {}),
+    ...(offer.commercial_link ? { commercial_link: offer.commercial_link } : {}) };
 }
 
 async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typeof ports, caller: Caller, sources: readonly Source[]) {
@@ -221,7 +227,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
   const sitePlan = async (source: Source, freshness_s: number) => {
     const site = source.site;
     const readOptions: SearchOpts = { paced: true, caller, person_id: ctx.user_id ?? undefined, visitor_id: ctx.visitor_id ?? undefined,
-      accounts: opts.accounts, harness: opts.harness, routed: opts.routed, dupe: opts.dupe, fetchPage: opts.fetchPage, log: ctx.log };
+      accounts: opts.accounts, harness: opts.harness, routed: opts.routed, dupe: opts.dupe, shopping: opts.shopping, fetchPage: opts.fetchPage, log: ctx.log };
     const unavailable = await sourceUnavailable(source, 'search', readOptions);
     if (unavailable) return rank(source, [], unavailable.searched, filters);
     const account = source.lane === 'harness' && ctx.user_id && opts.accounts
@@ -238,7 +244,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     const a = await runPlan({ kind: 'listings_matching', slots: { text: query }, protocol_version: protocol.version,
       first_ms: protocol.budget.first_ms, settled_ms: remaining, signal: controller.signal,
       targets: [{ target_id: `site:${source.id}`, query, deadline_ms: remaining, freshness_s, routes: [{
-        route_id: scopedRoute, site, lane: source.lane, pace: source.pace, cache: source.lane !== 'mcp', host: site === 'dupe' ? 'mcp.dupe.com' : new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
+        route_id: scopedRoute, site, lane: source.lane, pace: source.pace, cache: source.rights.may_store && source.lane !== 'mcp', host: site === 'dupe' ? 'mcp.dupe.com' : site === 'google_shopping' ? 'treg.to' : new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
         async run(q, { signal, readEnded }) {
           const readAt = performance.now();
           ran = true;
@@ -267,7 +273,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     const searched = a.searched[0]?.detail as SiteSearched | undefined;
     const outcome = a.searched[0]?.outcome ?? 'timeout';
     const observed: SiteSearched = searched && outcome !== 'timeout' ? searched : {
-      site, group: source.group, kind: 'search', url: source.lane === 'public_page' && site !== 'dupe' ? searchUrl(site, query, 'search') : null, outcome: outcome === 'over_budget' ? 'timeout' : outcome,
+      site, group: source.group, kind: 'search', url: source.lane === 'public_page' && site !== 'dupe' && site !== 'google_shopping' ? searchUrl(site, query, 'search') : null, outcome: outcome === 'over_budget' ? 'timeout' : outcome,
       count: rows.length, ms: a.searched[0]?.ms ?? Math.round(remaining), ...(source.pace ? { pace: source.pace } : {}),
     };
     sourceCounts.set(source.id, { count: observed.count, dropped: observed.dropped });

@@ -1,13 +1,14 @@
 import { searchParams, type Pace } from '../run.ts';
 import { M as depop } from '../../harness/sites/depop/adapter.ts';
+import { ROUTE_ID as SHOPPING_ROUTE_ID } from '../../harness/sites/google_shopping/adapter.ts';
 import { MIN_GAP_MS } from '../../harness/sites/dupe/adapter.ts';
 import type { Site } from '../../harness/protocol.ts';
 
-export type SourceSite = Site | 'dupe';
+export type SourceSite = Site | 'dupe' | 'google_shopping';
 
 export type Caller = 'person' | 'background';
 export interface Source {
-  id: string; site: SourceSite; group: 'platform' | 'osint'; lane: 'public_page' | 'harness' | 'mcp' | 'apify'; covers: readonly string[];
+  id: string; site: SourceSite; group: 'platform' | 'osint'; lane: 'public_page' | 'harness' | 'mcp' | 'apify' | 'treg'; covers: readonly string[];
   rights: { may_store: boolean; may_model?: false; use_scope?: 'hackathon_demo' };
   needs_ask: boolean; person_only?: boolean; on: boolean; reason?: string; pace: Pace;
 }
@@ -22,6 +23,7 @@ function pace(site: string, lane: Source['lane'], per_minute: number, min_gap_ms
     return { per_minute: capped ? Math.min(rate, per_minute) : rate, min_gap_ms: capped ? Math.max(gap, min_gap_ms) : gap };
   };
 }
+const shoppingPace = pace('google_shopping', 'treg', 30, 1000);
 const dupePace = pace('dupe', 'mcp', 60_000 / MIN_GAP_MS, MIN_GAP_MS);
 const depopPace = pace('depop', 'harness', depop.search.pace.per_minute, depop.search.pace.step_ms[0], true);
 const poshmarkPace = pace('poshmark', 'public_page', 20, 3000);
@@ -41,6 +43,7 @@ searchParams.declare({ name: 'search_apify_cost_per_row_usd', family: 'scalar', 
 // Nate's source rulings: spec/engines/protocol-and-adapters.md §8 (int-search-1 follow-up).
 export const SOURCES: Source[] = [
   { get pace() { return dupePace(); }, rights: { may_store: false }, id: 'dupe', group: 'osint', site: 'dupe', lane: 'mcp', covers: ['poshmark', 'depop', 'ebay', 'etsy', 'chairish'], needs_ask: false, on: true },
+  { get pace() { return shoppingPace(); }, rights: { may_store: false, may_model: false }, id: 'google_shopping', group: 'osint', site: 'google_shopping', lane: 'treg', covers: ['google_shopping'], needs_ask: false, on: true },
   { get pace() { return depopPace(); }, rights: { may_store: true }, id: 'depop', group: 'platform', site: 'depop', lane: 'harness', covers: ['depop'], needs_ask: false, on: true },
   { get pace() { return poshmarkPace(); }, rights: { may_store: true }, id: 'poshmark', group: 'platform', site: 'poshmark', lane: 'public_page', covers: ['poshmark'], needs_ask: false, on: true },
   { get pace() { return mercariPace(); }, rights: { may_store: true }, id: 'mercari', group: 'platform', site: 'mercari', lane: 'harness', covers: ['mercari'], needs_ask: true, on: true },
@@ -51,4 +54,4 @@ export const SOURCES: Source[] = [
 export const sourcesFor = (caller: Caller = 'background', sources: readonly Source[] = SOURCES) =>
   sources.filter(source => source.on && (!source.person_only || caller === 'person'));
 
-export const routeId = (source: Source) => source.lane === 'apify' ? `apify.${source.id}.search` : source.lane === 'mcp' ? 'dupe.search.api' : source.lane === 'public_page' ? `public.${source.id}` : `${source.id}.search.page`;
+export const routeId = (source: Source) => source.lane === 'treg' ? SHOPPING_ROUTE_ID : source.lane === 'apify' ? `apify.${source.id}.search` : source.lane === 'mcp' ? 'dupe.search.api' : source.lane === 'public_page' ? `public.${source.id}` : `${source.id}.search.page`;

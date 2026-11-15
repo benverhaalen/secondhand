@@ -335,3 +335,11 @@ test('a non-dry successful write still arrives without a handoff decision', asyn
   assert.deepEqual(r.store.getJob(j.id)!.result, result);
   assert.equal(r.store.decisions().length, 0);
 });
+
+test('every harness call names the job person, so the account gate can find a linked account', async () => {
+  const r = rig();
+  const j = r.job('post', 'app.list', 'user');
+  await r.pipe.runOnce(5);
+  assert.equal(r.fh.calls.find(c => c.verb === 'post')!.args.person_id, 'u1');
+  assert.equal(r.store.getJob(j.id)!.state, 'done');
+});

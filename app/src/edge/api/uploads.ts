@@ -1,5 +1,11 @@
 // Rests-on: features/capture/README.md (single-use upload agreement); spec/product.md §7.
-import { receiveUpload, UploadError, type Blobs } from '../store/blobs.ts';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { createLog, consoleSink } from '../../../../log/index.js';
+import { createBlobs, receiveUpload, UploadError, type Blobs } from '../store/blobs.ts';
+import { dataPath, db } from '../store/db.ts';
+import { kv } from '../store/kv.ts';
 import { ApiError, type Handler } from './http.ts';
 
 class UploadApiError extends ApiError {
@@ -20,12 +26,20 @@ export function createUploads(blobs: Blobs): Handler {
   };
 }
 
+const shared = globalThis as typeof globalThis & { __secondhandPhotos?: Blobs };
+// One photo store per process, in the data folder beside the database, shared by every route bundle.
+// The upload address is SECONDHAND_PUBLIC_ORIGIN, or this machine's port in development.
+export function photos(env: Record<string, string | undefined> = process.env): Blobs {
+  if (shared.__secondhandPhotos) return shared.__secondhandPhotos;
+  const path = dataPath(env), dir = path === ':memory:' ? mkdtempSync(join(tmpdir(), 'secondhand-photos-')) : dirname(path);
+  const origin = (env.SECONDHAND_PUBLIC_ORIGIN ?? `http://localhost:${env.PORT ?? 8081}`).replace(/\/+$/, '');
+  const log = createLog({ src: 'edge.photos', build: env.npm_package_version ?? 'dev', sink: consoleSink });
+  return shared.__secondhandPhotos = createBlobs({ kv: kv(db()), dir, origin, log });
+}
+
 let upload: Handler | undefined;
-// Server composition calls this with the same Blobs instance passed to capture.
+// A test binds its own store; otherwise the route uses the process's photo store, the one capture hands targets from.
 export function setBlobs(blobs: Blobs | undefined): void { upload = blobs ? createUploads(blobs) : undefined; }
 export const handlers: Record<string, Handler> = {
-  'PUT /v1/uploads/:id': (ctx, req) => {
-    if (!upload) throw new ApiError('unavailable', 'photo store is not configured', 'upload', { by: 'auto' });
-    return upload(ctx, req);
-  },
+  'PUT /v1/uploads/:id': (ctx, req) => (upload ??= createUploads(photos()))(ctx, req),
 };

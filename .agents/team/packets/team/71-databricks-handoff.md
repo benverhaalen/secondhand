@@ -38,7 +38,7 @@ Updated: 2026-11-15, about 13:35 UTC, at the wrap-up Nate called. Owner: Nate. A
 8. DB3: once the server lead's writer lands lines, run `load_observations` once and record a count by `use_scope`.
 9. The DB7 EXECUTE grant: today the API runs as Nate's user, which owns the functions; a separate principal needs `GRANT EXECUTE` on the five functions and `market_min_n`.
 10. The engines lead's real-time market scores (valuation.md §9) want a `measures.market_score` row per {site, kind} for the dashboard and Genie: not designed yet.
-11. Rights: Nate now allows Apify rows in fits ("Yes, Apify too"); eBay rows, direct or through Apify, never fit (data-use.md:105). The writer sets `may_model` at write time and every reader reads only `may_model` (agreed with the engines lead; the server lead to set it the same way).
+11. Rights: Apify is for Facebook Marketplace only, and those rows may fit; eBay rows come through treg and our own page reads and never fit (Nate, 13:40 UTC, [words](../../../../product/words.md#2026-11-15-nate-apify-for-facebook-marketplace-only-ebay-through-treg-and-our-own-pages); data-use.md:105). The writer sets `may_model` at write time and every reader reads only `may_model` (agreed with the engines lead; the server lead to set it the same way).
 12. Proposed rows DB11 to DB20 (coverage map), in order; DB15 is Nate's call. DB10 (the orchestrator's, after judging): Lakebase and a Delta share are Nate's alone.
 
 ## Spent

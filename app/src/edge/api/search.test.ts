@@ -95,7 +95,7 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
     const body = await r.json(); created.push(body.id);
     const expected = e.response as { id: string; stages: { name: string; started_at: string }[]; stream: string };
     assert.deepEqual({ ...body, id: expected.id, stream: expected.stream,
-      stages: body.stages.map((s: Record<string, unknown>) => ({ ...s, started_at: expected.stages[0].started_at })) }, { ...expected, stages: [...expected.stages, { ...expected.stages[0], name: 'site:ebay' }].map(stage => ({ ...stage, group: stage.name === 'site:dupe' ? 'osint' : 'platform' })) });
+      stages: body.stages.map((s: Record<string, unknown>) => ({ ...s, started_at: expected.stages[0].started_at })) }, { ...expected, stages: [expected.stages[0], { ...expected.stages[0], name: 'site:google_shopping' }, ...expected.stages.slice(1), { ...expected.stages[0], name: 'site:ebay' }].map(stage => ({ ...stage, group: ['site:dupe', 'site:google_shopping'].includes(stage.name) ? 'osint' : 'platform' })) });
   }
 });
 for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
@@ -221,7 +221,7 @@ test('site batches reach polling and a live SSE reader in landing order, with ex
   const res = await poll(job.id, searchVisitor, true);
   const reader = res.body!.getReader();
   let early = '';
-  while ((early.match(/event: answer.partial/g) ?? []).length < 3) early += new TextDecoder().decode((await bounded(reader.read())).value); // Dupe, unlinked Mercari and unrouted eBay settle first
+  while ((early.match(/event: answer.partial/g) ?? []).length < 4) early += new TextDecoder().decode((await bounded(reader.read())).value); // Dupe, unrouted Shopping, unlinked Mercari and unrouted eBay settle first
   for (const site of ['depop', 'poshmark'] as const) {
     release.get(site)!(page(fixture(site)));
     const frames = [];
@@ -500,6 +500,7 @@ test('search logs successful and late site transitions through the existing log 
 test('source rows control targets: eBay is on and a planted source runs without runner changes', async () => {
   assert.deepEqual(SOURCES.map(({ id, on, needs_ask, reason }) => ({ id, on, needs_ask, reason })), [
     { id: 'dupe', on: true, needs_ask: false, reason: undefined },
+    { id: 'google_shopping', on: true, needs_ask: false, reason: undefined },
     { id: 'depop', on: true, needs_ask: false, reason: undefined },
     { id: 'poshmark', on: true, needs_ask: false, reason: undefined },
     { id: 'mercari', on: true, needs_ask: true, reason: undefined },
@@ -1289,26 +1290,27 @@ test('SR11 every source declares platform or osint, including person-only Facebo
 });
 
 for (const [selection, expected] of [
-  [['poshmark'], ['poshmark']], [['osint'], ['dupe']], [['ebay', 'osint'], ['dupe', 'ebay']],
-  [['facebook'], []], [['dupe', 'osint'], ['dupe']],
+  [['poshmark'], ['poshmark']], [['osint'], ['dupe', 'google_shopping']], [['ebay', 'osint'], ['dupe', 'google_shopping', 'ebay']],
+  [['facebook'], []], [['dupe', 'osint'], ['dupe', 'google_shopping']],
 ] as [string[], string[]][]) test(`SR11 sources ${selection.join(',')} narrows visitor reads and never creates a Facebook stage`, async () => {
   const reads: string[] = [];
   ports.fetchPage = async () => { reads.push('poshmark'); return page(fixture('poshmark')); };
   ports.dupe = { search: async () => { reads.push('dupe'); return { ok: true, data: { rows: [], dropped: 0, total: 0, keep_until: '2040-01-01T00:00:00Z' } }; } };
   ports.routed = () => true;
   ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => { reads.push('ebay'); return { ok: true, data: [] }; } }] });
+  ports.shopping = { search: async () => { reads.push('google_shopping'); return { ok: true, data: { rows: [], dropped: 0, total: 0, keep_until: new Date().toISOString() } }; } };
   const job = await start({ text: 'selected sources', sources: selection }); await ended(job.id);
   assert.deepEqual(job.stages.map((s: { name: string }) => s.name), expected.map(id => `site:${id}`));
   assert.deepEqual(reads.sort(), [...expected].sort());
   for (const stage of jobs.st.getJob(job.id)!.stages as (typeof job.stages))
-    assert.equal(stage.group, stage.name === 'site:dupe' ? 'osint' : 'platform', stage.name);
+    assert.equal(stage.group, ['site:dupe', 'site:google_shopping'].includes(stage.name) ? 'osint' : 'platform', stage.name);
   for (const frame of jobs.framesAfter(job.id, 0)) {
-    if (frame.event === 'job.stage') assert.equal(frame.data.group, frame.data.stage === 'site:dupe' ? 'osint' : 'platform');
+    if (frame.event === 'job.stage') assert.equal(frame.data.group, ['site:dupe', 'site:google_shopping'].includes(String(frame.data.stage)) ? 'osint' : 'platform');
     const answer = frame.data.answer as { searched: { site: string; group: string }[] } | undefined;
-    for (const entry of answer?.searched ?? []) assert.equal(entry.group, entry.site === 'dupe' ? 'osint' : 'platform');
+    for (const entry of answer?.searched ?? []) assert.equal(entry.group, ['dupe', 'google_shopping'].includes(entry.site) ? 'osint' : 'platform');
   }
   const result = jobs.st.getJob(job.id)!.result as { searched: { site: string; group: string }[] };
-  for (const entry of result.searched) assert.equal(entry.group, entry.site === 'dupe' ? 'osint' : 'platform');
+  for (const entry of result.searched) assert.equal(entry.group, ['dupe', 'google_shopping'].includes(entry.site) ? 'osint' : 'platform');
 });
 
 for (const [sources, message] of [[['missing-source'], /missing-source/], [[], /source/], ['osint', /sources/], [[42], /sources/]] as [unknown, RegExp][])
@@ -1435,4 +1437,101 @@ test('SR3 stalled Facebook fill admission cannot outlive the search deadline or 
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(reads, 0, 'expired admission started a paid read after done');
   assert.equal((jobs.get(job.id, 'usr_8f2k') as unknown as { fill_until?: string }).fill_until, undefined);
+});
+
+const shoppingFixture = readFileSync(new URL('../harness/sites/google_shopping/fixtures/shopping.json', import.meta.url), 'utf8');
+async function shoppingPort(options: { status?: number; cost?: string; body?: string; wait?: Promise<void> } = {}) {
+  const { createShopping } = await import('../harness/sites/google_shopping/adapter.ts');
+  const { memoryShoppingSpend } = await import('../intel/public/search.ts');
+  const sink = memorySink(); deps.log = createLog({ src: 'test.shopping', build: 'test', sink });
+  let calls = 0;
+  ports.shopping = createShopping({ token: 'SYNTHETIC_API_SHOPPING_SECRET', log: deps.log, spend: memoryShoppingSpend(), fetch: async () => {
+    calls++; await options.wait;
+    return new Response(options.status ? 'SYNTHETIC_API_SHOPPING_SECRET' : options.body ?? shoppingFixture,
+      { status: options.status ?? 200, headers: { 'x-treg-cost-micro': options.cost ?? '2000' } });
+  } });
+  return { sink, calls: () => calls };
+}
+
+test('SR12 Shopping rows carry credit and rights, never reach sameProduct, and unreadable counts balance', async () => {
+  const { checkSearchCounts } = await import('./search.ts');
+  ports.sources = SOURCES.filter(s => s.id === 'google_shopping');
+  const h = await shoppingPort(); ports.ask = async () => assert.fail('Shopping rows reached sameProduct');
+  const job = await start({ text: 'shopping private words', sources: ['google_shopping'] }); await ended(job.id);
+  const saved = jobs.st.getJob(job.id)!;
+  const result = saved.result as { results: Record<string, unknown>[]; found: Found };
+  assert.equal(saved.state, 'done'); assert.equal(h.calls(), 1); assert.equal(result.results.length, 2);
+  assert.deepEqual(result.found.dropped_by_reason, { unreadable_card: 2 }); assert.deepEqual(checkSearchCounts(result.found), []);
+  for (const row of result.results) {
+    assert.equal(row.attribution, 'Google Shopping'); assert.equal(row.site, 'google_shopping'); assert.equal(row.may_model, false); assert.equal(row.may_store, false); assert.equal(row.relation, 'unresolved');
+  }
+  assert.equal(result.results[0].source_site, 'ebay'); assert.equal(result.results[0].secondhand, true); assert.equal(result.results[1].secondhand, false);
+  const frames = jobs.framesAfter(job.id, 0);
+  assert.equal(JSON.stringify([saved, frames, h.sink.lines]).includes('SYNTHETIC_API_SHOPPING_SECRET'), false);
+  assert.equal(h.sink.text().includes('Invented used jacket'), false, 'restricted rows entered the log');
+  const { store } = await import('./store.ts');
+  const { db } = await import('../store/db.ts');
+  assert.deepEqual((store.getJob(job.id)!.result as typeof result).results, [], 'Shopping rows persisted in the job');
+  const storedFrames = db().prepare('SELECT data FROM frames WHERE key = ?').all(job.id);
+  assert.equal(JSON.stringify(storedFrames).includes('Invented used jacket'), false, 'Shopping rows persisted in stream frames');
+  for (const frame of frames) {
+    const answer = frame.data.answer as { found: Found } | undefined;
+    if (answer) assert.deepEqual(checkSearchCounts(answer.found), []);
+  }
+});
+
+for (const status of [403, 500]) test(`SR12 treg ${status} fails one source and leaves the job done`, async () => {
+  ports.sources = SOURCES.filter(s => ['google_shopping', 'poshmark'].includes(s.id));
+  const h = await shoppingPort({ status }); ports.fetchPage = async () => page(fixture('poshmark'));
+  const job = await start(); await ended(job.id);
+  const saved = jobs.st.getJob(job.id)!; assert.equal(saved.state, 'done');
+  const result = saved.result as { results: { site: string }[]; searched: { site: string; outcome: string }[] };
+  assert.ok(result.results.some(r => r.site === 'poshmark')); assert.equal(result.searched.find(s => s.site === 'google_shopping')!.outcome, 'failed');
+  assert.equal(JSON.stringify([saved, jobs.framesAfter(job.id, 0), h.sink.lines]).includes('SYNTHETIC_API_SHOPPING_SECRET'), false);
+});
+
+test('SR12 ten visitors asking one query cost one call; restricted rows are not cached', async () => {
+  ports.sources = SOURCES.filter(s => s.id === 'google_shopping');
+  const gate = Promise.withResolvers<void>(); const h = await shoppingPort({ wait: gate.promise });
+  const arrivals = await Promise.all(Array.from({ length: 10 }, () => start({ text: 'one shopping query' }, visitorId())));
+  gate.resolve(); await Promise.all(arrivals.map(job => ended(job.id)));
+  assert.equal(h.calls(), 1);
+  for (const job of arrivals) assert.equal((jobs.st.getJob(job.id)!.result as { results: unknown[] }).results.length, 2);
+  const next = await start({ text: 'one shopping query' }); await ended(next.id); assert.equal(h.calls(), 2, 'restricted rows entered the freshness cache');
+  const costs = h.sink.lines.map(line => JSON.parse(line)).filter(entry => entry.event === 'call.end' && entry.cost_usd !== undefined);
+  assert.equal(costs.length, 2); assert.equal(costs[0].cost_usd, 0.002);
+});
+
+for (const selection of [['google_shopping'], ['osint'], ['poshmark']]) test(`SR12 sources ${selection.join(',')} selects Shopping only by its id or osint group`, async () => {
+  ports.sources = SOURCES.filter(s => ['google_shopping', 'poshmark'].includes(s.id));
+  const h = await shoppingPort(); ports.fetchPage = async () => page('No results');
+  const job = await start({ text: 'shopping selection', sources: selection }); await ended(job.id);
+  const wanted = selection[0] !== 'poshmark';
+  assert.equal(h.calls(), wanted ? 1 : 0);
+  assert.deepEqual(job.stages.map((s: { name: string }) => s.name), [wanted ? 'site:google_shopping' : 'site:poshmark']);
+});
+
+test('SR12 no token answers no_route with no pace wait or fetch', async () => {
+  ports.sources = LIVE_SOURCES.filter(s => s.id === 'google_shopping'); ports.shopping = undefined;
+  ports.fetchPage = async () => assert.fail('unrouted Shopping fetched');
+  const at = performance.now();
+  for (let i = 0; i < 3; i++) {
+    const job = await start({ text: `unrouted Shopping ${i}` }); await ended(job.id);
+    const result = jobs.st.getJob(job.id)!.result as { searched: { error_code: string }[] };
+    assert.equal(result.searched[0].error_code, 'no_route');
+  }
+  assert.ok(performance.now() - at < 150, 'unrouted Shopping waited for pace');
+});
+
+
+test('SR12 Google redirect query strings keep unrelated Shopping offers distinct', async () => {
+  ports.sources = SOURCES.filter(s => s.id === 'google_shopping');
+  const fixture = JSON.parse(shoppingFixture) as { shopping: { link: string; source?: string }[] };
+  fixture.shopping[1].source = 'eBay';
+  fixture.shopping[0].link = 'https://www.google.com/url?url=https%3A%2F%2Fexample.invalid%2Fone';
+  fixture.shopping[1].link = 'https://www.google.com/url?url=https%3A%2F%2Fexample.invalid%2Ftwo';
+  await shoppingPort({ body: JSON.stringify(fixture) });
+  const job = await start(); await ended(job.id);
+  const result = jobs.st.getJob(job.id)!.result as { results: { url: string }[] };
+  assert.deepEqual(result.results.map(row => row.url), fixture.shopping.slice(0, 2).map(row => row.link));
 });
