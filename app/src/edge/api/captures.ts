@@ -609,11 +609,13 @@ export const handlers: Record<string, Handler> = {
       runtime.store.tx(st=> {
         const current=st.get('item',row.user_id,row.item_id);
         const attributes=[...(current?.attributes as Attribute[] ?? [])];
+        const known:Record<string,unknown>={};
         for (const field of selected.rows) {
           if (field.field==='type' || field.field==='lot_count') continue;
           const resolution=fieldState(field,state,keys,captures.params);
           if (resolution.state!=='known') continue;
           const fact=resolution.fact!;
+          known[field.field]=fact.value;
           const next:Attribute={name:field.field,value:structuredClone(fact.value),source:sources[fact.source],confidence:fact.confidence,
             confirmed:fact.confirmed===true || fact.source==='you_said',method:fact.source,at,
             evidence:[{kind:kinds[fact.source],ref:`${row.id}/${fact.step ?? field.field}`,captured_at:at,extractor_version:`capture.v${table.version}`}]};
@@ -623,12 +625,34 @@ export const handlers: Record<string, Handler> = {
         }
         const priorPhotos=Array.isArray(current?.photos)?current.photos as {id:string}[]:[];
         const photos=[...priorPhotos.filter(photo=>!uploaded.some(next=>next.id===photo.id)),...uploaded];
-        const title=typeof ctx.body.title==='string'?ctx.body.title:current?.title ?? '';
-        st.put('item',current?{...current,title,attributes,photos,updated_at:at}:{id:row.item_id,user_id:row.user_id,title,state:row.data==='captured'?'review':'researching',origin:'capture',data:'captured',quantity:row.state.pieces ?? 1,attributes,photos,created_at:at,updated_at:at});
+        // Valuation reads these top-level fields; a lookup brand stays unconfirmed in attributes, so it would not count there.
+        const facts=Object.fromEntries(Object.entries({brand:known.brand,model:known.model,kind:state.kind ?? (selected.family==='other'?undefined:selected.family),
+          condition:known.condition,size:known.size ?? known.size_label,colour:known.colour}).filter(([,value])=>value!==undefined && value!==null && value!==''));
+        // A title only with a brand: a kind alone would pass the valuation's identity rule without naming the thing.
+        const composed=typeof facts.brand==='string' ? `${facts.brand} ${facts.kind ?? ''}`.trim()+(typeof facts.size==='string'?`, size ${facts.size}`:'') : '';
+        const title=typeof ctx.body.title==='string'?ctx.body.title:(current?.title as string|undefined)?.trim() || composed;
+        st.put('item',current?{...current,...facts,title,attributes,photos,updated_at:at}:{id:row.item_id,user_id:row.user_id,...facts,title,state:row.data==='captured'?'review':'researching',origin:'capture',data:'captured',quantity:row.state.pieces ?? 1,attributes,photos,created_at:at,updated_at:at});
       });
       write(ctx,row,'judged');
     },()=>({item_id:row.item_id}));
-    if (row.data==='captured') return {status:202,body:{capture:view(row),item:{id:row.item_id,state:runtime.store.get('item',row.user_id,row.item_id)!.state},jobs:row.identify_job_id?[{id:row.identify_job_id,kind:'identify',stream:`/v1/jobs/${row.identify_job_id}/events`}]:[]}};
+    if (row.data==='captured') {
+      const item=runtime.store.get('item',row.user_id,row.item_id)!;
+      const jobs:{id:string;kind:string;stream:string}[]=row.identify_job_id?[{id:row.identify_job_id,kind:'identify',stream:`/v1/jobs/${row.identify_job_id}/events`}]:[];
+      let valuation:{range_state:'needs_identity';needs:string[]}|undefined;
+      if (row.state.purpose==='appraise') {
+        // Mirrors the identity rule in engines/valuation/valuate.ts and the needs list check.ts returns without one.
+        const named=(value:unknown)=>typeof value==='string' && value.trim()!=='';
+        if (named(item.title) || named(item.brand) && named(item.kind) || named(item.product_id)) {
+          try {
+            const {startValuation}=await import('./valuations.ts');
+            const started=await startValuation({...ctx,body:{item_id:row.item_id}},item as Parameters<typeof startValuation>[1]);
+            const id=(started.body as {id:string}).id;
+            jobs.push({id,kind:'valuate',stream:`/v1/jobs/${id}/events`});
+          } catch (error) { ctx.log.error('capture.finish_valuation',error); } // the capture is already judged; the item page can still ask for a valuation
+        } else valuation={range_state:'needs_identity',needs:['brand','model','title']};
+      }
+      return {status:202,body:{capture:view(row),item:{id:row.item_id,state:item.state},jobs,...(valuation?{valuation}:{})}};
+    }
     return {status:202,body:{...structuredClone(example('captures.finish').response as Record<string,unknown>),capture:view(row),item:{id:row.state.item_id,state:'researching'}}};
   }),
   'POST /v1/captures/:id/talk': exampleHandler('POST /v1/captures/:id/talk', c=>fields(c.body,{voice:bool})),

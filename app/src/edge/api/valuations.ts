@@ -259,6 +259,11 @@ function validate(ctx: Ctx) {
   if (ctx.body.capture_id) reference(ctx.body.capture_id, ['cap_3n9q']);
 }
 const legacy = exampleHandler('POST /v1/valuations', validate, c => c.body.url ? 'valuations.appraise_url' : 'valuations.create', run);
+/** Starts the engine valuation of a stored item the caller owns; POST /v1/valuations and an appraise capture's finish share it. */
+export function startValuation(ctx: Ctx, row: Item) {
+  const seed = example('valuations.create');
+  return ctx.log.call('tool', 'api.engine', { endpoint: 'POST /v1/valuations' }, () => run(ctx, { status: seed.status, body: structuredClone(seed.response), headers: seed.headers }, row), () => ({ result: { source: 'engine' } }));
+}
 export const handlers: Record<string, Handler> = {
   'POST /v1/valuations': fromEngine(async (ctx, req) => {
     if (ctx.body.item_id === undefined) return legacy(ctx, req);
@@ -267,8 +272,7 @@ export const handlers: Record<string, Handler> = {
     validate(ctx);
     const row = store.get<Item>('item', ctx.user_id!, String(ctx.body.item_id));
     if (!row || row.deleted || row.user_id !== ctx.user_id || row.id === 'it_7c2m' && ctx.user_id !== EXAMPLE_USER) throw new ApiError('not_found', 'item not found', 'read');
-    const seed = example('valuations.create');
-    return ctx.log.call('tool', 'api.engine', { endpoint: 'POST /v1/valuations' }, () => run(ctx, { status: seed.status, body: structuredClone(seed.response), headers: seed.headers }, row), () => ({ result: { source: 'engine' } }));
+    return startValuation(ctx, row);
   }),
 };
 export const manifest = manifestFor(handlers);

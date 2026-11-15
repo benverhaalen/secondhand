@@ -968,6 +968,57 @@ test('F4: a proposal (not known) is written', async () => {
   assert.ok(!attributes.some(a=>a.name==='size_label'));
 });
 
+test('finish writes brand, kind, condition and a title onto the item from known facts, never a proposal', async () => {
+  // A fresh person's capture, so the item starts without the seeded example's title.
+  let c=await bodyOf(await at('POST /v1/captures','',openInput,'other'));
+  c=await bodyOf(await at(patchEndpoint,c.id,{version:c.version,type:'apparel'},'other'));
+  c=await bodyOf(await at(photosEndpoint,c.id,{photos:[photo('front'),photo('back'),photo('tag',[{field:'size_label',value:'M',source:'label',confidence:.97}])]},'other'));
+  assert.equal(fieldOf(c,'size_label').state,'proposed');
+  const state=capturesApi.captureRows.get(c.id)!.state;
+  state.facts.brand={value:'Carhartt',source:'label',confidence:.99,step:'tag'};
+  state.facts.condition={value:'good',source:'you_said',confidence:1};
+  assert.equal((await at(finishEndpoint,c.id,{version:c.version},'other')).status,202);
+  const {runtime}=await import('./runtime.ts');
+  const item=runtime.store.get('item','usr_other',c.item_id)!;
+  assert.equal(item.brand,'Carhartt');assert.equal(item.kind,'apparel');assert.equal(item.condition,'good');
+  assert.equal(item.title,'Carhartt apparel','a proposed size stays out of the title');
+  assert.equal(item.size,undefined,'a proposed size is not written');
+});
+
+async function valuationCapture(t:import('node:test').TestContext, purpose:'sell'|'appraise', brand?:string) {
+  const valuations=await import('./valuations.ts'), search=await import('./search.ts');
+  const defaults={...valuations.ports}, searchDefaults={...search.ports};
+  valuations.ports.sources=()=>[]; valuations.ports.observations={read:async()=>[],write:async()=>{}}; search.ports.sources=[];
+  t.after(async()=>{await Promise.all(valuations.pendingValuations.values());Object.assign(valuations.ports,defaults);Object.assign(search.ports,searchDefaults);});
+  const c=await bodyOf(await requestCapture('POST /v1/captures',{...openInput,purpose},'other'));
+  const row=capturesApi.captureRows.get(c.id)!;
+  row.state.type='apparel';
+  if (brand) row.state.facts.brand={value:brand,source:'lookup',confidence:.94};
+  keepFront(c.id);
+  row.identify_job_id='job_applied_above';
+  const response=await at(finishEndpoint,c.id,{version:c.version},'other');
+  assert.equal(response.status,202);
+  return response.json() as Promise<{item:{id:string};jobs:{id:string;kind:string;stream:string}[];valuation?:{range_state:string;needs:string[]}}>;
+}
+test('an appraise capture\'s finish starts a valuation; a sell capture\'s does not', async t => {
+  const appraised=await valuationCapture(t,'appraise','Carhartt');
+  const valuation=appraised.jobs.find(j=>j.kind==='valuate');
+  assert.ok(valuation,'finish returns the valuation job');
+  assert.equal(valuation.stream,`/v1/jobs/${valuation.id}/events`);
+  assert.ok(appraised.jobs.some(j=>j.kind==='identify'),'identify stays beside it');
+  const {getJob}=await import('./jobs.ts');
+  const job=await (await route('GET /v1/jobs/:id',getJob())(new Request(`http://edge.test/v1/jobs/${valuation.id}`,{headers:{Authorization:'Bearer other'}}))).json();
+  assert.equal(job.kind,'valuate');assert.equal(job.item_id,appraised.item.id);
+  const sold=await valuationCapture(t,'sell','Carhartt');
+  assert.ok(!sold.jobs.some(j=>j.kind==='valuate'));
+  assert.equal(sold.valuation,undefined);
+});
+test('an appraise capture with no identity starts no valuation and says what would identify it', async t => {
+  const result=await valuationCapture(t,'appraise');
+  assert.ok(!result.jobs.some(j=>j.kind==='valuate'));
+  assert.deepEqual(result.valuation,{range_state:'needs_identity',needs:['brand','model','title']});
+});
+
 test('F4: a you_said value on the item is overwritten by a capture\'s seen value', async () => {
   const {runtime}=await import('./runtime.ts');
   const current=runtime.store.get('item','usr_8f2k','it_7c2m')!;
