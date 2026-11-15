@@ -31,6 +31,25 @@ const run = (arrivals: Arrival[], steps: GatherStep[], extra: Record<string, unk
 
 const spread = (n: number, from = 1000, ago = 5) => Array.from({ length: n }, (_, i) => row(from + i * 500, ago));
 
+test('source_gap names basis_level family while gather stops on sufficient count and recency', async () => {
+  const { basisOf } = await import('../../engines/valuation/valuate.ts');
+  const { DEFAULTS } = await import('../../engines/valuation/comps.ts');
+  const sales = (level: 'family' | 'variant', n: number) => Array.from({ length: n }, (_, i) => ({
+    comp_id: `${level}:${i}`, site: 'poshmark' as const, sold_at: daysAgo(5), price_cents: 4000,
+    kind: 'sold' as const, level, condition: 'good', w_match: level === 'family' ? .25 : 1,
+    w_extract: .9, may_model: false, citation: `source:${level}:${i}`,
+  }));
+  const rows = sales('family', 31), arrivals = [arr(rows)], answer = base(arrivals);
+  const guarded = { state: 'shown' as const, basis_count: 31, as_of: daysAgo(0), citation_id: 'c', notes: ['source_gap'] };
+  answer.facts[0]!.guarded = guarded;
+  assert.equal(basisOf(rows, daysAgo(0), DEFAULTS).basis_level, 'family');
+  assert.ok(measure(arrivals, NOW).n_eff > 6);
+  assert.equal(measure(arrivals, NOW).sold_90d, 31);
+  const result = await gather({ answer, plan, arrivals, steps: [step(1, sales('variant', 8))], product: 'p', now: () => NOW });
+  assert.deepEqual(result.answer.gather?.steps_done, [], 'the numeric gather basis is already met');
+  assert.equal(result.stop, 'basis');
+});
+
 test('gather more: thin sales run more steps until the basis is met, one gather.update per step', async () => {
   const ev: string[] = [];
   const r = await run([arr(spread(2))], [step(1, spread(2, 3000)), step(2, spread(3, 6000)), step(3, spread(3, 9000))],

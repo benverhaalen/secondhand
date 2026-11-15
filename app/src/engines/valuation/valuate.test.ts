@@ -14,8 +14,8 @@ const ago = (days: number) => new Date(Date.parse(as_of) - days * 86400000).toIS
 const sales = (n: number): Comp[] => Array.from({ length: n }, (_, i) => ({ comp_id: `comp:${i}`, product_id: 'product:test',
   site: 'ebay', sold_at: ago(5), price_cents: 4000 + i * 100, kind: 'sold', level: 'variant', condition: 'good',
   w_match: 1, w_extract: 1, may_model: true, citation: `source:${i}` }));
-const item: ValuationItem = { item_id: 'item:test', product_id: 'product:test', kind: 'shoes', condition: 'good', floor_cents: 0,
-  objective: 'balanced', sites: [{ site: 'ebay' }] };
+const item = { item_id: 'item:test', product_id: 'product:test', kind: 'shoes', condition: 'good', floor_cents: 0,
+  objective: 'balanced', sites: [{ site: 'ebay' }] } satisfies ValuationItem;
 function setup(initial: Comp[] = []) {
   const rows = [...initial], writes: { rows: Comp[]; meta: Parameters<ObservationPort['write']>[1] }[] = [];
   const reads: Parameters<ObservationPort['read']>[0][] = [], errors: { where: string; error: unknown }[] = [];
@@ -33,6 +33,48 @@ function promote(store: ParamStore, path: string, value: number, scope: Scope = 
   assert.equal(store.promote(declared.name, scope, row.version, 0, as_of).promoted, true);
   return row.version;
 }
+
+test('type apparel alone needs identity before reading sold sources or observations', async () => {
+  const { ctx, reads, writes } = setup(sales(31).map(c => ({ ...c, level: 'family' })));
+  let soldReads = 0;
+  ctx.sources = [async () => { soldReads++; return sales(31); }];
+  const { valuation, gather, persisted } = await valuate({ ...item, product_id: undefined, kind: 'apparel' }, ctx);
+  assert.equal(valuation.range.state, 'needs_identity', 'a kind cannot identify the item');
+  assert.deepEqual([valuation.range.q10, valuation.range.q50, valuation.range.q90], [null, null, null]);
+  assert.ok(valuation.notes.includes('identity_unknown'));
+  assert.deepEqual(valuation.needs, ['brand', 'model', 'title']);
+  assert.equal(valuation.fast, null); assert.equal(valuation.citation, null);
+  assert.equal(valuation.modes, null); assert.equal(valuation.last_sale, null);
+  assert.equal(gather, null); assert.equal(persisted, true);
+  assert.equal(soldReads, 0); assert.deepEqual(reads, []); assert.deepEqual(writes, []);
+});
+
+for (const identity of [{ title: 'Better Sweater 1/4-zip fleece' }, { brand: 'Patagonia' }, { product_id: 'product:identified' }])
+  test(`identity ${Object.keys(identity)[0]} permits the existing apparel valuation`, async () => {
+    const { ctx } = setup(sales(8));
+    const baseline = await valuate({ ...item, kind: 'apparel' }, setup(sales(8)).ctx);
+    const out = await valuate({ ...item, product_id: undefined, kind: 'apparel', ...identity }, ctx);
+    assert.deepEqual(out.valuation.range, baseline.valuation.range);
+    assert.deepEqual(out.valuation.needs, []);
+  });
+
+for (const identity of [{ title: '  ', brand: ' ', model: ' ' }, { model: 'Better Sweater' }, { brand: 'Patagonia', kind: undefined }])
+  test(`incomplete identity ${JSON.stringify(identity)} never reads a sold source`, async () => {
+    const { ctx, reads } = setup(); let calls = 0;
+    ctx.sources = [async () => { calls++; return sales(8); }];
+    const out = await valuate({ ...item, product_id: undefined, ...identity }, ctx);
+    assert.equal(out.valuation.range.state, 'needs_identity');
+    assert.equal(calls, 0); assert.deepEqual(reads, []);
+  });
+
+test('source_gap rests on basis_level family despite n_eff above want_n_eff', async () => {
+  const { valuation, gather } = await valuate(item, setup(sales(31).map(c => ({ ...c, level: 'family', w_match: .25 }))).ctx);
+  assert.equal(valuation.basis_level, 'family');
+  assert.equal(gather?.basis_level, 'family', 'the gap is variant evidence, not sample count');
+  assert.equal(gather?.reason, 'source_gap');
+  assert.ok(gather.n_eff > gather.want_n_eff);
+  assert.ok(valuation.notes.includes('family_only'));
+});
 
 test('link 1: two stored sales keep the price, basis level and too_few note, and request more', async () => {
   const { ctx, writes, reads } = setup(sales(2));

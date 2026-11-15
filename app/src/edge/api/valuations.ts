@@ -24,7 +24,7 @@ import type { Row } from '../events/ports.ts';
 // shortcut: runtime.params is the events policy store, not a ParamStore; use one registry until the durable registry lands.
 const params = memoryStore();
 const soldSites: SoldSite[] = ['mercari', 'poshmark'];
-type Item = Row & { title: string; product_id?: string; kind?: string; condition?: string; attributes?: Attribute[]; category?: string; size?: string; family_id?: string; floor_cents?: number };
+type Item = Row & { title?: string; product_id?: string; brand?: string; model?: string; kind?: string; condition?: string; attributes?: Attribute[]; category?: string; size?: string; family_id?: string; floor_cents?: number };
 export type { ObservationInput } from '../events/observations.ts';
 type ObservationFunctions = {
   read(user_id: string, q: Parameters<typeof readObservations>[2]): ObservationRow[] | Promise<ObservationRow[]>;
@@ -82,8 +82,8 @@ export function observationPort(functions: ObservationFunctions, user_id: string
 }
 declareLearning(params);
 export const pendingValuations = new Map<string, Promise<void>>();
-export const ports: { sources: typeof soldSources; observations: ObservationPort | null; valuate: typeof valuate; params: typeof params } = {
-  sources: soldSources, observations: null, valuate, params,
+export const ports: { sources: typeof soldSources; soldSearch: typeof soldSearch; observations: ObservationPort | null; valuate: typeof valuate; params: typeof params } = {
+  sources: soldSources, soldSearch, observations: null, valuate, params,
 };
 
 function storedCitations(valuation: Awaited<ReturnType<typeof valuate>>['valuation'], user: string, item: ValuationItem, registry: typeof params) {
@@ -124,7 +124,9 @@ function itemFor(row: Item, log: Ctx['log']): ValuationItem & { title: string; f
     like_new: 'excellent', excellent: 'excellent', good: 'good', fair: 'fair', poor: 'for_parts', for_parts: 'for_parts' };
   const known = Object.hasOwn(grades, condition);
   if (!known) log.note('valuation.condition_unknown', { grade: condition });
-  return { item_id: row.id, product_id: row.product_id ?? row.id, title: row.title, kind: row.kind ?? row.category, condition: known ? grades[condition] : 'good',
+  return { item_id: row.id, product_id: row.product_id, title: row.title?.trim() ?? '',
+    brand: confirmed('brand') ?? row.brand, model: confirmed('model') ?? row.model,
+    kind: confirmed('kind') ?? row.kind ?? row.category ?? confirmed('type'), condition: known ? grades[condition] : 'good',
     size: confirmed('size') ?? row.size, family_id: row.family_id, floor_cents: row.floor_cents ?? 0, objective: 'balanced', sites: soldSites.map(site => ({ site })),
     ...(range ? { fast: { low: range.low.amount_cents, high: range.high.amount_cents, n: range.basis_count, as_of: range.as_of, basis: 'family', state: 'rough' } } : {}) };
 }
@@ -146,12 +148,20 @@ async function run(ctx: Ctx, seed: Exclude<Reply, Response>, row?: Item) {
       const stored = row ?? store.get<Item>('item', EXAMPLE_USER, 'it_7c2m');
       if (!stored) throw new Error('Example valuation item is missing');
       const item = itemFor(stored, ctx.log);
+      const product_id = item.product_id ?? item.item_id;
+      const query = item.title || [item.brand, item.model, item.kind].filter(value => value?.trim()).join(' ') || item.product_id || '';
       const as_of = new Date(deps.now()).toISOString();
       const sourceRows: Comp[] = [];
-      const sources = ports.sources(soldSearch({ person_id: ctx.user_id!, accounts: runtime.accounts, harness: runtime.harness,
-        live_sites: (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/), log: ctx.log }), soldSites,
-      { query: item.title, condition: item.condition, error: (where, error) => ctx.log.error(where, error) }).map(source => async (signal: AbortSignal) => {
-        const rows = await source(signal); if (!signal.aborted) sourceRows.push(...rows); return rows;
+      const titles = new Map<string, string>();
+      const search = ports.soldSearch({ person_id: ctx.user_id!, accounts: runtime.accounts, harness: runtime.harness,
+        live_sites: (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/), log: ctx.log });
+      const sources = ports.sources(async (site, query, signal) => {
+        const result = await search(site, query, signal);
+        for (const row of result.rows) if (typeof row.external_id === 'string' && typeof row.title === 'string') titles.set(`${site}:${row.external_id}`, row.title);
+        return result;
+      }, soldSites, { query, condition: item.condition, error: (where, error) => ctx.log.error(where, error) }).map(source => async (signal: AbortSignal) => {
+        const rows = (await source(signal)).map(comp => titles.has(comp.comp_id) ? { ...comp, title: titles.get(comp.comp_id)! } : comp);
+        if (!signal.aborted) sourceRows.push(...rows); return rows;
       });
       let portFailed = false;
       const observation = ports.observations ?? observationPort({
@@ -167,7 +177,7 @@ async function run(ctx: Ctx, seed: Exclude<Reply, Response>, row?: Item) {
         async write(rows, meta) {
           try {
             const fresh = rows.filter(comp => !written.has(comp.comp_id));
-            if (fresh.length) await observation.write(fresh.map(comp => ({ ...comp, product_id: comp.product_id ?? item.product_id })), meta);
+            if (fresh.length) await observation.write(fresh.map(comp => ({ ...comp, product_id: comp.product_id ?? product_id })), meta);
             for (const comp of fresh) written.add(comp.comp_id);
           }
           catch (error) { portFailed = true; throw error; }
@@ -178,6 +188,12 @@ async function run(ctx: Ctx, seed: Exclude<Reply, Response>, row?: Item) {
       let result = await ports.valuate(item, valuationCtx);
       if (portFailed || !result.persisted) throw new Error('Valuation observation port failed');
       const finish = async () => {
+        if (result.valuation.range.state === 'needs_identity') {
+          ctx.log.note('valuation.needs_identity', { item_id: item.item_id, needs: result.valuation.needs });
+          jobs.finish(job.id, { ...result.valuation, range_state: 'needs_identity' });
+          ctx.log.event('state.change', { entity: 'job', id: job.id, to: 'done' });
+          return;
+        }
         let gathered: GatherResult | undefined;
         if (result.gather) {
           const range = result.valuation.range;
@@ -187,15 +203,15 @@ async function run(ctx: Ctx, seed: Exclude<Reply, Response>, row?: Item) {
             basis_count: result.valuation.comps.length, as_of, citation_id: result.valuation.citation?.id ?? null };
           const fact: Fact = { name: 'sold_range', guarded,
             ...(shown ? { range: { low: range.q10!, high: range.q90! }, unit: 'cents' } : {}),
-            sources: readObservations(store, ctx.user_id!, { kind: 'price', product_id: item.product_id, purpose: 'show' }).map(row => row.evidence) };
-          const plan: Plan = { kind: 'price_now', slots: { product_id: item.product_id }, protocol_version: 1,
+            sources: readObservations(store, ctx.user_id!, { kind: 'price', product_id, purpose: 'show' }).map(row => row.evidence) };
+          const plan: Plan = { kind: 'price_now', slots: { product_id }, protocol_version: 1,
             targets: [], first_ms: 0, settled_ms: 0, calculate: () => ({ facts: [fact] }) };
           const initial: Answer = { id: job.id, kind: plan.kind, slots: plan.slots, protocol_version: plan.protocol_version,
             facts: [fact], found: emptyFound(), searched: [], stage: 'settled', ms: { first: 0, settled: 0 } };
           const steps = searchPorts.sources.filter(source => source.on).map(source => searchStep({
-            handler: searchHandlers['POST /v1/search'], jobs, ctx, text: item.title.toLowerCase(), source: source.id,
+            handler: searchHandlers['POST /v1/search'], jobs, ctx, text: query.toLowerCase(), source: source.id,
           }));
-          gathered = await gather({ answer: initial, plan, product: item.product_id, arrivals: [{ target_id: 'sold', route_id: 'valuation.sold', rows: result.valuation.comps, ms: 0 }],
+          gathered = await gather({ answer: initial, plan, product: product_id, arrivals: [{ target_id: 'sold', route_id: 'valuation.sold', rows: result.valuation.comps, ms: 0 }],
             now: deps.now, steps: [...steps, ...protocolSteps('price_now', {})], learning: ports.params, person: ctx.user_id!,
             onError: (where, error) => ctx.log.error(where, error),
             onEvent: (event, update) => {
@@ -208,7 +224,7 @@ async function run(ctx: Ctx, seed: Exclude<Reply, Response>, row?: Item) {
         if (ports.observations === null) storedCitations(result.valuation, ctx.user_id!, item, valuationCtx.params);
         // *agent proposal*: no API route records sales; until the watcher calls learning, source agreement on model-permitted observations is the minimum signal.
         if (portFailed || !result.persisted) throw new Error('Valuation observation port failed');
-        const modelRows = ports.observations === null ? readObservations(store, ctx.user_id!, { kind: 'price', product_id: item.product_id, purpose: 'model' }) : [];
+        const modelRows = ports.observations === null ? readObservations(store, ctx.user_id!, { kind: 'price', product_id, purpose: 'model' }) : [];
         const permitted = modelRows.map(row => row.payload).filter(isComp).filter(comp => comp.may_model && comp.site !== 'ebay');
         const modelParams = parameters(ports.params, { person: ctx.user_id!, ...(item.kind ? { kind: item.kind } : {}) });
         const eligible = canonical(permitted, as_of, modelParams);

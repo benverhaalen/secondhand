@@ -14,6 +14,7 @@ class CitationError extends Error {}
 type Calibration = { Q_g: number; parent_Q_g?: number; group: string; coverage: number; passes: boolean; n?: number; hits?: number };
 export type CheckInput = {
   product_id: string; variant?: string; condition: string; as_of: string;
+  title?: string; brand?: string; model?: string; identity_unknown?: boolean;
   kind_band?: Target['kind_band'];
   size?: string; family_id?: string; kind?: string; retail_cents?: number; depreciation?: number;
   completeness?: string[]; works?: string; retail_citation?: string;
@@ -50,14 +51,14 @@ export async function check(x: CheckInput) {
       return { ...s, site, sale: { ...s.sale, tax_rate: s.sale?.tax_rate ?? values.valuation_sales_tax_rate, as_of: s.sale?.as_of ?? x.as_of } };
     }).sort((a, b) => a.site.localeCompare(b.site));
     const controller = new AbortController();
-    const completed: Comp[][] = [[...x.warm_comps]];
+    const completed: Comp[][] = [x.identity_unknown ? [] : [...x.warm_comps]];
     let partial = false, closed = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const budget = Math.min(values.valuation_budget_ms, x.budget_ms ?? values.valuation_budget_ms);
     if (!Number.isFinite(budget) || budget < 0) throw new RangeError('budget_ms');
     const deadline = new Promise<void>(done => { timer = setTimeout(() => { partial = true; closed = true; controller.abort(); done(); }, budget); });
     try {
-      await Promise.race([Promise.all(x.sources.map(async source => {
+      await Promise.race([Promise.all((x.identity_unknown ? [] : x.sources).map(async source => {
         const observations = await source(controller.signal);
         if (!closed) completed.push(observations);
       })), deadline]);
@@ -84,9 +85,11 @@ export async function check(x: CheckInput) {
       if (x.log.note) x.log.note(name, fields); else x.log.error(name, fields);
     }
     const target: Target = { condition: x.condition, size: x.size, family_id: x.family_id, product_id: x.product_id,
-      kind: x.kind, kind_band: x.kind_band, retail_cents: x.retail_citation ? x.retail_cents : undefined, depreciation: x.retail_citation ? x.depreciation : undefined, completeness: x.completeness, works: x.works };
+      kind: x.kind, kind_band: x.identity_unknown ? undefined : x.kind_band, retail_cents: !x.identity_unknown && x.retail_citation ? x.retail_cents : undefined, depreciation: x.retail_citation ? x.depreciation : undefined, completeness: x.completeness, works: x.works };
     const found = comparables(target, snapshot, x.as_of, params);
-    const warm = x.fast;
+    const warm = x.identity_unknown ? null : x.fast;
+    const words = (text: string) => text.toLowerCase().normalize('NFKD').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(word => word.length > 1);
+    const identityWords = new Set(words([x.title, x.brand, x.model].filter(Boolean).join(' ')));
     const cap = x.condition === 'new_with_tags' ? Math.min(x.retail_cap_cents ?? Infinity, x.live_ask_cap_cents ?? Infinity) : Infinity;
     const finalRange = (local: typeof found, calibration?: Calibration) => {
       const q = calibration?.Q_g ?? 0, parent = calibration?.parent_Q_g ?? 0;
@@ -114,10 +117,16 @@ export async function check(x: CheckInput) {
         if (Number.isFinite(cap)) range = { q10: Math.min(range.q10!, cap), q50: Math.min(range.q50!, cap), q90: Math.min(range.q90!, cap) };
         if (!(range.q10! <= range.q50! && range.q50! <= range.q90!)) throw new RangeError('range conflict');
       }
-      const notes: ('too_few' | 'stale' | 'warm_unavailable')[] = [];
-      if (local.state === 'too_few') notes.push('too_few');
+      const notes: ('too_few' | 'stale' | 'warm_unavailable' | 'identity_unknown' | 'family_only')[] = [];
+      const familyOnly = basis_level === 'family';
+      const titles = local.comps.map(comp => 'title' in comp && typeof comp.title === 'string' ? comp.title : null);
+      const identity_unmatched_share = familyOnly && titles.length > 0 && titles.every(title => title !== null) && identityWords.size > 0
+        ? titles.filter(title => !words(title!).some(word => identityWords.has(word))).length / titles.length : null;
+      if (x.identity_unknown) notes.push('identity_unknown');
+      if (familyOnly) notes.push('family_only');
+      if (!x.identity_unknown && local.state === 'too_few') notes.push('too_few');
       if (local.comps.length && !local.comps.some(c => c.age_days <= params.recent_days)) notes.push('stale');
-      return { ...range, basis_level, notes, state: range.q10 === null || range.q90 === null ? 'hidden' : checked ? 'checked' : 'not_checked_yet',
+      return { ...range, basis_level, notes, identity_unmatched_share, state: x.identity_unknown ? 'needs_identity' : range.q10 === null || range.q90 === null ? 'hidden' : checked ? 'checked' : 'not_checked_yet',
         hide_reason: undefined,
         group: calibration?.group ?? null, share_shown: checked ? Math.floor(coverage! * 10) / 10 : null };
     };
@@ -163,8 +172,8 @@ export async function check(x: CheckInput) {
       } catch (error) {
         if (!(error instanceof CitationError)) throw error;
         x.log.error('valuation.check.site_citation', error);
-        return { ...s, local, band: { q10: null, q50: null, q90: null, state: 'hidden', share_shown: null,
-          basis_level: local.basis_level, notes: range.notes, group: s.calibration?.group ?? x.calibration?.group ?? null, hide_reason: 'no_citation' }, citation: null };
+        return { ...s, local, band: { ...finalRange(local), q10: null, q50: null, q90: null, state: 'hidden', share_shown: null,
+          group: s.calibration?.group ?? x.calibration?.group ?? null, hide_reason: 'no_citation' }, citation: null };
       }
     });
     const mode = (choice: keyof Modes): Mode | null => {
@@ -225,7 +234,8 @@ export async function check(x: CheckInput) {
     const path = chosen[0]?.path ?? null;
     const price_path = path && { ...path, curve_checked: chosen[0].curve_checked, start: Math.min(path.start, cap), list: Math.min(path.list, cap), always_accept: Math.min(path.always_accept, cap), ladder: path.ladder.filter(r => r.price >= path.floor && r.price <= cap) };
     return { product_id: x.product_id, variant: x.variant, condition: x.condition, as_of: x.as_of,
-      basis_level: range.basis_level, notes: range.notes, last_sale,
+      basis_level: range.basis_level, notes: range.notes, identity_unmatched_share: range.identity_unmatched_share,
+      needs: x.identity_unknown ? ['brand', 'model', 'title'] : [], last_sale,
       fast: warm ?? null, comps: found.comps, n_eff: found.n_eff, range, per_site: per_site.map(({ path: _path, ...s }) => s),
       best_sites: chosen.map(s => s.site), curve_checked: chosen.length > 0 && chosen.every(s => s.curve_checked), price_path, modes, param_version: x.param_version, param_versions: resolved.versions, partial,
       observation_snapshot: snapshot,

@@ -166,6 +166,72 @@ async function withPorts(run: () => Promise<void>) {
   } finally { Object.assign(ports, saved); }
 }
 
+test('a finished capture with only type apparel answers needs_identity without sold reads or observations', async () => withPorts(async () => {
+  const item = await ownItem({ title: '', attributes: [{ name: 'type', value: 'apparel', confirmed: true }] });
+  let soldReads = 0, observationReads = 0, writes = 0;
+  ports.sources = () => [async () => { soldReads++; return Array.from({ length: 31 }, (_, i) => ({ ...comp(), comp_id: `family:${i}`, level: 'family' })); }];
+  ports.observations = { read: async () => { observationReads++; return [comp()]; }, write: async () => { writes++; } };
+  const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  assert.equal(priced.range_state, 'needs_identity', 'the item id must not masquerade as an identified product');
+  assert.ok(object(priced.range));
+  assert.deepEqual([priced.range.q10, priced.range.q50, priced.range.q90], [null, null, null]);
+  assert.deepEqual(priced.needs, ['brand', 'model', 'title']);
+  assert.ok(Array.isArray(priced.notes) && priced.notes.includes('identity_unknown'));
+  assert.deepEqual(priced.comps, []); assert.equal(priced.gather, undefined);
+  assert.equal(soldReads, 0); assert.equal(observationReads, 0); assert.equal(writes, 0);
+}));
+
+test('unknown identity cannot learn from observations left by an earlier identified valuation', async () => {
+  const { memoryStore } = await import('../../engines/param/param.ts');
+  const { declareLearning, contributionMean } = await import('../intel/learn.ts');
+  const item = await ownItem();
+  ports.sources = () => [async () => [{ ...comp(), may_model: true }]];
+  await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  store.put('item', { ...item, title: '', category: 'apparel' });
+  ports.params = memoryStore(); declareLearning(ports.params);
+  ports.sources = () => [];
+  const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other', headers: { 'Idempotency-Key': 'identity-lost' } }));
+  assert.equal(priced.range_state, 'needs_identity');
+  assert.equal(contributionMean(ports.params, 'price_now', 'public.poshmark', 'usr_other'), .5, 'unknown identity must never label old observations as agreement');
+});
+
+test('the same apparel capture with Patagonia and Better Sweater title keeps its sold price and query', async () => withPorts(async () => {
+  const title = 'Better Sweater 1/4-zip fleece';
+  const item = await ownItem({ title, attributes: [{ name: 'type', value: 'apparel', confirmed: true }, { name: 'brand', value: 'Patagonia', confirmed: true }] });
+  const engine = ports.valuate; let queries = 0;
+  ports.valuate = async (item, ctx) => { assert.equal(item.brand, 'Patagonia'); assert.equal(item.kind, 'apparel'); return engine(item, ctx); };
+  ports.sources = (_search, _sites, q) => { queries++; assert.equal(q.query, title); return [async () => [comp()]]; };
+  const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  assert.ok(object(priced.range)); assert.equal(priced.range.q50, 2400);
+  assert.equal(priced.range_state, 'not_checked_yet'); assert.deepEqual(priced.needs, []);
+  assert.equal(queries, 1);
+}));
+
+test('brand and kind without a title build an identity query from capture attributes', async () => withPorts(async () => {
+  const item = await ownItem({ title: '', attributes: [{ name: 'kind', value: 'fleece', confirmed: true }, { name: 'brand', value: 'Patagonia', confirmed: true }] });
+  ports.sources = (_search, _sites, q) => { assert.equal(q.query, 'Patagonia fleece'); return [async () => [comp()]]; };
+  const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  assert.ok(object(priced.range)); assert.equal(priced.range.q50, 2400);
+}));
+
+test('sold row titles survive conversion and persistence for the family-only unmatched share', async () => withPorts(async () => {
+  const item = await ownItem({ title: 'Patagonia fleece' });
+  ports.sources = soldSources;
+  ports.soldSearch = () => async (_site, query) => {
+    assert.equal(query, 'Patagonia fleece');
+    return { outcome: 'hit', rows: Array.from({ length: 8 }, (_, i) => ({ external_id: `family:${i}`, title: i < 2 ? 'Patagonia vest' : 'Unrelated dress',
+      state: 'sold', price_cents: 2400, listed_at: comp().sold_at, url: `https://poshmark.com/listing/family-${i}` })) };
+  };
+  const stored: ReturnType<typeof comp>[] = [];
+  ports.observations = { read: async () => [...stored], write: async rows => { stored.push(...rows); } };
+  const first = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  assert.ok(Array.isArray(first.notes) && first.notes.includes('family_only'));
+  assert.equal(first.identity_unmatched_share, .75);
+  ports.sources = () => [];
+  const second = await result(await call(create, { body: { item_id: item.id }, token: 'other', headers: { 'Idempotency-Key': 'family-retained' } }));
+  assert.equal(second.identity_unmatched_share, .75, 'stored comps must retain the source title');
+}));
+
 test('another person’s item is 404 before observations or sold sources are read', async () => withPorts(async () => {
   const item = await ownItem(); let reads = 0;
   ports.observations!.read = async () => { reads++; return []; };
