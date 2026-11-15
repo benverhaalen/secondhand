@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { sep } from 'node:path';
 import { manifest, notBuilt, handlers } from './routes.ts';
 import { route, deps } from './http.ts';
 import { createLog, memorySink } from '../../../../log/index.js';
@@ -24,7 +25,7 @@ function endpointsOf(md: string) {
   return endpoints;
 }
 const product = read('spec/product.md').split('## 7.')[1].split('## 8.')[0];
-const files = readdirSync(new URL('app/src/app/v1/', root), { recursive: true }).map(f => String(f).split(/[\/]/).join('/')).filter(f => f.endsWith('+api.ts'));
+const files = readdirSync(new URL('app/src/app/v1/', root), { recursive: true }).map(f => String(f).split(sep).join('/') /* readdirSync gives the platform's separators; the manifest uses '/' */).filter(f => f.endsWith('+api.ts'));
 const sources = files.map(f => ({ file: f, source: read('app/src/app/v1/' + f) }));
 
 test('every section 7 endpoint is in the manifest or explicitly not built', () => {
