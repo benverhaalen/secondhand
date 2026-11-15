@@ -1,16 +1,12 @@
 {
   "route": "item/it_chair/pickup?case=pick",
-  "screen": "pickup",
+  "screen": "item",
   "states": [
-    "one",
-    "empty",
-    "typical",
-    "loading",
-    "failed",
-    "offline"
+    "one"
   ],
-  "skip": "new: Pickup opens only from a sale, and a person who has done nothing has sold nothing; dense: a pickup is one buyer collecting one item, so there is never a long list here",
+  "skip": "empty: an item page always has an item, and with nothing known yet it is new; new: an item still being researched, /item/it_hoodie; typical: two sites and one photo, /item/it_jacket; dense: many photos or sites, /item/it_tee; loading: under a sheet the page is its ground, /item/it_chair?state=loading; failed: under a sheet the page is its ground, /item/it_chair?state=failed; offline: under a sheet the page is its ground, /item/it_chair?state=offline",
   "catalog": false,
+  "wash": false,
   "status": "clean",
   "findings": [
     {
