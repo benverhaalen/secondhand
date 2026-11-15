@@ -19,6 +19,11 @@ final class ScreensTests: XCTestCase {
     let settle = Double(env["SH_SETTLE"] ?? "2.5") ?? 2.5
     let routes = (env["SH_ROUTES"] ?? "today|/").split(separator: ";").map { $0.split(separator: "|", maxSplits: 1).map(String.init) }
     let app = XCUIApplication(bundleIdentifier: bundle)
+    // On a phone the camera and photo prompts are system alerts that outlive a relaunch; answer them so they never cover a screen.
+    addUIInterruptionMonitor(withDescription: "permission") { alert in
+      for label in ["Allow", "OK", "Allow Full Access"] where alert.buttons[label].exists { alert.buttons[label].tap(); return true }
+      return false
+    }
     app.terminate()
     app.launch()
     _ = app.wait(for: .runningForeground, timeout: 20)
@@ -32,6 +37,7 @@ final class ScreensTests: XCTestCase {
       _ = app.wait(for: .runningForeground, timeout: 20)
       app.open(url)
       Thread.sleep(forTimeInterval: settle)
+      app.swipeUp(velocity: .slow); app.swipeDown(velocity: .slow) // lets the interruption monitor run
       XCTAssertEqual(app.state, .runningForeground, "\(r[0]) left the app (crash?)")
       keep(r[0], app)
     }

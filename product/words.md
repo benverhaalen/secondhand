@@ -2043,3 +2043,15 @@ Nate, capture lead's session, 2026-11-15, evening Central. Asked "can you push t
 > Build the module first
 
 Used in: `spec/engines/capture.md` §7 (the Swift capture module), `.agents/team/packets/team/72-capture-handoff.md` (queue item 5).
+
+## 2026-11-15 nate wrap up the sessions, review the whole project, then the presentation
+Nate, orchestrator's session, 2026-11-15, about 10:00 Central.
+> Lets wrap up models as they stand when finished on whats currently happening. End all extra sessions and ill archive. We'll review through all of the project. The ios build, website, backend system and every feature. Fully launch with the /goal to fully complete all aspects. Focus then on the presentation, highlighting everything, Which in a way will depend on how we market the site. I know ben did alot of work on that, and we'll get to it after everything wraps currently, we assess what works, what doesnt, whats left. Ensure every aspect of our half is finished, then wait on ben or help, then one will focus on finishing the site, the other testing the ui/ux, capture, and all app stuff. But the mac can test things humans dont need to do
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `spec/plans/completion.md` (the review).
+
+## 2026-11-15 nate if it is not in the repo, ben has not worked on it
+Nate, orchestrator's session, 2026-11-15, about 10:20 Central, asked where Ben's site and marketing work lives.
+> If its not in the repo then he hasnt worked on it. Now talk through all questions you have for me
+
+Used in: [packet 78](../.agents/team/packets/team/78-assist-handoff.md) (the site is built from what the repo holds).
