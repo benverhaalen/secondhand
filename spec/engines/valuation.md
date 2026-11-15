@@ -51,6 +51,22 @@ It makes no outward call to a site. Every read goes through [protocol and adapte
 
 A row with `may_model: false` (eBay API rows and Apify rows, per [data use](../data-use.md)) can be shown, cited and priced from as a comp in a shown range ([Nate](../../product/words.md#2026-11-15-nate-rows-that-may-not-be-modelled-on-may-price-a-shown-range): "they can, they are verified real data"). It is never used to fit a weight, a model or a calibration score, except Apify rows, which may fit the nightly models ([Nate](../../product/words.md#2026-11-15-nate-apify-rows-may-fit-the-models-real-time-scores-per-market-on-each-platform-extremely-accurate), "Yes, Apify too"). eBay content, including eBay rows read through an Apify actor, stays out of every fit under eBay's terms.
 
+### In Databricks' terms
+
+Databricks describes dynamic pricing as a **target sales curve** for the baseline, moved in real time by named **signals**, with a person deciding ([their article and our mapping](../../research/data/nate/databricks-retail-solutions.md#how-databricks-shapes-dynamic-pricing-and-our-pricing-beside-it)). This engine has the same shape: the sale curve (D10, D11) is the target sales curve, the range and the price path move with the signals below, and the person approves every price. Which signals a served valuation (`POST /v1/valuations` through `valuate`) reads, as of 2026-11-15:
+
+| Their signal | Ours | Read by a served valuation |
+|---|---|---|
+| History | sold comps, weighted by age, likeness and type (D1) | yes, live from the sold sources on each request |
+| Timing | the age decay of each comp (D3) and the per-family price index over time | yes, computed from the same comps |
+| Target sales curve | the fitted sale curve per kind and site, and the fitted range calibration | not yet: the reader is row EN3; until it lands the chance of sale and days come back empty |
+| Competition | live asks for the same product on every site we read | no: read in search, not joined to a valuation |
+| Customer sensitivity | offer acceptance learned per site and family | no: the learner exists and no served path calls it (EN2) |
+| Demand, digital behavior | watchers, likes, saves, messages and offers on a listing | no: parsed on eBay and Depop rows, not read by the valuation |
+| Season and outside events | the season and day measures | no: offline, in Python |
+
+A row in this table changes in the same commit as the code that makes it true. We price the item, never the person looking at it.
+
 ## 3. The calculation
 
 | Step | Card | Model or arithmetic |
