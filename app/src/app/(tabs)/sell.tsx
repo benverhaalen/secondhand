@@ -3,7 +3,7 @@
 // world; the page only chooses what to show. Why each element is here is in app/behavior/(tabs)/sell.json, "decisions".
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Approve, EmptyState, FootButton, Grid, List, Nav, Pill, Row, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';
+import { Approve, EmptyState, FootButton, Grid, List, log, Nav, Pill, Row, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
 import { Shelf, Tile, TileSkeleton, type TileFact } from '@/ui/parts/tile';
 import { day, feed, pill, sellItem, shelves, unread, usd, type Item, type World } from '@/demo';
@@ -36,12 +36,12 @@ const KEY = (who: string) => `sell.folds.${who}`;
 function readFolds(who: string): Record<string, boolean> {
   if (MEMORY[who]) return MEMORY[who];
   let kept: Record<string, boolean> = {};
-  try { const v = globalThis.localStorage?.getItem(KEY(who)); if (v) kept = JSON.parse(v); } catch { kept = {}; }
+  try { const v = globalThis.localStorage?.getItem(KEY(who)); if (v) kept = JSON.parse(v); } catch (e) { log.error('sell.folds_read', e, { who }); kept = {}; }
   return (MEMORY[who] = kept);
 }
 function writeFolds(who: string, folds: Record<string, boolean>) {
   MEMORY[who] = folds;
-  try { globalThis.localStorage?.setItem(KEY(who), JSON.stringify(folds)); } catch { /* private window: memory holds it */ }
+  try { globalThis.localStorage?.setItem(KEY(who), JSON.stringify(folds)); } catch (e) { log.error('sell.folds_write', e, { who }); }
 }
 
 // A value is a range said the way a friend says it, in whole dollars, widened outward so it never claims more (copy.md).
