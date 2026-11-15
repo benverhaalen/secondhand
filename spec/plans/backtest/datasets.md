@@ -4,6 +4,25 @@ Status: *agent proposal* for Ben and Nate. Written 2026-11-15 by the sold-data t
 
 Ben, 08:19: "ok consider the nber thing too. using those datasets and using an experiment design considering what each have what conclusions about our methodologies would you be able to make. how would you sample. factor in the cost of the backtest. how would use it to maybe improve - think of the logging principles applied to this".
 
+## 0. Each dataset's role, and when a fix found on it counts
+
+Ben, 08:49: "you can selectively remove a bug. just ensure the same system generalizes." His project-evidence skill gives the rules this follows: "Do not modify evaluation criteria to flatter results. Correct grader defects transparently and rerun comparable baselines", and "Preserve failures, retries, interventions, exclusions, and rejected experiments."
+
+| Role | What it means | Dataset |
+|---|---|---|
+| **Development** | Looked at as much as we like. A bug found here may be fixed | StockX Nov 2018 to Feb 2019 (the bug was found there); NBER May 2012 to March 2013; the 2026 CC0 and CC BY sets as level checks |
+| **Confirmation** | Never looked at while building. Scored once, after the code is frozen, and logged in the run ledger | StockX March to October 2018 (done: the fix held, +7.0 points against +8.3 on the development months, [claims.md](claims.md)); the NBER May 2013 locked month; two NBER kinds left out of all tuning |
+| **Graded by the future** | Our number is committed before the outcome exists, so nothing can leak | the forecast duel on live listings |
+| **Excluded** | Not scored at all | Kaggle Mercari: its rules allow "the Competition Data only for the purposes of the Competition" (the research note's follow-up), so decision 31's public benchmark is off. Grailed and the other scrapes are exploratory at most, depending on Ben's answer |
+
+A fix found on a development set counts when four things hold:
+1. It is one mechanism with no branch for a dataset or kind.
+2. Every baseline reruns on the same rows.
+3. The result from before the fix is kept beside the new one.
+4. It holds on a confirmation set it never saw.
+
+The StockX identity fix passed all four on time. It hasn't passed across markets yet. NBER is the test of that.
+
 ## 1. The methods under test
 
 Nine things we claim, each a separate question. A dataset can answer a question only if it has the column the question turns on.
@@ -26,7 +45,7 @@ Nine things we claim, each a separate question. A dataset can answer a question 
 |---|---|---|---|
 | **NBER eBay** (98M listings, 2012-05 to 2013-06, sold and unsold) | A, B, C, D, F, G, I, and leave-one-kind-out | "On used goods across eBay's categories, our price beat the 90-day sold median on the same items, the range held, and abstaining was earned." It's also our only test of speed and of the slider, because it keeps the unsold listings and both dates | today's price levels (13 years old); seasons (13 months is under the 24 that decision 27 needs); anything visual (titles and photos are anonymised); Depop and Poshmark behaviour. Selection: every row was a Best Offer listing |
 | **StockX 2019** (99,956 sales, 2017-09 to 2019-02) | A, C, E, and the size premium in B | "Under fast drift (hype fading after release), moving comps to today beats a stale median, and the range still holds." Its sampling is a fixed random share per colorway per day (StockX's note), so its volumes are unbiased over time | condition (all new); identity (sku given); abstaining (dense); speed (no listings). It's easy mode: identical pairs sold a median 1.7% apart in the same week, so every method looks good. It's the noise floor, never the headline |
-| **Kaggle Mercari** (1,481,661 sold, 2017) | H, F and brand across items | "From the title, brand, category and condition alone, we price within X% (RMSLE Y, beside the 2018 winner's 0.3875)." It's the outside-graded number | anything over time (no dates); comps (no product id). A random split leaks near-duplicates: 31% of rows share a normalised title with another row (*observed*, our count) |
+| **Kaggle Mercari** (1,481,661 sold, 2017) | nothing: excluded | none. Kaggle's rules limit the data to the competition, so it is `may_model` false and not scored | everything; it was going to be the from-a-title benchmark (H) |
 | **Grailed 2021** (103,537 sold) | H for apparel, I (photo count, feedback) | exploratory only; `may_model` is false, and how to treat it waits on Ben's card | the same as Mercari, plus the terms problem |
 | **2026 small sets** (3,710 rows) | level check | "Today's prices in these keywords sit where the old data's trend would put them, or don't" | anything statistical; scrapes, so `may_model` is false |
 
@@ -56,7 +75,7 @@ So **2,000 test sales per kind in the tuning windows and 1,200 per kind in the l
 
 **StockX:** all of it (it's small). Tune on Sept 2017 to Oct 2018, lock Dec 2018 to Feb 13, 2019, and skip Nov 2018 as a gap. Two models are 50% of the sales, so also report per model.
 
-**Mercari:** split by group, not by row. Group rows by normalised title and brand, put whole groups in train or test, and stratify the 10% test split by kind. A random row split would put the same listing on both sides.
+**Mercari:** excluded (section 0). If another from-a-title set is found: split by group, not by row (31% of Mercari's rows shared a normalised title with another row, so a row split would put the same listing on both sides).
 
 ## 4. What it costs
 
@@ -85,5 +104,5 @@ The repo's logging rule ([log/README.md](../../../log/README.md)) is that from t
 
 1. Done: the runner indexes history by product, and the full StockX run is in plan.md §9. The last sale was within 20% 97% of the time, the 90-day median 89%, and `market.py` 68%, because it ignores product identity. That's the first finding: when the product is known, comps must outrank the attribute model (A over B), so the model needs a product-level term or a blend with comps before NBER.
 2. Nate pulls NBER (packet 64). Then: the thickness strata, the two-stage sample, the four planted cases, and the tuning windows only.
-3. The Mercari grouped split and the from-a-title contestant.
+3. The from-a-title test (H) needs a dataset whose terms allow it. Kaggle Mercari's don't. Until one is found, H is tested only in the forecast duel.
 4. Pre-register (decision 25) and score the NBER locked month once. Then leave-one-kind-out.
