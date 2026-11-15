@@ -1547,6 +1547,11 @@ Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages
 
 Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/waiting.md).
 
+## 2026-11-15 nano banana stays, app store coming soon, the voice waits
+Ben, project chat, 08:33 UTC, answering the image model, App Store and capture voice questions.
+> stay on nanobanana for 1. 2. coming soon. 3. wait on the voice, plan for later.
+
+Used in: [intent ledger](../spec/intent-ledger.md), [photo F7](constitutions/photo.md), [demo D7](constitutions/demo.md).
 ## 2026-11-15 stop hot items and seasons; stay on Nano Banana; Depop's API is a proposal, not a claim
 
 Ben, project chat, 08:31 to 08:34 UTC (excerpts that concern product scope; the rest of the 08:31 message is about the website).
