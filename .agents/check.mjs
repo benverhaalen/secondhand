@@ -17,6 +17,8 @@ import { code } from './checks/code.mjs';
 import { parts } from './checks/parts.mjs';
 import { picks } from './checks/picks.mjs';
 import { rules, tally } from './checks/rules.mjs';
+import { rests, commitsSince } from './checks/rests.mjs';
+import { unreached } from './checks/evidence.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const git = (...a) => { try { return execFileSync('git', a, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return null; } };
@@ -37,6 +39,7 @@ const results = [
   ...layout(root).map(msg => ({ level: 'error', where: 'layout', msg })),
   ...links(root, { files, awaited: JSON.parse(read('.agents/awaited.json') || '[]') }), ...provenance(root, { wordsBase }), ...research(root, { files }),
   ...secrets(root, { files }), ...ui(root, { files }), ...brand(root, { files }), ...logging(root, { files }), ...code(root, { files, changed }), ...parts(root, { files }), ...picks(root, { files }), ...rules(root),
+  ...rests(root, { commits: commitsSince(root, base) }),
 ];
 // Keep each human in the loop on the other's work: research and packets that landed in the last day.
 const news = (git('log', '--since=24 hours ago', '--name-only', '--format=@%h %an %ar', '--', 'research/*/nate', 'research/*/ben', '.agents/team/packets') ?? '')
@@ -46,6 +49,8 @@ if (nate.length) console.log(`from Nate in the last day (summarize for Ben):\n${
 for (const r of results) console.log(`${r.level === 'error' ? 'ERROR' : 'warn '} ${r.where}  ${r.msg}`);
 const n = results.filter(r => r.level === 'error').length;
 if (tally(root)) console.log(tally(root));
+const reach = unreached(root, files);
+console.log(`research: ${reach.notes - reach.unreached.length} of ${reach.notes} notes are cited by spec/ or decisions.md; node scripts/evidence.mjs <slug> lists the rest per feature`);
 console.log(n ? `\n${n} error(s). Fix them before pushing.` : `checks ok${results.length ? ` (${results.length} warning(s) to read)` : ''}`);
 const tests = files.filter(f => /^(\.agents|scripts|spec)\/.*\.test\.mjs$|^app\/src\/.*\.test\.ts$/.test(f));
 const t = tests.length ? (() => { try { execFileSync(process.execPath, ['--test', ...tests], { cwd: root, stdio: 'pipe' }); return 0; } catch (e) { process.stdout.write(e.stdout); return 1; } })() : 0;
