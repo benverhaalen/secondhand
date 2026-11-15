@@ -1,78 +1,78 @@
-Attributes: Application, 0x1020aa430, pid: 82533, label: 'secondhand'
+Attributes: Application, 0x10334d9b0, pid: 19800, label: 'secondhand'
 Element subtree:
- →Application, 0x1020aa430, pid: 82533, label: 'secondhand'
-    Window (Main), 0x102085d30, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x102085250, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x102084b90, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x102081e60, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x102084f00, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x10207bea0, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x102085970, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x102083dc0, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x10208b170, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x102083a50, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x1020924a0, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x102091a50, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x1020883c0, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x10208a080, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x1020844b0, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x10208f730, {{0.0, 0.0}, {402.0, 874.0}}
-                                    Other, 0x10202d090, {{0.0, 0.0}, {402.0, 874.0}}
-                                      Other, 0x102090500, {{0.0, 0.0}, {402.0, 874.0}}
-                                        Other, 0x102090fb0, {{0.0, 0.0}, {402.0, 874.0}}
-                                          Other, 0x1020908a0, {{0.0, 0.0}, {402.0, 874.0}}
-                                            Other, 0x10221ce40, {{0.0, 0.0}, {402.0, 874.0}}
-                                              Other, 0x102228840, {{0.0, 0.0}, {402.0, 874.0}}
-                                                Other, 0x102232040, {{0.0, 0.0}, {402.0, 874.0}}
-                                                  ScrollView, 0x1022317e0, {{0.0, 0.0}, {402.0, 874.0}}
-                                                    Other, 0x10213ce40, {{0.0, 0.0}, {402.0, 927.7}}
-                                                      Other, 0x10211c790, {{0.0, 0.0}, {402.0, 927.7}}
-                                                        Other, 0x1021265f0, {{0.0, 0.0}, {402.0, 298.0}}
-                                                        Other, 0x1021520f0, {{20.0, 62.0}, {362.0, 44.0}}
-                                                          Button, 0x102161940, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
-                                                        StaticText, 0x10215aef0, {{20.0, 118.0}, {362.0, 41.3}}, label: 'Pickup'
-                                                          StaticText, 0x10216a5d0, {{20.0, 118.0}, {362.0, 41.3}}, label: 'Pickup'
-                                                        Button, 0x102344e80, {{20.0, 171.3}, {362.0, 104.0}}, identifier: 'pickup-item', label: 'IKEA Stefan chair, light wood'
-                                                        Other, 0x102343a60, {{20.0, 307.3}, {304.0, 58.3}}
-                                                        StaticText, 0x102340f30, {{37.0, 316.3}, {270.3, 40.3}}, label: 'Hi, is it still available? When could I come get it?'
-                                                          StaticText, 0x1023414c0, {{37.0, 316.3}, {270.3, 40.3}}, label: 'Hi, is it still available? When could I come get it?'
-                                                        Other, 0x10232f790, {{20.0, 369.7}, {95.7, 18.3}}
-                                                          StaticText, 0x102347930, {{20.0, 369.7}, {95.7, 18.3}}, label: 'Jordan, 24m ago'
-                                                            StaticText, 0x10233c970, {{20.0, 369.7}, {95.7, 18.3}}, label: 'Jordan, 24m ago'
-                                                        StaticText, 0x102333c70, {{20.0, 420.0}, {362.0, 24.3}}, label: 'Days that work'
-                                                          StaticText, 0x1023455e0, {{20.0, 420.0}, {362.0, 24.3}}, label: 'Days that work'
-                                                        Button, 0x102129450, {{20.0, 460.3}, {73.7, 40.0}}, identifier: 'meet-day-2026-11-15', label: 'Today'
-                                                        Button, 0x102154090, {{101.7, 460.3}, {78.7, 40.0}}, identifier: 'meet-day-2026-11-16', label: 'Mon 16'
-                                                        Button, 0x102349110, {{188.3, 460.3}, {73.7, 40.0}}, identifier: 'meet-day-2026-11-17', label: 'Tue 17'
-                                                        Button, 0x1023451c0, {{270.0, 460.3}, {80.3, 40.0}}, identifier: 'meet-day-2026-11-18', label: 'Wed 18'
-                                                        Button, 0x10234fbb0, {{20.0, 508.3}, {74.7, 40.0}}, identifier: 'meet-day-2026-11-19', label: 'Thu 19'
-                                                        Button, 0x10234fcd0, {{102.7, 508.3}, {70.3, 40.0}}, identifier: 'meet-day-2026-11-20', label: 'Fri 20'
-                                                        Button, 0x10234fdf0, {{181.0, 508.3}, {71.0, 40.0}}, identifier: 'meet-day-2026-11-21', label: 'Sat 21'
-                                                        StaticText, 0x10234ff10, {{20.0, 580.3}, {362.0, 24.3}}, label: 'Where'
-                                                          StaticText, 0x102086050, {{20.0, 580.3}, {362.0, 24.3}}, label: 'Where'
-                                                        Button, 0x10208b840, {{20.0, 620.7}, {362.0, 56.0}}, identifier: 'place-saved', label: 'Library parking lot, Main St. Your saved spot, out in public', Selected
-                                                        Other, 0x10208aaa0, {{20.0, 676.7}, {362.0, 56.3}}
-                                                        Button, 0x10208ae00, {{20.0, 677.0}, {362.0, 56.0}}, identifier: 'place-sp_police', label: 'Police station, Elm St. A safe exchange zone, lit and on camera'
-                                                        Other, 0x10208c9c0, {{20.0, 733.0}, {362.0, 56.3}}
-                                                        Button, 0x102089cf0, {{20.0, 733.3}, {362.0, 56.0}}, identifier: 'place-sp_store', label: 'Grocery store entrance, Oak Ave. Busy and lit until 10 pm'
-                                                        StaticText, 0x10208bbe0, {{20.0, 821.3}, {362.0, 40.3}}, label: 'Tap the days that work. The agent writes to Jordan from them.'
-                                                          StaticText, 0x10208df40, {{20.0, 821.3}, {362.0, 40.3}}, label: 'Tap the days that work. The agent writes to Jordan from them.'
-                                                    Other, 0x102095f70, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
-                                                      Other, 0x10208dbc0, {{396.0, 65.0}, {3.0, 701.0}}
-                                                    Other, 0x10208cd40, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                      Other, 0x10208b4d0, {{65.0, 868.0}, {272.0, 3.0}}
-                                                    Other, 0x10208c2e0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
-                                                      Other, 0x10208e610, {{396.0, 65.0}, {3.0, 701.0}}
-                                                    Other, 0x10208d860, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                      Other, 0x102024f20, {{65.0, 868.0}, {272.0, 3.0}}
-                                    Other, 0x1020943c0, {{0.0, 0.0}, {402.0, 874.0}}
-                                      Other, 0x102081410, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x1020810a0, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10202b440, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x10334d9b0, pid: 19800, label: 'secondhand'
+    Window (Main), 0x10334bbb0, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x103335e30, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x10334d170, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x103346d40, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x10334d590, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x10334bfd0, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x10334b370, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x1033477a0, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x10334af50, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x103346b00, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103346c20, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x103337420, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x103337540, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x103337660, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x103337780, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x1033378a0, {{0.0, 0.0}, {402.0, 874.0}}
+                                    Other, 0x1033379c0, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x103337ae0, {{0.0, 0.0}, {402.0, 874.0}}
+                                        Other, 0x103337c00, {{0.0, 0.0}, {402.0, 874.0}}
+                                          Other, 0x103337d20, {{0.0, 0.0}, {402.0, 874.0}}
+                                            Other, 0x103341f60, {{0.0, 0.0}, {402.0, 874.0}}
+                                              Other, 0x103342080, {{0.0, 0.0}, {402.0, 874.0}}
+                                                Other, 0x1033421a0, {{0.0, 0.0}, {402.0, 874.0}}
+                                                  ScrollView, 0x1033422c0, {{0.0, 0.0}, {402.0, 874.0}}
+                                                    Other, 0x1033423e0, {{0.0, 0.0}, {402.0, 927.7}}
+                                                      Other, 0x103342500, {{0.0, 0.0}, {402.0, 927.7}}
+                                                        Other, 0x103342620, {{0.0, 0.0}, {402.0, 298.0}}
+                                                        Other, 0x103342740, {{20.0, 62.0}, {362.0, 44.0}}
+                                                          Button, 0x103342860, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                                        StaticText, 0x103342980, {{20.0, 118.0}, {362.0, 41.3}}, label: 'pickup'
+                                                          StaticText, 0x103342aa0, {{20.0, 118.0}, {362.0, 41.3}}, label: 'pickup'
+                                                        Button, 0x103342bc0, {{20.0, 171.3}, {362.0, 104.0}}, identifier: 'pickup-item', label: 'IKEA Stefan chair, light wood'
+                                                        Other, 0x103342ce0, {{20.0, 307.3}, {304.0, 58.3}}
+                                                        StaticText, 0x103342e00, {{37.0, 316.3}, {270.3, 40.3}}, label: 'Hi, is it still available? When could I come get it?'
+                                                          StaticText, 0x103342f20, {{37.0, 316.3}, {270.3, 40.3}}, label: 'Hi, is it still available? When could I come get it?'
+                                                        Other, 0x103343040, {{20.0, 369.7}, {95.7, 18.3}}
+                                                          StaticText, 0x103343160, {{20.0, 369.7}, {95.7, 18.3}}, label: 'Jordan, 24m ago'
+                                                            StaticText, 0x103343280, {{20.0, 369.7}, {95.7, 18.3}}, label: 'Jordan, 24m ago'
+                                                        StaticText, 0x1033433a0, {{20.0, 420.0}, {362.0, 24.3}}, label: 'Days that work'
+                                                          StaticText, 0x1033434c0, {{20.0, 420.0}, {362.0, 24.3}}, label: 'Days that work'
+                                                        Button, 0x1033435e0, {{20.0, 460.3}, {73.7, 40.0}}, identifier: 'meet-day-2026-11-15', label: 'Today'
+                                                        Button, 0x103343700, {{101.7, 460.3}, {78.7, 40.0}}, identifier: 'meet-day-2026-11-16', label: 'Mon 16'
+                                                        Button, 0x103343820, {{188.3, 460.3}, {73.7, 40.0}}, identifier: 'meet-day-2026-11-17', label: 'Tue 17'
+                                                        Button, 0x103343940, {{270.0, 460.3}, {80.3, 40.0}}, identifier: 'meet-day-2026-11-18', label: 'Wed 18'
+                                                        Button, 0x103343a60, {{20.0, 508.3}, {74.7, 40.0}}, identifier: 'meet-day-2026-11-19', label: 'Thu 19'
+                                                        Button, 0x103343b80, {{102.7, 508.3}, {70.3, 40.0}}, identifier: 'meet-day-2026-11-20', label: 'Fri 20'
+                                                        Button, 0x103343ca0, {{181.0, 508.3}, {71.0, 40.0}}, identifier: 'meet-day-2026-11-21', label: 'Sat 21'
+                                                        StaticText, 0x103343dc0, {{20.0, 580.3}, {362.0, 24.3}}, label: 'Where'
+                                                          StaticText, 0x103343ee0, {{20.0, 580.3}, {362.0, 24.3}}, label: 'Where'
+                                                        Button, 0x103344000, {{20.0, 620.7}, {362.0, 56.0}}, identifier: 'place-saved', label: 'Library parking lot, Main St. Your saved spot, out in public', Selected
+                                                        Other, 0x103344120, {{20.0, 676.7}, {362.0, 56.3}}
+                                                        Button, 0x103344240, {{20.0, 677.0}, {362.0, 56.0}}, identifier: 'place-sp_police', label: 'Police station, Elm St. A safe exchange zone, lit and on camera'
+                                                        Other, 0x103344360, {{20.0, 733.0}, {362.0, 56.3}}
+                                                        Button, 0x103348220, {{20.0, 733.3}, {362.0, 56.0}}, identifier: 'place-sp_store', label: 'Grocery store entrance, Oak Ave. Busy and lit until 10 pm'
+                                                        StaticText, 0x103348340, {{20.0, 821.3}, {362.0, 40.3}}, label: 'Tap the days that work. The agent writes to Jordan from them.'
+                                                          StaticText, 0x103348460, {{20.0, 821.3}, {362.0, 40.3}}, label: 'Tap the days that work. The agent writes to Jordan from them.'
+                                                    Other, 0x103348580, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                                      Other, 0x1033486a0, {{396.0, 65.0}, {3.0, 701.0}}
+                                                    Other, 0x106404390, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                      Other, 0x1033487c0, {{65.0, 868.0}, {272.0, 3.0}}
+                                                    Other, 0x1033488e0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                                      Other, 0x103348a00, {{396.0, 65.0}, {3.0, 701.0}}
+                                                    Other, 0x10364dac0, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                      Other, 0x10364efe0, {{65.0, 868.0}, {272.0, 3.0}}
+                                    Other, 0x10364f100, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x10364f220, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x10364f5a0, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10364f6c0, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x1020aa430, pid: 82533, label: 'secondhand'
+ →Application, 0x10334d9b0, pid: 19800, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x102350690, pid: 82533, label: 'secondhand'
+    Application, 0x10342af80, pid: 19800, label: 'secondhand'
   }

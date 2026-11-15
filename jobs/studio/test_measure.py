@@ -1,5 +1,7 @@
 """The ruler, on outlines whose true pit to pit and length are known, and on the same outline stretched."""
-import cv2
+import pytest
+
+cv2 = pytest.importorskip("cv2", reason="studio measurements require optional OpenCV")
 import numpy as np
 
 from studio.measure import against_tape, measure
