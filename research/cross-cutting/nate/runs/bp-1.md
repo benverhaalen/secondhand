@@ -57,3 +57,15 @@ What is missing: no signed-in run, because there is no go from Nate for any acco
 ## Contract problems and warnings
 
 - none
+
+## Run 2, through the browser-use path (real Chrome over CDP), 2026-11-15
+
+One signed-out search page per site, one request each, run one site at a time on a local Chrome 2026 build (`C:/Program Files/Google/Chrome/Application/chrome.exe`), reached over CDP by `cdpLauncher(localChrome)`. No captcha solver, no stealth flag, no user-agent change. The scripts were `/c/dev/.tmp-check/cdp-run.ts` and `cdp-run-headed.ts`.
+
+| site, page | headless Chrome | headed Chrome (a real window) |
+|---|---|---|
+| depop.com/search/?q=levis | 403, title "Forbidden - Depop", 0 listing links: a block page, not a challenge | 200, "Search \| Depop", 24 listing links |
+| mercari.com/search/?keyword=levis | 403, title "Just a moment...": a challenge page | 200, "Shop levis on Mercari", no challenge (the cards had not rendered in the 3 s wait, so the link count read 0) |
+| poshmark.com/search?query=levis | 200, "levis on Poshmark", 96 listing links | not needed |
+
+What it shows (observed): Depop and Mercari refuse a headless browser, not automation as such. The same Chrome in a real window gets each site's real search page, with no challenge shown. So the platform profile carries `headed: true` for Depop and Mercari, and the pool runs their accounts and their public reads in a real window (on a server, a virtual display such as Xvfb). Nothing here solved or skipped a check. If a check page appears in a real window, the session pauses for the person.

@@ -57,7 +57,7 @@ export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage>
 
 // A local Chrome on a kept profile, the debugging port bound to 127.0.0.1 and chosen by Chrome (port 0), read from DevToolsActivePort.
 // The port has no authentication (browser-use README), so it never binds beyond loopback.
-export function localChrome({ executablePath, scratch, headless = true, spawnFn = spawn, readyMs = 15_000 }: {
+export function localChrome({ executablePath, scratch, headless, spawnFn = spawn, readyMs = 15_000 }: {
   executablePath: string; scratch: string; headless?: boolean; spawnFn?: typeof spawn; readyMs?: number;
 }): BrowserSource {
   let n = 0;
@@ -68,7 +68,7 @@ export function localChrome({ executablePath, scratch, headless = true, spawnFn 
       mkdirSync(dir, { recursive: true });
       rmSync(join(dir, 'DevToolsActivePort'), { force: true });
       const args = [`--user-data-dir=${dir}`, '--remote-debugging-port=0', '--remote-debugging-address=127.0.0.1', '--no-first-run',
-        '--no-default-browser-check', ...(headless ? ['--headless=new'] : []), ...(opts.proxy ? [`--proxy-server=${opts.proxy.server}`] : []), 'about:blank'];
+        '--no-default-browser-check', ...((headless ?? opts.headless) ? ['--headless=new'] : []), ...(opts.proxy ? [`--proxy-server=${opts.proxy.server}`] : []), 'about:blank'];
       const child = spawnFn(executablePath, args, { stdio: 'ignore' });
       const exited = new Promise<void>(r => { if (child.exitCode !== null) r(); else child.once('exit', () => r()); });
       // Wait for Chrome to exit so its profile lock and cookie store are released before anyone reopens or removes the directory.

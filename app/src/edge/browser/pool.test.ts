@@ -11,7 +11,7 @@ import { createLog } from '../../../../log/index.js';
 import { existsSync } from 'node:fs';
 
 // Every account counts as linked: for tests about the pool's own mechanics.
-const allLinked: Accounts = { linked: async () => [], byId: async id => ({ account_id: id, person_id: 'p1', site: 'depop', token_ref: `ref-${id}` }) };
+const allLinked: Accounts = { linked: async () => [], byId: async id => ({ account_id: id, person_id: 'p1', site: 'ebay', token_ref: `ref-${id}` }) };
 
 // A fake launcher: a cold launch costs 30 ms, a page 1 ms; it records every launch and the options it got.
 function fakeLauncher(coldMs = 30) {
@@ -234,4 +234,17 @@ test('real local Chrome over CDP: state loads, exports, survives a relaunch; war
     await pool.close();
     rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
   }
+});
+
+test('a site whose profile says headed gets a real window, for accounts and public reads; the rest run headless', async () => {
+  const f = fakeLauncher(1);
+  const accounts: Accounts = { linked: async () => [], byId: async id => ({ account_id: id, person_id: 'p1', site: id === 'a-depop' ? 'depop' : 'ebay', token_ref: `ref-${id}` }) };
+  const pool = createPool({ launcher: f.launcher, profileRoot: '/profiles', accounts, publicConcurrency: 2 });
+  await pool.dispatchAll([{ account_id: 'a-depop', job_id: '1', run: async () => 0 }, { account_id: 'a-ebay', job_id: '2', run: async () => 0 }]);
+  assert.equal(f.launched.find(l => l.dir?.endsWith('a-depop'))?.opts.headless, false);
+  assert.equal(f.launched.find(l => l.dir?.endsWith('a-ebay'))?.opts.headless, true);
+  await pool.dispatch({ site: 'mercari', job_id: 'm', run: async () => 0 });
+  await pool.dispatch({ site: 'poshmark', job_id: 'p', run: async () => 0 });
+  await pool.dispatch({ site: 'mercari', job_id: 'm2', run: async () => 0 });
+  assert.deepEqual(f.launched.filter(l => l.kind === 'anonymous').map(l => l.opts.headless), [false, true], 'the headed public slot is reused for the second Mercari read');
 });
