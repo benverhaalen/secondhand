@@ -2694,3 +2694,11 @@ Nate, the orchestrator's session, 2026-11-15, about 16:15 and 16:17 UTC by the m
 > You can then continue improving perfformance in potential update branches
 
 Used in: [finalization §13](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator), the state at 16:17 UTC; the leads hold, one deployer; later work lands from update branches after the build.
+
+## 2026-11-15 nate the chat answers with what has arrived
+Nate, the native-walks lead's session, 2026-11-15, about 16:15 UTC, relayed by that lead; on the chat answering before every source has come back.
+> that can be faster, if after 25 seconds, don have it,
+
+> no just keep whats there, we'll treat it like we do other responses where the ai begins outputting even though it hasnt recieved all outpuits yet
+
+Used in: the chat keeps answering from the rows that have arrived when asked. Separate from this: on the hosted server one answer counted 64 listings for a finished search of 346 (it read the stored copy of the frames, which leaves out rows we may not keep); that is for an update branch.
