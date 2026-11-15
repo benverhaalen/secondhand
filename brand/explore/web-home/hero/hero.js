@@ -77,9 +77,11 @@
 
   // The open.
   const intro = document.querySelector('.intro'), lockup = document.querySelector('.lockup');
+  // An automated check without ?intro=1 sees the page settled, not mid-fade, as it does the open.
+  const settled = () => reduce || (navigator.webdriver && q.get('intro') !== '1');
   const show = () => {
     opened = true;
-    if (reduce) return;
+    if (settled()) return;
     wall.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 900, easing: 'ease-out' });
     copy.animate([{ opacity: 0, transform: 'translate3d(0, 12px, 0)' }, { opacity: 1, transform: 'none' }], { duration: 700, delay: 120, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
   };
