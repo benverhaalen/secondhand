@@ -1983,3 +1983,9 @@ Nate, third integration lead's session, 2026-11-15, morning Central, on the full
 > dont rerun benches until we have perfectly optimized to correct such blunders like the jump in latency
 
 Used in: [packet 69](../.agents/team/packets/team/69-integration-handoff.md), [joins.md J12](../spec/plans/joins.md#named-fixes-in-build-order): the bench reruns only after an in-process latency test of the composed search passes.
+
+## 2026-11-15 nate the system picks the platform a listing will do best on, or lists on both
+Nate, orchestrator's session, 2026-11-15, about 07:30 Central.
+> The system assess for the user, based on their given linked platforms, the one that it'd perform best on, or to possibly list both but we've accounted for how to handle multiple listings
+
+Used in: `spec/engines/adaptation.md` (AD5, rank sites by expected keep), `spec/plans/engines-queue.md`.
