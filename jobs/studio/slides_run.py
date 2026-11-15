@@ -33,13 +33,11 @@ from studio import plan as P  # noqa: E402
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 TEMPLATES = os.path.join(ROOT, "research", "studio", "ben", "templates")
 VISION = ["google/gemini-4-carbon", "google/gemini-4-hydrogen", "google/gemini-2.5-pro"]
-# candidates per whole slide. Ben asked for Seedream 5.5, not Nano Banana or the ChatGPT image model (words, 2026-11-14:
-# "seedream 5.5 doesnt have that specific noise that chatgpt's does"; again 2026-11-15 08:09). Seedream 5.5 leads with four
-# seeds ($0.02 an image plus $0.008 per reference image on OpenRouter, observed 2026-11-15 on its model page). Its slug was
-# not in OpenRouter's model list on 2026-11-15 06:07, so one Nano Banana 2.1 candidate stays as the fallback; a Seedream call
-# that returns nothing is one failed row, never a crash, and the run log says which model won.
-SEEDREAM = "bytedance-seed/seedream-5-5"
-CANDIDATES = [(SEEDREAM, 1), (SEEDREAM, 2), (SEEDREAM, 3), (SEEDREAM, 4), ("google/gemini-nano-banana-2.1", 1)]
+# candidates per whole slide: Nano Banana 2.1 leads (Ben, 2026-11-15 08:33: "stay on nanobanana"); it is fast and cheap
+# (6.8 s, $0.037 in the smoke run), and Gemini 3 Pro Image is a second opinion ($0.14). Seedream 5.5 was not reachable on
+# OpenRouter's model list that morning. GPT image 2 took 95 s and is left out.
+CANDIDATES = [("google/gemini-nano-banana-2.1", 1), ("google/gemini-nano-banana-2.1", 2), ("google/gemini-nano-banana-2.1", 3),
+              ("google/gemini-nano-banana-2.1", 4), ("google/gemini-3-pro-image", 1)]
 SIDE = 1080
 
 IRONED = ("Freshly ironed means: the fabric lies smooth and flat across the whole body and sleeves. No crumpling, no fold "

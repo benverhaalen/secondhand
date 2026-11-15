@@ -7,9 +7,9 @@ The model is code, not a spreadsheet: [scripts/bench/roi.mjs](../scripts/bench/r
 ## The answer first
 
 1. **One referred purchase earns about $0.94.** That is a $33 order (Poshmark's own 2019 average, *observed* in its S-1) times a blended 2.8% commission, after a network's cut where a site has no direct programme.
-2. **Free works if a person buys through us about once every three months, and Depop watching is designed down.** The base case loses $0.14 per person per month, and the whole loss is Depop: a signed-in sweep costs about $0.45 per person per month. With Depop's partner API (webhooks, no sweep), the same base case earns $0.31 per person per month, about $3.7M a year at 1M monthly users.
+2. **Free works if a person buys through us about once every three months, and Depop watching is designed down.** The base case loses $0.15 per person per month, and the whole loss is Depop: a signed-in sweep costs about $0.45 per person per month. With Depop's partner API (webhooks, no sweep), which we propose and have not joined, the same base case would earn $0.30 per person per month, about $3.5M a year at 1M monthly users.
 3. **Two independent anchors land on the same purchase rate.** Honey earned about $0.49 per monthly user per month in 2018 (*asserted*: PayPal's CEO via a secondary source). At our $0.94 a purchase, that is 0.52 purchases a month. A Poshmark buyer made 6.3 orders a year in 2019 (*asserted*, a write-up of the S-1), which is 0.525 a month. So the flattering case, 0.5 a month, is "as often as a Poshmark buyer already buys", not a fantasy.
-4. **The decision this forces:** apply to Depop's partner programme. It is the difference between losing and earning money on free, at every purchase rate below the flattering one.
+4. **What we run today, and what we propose.** Today Depop is watched by the signed-in sweep (Ben's choice, 08:32). We are not in Depop's partner programme and have not applied. *Proposed:* join it, because its webhooks would replace the sweep and flip the base case to +$0.30 per person per month. Until then the lever is the sweep's cadence: every 23 minutes instead of 15 while live brings Depop watching to about $0.30 a person a month and the base case to break-even.
 
 ## Revenue streams
 
@@ -20,7 +20,7 @@ The model is code, not a spreadsheet: [scripts/bench/roi.mjs](../scripts/bench/r
 | Buy-side referral, retail and Amazon | The better official option (refurbished, new) shown beside a used result | Amazon apparel 4%, home 3% (*asserted*, a third-party reading of the Associates table) | yes |
 | Buy-side referral, Etsy | Etsy's programme runs through Rakuten | "case-by-case", 7-day cookie (*observed*, Etsy's terms); 3.2% (*asserted*, third party) | yes |
 | Facebook Marketplace | None | no programme found (*observed* absence in [buyer-side research](../research/watch/nate/buyer-side-actions-and-affiliate.md)) | 0 |
-| Studio photos | The one paid extra | $0.99 an item (*assumption*); our cost $0.54, so $0.45 margin | yes |
+| Studio photos | The one paid extra | $0.99 an item (*assumption*); our cost $0.63, so $0.36 margin | yes |
 | A plan for resellers | Flat monthly, under the crosslisters | $9.99 a month (*assumption*); a crosslister lists at $39.99 (*asserted*) | yes |
 | Market data | Anonymous, from consenting sellers and sources whose terms allow it | not priced | no, later |
 
@@ -42,13 +42,13 @@ The lesson we take: the economics work (Honey proves a shopping helper can earn 
 |---|---|---|---|
 | Identify an item | item | $0.035 (range $0.015 to $0.06) | [numbers](numbers.md#what-it-costs-us), *inferred* |
 | Post to 4 sites and take down after the sale | item | $0.015 | same |
-| Studio, as built | item that asks for it | $0.54: 2 slides × (4 Seedream 5.5 seeds × ($0.02 + 4 input images × $0.008) + 1 Nano Banana fallback at $0.037) + 10 judge reads at ~$0.005 | Seedream page (*observed*), run log (*observed*), judge (*assumption*) |
+| Studio, as built | item that asks for it | $0.63: 2 slides × (4 Nano Banana 2.1 seeds at $0.037 + 1 Gemini 3 Pro Image at $0.14) + 10 judge reads at ~$0.005 | run log (*observed*, [slides note](../research/studio/ben/slides.md)), judge (*assumption*) |
 | Watching for sales, eBay, Facebook, Poshmark, Mercari | account-day | ~$0 | eBay pushes; we booked the pickup; a public page read is one 0.44 s request ([trace sd-1](../research/cross-cutting/nate/runs/sd-1.md)) |
 | Watching for sales, Depop, signed in | account-day while live | $0.10 | [numbers](numbers.md#what-it-costs-us), *inferred* |
 | A buy search | search | $0.01 | *inferred* from one web search |
 | The platform | month | $1,500 fixed plus $0.02 a person | *assumption*; replace with the first bill |
 
-Note on the studio: [numbers.md](numbers.md#what-it-costs-us) says about $0.25 for studio light. That figure is 3 relights; the run as built makes 10 candidates for 2 slides, which is $0.54. Cutting to 2 Seedream seeds a slide halves it.
+Note on the studio: [numbers.md](numbers.md#what-it-costs-us) says about $0.25 for studio light. That figure is 3 Seedream relights; the run as built (Ben kept Nano Banana at 08:33) makes 10 candidates for 2 slides, which is $0.63. Dropping the Gemini 3 Pro second opinion takes it to $0.35.
 
 ## Per person per month
 
@@ -57,21 +57,21 @@ Note on the studio: [numbers.md](numbers.md#what-it-costs-us) says about $0.25 f
 | Referred purchases | 0.05 | 0.2 | 0.5 |
 | Items listed | 1.0 | 1.5 | 2.0 |
 | Studio attach / plan share | 5% / 1% | 10% / 2% | 15% / 3% |
-| Depop | signed-in sweep | signed-in sweep | partner API |
+| Depop | signed-in sweep (today) | signed-in sweep (today) | partner API (proposed, not joined) |
 | **Revenue** | $0.196 | $0.536 | $1.06 |
 | of which referrals | $0.047 | $0.187 | $0.468 |
-| **Cost** | $0.727 | $0.676 | $0.362 |
+| **Cost** | $0.731 | $0.689 | $0.388 |
 | of which Depop watching | $0.600 | $0.450 | $0 |
-| **Margin** | −$0.53 | −$0.14 | +$0.70 |
-| Purchases a month to break even | 0.62 | 0.35 | 0 |
+| **Margin** | −$0.54 | −$0.15 | +$0.68 |
+| Purchases a month to break even | 0.62 | 0.36 | 0 |
 
 At scale, after the fixed platform cost, per year:
 
-| Monthly users | conservative | base | base with Depop's partner API | flattering |
+| Monthly users | conservative | base | base with Depop's partner API (proposed) | flattering (proposed API) |
 |---|---|---|---|---|
-| 10,000 | −$82k | −$35k | about +$19k | +$66k |
-| 100,000 | −$655k | −$187k | +$353k | +$825k |
-| 1,000,000 | −$6.4M | −$1.7M | +$3.7M | +$8.4M |
+| 10,000 | −$82k | −$36k | +$18k | +$63k |
+| 100,000 | −$660k | −$202k | +$338k | +$795k |
+| 1,000,000 | −$6.4M | −$1.9M | +$3.5M | +$8.1M |
 
 **What flatters us, and why it's still honest.** The $33 order value is Poshmark's, and many of our purchases go to eBay, where order values are higher, so commission per purchase is likely understated. The flattering purchase rate is the rate Poshmark buyers already showed. What cuts against us: buyers who already know where to shop won't route through us, an affiliate network can refuse us, and eBay requires approval before production Buy API access ([buyer-side research](../research/watch/nate/buyer-side-actions-and-affiliate.md) §1).
 
@@ -89,4 +89,4 @@ The fee is never the only reason: who buys there matters more ([feature breakdow
 
 ## Sources
 
-All in the `source` field of each input in [roi.mjs](../scripts/bench/roi.mjs). The pages behind them, read 2026-11-15: Poshmark S-1 (sec.gov, filed 2020-12-17); eBay Partner Network rate card and its PDF; Skimlinks support "How much does Skimlinks charge"; Etsy affiliate terms (updated 2026-11-23 per the page); getlasso.co on Amazon and Etsy (third party); productmint.com, seekingalpha.com and a Substack on Honey (third party); Wikipedia on Capital One Shopping; search-result titles for the Capital One Shopping suit (not read in full); openrouter.ai and runware.ai Seedream 5.5 pages; Value Investors Club on Poshmark (third party). Impact.com's 2025 benchmark gives only year-on-year change in affiliate conversion (−6%) and a $123 all-retail order value, too broad to use for secondhand.
+All in the `source` field of each input in [roi.mjs](../scripts/bench/roi.mjs). The pages behind them, read 2026-11-15: Poshmark S-1 (sec.gov, filed 2020-12-17); eBay Partner Network rate card and its PDF; Skimlinks support "How much does Skimlinks charge"; Etsy affiliate terms (updated 2026-11-23 per the page); getlasso.co on Amazon and Etsy (third party); productmint.com, seekingalpha.com and a Substack on Honey (third party); Wikipedia on Capital One Shopping; search-result titles for the Capital One Shopping suit (not read in full); Value Investors Club on Poshmark (third party). Impact.com's 2025 benchmark gives only year-on-year change in affiliate conversion (−6%) and a $123 all-retail order value, too broad to use for secondhand.
