@@ -8,11 +8,12 @@ export type MatchState = 'found' | 'alerted' | 'saved' | 'asked' | 'offered' | '
 
 export interface Want {
   id: string; state: WantState; text: string; product_id?: string; sites: string[];
-  fit?: { size?: string; measurements?: Record<string, number>; tolerance_cm?: number };
+  fit?: { size?: string; cut?: 'mens' | 'womens' | 'youth'; measurements?: Record<string, number>; tolerance_cm?: number };
   max_total_cents?: number; alert: 'available' | 'under';
   quiet_hours?: [start: number, end: number]; // local hours; alerts inside them go to the digest
 }
-export type Listing = OfferRow & { size?: string; measurements?: Record<string, number> };
+// department: who the listing says it's cut for, as the site files it (Poshmark's Men, Women, Kids).
+export type Listing = OfferRow & { size?: string; department?: string; measurements?: Record<string, number> };
 export interface Match {
   id: string; want_id: string; site: string; url: string; price_cents: number; delivered_cents: number;
   seen_at: string; state: MatchState; also_on: string[]; fit: 'measured' | 'size_only' | 'unknown';
@@ -40,9 +41,13 @@ export function sizeKey(size: string, jersey = false): string {
   return SIZE_WORDS[t] ?? (jersey ? JERSEY_CHEST[t] : undefined) ?? t.toUpperCase();
 }
 
+const CUT_OF: Record<string, 'mens' | 'womens' | 'youth'> = { men: 'mens', mens: 'mens', women: 'womens', womens: 'womens', kids: 'youth', youth: 'youth', boys: 'youth', girls: 'youth' };
 export function fits(want: Want, l: Listing): Match['fit'] | null {
   const f = want.fit;
   if (!f) return 'unknown';
+  // A different cut never fits, whatever its size label says: a boys' XXL displays as "XXL" (the Brewers trial).
+  const cut = l.department ? CUT_OF[l.department.toLowerCase().replace(/[’']s$/, 's')] : undefined;
+  if (f.cut && cut && cut !== f.cut) return null;
   if (f.measurements && l.measurements) {
     const tol = f.tolerance_cm ?? DEFAULT_TOLERANCE_CM;
     const shared = Object.keys(f.measurements).filter(k => l.measurements![k] !== undefined);

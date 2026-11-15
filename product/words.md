@@ -1547,6 +1547,11 @@ Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages
 
 Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/waiting.md).
 
+## 2026-11-15 nano banana stays, app store coming soon, the voice waits
+Ben, project chat, 08:33 UTC, answering the image model, App Store and capture voice questions.
+> stay on nanobanana for 1. 2. coming soon. 3. wait on the voice, plan for later.
+
+Used in: [intent ledger](../spec/intent-ledger.md), [photo F7](constitutions/photo.md), [demo D7](constitutions/demo.md).
 ## 2026-11-15 stop hot items and seasons; stay on Nano Banana; Depop's API is a proposal, not a claim
 
 Ben, project chat, 08:31 to 08:34 UTC (excerpts that concern product scope; the rest of the 08:31 message is about the website).
@@ -1566,3 +1571,15 @@ Nate, build session (orchestrator), 2026-11-15 about 04:40 Central, after the Po
 > just the poshmark one
 
 Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/waiting.md).
+
+## 2026-11-15 nate mercari under the person's approval, broad search through sites that already show it, ebay on the harness until the api is approved
+Nate, build session (orchestrator), 2026-11-15 about 05:15 Central, after the Mercari harness build quoted Mercari's rule against automated access.
+> Pull all packets from ben to see recent benchmarking and changes, ensure too you are focused on everything. Also we do read mercari, but we do it cognizently under user approval, I believe for more broad searches like the buying system that searches across all marketplaces, we are less through with mercari, and instead lean on websites that already display information from those platforms, or others as well, like we could harness dupe. Also ebay is pending api approval, so fall on the optimized harness for now
+
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
+
+## 2026-11-15 nate registers the api keys, the giannis jersey counts, the want asks what i want
+Ben, project thread "Prove the Brewers jersey buy alert", 08:36 UTC.
+> nate will register. the giannis one can count. ensure the flow asks and helps me specify what i want considering dynamic ui. color, size, etc. if not done already
+
+Used in: [scripts/demo/wants/brewers-jersey.json](../scripts/demo/wants/brewers-jersey.json), [spec/features/watch.md](../spec/features/watch.md), [app/src/app/want.tsx](../app/src/app/want.tsx), [brewers-alert-trial.md](../research/watch/ben/brewers-alert-trial.md).

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetBestOffersResponse xmlns="urn:ebay:apis:eBLBaseComponents">
+  <Timestamp>2026-11-15T07:00:00.000Z</Timestamp><Ack>Success</Ack><Version>1349</Version>
+  <BestOfferArray>
+    <BestOffer><BestOfferID>5011111111</BestOfferID><ExpirationTime>2026-11-16T06:00:00.000Z</ExpirationTime>
+      <Buyer><UserID>fixture_buyer_1</UserID></Buyer><Price currencyID="USD">30.00</Price><Status>Pending</Status><Quantity>1</Quantity><BestOfferCodeType>BuyerBestOffer</BestOfferCodeType></BestOffer>
+    <BestOffer><BestOfferID>5011111112</BestOfferID><ExpirationTime>2026-11-14T06:00:00.000Z</ExpirationTime>
+      <Buyer><UserID>fixture_buyer_2</UserID></Buyer><Price currencyID="USD">20.00</Price><Status>Declined</Status><Quantity>1</Quantity><BestOfferCodeType>BuyerBestOffer</BestOfferCodeType></BestOffer>
+  </BestOfferArray>
+  <Item><ItemID>110551234567</ItemID></Item>
+</GetBestOffersResponse>

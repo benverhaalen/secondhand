@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { SEARCH_DUNKS, type Site } from '../demo/index.ts';
 import {
-  cardLine, coloursFor, cover, firstPass, kindOf, monthLabel, offerAmounts, offerProblem, paysFor, priceBounds, priceWords, rank, searchFor, sizesFor, sizeWords,
+  cardLine, coloursFor, cover, cutWords, firstPass, kindOf, monthLabel, offerAmounts, offerProblem, paysFor, priceBounds, priceWords, rank, searchFor, sizesFor, sizeWords,
   soldDots, wantFromWords, wantTag,
 } from './read.ts';
 
@@ -101,4 +101,13 @@ test('every site says who covers the sale, and a pickup says nobody does', () =>
   for (const s of ['ebay', 'depop', 'poshmark', 'mercari', 'facebook'] as const) assert.ok(cover(s, false).startsWith('Covered'));
   assert.match(cover('facebook', true), /^No site cover/);
   assert.equal(monthLabel('2026-06'), 'Jun');
+});
+
+test('a want from words reads who clothes are cut for, and only for clothes', () => {
+  assert.equal(cutWords('brewers jersey youth L'), 'youth');
+  assert.equal(cutWords('women’s brewers jersey'), 'womens');
+  assert.equal(cutWords("men's brewers jersey"), 'mens');
+  assert.equal(cutWords('brewers jersey'), undefined);
+  assert.equal(wantFromWords("men's brewers jersey L around $60").fit.cut, 'mens');
+  assert.equal(wantFromWords("nike dunk men's 10").fit.cut, undefined, 'a shoe has sizes per cut, not a cut chip');
 });

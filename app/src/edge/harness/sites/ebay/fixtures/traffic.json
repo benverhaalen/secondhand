@@ -1,0 +1,4 @@
+{"header":{"dimensionKeys":[{"key":"LISTING_ID","dataType":"STRING"}],"metrics":[{"key":"LISTING_VIEWS_TOTAL","dataType":"INTEGER"},{"key":"LISTING_IMPRESSION_TOTAL","dataType":"INTEGER"},{"key":"TRANSACTION","dataType":"INTEGER"}]},
+ "records":[{"dimensionValues":[{"value":"110551234567","applicable":true}],"metricValues":[{"value":41,"applicable":true},{"value":1290,"applicable":true},{"value":0,"applicable":true}]},
+  {"dimensionValues":[{"value":"110552222222","applicable":true}],"metricValues":[{"value":63,"applicable":true},{"value":2210,"applicable":true},{"value":1,"applicable":true}]}],
+ "startDate":"2026-11-08T08:00:00.000Z","endDate":"2026-11-15T08:00:00.000Z","lastUpdatedDate":"2026-11-15T06:00:00.000Z"}
