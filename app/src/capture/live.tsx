@@ -158,7 +158,7 @@ export function LiveCapture({ mode }: { mode: string }) {
       </CameraFoot>}>
       {coaching ? <View pointerEvents="none" style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}><ShotGuide step={guideStep} family={family} words={shotQuestion?.words} /></View> : null}
       {needsPhoto && !permission?.granted && !error ? <CameraOff title="Use your camera" line="Take each photo when you are ready." acts={[{ id: 'camera-permission', label: 'Allow camera', onPress: () => permission?.canAskAgain === false ? void Linking.openSettings().catch(failure => setError(captureMessage(failure))) : void askPermission() }, { id: 'camera-library', label: 'Choose photos', onPress: library }]} /> : null}
-      {error ? <CameraOff title="Could not continue" line={error} acts={[{ id: 'capture-retry', label: 'Try again', onPress: () => pending.length ? void run('Uploading photos', () => send(pending)) : refresh() }, { id: 'capture-error-close', label: 'Close', onPress: close }]} /> : null}
+      {error ? <CameraOff title="Could not continue" line={error} acts={[{ id: 'capture-retry', label: 'Try again', onPress: () => pending.length ? void run('Uploading photos', async () => { await send(pending); }) : refresh() }, { id: 'capture-error-close', label: 'Close', onPress: close }]} /> : null}
     </Viewfinder>
     <Sheet open={!!question} title={question?.words} onClose={() => setQuestion(null)}>
       {question ? <Answer key={question.id} question={question} busy={!!busy} onAnswer={answer} /> : null}
