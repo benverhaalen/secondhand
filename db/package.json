@@ -1,0 +1,7 @@
+{
+  "name": "secondhand-db",
+  "private": true,
+  "type": "module",
+  "description": "Lakebase (Postgres 16) migrations. One writer: task db-1.",
+  "devDependencies": { "@electric-sql/pglite": "0.5.16" }
+}
