@@ -9,7 +9,7 @@ import type { Item } from '@/demo';
 import { Approve, Guess, Line, List, Nav, Screen, Section, Sheet, Stack, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
-import { cash, changed, drawn, PAGES, PROMOTE_AT, ruleName, ruleSentence, useGo, useWorld } from './state';
+import {cash, changed, drawn, PAGES, PROMOTE_AT, ruleName, ruleSentence, skips, useGo, useWorld } from './state';
 
 // Never alone (decisions: tiers that learn), and a price under the floor (decisions: a price below your floor always asks).
 const ALWAYS_ASKS = [
@@ -45,7 +45,7 @@ export function Rules() {
   const line = (l: { floor: number; top: number | null }) => l.top ? `Takes ${cash(l.top)} or more at once. Asks you under ${cash(l.floor)}` : `Asks you about any offer under ${cash(l.floor)}`;
 
   return (
-    <Screen name="you-rules" state={drawn(w, w.rules.length)} nav={<Nav back={() => go.back()} />}>
+    <Screen name="you-rules" state={drawn(w, w.rules.length)} skip={skips(drawn(w, w.rules.length), { empty: 'drawn with world=new, where no rule has been approved yet', failed: 'a switch or a price is saved on the phone first; a save that fails says so on its button', offline: 'a switch is saved on the phone and sent when it is back' })} nav={<Nav back={() => go.back()} />}>
       <Txt role="heading">{PAGES.rules.title}</Txt>
 
       <Section title="Runs on its own">

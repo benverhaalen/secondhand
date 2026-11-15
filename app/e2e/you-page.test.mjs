@@ -17,6 +17,7 @@ const STATES = {
   'insights new': { shows: ['By site', 'Each site you sell on shows here once it has a sale.', 'Amount'] },
   'records typical': { shows: ['Records', '2026', 'Sold, 4 sales', 'Fees and labels', '$25.37', 'Kept', '$163.63', 'Download CSV'] },
   'records new': { shows: ['Records', 'No sales this year'], hidden: ['Download CSV'] },
+  'connections mismatch': { shows: ['Doesn’t match', 'Brass desk lamp with cream shade', 'Open on the site'] },
   'connections typical': { shows: ['Your sites', 'Linked', 'Needs you', 'Signed out yesterday at 9 pm', 'Try again', 'Not linked', 'Link', 'Your password goes to the site, never to secondhand.'] },
   'connections loading': { taps: ['link-mercari'], shows: ['Signing in'] },
   'connections failed': { taps: ['link-mercari'], wait: 1600, shows: ['Didn’t link', 'The code from your phone timed out'] },
@@ -24,7 +25,8 @@ const STATES = {
   'rules new': { shows: ['Rules and limits', 'Approve the same kind of card 3 times without a change, and it can run on its own here.', 'Always asks you'] },
   'log typical': { shows: ['Activity', 'Today', 'Yesterday', 'Answered “blanket lined” from the tag photo', 'Undo'] },
   'log new': { shows: ['Activity', 'Nothing done for you yet'] },
-  'settings typical': { shows: ['Settings', 'Pause selling', 'Quiet hours', 'Never suggest photo edits', 'Notifications', 'Offers', 'Right away', 'In a batch', 'Measurements', 'Inches', 'US dollars', 'Signed in with', 'Apple', 'Export your data', 'Sign out', 'Delete account'] },
+  'notifications typical': { shows: ['Notifications', 'Right away', 'In the next summary', 'It sold', 'An offer you’d take', 'Never sent', 'Group by item', 'Quiet hours', '10 pm', '8 am', 'On the lock screen', 'Accept, Approve and Counter', 'Face ID', 'Show messages and addresses'] },
+  'settings typical': { shows: ['Settings', 'Pause selling', 'Never suggest photo edits', 'Notifications', 'Measurements', 'Inches', 'US dollars', 'Signed in with', 'Apple', 'Export your data', 'Sign out', 'Delete account'] },
   'not found': { shows: ['Not found'] },
 };
 
@@ -89,6 +91,26 @@ test('you/[page]: a payout shows its four words with dates, and instant payout w
   await f.tap('payout-instant');
   await f.saw({ type: 'change', entity: 'payout', id: 'ord_f6', to: 'instant_requested' });
   await f.shows('Today, with the fee');
+});
+
+// Face ID guards every lock-screen act that commits the person, and has no switch (spec/notifications.md).
+test('you/[page]: lock-screen Accept, Approve and Counter need Face ID, with no switch', async () => {
+  const s = await app.open('/you/notifications');
+  await s.shows('Accept, Approve and Counter');
+  await s.shows('Face ID');
+  assert.equal(await s.page.getByRole('switch', { name: /Accept|Face ID/ }).count(), 0, 'the Face ID row has no switch');
+  assert.ok(await s.page.getByRole('switch').count() > 5, 'the kinds do have switches');
+});
+
+// Mismatches lead Your sites, across every site (Ben 05:18), and a clean world has none.
+test('you/[page]: what doesn’t match comes before the sites', async () => {
+  const s = await app.open('/you/connections?world=edge');
+  const top = await s.page.getByText('Doesn’t match', { exact: true }).boundingBox();
+  const site = await s.page.getByTestId('site-row-ebay').boundingBox();
+  assert.ok(top && site && top.y < site.y, 'Doesn’t match sits above the site rows');
+  const c = await app.open('/you/connections');
+  await c.shows('Your sites');
+  assert.equal(await c.page.getByText('Doesn’t match', { exact: true }).count(), 0);
 });
 
 // A price is saved only on Approve, and the save can be undone (README, the hand-off rule).

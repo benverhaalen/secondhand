@@ -11,7 +11,7 @@ after(async () => { await app?.stop(); });
 
 // What each state must show, read from the table's "shows", in the world it names.
 const SHOWS = {
-  typical: ['You', 'A site signed you out', '$163.63', 'Earned after fees, from 4 sales', 'On its way', 'Ready on the site about Tuesday', '$132.33', '4 live, could earn', '1 kept, worth', 'November goal', 'By site', 'Records', 'Your sites', '3 of 5', 'Rules and limits', '3 on their own', 'Activity', 'Settings'],
+  typical: ['You', 'A site signed you out', '$163.63', 'Earned after fees, from 4 sales', 'On its way', 'Ready on the site about Tuesday', '$132.33', '4 live, could earn', '1 kept, worth', 'November goal', 'By site', 'Records', 'Your sites', '3 of 5', 'Rules and limits', '3 on their own', 'Activity', 'Notifications', 'Settings'],
   dense: ['You', 'Earned after fees, from 8 sales', 'On its way', 'November goal', 'Your sites', '5 of 5'],
   one: ['Nothing sold yet', '1 live, could earn', 'November goal', 'Your sites', 'Settings'],
   new: ['Nothing sold yet', 'Sell something', 'Your sites', '0 of 5', 'Rules and limits', 'Settings'],

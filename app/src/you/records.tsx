@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 import { day, records } from '@/demo';
 import { EmptyState, FootButton, List, Nav, Screen, Section, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
-import { cash, changed, drawn, PAGES, plural, useGo, useWorld } from './state';
+import {cash, changed, drawn, PAGES, plural, skips, useGo, useWorld } from './state';
 
 export function Records() {
   const w = useWorld(), go = useGo();
@@ -30,7 +30,7 @@ export function Records() {
   };
 
   return (
-    <Screen name="you-records" state={drawn(w, rows.length)} nav={<Nav back={() => go.back()} />}
+    <Screen name="you-records" state={drawn(w, rows.length)} skip={skips(drawn(w, rows.length), { empty: 'drawn with world=new, No sales this year', failed: 'the year is worked out from sales already read; the CSV is made on the phone', offline: 'the CSV is made on the phone, with no network' })} nav={<Nav back={() => go.back()} />}
       foot={rows.length ? <FootButton id="records-csv" label={saved ? 'Downloaded' : 'Download CSV'} kind={saved ? 'second' : 'primary'} icon={saved ? 'checkmark-circle-02' : undefined} onPress={download} /> : undefined}>
       <Txt role="heading">{PAGES.records.title}</Txt>
       {rows.length ? (

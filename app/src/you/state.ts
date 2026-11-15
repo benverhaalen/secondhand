@@ -23,6 +23,23 @@ export function drawn(w: World, rows: number): DrawnState {
   return w.items.length > 30 ? 'dense' : 'typical';
 }
 
+// B35 asks every screen about each state on .agents/ui-states.json's required list; one render draws one of them, so the rest
+// are named in Screen's skip with where they are drawn or why they can't happen. A page passes only what is particular to it.
+const REQUIRED = ['new', 'empty', 'one', 'typical', 'dense', 'loading', 'failed', 'offline'] as const;
+const WHERE: Record<(typeof REQUIRED)[number], string> = {
+  new: 'drawn with world=new',
+  empty: 'drawn with world=new',
+  one: 'drawn with world=one',
+  typical: 'drawn in the default world, clearing',
+  dense: 'drawn with world=flipper',
+  loading: 'the demo world is read at once, so nothing on this page waits',
+  failed: 'nothing on this page calls out, so nothing here can fail',
+  offline: 'nothing on this page needs the network',
+};
+export function skips(now: string, why: Partial<Record<(typeof REQUIRED)[number], string>> = {}): string {
+  return REQUIRED.filter(s => s !== now).map(s => `${s}: ${(why[s] ?? WHERE[s]).replace(/[:;]/g, ',')}`).join('; ');
+}
+
 // A change the person made (a switch, a field, Undo): one state.change line in the app log, and on the web one event the tests read.
 export function changed(entity: string, id: string, to: string, was?: string) {
   log.event('state.change', was === undefined ? { entity, id, to } : { entity, id, to, was });
@@ -72,7 +89,8 @@ export const PAGES = {
   connections: { title: 'Your sites', icon: 'link-01' },
   rules: { title: 'Rules and limits', icon: 'settings-01' },
   log: { title: 'Activity', icon: 'clock-01' },
-  settings: { title: 'Settings', icon: 'notification-01' },
+  notifications: { title: 'Notifications', icon: 'notification-01' },
+  settings: { title: 'Settings', icon: 'user' },
 } as const;
 export type PageKey = keyof typeof PAGES;
 export const isPage = (p: unknown): p is PageKey => typeof p === 'string' && p in PAGES;

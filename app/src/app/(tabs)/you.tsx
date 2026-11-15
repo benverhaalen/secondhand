@@ -9,7 +9,7 @@ import { ListRow } from '@/ui/parts/list-row';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { WeekBars } from '@/ui/parts/week-bars';
 import { moneyRows, soonest } from '@/you/money-steps';
-import { cash, drawn, PAGES, plural, span, useGo, useWorld, weeks } from '@/you/state';
+import { cash, drawn, PAGES, plural, skips, span, useGo, useWorld, weeks } from '@/you/state';
 
 const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -29,7 +29,7 @@ export default function You() {
   const state = drawn(w, n.sold + live + kept.length);
 
   return (
-    <Screen name="you" state={state} wash nav={<TabNav title="You" inbox={{ count: unread(w), onPress: () => go.to('/messages') }} />}>
+    <Screen name="you" state={state} wash skip={skips(state, { empty: 'You always lists its pages, so it is never empty; nothing sold is drawn with world=new', loading: 'You reads the world at once', failed: 'a site that failed shows as the signed-out notice at the top', offline: 'You shows the last numbers it has' })} nav={<TabNav title="You" inbox={{ count: unread(w), onPress: () => go.to('/messages') }} />}>
       {broken ? (
         <Notice id="you-signed-out" icon="alert-02" tone="need" text={broken === 1 ? 'A site signed you out' : `${broken} sites signed you out`} onPress={() => go.to('/you/connections')} />
       ) : null}
@@ -68,6 +68,7 @@ export default function You() {
         <ListRow id="you-connections" lead={PAGES.connections.icon} label={PAGES.connections.title} value={`${linked} of ${w.connections.length}`} onPress={() => go.to('/you/connections')} />
         <ListRow id="you-rules" lead={PAGES.rules.icon} label={PAGES.rules.title} value={auto ? `${auto} on their own` : undefined} onPress={() => go.to('/you/rules')} />
         {w.events.length ? <ListRow id="you-log" lead={PAGES.log.icon} label={PAGES.log.title} onPress={() => go.to('/you/log')} /> : null}
+        <ListRow id="you-notifications" lead={PAGES.notifications.icon} label={PAGES.notifications.title} onPress={() => go.to('/you/notifications')} />
         <ListRow id="you-settings" lead={PAGES.settings.icon} label={PAGES.settings.title} onPress={() => go.to('/you/settings')} />
       </List>
     </Screen>

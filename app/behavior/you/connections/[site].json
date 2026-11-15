@@ -1,0 +1,39 @@
+{
+  "screen": "you/connections/[site]",
+  "route": "/you/connections/:site",
+  "what": "One site, audited from one app: its state, what doesn't match first, then what we read there, what we did there with what the check after found, and what changed there that we didn't do. Unlink is the page's one act.",
+  "frame": {
+    "who": "The person clearing out, after a site signed them out or a sale they didn't expect; the flipper, checking that what the agent did on a site is what the site shows.",
+    "how_often": "Rarely: when something looks wrong, or before trusting a site with more.",
+    "came_to": "See what the agent did on one site and whether the site agrees, and open the site itself where it doesn't.",
+    "costly_mistake": "Trusting our copy when the site shows something else: a listing still up after it sold, or a post the site refused. Those rows come first, each with Open on the site.",
+    "ways_out": "spec/ways-out.md: unlink a site (Undo for a few seconds; the listings stay up), a site's sign-in that ended (Try again), and Open on the site to fix a thing on the site itself.",
+    "in_the_loop": "Every step the agent took on this site is listed with what the check after found, and every change the site or a buyer made is listed apart, so the person sees what was ours and what wasn't."
+  },
+  "states": [
+    { "state": "typical", "path": "/you/connections/ebay", "shows": "the site's logo with Linked and when it was checked; What we read: listings, threads with buyers and sales as counts; What we did: each step with the thing, why, Checked on the site after, and when; Changed there, not by us: sales, offers and buyers' messages with when; Unlink at the foot" },
+    { "state": "mismatch", "path": "/you/connections/ebay?world=edge", "shows": "Doesn’t match above What we read: the lamp, It didn’t take on the site, with Open on the site" },
+    { "state": "failed", "path": "/you/connections/poshmark", "shows": "the logo with Needs you, the time it signed out and Try again; What we read says Nothing until you sign in again, and that its listings stay up, unchecked; no Unlink" },
+    { "state": "new", "path": "/you/connections/mercari", "shows": "the logo with Not linked and Link; What we read with nothing read; What we did and Changed there say nothing yet" },
+    { "state": "empty", "path": "/you/connections/ebay?world=one", "shows": "Linked, with What we did saying Nothing yet and what each step will show" },
+    { "state": "not found", "path": "/you/connections/grailed", "shows": "Not found under Back" }
+  ],
+  "controls": [
+    { "id": "nav-back", "control": "Back", "on_tap": "goes back, or to Your sites when opened directly", "does": "goes back", "path": "/you/connections/ebay", "goes": "/you/connections" },
+    { "id": "did-ev_4", "control": "A step we took", "on_tap": "opens the thing", "does": "opens the item", "path": "/you/connections/ebay", "goes": "/item/it_tee" },
+    { "id": "open-mismatch-dec_failed", "control": "Open on the site", "on_tap": "opens the thing's listing on the site itself", "does": "opens the site", "path": "/you/connections/ebay", "world": "edge" },
+    { "id": "link-poshmark", "control": "Try again", "on_tap": "signs in again: Signing in, then Linked", "does": "relinks the site", "path": "/you/connections/poshmark", "logs": { "type": "change", "entity": "account", "id": "poshmark", "to": "loading" } },
+    { "id": "site-unlink", "control": "Unlink", "on_tap": "unlinks the site, leaves its listings up, and shows Unlinked with Undo", "does": "unlinks", "path": "/you/connections/ebay", "logs": { "type": "change", "entity": "account", "id": "ebay", "to": "not_connected" } },
+    { "id": "site-undo", "control": "Undo (unlink)", "on_tap": "links the site again", "does": "undoes the unlink", "path": "/you/connections/ebay", "before": ["site-unlink"], "logs": { "type": "change", "entity": "account", "id": "ebay", "to": "loading" } }
+  ],
+  "back": "Back goes to the screen it came from; opened directly, it goes to Your sites.",
+  "decisions": [
+    "The page is the site's logo and its state, never its name in words (C5), so its first row is the logo with Linked, Needs you or Not linked.",
+    "What doesn't match comes first, then three lists in the order Ben named them (05:18): what we read, what we did, what changed there that we didn't do.",
+    "A step in What we did says Checked on the site after because every write is read back before it is logged (spec/product.md, Evidence; a delist is recorded only from a read-back). A step whose read-back differs is a mismatch instead.",
+    "What changed there, not by us, is what a buyer or the site did: a sale, an offer, a message, or a site event. The person's own edits made on the site will show here once the harness reads them back as site_changed_listing.",
+    "Open on the site opens the listing itself, so the person can check and fix it where it lives, never only in our copy.",
+    "Unlink moves here from a sheet: it belongs to the one site, and it stays one tap with Undo (ways-out, Get me out).",
+    "The screenshot of the thread as the site showed it (Ben 05:24, See it on the site) needs evidence.snapshot_ref in the demo; it is asked for, not drawn."
+  ]
+}

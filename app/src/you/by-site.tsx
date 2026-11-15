@@ -6,7 +6,7 @@ import { connectionState, insights, type Site } from '@/demo';
 import { Blank, Guess, Line, List, Nav, Screen, Section, Txt } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
 import { ListRow } from '@/ui/parts/list-row';
-import { cash, changed, drawn, PAGES, plural, span, useGo, useWorld } from './state';
+import {cash, changed, drawn, PAGES, plural, skips, span, useGo, useWorld } from './state';
 
 const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 // What the person typed as an amount, in cents, or null when it is not one.
@@ -28,7 +28,7 @@ export function BySite() {
   };
 
   return (
-    <Screen name="you-insights" state={drawn(w, n.by_site.length)} nav={<Nav back={() => go.back()} />}>
+    <Screen name="you-insights" state={drawn(w, n.by_site.length)} skip={skips(drawn(w, n.by_site.length), { empty: 'drawn with world=new, where no site has a sale', failed: 'the numbers are worked out from the sales already read, so nothing here can fail', offline: 'the numbers are the last ones read' })} nav={<Nav back={() => go.back()} />}>
       <Txt role="heading">{PAGES.insights.title}</Txt>
       <Section>
         {n.by_site.length ? (

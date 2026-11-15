@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { List, Amount, EmptyState, FootButton, Nav, Screen, Section, Sheet, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
 import { inLine, moneyLine, moneyRows, type MoneyRow } from './money-steps';
-import { cash, changed, drawn, PAGES, useGo, useWorld } from './state';
+import {cash, changed, drawn, PAGES, skips, useGo, useWorld } from './state';
 
 export function Payouts() {
   const w = useWorld(), go = useGo();
@@ -22,7 +22,7 @@ export function Payouts() {
   );
   const bank = open ? open.steps[open.steps.length - 1] : null;
   return (
-    <Screen name="you-payouts" state={drawn(w, rows.length)} nav={<Nav back={() => go.back()} />}>
+    <Screen name="you-payouts" state={drawn(w, rows.length)} skip={skips(drawn(w, rows.length), { empty: 'drawn with world=new, No payouts yet', failed: 'a payout that fails is the site’s, and its row says Held while it is open', offline: 'the rows are the last ones read, each with its date' })} nav={<Nav back={() => go.back()} />}>
       <Txt role="heading">{PAGES.payouts.title}</Txt>
       {!rows.length ? (
         <EmptyState title="No payouts yet" line="Money from a sale shows here until it lands." />
