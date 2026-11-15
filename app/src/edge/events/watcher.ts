@@ -47,6 +47,37 @@ export const WATCH_PARAMS = [
 ] as const satisfies readonly Declared[];
 
 type Row = Record<string, unknown>;
+type WatcherJobArgs = Record<string, unknown> & {
+  account_id?: string;
+  operation_id?: string;
+  user_id?: string;
+  slug?: string;
+  response?: 'accept' | 'decline' | 'counter';
+  price_cents?: number;
+  floor_cents?: number;
+  ask_cents?: number;
+  negotiation_ask?: boolean;
+  external_id?: string;
+  decision_kind?: string;
+  decided_by?: 'negotiation';
+};
+function watcherJobArgs(value: unknown): WatcherJobArgs | undefined {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  const args = value as Record<string, unknown>;
+  if (args.account_id !== undefined && typeof args.account_id !== 'string'
+    || args.operation_id !== undefined && typeof args.operation_id !== 'string'
+    || args.user_id !== undefined && typeof args.user_id !== 'string'
+    || args.slug !== undefined && typeof args.slug !== 'string'
+    || args.response !== undefined && args.response !== 'accept' && args.response !== 'decline' && args.response !== 'counter'
+    || args.price_cents !== undefined && typeof args.price_cents !== 'number'
+    || args.floor_cents !== undefined && typeof args.floor_cents !== 'number'
+    || args.ask_cents !== undefined && typeof args.ask_cents !== 'number'
+    || args.negotiation_ask !== undefined && typeof args.negotiation_ask !== 'boolean'
+    || args.external_id !== undefined && typeof args.external_id !== 'string'
+    || args.decision_kind !== undefined && typeof args.decision_kind !== 'string'
+    || args.decided_by !== undefined && args.decided_by !== 'negotiation') return undefined;
+  return args as WatcherJobArgs;
+}
 function rows(data: unknown, section: string): Row[] {
   const value = Array.isArray(data) ? data : data && typeof data === 'object' ? (data as Row)[section] : undefined;
   if (!Array.isArray(value) || !value.every(r => r !== null && typeof r === 'object' && !Array.isArray(r)))
@@ -236,10 +267,11 @@ export function createWatcher(d: WatcherDeps) {
   // The pipeline's policy checks price and kind, but has no negotiation.ask input. Preserve that
   // stricter engine decision at the harness boundary before any adapter can run.
   const harness: HarnessLike = { async call<T>(site: Site, verb: string, args = {}) {
-    const account_id = typeof args.account_id === 'string' ? args.account_id : '';
-    const operation = typeof args.operation_id === 'string' ? args.operation_id : '';
+    const jobArgs = watcherJobArgs(args);
+    const account_id = jobArgs?.account_id ?? '';
+    const operation = jobArgs?.operation_id ?? '';
     const job = store.getJob(operation.slice(0, operation.lastIndexOf(':')));
-    const user_id = job?.user_id ?? args.user_id;
+    const user_id = job?.user_id ?? jobArgs?.user_id;
     const account = linked.find(a => a.account_id === account_id && a.site === site);
     const meta = { route_id: 'watcher', ms: 0, fell_back: false };
     if (account && account.user_id !== user_id) return { ok: false, error: {
@@ -250,34 +282,35 @@ export function createWatcher(d: WatcherDeps) {
     if (store.get('account', account.user_id, account_id)?.paused === 'blocked') return { ok: false, error: {
       code: 'blocked', message: 'account check pending', hint: { do: 'pause_session', site },
     }, meta };
-    if (isWrite(verb as Verb) && (args.decided_by !== 'negotiation' || args.negotiation_ask !== false
-      || typeof args.price_cents !== 'number' || !Number.isSafeInteger(args.price_cents)
-      || typeof args.floor_cents !== 'number' || !Number.isSafeInteger(args.floor_cents) || args.floor_cents < 0 || args.price_cents < args.floor_cents
-      || typeof args.ask_cents !== 'number' || !Number.isSafeInteger(args.ask_cents) || args.price_cents > args.ask_cents)) return { ok: false, error: {
-      code: 'policy_refused', message: 'negotiation requires approval', hint: { do: 'raise_decision', kind: typeof args.decision_kind === 'string' ? args.decision_kind : 'offer_to_likers' },
+    if (isWrite(verb as Verb) && (!jobArgs || !jobArgs.account_id || jobArgs.decided_by !== 'negotiation' || jobArgs.negotiation_ask !== false
+      || typeof jobArgs.price_cents !== 'number' || !Number.isSafeInteger(jobArgs.price_cents)
+      || typeof jobArgs.floor_cents !== 'number' || !Number.isSafeInteger(jobArgs.floor_cents) || jobArgs.floor_cents < 0 || jobArgs.price_cents < jobArgs.floor_cents
+      || typeof jobArgs.ask_cents !== 'number' || !Number.isSafeInteger(jobArgs.ask_cents) || jobArgs.price_cents > jobArgs.ask_cents
+      || verb === 'answer_offer' && !jobArgs.response)) return { ok: false, error: {
+      code: 'policy_refused', message: 'negotiation requires approval', hint: { do: 'raise_decision', kind: jobArgs?.decision_kind ?? 'offer_to_likers' },
     }, meta };
     if (isWrite(verb as Verb)) {
       const limits = job?.item_id ? d.limits.of(job.user_id, job.item_id) : undefined;
-      const price = args.price_cents as number;
+      const price = jobArgs!.price_cents!;
       if (!limits || price < limits.floor_cents || price > limits.ask_cents
-        || args.decision_kind === 'accept_offer' && price < limits.always_accept_cents) return { ok: false, error: {
+        || jobArgs!.decision_kind === 'accept_offer' && price < limits.always_accept_cents) return { ok: false, error: {
         code: 'policy_refused', message: 'negotiation no longer meets current limits', hint: { do: 'raise_decision',
-          kind: limits && price < limits.floor_cents ? 'price_below_floor' : String(args.decision_kind ?? 'counter_offer') },
+          kind: limits && price < limits.floor_cents ? 'price_below_floor' : String(jobArgs!.decision_kind ?? 'counter_offer') },
       }, meta };
     }
-    const slug = slugs.get(`${account_id}:${args.external_id}`) ?? args.slug;
+    const slug = slugs.get(`${account_id}:${jobArgs?.external_id}`) ?? jobArgs?.slug;
     if (site === 'depop' && verb === 'end' && typeof slug !== 'string') return { ok: false, error: {
       code: 'policy_refused', message: 'Depop listing slug has not been read', hint: { do: 'raise_decision', kind: 'failed_delist' },
     }, meta };
     const env = await d.harness.call<unknown>(site, verb as Verb, { ...d.readArgs?.(account), ...args,
       ...(site === 'depop' && verb === 'end' && { slug }),
-      ...(verb === 'answer_offer' && { action: args.response, amount_cents: args.price_cents, now: iso() }),
+      ...(verb === 'answer_offer' && { action: jobArgs?.response, amount_cents: jobArgs?.price_cents, now: iso() }),
     });
     log.event('note', { msg: 'watcher job call', account_id, site, verb, ok: env.ok, ...(!env.ok && { code: env.error.code }) });
     if (!env.ok) {
       if (env.error.code === 'auth_expired') staleAccount(account);
-      if (env.error.code === 'rate_limited' || env.error.hint.do === 'retry_after') return { ...env, error: { ...env.error,
-        hint: { ...env.error.hint, do: 'retry_after', after_s: retryAfter(env.error.hint.after_s) },
+      if (env.error.code === 'rate_limited' || 'after_s' in env.error.hint) return { ...env, error: { ...env.error,
+        hint: { ...env.error.hint, do: 'retry_after', after_s: retryAfter('after_s' in env.error.hint ? env.error.hint.after_s : undefined) },
       } };
       return env;
     }
