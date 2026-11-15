@@ -52,7 +52,7 @@ Each task's full statement is section 10 of its engine document, with the calcul
 
 ## Then
 
-The second set (each engine's learning, fit and proof tasks, the adapters for the other six sites, the `/v1` routes, deployment) starts as the tasks above finish; the dependencies are in each engine's section 10 and in the full plan. The walk (S-4) is rerun after every merge and is never left red.
+The second set (each engine's learning, fit and proof tasks, the adapters for the other four sites (eBay, Facebook Marketplace, Poshmark, Mercari), the `/v1` routes, deployment) starts as the tasks above finish; the dependencies are in each engine's section 10 and in the full plan. The walk (S-4) is rerun after every merge and is never left red.
 
 ## Clock
 

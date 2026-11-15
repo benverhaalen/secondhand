@@ -128,6 +128,8 @@ The route table holds this as `needs_session` per verb and field. A public route
 
 Each cell is the first route recon targets (*inferred* from the canon site table at [product.md](../product.md#the-harness-protocol), which puts our own adapter first everywhere). An API named in a cell is the last fallback and a fact on record. "page" means a page-driving recipe; "endpoint" means recon expects an internal endpoint.
 
+The build covers five sites: eBay, Facebook Marketplace, Depop, Poshmark and Mercari. The OfferUp and Grailed columns are kept for the [future idea](../../ideas/post-to-grailed-and-offerup.md) and are not built now ([Nate](../../product/words.md#2026-11-14-nate-five-sites-offerup-and-grailed-are-a-future-idea-and-ebays-push-only-if-it-beats-our-harness)).
+
 | Verb | eBay | Facebook | Depop | Poshmark | Mercari | OfferUp | Grailed |
 |---|---|---|---|---|---|---|---|
 | `post` | adapter, endpoint; Inventory and Offer APIs | adapter, page | adapter, endpoint; products API if granted | adapter, page | adapter, page | adapter, planned ([words](../../product/words.md#2026-11-14-grailed-and-offerup-posting-planned-not-built)) | adapter, planned (same) |
