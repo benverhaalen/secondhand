@@ -1538,3 +1538,11 @@ Nate, build session (orchestrator), 2026-11-15 about 04:00 Central, after the in
 > Oh wow, well ensure workers aren't going to get confused and all wait in a way that connects to it working, that they check through all docs and that you have expert data scientists and ai software engineers, databricks professional subagents, sweep over the spec of whats imagined and suggest improvements
 
 Used in: [who is waiting on what](../spec/plans/waiting.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate the reviewers know what we are trying to outperform, and the benchmark may run alongside
+Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages, the second a minute after the first.
+> well we should probably wait for things to work before fully benchmarking, but have the reviewers understand what we are trying to outperform
+
+> or let everything go its cool if they can benchmark at the same time
+
+Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/waiting.md).

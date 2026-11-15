@@ -1,0 +1,8 @@
+{
+ "_fixture": "synthetic, not recorded: no account is linked, the signed-in path and shape are unobserved",
+ "data": [
+  { "id": "o1", "post_id": "6ad63271c9ddecf01eaf740c", "offer_amount": { "val": "30.0", "currency_code": "USD" }, "status": "pending", "buyer_username": "u00000001", "created_at": "2026-11-14T09:00:00-08:00" },
+  { "id": "o2", "post_id": "6ad63271c9ddecf01eaf740c", "offer_amount": { "val": "25.0", "currency_code": "USD" }, "status": "declined", "buyer_username": "u00000002", "created_at": "2026-11-13T09:00:00-08:00" }
+ ],
+ "more": { "is_next_max_id_present": false }
+}

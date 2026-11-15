@@ -191,7 +191,7 @@ A question is data the UI renders with no logic of its own:
 - `proposed` marks the option the photos or a lookup gave. Never on `confirm: always` fields with no photo evidence (function), and never when card 7's margin fails.
 - `why` is a code the screen turns into words: `required` (a linked site needs it), `confirm` (a proposal to settle), `value` (it changes the price or the match), `only_you_know`.
 - `unlocks.required` counts the linked (site, required field) pairs it settles; `ready_after` lists the sites that become ready if it is answered and nothing else changes.
-- `answer` is the call that answers it: `PATCH /v1/items/:id/attributes/:name` for a value, `PATCH /v1/captures/:id` for the type, `POST /v1/captures/:id/photos` for a shot.
+- `answer` is the call that answers it: `PATCH /v1/captures/:id` with `{version, type}`, `{version, answer: {field, value}}` or `{version, refuse: field}`, which writes the attribute as `you_said` with owner evidence and returns the next plan; `POST /v1/captures/:id/photos` for a shot. A later correction on the item card stays `PATCH /v1/items/:id/attributes/:name`.
 - `words` come from the row's `ask` text, fixed per field and checked by `scripts/copy-lint.mjs` in the table's test. An eBay aspect with no row ([aspects.ts](../../app/src/engines/listing/aspects.ts)) gets `"<Aspect name>?"`. No model writes a question; if one ever rewrites `words`, the field, kind and options stay as planned and the result passes the same lint.
 
 **Which questions, in which order.** A field gets a question when it is `proposed`, or `missing` with `asked` among its ways, or when its next way is a view: a kept view that failed to read it gets a `shot` retake (at most 2, card 17), and a view outside the process gets a `shot` only when a linked site requires the field. Never asked: a `known` or `waiting` field, a `refused` one, condition when the purpose is `find`. The order is a total sort:
@@ -212,7 +212,7 @@ A question is data the UI renders with no logic of its own:
 
 ### What Ben's screens get
 
-Every capture route returns `plan` beside the capture: `{family, kind, dimension_class, fallback, process[] (each step with its state: pending, kept, retake), checks[], fields[] (field, state, value, source, required_by, recommended_by), questions[], complete {site: {ready, missing[]}}, status}`. `GET /v1/captures/:id` returns the same. A screen shows the current step, renders `questions[0]` with the widget its `kind` names, sends `answer`, and reads the next plan; it never decides what to ask or when to stop. The layout, the words around the question, the motion and the drag grid stay Ben's.
+Every capture route returns `plan` beside the capture (a `GET /v1/captures/:id` for a refresh after a background read is asked of the orchestrator): `{family, kind, dimension_class, fallback, process[] (each step with its state: pending, kept, retake), checks[], fields[] (field, state, value, source, required_by, recommended_by), questions[], complete {site: {ready, missing[]}}, status}`. A screen shows the current step, renders `questions[0]` with the widget its `kind` names, sends `answer`, and reads the next plan; it never decides what to ask or when to stop. The layout, the words around the question, the motion and the drag grid stay Ben's.
 
 ### Build and proof
 
