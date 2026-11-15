@@ -4,9 +4,14 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
-  Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Guess, IconButton, ItemCard, Line, Nav, Notice, Pill,
+  Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Guess, IconButton, ItemCard, Line, List, Nav, Notice, Pill,
   Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type TabKey, type TagState,
 } from '@/ui';
+import { GoalBar } from '@/ui/parts/goal-bar';
+import { ListRow } from '@/ui/parts/list-row';
+import { Switch } from '@/ui/parts/switch';
+import { TabNav } from '@/ui/parts/tab-nav';
+import { WeekBars } from '@/ui/parts/week-bars';
 
 const HOUR = 3600000;
 // Deadlines are fixed offsets from the moment the sheet opens, so each strength of a state gradient shows.
@@ -27,6 +32,7 @@ function Sheetful() {
   const [tab, setTab] = useState<TabKey>('index');
   const [sheet, setSheet] = useState(false);
   const [size, setSize] = useState('');
+  const [on, setOn] = useState(true);
   return (
     <Screen name="parts" state="all" wash nav={<Nav inbox={{ count: 2 }} />}>
       <TopSlot news={{ since: 'Since yesterday', kept: 96.2, line: '2 sold, after fees' }} />
@@ -140,6 +146,23 @@ function Sheetful() {
 
       <Section title="Top slot, a new person">
         <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: 'Connect a site' }} />
+      </Section>
+
+      <Section title="You: tab nav, list rows, switch, goal, week bars">
+        <TabNav title="You" inbox={{ count: 2 }} />
+        <List>
+          <ListRow id="lr-plain" lead="money-03" label="Payouts" onPress={() => {}} />
+          <ListRow id="lr-value" label="On its way" value="$132.33" tabular onPress={() => {}} />
+          <ListRow id="lr-fact" label="Money" value="US dollars" />
+          <ListRow id="lr-switch" label="Pause selling" detail="Sites use their own away mode. The rest end and come back on your date" trail={<Switch id="sw-1" label="Pause selling" on={on} onChange={setOn} />} />
+          <ListRow id="lr-off" label="Buy shipping labels" detail="Asks you first. Approved 2 of 3 times without a change" trail={<Switch id="sw-2" label="Buy shipping labels" on={false} disabled />} />
+          <ListRow id="lr-site" site="depop" label="Linked" detail="Checked 5m ago" onPress={() => {}} />
+          <ListRow id="lr-link" site="mercari" label="Not linked" trail={<Pill id="lr-link-p" kind="second" label="Link" />} />
+          <ListRow id="lr-linking" site="ebay" label="Signing in" trail={<Pill id="lr-linking-p" kind="second" label="Link" state="working" />} />
+          <ListRow id="lr-error" site="poshmark" tone="brick" label="Didn’t link" trail={<Pill id="lr-error-p" kind="second" label="Try again" icon="refresh" />} />
+        </List>
+        <GoalBar label="November goal" kept={132.33} target={300} />
+        <WeekBars weeks={[{ label: 'Sep 22', amount: 31.3 }, { label: '29', amount: 0 }, { label: 'Oct 6', amount: 64 }, { label: '13', amount: 12.5 }, { label: '20', amount: 0 }, { label: '27', amount: 88.1 }, { label: 'Nov 3', amount: 40 }, { label: '10', amount: 132.33, now: true }]} />
       </Section>
 
       <Section title="Tab bar">
