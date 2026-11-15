@@ -149,6 +149,10 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     const account = typeof args.account_id === 'string' ? await accounts.byId(args.account_id) : undefined;
     if (account && args.user_id !== undefined && args.user_id !== account.person_id)
       return { ...fail('policy_refused', 'account belongs to another person', { do: 'raise_decision', kind: 'link_account' }), meta: admitted.meta };
+    if (isWrite(verb) && !liveSites.has(site)) {
+      args = { ...args, dry: true };
+      log.note('marketplace write forced dry', { site, verb, operation_id: args.operation_id });
+    }
     return services.get(site)!.call(verb, { ...args,
       ...(isWrite(verb) && account && { user_id: account.person_id }),
     });
@@ -195,7 +199,16 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       return false;
     });
   }
-  const watcherStore: Store = { ...st, claimJobs: (limit, worker) => claimJobs(limit, worker, true) };
+  const watcherStore: Store = { ...st, claimJobs: (limit, worker) => claimJobs(limit, worker, true),
+    raiseDecision(decision) {
+      const job = decision.job_id ? st.getJob(decision.job_id) : undefined;
+      const midpoint = job?.kind === 'answer_offer' && job.args.decided_by === 'negotiation' && job.args.response === 'counter'
+        && (decision.kind === 'counter_offer' || decision.kind === 'price_below_floor');
+      return st.raiseDecision({ ...decision, ...(midpoint && {
+        why: 'No acceptance model weighed this; the counter is the midpoint inside your limits.',
+      }) });
+    },
+  };
   const watcher = createWatcher({ store: watcherStore, harness, accounts, leases, params, log, now, snapshots,
     listings: {
       byExternal: (user_id, site, external_id) => listings(user_id).find(row => row.site === site && row.external_id === external_id),
@@ -218,8 +231,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       return ask_cents !== undefined && floor_cents !== undefined && always_accept_cents !== undefined
         ? { ask_cents, floor_cents, always_accept_cents } : undefined;
     } },
-    // No production acceptance model exists: choose.ts documents NaN as p_accept_invalid,
-    // which uses the champion and asks when waiting value is hidden. Never invent a probability.
+    // shortcut: replace NaN with pAccept({site, kind, ask_cents, offer_cents, days_listed, buyer_tier, round?}, store) -> {p, basis_level, param_versions} from the engines lead.
     pAccept: () => NaN,
     // Hazard omitted until the engines lead supplies its port; the watcher's tier cadence applies.
     readArgs(account) {

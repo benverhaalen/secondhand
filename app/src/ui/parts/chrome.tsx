@@ -2,6 +2,7 @@
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { router, type Href } from 'expo-router';
 import { View, type ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '../icon';
 import { alpha } from '../paint';
 import { Press } from '../press';
@@ -14,14 +15,16 @@ import { Count } from './small';
 
 // The wash (Art. 5, The wash): sky to mint at full strength under a fade to the page, behind the nav and the one summary
 // under it. 236 tall, it ends where the first card starts, and nothing below is tinted. It holds no card and no control.
-export function Wash() {
+// `under` is the status bar's height: the wash runs up under it, so the color reaches the top of the glass on a phone
+// instead of stopping at a white band (the phone audit, 2026-11-15: "why the top is cut off").
+export function Wash({ under = 0 }: { under?: number }) {
   const c = useColors();
   const fade = `linear-gradient(180deg, ${alpha(c.page, 0)} 0%, ${alpha(c.page, 0.25)} 45%, ${alpha(c.page, 0.8)} 80%, ${c.page} 100%)`;
   return (
     <View
       {...mark('wash')}
       pointerEvents="none"
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, height: size.washH, backgroundColor: c.wash1, backgroundImage: `${fade}, linear-gradient(105deg, ${c.wash1}, ${c.wash2})` } as ViewStyle}
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, height: size.washH + under, backgroundColor: c.wash1, backgroundImage: `${fade}, linear-gradient(105deg, ${c.wash1}, ${c.wash2})` } as ViewStyle}
     />
   );
 }
@@ -121,22 +124,30 @@ export function TabBar({ current, badges = {}, onTab }: {
   badges?: Partial<Record<TabKey, boolean>>;
   onTab: (key: TabKey | 'new') => void;
 }) {
-  const c = useColors();
+  const c = useColors(), inset = useSafeAreaInsets();
+  // iOS 26's tab bar (Ben, 09:56: "the bottom bar looks odd with the iphone curves"; 10:01: "standard to apple iphone
+  // design"): a capsule 62 tall, 16 in from each side and 21 above the bottom of the glass, so its round ends follow the
+  // phone's round corners instead of a flat bar with a line meeting them. It is told apart by tone (surface on the page),
+  // not a line or a shadow. On a phone with no home bar it sits 12 above the edge.
+  const below = inset.bottom ? Math.max(inset.bottom - 13, space.s3) : space.s3;
   return (
-    <OnGround ground="page">
-      <View
-        {...mark('tab-bar')}
-        accessibilityRole="tablist"
-        style={{ height: size.tabH, flexDirection: 'row', backgroundColor: c.page, borderTopWidth: 1, borderTopColor: c.rule }}>
-        {TABS.map(t => (t.key === 'new' ? <NewSlot key="new" onPress={() => onTab('new')} /> : (
-          <TabSlot key={t.key} word={t.word} icon={t.icon} on={t.key === current} dot={!!badges[t.key]} onPress={() => onTab(t.key)} id={`tab-${t.key === 'index' ? 'today' : t.key}`} />
-        )))}
+    <OnGround ground="card">
+      <View style={{ backgroundColor: c.page, paddingHorizontal: space.s4, paddingTop: space.s2, paddingBottom: below }}>
+        <View {...mark('tab-bar')} accessibilityRole="tablist"
+          style={{ height: size.tabH, borderRadius: size.tabH / 2, backgroundColor: c.surface, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.s1 }}>
+          {TABS.map(t => (t.key === 'new' ? <NewSlot key="new" onPress={() => onTab('new')} /> : (
+            <TabSlot key={t.key} word={t.word} icon={t.icon} on={t.key === current} dot={!!badges[t.key]} onPress={() => onTab(t.key)} id={`tab-${t.key === 'index' ? 'today' : t.key}`} />
+          )))}
+        </View>
       </View>
     </OnGround>
   );
 }
 
-const slot: ViewStyle = { height: size.tabH, alignItems: 'center', paddingTop: space.s2, gap: space.s1 };
+// A tab: its icon over its word, centered in the capsule's height. The tab you are on sits in a lighter capsule of its own,
+// as iOS 26 marks it, with the icon filled and the word in ink (Ben, 03:22: "a less subtle way to show what section you are on").
+const SLOT_H = size.tabH - space.s2;
+const slot: ViewStyle = { height: SLOT_H, alignItems: 'center', justifyContent: 'center', gap: 2, borderRadius: SLOT_H / 2 };
 
 function TabSlot({ id, word, icon, on, dot, onPress }: { id: string; word: string; icon: IconName; on: boolean; dot: boolean; onPress: () => void }) {
   const c = useColors();
@@ -148,10 +159,10 @@ function TabSlot({ id, word, icon, on, dot, onPress }: { id: string; word: strin
           {...({ 'aria-current': on ? 'page' : undefined } as object)}
           accessibilityRole="tab"
           accessibilityState={{ selected: on }}
-          style={slot}>
-          <View style={{ width: 56, height: 32, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? c.tabOn : 'transparent' }}>
+          style={[slot, { backgroundColor: on ? c.tabOn : 'transparent' }]}>
+          <View>
             <Icon name={icon} filled={on} tone={on ? 'ink' : 'ink-2'} />
-            {dot ? <View style={{ position: 'absolute', top: 4, right: 12, width: 8, height: 8, borderRadius: radius.pill, backgroundColor: c.marigold }} /> : null}
+            {dot ? <View style={{ position: 'absolute', top: -2, right: -4, width: 8, height: 8, borderRadius: radius.pill, backgroundColor: c.marigold }} /> : null}
           </View>
           <Txt role="caption" tone={on ? 'ink' : 'ink-2'}>{word}</Txt>
         </View>
@@ -162,7 +173,7 @@ function TabSlot({ id, word, icon, on, dot, onPress }: { id: string; word: strin
 
 function NewSlot({ onPress }: { onPress: () => void }) {
   return (
-    <View style={{ flex: 1, alignItems: 'center' }}>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <Press id="tab-new" label="New" onPress={onPress}>
         {({ pressed }) => <NewCircle pressed={pressed} />}
       </Press>
@@ -171,9 +182,11 @@ function NewSlot({ onPress }: { onPress: () => void }) {
 }
 function NewCircle({ pressed }: { pressed: boolean }) {
   const c = useColors();
-  // Raised: it stands 12 above the line of the other icons, so the one act that starts everything reads first.
+  // Inside the capsule and centered in it, on the same middle line as every tab (Ben, 09:56: "the middle + circle isnt
+  // aligned"). 48 across: the black that marks the one act that starts everything.
+  const d = 48;
   return (
-    <View {...mark('new-button')} style={{ width: 56, height: 56, marginTop: -space.s3, borderRadius: radius.pill, backgroundColor: pressed ? c.inkPress : c.ink, alignItems: 'center', justifyContent: 'center' }}>
+    <View {...mark('new-button')} style={{ width: d, height: d, borderRadius: radius.pill, backgroundColor: pressed ? c.inkPress : c.ink, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name="add-01" tone="page" />
     </View>
   );

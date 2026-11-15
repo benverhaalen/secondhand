@@ -12,6 +12,10 @@ import { join } from 'node:path';
 import { appDir, serve } from './web.mjs';
 import { playwright } from '../../scripts/brand-check.mjs';
 
+// How long a test waits for something to show, appear or be logged. Every wait here ends the moment its condition holds, so a
+// long cap costs nothing when the app is quick and stops a loaded machine from failing a test that was only slow.
+export const WAIT = Number(process.env.E2E_WAIT_MS) || 10_000;
+
 export function behavior(page) {
   const file = join(appDir, 'behavior', `${page}.json`), table = JSON.parse(readFileSync(file, 'utf8'));
   return { ...table, file, states: table.states ?? [], controls: table.controls ?? [], state: name => table.states?.find(s => s.state === name) ?? assert.fail(`${file} has no state "${name}"`) };
@@ -49,16 +53,20 @@ function screen(page) {
     // Presses the part with this testID (React Native for web writes it as data-testid). Fails if it is not on screen.
     // Only what is shown counts: a stack keeps the page under a pushed one in the DOM, hidden, with the same testIDs
     // (opening /item/x/ship cold puts the item page under it, app/src/app/item/[id]/_layout.tsx).
-    async tap(id) { const el = page.getByTestId(id).filter({ visible: true }); await el.waitFor({ state: 'visible', timeout: 3000 }); await el.tap(); },
+    async tap(id) { const el = page.getByTestId(id).filter({ visible: true }); await el.waitFor({ state: 'visible', timeout: WAIT }); await el.tap(); },
     // Waits until an event with these fields is in the log, and returns it.
-    async saw(want, { timeout = 3000 } = {}) {
+    async saw(want, { timeout = WAIT } = {}) {
       const end = Date.now() + timeout;
       for (;;) { const got = (await self.events()).find(e => fits(e, want)); if (got) return got;
         if (Date.now() > end) assert.fail(`no event like ${JSON.stringify(want)} in globalThis.__events: ${JSON.stringify(await self.events()).slice(0, 600)}`);
         await page.waitForTimeout(50); }
     },
     // Waits until this text is on screen (a string is matched exactly, a RegExp as a pattern).
-    async shows(text, { timeout = 3000 } = {}) { await page.getByText(text, { exact: typeof text === 'string' }).filter({ visible: true }).first().waitFor({ state: 'visible', timeout }); },
+    async shows(text, { timeout = WAIT } = {}) { await page.getByText(text, { exact: typeof text === 'string' }).filter({ visible: true }).first().waitFor({ state: 'visible', timeout }); },
+    // How many of this text are on screen. Only what is shown counts: a stack keeps the page under a pushed one in the DOM, hidden,
+    // with the same words, so a bare getByText(...).count() counts the hidden copy too.
+    count: (text, { exact = false } = {}) => page.getByText(text, { exact }).filter({ visible: true }).count(),
+    countId: id => page.getByTestId(id).filter({ visible: true }).count(),
     path: () => new URL(page.url()).pathname,
   };
   return self;
@@ -71,6 +79,6 @@ export function controlTests(test, table, open) {
     const s = await open(c);
     await s.tap(c.id);
     await s.saw({ type: 'tap', id: c.id });
-    if (c.goes) await s.page.waitForURL(u => new URL(u).pathname === c.goes, { timeout: 3000 });
+    if (c.goes) await s.page.waitForURL(u => new URL(u).pathname === c.goes, { timeout: WAIT });
   });
 }

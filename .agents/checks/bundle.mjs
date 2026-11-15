@@ -1,64 +1,70 @@
-import { posix } from 'node:path';
-import { read, err, lineOf, withoutStrings, withoutComments, commentsOnly } from './util.mjs';
+import { createRequire } from 'node:module';
+import { extname, join, posix } from 'node:path';
+import { read, err, commentsOnly } from './util.mjs';
 
 const routePattern = /^app\/src\/app\/(?:.*\/)?[^/]*\+api\.ts$/;
 const testFile = /\.test\.ts$/;
 const extensions = ['', '.ts', '.tsx', '.js', '.mjs', '/index.ts'];
 
+// The non-type import and export specifiers of one file, parsed (the hermes check walks screens with it).
 export function imports(file, raw) {
-  const code = withoutStrings(file, raw), text = withoutComments(file, raw);
-  const pattern = /\b(import|export)\s+(?!type\b)(?:(?:[^;'"`]*?\s+from\s*)?)(['"])([^'"\n]+)\2/g;
-  return [...text.matchAll(pattern)].filter(m => /^(?:import|export)$/.test(code.slice(m.index, m.index + m[1].length))).map(m => m[3]);
-}
-
-function topLevelAwaits(code) {
-  const tokens = [...code.matchAll(/\b(?:await|function|if|for|while|switch|catch|with)\b|=>|[{}();,\[\]]|[\w$]+|\S/g)];
-  const stack = [], expressions = [], found = [];
-  let parens = 0, brackets = 0;
-  for (let i = 0; i < tokens.length; i++) {
-    const value = tokens[i][0], prev = tokens[i - 1]?.[0];
-    while (expressions.length && ((value === ';' || value === ',') && parens === expressions.at(-1).parens && brackets === expressions.at(-1).brackets && stack.length === expressions.at(-1).depth || (value === ')' && parens === expressions.at(-1).parens) || (value === '}' && stack.length === expressions.at(-1).depth))) expressions.pop();
-    if (value === 'await' && !stack.some(x => x.function) && !expressions.length) found.push(tokens[i].index);
-    if (value === '=>') {
-      if (tokens[i + 1]?.[0] !== '{') expressions.push({ parens, brackets, depth: stack.length });
-    } else if (value === '(') parens++;
-    else if (value === ')') parens--;
-    else if (value === '[') brackets++;
-    else if (value === ']') brackets--;
-    else if (value === '{') {
-      let fn = prev === '=>';
-      let close = i - 1;
-      if (prev !== ')' && prev !== '=>') {
-        while (close >= 0 && ![')', '{', '}', ';', '='].includes(tokens[close][0])) close--;
-        if (!tokens.slice(close + 1, i).some(t => t[0] === ':')) close = -1;
-      }
-      if (tokens[close]?.[0] === ')') {
-        let depth = 1, j = close - 1;
-        for (; j >= 0 && depth; j--) { if (tokens[j][0] === ')') depth++; else if (tokens[j][0] === '(') depth--; }
-        const before = tokens[j]?.[0];
-        fn = !['if', 'for', 'while', 'switch', 'catch', 'with'].includes(before);
-      }
-      stack.push({ function: fn });
-    } else if (value === '}') stack.pop();
+  const ts = createRequire(new URL('../../app/package.json', import.meta.url))('typescript');
+  const source = ts.createSourceFile(file, raw, ts.ScriptTarget.Latest, true, /.tsx$/.test(file) ? ts.ScriptKind.TSX : /.(m|c)?jsx?$/.test(file) ? ts.ScriptKind.JS : ts.ScriptKind.TS);
+  const out = [];
+  for (const node of source.statements) {
+    if (!(ts.isImportDeclaration(node) || ts.isExportDeclaration(node))) continue;
+    const typeOnly = ts.isImportDeclaration(node) ? node.importClause?.isTypeOnly : node.isTypeOnly;
+    if (!typeOnly && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) out.push(node.moduleSpecifier.text);
   }
-  return found;
+  return out;
 }
 
 export function bundle(root, { files }) {
+  let ts;
+  try {
+    ts = createRequire(join(root, 'app/package.json'))('typescript');
+  } catch (error) {
+    return [err('app/package.json', `Cannot load TypeScript for bundle check: ${error.message}`)];
+  }
+  const functionKinds = new Set([
+    ts.SyntaxKind.FunctionDeclaration, ts.SyntaxKind.FunctionExpression,
+    ts.SyntaxKind.ArrowFunction, ts.SyntaxKind.MethodDeclaration,
+    ts.SyntaxKind.Constructor, ts.SyntaxKind.GetAccessor, ts.SyntaxKind.SetAccessor,
+  ]);
+  const scriptKinds = {
+    '.ts': ts.ScriptKind.TS, '.tsx': ts.ScriptKind.TSX,
+    '.js': ts.ScriptKind.JS, '.jsx': ts.ScriptKind.JSX,
+    '.mjs': ts.ScriptKind.JS, '.cjs': ts.ScriptKind.JS,
+    '.mts': ts.ScriptKind.TS, '.cts': ts.ScriptKind.TS,
+  };
   const available = new Set(files), seen = new Set(), out = [];
   const visit = (file, route) => {
     if (seen.has(file) || testFile.test(file)) return;
     seen.add(file);
     const raw = read(root, file);
     if (raw === null) return;
-    const code = withoutStrings(file, raw), comments = commentsOnly(file, raw).split('\n');
-    const add = (index, name) => out.push(err(`${file}:${lineOf(code, index)}`, `${name}, reached from ${route}`));
-    for (const m of code.matchAll(/\bimport\s*\.\s*meta\b/g)) add(m.index, 'import.meta');
-    for (const m of code.matchAll(/\breadFileSync\s*\(/g)) {
-      if (!/\bbundle-safe:\s*\S/.test(comments[lineOf(code, m.index) - 1])) add(m.index, 'readFileSync');
-    }
-    for (const index of topLevelAwaits(code)) add(index, 'top-level await');
-    for (const spec of imports(file, raw)) {
+    const source = ts.createSourceFile(file, raw, ts.ScriptTarget.Latest, true, scriptKinds[extname(file)] ?? ts.ScriptKind.TS);
+    const comments = commentsOnly(file, raw).split('\n'), imports = [];
+    const lineOf = node => source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
+    const add = (node, name) => out.push(err(`${file}:${lineOf(node)}`, `${name}, reached from ${route}`));
+    const walk = (node, inFunction = false) => {
+      if (ts.isMetaProperty(node) && node.keywordToken === ts.SyntaxKind.ImportKeyword) add(node, 'import.meta');
+      if (!inFunction && (ts.isAwaitExpression(node) || (ts.isForOfStatement(node) && node.awaitModifier))) add(node, 'top-level await');
+      if (ts.isCallExpression(node)) {
+        const callee = node.expression;
+        if ((ts.isIdentifier(callee) && callee.text === 'readFileSync') || (ts.isPropertyAccessExpression(callee) && callee.name.text === 'readFileSync')) {
+          if (!/\bbundle-safe:\s*\S/.test(comments[lineOf(node) - 1])) add(node, 'readFileSync');
+        }
+      }
+      if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+        const typeOnly = ts.isImportDeclaration(node) ? node.importClause?.isTypeOnly : node.isTypeOnly;
+        if (!typeOnly && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) imports.push(node.moduleSpecifier.text);
+      }
+      const childInFunction = inFunction || functionKinds.has(node.kind);
+      ts.forEachChild(node, child => walk(child, childInFunction));
+    };
+    walk(source);
+    for (const spec of imports) {
       if (!spec.startsWith('.') && !spec.startsWith('@/')) continue;
       const base = spec.startsWith('@/') ? posix.join('app/src', spec.slice(2)) : posix.join(posix.dirname(file), spec);
       if (base === '..' || base.startsWith('../') || posix.isAbsolute(base)) continue;

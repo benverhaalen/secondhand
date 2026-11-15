@@ -6,6 +6,7 @@
 // event. A home address is never sent by the agent: it waits for its own tap, with the public spot first (share_address
 // is locked). The two cases no world holds are asked for: `case=ask` (a buyer wants to meet) and `case=pick` (their pick).
 // Behavior: app/behavior/item/[id]/pickup.json.
+// one at a time: pickup-running-late (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Share } from 'react-native';
@@ -18,6 +19,7 @@ import { DARK, FIRST_SPAN, MEET_ASK, MEET_PICK, PROFILES, SAFE_SPOTS, atTime, fr
 import { photo } from '@/demo/photos';
 import { useScreen } from '@/demo/screen';
 import { Chip, Choice } from '@/ui/parts/chip';
+import { log } from '@/ui/log';
 
 // The states Pickup cannot be in, each with why (B35, app/src/demo/screen.ts).
 const SKIP = 'new: Pickup opens only from a sale, and a person who has done nothing has sold nothing; '
@@ -112,10 +114,10 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
     const url = kind === 'google'
       ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${stamp(meetAt)}/${stamp(end)}&location=${encodeURIComponent(place)}&details=${encodeURIComponent(details)}`
       : `data:text/calendar;charset=utf8,${encodeURIComponent(['BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT', `DTSTART:${stamp(meetAt)}`, `DTEND:${stamp(end)}`, `SUMMARY:${title}`, `LOCATION:${place}`, `DESCRIPTION:${details}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n'))}`;
-    Linking.openURL(url).catch(() => {});
+    Linking.openURL(url).catch(e => log.error('pickup.open', e));
   };
   const sharePlan = () => Share.share({ message: `Meeting ${buyer} ${when(meetAt, w.now)} at ${place} to hand over ${item.title}.` })
-    .then(r => { if (r.action === Share.sharedAction) setSaid(s => [...s, 'Shared your plan']); }).catch(() => {});
+    .then(r => { if (r.action === Share.sharedAction) setSaid(s => [...s, 'Shared your plan']); }).catch(e => log.error('pickup.open', e));
 
   const state = offline ? 'offline' : stage === 'cancelled' || stage === 'ask' ? 'empty' : stage === 'pick' ? 'one' : 'typical';
   const foot = stage === 'pick' && approve !== 'done' ? (
@@ -185,7 +187,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
             {/* The site's own picture of the thread where the time was agreed, to check ours against, and the way back to the
                 site (Ben, 06:19: "It should use screenshots from the site when you need to verify certain things like scheduling"). */}
             <Line>
-              {siteUrl ? <SiteLink id="pickup-site" site={order.site} onPress={() => { Linking.openURL(siteUrl).catch(() => {}); }} /> : null}
+              {siteUrl ? <SiteLink id="pickup-site" site={order.site} onPress={() => { Linking.openURL(siteUrl).catch(e => log.error('pickup.open', e)); }} /> : null}
               <Pill id="pickup-snapshot" kind="second" icon="image-01" label="See the site’s copy" onPress={() => setOpen('copy')} />
             </Line>
           </Section>
@@ -220,7 +222,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
       )}
 
       <SiteCopy id="pickup-copy" open={open === 'copy'} site={order.site} onClose={() => setOpen(null)}
-        onOpen={() => { setOpen(null); if (siteUrl) Linking.openURL(siteUrl).catch(() => {}); }} />
+        onOpen={() => { setOpen(null); if (siteUrl) Linking.openURL(siteUrl).catch(e => log.error('pickup.open', e)); }} />
 
       <Sheet open={open === 'another'} title="Suggest another time" onClose={() => setOpen(null)}>
         {open === 'another' ? (
