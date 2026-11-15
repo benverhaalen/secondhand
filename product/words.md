@@ -898,6 +898,10 @@ Nate, build session (orchestrator), 2026-11-14 about 22:00 Central, asked "Which
 Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:23 UTC, after a side by side of Book, Medium on titles and a weight near 450. Recorded by the brand thread, which owns Article 6.
 > i think with font weights i like 500 unless you have a researched back reason to choose 450. what do you think
 
+## 2026-11-15 text at 500, and a pill behind the current tab
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:45 UTC. Just before it he picked "A pill behind the icon" on the decision card "Pick how the tab bar shows which tab you're on", over keeping round 10's filled icon with dimmer others, and a filled icon with a dot. At 03:23 he had written "i think with font weights i like 500 unless you have a researched back reason to choose 450".
+> also ensure font goes 500
+
 ## 2026-11-15 round 11 picks
 Ben, on the round 11 picks page, saved 2026-11-15 03:37 UTC; he wrote "done with round 11" in the thread "Set the secondhand brand identity" at 03:37. He tapped four things: the light fill under the second button, one black button under the black pill, centered under where the wordmark sits, and the line "Your second hand, for everything secondhand." under the idea in one line. The quotes are the notes he typed.
 
