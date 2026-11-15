@@ -39,7 +39,7 @@ export function PriceChart({ id, points, reference }: {
             <View style={{ height: type.t13.lineHeight }}>{i === at ? <Txt role="caption" tone="ink">{`${p.label} ${money(p.value)}`}</Txt> : null}</View>
             <Press id={`${id}-${i}`} label={`${p.label}, ${money(p.value)}`} selected={i === at} onPress={() => setAt(i)} round={false}>
               <View style={{ alignItems: 'center', minWidth: space.s8 }}>
-                <View style={{ width: BAR, height: h(p.value), borderRadius: radius.pill, backgroundColor: i === at ? c.ink : c.ink2, opacity: i === at ? 1 : 0.35 }} />
+                <View style={{ width: BAR, height: h(p.value), borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: i === at ? c.ink : c.ink2, opacity: i === at ? 1 : 0.35 }} />
               </View>
             </Press>
           </View>
