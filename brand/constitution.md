@@ -73,7 +73,7 @@ The brand is built from Ben's references, each with one job. A reference supplie
 | ref-12 (Exalt / Meshed dashboard) | **The brand field.** Ben, 20:17: "i love the sky and lime gradient" | A soft mesh of sky, mint, lime and a peach corner, with visible texture, held to one band of the page. Black pills as punctuation. | Its greeting copy ("Good morning…"), its testimonial, its desktop layout |
 | jpg(12) (Docket notes) | **Color as category.** | Flat fills from the same family (marigold, coral, lilac) used to tell kinds of things apart. Black round controls on color. Generous crop. | Rounded geometric display type, candy saturation everywhere |
 | jpg(17) and ref-28 (Sana automations) | **Real logos and mixed cards.** | Real third-party logos as small chips. Solid color feature cards beside white outlined cards. A filled pill next to a plain text action. | Its density, its dark maroon card with coral text |
-| QOVES case study | **Type setting.** | Book weight for display, medium only on buttons, two luminances instead of bold, small labels | Its clinical palette |
+| QOVES case study | **Type setting.** | One sans for everything in two weights, medium only on buttons, two luminances instead of bold, small labels | Its clinical palette |
 | Quechua, ref-22 | **Product photography.** | Real products on stone and plain grounds, daylight, the object large in frame | Outdoor lifestyle scenes |
 | Amigo, Home_X | **One warm signal.** | A single brick red for alerts | Its use of brick as a page color |
 
@@ -85,26 +85,28 @@ When a new reference is added: name its one job, say whether it is a requirement
 
 The few signature assets that make secondhand recognizable (E4). Each has an exact value in `tokens.css` and a boundary. Every output uses the codes that its medium can carry (see Part III) and no codes that are not on this list.
 
-**C1. The wordmark.** "secondhand", all lowercase, one word, set in the display face (Article 6), black on white or on the field.
+**C1. The wordmark.** "secondhand", all lowercase, one word, set in Clofie SemiBold (Article 6; Ben, [round 8](../product/words.md#2026-11-15-round-8-picks)), black on white or on the field.
 - App: centered at the top of every main screen, in the navigation bar. Ben, 20:17: "the secondhand wordmark should be right at the top, centered."
 - Web: top left in the header, and once large in the footer.
 - Post: top center or bottom center, small, the same place on every post in a series.
 - Video: the end card only, centered, held for at least 1.5 s.
 - Boundary: never in a sentence, never capitalized, never with a tagline attached, never smaller than 14 px (app) or 3% of frame height (video), never recolored except black or white.
 
-**C2. The field.** A soft mesh of sky, mint and lime, with an optional peach corner, sampled from ref-12. It is the brand's one color event. What Ben likes is its pattern and feel more than its exact colors ("the lighter ones", [round 7](../product/words.md#2026-11-15-round-7-picks)).
+**C2. The field.** A soft mesh of three colors that sit next to each other on the ring (Article 5). Home is sky, mint and lime, the heart of the brand. It is the brand's one color event. What Ben likes is its pattern and feel more than its exact colors ("the lighter ones", [round 7](../product/words.md#2026-11-15-round-7-picks)).
+- A set, by rule (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): "A set but a larger set"). Any three neighbors on the ring make a field, and nothing else does: never dark or saturated, never opposites (they meet in mud), never hard stops, never two flat stops, never more than three colors.
+- One field changes into the next by moving one step along the ring, so two of its three colors stay (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): "a gradient changing into another gradient into another"). Fields are written in code from the tokens, never as images. Which fields get a name and a job is open in the [ledger](ledger.md).
 - One field per view: one card, one band, one panel, one frame.
-- It is soft: several blurred points of color, with no lines and no grain (Ben, rounds 6 and 7). A flat two-stop CSS gradient is an AI tell.
+- It is soft: several blurred points of color, with no lines and no grain (Ben, rounds 6 and 7).
 - It drifts slowly and is never static, and never a loop you can see repeat (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "super ambient but not static").
 - It sits behind the most important thing (the decision that needs you, the hero of a web page, the one stat in a post), never behind long text.
-- Text on the field is black only. Every field color passes 9:1 with black and fails 3:1 with white. State pills on the field are white with a black label, so they don't vanish into it.
+- Text on the field is black only. Every field color passes 13:1 with black and fails 3:1 with white. State pills on the field are white with a black label, so they don't vanish into it.
 - At rest in the app it is one card. On a sale, the biggest moment, it fills the whole screen once as an animation, with a haptic and a sound (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)).
 - Boundary: never a border or text fill, never two fields touching.
 
 **C3. The item leads.** Every item is shown by its photo, and the photo is the largest image in its group. A real photo of the real thing, in daylight, on a plain ground. Ben, 20:17: "for a carhartt jacket, you should probably have a picture of it."
 - Boundary: no item without a photo (use a neutral tile with the category icon only while the photo loads); no illustration of an item; generated photos only in demos, marked as such.
 
-**C4. The black pill is the act.** The one action that moves things forward is a black pill with white text. One per decision, and on the app at most one per card. It is never flat pure black: it has a little depth (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "slight variations to black", "a little more depth or a slight shadow"). How much is open in the [ledger](ledger.md).
+**C4. The black pill is the act.** The one action that moves things forward is a black pill with white text. One per decision, and on the app at most one per card. It is never flat pure black: it has a little depth (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "slight variations to black", "a little more depth or a slight shadow"). The depth is a faint glow of sky and lime under the pill, `--pill-glow` (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks)).
 - Boundary: never red, never on the field in anything but black, never two black pills side by side.
 
 **C5. Platform logos, not names.** Where a marketplace is meant, its real logo is shown, from [assets/platforms/](../assets/platforms/). Ben, 19:59.
@@ -121,16 +123,15 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 | Ink | Black | `#0A0A0A` | All text, icons, the act (C4) | Pure `#000` large fills next to photos (too harsh) |
 | Ink, second | Black 65% | `rgb(10 10 10 / .65)` | Secondary text on white and gray (6.1:1 and 5.4:1) | Gray hex values; any field, state or category fill; anything under 13 px |
 | Ground | Cool gray | `#EFF1F2` (sampled, ref-12) | Secondary fills, photo tiles while loading | Text |
-| Field | Sky | `#90D1EF` / `#4EBAF7` | C2 (`#4EBAF7` is its deep corner), the state "shipping" | Text, lines, icons on white (1.67 and 2.17:1) |
-| Field | Mint | `#88DCB9` | C2, the state "live" | Same |
-| Field | Lime | `#E6EA6A` | C2, and money: the states "sold" and "paid" | Same (1.29:1) |
-| Field | Peach | `#FBB383` | C2 corner only | Anywhere else |
-| State | Marigold | `#F9C76F` (sampled, jpg(12)) | The state "needs you" | Category; decoration |
-| Category | Coral, lilac | `#EF956E`, `#B08DF1` (sampled, jpg(12)) | Telling kinds of things apart (collections, post series) | State; mixed with the field in one view |
+| State | Sky | `#A5E1FE` | The state "shipping"; C2 | Text, lines, icons on white (under 1.5:1) |
+| State | Mint | `#A1EACB` | The state "live"; C2 | Same |
+| State | Lime | `#EBF08F` | Money: the states "sold" and "paid"; C2 | Same |
+| State | Marigold | `#F5D297` | The state "needs you"; C2 | Category; decoration |
+| Category | Aqua, peach, pink, lilac | `#91EAE9`, `#FECCAA`, `#FEC6D2`, `#DDCEFE` | Telling kinds of things apart (collections, post series); C2 | State |
 | Alert | Brick | `#C52B17` (sampled, Amigo and Home_X) | Failed; the confirm in a destructive sheet | Other buttons, headlines, decoration (white on it 5.6:1; black on it fails) |
 
 Rules:
-1. **Color is a ground, never ink.** Every field, state and category color is a fill behind black text (each passes 9:1). White text only on the black pill (C4) and brick. No colored text, colored lines or colored icons on white, except platform logos (C5), the alert brick and the unread dot. Text over a photo or footage sits on the field or a white bar, in black; never white with a shadow.
+1. **Color is a ground, never ink.** Every state and category color is a fill behind black text (each passes 13:1). White text only on the black pill (C4) and brick. No colored text, colored lines or colored icons on white, except platform logos (C5), the alert brick and the unread dot. Text over a photo or footage sits on the field or a white bar, in black; never white with a shadow.
 2. **Color covers at most a third of any view.** Measured as the share of pixels that are not white, black, gray or photo. The references sit at 12% (ref-12), 25% (Sana) and up to 50% (Docket); a third is the ceiling.
 3. **A color means one thing everywhere.** Mint is live. Lime is money: sold, paid and the amount you keep. Marigold needs you. Sky is on its way. Brick failed. Gray ended. The full set, with every interaction state, is the table below.
 4. **Photos bring their own color.** When a view has item photos, the field shrinks or moves away from them; it never sits behind a photo.
@@ -142,11 +143,11 @@ Every state a screen can show, decided once so no worker invents one. Fills take
 | State | Shows as | Token | Contrast |
 |---|---|---|---|
 | Draft | White pill, hairline outline, gray text | `--rule`, `--ink-2` | 6.1:1 |
-| Live | Mint fill | `--mint` | 12.2:1 |
-| Needs you (an offer, a question, a deadline) | Marigold fill | `--marigold` | 12.7:1 |
-| Sold | Lime fill | `--lime` | 15.4:1 |
-| Shipping | Sky fill | `--sky` | 11.8:1 |
-| Paid | Lime fill with a check icon | `--lime` | 15.4:1 |
+| Live | Mint fill | `--mint` | 14.3:1 |
+| Needs you (an offer, a question, a deadline) | Marigold fill | `--marigold` | 13.7:1 |
+| Sold | Lime fill | `--lime` | 16.4:1 |
+| Shipping | Sky fill | `--sky` | 13.9:1 |
+| Paid | Lime fill with a check icon | `--lime` | 16.4:1 |
 | Failed | Pale brick fill, brick icon | `--brick-tint`, `--brick` | 17.2:1; icon 4.9:1 |
 | Ended, expired, unsold | Gray fill, gray text | `--gray`, `--ink-2` | 5.4:1 |
 | Unread | 8 px dot | `--sky-ink` | 4.0:1 on white |
@@ -168,7 +169,7 @@ State on a photo: a corner tag in a soft gradient of the state's color, tint to 
 Notice card: gray, or marigold tint when it needs the person, with an x to dismiss (agent decision; Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "your choice"). Sky tint is not used, because sky means on its way.
 Every state carries its icon as well as its color (Ben, [round 6](../product/words.md#2026-11-14-round-6-picks)): live a broadcast signal, needs you a raised hand, sold a banknote, shipping a parcel, paid a check, failed an alert, draft a pencil, ended a clock. Color is never the only sign.
 
-**The family.** Every hue (sky, mint, lime, marigold, lilac, brick) has three steps and no others: a tint, the fill and a deep. They are built the same way in OKLCH (tint at lightness .955, deep at .42, the hue kept), which is what keeps them one family. Tints and fills take black text; deeps take white. A new color is a new hue run through the same three steps, never a hand-picked hex.
+**The family.** Eight light hues make a ring, in this order: lilac, sky, aqua, mint, lime, marigold, peach, pink, and back to lilac (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): the wider set under one rule). Each hue, and brick, has three steps and no others: a tint, the fill and a deep. They are built the same way in OKLCH with the hue kept: the tint at lightness .955 and chroma .045, the fill at .88 and .085, the deep at .42. Lime's fill is .93 and .12, because a yellow that dark reads as olive. Tints and fills take black text; deeps take white. A new color is a new hue run through the same steps, never a hand-picked hex. Whether the family gets a deeper step that is used is open in the [ledger](ledger.md) (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): "the palette could be lacking deeper colors?").
 
 **Dark mode** comes later (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "plan dark mode for later", and "light vs dark should be exclusively color changes"). Light is standard. When it is built, nothing but color changes: only the page, the surfaces and the ink flip. The field, the fills and black text on color are the same in both modes, so the brand reads the same. Values are in `tokens.css`.
 
@@ -176,36 +177,32 @@ The unread dot is the one colored mark allowed on white besides logos and brick,
 
 ### Article 6. Type
 
-Ben, 20:17: "im still not set on the fonts. i think you need to justify all text." So every type choice below carries its reason, and the open choices are in the kit.
+Ben, 20:17: "im still not set on the fonts. i think you need to justify all text." Since then: mirror QOVES's fonts and how it sets them, without the mono ([round 7](../product/words.md#2026-11-15-round-7-picks)), and the wordmark is Clofie SemiBold, with "some bigger things in the app" in Clofie too ([round 8](../product/words.md#2026-11-15-round-8-picks)).
 
-**What each role has to do, before any typeface is chosen:**
-
-| Role | Job | Hard requirements |
+| Face | Sets | Why |
 |---|---|---|
-| Text | Everything people read: listing titles, prices, buttons, messages, captions | Accents and symbols for real listing titles (é ñ × ° ″ ½ –); tabular figures; clear at 13 px; feels native beside iOS; covers Latin, Cyrillic and Greek, with a named fallback for other scripts |
-| Display | The wordmark and headings: in the app one heading per view; on the web Ben's three tiers (hero, section, feature) | Has a voice that is not the default grotesk every AI app uses; a Book weight that holds at 21 to 86 px; an italic for a second phrase if we use that move |
+| **Neue Montreal**, 400 and 500 | Everything people read or tap: item titles, amounts, buttons, tabs, messages, captions, headlines in cards | QOVES sets all of its text in it, headings included, in these two weights ([what its stylesheets say](explore/round-8/qoves-type.md)) |
+| **Clofie SemiBold**, 600 | The wordmark, and the short list below | Ben's pick. Geometric and friendly, and not the grotesk every AI app uses |
 
-**Candidates and reasons (agent proposal; Ben picks in the kit):**
+**Where Clofie goes** (agent decision; Ben asked for it in [round 8](../product/words.md#2026-11-15-round-8-picks); the reasons and sources are in [explore/round-9/clofie-use.md](explore/round-9/clofie-use.md)). A string is set in Clofie only when all five hold: we wrote it, it is 21 px or larger, it fits on one line, it has no digits, and it is the only Clofie string in the view besides the wordmark.
 
-| Face | Role | For | Against |
-|---|---|---|---|
-| **Geist** | Text | Ben's harness default; free; tabular figures; looks the same in the app, on the web, in posts and in video (E4) | Common in developer tools, so alone it says "tech"; Latin and Cyrillic only, so other scripts fall to Noto |
-| SF Pro (the iPhone system face) | Text | The platform default: native by definition, Dynamic Type for free, every script | Not available on the web or in posts outside Apple devices, so the brand looks different off the phone (E4) |
-| Neue Montreal | Text | Ben's QOVES brief; slightly warmer than Geist | The free cut has no Book weight and thinner coverage |
-| **Marist Book** | Display | Ben's 19:56 pick; a serif voice breaks the "every AI app is a grotesk" tell (E5); Book italic gives the second-phrase move without bold | Only for display: a serif in 13 px UI text is wrong on a phone; trial files |
-| Geist or Neue Montreal at Regular | Display | One family throughout, like the sky + lime references (all sans); the calmest option | Less recognizable (E4) |
-| Clofie | Display only | Geometric and friendly | 103 glyphs, no accents: never for anything users write or listing titles |
+| Clofie | Never Clofie |
+|---|---|
+| The wordmark | Any amount or number: its digits are 366 to 673 units wide and it has no tabular figures, so an amount that changes would shift |
+| The screen title, one per view ("Today", "Sell") | Anything a seller, a buyer or a marketplace wrote: item titles, names, messages. It has 103 glyphs and no accents |
+| The headline of a moment: a sale, an empty screen, a first-run screen | Buttons, tabs, labels, captions and headlines in cards |
+| Web hero and section headings; post and deck headlines | Any script but Latin; the text face takes the role |
 
 **Banned:** Inter, even as a fallback (Ben's harness rule). Faux bold and faux italics. More than two families in one output, not counting a Noto fallback for a script the text face lacks. Uppercase mono labels as a style (Ben, 19:59: "completely fine not doing a mono font"); use the text face in sentence case.
 
 **Setting rules (these hold whatever faces win):**
-1. **Two weights per face.** Display: Book (350) and its italic. Text: Regular (400), and Medium (500) only for button labels and the selected tab. No bold anywhere. Hierarchy comes from size and the two ink levels, never from weight. (QOVES; Ben's brief. This removes the "janky bolding" of round 3, where a medium item title sat next to regular text of nearly the same size.)
-2. **Few sizes, far apart.** App: 13, 15, 18, 21, 36 and 50, by role in the table below. 21, 36 and 50 are Ben's Marist spec at 390 px wide. Adjacent steps differ by at least 15%, so a step reads as intended, not as a mistake (15 to 17 is only 13%, which is why the headline is 18). Web and post sizes scale by the medium table in Part III.
-3. **Leading tightens as size grows.** Text: 13/18, 15/20, 18/24 (agent proposal). Display: 1.10 at 21, 1.05 at 36, 0.95 at 50 and up (Ben's ratios: 21/23.1, 36/37.8, 50/47.5). Devanagari, Thai and Arabic: at least 1.2 at every size.
-4. **Tracking tightens as size grows.** 0 at 13 to 15 px; −0.01em at 18 to 36 (Ben: −0.2px at 21, −0.01em at 36); −0.02em at 50 and up (Ben). None in Chinese, Japanese or Korean.
+1. **Weights.** Text: Regular (400), and Medium (500) only for button labels and the selected tab. Display: SemiBold (600), the only Clofie weight. Hierarchy in text comes from size and the two ink levels, never from weight. (QOVES; Ben's brief. This removes the "janky bolding" of round 3, where a medium item title sat next to regular text of nearly the same size.)
+2. **Few sizes, far apart.** App: 13, 15, 18, 21, 36 and 50, by role in the table below. 21, 36 and 50 are from Ben's earlier spec at 390 px wide. Adjacent steps differ by at least 15%, so a step reads as intended, not as a mistake (15 to 17 is only 13%, which is why the headline is 18). Web and post sizes scale by the medium table in Part III.
+3. **Leading follows QOVES.** Text: 13/18, 15/20, 18/24 (QOVES sets 12/16, 14/20 and 18/24). The screen title at 36 is 1.125 (QOVES's phone hero, 32/36). The amount at 50 is 1.14 (QOVES's big number, 51.66/59.04). Devanagari, Thai and Arabic: at least 1.2 at every size.
+4. **Tracking follows QOVES.** 0 up to 18 px; −0.015em at 36; −0.02em at 50 and up. The wordmark is −0.01em. None in Chinese, Japanese or Korean.
 5. **Sentence case everywhere.** No title case, no all caps except the platform's own logos.
-6. **Second phrase, not bold.** A heading may have a second phrase at black 65% (on white or gray) or in the display italic (in black, on any ground). 21 px and up only.
-7. **Numbers are tabular** wherever they line up or change.
+6. **Second phrase, not bold.** A heading may have a second phrase at black 65%, on white or gray. 21 px and up only.
+7. **Numbers that line up or change keep their width.** The Neue Montreal file we have has no tabular figures: its digits are 346 to 620 units wide (read from the file on Ben's Mac, 2026-11-15). Until a file that has them replaces it, an amount that changes in place or sits in a column is set with each digit in a cell of equal width (agent proposal).
 8. **Sizes follow the person's text setting.** The sizes are the default-size values; on iOS they map to Dynamic Type (13 footnote, 15 subheadline, 18 body, 21 title2, 36 largeTitle) and grow with it. Line heights are ratios, so they grow too.
 
 **Roles** (agent proposal; tokens in [tokens.css](tokens.css)):
@@ -216,9 +213,9 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 | Body, list row, price in a row, card title | 15 | text 400 | ink |
 | Button label | 15 | text 500 | white on the pill, ink on the others |
 | Headline in a card or sheet; text you type | 18 | text 400 | ink |
-| Wordmark; feature heading | 21 | display 350 | ink |
-| Screen heading, one per view | 36 | display 350 | ink |
-| The peak amount on a sale | 50 | text 400, tabular (open: D6) | ink |
+| Wordmark | 21 | Clofie 600 | ink |
+| Screen title, one per view | 36 | Clofie 600 | ink |
+| The peak amount on a sale | 50 | text 400 | ink |
 
 **Any language.** The same rules hold in every language: sentence case, two weights, the size steps, no exclamation marks, no em dashes. When a script is not covered by the text face, fall back to Noto Sans in that script at the matching weight (the stack is in `tokens.css`), and check that line breaks still fall between words or phrases, not inside them. Numbers, dates and currency follow the locale (`Intl.NumberFormat`), never a hard-coded US format. Length limits counted in words count 2 characters as a word in Chinese, Japanese and Korean. The display face is never used for a script it does not cover; the text face takes the role instead.
 
@@ -242,7 +239,7 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 ### Article 9. Shape, depth and texture
 
 1. **Radius scale:** 8 (photos inside cards), 14 (cards), 20 (sheets), pill (buttons, chips).
-2. **Depth:** one of two, chosen per medium and kept: hairline rules (1 px black at 8%) or one soft shadow (`0 1px 2px` plus a wide faint blur). Never both on one surface, never colored glows on white, never glass.
+2. **Depth:** one of two, chosen per medium and kept: hairline rules (1 px black at 8%) or one soft shadow (`0 1px 2px` plus a wide faint blur). Never both on one surface, no colored glow on white except the one under the black pill (C4), never glass.
 3. **No texture.** No grain and no lines, on the field or anywhere else (Ben, rounds 6 and 7).
 
 ### Article 10. Icons and logos
@@ -318,7 +315,7 @@ Each AI tell is paired with what to reach for, because banning one default moves
 | Field (C2) | The one card or band that needs you | The hero band | Background of one panel per carousel, or one band | One scene or the end card | Title slide and one key slide |
 | Item (C3) | Every item row and card | Real items in every example | The item is the post | Real item footage | Real screenshots and photos |
 | Act (C4) | One per decision | One per section | None (posts don't have buttons); a plain line instead | None | None |
-| Text sizes | 13 / 15 / 18 / 21 / 36 / 50 | Display, Ben's Marist spec from 390 to 1440 wide: hero 50 to 86.5, section 36 to 58.3, feature 21 to 24.9 (`clamp()` between). Text 15 and 18 at every width | Body 40, heading 72, one number up to 200 | Captions 48, titles 96 | Body 32, heading 64, one number up to 200 |
+| Text sizes | 13 / 15 / 18 / 21 / 36 / 50 | Display, Ben's sizes from 390 to 1440 wide: hero 50 to 86.5, section 36 to 58.3, feature 21 to 24.9 (`clamp()` between). Text 15 and 18 at every width | Body 40, heading 72, one number up to 200 | Captions 48, titles 96 | Body 32, heading 64, one number up to 200 |
 | Longest text | One sentence per card | Two short paragraphs per section | 20 words per slide | 8 words on screen at once | 15 words per slide |
 
 Post and video notes:
@@ -346,7 +343,7 @@ Each rule has an id, a check, and who runs it. **Script** means a deterministic 
 | B10 | One black pill per decision (C4) | Count primary buttons per card ≤ 1 | Not built |
 | B11 | Logos not names (C5) | No marketplace name as visible text where a logo slot exists; logo `aria-label` present | Not built |
 | B12 | Money: tabular, labelled, no highlight (C6) | Money nodes have `tabular-nums` and no background; each amount has a label within its group | Not built |
-| B13 | Two weights per face (Art. 6.1) | Computed `font-weight` values ⊆ {350, 400, 500}; 350 only in the display face; 500 only on buttons and the selected tab | Script (the set only) |
+| B13 | Weights (Art. 6.1) | Computed `font-weight` values ⊆ {400, 500, 600}; 600 only in the display face; 500 only on buttons and the selected tab | Script (the set only) |
 | B14 | Size steps only (Art. 6.2) | At the default text size, computed sizes ⊆ the medium's set. Web: at 390 and 1440 wide each display size equals its endpoint, and text sizes ⊆ {15, 18}. The wordmark is exempt (its size is in Part III) | Not built |
 | B15 | No banned faces (Art. 6) | Computed `font-family` contains no Inter; loaded fonts match the picks | Script (no literal font names in source) |
 | B16 | Sentence case (Art. 6.5) | No string, other than logos and proper nouns, is all caps or title case | Not built |
