@@ -2,17 +2,14 @@
   "route": "onboarding",
   "screen": "onboarding",
   "states": [
-    "new"
+    "new",
+    "typical",
+    "loading",
+    "failed",
+    "offline"
   ],
-  "skip": "",
+  "skip": "empty: first launch is only for a new person, who has nothing yet; one: first launch is only for a new person; dense: first launch is only for a new person",
   "catalog": false,
-  "status": "fail",
-  "findings": [
-    {
-      "level": "error",
-      "id": "B35",
-      "where": "screen \"onboarding\"",
-      "msg": "is not drawn in the states empty, one, typical, dense, loading, failed, offline, at /onboarding?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"empty: why\">"
-    }
-  ]
+  "status": "clean",
+  "findings": []
 }

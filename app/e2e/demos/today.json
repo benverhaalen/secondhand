@@ -1,0 +1,14 @@
+[
+  { "go": "/?world=clearing" },
+  { "caption": "Two offers came in on the jacket" },
+  { "wait": 1600 },
+  { "caption": "Accept $85 in one tap" },
+  { "tap": "dec_jacket-acc" },
+  { "wait": 1400 },
+  { "caption": "Changed your mind? Undo" },
+  { "tap": "dec_jacket-undo" },
+  { "wait": 1400 },
+  { "caption": "Counter at $92 instead" },
+  { "tap": "dec_jacket-ctr" },
+  { "wait": 2200 }
+]

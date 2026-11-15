@@ -1,37 +1,142 @@
 {
   "screen": "onboarding",
   "route": "/onboarding",
-  "what": "First launch after sign-in: link where you sell, each site on its own and each optional, then take a photo of the first thing. Two steps to a first listing.",
+  "what": "First launch after sign-in: link where you sell, each site on its own and each optional; an optional saved pickup spot; then a photo of the first thing. Three short steps to a first listing.",
   "frame": {
     "who": "A new person, signed in a minute ago, with nothing linked or listed (world new); most often the person clearing out.",
     "how_often": "Once, and again only after signing out.",
     "came_to": "Get the first thing listed with the least setup.",
     "costly_mistake": "A step that blocks: a site that will not sign in, or a question that could wait. Every site can be skipped, a failed sign-in says why and offers Try again, and Continue never waits for all five.",
-    "ways_out": "Skip for now with nothing linked; Later on the photo step goes to Today; a site's 2FA or captcha shows its own step, and a timeout gives Try again (spec/ways-out.md).",
+    "ways_out": "Skip for now with nothing linked; Skip on the pickup step with no spot; Later on the photo step goes to Today; a site's 2FA or captcha shows its own step, and a timeout gives Try again (spec/ways-out.md).",
     "in_the_loop": "The person signs in on the site's own page; the password never reaches secondhand, and the page says so."
   },
   "states": [
-    { "state": "new", "shows": "the wordmark, 1 of 2, Your sites, the line that each is optional, five rows by logo each Not linked with Link, the password line, and Skip for now at the foot" },
-    { "state": "loading", "shows": "the row tapped says Signing in with its pill spinning; the other rows stay tappable; the foot is unchanged" },
-    { "state": "typical", "shows": "a linked row says Linked with a check; the line counts the sites linked; the foot says Continue in black" },
-    { "state": "failed", "shows": "Mercari's first try: Didn’t link, The code from your phone timed out, and Try again; the rest unchanged" },
-    { "state": "photo", "shows": "Back, 2 of 2, First photo, the line about one photo, Later, and Take a photo at the foot" }
+    {
+      "state": "new",
+      "shows": "the wordmark, 1 of 3, Your sites, the line that each is optional, five rows by logo each Not linked with Link, the password line, and Skip for now at the foot"
+    },
+    {
+      "state": "loading",
+      "shows": "the row tapped says Signing in with its pill spinning; the other rows stay tappable; the foot is unchanged"
+    },
+    {
+      "state": "typical",
+      "shows": "a linked row says Linked with a check; the line counts the sites linked; the foot says Continue in black"
+    },
+    {
+      "state": "failed",
+      "shows": "Mercari's first try: Didn’t link, The code from your phone timed out, and Try again; the rest unchanged"
+    },
+    {
+      "state": "pickup",
+      "shows": "Back, 2 of 3, Pickup spot, the line that it is optional and that days and times are picked when a buyer asks, never from the calendar; one field, A public place; the line on safe spots; Skip at the foot, Save spot once a place is typed"
+    },
+    {
+      "state": "photo",
+      "shows": "Back, 3 of 3, First photo, the line about one photo, Later, and Take a photo at the foot"
+    },
+    {
+      "state": "offline",
+      "path": "/onboarding?state=offline",
+      "shows": "Waiting for signal, that linking a site needs it and can be skipped, then the sites"
+    }
   ],
   "controls": [
-    { "id": "link-ebay", "control": "Link", "on_tap": "starts that site's sign-in: Signing in, then Linked", "does": "links the site", "logs": { "type": "change", "entity": "account", "id": "ebay", "to": "loading" } },
-    { "id": "link-mercari", "control": "Link (Mercari)", "on_tap": "the first try times out at the code step and offers Try again; the second links", "does": "links the site", "logs": { "type": "change", "entity": "account", "id": "mercari", "to": "loading" } },
-    { "id": "onboarding-next", "control": "Skip for now or Continue", "on_tap": "goes to the photo step, whatever is linked", "does": "goes to the photo step" },
-    { "id": "nav-back", "control": "Back (photo step)", "on_tap": "goes back to the sites step with what was linked kept", "does": "goes back a step", "before": ["onboarding-next"] },
-    { "id": "onboarding-camera", "control": "Take a photo", "on_tap": "finishes first launch and opens the camera over Today", "does": "opens the camera", "before": ["onboarding-next"], "goes": "/camera" },
-    { "id": "onboarding-later", "control": "Later", "on_tap": "finishes first launch and opens Today", "does": "opens Today", "before": ["onboarding-next"], "goes": "/" }
+    {
+      "id": "link-ebay",
+      "control": "Link",
+      "on_tap": "starts that site's sign-in: Signing in, then Linked",
+      "does": "links the site",
+      "logs": {
+        "type": "change",
+        "entity": "account",
+        "id": "ebay",
+        "to": "loading"
+      }
+    },
+    {
+      "id": "link-mercari",
+      "control": "Link (Mercari)",
+      "on_tap": "the first try times out at the code step and offers Try again; the second links",
+      "does": "links the site",
+      "logs": {
+        "type": "change",
+        "entity": "account",
+        "id": "mercari",
+        "to": "loading"
+      }
+    },
+    {
+      "id": "onboarding-next",
+      "control": "Skip for now or Continue",
+      "on_tap": "goes to the pickup step, whatever is linked",
+      "does": "goes to the pickup step"
+    },
+    {
+      "id": "nav-back",
+      "control": "Back (pickup step)",
+      "on_tap": "goes back to the sites step with what was linked kept",
+      "does": "goes back a step",
+      "before": [
+        "onboarding-next"
+      ]
+    },
+    {
+      "id": "onboarding-spot",
+      "control": "A public place",
+      "on_tap": "edits the spot in place; once typed, the foot reads Save spot",
+      "does": "edits the spot",
+      "before": [
+        "onboarding-next"
+      ]
+    },
+    {
+      "id": "onboarding-pickup-next",
+      "control": "Skip or Save spot",
+      "on_tap": "saves the spot if one is typed, or skips, and goes to the photo step",
+      "does": "goes to the photo step",
+      "before": [
+        "onboarding-next"
+      ],
+      "logs": {
+        "type": "change",
+        "entity": "onboarding",
+        "to": "pickups"
+      }
+    },
+    {
+      "id": "onboarding-camera",
+      "control": "Take a photo",
+      "on_tap": "finishes first launch and opens the camera over Today",
+      "does": "opens the camera",
+      "before": [
+        "onboarding-next",
+        "onboarding-pickup-next"
+      ],
+      "goes": "/camera"
+    },
+    {
+      "id": "onboarding-later",
+      "control": "Later",
+      "on_tap": "finishes first launch and opens Today",
+      "does": "opens Today",
+      "before": [
+        "onboarding-next",
+        "onboarding-pickup-next"
+      ],
+      "goes": "/"
+    }
   ],
-  "back": "The sites step has no Back: it is the first screen after sign-in. The photo step goes back to the sites step.",
+  "back": "The sites step has no Back: it is the first screen after sign-in. The pickup step goes back to the sites step, and the photo step to the pickup step.",
   "decisions": [
-    "Two steps, not the seven in spec/pages.md §6.1: sign-in is already done, and email for sales, pickups and alerts are asked the first time each is needed, so nothing stands between a new person and a first listing (the brief: the fewest steps to the first listing).",
+    "Three steps, not the seven in spec/pages.md §6.1: sign-in is already done, and email for sales and alerts are asked the first time each is needed, so nothing stands between a new person and a first listing (the brief: the fewest steps to the first listing).",
+    "An optional saved pickup spot is the only pickup step (spec/edge-cases.md §16; decision: no fixed pickup windows): no hours to set and no calendar read. Days and times are tapped when a buyer wants to meet, so the step asks one thing and can be skipped.",
+    "The spot is a blank field, A public place, with one line on where is safest (a police station's safe exchange zone, then a busy, lit store entrance); the address goes out only on its own tap later. A map of safe spots needs place data the demo does not have.",
     "No carousel and no promises: the first screen is the first task.",
     "The wordmark sits in the nav on the first step, which is the first screen a new person sees after sign-in; the photo step has Back instead.",
     "Every site has its own state and act, and Continue works with none linked (Ben, 03:22). With none linked the foot reads Skip for now in gray; with one it reads Continue in black, so the black pill appears once there is something to continue with.",
     "The import of found listings is left to Today as merge cards, so linking never waits on a scan.",
-    "Mercari's first Link in the demo times out at the code step, so the failed state and Try again can be seen."
+    "Mercari's first Link in the demo times out at the code step, so the failed state and Try again can be seen.",
+    "?state= draws each state of the first step: typical with one site linked, loading with one signing in, failed with Mercari's try timed out, offline with Waiting for signal. Empty, one and dense are skipped: first launch is only for a new person."
   ]
 }

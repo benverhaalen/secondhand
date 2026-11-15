@@ -1,0 +1,23 @@
+{
+  "route": "want?id=want_oven&world=buyer",
+  "screen": "want",
+  "states": [
+    "typical",
+    "new",
+    "empty",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "one: a want is one thing, with no list in it to hold one or many; dense: the same, a want has no list to fill",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}

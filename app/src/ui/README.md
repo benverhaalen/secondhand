@@ -53,6 +53,12 @@ See every part in every state at **`/dev/parts`** (light) and **`/dev/parts?sche
 | `TopSlot` | | `news?: { since, kept, line, onPress? }` or `setup?: { id, step, line, onPress? }`. Nothing new: no slot. Never $0.00 |
 | `TabBar` | 390 x 84 | `current: TabKey`, `badges?`, `onTab`. Already in `(tabs)/_layout.tsx`; a screen never draws it |
 | `Wash` | 390 x 236 | Drawn by `Screen wash`; never by hand |
+| `ThreadRow` | 350 x 96 | `id`, `who`, `photo`, `title`, `site`, `need?: { state, word }`, `did?` ("Sent for you"), `last`, `mine?`, `time`, `unread`, `onPress?`. One conversation in Messages; a `List` of them |
+| `Message` | its words, at most 84% wide | `side: 'theirs' \| 'mine'`, `children`, `meta?` (a `Meta`), `id?`, `label?`, `onPress?` (a message the agent sent opens its Why?). Not a sized part: as tall as its words |
+| `Meta` | a caption line | `text`, `icon?`, `info?`. Who and when under a bubble, or a note of what was done |
+| `Draft` | full width | `id`, `who`, `spans: Span[]`, `facts?: { text, from }[]`, `status?: 'ready' \| 'editing' \| 'sending' \| 'sent' \| 'failed'`, `lead?`, `hold?`, `failed?`, `onSend?`, `onChange?`, `onMine?`. The agent's reply held for a tap: guessed words dotted, solid once changed (`remark` works out which), a chip per fact with its source. Send, Edit, Take over |
+| `Composer` | full width, 40 tall and grows | `id`, `to`, `value`, `onChange`, `onSend`, `sending?`. The person's own message; Send waits for words |
+| `TimeSpan` | full width x 40, the day and words above | `id`, `day`, `words` ("2 to 4 pm"), `value: { start, end }` in half hours, `onChange`, `from?`, `to?`, `note?`. A span on one day, dragged by its two knobs; snaps to half hours |
 | `Tile` (parts/tile) | a grid column | `id`, `title`, `photo`, `state`, `word?`, `sites?`, `fact: { label, amount? }`, `faded?`, `select?: 'off' \| 'on' \| 'picked'`, `price?`, `onPress`. A thing in a photo grid: the tag on the photo's top left, site badges on its bottom right corner 4 apart |
 | `Shelf` (parts/tile) | header 24 | `id`, `title`, `count`, `onAll?` (See all), `folded?`, `onOpen?`, `children`. A section of a grid with its count |
 | `FilterRow`, `Chip` (parts/chip) | 40 tall | `FilterRow` scrolls sideways past the gutter. `Chip`: `id`, `label?`, `count?`, `icon?`, `site?` (the logo alone), `picked?`, `onPress`. One row of filters |

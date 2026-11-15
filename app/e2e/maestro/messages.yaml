@@ -1,0 +1,21 @@
+# Messages (app/behavior/messages/index.json) on a phone or simulator: the same states as app/e2e/messages.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/messages.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/messages.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+- openLink: ${URL}/--/messages
+- extendedWaitUntil:
+    visible: "Messages"
+    timeout: 30000
+- assertVisible: "Possible scam"
+- tapOn: { id: "messages-filter" }
+- tapOn: { id: "filter-it_jacket" }
+- assertNotVisible: { id: "thread-cv_cf" }
+- tapOn: { id: "thread-cv_jd" }
+- extendedWaitUntil:
+    visible: "Counter"
+    timeout: 10000
