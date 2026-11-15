@@ -1,6 +1,6 @@
 {
  "fixture": "pages",
- "version": 1,
+ "version": 2,
  "note": "Public signed-out search pages reduced to the result cards; seller handles hashed, images and scripts removed. Synthetic pages are hand-built to the same structure where the live site blocked the fetch.",
  "files": [
   {
@@ -57,15 +57,15 @@
   },
   {
    "site": "mercari",
-   "mode": "synthetic",
-   "source_url": "https://www.mercari.com/search/?keyword=levi+501",
-   "note": "live fetch returned an HTTP 403 bot check",
-   "fetched_at": null,
+   "mode": "recorded",
+   "source_url": "https://www.mercari.com/search/?keyword=carhartt+jacket",
+   "note": "HTTP 200 on a signed-out cloud browser, first 12 result cards; a plain server fetch gets a 403",
+   "fetched_at": "2026-11-15",
    "page": "mercari.html",
    "expected": "mercari.expected.json",
    "sha256": {
-    "mercari.html": "880a58d3db1f6f789143cd24ea07aabb7ee193dacd88f12d366e3312f8f4b353",
-    "mercari.expected.json": "a5a3dee463fac9fc3abac752f9abe4283909fecbc38183ef477bba544e80e732"
+    "mercari.html": "15483c0c1e87c11c40adda52a4dd7b769d67ce8e6526e1492df3b68385b67d84",
+    "mercari.expected.json": "6785e12cc7763e18806bf7c214d18f5e8660cd529034b0c3aa93fdae462da2a0"
    }
   }
  ]
