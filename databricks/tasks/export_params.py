@@ -28,12 +28,11 @@ def run(spark, files, *, catalog, contestant, split_at, now, run_id, code_versio
                              CAST(listed_at AS DATE) AS listed_at, CAST(at AS DATE) AS at
                       FROM {catalog}.market.comp_for_model
                       WHERE source = 'nber_ebay_bo'"""
-        named = contestant.replace("'", "''")
         estimate_sql = f"""SELECT e.* FROM {catalog}.measures.backtest_estimate e
-            WHERE e.contestant = '{named}' AND e.run_id = (
+            WHERE e.contestant = :contestant AND e.run_id = (
                 SELECT e.run_id FROM {catalog}.measures.backtest_estimate e
                 JOIN {catalog}.measures.backtest_run r ON r.run_id = e.run_id
-                WHERE e.contestant = '{named}'
+                WHERE e.contestant = :contestant
                 ORDER BY r.ended_at DESC, e.run_id DESC LIMIT 1
             )"""
         comps = log.call('db', 'read_export_comps', {'catalog': catalog},
@@ -45,13 +44,13 @@ def run(spark, files, *, catalog, contestant, split_at, now, run_id, code_versio
             estimates = []
         else:
             estimates = log.call('db', 'read_export_estimates', {'contestant': contestant},
-                                 lambda: [r.asDict() for r in spark.sql(estimate_sql).collect()],
+                                 lambda: [r.asDict() for r in spark.sql(estimate_sql, args={'contestant': contestant}).collect()],
                                  describe=lambda rs: {'rows': len(rs)})
             if not estimates:
                 log.note('no backtest estimates for contestant; no calibration rows',
                          level='info', contestant=contestant)
         out = log.timed('export_params.build', lambda: build_rows(comps, estimates, contestant, now,
-                                                                  run_id, code_version, split_at=split_at, counts=counts))
+                                                                  run_id, code_version, split_at=split_at, counts=counts, log=log))
         log.note('param export counts', level='info', **counts)
         payload = (json.dumps(out, allow_nan=False) + '\n').encode('utf-8')
         base = f'/Volumes/{catalog}/raw/export/params'
@@ -66,7 +65,7 @@ def run(spark, files, *, catalog, contestant, split_at, now, run_id, code_versio
         return out
     except Exception as error:
         log.error('export_params', error)
-        log.job(run_id, 'export_params', 'failed')
+        log.job(run_id, 'export_params', 'failed', error=error)
         log.end(ok=False)
         raise
 

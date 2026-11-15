@@ -17,7 +17,7 @@ if __package__ in (None, ''):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from param.registry import FIELDS, complete_row, scope_key
-from valuation.sale_curve import fit_group
+from valuation.sale_curve import _timestamp, fit_group
 
 
 def _param(name, scope, value, ids, now):
@@ -55,8 +55,6 @@ def split_date(value):
 
 def _calibration(rows, holdout, split_at):
     datasets = {row['data'] for row in rows + holdout}
-    if len(datasets) != 1 or not next(iter(datasets)).startswith('dataset:'):
-        raise ValueError('calibration scope must contain one dataset provenance')
     scores = sorted(max(math.log(r['q10_cents']) - math.log(r['truth_cents']),
                         math.log(r['truth_cents']) - math.log(r['q90_cents']), 0) for r in rows)
     n = len(scores)
@@ -74,7 +72,7 @@ def _calibration(rows, holdout, split_at):
             'nominal': .8, 'fitted_on': next(iter(datasets)), 'use_scope': 'hackathon_demo'}
 
 
-def build_rows(comps, estimates, contestant, now, run_id, code_version, *, split_at=None, counts=None):
+def build_rows(comps, estimates, contestant, now, run_id, code_version, *, split_at=None, counts=None, log=None):
     if estimates or split_at is not None:
         split_at = split_date(split_at)
     counts = counts if counts is not None else Counter()
@@ -101,10 +99,23 @@ def build_rows(comps, estimates, contestant, now, run_id, code_version, *, split
         if not all(_positive(row.get(field)) for field in ('q10_cents', 'q90_cents', 'truth_cents')):
             counts['invalid_estimates'] = counts.get('invalid_estimates', 0) + 1
             continue
-        valid.append(row)
+        try:
+            as_of = datetime.fromtimestamp(_timestamp(row.get('as_of')), timezone.utc).date()
+        except (AttributeError, TypeError, ValueError, OverflowError, OSError):
+            counts['invalid_estimates'] = counts.get('invalid_estimates', 0) + 1
+            continue
+        valid.append({**row, 'as_of': as_of})
     for scope, members in _groups(valid):
-        fit = [r for r in members if str(r['as_of']) < split_at]
-        holdout = [r for r in members if str(r['as_of']) >= split_at]
+        datasets = {r['data'] for r in members}
+        if len(datasets) != 1 or not next(iter(datasets)).startswith('dataset:'):
+            counts['omitted_calibration_groups'] = counts.get('omitted_calibration_groups', 0) + 1
+            if log is not None:
+                log.note('omitted calibration group', level='info', scope=scope,
+                         reason='calibration scope must contain one dataset provenance')
+            continue
+        cutoff = date.fromisoformat(split_at)
+        fit = [r for r in members if r['as_of'] < cutoff]
+        holdout = [r for r in members if r['as_of'] >= cutoff]
         if len(fit) >= 30:
             params.append(_param('valuation_calibration', scope, _calibration(fit, holdout, split_at),
                                  [r['item_id'] for r in fit], now))
@@ -155,7 +166,7 @@ def main(argv=None, *, log_path=None):
                              describe=lambda rs: {'rows': len(rs)}) if args.estimates else []
         counts = Counter()
         out = log.timed('valuation.export', lambda: build_rows(comps, estimates, args.contestant, now,
-                                                               args.run_id, version, split_at=args.split_at, counts=counts))
+                                                               args.run_id, version, split_at=args.split_at, counts=counts, log=log))
         log.note('param export counts', **counts)
         log.call('tool', 'write_params', {'file': args.out, 'rows': len(out['params'])},
                  lambda: Path(args.out).write_text(json.dumps(out, allow_nan=False) + '\n', encoding='utf-8'))
@@ -164,7 +175,7 @@ def main(argv=None, *, log_path=None):
         return out
     except Exception as error:
         log.error('valuation.export', error)
-        log.job(args.run_id, 'export_params', 'failed')
+        log.job(args.run_id, 'export_params', 'failed', error=error)
         log.end(ok=False)
         raise
 

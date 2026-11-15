@@ -216,3 +216,54 @@ def test_holdout_rows_cannot_satisfy_the_thirty_fit_row_floor():
 def test_build_rejects_missing_or_invalid_split_at(split_at):
     with pytest.raises(ValueError, match='--split-at'):
         build_rows([], estimates(), 'engine_all_on', NOW, 'r', 'dev', split_at=split_at)
+
+
+def test_failed_cli_log_passes_the_log_contract(tmp_path):
+    log = tmp_path / 'failed.jsonl'
+    with pytest.raises(FileNotFoundError):
+        main(['--comps', str(tmp_path / 'missing.csv.gz'), '--run-id', 'f',
+              '--out', str(tmp_path / 'params.json')], log_path=log)
+    checked = subprocess.run(['node', str(ROOT / 'spec/log.mjs'), str(log)], capture_output=True, text=True)
+    assert checked.returncode == 0, checked.stdout + checked.stderr
+
+
+@pytest.mark.parametrize('as_of', [None, 'not-a-date'])
+def test_invalid_as_of_is_counted_and_enters_neither_split(as_of):
+    invalid = {**estimates(1)[0], 'item_id': 'invalid-date', 'as_of': as_of}
+    counts = {}
+    out = build_rows([], estimates() + [invalid], 'engine_all_on', NOW, 'r', 'dev',
+                     split_at=SPLIT_AT, counts=counts)
+    value = out['params'][0]['value_or_hyperparams']
+    assert counts.get('invalid_estimates') == 1, 'invalid as_of must be counted'
+    assert value['n'] == 30 and value['holdout_n'] == 0, 'invalid as_of entered a split'
+
+
+@pytest.mark.parametrize('as_of', ['2018-12-31T23:30:00-05:00', '2019-01-01T00:00:00Z', '2019-01-01'])
+def test_time_split_uses_the_utc_date(as_of):
+    boundary = {**estimates(1)[0], 'item_id': 'utc-boundary', 'as_of': as_of}
+    value = build(es=estimates() + [boundary])['params'][0]['value_or_hyperparams']
+    assert value['n'] == 30, 'UTC holdout leaked into fit'
+    assert value['holdout_n'] == 1, 'UTC boundary must be holdout'
+
+
+@pytest.mark.parametrize('stray_as_of', ['2018-12-31', '2019-01-01'])
+def test_mixed_provenance_omits_only_its_calibration_group_and_writes_file(tmp_path, stray_as_of):
+    path = tmp_path / 'rows.csv.gz'
+    with gzip.open(path, 'wt', newline='') as stream:
+        writer = csv.DictWriter(stream, fieldnames=comps()[0])
+        writer.writeheader()
+        writer.writerows(comps())
+    stray = {**estimates(1)[0], 'item_id': 'stray', 'data': 'dataset:other', 'as_of': stray_as_of}
+    other = [{**r, 'kind': 'media', 'item_id': 'other-' + r['item_id']} for r in estimates()]
+    es = tmp_path / 'estimates.jsonl'
+    es.write_text('\n'.join(json.dumps(r) for r in estimates() + [stray] + other))
+    out, log = tmp_path / 'params.json', tmp_path / 'export.jsonl'
+    main(['--comps', str(path), '--estimates', str(es), '--split-at', SPLIT_AT,
+          '--run-id', 'mixed', '--out', str(out)], log_path=log)
+    rows = json.loads(out.read_text())['params']
+    assert {(r['name'], r['scope']['kind']) for r in rows} == {
+        ('valuation_sale_curve', 'electronics'), ('valuation_calibration', 'media')}
+    events = [json.loads(line) for line in log.read_text().splitlines()]
+    assert any(e.get('omitted_calibration_groups') == 1 for e in events)
+    assert any(e.get('reason') == 'calibration scope must contain one dataset provenance'
+               and e.get('scope') == {'kind': 'electronics', 'site': None} for e in events)

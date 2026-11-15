@@ -19,8 +19,9 @@ class Spark:
     def __init__(self, comps=(), estimates=()):
         self.comps, self.estimates, self.queries = comps, estimates, []
 
-    def sql(self, sql):
+    def sql(self, sql, args=None):
         self.queries.append(sql)
+        self.args = args
         rows = self.comps if '.market.comp_for_model' in sql else self.estimates
         return SimpleNamespace(collect=lambda: [SimpleNamespace(asDict=lambda r=r: r) for r in rows])
 
@@ -72,7 +73,9 @@ def test_queries_use_the_guarded_view_and_latest_run_of_only_the_named_contestan
     assert 'CAST(listed_at AS DATE)' in comp_sql and 'CAST(at AS DATE)' in comp_sql
     assert not any(re.search(r'\bmarket\.comp\b', q) for q in spark.queries)
     assert 'secondhand.measures.backtest_estimate' in estimate_sql
-    assert estimate_sql.count("contestant = 'engine_all_on''quoted'") == 2
+    assert estimate_sql.count('contestant = :contestant') == 2
+    assert "engine_all_on" not in estimate_sql, 'contestant must not be interpolated into SQL'
+    assert spark.args == {'contestant': "engine_all_on'quoted"}
     assert 'secondhand.measures.backtest_run' in estimate_sql
     assert 'ORDER BY r.ended_at DESC' in estimate_sql and 'LIMIT 1' in estimate_sql
     assert 'e.run_id = (' in estimate_sql
@@ -110,6 +113,9 @@ def test_upload_failure_propagates_and_marks_job_failed():
             split_at='2019-01-01')
     events = [json.loads(line) for line in lines]
     assert any(e['event'] == 'job.state' and e['state'] == 'failed' for e in events)
+    failed = next(e for e in events if e['event'] == 'job.state' and e['state'] == 'failed')
+    assert failed.get('error', {}).get('type') == 'OSError', 'failed job needs its error'
+    assert failed['error']['msg'] == 'volume unavailable'
     assert events[-1]['event'] == 'session.end' and events[-1]['ok'] is False
 
 
