@@ -658,3 +658,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 > Do not hedge
 
 > Lets prepare for next session, run through everything with me. So with this established specialized protocol for every platform, we can also build established search and information engines to aggregate with https://www.firecrawl.dev/ and treg for all additional market research, also utilize thriftx. not scannning that site, but building osint powered intelligence and inforamtion gatherers. Extreemely fast. and efficient
+
+## 2026-11-14 nate spec in full how marketing strategies are weighed in real time and how collected data is used
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> So that solves all actions on every platform, we still need to have a clear way to weigh and realtime determine marketing strategies, how our data we collect will be usedd. all should be specced in full
