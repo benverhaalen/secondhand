@@ -24,7 +24,7 @@ const plan = { tasks: [
 const planPath = join(dir, 'plan.json');
 writeFileSync(planPath, JSON.stringify(plan));
 const okWalk = join(dir, 'walk-ok.mjs'); writeFileSync(okWalk, 'process.exit(0)');
-const run = (...args) => spawnSync(process.execPath, [prove, '--plan', planPath, ...args], { encoding: 'utf8' });
+const run = (...args) => spawnSync(process.execPath, [prove, '--plan', planPath, ...args], { encoding: 'utf8', env: { ...process.env, PROVE_RUNNING: '' } });
 const out = r => r.stdout + r.stderr;
 
 test('--task passing task exits 0', () => {
