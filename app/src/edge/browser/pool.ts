@@ -42,7 +42,7 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
     const server = account_id ? address(account_id) : undefined, headless = !(site && PROFILES[site].headed);
     return server ? { headless, proxy: { server } } : { headless };
   };
-  const profileDir = (account_id: string) => join(profileRoot, encodeURIComponent(account_id));
+  const profileDir = (account_id: string) => profileDirFor(profileRoot, account_id);
 
   function slotFor(account_id: string, site?: Site): Slot<P> {
     const have = accounts.get(account_id);
@@ -163,5 +163,8 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
     },
   };
 }
+
+// One account's profile directory: the pool and the hosted sign-in open the same one.
+export const profileDirFor = (profileRoot: string, account_id: string) => join(profileRoot, encodeURIComponent(account_id));
 
 export type Pool<P extends PoolPage = PoolPage> = ReturnType<typeof createPool<P>>;

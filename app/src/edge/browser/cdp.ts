@@ -20,7 +20,7 @@ type CdpBrowser = { contexts(): CdpContext[]; newContext(): Promise<CdpContext>;
   newBrowserCDPSession?(): Promise<{ send(method: 'Browser.close'): Promise<unknown> }> };
 export type CdpPw = { chromium: { connectOverCDP(url: string, o?: { timeout?: number }): Promise<CdpBrowser> } };
 
-export type AuthedContext<P> = PoolContext<P & CdpPage> & { loadState(s: StorageState): Promise<void>; exportState(): Promise<StorageState> };
+export type AuthedContext<P> = PoolContext<P & CdpPage> & { loadState(s: StorageState): Promise<void>; exportState(): Promise<StorageState>; live_url?: string };
 
 export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage> {
   async function connect(profileDir: string | undefined, opts: LaunchOptions): Promise<AuthedContext<CdpPage>> {
@@ -50,6 +50,7 @@ export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage>
           `if (location.origin === ${JSON.stringify(o.origin)}) { for (const [k, v] of ${JSON.stringify(o.localStorage.map(i => [i.name, i.value]))}) localStorage.setItem(k, v); }` });
       },
       exportState: () => ctx.storageState(),
+      live_url: ep.live_url, // a cloud browser's live view; the server keeps it and hands the client only an opaque token
     };
   }
   return { persistent: (dir, opts) => connect(dir, opts), anonymous: opts => connect(undefined, opts) };
