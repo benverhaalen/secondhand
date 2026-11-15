@@ -30,19 +30,38 @@ Nate: "Utilize codex too, sol and terra and even astra at times. 6.1 which you h
 | A second opinion on a risky diff, or a second attempt after a Claude seat fails twice | Codex, picked per case | a different family finds different faults |
 | Terra | whatever the Codex skill's roster says it is suited to on this machine: read the roster before the first dispatch, do not assume | not verified in this session |
 | Images: demo items, photo fixtures, planted-change pairs | Astra through the `image-gen` skill | the repo's rule for every generated image |
+| Continuous review, test and fix while the build goes on: rerun every proving command and the walk on `main`, review what merged, fix what is red through the owning stream | Codex sessions, led by an Opus or Fable session (stream 16) | Nate: "Codex can also have sessions review and test and fix as we continously keep building" |
 | Review of every Codex-written change | a fresh Claude reviewer, with `node scripts/evidence.mjs brief` | Claude reviews Codex code; no change is reviewed by its writer |
 
 Send independent tasks to both families in the same message. A Codex task gets the same brief block, `rests`, check and breaks list as a Claude one.
+
+## Skills and connectors to load
+
+Load these at the start, before the first dispatch, and name the right ones in each stream's brief.
+
+| For | Load |
+|---|---|
+| Any code | the repo's `build` skill; `tdd` where a stream asks for test-first; `debug` on any failure with no known cause |
+| Dispatching seats and sessions | `delegate`, `codex` (read its roster before the first Codex dispatch), `operate-agents` for sessions that outlive a turn, `review` |
+| Facts that could have changed | the repo's `research-note` skill, `research`, the Exa tools |
+| Choices that shape the build | the repo's `decide` skill; taste, direction and scope go to Nate or Ben |
+| Words a person reads | the repo's `writing` skill |
+| Databricks (stream 13 and any stream that touches the workspace) | `databricks:databricks-core` first, then the matching one: `databricks-lakebase`, `databricks-apps`, `databricks-jobs`, `databricks-dabs`, `databricks-unity-catalog`, `databricks-model-serving`, `databricks-mlflow-evaluation`, `databricks-vector-search`, `databricks-pipelines`. The CLI has two profiles; never pick one silently, pass `--profile` |
+| The app and its routes (stream 15) | `expo:expo-router`, `expo:expo-data-fetching`, `expo:eas-simulator` for a cloud simulator; the Expo connector is signed in; ask Nate before the first build or simulator |
+| Library and platform documentation | the context7 tools, before recalling an API from memory |
+| Generated images | the repo's `image-gen` skill (Astra) |
+| What a feature rests on | `node scripts/evidence.mjs <slug>` before writing, `node scripts/evidence.mjs brief <commit>` for the reviewer |
 
 ## Start here
 
 1. [spec/README.md](../../../../spec/README.md): the index of everything below.
 2. [spec/plans/workstreams.md](../../../../spec/plans/workstreams.md): the build piece by piece. The sessions the orchestrator launches, what each owns and delivers, what a platform team builds, and the seams fixed in the first hour.
-3. [spec/plans/start-now.md](../../../../spec/plans/start-now.md): every task that can begin this minute, with its files and proving command, and the block to paste into every build brief. The full graph is `spec/plans/backend/plan.md` and `plan.json` when they land.
-4. [spec/engines/](../../../../spec/engines/): one document per engine. Each has what it decides, its signals, the calculation, how it learns, its speed design, what the person sees, how it beats what exists, protections, proof and build tasks.
-5. [spec/product.md](../../../../spec/product.md): the canon. Names, tables, the API and the five machines. A name not in it is added there first.
-6. [spec/assessment.md](../../../../spec/assessment.md): what is settled, what needs a check, and the ten workspace checks for the first hour.
-7. [spec/open-questions.md](../../../../spec/open-questions.md): what only Ben or Nate can settle. It opens with the questions for Ben.
+3. [spec/plans/board.md](../../../../spec/plans/board.md): the one place progress is tracked. Every item is a box with its proving command; nothing is built that is not on it.
+4. [spec/plans/start-now.md](../../../../spec/plans/start-now.md): every task that can begin this minute, with its files and proving command, and the block to paste into every build brief. The full graph is `spec/plans/backend/plan.md` and `plan.json` when they land.
+5. [spec/engines/](../../../../spec/engines/): one document per engine. Each has what it decides, its signals, the calculation, how it learns, its speed design, what the person sees, how it beats what exists, protections, proof and build tasks.
+6. [spec/product.md](../../../../spec/product.md): the canon. Names, tables, the API and the five machines. A name not in it is added there first.
+7. [spec/assessment.md](../../../../spec/assessment.md): what is settled, what needs a check, and the ten workspace checks for the first hour.
+8. [spec/open-questions.md](../../../../spec/open-questions.md): what only Ben or Nate can settle. It opens with the questions for Ben.
 
 ## What the product is, in Nate's words
 
@@ -135,6 +154,7 @@ You are the orchestrator for Nate's side of secondhand. Read .agents/team/packet
 Goal: every backend feature built, working and testable with no UI, by 03:00 Central, starting with every task in spec/plans/start-now.md at once, then the full plan wave by wave.
 
 How to run it:
+00. Load the skills and connectors in the packet's table. Track everything on spec/plans/board.md: tick a box only when its proving command exits 0 on main and a seat that did not write it has reviewed it; add new work to the board before starting it; post the counts per stream to Nate at each checkpoint. Keep a Codex review, test and fix sweep running the whole time (stream 16).
 0. You launch each stream in spec/plans/workstreams.md as its own session, led by Opus or Fable, each with Sonnet seats and Codex workers on GPT-6.1 as builders. Streams 1, 2, 10, 13 and 15 push their interface first; the five platform teams and the scoring streams start the moment the protocol envelope is pushed. You hold the canon, the walk and the clock.
 1. Wave 0 first: the workspace checks on the event workspace, the scaffolds, the fixtures, the failure reporter, and the eleven expert research sessions (one per engine, from a working professional's view: what must be determined, the best way, what to consider). Fold each session's findings into its engine document and its tasks' accepts and breaks before that engine's build tasks start.
 2. Dispatch every task whose dependencies are done and whose owned files are disjoint, all in one message. Paste the plan's "Say this in every build brief" block into each brief, with the task's rests, owns, check, accepts and breaks. Specified tasks go to Sonnet or a Codex worker; Opus only where the approach must be found in the code.
