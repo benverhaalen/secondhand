@@ -16,7 +16,7 @@ Status: draft. Written 2026-11-14, second and third passes the same day. Every l
 
 ## 2. The map
 
-Tabs follow the decided bar: Today · Sell · ＋ · Buy · You ([decisions](../product/decisions.md#2026-11-14-the-bottom-bar-is-today--sell----buy--you)). Every feature is in scope ([decisions](../product/decisions.md#2026-11-14-keep-every-feature-in-scope)). An entity listed here has its owner table in that feature; others read it.
+The decided bar is Today · Sell · ＋ · Buy · You ([decisions](../product/decisions.md#2026-11-14-the-bottom-bar-is-today--sell----buy--you)); the "Where the person meets it" column below names the behaviour a person reaches, not a settled layout, since Ben's screen design is still open (*agent proposal*). Every feature is in scope ([decisions](../product/decisions.md#2026-11-14-keep-every-feature-in-scope)). An entity listed here has its owner table in that feature; others read it.
 
 | Slug | Where the person meets it | Owns | Spec |
 |---|---|---|---|
@@ -41,7 +41,7 @@ Tabs follow the decided bar: Today · Sell · ＋ · Buy · You ([decisions](../
 | score | Every number on an item, listing, product or match | `score`, `ranker_model`, `experiment`, `arm`, change detection, the `citation` writer ([words](../product/words.md#2026-11-14-nate-a-general-scoring-feature-and-real-time-algorithms)) | [features/score.md](features/score.md) |
 | assist | Buy search prompt, capture gaps, Sell and Market prompts | `intent`, the span fields on a `clarify` decision, the `assist` job | [features/assist.md](features/assist.md) |
 
-`rule` and `limits` sit with data because Today, messages, sold, price and buy all enforce them; You > Automation and You > Pickups are their screens. `requirement` sits with capture (the session reads it) and `claim_check` with data (every outgoing path calls it). `kind` and `category_map` sit with identify (*agent proposal*, inferred from [fields-by-kind](determinations/fields-by-kind.md)); `route_table`, `route_call` and `route_truth` sit with data.
+`rule` and `limits` sit with data because Today, messages, sold, price and buy all enforce them; You > Automation and You > Pickups are their screens. `requirement` sits with capture (the session reads it) and `claim_check` with data (every outgoing path calls it). `kind` and `category_map` sit with identify (*agent proposal*, inferred from [fields-by-kind](determinations/fields-by-kind.md)); `route_table`, `route_call`, `route_truth`, `param` and the information engines sit with data.
 
 How each number is computed lives in [determinations/](determinations/), one card per number: [seeing the item](determinations/seeing-the-item.md), [money](determinations/money.md), [listing and marketing](determinations/listing-and-marketing.md), [managing and buyers](determinations/managing-and-buyers.md), [market insight](determinations/market-insight.md), [asking and intent](determinations/asking-and-intent.md), [capture shots](determinations/capture-shots.md), [fields by kind](determinations/fields-by-kind.md). This page names things; a card says how they are worked out.
 
@@ -64,9 +64,9 @@ Every row carries `id` (prefixed, §7), `user_id`, `created_at`, `updated_at` an
 | `photo` | capture_id, role (`front`, `back`, `tag`, `care_label`, `fabric`, `detail`, `side`, `inside`, `sole`, `flaw`, `spin`, `screenshot`, `studio`), file_ref, parent_photo_ids[], exif_stripped (bool), use (`real`, `improved`), ai_marked (bool, the in-app mark; any export tag is separate, §9 J11) | capture | L, files V | studio, list, identify | part of Item |
 | `attribute` | item_id, name, value (json, or null when unknown), unit?, source, confidence (0..1, internal; never shown as a percentage, §8 certainty), evidence[] (`evidence` shape, below; includes the identity anchor), method, at, confirmed (bool), unknown_reason? | item-card | L | all | part of Item; a row per fact so each carries provenance |
 | `job` | kind (§4), item_id?, stages[] {name, state, started_at, ended_at}, state, result?, error?, trace_id | data | L | all | **Job** |
-| `comp` | product_id?, cluster_id? (one physical listing across sites and relists), site, price_cents, price_type (`asking`, `sold`, `retail`), best_offer_accepted? (bool; true means the shown price is the ask, not what was paid), observed_at (last read), first_seen_at, listed_at_source?, ended_at?, ended_reason? (`sold`, `ended`), sold_at? (equals ended_at when ended_reason is `sold`), price_history[] {at, price_cents}, phash[], condition, url_ref, evidence (`evidence` shape for a comp, with `rights`), source_route | price | D | price, appraise, watch, insights, market, score | **Comp** |
+| `comp` | product_id?, cluster_id? (one physical listing across sites and relists), site, price_cents, price_type (`asking`, `sold`, `retail`), best_offer_accepted? (bool; true means the shown price is the ask, not what was paid), observed_at (last read), first_seen_at, listed_at_source?, ended_at?, ended_reason? (`sold`, `ended`), sold_at? (equals ended_at when ended_reason is `sold`), price_history[] {at, price_cents}, phash[], condition, url_ref, evidence (`evidence` shape for a comp, with `rights`), source_route | price | D | price, appraise, watch, insights, market, score | **Comp**; a typed view of `observation` (kinds `price` and `listing`) |
 | `valuation` | one of item_id, match_id, capture_id or url_ref; per_site[] {site, low, high, basis_count, as_of, dates}, level (1 an exact live market, 2 adjusted similar sales, 3 a research guess), drivers[], max_pay_cents? with max_pay_citation_id? (its basis, [D17](determinations/money.md#d17-most-a-buyer-should-pay)), verdict?, check?, job_id | price | L (current), D (history) | item-card, appraise, list, buy, today | **Valuation**; an appraisal is a valuation with no item_id, carrying verdict, max_pay and the one check to make |
-| `strategy` | item_id, site, state (§4), objective (`quick`, `balanced`, `max_return`), price_path[] {at, price_cents}, floor_cents, offers_on (bool), list_at, title_form, photo_order[], attributes_to_fill[], handover (`ship`, `pickup`, `either`), follow_ups[], comp_set {ids[], as_of, fingerprint}, citation_id, preselected (bool), chosen_at?; one row per site, which is list.md's `per_site[]` | price | L | list, messages, sold | new: a determined calculation, one best plan per platform computed in plain code from that platform's comparable listings now, preselected, with the other objectives selectable; recomputed when the comparable set changes; "fast, credible and dynamic, yet transparent", so the person-facing step is under 1 s at the 95th percentile ([score.md](features/score.md)) and the plan shows its basis ([words](../product/words.md#2026-11-14-nate-the-best-strategy-per-platform-computed)); markdowns and counters follow the chosen path ([fees-and-taxes.md](../research/price/nate/fees-and-taxes.md) for net) |
+| `strategy` | item_id, site, state (§4), verdict (`list`, `skip`), skip_reason? (`site_bars_category`, `recall_or_legal_flag`, `not_connected`, `fit_avoid`, `negative_value`), objective (`quick`, `balanced`, `max_return`, the one set of names everywhere), price_path[] {at, price_cents}, floor_cents, horizon_days (7, 30, 90), offers_on (bool), list_at, title_form, photo_order[], attributes_to_fill[], category_id, shipping {mode (`buyer_pays`, `free`, `pickup`, `either`; the handover), ship_cents, price_includes_ship}, promotion {on, rate?, lift_lb?}, standing {offers_to_likers {on, discount, cooldown_days}, refresh {on, interval_days?}, relist {allowed, false on Poshmark}, bundle {on, max_discount}}, scores {e_net_cents, p_sale {d7, d30, d90}, tts_days [lo, hi], position [lo, hi], utility_cents}, alternatives[] {candidate_id, objective, e_net_cents, p_sale_d30, tts_days}, comp_set {ids[], as_of, fingerprint}, citation_id, param_versions {name: version} (also in the citation), preselected (bool), chosen_at?; one row per site, which is list.md's `per_site[]` and [marketing-engine](marketing-engine.md)'s `site_plan`, so a skipped site is a row with its reason; one row per site, which is list.md's `per_site[]` | price | L | list, messages, sold | new: a determined calculation, one best plan per platform computed in plain code from that platform's comparable listings now, preselected, with the other objectives selectable; recomputed when the comparable set changes; "fast, credible and dynamic, yet transparent", so the person-facing step is under 1 s at the 95th percentile ([score.md](features/score.md)) and the plan shows its basis ([words](../product/words.md#2026-11-14-nate-the-best-strategy-per-platform-computed)); markdowns and counters follow the chosen path ([fees-and-taxes.md](../research/price/nate/fees-and-taxes.md) for net) |
 | `listing` | item_id, site, state (`LISTING_STATES`), price_cents, url, external_ids[] {id, url, from, to}, sku, draft {title, body, photo_ids[]}, overrides (json, per site), interest {views?, watchers?, likes?}, posted_at, last_read_back_at, next_check_at (§6 runtime) | list | L | all | **Listing** |
 | `conversation` | site, site_thread_id, item_id?, listing_id or match_id, buyer_ref_hash, role (`sell`, `buy`), intent_last, state (§4), last_read_at, next_check_at | messages | L | today, sold, buy | **Conversation** |
 | `message` | conversation_id, actor (`user`, `auto`, `counterpart`), sent_at, site_message_id, intent, facets[] (including `possible_scam`, `dispute`), text_ref (body held encrypted, never logged) | messages | L | messages | part of Conversation |
@@ -83,13 +83,14 @@ Every row carries `id` (prefixed, §7), `user_id`, `created_at`, `updated_at` an
 | `event` | item_id?, actor (`user`, `auto`, `site`), action, why, observed_at, effective_at, operation_id, trace_id, undo {allowed, until}, undo_of?, route? (`api`, `replay`, `browser`), fell_back?, ms? | data | D, written through the logger | data, insights, today | the one log and the one "why?" source ([5-logging.md](../.agents/team/packets/team/5-logging.md)) |
 | `label` | subject (decision_id, message_id or attribute id), kind (`owner_statement`, `observed`, `verified_correction`, `specialist`), value, state (§4) | data | L, D | data, every typed judgement | new: what a tap or a correction teaches, kept apart from the decision it came from |
 | `recording` | site, task, steps_ref, recorded_at, last_ok_at, fail_count | replay | L, files V | the harness for that site | new, *agent proposal*: a site action recorded once in the harness and replayed as its fast path. Ben's word "recipe" (`rcp_`) is the same thing; `rec_` stands |
-| `citation` | metric, filters, table_versions[], definition_version, code_version, computed_at, basis_ids[], basis_hash (SHA-256 of the sorted basis ids and prices, [M21](determinations/market-insight.md#m21-the-citation-attached-to-every-published-number)) | score | D | every screen that shows a number | new: enough to recompute a number as of its date ([words](../product/words.md#2026-11-14-nate-provable-and-features-for-databricks)) |
+| `citation` | metric, filters, table_versions[] (Delta version n, read back with `VERSION AS OF n`, [settled](../research/data/nate/open-items-settled-databricks.md)), definition_version, code_version, param_versions{} (param name to version, so "Why this price?" can say "Mercari sales weighted 1.0, fitted on 214 sales, v37"), model_version, computed_at, basis_ids[], basis_hash (SHA-256 of the sorted basis ids and prices, [M21](determinations/market-insight.md#m21-the-citation-attached-to-every-published-number)) | score | D | every screen that shows a number | new: enough to recompute a number as of its date ([words](../product/words.md#2026-11-14-nate-provable-and-features-for-databricks)) |
 | `score` | subject_type (`item`, `listing`, `product`, `match`), subject_id, axis (`financial`, `quality`, `visibility`, `trend`), site?, value, range, citation_id, state (`shown`, `hidden`), hide_reason?, model_version | score | L (current), D (history) | item-card, price, list, market, watch, insights | new: one scored axis, a guarded number ([words](../product/words.md#2026-11-14-nate-a-general-scoring-feature-and-real-time-algorithms)) |
 | `ranker_model` | site, category, factors[] {name, p_helps, effect, range}, noise_floor, panel_as_of, change_flag (bool), model_version | score | D, UC model registry | score, list, price | new: the learned stand-in for one site's ranking per category; never the site's real weights |
 | `experiment` | site, category, factor, arms[], state (§4), started_at, ended_at?, budget {listings, price_floor_kept} | score | L (live), D (results) | score, list | new: a controlled variation on consenting users' own listings |
 | `arm` | experiment_id, design (`matched_pair`, `before_after`), variant (json), listing_ids[], exposures, outcome {impressions?, views, watchers, sold, days_to_sell}, posterior | score | L, D | score | part of experiment; a `before_after` arm is labelled as such and never called randomised |
-| `rank_observation` | site, category, query, observed_at, listing_ids[] (in order), evidence (comp shape) | score | D | score | new: one query on one site at one time |
-| `notice` | kind (`ranker_changed`, `listing_stale`, `anomaly`), site, category?, opened_at, cleared_at?, signals[] | score | L | score, list, price, today | new: raised to every affected listing |
+| `rank_observation` | site, category, query, observed_at, listing_ids[] (in order), evidence (comp shape) | score | D | score | new: one query on one site at one time; a typed view of `observation` (kind `rank`) |
+| `observation` | kind (`listing`, `stats`, `price`, `rank`, `fact`, `trend`, `retail`, `rule`), site?, product_id?, subject_ref (a listing id, url_ref or query), observed_at, payload (json), evidence (`evidence` shape), source_route, retention_class, rights_mode | data | D, append-only; snapshots on V | price, score, market, identify, insights, watch, buy | new, *agent proposal*: the one general row that every protocol read (`read_listings`, `read_stats`, `search`) and every information-engine find writes ([data-use](data-use.md)). `comp` and `rank_observation` are typed views over it with their own parsed columns, kept as the names readers use; nothing is stored twice |
+| `notice` | kind (`ranker_changed`, `listing_stale`, `anomaly`, `value_moved`, `demand_rose`), site, category?, opened_at, cleared_at?, signals[] | score | L | score, list, price, today | new: raised to every affected listing |
 | `product_snapshot` | product_id, site, price_type, day, n, p25, p50, p75, listed_count, sold_count, table_version | market | D | market, price, score | new: daily per product, site and price type |
 | `market_metric` | metric, subject_type, subject_id, as_of, a guarded number | market | D, served from L | market, insights | new |
 | `index_point` | index_id, basket_version, day, value, era, citation_id | market | D | market | new |
@@ -100,13 +101,14 @@ Every row carries `id` (prefixed, §7), `user_id`, `created_at`, `updated_at` an
 | `visitor` | session_ref (no account, no `user_id`), first_seen_at, rate_bucket, referral_ref | market | edge, L (counts only) | market | new: searches and opens product pages; cannot sell or save ([words](../product/words.md#2026-11-14-nate-visitors-and-full-users)) |
 | `follow` | target (`product_id`, brand, category or query), variant?, channel, opt_in_at, first_seen_price_cents?, first_seen_at, last_notified_at?, muted_at? | market | L | market, today, insights | new: interest to learn and be told, distinct from a `want` |
 | `referral_click` | visitor_id or user_id, product_id?, site, url, referral_tag, clicked_at | market | D | market, insights | new: a link-out that carries a referral ([words](../product/words.md#2026-11-14-nate-referrals-and-market-data)) |
-| `thresholds` | name, value, scope {item_kind?, site?}, version, calibration_split, refit_at | data | D (versioned), read into L | capture, identify, measure, messages, score, assist | new, *agent proposal*: every starting value a determination card names, versioned so a refit is auditable; assist starts `assist_span_open` 0.8, `assist_preselect_margin` 0.2, `assist_value_floor` 0.15 ([asking-and-intent](determinations/asking-and-intent.md)) |
+| `param` | name, scope {kind?, site?, segment?}, family (`scalar`, `beta`, `normal`, `gamma`, `model_ref`), value_or_hyperparams (json), prior, version, fitted_on_ids_hash, n_eff, metric, guard_lo, guard_hi, status (`champion`, `challenger`, `retired`), frozen (bool, set by a site change flag) | data | L (live), history D | every reader of a weight or threshold | new, *agent proposal*, replaces `thresholds`: every learned weight, threshold and interval a determination card names; the card's number is the prior, a new scope starts at it with n_eff 0 (§6 real-time weights). assist starts `assist_span_open` 0.8, `assist_preselect_margin` 0.2, `assist_value_floor` 0.15 as priors ([asking-and-intent](determinations/asking-and-intent.md)); the marketing engine starts `holding_cost_balanced` 0.002 and `holding_cost_quick` 0.01 of the fair-value midpoint per day (`max_return` 0), `p_min_quick` 0.6 and `p_min_balanced` 0.4, and `vis_exponent` 0.5 ([marketing-engine](marketing-engine.md) §3.4) |
+| `style_profile` | facets[] {name (brand, category, size, colour, era, price_band), weight, from (`sold`, `kept`, `saved`, `followed`, `bought`, `edited`)}, edited_at? | buy | L | buy, market, today | new, *agent proposal*: one per person, learned from what they sell, keep, save, follow and buy; feeds recommendations and Buy shelves; every facet shows where it came from and can be edited or removed; never reorders by referral |
 | `release_event` | product_id, store, kind (`release`, `restock`), date, source_rank | market | D | market, score | new, *agent proposal*: a retail release or restock, for [M16](determinations/market-insight.md#m16-how-new-retail-releases-relate-to-used-supply-and-price) |
 | `intent` | owner_ref (user or visitor), surface, job_id, want_id?, slots {use, for_whom, budget, size, compatibility[], deadline, condition_tolerance, keep_for (months)}, each slot a provenance value | assist | L | buy, watch, market, price | new, *agent proposal*: what a person is after, parsed from their words ([assist](features/assist.md)) |
 | `retail_offer` | product_id, relation (`same_product`, `successor`, `functional_equivalent`), seller_kind, condition, price_cents, shipping_cents, tax_cents, delivery_min_days, delivery_max_days, stock, ships_from, ships_to, warranty_months, returns_days, source, fetched_at, rights | market | D, Shopify rows kept 10 minutes at most | buy, market, price | new, *agent proposal*: a new, refurbished or brand-resale offer from an official seller. Named `retail_offer` so it is never read as `offer`, a price offer between people (was `official_offer`) |
 | `price_point` | product_id, site, band, at, value_cents or gap, definition_version | market | D | market, price, score | new, *agent proposal*: a change-only series per product, site and band ([M3](determinations/market-insight.md#m3-used-price-per-site-over-time)) |
 | `held_for_review` | comp_id, product_id, reason, held_at, state (`held`, `accepted`, `dropped`, `entered_half_weight` after 14 days) | market | D | market | new, *agent proposal*: an odd sale kept out of the index until reviewed ([M14](determinations/market-insight.md#m14-a-category-price-index) step 6); state names *inferred* |
-| `route_table` | route_id (reverse-DNS, e.g. `com.ebay.browse.sold`), site, need (a harness verb or `sold`, `asking`, `retail`, `trend`, `identify`), returns, kind (`official_api`, `own_account`, `browser`, `treg_direct`, `treg_routed`, `other_vendor`), unit_cost, ok_7d, hit_7d, p50_ms, p95_ms, freshness, coverage, rights, right_90d, fallback_order, seed_source, state (`active`, `demoted`, `dropped`, `kill`), input_schema, output_schema, auth (`API_KEY`, `OAUTH2`, `NO_AUTH`, `BASIC`, `session`), version (each version kept as history: a reviewed rule change, which only reorders, or the kill switch) | data | L, history D | every harness, price, market, watch | new, *agent proposal*: one row per (site, need, route) ([data](features/data.md#source-registry-and-router-agent-proposal)); absorbs `route_rule_version` |
+| `route_table` | route_id (reverse-DNS, e.g. `com.ebay.browse.sold`), layer (`site_protocol` for the five marketplaces, `engine` for an information gatherer, §6), site, need (a harness verb or `sold`, `asking`, `retail`, `trend`, `identify`), returns, kind (`adapter` (our own, through the person's signed-in session), `fetch` (Firecrawl, jev-ultrafast), `official_api`, `treg_direct`, `treg_routed`, `other_vendor`), recipe_ref? and fixture_ref? (for an adapter), unit_cost, success (a `param` of family beta, updated per call), p50_ms, p95_ms, completeness (share of the need's fields it returns), account_risk (`low`, `medium`, `high`, shown per site), breaker (`closed`, `open`, `half_open`), freshness, coverage, rights, right_90d, seed_source, state (`active`, `demoted`, `dropped`, `kill`), input_schema, output_schema, auth (`API_KEY`, `OAUTH2`, `NO_AUTH`, `BASIC`, `session`), version (each version kept as history: a reviewed rule change, which only reorders, or the kill switch) | data | L, history D | every harness, price, market, watch | new, *agent proposal*: one row per (site, need, route) ([data](features/data.md#source-registry-and-router-agent-proposal)); absorbs `route_rule_version` |
 | `route_call` | call_id, route_id, tags {person, job, need}, verdict (incl. `no_route`), fell_back, ms, cost_micro, overhead_micro | data | D | data, insights | new, *agent proposal*: one routed call; the daily stats are a Lakeflow rollup of it, not an entity (was `route_day_stat`) |
 | `route_truth` | route_id, checked_at, agreed (within the [D5](determinations/money.md#d5-fair-value-range-overall-and-per-site) range), basis | data | D | data | new, *agent proposal*: the nightly check behind `right_90d`; fields besides route_id *inferred* |
 
@@ -131,7 +133,7 @@ Ben's comp names map in (*agent proposal*): price_basis `sold` is price_type `so
 | offer_view | {condition, seller_kind, delivered_cents, delivery_min_days, delivery_max_days, stock, ships_from, ships_to} | buy | one row of a search result, from a listing or a `retail_offer`; delivered includes a labelled tax estimate |
 | `evidence`, attribute | {kind (`image_region`, `depth`, `label_text`, `lookup`, `owner`), ref, region?, captured_at, extractor_version} | item-card | what a fact rests on; `owner` is the person's own statement |
 | `evidence`, comp | {source_url, read_at, snapshot_ref, fingerprint, extractor_version, rights} | price | `snapshot_ref` points at the stored page in V so the read can be replayed |
-| `rights` | tags `may_store`, `may_model`, `may_show`, `may_share`, `ttl` | price | set per source from its terms, as facts. Hackathon build: recorded, not enforced. Public launch: the same tags are enforced ([decisions](../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build)). Replaces `permitted_uses` |
+| `rights` | tags `may_store`, `may_model`, `may_show`, `may_share`, `ttl` | price | set per source from its terms, as facts. Hackathon build: recorded, not enforced. Public launch: the same tags are enforced ([decisions](../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build)). Replaces `permitted_uses`. Every stored row also carries `retention_class` (`device`, `transient` deleted after its step, `thread`, `order`, `item_audit`, `source_ttl`, `history`) and `rights_mode` (`own_scope` trains only that person's scope, `opt_in_shared`, `aggregate_only`, `public`, `internal`, `never_kept`), one value per kind of data as [data-use](data-use.md) lists it; a zero-row scan by user id checks deletion |
 | guarded number | {value or range, basis_count, as_of, citation_id, state (`shown`, `hidden`), hide_reason? (`too_few`, `stale`, `mixed_types`, `source_gap`, `conflict`, `noise`)} | score | every number the app shows; a hidden one says why and what would show it |
 
 ## 4. States
@@ -230,16 +232,16 @@ Dibs: a paid buyer beats a dibs (code, not a decision); the dibs buyer gets an a
 |---|---|
 | capture | `capture_judge` (stages received, judged), `defect_propose`, `folder_group` |
 | item research | `measure`, `identify`, `studio`, `valuate` (appraise uses valuate) |
-| list | `draft`, `post` (relist uses post), `delist`, `share` (the engagement levers, [listing D26](determinations/listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own)) |
+| list | `draft`, `post` (relist uses post), `delist` (deterministic, no agent step, the first kind built), `share` (the engagement levers, [listing D26](determinations/listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own)), `promote_spend` (proposes and runs paid promotion inside the approved budget), `end_unsold` (the unsold end: relist, lower, donate or keep, as a decision) |
 | messages | `send_message`, `poll_inbox` |
 | sold | `label` (stages rate, buy, upload_tracking), `poll_orders` |
 | watch, buy | `watch_run`, `search` (stages identify, fanout, rank) |
 | assist | `assist` (stages parsed, linked, proposed) |
 | insights | `poll_stats` (runs the harness `read_stats` verb for the funnel) |
-| data, scheduled | `route_probe` (hourly, writes route health) |
+| data, scheduled | `route_probe` (hourly, writes route health), `adapter_author` (writes or repairs a site adapter and its fixture test, started on `no_route` or when a route's measured success drops), `param_fold` (nightly or weekly, writes `param` challengers and promotes by backtest, §6 real-time weights) |
 | connect | `import` {listings, purchases}, `unlink` |
-| scheduled | `reconcile`, `check_due` (one per row whose `next_check_at` has passed, §6 runtime) |
-| score | `observe_rank` (the fixed query panel per site and category, daily, through the harness `search` verb, writes `rank_observation`), `fit_ranker` (refits `ranker_model`, registers a Challenger, promotes to Champion only when held-out agreement beats the Champion and the floor), `score` (recomputes a subject's axes when its comparable set moves), `run_experiment` (allocates and reads arms), `requirement_reorder` (weekly, proposes a new `requirement` version a person approves) |
+| scheduled | `reconcile` (deterministic, no agent step), `check_due` (one per row whose `next_check_at` has passed, §6 runtime) |
+| score | `observe_rank` (the fixed query panel per site and category, daily, through the harness `search` verb, writes `rank_observation`), `fit_ranker` (refits `ranker_model`, registers a Challenger, promotes to Champion only when held-out agreement beats the Champion and the floor), `score` (recomputes a subject's axes when its comparable set moves), `run_experiment` (allocates and reads arms), the `requirement` order is a `param` challenger written by `param_fold`; a person's approval is its promotion guard |
 | market | `market_refresh` (retail, used asking and sold per followed product), `notify_follow` |
 | data | `export_user`, `delete_user` |
 
@@ -267,6 +269,7 @@ Modes are `auto`, `ask` and `locked`; `locked` is what [events.json](events.json
 | accept_offer | messages | auto at or above always_accept, else ask | yes, per item | | |
 | decline_offer | messages | auto | yes | | below the floor, answered with a counter at it |
 | offer_to_watchers | messages | auto inside limits | yes | | eBay, Depop |
+| bundle_offer | messages | auto inside limits | yes | | *agent proposal*: one buyer takes several items at [D19](determinations/listing-and-marketing.md#d19-bundle-discount)'s discount, never below any item's floor; Depop, Poshmark, eBay combined shipping |
 | scam_warning | messages | ask | no | | a `possible_scam` facet |
 | move_off_site | messages | locked | no | | the agent may refuse a buyer's request to leave the site |
 | book_pickup | messages | auto inside the windows at the saved spot | n/a | | ([decisions](../product/decisions.md#2026-11-14-pickups-use-your-windows-and-a-saved-meetup-spot)) |
@@ -274,7 +277,7 @@ Modes are `auto`, `ask` and `locked`; `locked` is what [events.json](events.json
 | share_address | messages | locked | no | | the home address |
 | markdown | price | auto above the floor, on the path | yes | markdown_suggested | |
 | price_below_floor | price | ask | never | price_below_lowest, below_floor | ([decisions](../product/decisions.md#2026-11-14-a-price-below-your-floor-always-asks)); screen copy "lowest you'd take" |
-| clarify | identify, assist | ask | no | clarifying_question | carries a `span` when assist raises it ([assist](features/assist.md)); a `blank` span sets `wait` and no suggestion |
+| clarify | identify, assist, capture, list | ask | no | clarifying_question | the one way of asking (*agent proposal*): `clarify(slot, candidates[], value_of_information)`, raised by [asking-and-intent](determinations/asking-and-intent.md), [fields-by-kind](determinations/fields-by-kind.md) and [seeing-the-item card 17](determinations/seeing-the-item.md); one ranker orders open asks by value of information under the asking cap; carries a `span` when assist raises it ([assist](features/assist.md)); a `blank` span sets `wait` and no suggestion |
 | identity_claim | identify | locked | no | | counterfeit, function, or removing a flaw |
 | retake, missing_shot, confirm_flaw, approve_groups, category_unsure | capture | ask | no | | |
 | measure_review | measure | ask | no | | |
@@ -305,7 +308,7 @@ Modes are `auto`, `ask` and `locked`; `locked` is what [events.json](events.json
 | bulk_action | list | ask | no (*inferred*) | | one decision for a change set across listings ([list](features/list.md#changing-many-listings-at-once)): Do all, Untick some, Cancel |
 | end_unsold | price | ask | no | | the end of the markdown path ([money D15](determinations/money.md#d15-markdown-path-stale-and-relist)); promotable *inferred* as no |
 
-Notices are cards that ask nothing and commit nothing, so they are not decision kinds and carry no mode. Kinds: `ranker_changed` (score: a site's ranking seems to have changed; visibility and trend for that site hide on every affected listing until it clears), `listing_stale` and `anomaly` (insights).
+Notices are cards that ask nothing and commit nothing, so they are not decision kinds and carry no mode. Kinds: `ranker_changed` (score: a site's ranking seems to have changed; visibility and trend for that site hide on every affected listing until it clears), `listing_stale` and `anomaly` (insights), `value_moved` and `demand_rose` on an item the person owns ([market](features/market.md#one-catalog)).
 
 Promotion counts only marks the person saw (a money mark or a claim mark, `span.seen_at` set); an unseen default is never an approval.
 
@@ -357,37 +360,38 @@ The decision is Databricks for the whole backend with a hybrid fallback after 2 
 
 | Piece | Job here | Fact and limit | Risk | Test first |
 |---|---|---|---|---|
-| Apps (FastAPI) | the `/v1` API, policy check, executors' front | Node 22 and Python 3.11; external callers need an `/api/` route, CAN USE and an OAuth bearer; SIGTERM gives 15 s; 100 apps per workspace; timeout and SSE undocumented | phone and webhooks may not reach it; a forum report says unauthenticated calls get a 302 (asserted) | federated token from the phone; unauthenticated webhook; SSE and long requests through the proxy |
+| Apps (FastAPI) | the `/v1` API, policy check, executors' front | Node 22 and Python 3.11; external callers need an `/api/` route, CAN USE and an OAuth bearer; SIGTERM gives 15 s; 100 apps per workspace; timeout and SSE undocumented; an app accepts only members of the same Databricks account, with no public or anonymous mode ([settled](../research/data/nate/open-items-settled-databricks.md) row 4) | phone, visitors and webhooks cannot reach it directly | federated token from the phone; unauthenticated webhook; SSE and long requests through the proxy |
 | Lakebase | operational truth, pgvector 0.8 | GA, PG 17; scale to zero (60 s to 7 d), wake of a few hundred ms, pools and prepared statements lost; OAuth tokens 1 h, checked at login, not with PgBouncer; 0.5 CU allows 105 connections; LISTEN/NOTIFY lost on scale to zero | cold wake drops pools; RLS keys on a Databricks identity | wake with a pool; RLS with one service principal |
 | Synced tables, CDF | Lakebase to Delta for analysis | Continuous sync 15 s minimum, about 150 rows/s/CU; CDF from PG to Delta is Public Preview | lag on By site numbers | sync and CDF latency |
-| Volumes | capture files | Files API PUT up to 5 GiB; no presigned URLs | phone upload needs a proxy or a token | signed or proxied upload |
+| Volumes | capture files | Files API PUT up to 5 GiB; no presigned volume upload ([settled](../research/data/nate/open-items-settled-databricks.md) row 27) | phone uploads go through our endpoint or a cloud-storage presigned URL | 20 uploads timed |
 | Delta | comps, events, labels, traces, evaluation sets | Unity Catalog governed | none known | row filters per user |
-| Lakeflow jobs | polling orders, inboxes, watches; reconcile | scheduled, table-update and file-arrival triggers; one active run per job | a slow run delays the next | watch every 5 to 10 minutes ([decisions](../product/decisions.md#2026-11-14-watch-alerts-run-on-firecrawl-the-ebay-api-and-a-facebook-search-api)) under load |
-| Agent Bricks or a custom agent on Apps | investigate, draft listings, read messages, propose decisions | DurableAgentServer for background work; memory on Lakebase; Knowledge Assistant and Supervisor are Legacy, Supervisor API end of life 2026-09-30 | do not build on Legacy pieces | one agent run end to end with a trace |
-| Unity Gateway | every model call | GA with budgets, fallbacks, guardrails; release notes name Opus 5.5, Haiku 5.5 and Fable, plus GPT and Gemini models; Sonnet is not named; Seedream not listed; no rate limits documented | studio provider outside the gateway | model availability on our workspace |
-| AI Search | product and comp retrieval, similar items | no image embeddings; hybrid returns at most 200; dimension up to 4096 | image vectors are self-managed | pgvector or Delta vectors for photos |
+| Lakeflow jobs | polling orders, inboxes, watches; reconcile | scheduled, table-update and file-arrival triggers (file arrival is best effort, about every minute); one active run per job; Lakebase has no pg_cron or pgmq, so schedules are Jobs ([settled](../research/data/nate/open-items-settled-databricks.md) rows 16, 26) | a slow run delays the next | watch every 5 to 10 minutes ([decisions](../product/decisions.md#2026-11-14-watch-alerts-run-on-firecrawl-the-ebay-api-and-a-facebook-search-api)) under load |
+| Agent Bricks or a custom agent on Apps | investigate, draft listings, read messages, propose decisions | DurableAgentServer gives idempotent invocations, crash recovery and persistent state; idempotency is per invocation, so an irreversible tool keeps its own key ([settled](../research/data/nate/open-items-settled-databricks.md) row 24); memory on Lakebase; Knowledge Assistant and Supervisor are Legacy, Supervisor API end of life 2026-09-30 | do not build on Legacy pieces | one agent run end to end with a trace |
+| Unity Gateway | every model call | GA with budgets, fallbacks, guardrails; Sonnet 5.5, Opus 5.5, Haiku 5.5 and Fable 5.2 are served; rate limits (ITPM/OTPM/RPH) are 1M/100k/360k for Sonnet and Opus 5.5 and 200k/20k/360k for Haiku 5.5; image input on Haiku 5.5, Haiku 4.5, Sonnet 5, Sonnet 4.6, Sonnet 4.5, Fable 5.1 and 5.2 and the Opus family, while Sonnet 5.5 and Fable 5 are text only ([settled](../research/data/nate/open-items-settled-databricks.md) rows 19, 20, 22); Seedream not listed | studio provider outside the gateway | model availability on our workspace |
+| AI Search | product and comp retrieval, similar items | no image-native index, but it indexes precomputed embeddings ([settled](../research/data/nate/open-items-settled-databricks.md) row 28); hybrid returns at most 200; dimension up to 4096 | none: image vectors from a GPU endpoint go in as self-managed embeddings | AI Search with self-managed image vectors, pgvector as the alternative |
 | MLflow 3 | a trace per job, labels, evaluation | traces in UC Delta; 200 traces/s ingestion; a trace over 25 MB unreadable; `log_feedback` takes HUMAN, LLM_JUDGE, CODE, but not on traces stored in Unity Catalog tables, so a tap is stored as a `label` row in Delta that links the trace id ([databricks.md](databricks.md)); prompt registry Beta | big image payloads in traces | trace volume at real load |
 | Genie | questions over items and sales | per the decision; Genie Agents take no custom tools | scoping to one user | a user-scoped space over metric views |
 | Zerobus | dropped, kept in reserve: the Lakebase change feed already ingests ([data](features/data.md)) | at-least-once delivery | duplicate events, if it returns | dedupe on `operation_id` and event id; returns only when event volume passes the feed's limits |
-| Free Edition (the workspace looked like it) | n/a; the event gives a full workspace ([words](../product/words.md#2026-11-14-nate-answers-on-the-databricks-file-the-workspace-and-feature-pages)), so these limits are temporary | 3 apps that stop after 24 h, 1 Lakebase project, 5 concurrent tasks, no GPU serving, open models only, one 2X-Small warehouse, outbound to trusted domains only, non-commercial ([databricks.md](databricks.md)) | fails a product that runs all day; open-web fetching runs outside | which edition we have |
+| GPU model serving | segmentation, image vectors, specialist vision, used wherever it serves the product | the event gives a full workspace ([words](../product/words.md#2026-11-14-nate-answers-on-the-databricks-file-the-workspace-and-feature-pages)); nothing is shrunk to fit Free Edition, whose limits stay as facts in [databricks.md](databricks.md) §8 | cost per endpoint is Ben and Nate's call | `serving-endpoints list` for the image models |
 
 Confirmed for this pass (*observed*), and binding on every feature:
 
 | Fact | What it forces |
 |---|---|
-| An app accepts only Databricks sign-in | phones, visitors and webhooks come through the public edge (option A below) |
+| An app accepts only members of the same Databricks account ([settled](../research/data/nate/open-items-settled-databricks.md) row 4) | phones, visitors and webhooks come through the public edge (option A below), unless the hosting probe (§9) finds a way |
 | The official database plugin gives no per-user row isolation | isolation is ours: `SET LOCAL app.user_id` and policies (Tenant isolation) |
 | Synced tables into Lakebase are read-only and carry no catalog row filters | a synced table is filtered by `user_id` in our query, never trusted to filter itself |
 | Lakebase tokens last 1 h | the API refreshes before expiry; long jobs reconnect |
 | Zerobus is at-least-once (dropped, in reserve) | if it returns, every consumer dedupes |
 | Genie Agents take no custom tools | Genie answers questions; actions go through the `/v1` API |
-| Free Edition: 3 apps that stop after 24 h, 1 Lakebase project, no GPU serving, open models only | until the full workspace arrives: the agent runtime cannot live in an App alone; image vectors run on CPU or outside |
 
 ### Front door (Open, §9)
 
+Hosting (*agent proposal*): on Databricks if the hosting probe (§9) passes; otherwise the Next.js site is the edge (option A), holding no data but visitor counts.
+
 | Option | How | Holds if | Cost |
 |---|---|---|---|
-| A. Thin public edge | A small public service signs users in, serves unauthenticated visitor search (rate limited per `visitor` session and per IP), receives marketplace webhooks and Gmail push, issues upload targets, and forwards to the Apps API with a service identity and the user id | Apps cannot take a phone token or an unauthenticated webhook (confirmed: an app accepts only Databricks sign-in) | one more service, holding no data but visitor counts |
+| A. Thin public edge | A small public service signs users in, serves unauthenticated visitor search (rate limited per `visitor` session and per IP), receives marketplace webhooks and Gmail push, issues upload targets, and forwards to the Apps API with a service identity and the user id | Apps cannot take a phone token or an unauthenticated webhook (confirmed: same Databricks account only, [settled](../research/data/nate/open-items-settled-databricks.md) row 4); the Next.js site is this edge | one more service, holding no data but visitor counts |
 | B. Apps direct | The phone sends a federated token (RFC 8693, about 1 h, no refresh token); webhooks hit `/api/` | the tests above pass, including a webhook without Databricks auth | none, if it works |
 
 Webhooks likely need the edge either way, because sites do not send a Databricks token. If Lakebase or Apps fails the 2 hour test, the hybrid fallback moves the app and its database off Databricks and keeps comps, valuation, traces, evaluation and Genie on it.
@@ -421,18 +425,41 @@ What the two decisions fixed:
 | [A harness per marketplace](../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud) ([words](../product/words.md#2026-11-14-a-harness-per-app)) | one harness per app, run on Browser Use cloud, acting in the user's own signed-in session after the user's tap; it replaces separate per-site integrations and a separate replay layer |
 | [Build it](../product/decisions.md#2026-11-14-its-a-demo-so-build-it) ([words](../product/words.md#2026-11-14-demo-not-production)) | eBay gets a harness too, with its API used inside the harness only where faster or more reliable; research does not drop an idea for being risky or against a site's terms, it states the rule |
 
-Every harness has one set of verbs on every site: `post, revise, end, relist, read_listings, read_inbox, send_message, read_offers, answer_offer, make_offer, read_orders, read_stats, search, save`. `read_listings` reads the seller's own live listings on a site (*agent proposal*). `make_offer` is the buyer-side verb (an offer on someone else's listing); it runs only from a `buy_offer` decision, which is `ask` every time and never promoted. Job kinds map onto them: `post` runs `post`, `revise` and `relist`; `delist` runs `end`; `poll_inbox` runs `read_inbox`; `poll_orders` runs `read_orders`; `observe_rank` uses `search`; `fit_ranker`, `score` and `run_experiment` read `read_stats`; `watch_run` and `search` use `search` and `save`; `import` runs `read_listings` for listings and `read_orders` for purchases. An offer to watchers is `answer_offer` with no incoming offer (*agent proposal*). Each harness returns the capability table below; a missing capability becomes a one-tap handoff that opens the site. Each outward run writes `route` (`api`, `replay`, `browser`), `fell_back` and `ms` on its event. The recorded fast path (`recording`, replay's spec) is an *agent proposal* inside the harness, with test accounts per site, not a layer of its own; its events (recorded, drift, fallback) go into events.json as a build task. The person meets any harness only through its result. Facts are from [platform-access.md](../research/connect/nate/platform-access.md), observed unless marked.
+Every harness has one set of verbs on every site: `post, revise, end, relist, read_listings, read_inbox, send_message, read_offers, answer_offer, make_offer, read_orders, read_stats, search, save`. `read_listings` reads the seller's own live listings on a site (*agent proposal*). `make_offer` is the buyer-side verb (an offer on someone else's listing); it runs only from a `buy_offer` decision, which is `ask` every time and never promoted. Job kinds map onto them: `post` runs `post`, `revise` and `relist`; `delist` runs `end`; `poll_inbox` runs `read_inbox`; `poll_orders` runs `read_orders`; `observe_rank` uses `search`; `fit_ranker`, `score` and `run_experiment` read `read_stats`; `watch_run` and `search` use `search` and `save`; `import` runs `read_listings` for listings and `read_orders` for purchases. An offer to watchers is `answer_offer` with no incoming offer (*agent proposal*). A missing capability becomes a one-tap handoff that opens the site. The person meets any harness only through its result. Facts are from [platform-access.md](../research/connect/nate/platform-access.md), observed unless marked.
 
-| Site | Route | `post`, `revise`, `end`, `relist` | `read_listings` | `read_orders` | `read_inbox`, `send_message` | `read_offers`, `answer_offer` | `make_offer` | `read_stats`, `search`, `save` | Terms on record (facts, §5 licences; `rights` enforced at public launch) |
+#### The harness protocol
+
+The harness is our own protocol, and it is the primary route for every site and every verb, reads and writes. Nate set the direction ([words](../product/words.md#2026-11-14-nate-our-own-protocol-official-apis-last), [words](../product/words.md#2026-11-14-nate-our-own-harness-over-official-apis-and-opencli)); the design below is an *agent proposal* (Ben not yet asked). It covers anything the product needs from a site: every field a signed-in person can see and every action they can take, not only what an API exposes (accepted offer prices, full sold history, likes, watchers, the inbox). The pattern is adopted from jackwener/opencli (Apache-2.0, *observed*: [databricks.md](databricks.md) Appendix B); the runtime is ours.
+
+| Part | Rule |
+|---|---|
+| Call | `harness.call(site, verb, args)`, one of the 14 verbs above, with `operation_id` for a write |
+| Response | `{ok: true, data, meta}` or `{ok: false, error: {code, message, hint}, meta}`; `meta` is `{route_id, adapter_version, ms, fell_back, observation_ids[]}` |
+| Error codes | `auth_expired` (hint: sign in again inside the cloud browser), `not_found`, `rate_limited` (hint: retry after), `page_changed` (starts `adapter_author`), `blocked` (a captcha or check the person must pass), `policy_refused` (the §5 check said no), `outcome_unknown` (a write interrupted; reconcile settles it), `no_route` |
+| Routes, in order | 1. our own adapter for that site and verb, over the person's signed-in session; 2. our fetch engine (Firecrawl, jev-ultrafast) for public reads; 3. last fallback, the site's official API or an outside aggregator (treg), used only when ours cannot be made to work for that verb. Every route is measured on success, speed, cost and completeness and recorded in `route_call` |
+| Adapter | deterministic commands, one per site and verb, authored once from a recon of the page and its network calls; a row of `route_table` with its recipe and fixture |
+| Adapter manifest | `{site, verb, version, input_schema, output_schema, fields[], session (`signed_in`, `public`), pace, fixture_ref, recorded_at}` |
+| Fixture test | each adapter ships a recorded page and network capture with the expected JSON; it must pass before the adapter goes live and again nightly against a live read on the test account; a field missing from the output fails it |
+| Browser primitives | `open, inspect, click, fill, extract, network` cover a page with no adapter yet; an agent uses them to write the adapter (`adapter_author` job) |
+| Self-repair | `page_changed`, or a route's measured success falling below its guard, starts `adapter_author`: recon, new version, fixture test, then live; the old version stays until the new one passes |
+| Versioning | adapters are semver'd; a run records `adapter_version`; a failed new version rolls back to the last passing one |
+| Session | the person signs in inside the cloud browser (Browser Use cloud, [decisions](../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)), which keeps the login; on their own device where that lowers account risk; we never see the password |
+| Pacing and lease | one job drives an account's session at a time (the lease, runtime below); each site has its own pace (requests per minute, quiet hours) in the adapter manifest |
+| Evidence | every read writes an `observation` (a page snapshot with a fingerprint) and a `route_call`; every write is read back |
+| Protections | account risk shown per site in connect; locked actions stay locked (§5); the §5 policy check runs in code before any outward verb |
+
+The tests that prove each adapter: its fixture test passes; a live read on the test account matches the fixture's fields; for a write, post then read back then end on the test account; and the router test in [databricks.md](databricks.md) §9 (30% injected failures demote a route within 20 calls and recover within 1 h). The recorded fast path (`recording`, replay's spec) is the adapter's recipe, not a layer of its own; its events (recorded, drift, fallback) go into events.json as a build task.
+
+| Site | Route (own adapter first in every cell; an API named in a cell is the last fallback and a fact on record) | `post`, `revise`, `end`, `relist` | `read_listings` | `read_orders` | `read_inbox`, `send_message` | `read_offers`, `answer_offer` | `make_offer` | `read_stats`, `search`, `save` | Terms on record (facts, §5 licences; `rights` enforced at public launch) |
 |---|---|---|---|---|---|---|---|---|---|
-| eBay | harness, API inside | Inventory and Offer APIs (unique SKU; relist makes a new item id); end by withdrawOffer or EndItem (asserted) | Inventory API reads; Trading GetMyeBaySelling (asserted) | Fulfillment plus Notification topics | Message API, Trading member messages | GetBestOffers, RespondToBestOffer; offers to watchers through Negotiation | harness (a Best Offer binds the buyer if accepted, asserted) | Browse; Marketplace Insights restricted | User Agreement: LLM bots and buy-for-me agents may not order without human review (effective 2026-06-28 on the live page; Ben's note says 2026-02-20). API licence: no AI training on eBay content, no Restricted API output in non-eBay AI without consent, no auto-repricing against other sites, account deletion notices handled. At launch: eBay comps carry `may_model: false` until consent |
-| Facebook Marketplace | harness, cloud browser in the US | harness | harness | harness | harness | none found | harness (a message to the seller) | ScrapeCreators for search (decision) | partner API is EU and EEA only and links out; Meta's Automated Data Collection Terms ban automated collection without written permission |
-| Depop | harness, partner API inside if granted | products CRUD, mark as sold | products list if granted, else harness (asserted) | orders plus webhooks | none in the API | send offer to likers; no list-offers | harness | likes and bag counts | partner access gated (email first); API terms ban scraping unless authorised; 200 per 10 s create limit |
-| Poshmark | harness, paced | harness | harness | harness; sale email | harness | harness | harness | harness | ToS bans automated collection; guidelines ban automation, including delete-and-repost, likes, shares and follows; mass suspensions in Nov 2025, lifted within 24 h (asserted) |
-| Mercari | harness | harness | harness | harness; sale email | harness | harness | harness | harness | in the set ([decisions](../product/decisions.md#2026-11-14-mercari-stays-in-the-platform-set)); no public API (asserted); bots and scrapers banned; may suspend and hold funds |
-| OfferUp, Grailed | search and price only | posting planned, not built ([words](../product/words.md#2026-11-14-grailed-and-offerup-posting-planned-not-built)) | n/a | n/a | n/a | n/a | n/a (a link-out) | Firecrawl monitor, Exa, our scrapers, Apify fallback | the set is decided ([decisions](../product/decisions.md#2026-11-14-the-platform-list-is-set)) |
+| eBay | own adapter; Inventory, Trading and Browse APIs as last fallback | Inventory and Offer APIs (unique SKU; relist makes a new item id); end by withdrawOffer or EndItem (asserted) | Inventory API reads; Trading GetMyeBaySelling (asserted) | Fulfillment plus Notification topics | Message API, Trading member messages | GetBestOffers, RespondToBestOffer; offers to watchers through Negotiation | harness (a Best Offer binds the buyer if accepted, asserted) | Browse; Marketplace Insights restricted | User Agreement: LLM bots and buy-for-me agents may not order without human review (effective 2026-06-28 on the live page; Ben's note says 2026-02-20). API licence: no AI training on eBay content, no Restricted API output in non-eBay AI without consent, no auto-repricing against other sites, account deletion notices handled. At launch: eBay comps carry `may_model: false` until consent |
+| Facebook Marketplace | harness, cloud browser in the US | harness | harness | harness | harness | none found | harness (a message to the seller) | own adapter; ScrapeCreators as a measured fallback route for search ([decisions](../product/decisions.md#2026-11-14-watch-alerts-run-on-firecrawl-the-ebay-api-and-a-facebook-search-api)) | partner API is EU and EEA only and links out; Meta's Automated Data Collection Terms ban automated collection without written permission |
+| Depop | own adapter; partner API as last fallback if granted | products CRUD, mark as sold | products list if granted, else harness (asserted) | orders plus webhooks | none in the API | send offer to likers; no list-offers | harness | likes and bag counts | partner access gated (email first); API terms ban scraping unless authorised; 200 per 10 s create limit |
+| Poshmark | own adapter, paced | harness | harness | harness; sale email | harness | harness | harness | harness | ToS bans automated collection; guidelines ban automation, including delete-and-repost, likes, shares and follows; mass suspensions in Nov 2025, lifted within 24 h (asserted) |
+| Mercari | own adapter | harness | harness | harness; sale email | harness | harness | harness | harness | in the set ([decisions](../product/decisions.md#2026-11-14-mercari-stays-in-the-platform-set)); no public API (asserted); bots and scrapers banned; may suspend and hold funds |
+| OfferUp, Grailed | own adapter for search and price | posting planned, not built ([words](../product/words.md#2026-11-14-grailed-and-offerup-posting-planned-not-built)) | n/a | n/a | n/a | n/a | n/a (a link-out) | own adapter; then the fetch engine (Firecrawl); Apify last | the set is decided ([decisions](../product/decisions.md#2026-11-14-the-platform-list-is-set)) |
 
-Sale email: connect holds an `email` account (Gmail OAuth, read-only); sold's `poll_orders` reads Poshmark and Mercari sale email from Gmail push and also polls each sold page through the harness every 1 to 2 minutes (inferred). Without it, connect's health line reads "email not connected: sale detection off for Poshmark and Mercari" and the sold-page poll carries detection alone.
+Sale detection: sold's `poll_orders` reads each site's orders through the harness first, every 1 to 2 minutes (inferred). Sale email is the fallback: connect holds an `email` account (Gmail OAuth, read-only) and Gmail push on a Poshmark or Mercari sale email starts the same job at once. Without it, connect's health line reads "email not connected: the sold-page read carries sale detection alone" (*agent proposal*).
 
 ### The agent runtime (*agent proposal*)
 
@@ -444,7 +471,7 @@ flowchart LR
   J --> L{"lease free for this account session?"}
   L -->|"no"| W["wait, paced per site"]
   L -->|"yes"| P["policy check in code (§5)"]
-  P --> H["harness verb: official route or cloud browser"]
+  P --> H["harness.call: own adapter, fetch engine, official API last"]
   H --> R["read the site back"]
   R --> E["event and trace logged"]
   E --> D{"person needed?"}
@@ -454,14 +481,15 @@ flowchart LR
 
 | Part | Rule |
 |---|---|
-| Job | every trigger becomes one `job` with an idempotency key; a repeat trigger joins the running job |
-| Lease | one job drives an account's session at a time; a second job for the same account waits; each site has its own pace (requests per minute, quiet hours) set in the harness |
-| `next_check_at` | set from state, set to now by any event; `check_due` picks rows whose time has passed |
+| Job | every trigger becomes one `job` row with an idempotency key; a repeat trigger joins the running job; workers pull rows with `FOR UPDATE SKIP LOCKED` (no pg_cron or pgmq on Lakebase, [settled](../research/data/nate/open-items-settled-databricks.md)) |
+| Agent step | each kind runs one durable agent step whose tools are the 14 verbs plus guarded writes; `delist` and `reconcile` are deterministic and get none |
+| Lease | one job drives an account's session at a time; a second job for the same account waits; each site has its own pace (requests per minute, quiet hours) set in the adapter manifest |
+| `next_check_at` | one column, set from state by one hazard tuner whose priors are the `param` rows below, set to now by any event; `check_due` picks rows whose time has passed |
 | Policy | the §5 check runs in code before every outward verb; a model never decides it |
 | Trace | one MLflow trace per job, tagged with `route`, `fell_back`, `ms` |
 | Marketplace write | every outward verb that changes a site (`post`, `revise`, `end`, `relist`, `send_message`, `answer_offer`, `make_offer`, `save`) runs as a durable step keyed by an `operation_id` in Lakebase, then a read-back. An interrupted ordinary tool call settles as outcome-unknown and is never re-run blind; reconcile reads the site to settle it ([flue-agent-harness.md](../research/cross-cutting/nate/flue-agent-harness.md)) |
 
-| Row state | Next check (starting values, tuned by what changes) |
+| Row state | Next check (hazard priors in `param`, tuned by what changes) |
 |---|---|
 | listing with a pending offer, or conversation awaiting our reply | minutes |
 | conversation awaiting the buyer | 15 to 60 min |
@@ -471,7 +499,7 @@ flowchart LR
 | want with no movement | hours |
 | any event on the row | now |
 
-Framework, open (§9), facts from [flue-agent-harness.md](../research/cross-cutting/nate/flue-agent-harness.md) (*observed*): Flue in TypeScript, with Lakebase through `@databricks/lakebase` and MLflow traces, where the store is ours and the Lakebase, MLflow and browser adapters are ours to write and keep; or Databricks' own Python agent server (DurableAgentServer), which gives idempotent invocation ids, ordered sessions and heartbeat recovery with no app code, in Python only, on a Databricks-managed store that is not the product's Lakebase project ([words](../product/words.md#2026-11-14-nate-a-safety-layer-and-a-framework-like-flue)). What decides it: which holds a cloud browser session through a slow site for minutes and resumes after a restart; which runs while Free Edition apps stop after 24 h; which writes one MLflow trace per job without glue; and which lets the harness verbs and `claim_check` be plain code tools. A one-site trial of each on `read_inbox` then `send_message` settles it.
+Framework, open (§9), facts from [flue-agent-harness.md](../research/cross-cutting/nate/flue-agent-harness.md) (*observed*): Flue in TypeScript, with Lakebase through `@databricks/lakebase` and MLflow traces, where the store is ours and the Lakebase, MLflow and browser adapters are ours to write and keep; or Databricks' own Python agent server (DurableAgentServer), which gives idempotent invocation ids, ordered sessions and heartbeat recovery with no app code, in Python only, on a Databricks-managed store that is not the product's Lakebase project ([words](../product/words.md#2026-11-14-nate-a-safety-layer-and-a-framework-like-flue)). What decides it: which holds a cloud browser session through a slow site for minutes and resumes after a restart; which writes one MLflow trace per job without glue; and which lets the harness verbs and `claim_check` be plain code tools. The lean (J2, *agent proposal*) is DBOS on Lakebase: durable steps in the product's own Postgres, the same `job` rows and `operation_id` keys; a one-site trial against each option on `read_inbox` then `send_message` settles it.
 
 ### Source router (*agent proposal*)
 
@@ -479,11 +507,46 @@ Every outside read goes through `route_table` and writes a `route_call` ([data](
 
 | Rule | Value |
 |---|---|
-| Exploration | 5% of reads try a route other than the best, so `route_truth` stays current |
-| Ceilings | cost and latency per call, as settings |
+| Order | own adapter, then the fetch engine, then an official API or aggregator ([words](../product/words.md#2026-11-14-nate-our-own-protocol-official-apis-last)); within a kind, cost per useful result |
+| Learning | each call updates its route's `success` Beta `param` in the same transaction; a breaker opens after 3 straight failures ([data](features/data.md#source-registry-and-router-agent-proposal)) |
+| Exploration | a `param` share of reads (prior 5%, capped per day on paid routes) tries another eligible route, so `route_truth` stays current |
+| Ceilings | cost and latency per call, as `param` rows |
 | Recovery | a retry by `call_id` costs nothing |
 | Provider error | no cost recorded; no fallback on any other 4xx |
 | Health | `GET /v1/sources/health` (§7); `route_probe` keeps it fresh |
+
+### Real-time weights (*agent proposal*)
+
+Every weight, threshold, prior and hide rule is a `param` row (§3), read through a 60 s cache and updated from observed outcomes, never hardcoded ([words](../product/words.md#2026-11-14-nate-a-general-scoring-feature-and-real-time-algorithms)). Data owns the registry ([data](features/data.md#real-time-weights-agent-proposal)); each determinations card names which of its values are `param` rows and which stay fixed.
+
+| Step | Rule |
+|---|---|
+| Sources | three, each an `observation` with evidence and a weight for how sure its outcome is: every listing the protocol reads on a site and what changed when it was read again (price or rank change, sold mark, a disappearance counted as a probable sale by age and the site's sell-through), giving outcomes at market volume from day one; what platforms and industries publish (ranking statements, fees, retail and brand data, price history, trends), gathered by the information engines; our own users' outcomes, the most exact rows, which calibrate the rest. Learning does not wait for our users ([words](../product/words.md#2026-11-14-nate-the-engine-learns-from-the-whole-market-not-only-our-users), [marketing-engine §3](marketing-engine.md)) |
+| Read | through a 60 s cache; a scope with little data reads its parent scope (partial pooling) |
+| Update | conjugate, in the same transaction as the outcome event that informs it (a sale, a market listing's change, a reply, a route call, a label), scaled by the observation's weight, with a forgetting factor of about 30 days |
+| Fold | `param_fold` runs nightly or weekly from Delta and writes challengers for what a conjugate update cannot hold (comp weights, ranker features) |
+| Promote | a challenger replaces the champion when its backtest beats it by more than the bootstrap noise; a person's approval stays the guard where the card asks for one |
+| Explain | every `citation` carries `param_versions{}` and `model_version` |
+| Guard | comp weights move at most ±50% from their prior; Beta means stay in [0.02, 0.98]; a move over 2 SE raises a drift `anomaly`; a site's layout change (adapter version bump) sets `frozen` on that site's rows until its fixtures pass |
+| Roll back | one UPDATE sets the previous version back to `champion` |
+
+Fixed and never learned: fees, site minimum offer discounts, title and photo limits, locked actions, recall and legal flags, the floor the person set, never relisting on Poshmark, and never inferring condition, size or authenticity ([marketing-engine](marketing-engine.md) §3.4). A check fails on a numeric literal in a scoring path that is not one of these.
+
+### Information engines (*agent proposal*)
+
+Two layers sit under one registry, `route_table` ([words](../product/words.md#2026-11-14-nate-search-and-information-engines-beside-the-protocol)): the site protocol (the harness above) for the five marketplaces, reads and writes; and information engines for everything else on the open web that market research needs: retail and brand pages, price history, reviews, forums, release and trend sources, archives.
+
+| Part | Rule |
+|---|---|
+| Gatherer | a pipeline that takes a question or a product, fans out to its sources in parallel, de-duplicates (the same item on several pages collapses to one), and writes each find as an `observation` with `evidence` and a `route_call` |
+| Built on | Firecrawl for search, crawl and extract; treg for the long tail of data providers; each a `route_table` row with `layer: engine`, measured like any route |
+| Reference | ThriftX shows how a gatherer is built: fan-out across sources, a scraping proxy, the same item collapsed ([settled](../research/watch/nate/open-items-settled-sites-and-rivals.md)). It is a reference, not a site we read |
+| Deadline | every fan-out has one; results stream to the job's events as they arrive; a source that misses the deadline is recorded as late, not waited on |
+| Standing index | what was already gathered is kept; a repeat question is answered from it at once and only a live delta is fetched (sources whose `next_check_at` has passed) |
+| Storage | change only: a page whose fingerprint has not changed writes no new snapshot, only a `seen_at` |
+| Budgets | per source: calls per minute and cost per answer, as `param` rows; a source over budget is skipped and named in "What we considered" |
+
+Time budgets (§8): a research answer shows its first cited findings within 3 s and completes within 20 s; a repeat question answers from the standing index in under 1 s with its live delta within 5 s; a search meets the search row in §8.
 
 ### Public API (*agent proposal* on the shape; public by Nate's [words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos))
 
@@ -505,7 +568,7 @@ Every fact carries `evidence`, every number shown is a guarded number with a `ci
 | Governance | `rights` tags carried with each row; history kept so any number can be recomputed as of its date | Unity Catalog tags and lineage; table history retention raised above the 7 day default, or append-only snapshots |
 | Output | a guarded number with `citation_id` reaches the phone; hidden numbers say why; `claim_check` gates messages and listings | Lakebase (current guarded numbers, `claim_check` rows), the `/v1` API, MLflow traces |
 
-Guard rules: a sold range is hidden below [money D1](determinations/money.md#d1-comparable-set-and-weights)'s minimum basis (`n_eff >= 6` and at least 2 sold in 90 days, which replaces a plain count of 5; the range itself is [D5](determinations/money.md#d5-fair-value-range-overall-and-per-site)); once shown, 5 to 9 low, 10 to 29 medium, 30 or more high; a series older than 2 weeks is dropped ([databricks.md](databricks.md)); an asking range on fewer than 6 listings is hidden ([market-intelligence.md](../research/data/nate/market-intelligence.md)). The kill test: recompute 20 shown numbers from their citations a week later and match them exactly.
+Guard rules: a sold range is hidden below [money D1](determinations/money.md#d1-comparable-set-and-weights)'s minimum basis (`n_eff >= 6`, a `param` starting at 6, and at least 2 sold in 90 days, which replaces a plain count of 5; the range itself is [D5](determinations/money.md#d5-fair-value-range-overall-and-per-site)); once shown, 5 to 9 low, 10 to 29 medium, 30 or more high; a series older than 2 weeks is dropped ([databricks.md](databricks.md)); an asking range on fewer than 6 listings is hidden ([market-intelligence.md](../research/data/nate/market-intelligence.md)). The kill test: recompute 20 shown numbers from their citations a week later and match them exactly.
 
 Sources: any source on the open internet may be used for this build (marketplace pages, price-history sites, retail and brand pages, archived pages, trend sources); each observation records its source and `rights` tags in its `evidence`, and a source's terms are listed as facts ([words](../product/words.md#2026-11-14-nate-open-source-onto-databricks-and-open-internet-sources)).
 
@@ -519,12 +582,13 @@ Image judgements and text judgements are separate parts of the harness, and the 
 |---|---|---|---|
 | Image | shot accepted, view missing, defect present, tag readable | OpenAI Decisions API | typed yes, no or score |
 | Image | masks, read text, depth and pose | specialist vision models | outputs are `capture` refs |
-| Image | identity by look | self-managed image vectors | AI Search has no image embeddings |
+| Image | identity by look | image vectors from a GPU endpoint | indexed in AI Search as self-managed embeddings ([settled](../research/data/nate/open-items-settled-databricks.md) row 28) |
 | Image | studio relight | Seedream 5.5 | not on the gateway; real photos always kept; provider open |
 | Image | talk mode | a live video model | shares the shot list ([decisions](../product/decisions.md#2026-11-14-capture-opens-on-the-guided-shot-list-talk-mode-is-one-tap-away)) |
 | Text | buyer message intent, scam risk, does a listing match a want | Jev beside a Decisions API run | Jev untested here; labels pick |
 | Text | investigate an item | Claude Opus 5.5 | through the gateway |
-| Text | listing copy, reply drafts | Claude Opus 5.5 or Haiku 5.5 | in the seller's voice; Sonnet is under §9 |
+| Image and text | listing copy written from the photos | Claude Haiku 5.5, Sonnet 5 or Opus 5.5 | these take image input; Sonnet 5.5 is text only ([settled](../research/data/nate/open-items-settled-databricks.md) row 19) |
+| Text | reply drafts | Claude Sonnet 5.5 or Haiku 5.5 | in the seller's voice; a reply whose intent is `other` drafts on Sonnet 5.5 |
 | Text | routing, short classification | Claude Haiku 5.5 | |
 | Code | money, units, limits, permissions, state changes, fees | plain code | never a model |
 
@@ -584,11 +648,11 @@ The frame's shapes are binding: ids `it_`, `ls_`, `job_`, `dec_`, `ord_`, `want_
 
 ### Jobs and the event stream
 
-A long call returns `202` with `{id, kind, state, stages:[{name, state, started_at, ended_at}], result?}` at once. `GET /v1/jobs/:id/events` streams SSE frames carrying events.json `job.state` and `job.stage` payloads, each with an `id` so `Last-Event-ID` resumes; a heartbeat comment every 15 s. `GET /v1/jobs/:id` returns the same shape for polling, every 2 s. Job states and stage states are the §4 names, the same in stream, log and [frontend-standard.md](../product/frontend-standard.md). `message.new` and `score.change` are stream-only today. Build tasks for [events.json](events.json): log lines for `message.new` and `score.change`; `studio.*` events from [studio.md](features/studio.md); `double_sale`, `claim_reply` and the `cancel_reason` field from [sold.md](features/sold.md). SSE through the Apps proxy is untested, so polling must always work.
+A long call returns `202` with `{id, kind, state, stages:[{name, state, started_at, ended_at}], result?}` at once. `GET /v1/jobs/:id/events` streams SSE frames carrying events.json `job.state` and `job.stage` payloads, each with an `id` so `Last-Event-ID` resumes; a heartbeat comment every 15 s. `GET /v1/jobs/:id` returns the same shape for polling, every 2 s. Every stage carries `found{}` (*agent proposal*): real counts of what the stage considered, as `{sources_searched, results_found, results_used, dropped_by_reason{}, sites{}}` with only the counts that stage has, built from `route_call` and `citation` rows, never estimated; each `job.stage` event streams the counts as they grow, and the frontend shows them one tap from the result as "What we considered". How the counts move on screen is Ben's. Job states and stage states are the §4 names, the same in stream, log and [frontend-standard.md](../product/frontend-standard.md). `message.new` and `score.change` are stream-only today. Build tasks for [events.json](events.json): log lines for `message.new` and `score.change`; `studio.*` events from [studio.md](features/studio.md); `double_sale`, `claim_reply` and the `cancel_reason` field from [sold.md](features/sold.md). SSE through the Apps proxy is untested, so polling must always work.
 
 Watch has two event layers (*agent proposal*, from [Ben's plan](../.agents/team/packets/price/21-pricing-search-watch-plan.md)). The page monitor emits `listing.new`, `price.drop`, `listing.gone`, `monitor.behind` and `monitor.recovered`: what changed on a site's pages, before any matching. Above it, watch emits `watch.ran`, `match.found` and `match.alerted`, which are about a person's want. `monitor.behind` adds its site to behind[] on `GET /v1/wants`, and `monitor.recovered` removes it. The monitor events go into events.json as a build task.
 
-Assist has one event set (*agent proposal*, [assist](features/assist.md#contract-for-the-frontend)), into events.json as a build task: `assist.parsed`, `assist.assumed`, `assist.answered`, `assist.left`, `assist.defined`, `assist.scored`, `assist.dropped`, `assist.blank`, `assist.filled`, `assist.stale`. Its thresholds are rows of `thresholds` (§3).
+Assist has one event set (*agent proposal*, [assist](features/assist.md#contract-for-the-frontend)), into events.json as a build task: `assist.parsed`, `assist.assumed`, `assist.answered`, `assist.left`, `assist.defined`, `assist.scored`, `assist.dropped`, `assist.blank`, `assist.filled`, `assist.stale`. Its thresholds are `param` rows (§3).
 
 ### Decisions and the act endpoint
 
@@ -626,6 +690,8 @@ Assist has one event set (*agent proposal*, [assist](features/assist.md#contract
 | Sell-through | One definition, owned by [M6](determinations/market-insight.md#m6-sell-through) (*agent proposal*): of the listing clusters first seen 60 to 31 days ago, the share sold within 30 days of first seen, over eBay, Poshmark, Mercari and Depop (Facebook excluded); hidden as `too_few` under 10 clusters and as `source_gap` under 2 of those 4 sites; in the first 60 days the stock form sold/(sold+active) is shown, labelled as such. A card that needs sell-through reads this one (§9) |
 | Shared market data | Before any aggregate leaves a person's account, the [M20](determinations/market-insight.md#m20-making-an-anonymous-dataset-safe-to-share) contributor rule, starting values: no person ids, handles, urls or photos; at least 10 distinct contributors per cell; a cell where one contributor makes over 50% is dropped; complementary suppression so a dropped cell cannot be derived; counts rounded to 5; time no finer than a week under 50 contributors |
 | Tax | No paid tax service ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)): a delivered price shows tax as a labelled estimate; the rate is a placeholder (§9) |
+| Speed (*agent proposal*) | First value: a rough band within 2 s of the first photo, the Check within 10 s, identify p50 at most 9 s. Search: p95 3 s to the first batch, 10 s to the last site, under 1 s from the warm index, highlights within 1.5 s. Draft: scores p95 1 s; D1 recomputes at most once a minute while editing. Reply: within 60 s, offers by rule. Product page: p95 1.5 s from the snapshot, the live delta within 5 s. Research answer: first cited findings within 3 s, complete within 20 s (§6 information engines). Delist: p95 under 2 min, red at 5 min, a pre-emptive hold on every other site the moment a sale is seen; delist is the first job built |
+| Approximate or exact | Approximate is shown and labelled for: first value, search order, time to sell (a range until `n_eff` reaches 6), measurements (with ±). Never approximate: an automatic counter or accept, condition, size or authenticity (J20), delist |
 | Account risk | Every automated action on a person's account shows that site's account risk; sharing and offers to likers run at the pace the engine finds best ([listing D26](determinations/listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own)); automation on real accounts may be left out of the demonstration (Nate, same words) |
 
 ## 9. Open for Ben and Nate
@@ -644,7 +710,7 @@ Assist has one event set (*agent proposal*, [assist](features/assist.md#contract
 | Nate's other proposals not yet answered by Ben: private store, For you and save-sync | not answered | Nate's proposal (vision.md Proposed) | keep them in the specs as proposals | buy, connect |
 | Studio photos and honesty | not answered | not answered | always keep the real photos alongside | studio, list |
 | Tell buyers an assistant is answering? | not answered | not answered | natural voice, a short note on the first automatic message, honest if asked ([handled-by-default.md](../research/messages/nate/handled-by-default.md)) | messages, legal exposure |
-| The front door | not answered | the event gives a full workspace ([words](../product/words.md#2026-11-14-nate-answers-on-the-databricks-file-the-workspace-and-feature-pages)); the search engine is a public API ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)) | test option B on the real workspace; keep A ready, and A now also carries the public API's keys and rate limits (§6) | everything that calls the API |
+| The front door | not answered | the event gives a full workspace ([words](../product/words.md#2026-11-14-nate-answers-on-the-databricks-file-the-workspace-and-feature-pages)); the search engine is a public API ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)) | the hosting probe: test option B on the real workspace; if it fails, the Next.js site is the edge (option A), which also carries the public API's keys and rate limits (§6) | everything that calls the API |
 | Is the search engine's API public? | not answered | answered yes: "We will make the out perfroming industry and product search engine an available to call api." ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)) | §6 Public API | market, buy, front door |
 | Do people's listings go out as feeds to assistants? | not answered | answered no: "we dont serve what we have placed on secondhand, as secondhand inst a storefront" (same words) | no feed; the API serves search only | market, buy, list |
 | A paid tax service (Avalara or TaxJar)? | not answered | answered no: "We do not pay for a tax service" (same words) | a labelled estimate (§8) | buy, sold, insights |
@@ -653,9 +719,9 @@ Assist has one event set (*agent proposal*, [assist](features/assist.md#contract
 | Expo holds only if capture is fully possible in it? | Expo with a Swift camera module ([decisions](../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)) | Expo if every capture feature works as it would natively ([words](../product/words.md#2026-11-14-nate-expo-if-capture-is-fully-possible)) | Expo stands; the camera module test on object capture and LiDAR settles it | capture, measure |
 | Which `rights` tags are enforced at a public launch, and by what (a UC tag policy, a query guard, both)? | not answered | licences do not shape the build ([words](../product/words.md#2026-11-14-nate-licences-do-not-constrain-the-build)) | record tags now on every comp; enforce through `guarded_query` plus UC tags at launch | price, market, score, data |
 | Where marketplace sessions live (Keychain or server) | not answered | not answered | server vault and cloud browser profile, with the stakes stated | connect, security |
-| Is Sonnet on our gateway? Release notes name Opus 5.5, Haiku 5.5 and Fable, not Sonnet | not answered | not answered | draft on Haiku, investigate on Opus; test Sonnet on the workspace | list, messages, appraise |
+| Is Sonnet on our gateway? | settled at source: Sonnet 5.5 is served, text only ([settled](../research/data/nate/open-items-settled-databricks.md) rows 19, 20) | | photo drafts on Haiku 5.5, Sonnet 5 or Opus 5.5; text on Sonnet 5.5 (§6 model allocation) | list, messages, appraise |
 | How does secondhand earn (a fee, a subscription, a referral, paid data)? | not answered | Nate's proposal: buy-side referrals, and anonymous market data ([words](../product/words.md#2026-11-14-nate-referrals-and-market-data)) | your call; market data needs the privacy rules in §8 | pricing screens, data use, terms |
-| The agent framework: Databricks' long-running agent server or a framework like Flue | not answered | Nate's proposal: "similar to flue perhaps" ([words](../product/words.md#2026-11-14-nate-a-safety-layer-and-a-framework-like-flue)) | trial both on one site (§6 runtime) | the runtime, every harness |
+| The agent framework: Databricks' long-running agent server or a framework like Flue | not answered | Nate's proposal: "similar to flue perhaps" ([words](../product/words.md#2026-11-14-nate-a-safety-layer-and-a-framework-like-flue)) | lean DBOS on Lakebase (J2); trial on one site (§6 runtime) | the runtime, every harness |
 | Score weights: may the axes combine into one score, and with what weights? | not answered | not answered | combine only when every axis is shown; weights per person's goal, shown | score, list, price |
 | Visitor rate limits | not answered | not answered | per session and per IP at the edge; numbers set by load test | market, front door |
 | The floor for a follow notification (how much a price must move) | not answered | not answered | a move outside the guarded range, at most one a day per follow | market, today |
@@ -667,12 +733,16 @@ Assist has one event set (*agent proposal*, [assist](features/assist.md#contract
 | Shopify's product taxonomy as the spine for every kind (J19) | not answered | not answered | yes ([fields-by-kind](determinations/fields-by-kind.md)) | identify, capture, list |
 | May an inferred value of medium importance go into a site's structured fields (J20)? | not answered | not answered | yes for search fields, never for condition, size or authenticity | list, identify |
 | Several things sold together: one card for the lot or one per piece (J21)? | not answered | not answered | one card for the lot, pieces as parts | capture, price |
-| Exploration traffic on paid routes (J22) | not answered | not answered | yes, capped per day (§6 Source router) | data |
+| Exploration traffic on paid routes (J22) | not answered | not answered | yes, a `param` share capped per day (§6 Source router) | data |
 | Product page order: buy's shared order or score alone (J23)? | not answered | not answered | the same rule as search | market, buy |
 | Poshmark share pace | not answered | "It can share and send offers however much is best." ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)) | the engine's pace, with the account risk shown (§8) | list, connect |
 | The 7% tax placeholder | not answered | no paid service (same words) | keep it labelled as an estimate until a per-state table exists | buy, sold |
 | Care label and fabric close-ups: conditional or always? | not answered | not answered | conditional on kind (inferred from [capture-shots](determinations/capture-shots.md); Ben's call) | capture |
-| Widen `clarify` to identify and assist; assist catalog rows 54 to 67 against A2UI; visitors stored as counts only; inline marks or chips | not answered | not answered | as [assist](features/assist.md#contract-for-the-frontend) proposes; a bar tests marks against chips | assist, buy, market |
+| `clarify` is the one way of asking (§5, P5); assist catalog rows 54 to 67 against A2UI; visitors stored as counts only; inline marks or chips | not answered | not answered | as [assist](features/assist.md#contract-for-the-frontend) proposes; a bar tests marks against chips | assist, buy, market |
+| May the score axes combine into one number? | not answered | not answered | four separate axes per site; a combined line only as expected net with its chance of sale ([score](features/score.md)) | score, price, market |
+| May message text be kept in traces? | not answered | not answered | no: ids only, because traces have no per-trace delete ([data-use](data-use.md)) | messages, data |
+| May shared models train on people's labels? | not answered | not answered | only with each person's opt-in, revocable; otherwise a label trains that person's scope | data, identify, messages |
+| May consenting people's statistics be pooled? | not answered | not answered | yes, as aggregates above money D1's basis, opt-in, eBay rows never | score, market, insights |
 
 ## 10. Data flows
 
@@ -757,17 +827,17 @@ flowchart LR
 
 The interval is the [watch alerts decision](../product/decisions.md#2026-11-14-watch-alerts-run-on-firecrawl-the-ebay-api-and-a-facebook-search-api).
 
-### Learning loop: tap to label to changed threshold
+### Learning loop: tap to label to changed param
 
 ```mermaid
 flowchart LR
   T["tap in Today"] -->|"POST /v1/decisions/:id/act: decision answered, event"| E["Delta event"]
   E -->|"MLflow log_feedback HUMAN: label proposed"| L["Delta label"]
   E -->|"plain code counts unedited approvals: rule eligible"| R["Always do this, rule auto"]
-  L -->|"MLflow evaluation over labels: label in_use"| J["typed judgement threshold changed"]
+  L -->|"param_fold over labels: label in_use, challenger written"| J["Lakebase param promoted"]
 ```
 
-A threshold changes only when the labelled set clears its bar: 0.98 precision and 0.95 recall for an automatic reply class (*agent proposal*, [features/data.md](features/data.md), [features/messages.md](features/messages.md); method in [messages-and-offers.md](../research/messages/ben/messages-and-offers.md)).
+A threshold `param` is promoted only when the labelled set clears its bar: 0.98 precision and 0.95 recall for an automatic reply class (*agent proposal*, [features/data.md](features/data.md), [features/messages.md](features/messages.md); method in [messages-and-offers.md](../research/messages/ben/messages-and-offers.md)).
 
 ### Scoring loop: observe, fit, experiment, detect change, re-plan (*agent proposal*)
 
@@ -807,6 +877,17 @@ flowchart LR
   P -->|"Follow tapped: sign up, then follow in Lakebase"| F["full user"]
 ```
 
+### Research question to a cited answer (*agent proposal*)
+
+```mermaid
+flowchart LR
+  Q["question or product"] -->|"one job"| I{"in the standing index?"}
+  I -->|"yes: answer in under 1 s"| A["cited answer, streamed"]
+  I -->|"live delta only"| G["gatherers fan out in parallel, with a deadline"]
+  G -->|"site protocol for the five marketplaces; Firecrawl and treg for the open web"| O["observation and route_call, change only"]
+  O -->|"de-duplicate, fold into the index"| A
+```
+
 ## 11. How to change this spec
 
 A spec Ben and Nate can audit ([words](../product/words.md#2026-11-14-nate-validate-breadth-and-an-auditable-spec)).
@@ -814,7 +895,7 @@ A spec Ben and Nate can audit ([words](../product/words.md#2026-11-14-nate-valid
 | Change | Where it goes | Who |
 |---|---|---|
 | A name, state, kind, job kind, endpoint or shape | this page first, then the features that use it | any agent, marked *agent proposal* |
-| A method, weight, threshold or hide rule | its card in [determinations/](determinations/); a new name it needs comes here first | any agent, marked *agent proposal* |
+| A method, weight, threshold or hide rule | its card in [determinations/](determinations/), its value a `param` row; a new name it needs comes here first | any agent, marked *agent proposal* |
 | A name a feature needs that this page lacks | that feature's "Needs from the shared model", until it lands here | the feature's agent |
 | A tool that already does part of a feature, and how ours compares | [parity.md](parity.md); a name it needs comes here first | any agent, marked *agent proposal* |
 | How a feature works, in plain words for readers outside the build | [../docs/how-it-works/](../docs/how-it-works/README.md), after the name or card it explains has changed here or in determinations | any agent |

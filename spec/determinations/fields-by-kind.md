@@ -11,7 +11,7 @@ Cards this file links rather than repeats: item kind ([seeing 1](seeing-the-item
 
 **Spine: Shopify's Standard Product Taxonomy** (*agent proposal*). Facts *observed* at [github.com/Shopify/product-taxonomy](https://github.com/Shopify/product-taxonomy) on 2026-11-14:
 - MIT licence; release v2026-11, published 2026-11-13; monthly versions.
-- 26 vertical files, 14,606 categories, 8,240 attributes and 74,820 values. Ids look like `gid://shopify/TaxonomyCategory/aa-1-13-8` (Apparel & Accessories > Clothing > Clothing Tops > T-Shirts).
+- 26 verticals, 12,333 attributes and 127,383 values; about 12,000 to 64,000 categories depending on how leaf and parent categories are counted, read from the release at build time ([claims validated](../../research/cross-cutting/nate/claims-validated-determinations.md)). Ids look like `gid://shopify/TaxonomyCategory/aa-1-13-8` (Apparel & Accessories > Clothing > Clothing Tops > T-Shirts).
 - A mapping to the Google product taxonomy (2021-09-21) ships with it.
 - Distribution is release assets (`categories.en.json.gz`, `integrations.all_mappings.en.json.gz`). The committed `dist/` folder is deprecated.
 
@@ -20,7 +20,7 @@ Why this spine: it is open, versioned, broad (vehicles, media, collectibles, too
 - **eBay's tree** differs per marketplace and its aspects are per category through an API (*observed*, [listing fields §1](../../research/list/nate/listing-fields-by-platform.md)).
 - **GS1 GPC** is built for retail supply chains, with no resale fields (*asserted*).
 
-**What Shopify lacks.** Its attributes describe the new product, not the used unit (*observed*). T-Shirts list 22 attributes, among them fabric, fit, neckline, size and sleeve length. None of them is brand, artist, era, a measurement or condition. Condition does exist as separate attributes (`Condition` 2360, `Item condition` 2680, `Cosmetic condition` 1857, `Part condition` 8587), but no T-Shirt carries them (*observed*). The unit-level fields therefore come from our own registry (section 2).
+**What Shopify lacks.** Its attributes describe the new product, not the used unit (*observed*). T-Shirts list 24 attributes ([claims validated](../../research/cross-cutting/nate/claims-validated-determinations.md)), among them fabric, fit, neckline, size and sleeve length. None of them is brand, artist, era, a measurement or condition. Condition does exist as separate attributes (`Condition` 2360, `Item condition` 2680, `Cosmetic condition` 1857, `Part condition` 8587), but no T-Shirt carries them (*observed*). The unit-level fields therefore come from our own registry (section 2).
 
 ### Other taxonomies mapped onto it
 
@@ -60,7 +60,7 @@ Any Shopify leaf resolves to the nearest ancestor that has a row. So all 14,606 
 
 ## 2. The field registry is the requirement row
 
-Field importance and the capture `requirement` rows are one registry. The `requirement` row in [product §3](../product.md) already carries item_kind, field, type, values_or_unit, role, site_names, importance, fill_ladder, views_needed, seconds, effort, priority and a version; this section says what each column means. Capture reads `views_needed` from it, identify reads `fill_ladder`, list reads `site_names`, and `requirement_reorder` ([score](../features/score.md)) learns `importance` on it.
+Field importance and the capture `requirement` rows are one registry. The `requirement` row in [product §3](../product.md) already carries item_kind, field, type, values_or_unit, role, site_names, importance, fill_ladder, views_needed, seconds, effort, priority and a version; this section says what each column means. Capture reads `views_needed` from it, identify reads `fill_ladder`, list reads `site_names`, and the `requirement_fold` challenger in `param_fold` ([product §6](../product.md#real-time-weights-agent-proposal)) learns `importance` on it. A field still missing is asked through one `clarify(slot, candidates[], value_of_information)` ([product §5](../product.md#decision-kinds-the-complete-list)).
 
 | Column | Values | Meaning |
 |---|---|---|
@@ -114,7 +114,7 @@ Field importance and the capture `requirement` rows are one registry. The `requi
 | `bikes_sports` | `frame_size`, `wheel_size`, `groupset`, `serial`, `hand` | |
 | `baby_gear` | `model`, `date_code`, `expiry`, `harness`, `all_hardware` | the date code drives the recall check |
 
-Shopify's own attributes for a kind (the 22 for T-shirts) join the row set as `low` importance fields filled by lookup or vision. They earn a higher importance only through card F2.
+Shopify's own attributes for a kind (the 24 for T-shirts) join the row set as `low` importance fields filled by lookup or vision. They earn a higher importance only through card F2.
 
 ## 3. The fill ladder
 
@@ -154,7 +154,7 @@ A site that requires a field the item cannot have (a size on a lamp) takes the s
 | Gaps remain on `high` fields | rung 5 | [seeing 17](seeing-the-item.md#17-which-question-to-ask-next-and-when-to-stop) picks the next input; at most 3 per item | `you_said` values |
 | Card complete | five listings | [listing D4 to D7](listing-and-marketing.md#d4-title-per-site) map fields to each site; `claim_check` on every claim | `listing` drafts |
 
-Conflict between sources is settled by card F5, which applies [seeing 9](seeing-the-item.md#9-which-product-it-is-and-when-identity-is-confirmed) and identify's evidence ladder to fields. Importance is learned weekly by `requirement_reorder` from how often each field changed the value, the match or the rank (card F2), and lands as a new `requirement` version a person approves.
+Conflict between sources is settled by card F5, which applies [seeing 9](seeing-the-item.md#9-which-product-it-is-and-when-identity-is-confirmed) and identify's evidence ladder to fields. Importance is learned weekly by the `requirement_fold` challenger in `param_fold` ([product §6](../product.md#real-time-weights-agent-proposal)) from how often each field changed the value, the match or the rank (card F2), and lands as a new `requirement` version a person approves.
 
 ## 5. Six worked examples
 
@@ -301,12 +301,12 @@ Asked: "Works?", the only fact no photo settles.
 | identity-schema's per-kind list | starting importance | the prior for a new row | the research, until data exists |
 
 **Method**:
-1. Weekly, `requirement_reorder` computes three effects per field and node.
+1. Weekly, the `requirement_fold` challenger computes three effects per field and node.
 2. Match: high if the field changed the label in 5% or more of items, medium at 1% (start).
 3. Value: high at 10% of the median price or more, medium at 3% (start).
 4. Rank: a site requirement, or high attribution, gives high.
 5. Nodes with fewer than 30 items take their parent's values.
-6. The result is a new version that a person approves.
+6. The result is a challenger `requirement` version; promotion has a person's approval as its guard.
 
 **Why this method**: importance is what a field changed, which is the test [asking 3](asking-and-intent.md#3-whether-resolving-a-span-would-change-anything) applies to a single span, here applied to the row (*inferred*). The alternative is a hand list per kind. It is fast to write, but it goes stale as the sites change.
 
@@ -429,7 +429,11 @@ Asked: "Works?", the only fact no photo settles.
   - Widen `requirement` as in section 2: `node`, `type`, `values_or_unit`, `role`, `site_names`, `importance`, and `fill_ladder`, which replaces `obtained_by`; `priority` is derived.
   - Add `kind` (id, parent_id, family, shopify_gid, google_id, version) and `category_map` (kind_id, site, marketplace, site_category, version).
 - **seeing-the-item.** Card 1's "13 kinds" are the families here. Card 3 reads `importance` through the derived `priority`.
-- **score.** `requirement_reorder` computes the three effects in F2.
+- **data.** `param_fold` runs the `requirement_fold` challenger for the three effects in F2.
 - **money.** D2 exposes the per-field adjustment that F2 reads.
 - **list.** D6 and D7 read `site_names` and `category_map`.
 - **data.** The router adds the spec lookup and the IMEI or TAC lookup as needs.
+
+## What its parameters learn from (*agent proposal*)
+
+Every learned number on this page is a `param` row whose written value is the prior. It updates from three sources, each written as an `observation` with evidence and a weight for how sure the outcome is: every listing the protocol reads on a site and what changed when it was read again (a price or rank change, a sold mark, a disappearance counted as a probable sale by age and the site's sell-through); what platforms and industries publish, gathered by the information engines; and our own users' outcomes, the most exact rows, which calibrate the rest. Learning does not wait for our users. How rows update, promote, guard and roll back is in [product §6](../product.md#real-time-weights-agent-proposal).
