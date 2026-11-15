@@ -285,6 +285,7 @@ Fixed. Each was found by a fresh review and has a regression test:
 | F2: `suggest.py` repeated card 7's bounds as defaults | `test_suggest.py`, a row for `capture_preselect_floor` moves the preselect (cap-param-1) |
 | F4: facts stayed on the capture | `captures.test.ts`: finish writes each known fact (not `type` or `lot_count`) to the person's item in one store transaction before the capture is judged, with evidence `ref` `<capture>/<step>`; a `you_said` or confirmed attribute is never overwritten; a missing item row is created with `data: captured`; a second person's item never changes (cap-route-2, 6870dc38) |
 | F13: job results wrote to a finished capture, and `photo_score` trusted an unkept key | `captures.test.ts`, both refused and the capture unchanged (6870dc38) |
+| F10, F11, F12, F14: phone reads were not checked against their row; open ignored the size and a scan its extent; colour's limit lived in the route; studio asks were checked loosely | `captures.test.ts` 128 pass: a read that fails its row is dropped with a logged field and reason; open with 130 cm rigid selects `large_bulky`; a scan at `extent_conf` 0 stays proposed and a failed scan turns `object_capture` off; lists read `row.max`; each ask type's fields and a measure's name are enforced (cap-route-2 round 2, d521628e) |
 | F15: `state.change` lacked `was` and repeated | `captures.test.ts`, the captured log passes `spec/log.mjs` `checkLog`, every event has `was` (null on open), none repeats a state (6870dc38) |
 
 Open:
@@ -323,7 +324,7 @@ Every command was rerun on the Mac on 2026-11-15.
 | Questions to done | `walk.test.ts` diagnostics, `capture.questions` | T-shirt 3 (2 with auto confirm), sneakers 4, handbag 5, phone 5, chair 2, bundle of three 9, close-variant table 1 with depth and 2 without |
 | Same input, same output | each walk run twice in `walk.test.ts` | identical |
 | Plan speed | `captures.test.ts`, "capture plan speed" | p50 0.097 ms, p95 0.282 ms over 52 states; budget 100 ms |
-| The routes | `node --test --test-concurrency=1 app/src/edge/api/captures.test.ts`, plus `spec/examples.test.mjs` and `routes.test.ts` | 108, 9 and 6 pass (b600bd23; 89 before F4, F13 and F15) |
+| The routes | `node --test --test-concurrency=1 app/src/edge/api/captures.test.ts`, plus `spec/examples.test.mjs` and `routes.test.ts` | 128, 9 and 6 pass (d521628e; 89 before F4, F10 to F15) |
 | One real run | `node scripts/capture-real.mjs` (`spec/items/capture-real/2026-11-15.json`) | Ben's three real garments: photos scored 69 to 77, tag photos 90 and 94; tee 6 questions, pants 7, hoodie waiting on a back photo. `data: captured`; one run on three items, not accuracy. |
 
 **Speed budgets.** These are from the old design and are not measured on a device:

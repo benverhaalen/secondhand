@@ -339,6 +339,28 @@ The rival entries come from [parity.md](../parity.md#cross-marketplace-search-an
 | Listing swarm | the merge fixture yields one `per_site` row per site; a risk block removes its site from the marketing engine's input |
 | Head to head | the same 200 questions through Firecrawl extract alone and through this engine: we answer more with a basis met, faster, at lower cost per used result |
 
+## Open from the audit (checked 2026-11-15)
+
+Each row of the Intelligence API section of [audit.md](audit.md) was checked against the code. 1 of 19 is closed (the OfferUp price now needs safe whole cents, `public/readers.ts:109`). 1 is unclear and 17 are open. Worst first. All paths are under `app/src/edge/intel/`.
+
+| # | What is wrong | Where (file:line today) | Fix | Test that proves it |
+|---|---|---|---|---|
+| IN-A1 | Rung-4 grounding checks strings only. A model-invented number (price, count) passes and can feed computed money. | `extract.ts:348` | Require each numeric field to have a parseable span in the page text. | Page text has "$45". A row with `price_cents` 4500 is accepted. A row with 9900 is dropped as `ungrounded:price_cents`. |
+| IN-A2 | A comp with no sale date counts at full weight, a future date counts as age zero, and `sold_90d` counts future rows. | `gather.ts:39` | Reject undated and future sold rows and validate prices. | One undated comp and one dated tomorrow: both excluded and counted as dropped. `n_eff` is 0. |
+| IN-A3 | Numeric reconciliation accepts NaN values and reliability weights outside [0,1]. | `reconcile.ts:134` | Validate finite values and weights in [0,1] before the weighted pick. | Values [NaN, 100] raise. A weight of 1.5 raises. |
+| IN-A4 | `calculate()` can return raw facts and the runner emits them with no answer or guard step. | `run.ts:156` | Pass every numeric fact through the proof publication boundary before emitting it. | A plan returning a fact on 1 row emits it with `too_few` notes. With 6 fresh rows it emits a shown number with a citation id. |
+| IN-A5 | `n_eff` is the sum of age weights. Valuation and proof use the Kish count, so one comp set passes different gates. | `gather.ts:47` | Reuse `basisOf` from the proof layer. | Weights [1, 1, 0.1, 0.1]: `measure` returns the same `n_eff` as `basisOf` (2.396 by Kish, 2.2 today). |
+| IN-A6 | Saturation uses the last inserted comps, so the same set in another arrival order stops at a different stage with a different median. | `gather.ts:44` | Sort comps by a stable id before the median, or version the snapshot. | The same 8 comps in two arrival orders give the same `saturated` flag and median. |
+| IN-A7 | The first route to hit wins, so scheduling picks the numeric source. | `run.ts:138` | Freeze the observations and reconcile them under a stable source policy. | Two routes hit with 10000 and 12000. Swapping their arrival order gives the same `route_id` and price. |
+| IN-A8 | The cluster id is the first incoming member id. Python hashes the sorted member ids. | `reconcile.ts:125` | Use the sorted-ids hash. | Permuting the input gives the same cluster id, equal to the Python value on a shared fixture. |
+| IN-A9 | Stock-photo detection counts sellers per site. Python counts across the whole set. | `reconcile.ts:108` | One evidence contract and shared fixtures. | 3 sellers on ebay and 3 on mercari with one photo hash (threshold 5): both runtimes call it stock. |
+| IN-A10 | The TS dedupe has no blocked-pair constraint, so rejected pairs can rejoin. | `reconcile.ts:121` | Honor the same persistent blocked pairs as `cluster.py`. | Pair (a, b) is blocked and shares a photo hash: they stay in two clusters in both runtimes. |
+| IN-A11 | Tokenizing is ASCII lowercase and split. Python uses Unicode casefold. Non-ASCII titles score differently. | `reconcile.ts:87` | Share one normalization (casefold, `\w+`). | "Café Tasse" and "CAFÉ tasse" have text similarity 1.0 in both. |
+| IN-A12 | Unclear, the code cites identity.md B5. Agreeing model ids alone are called `exact`. Python needs a score at the threshold plus GTIN or MPN, or model plus variant. | `reconcile.ts:43` | Use the identity engine's single exact-match gate in both. | Matching model id with `pair_score` 0.4: both runtimes return the same match class. |
+| IN-A13 | Conditions are new, like_new, used, refurbished. Valuation uses other bands. No conversion exists. | `classify.ts:37` | One table mapping to the canonical bands before numeric engines read the slot. | `like_new` maps to the canonical top used band. An unknown value is refused, not passed. |
+| IN-A14 | Contribution observations are not wired to `runPlan`, so a settled source does not update its posterior. | `learn.ts:25` | Observe on settlement and read the new target order. | After a route settles an answer, the Beta for `{kind, segment}` has one more success. The next target order changes. |
+| IN-A15 | Literals instead of declared scoped params: 120 s deadline, basis 6 and 2, half-life 90, cutoff 365, saturation 3 and 0.02, gain 0.1 (`gather.ts:25`); match thresholds (`reconcile.ts:14`); regenerate 0.2, window 50, 5 pages, 3 refinements, 0.1 missing (`extract.ts:47`); 200 pages and 2 points (`learn.ts:125`). | the four lines named | Declare each prior with its spec citation and read the scoped champion. | Set `basis_n_eff` to 3 in the registry: `basisMet` is true at `n_eff` 3. Setting the exact threshold to 0.9 turns a 0.87 pair from `likely` to not matched. |
+
 ## 10. Build tasks
 
 The paths are proposed. Tasks 1, 3, 5 and 8 run in parallel; 2 needs 1; 4 needs 2 and 3; 6 needs 2; 7 needs 2 and 5.

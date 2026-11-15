@@ -2036,5 +2036,617 @@
         "scope": {}
       }
     ]
+  },
+  {
+    "name": "fit v5 rollback restores replaced event v4 exactly keep_evidence=False",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "success": 1,
+          "weight": 2
+        }
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "success": 0,
+          "weight": 3
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 0,
+          "weight": 0
+        }
+      },
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "held_out_score": 0.9,
+        "expect_version": 4
+      },
+      {
+        "op": "promote",
+        "version": 5,
+        "at": "2026-01-31"
+      },
+      {
+        "op": "rollback",
+        "at": "2026-03-02",
+        "keep_evidence": false
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 42,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 5
+        },
+        "version": 3,
+        "n_eff": 45,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "version": 5,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "first fit rollback restores event-only history keep_evidence=False",
+    "declare": [
+      {
+        "name": "sale_rate",
+        "family": "gamma",
+        "prior": {
+          "shape": 2,
+          "rate": 4
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "apply_gamma",
+        "count": 1,
+        "exposure": 0.5,
+        "weight": 2
+      },
+      {
+        "op": "propose",
+        "value": {
+          "shape": 8,
+          "rate": 6
+        },
+        "held_out_score": 0.5,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "version": 2
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": false
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 8,
+          "rate": 6
+        },
+        "version": 2,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "fit v2 rollback restores fit v1 without replay keep_evidence=False",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": 0.7,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1
+      },
+      {
+        "op": "propose",
+        "value": 0.9,
+        "held_out_score": 0.8,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "version": 2
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": false
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.9,
+        "version": 2,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "fit v5 rollback restores replaced event v4 exactly keep_evidence=True",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "success": 1,
+          "weight": 2
+        }
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "success": 0,
+          "weight": 3
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 0,
+          "weight": 0
+        }
+      },
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "held_out_score": 0.9,
+        "expect_version": 4
+      },
+      {
+        "op": "promote",
+        "version": 5,
+        "at": "2026-01-31"
+      },
+      {
+        "op": "rollback",
+        "at": "2026-03-02",
+        "keep_evidence": true
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 42,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 5
+        },
+        "version": 3,
+        "n_eff": 45,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "version": 5,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "first fit rollback restores event-only history keep_evidence=True",
+    "declare": [
+      {
+        "name": "sale_rate",
+        "family": "gamma",
+        "prior": {
+          "shape": 2,
+          "rate": 4
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "apply_gamma",
+        "count": 1,
+        "exposure": 0.5,
+        "weight": 2
+      },
+      {
+        "op": "propose",
+        "value": {
+          "shape": 8,
+          "rate": 6
+        },
+        "held_out_score": 0.5,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "version": 2
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": true
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 8,
+          "rate": 6
+        },
+        "version": 2,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "fit v2 rollback restores fit v1 without replay keep_evidence=True",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": 0.7,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1
+      },
+      {
+        "op": "propose",
+        "value": 0.9,
+        "held_out_score": 0.8,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "version": 2
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": true
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.9,
+        "version": 2,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      }
+    ]
   }
 ]

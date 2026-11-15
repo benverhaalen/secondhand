@@ -212,3 +212,51 @@ test('pooling recursively weighs every permitted ancestor and the prior, skippin
 });
 
 for (const [name, check] of Object.entries(regressions)) test(name, () => check(memoryStore()));
+
+for (const keep_evidence of [false, true]) {
+  test(`rollback of fit v5 restores replaced event v4 exactly (keep_evidence=${keep_evidence})`, () => {
+    const s = store(), name = 'assist_span_open', scope = { site: 'depop' };
+    s.propose(fit({ name, family: 'beta', prior: { alpha: 8, beta: 2 }, value_or_hyperparams: { alpha: 8, beta: 2 } }), 0);
+    s.promote(name, scope, 1, 0, DAY0);
+    s.observe(name, scope, { success: 1, weight: 2 }, DAY0);
+    s.observe(name, scope, { success: 0, weight: 3 }, DAY0);
+    s.observe(name, scope, { success: 0, weight: 0 }, DAY30);
+    const previous = s.rows(name, scope).find((r) => r.version === 4)!;
+    assert.deepEqual(previous.value_or_hyperparams, { alpha: 9, beta: 3.5 });
+    assert.equal(previous.n_eff, 22.5);
+    s.propose(fit({ name, family: 'beta', value_or_hyperparams: { alpha: 18, beta: 2 }, held_out_score: 0.9 }), 4);
+    assert.equal(s.promote(name, scope, 5, 0, DAY30).promoted, true);
+    assert.equal(s.rows(name, scope).at(-1)!.previous_version, 4);
+    const at = '2026-03-02T00:00:00Z';
+    assert.deepEqual(s.rollback(name, scope, at, keep_evidence), { ...previous, promoted_at: at });
+    assert.deepEqual(s.read(name, scope), { value: previous.value_or_hyperparams, n_eff: previous.n_eff, version: 4, from: 'row', scope });
+    assert.equal(s.rows(name, scope).length, 5);
+    assert.deepEqual(s.rows(name, scope).filter((r) => r.status === 'champion').map((r) => r.version), [4]);
+  });
+
+  test(`rollback of the first fit restores its event-only model history (keep_evidence=${keep_evidence})`, () => {
+    const s = memoryStore(), name = 'P_accept', scope = { site: 'depop' };
+    s.declare({ name, family: 'model_ref', prior: { term: 0 } });
+    s.apply(name, scope, () => ({ value: { term: 4 }, weight: 8 }), DAY0);
+    const previous = s.rows(name, scope)[0];
+    s.propose(fit({ name, scope, family: 'model_ref', prior: { term: 0 }, value_or_hyperparams: { term: 9 } }), 1);
+    assert.equal(s.promote(name, scope, 2, 0, DAY30).promoted, true);
+    assert.equal(s.rows(name, scope)[1].previous_version, 1);
+    assert.deepEqual(s.rollback(name, scope, DAY30, keep_evidence), { ...previous, promoted_at: DAY30 });
+    assert.deepEqual(s.read(name, scope), { value: { term: 4 }, version: 1, n_eff: 8, from: 'row', scope });
+    assert.equal(s.rows(name, scope).length, 2);
+    assert.deepEqual(s.rows(name, scope).filter((r) => r.status === 'champion').map((r) => r.version), [1]);
+  });
+
+  test(`a second rollback of fit v2 over fit v1 has no earlier promoted version (keep_evidence=${keep_evidence})`, () => {
+    const s = store(), name = 'p_min_quick', scope = { site: 'depop' };
+    s.propose(fit(), 0);
+    s.promote(name, scope, 1, 0, DAY0);
+    s.propose(fit({ value_or_hyperparams: 0.9, held_out_score: 0.8 }), 1);
+    s.promote(name, scope, 2, 0, DAY0);
+    assert.equal(s.rollback(name, scope, DAY30, keep_evidence).version, 1);
+    assert.throws(() => s.rollback(name, scope, DAY30, keep_evidence), /earlier promoted/);
+    assert.equal(s.read(name, scope).version, 1);
+    assert.equal(s.rows(name, scope).length, 2);
+  });
+}
