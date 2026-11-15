@@ -45,7 +45,7 @@ def validate(params):
         if name not in params['values'] or name not in params['versions']:
             raise ValueError(f'missing {name}')
         v, version = params['values'][name], params['versions'][name]
-        if not isinstance(version, int) or version < 0:
+        if isinstance(version, bool) or not isinstance(version, int) or version < 0:
             raise ValueError(f'{name} version')
         if d['family'] == 'scalar' and (not math.isfinite(v) or v < d['guard_lo'] or v > d.get('guard_hi', math.inf)):
             raise ValueError(name)

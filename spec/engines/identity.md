@@ -146,3 +146,14 @@ All numbers are examples.
 A person captures a jacket. Rung 1 reads no code. Rung 2 returns "Patagonia Nano Puff Hoody, black" at s 0.82, so c = 0.8 x 0.82 = 0.66. Rung 3 returns the same product at s 0.91 (0.46) and the blue variant at s 0.89 (0.45). With `q_apparel` = 0.60, C holds only the black one: "Is it this?". The person taps yes; the label is `exact` by confirm, and 0.34 joins the kind's nonconformity window.
 
 A Depop comp of the same jacket arrives: brand, model and colour agree, size L, text_sim 0.72, image_sim 0.88. Its W maps to 0.81 on the M1 scale, so it is `likely_same_model`, not `exact`: no code field agreed. A Poshmark comp 4 days later has a photo 3 bits from the Depop one, price $5 lower (6%), same seller hash: one cluster, one row, "Also on Poshmark". The price range counts it once.
+
+## Capture's side (capture lead, 2026-11-15)
+
+What identify hands capture today: the identify result in [capture §5](capture.md#5-results-from-the-jobs-capturests-applyjobresult), `{action, set: [{product_id, family, brand?, model?, c, label?, dimensions?}]}`. `action` comes from `ladder.action()` (`confirm` for one candidate, `pick` for 2 up to `identity_max_pick`, else `ask`). `set` is the conformal set from `ladder.conformal_set()`.
+
+What capture does with it is in [capture §5](capture.md#5-results-from-the-jobs-capturests-applyjobresult) and [capture §2](capture.md#dimensions-and-close-variants-fieldsts). It is not repeated here.
+
+Open on this side:
+- No job runner calls `applyJobResult` yet, so identify never changes a live capture's plan (capture fix F6).
+- The held-out set `jobs/identity/proof/held_out.json` is labelled `synthetic_regression`: authored from §3 rules, not hand-labelled real items. Identify has no real run, so its coverage and pick rates are unmeasured on real items.
+- Apple Vision's `BarcodeSymbology` has no UPC-A case, so a UPC-A is expected back as an EAN-13 with a leading 0. That is *asserted*, not observed ([capture tech docs](../../research/capture/nate/capture-tech-docs-2026-11.md)). The code lookup (rung 1) must try both forms: the 13 digits, and the 12 digits with the leading 0 dropped. The phone also sends the UPC-A form ([capture §7](capture.md#7-what-the-phone-sends-the-swift-capture-modules-contract)). Test: a UPC-A item scanned as EAN-13 `0…` finds the same product.

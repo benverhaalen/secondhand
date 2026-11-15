@@ -3,6 +3,7 @@
 // each one's progress and failure on its own row (the Shopify batch, sold.md "Batch print"); where to drop it off; and the
 // ways out (spec/ways-out.md §6.9): ship it myself, with tracking or without and what that costs, and Cancel sale.
 // Behavior: app/behavior/item/[id]/ship.json.
+// one at a time: ship-box (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking } from 'react-native';
@@ -14,6 +15,7 @@ import { itemById, ms, usd, when, world, type Decision, type Item, type Order, t
 import { CANCEL_REASONS, DROP_OFFS, NO_TRACKING, byDay, cancelCost, moneyPath, shippable, twoSold, withDoubleSale } from '@/demo/handover';
 import { photo } from '@/demo/photos';
 import { useScreen } from '@/demo/screen';
+import { log } from '@/ui/log';
 
 // The state Ship cannot be in, with why (B35, app/src/demo/screen.ts).
 const SKIP = 'new: Ship opens only from a sale, and a person who has done nothing has sold nothing';
@@ -163,7 +165,7 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
           onPress={() => router.push(`/item/${mine.item.id}` as Href)} />
         {/* The way back to the sale on its site, and the site's own picture of the order to check the ship-by date against (Ben, 06:19). */}
         <Line>
-          {saleUrl ? <SiteLink id="ship-site" site={mine.order.site} onPress={() => { Linking.openURL(saleUrl).catch(() => {}); }} /> : null}
+          {saleUrl ? <SiteLink id="ship-site" site={mine.order.site} onPress={() => { Linking.openURL(saleUrl).catch(e => log.error('ship.open', e)); }} /> : null}
           <Pill id="ship-snapshot" kind="second" icon="image-01" label="See the site’s copy" onPress={() => setCopy(true)} />
         </Line>
       </Stack>
@@ -211,7 +213,7 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
                 <Press key={s.id} id={`dropoff-${s.id}`} label={s.name} round={false}
                   onPress={() => (s.kind === 'door'
                     ? setToast({ id: 'pickup-undo', text: `Pickup set for ${when(s.next_open, w.now)}`, undo: () => setToast(null) })
-                    : Linking.openURL(`https://maps.apple.com/?q=${encodeURIComponent(s.name)}`).catch(() => {}))}>
+                    : Linking.openURL(`https://maps.apple.com/?q=${encodeURIComponent(s.name)}`).catch(e => log.error('ship.open', e)))}>
                   <Row lead={<Icon name={s.kind === 'door' ? 'delivery-truck-01' : 'location-01'} />} trail={<Icon name="arrow-right-01" size={20} tone="ink-2" />}>
                     <Txt role="body" lines={1}>{s.name}</Txt>
                     <Txt role="caption" lines={1}>{s.kind === 'door' ? `Free, ${when(s.next_open, w.now)}` : `${s.distance_mi} mi, opens ${when(s.next_open, w.now)}`}</Txt>
@@ -250,7 +252,7 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
       )}
 
       <SiteCopy id="ship-copy" open={copy} site={mine.order.site} onClose={() => setCopy(false)}
-        onOpen={() => { setCopy(false); if (saleUrl) Linking.openURL(saleUrl).catch(() => {}); }} />
+        onOpen={() => { setCopy(false); if (saleUrl) Linking.openURL(saleUrl).catch(e => log.error('ship.open', e)); }} />
 
       <Sheet open={open === 'self'} title="Ship it myself" onClose={() => setOpen(null)}>
         <Line>

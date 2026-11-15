@@ -1795,6 +1795,13 @@ Ben, 09:26 UTC, project chat:
 > yes
 
 Used in: [brand/ledger.md](../brand/ledger.md) L54 to L59, [the website constitution](constitutions/web.md) W8, W13, W14 and W15, `.agents/checks/site.mjs`, and the first screen in `brand/explore/web-home/hero/`.
+## 2026-11-15 ben research how depop and other resale apps estimate prices
+
+Ben, project chat, 2026-11-15 09:31 UTC.
+
+> i know depop does price estimates in there app, research that and similar reselling platforms that share similar features
+
+Used in: [how resale platforms suggest prices](../research/price/ben/platform-price-suggestions.md).
 ## 2026-11-15 nate backtest as we build, and the steps for testflight
 Nate, build session (orchestrator), 2026-11-15 about 13:10 Central. Two messages.
 > Please also give me the steps to set up the bundler id and everything for expo to get testflight builds and everything set up
@@ -1828,3 +1835,97 @@ Ben, website thread, 2026-11-15 10:05 and 10:11 UTC.
 > i trigger the repeats in the chat. so once you get my hitl feedback you adjust and learn and create checks and then continue on with the same philosophy for it all
 
 Used in: [web.md W15](constitutions/web.md).
+## 2026-11-15 nate wrap the leads up at a good spot, then spec from what we have
+Nate, build session (orchestrator), 2026-11-15 about 15:30 Central.
+> Everything you just ascertained, lets wrap up the current leads at a good spot. Then fully focus on speccing based on what we currently have, and focusing to improve fix, and further develop, meanwhile, give me the full command to put into the terminal with the path for the p8 and everything prewritten
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "The spec pass".
+
+## 2026-11-15 nate where are we not optimized, an expert lead for real-time adaptation, the bundle identifier, and sessions end before they fill
+Nate, build session (orchestrator), 2026-11-15 between about 15:45 and 16:00 Central. Three messages.
+> Where have we not optimized in speed, accuracy, all aspects to the retrieval and operations of data and such features and everything driven with our custom build pipelines and api protocols. /research and assess. Addtionally, fully focus an expert team lead to apply the relevant skills, research out and continously with codex address things to fit the realtime adapt to each specific platform product type engines, taking into account the data we can gather and calculate things against, combining things to create metrics, all researched and credibly proven
+
+> com.bnvg.secondhand
+
+> ensure the sessions end, as each team lead is reaching their context load, and ideally stop at 50% to 60% filled
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "A session ends before it fills"; `spec/plans/optimization-gaps.md`.
+
+## 2026-11-15 the app looks nothing like the mocks: hierarchy, spacing, what stacks and what has color
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 09:30 UTC (relayed from another thread).
+
+> so it doesnt look like the mocks you gave me why. figure it out from logging. use some sort of way to run automations on my actual phone with the app. and fix why like fonts arent loading and why the top is cut off. spacing is weird. it feels sloppy. incohesive. look at all the mocks you gave and audit and figure out why the implementation missed the mark and how to write tests to fix it. im confused how you got really good ui to look using code in one way but then on the actual app it looks so so ai slop and bad. also audit from like an expert in context too.
+
+Ben, same thread, 09:38 UTC.
+
+> all messages in here just feed to codex. identify where the example ones differ from the example ones i approved. find the ones i really liked and why. a problem i have is there is not really a super clear hierarchy for a lot of it. finding why it just looks nothing like code stuff that i actually approved. continuously auditing for the expert principles and the design constitution and the rules for how to write great code in the language for ui design like an expert. how to actually expertly do it
+
+Ben, same thread, 09:44 UTC.
+
+> my main critique is it lacks hierarchy across generalized pages. the spacing feels off and very ai sloppy. i feel like there is no consistency. why do some things stack. why do some have color. it all feels very random and unintentional and rules need to be written to make it intentional to how an expert would fix it
+
+Ben, same thread, 09:47 UTC.
+
+> wait stop on this just focus on deslopping and improving the ai. through this note down where things break and where things need to change and use effective logging
+
+Used in: [brand/constitution.md Art. 7.11 to 7.16](../brand/constitution.md#article-7-space-and-layout), `scripts/composition.mjs` (U9 to U14), [the audit](../research/cross-cutting/ben/why-the-app-missed-the-mocks.md), [the breaks log](../features/app/breaks.md).
+
+## 2026-11-15 show how deep the project goes, and the novel ways we used the technology
+
+Ben, project chat, 09:57 UTC.
+> add more into it for dig deep how we created a project with absurd depth. also absurd depth in how we used the technologies and used them in a novel way.
+
+Used in: [devpost.md](devpost.md#how-deep-we-dug), [pitch.md](pitch.md#how-deep-we-dug).
+## 2026-11-15 every page earns its spot, a title on every tab, Today sorted differently, the bar and the plus
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 09:56 UTC.
+
+> audit how you are ensuring the whole app meets the standard of expert ui design and try and improve it. i recall the way i had prompted the dark mode original design had somehow created something that was actually good. for some reason those principles were lost. everything needs to earn its spot on the screen and all composure and structure and evaluating the app as a whole should ensure similar things have similar hierarchy and tests need to be written with this. also hopefully you have some sort of decision tree for figuring out what animations when or if an animation should play. also there are some fixes i have for things that make no sense to me. i think the today page should be sorted completely differently. i think the money thing at the top should change. the bottom bar looks odd with the iphone curves. the middle + circle isnt aligned. each page isnt designed for how the user would want to do something. it isnt designed like how a user would probably end up wanting to do things. everything feels cramped. i feel like the font weight hierarchy is not imposed. i think the second hand font isnt used enough. the today page should say today, the sell sell, the buy page, buy. then the main actions a user would want to do should be there. messages should just list the messages. also the gradient at the top of the screen is on some pages and not on others. think of how to group things in today better. the color makes no sense to me too. ensure there is no excessive text. recall all text needs to be written with the de claudish skill i hae in my harness.
+
+Ben, same thread, 09:59 UTC.
+
+> another note, i think that there should be lint rules and you should continue making lint rules based on what you see too. also like i think some things are just too small. like the little tags for pickup or offers etc. also you need to ensure that data can effectively wire up to the ui too. it should all feel familiar and be organized in a familiar way
+
+Ben, same thread, 10:00 UTC.
+
+> also what ui would you remove or what would you add to show rather than tell. and improve hierarchy and coherence. note down on the screens all the issues with cohesiveness and a combined brand family and where it wasnt enforced and trying to improve all those checks and rules that are deterministic and not just a prompt
+
+Ben, same thread, 10:01 UTC.
+
+> the scale and organization of each page is completely intentional and standard to apple iphone design
+## 2026-11-15 nate how credible and research-proven are our scorers, real time against 2012 to 2013, and proving we beat the other tools
+Nate, adaptation lead's session, 2026-11-15, evening Central.
+> So with this prompt, I was focused on you establishing how our engines are credible and accurate. Theres value to realtime vs 2012 to 2013. We research current market data, so I wanted you to assess how credible and research proven our scorers and such deterministic system we had in place were. What are the ways we can. /research  to understand what would make it such. What would help us easily prove or exhibit outperfroming competitors and other tools in our depth of research, and how we aid people.
+
+Used in: `spec/engines/credibility.md`.
+
+## 2026-11-15 nate fresh leads replace the ones with heavy context
+Nate, orchestrator's session, 2026-11-15, about 04:30 Central.
+> get all new leads in replacing old ones with very heavy context windows
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills).
+
+## 2026-11-15 nate the trial workspace is the one the judges see
+Nate, the Databricks lead's session, 2026-11-15, about 04:00 Central, as that lead relayed it to the orchestrator (not heard first hand).
+> thats what we have, yeah lets do the trial
+
+Used in: [packet 71](../.agents/team/packets/team/71-databricks-handoff.md), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate the dashboard is rebuilt before any deploy
+Nate, orchestrator's session, 2026-11-15, about 05:00 Central, asked whether to force the Databricks deploy before the dashboard is rebuilt.
+> Rebuild first
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 71](../.agents/team/packets/team/71-databricks-handoff.md).
+
+## 2026-11-15 nate apify is set up for the hackathon
+Nate, orchestrator's session, 2026-11-15, about 05:10 Central, with a screenshot of his Apify console (the Facebook Marketplace scraper and an eBay listings and prices scraper). Asked whether the token he typed should be set and whether this is his go on third-party feeds.
+> You set it, ill rotate after hackathon
+
+Read by the orchestrator (agent proposal, until he says otherwise): a go to use those two Apify actors as sources for the hackathon demo, labelled as such and never modelled on. Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate ebay and facebook through apify, integrated selectively, not only apis
+Nate, orchestrator's session, 2026-11-15, about 05:15 Central, after the Apify token was set.
+> Now you have access to both ebay pricing, listings, etc, and facebook marketplace, alot of possible sources we should selectively integrate, improve benchmarks, of course not just utilizing apis
+
+Used in: `app/src/edge/harness/sites/apify/` (in build), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).

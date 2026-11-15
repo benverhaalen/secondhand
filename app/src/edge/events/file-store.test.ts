@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync, mkdirSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileStore } from './file-store.ts';
-import type { JobRow } from './ports.ts';
+import { TABLES, type JobRow } from './ports.ts';
 
 const ev = { user_id: 'u1', source: 'app', action: 'app.list', dedupe_key: 'k1', actor: 'user', observed_at: 'x', effective_at: 'x', trace_id: 't' } as const;
 const job: Omit<JobRow, 'id'> = { kind: 'post', user_id: 'u1', event_id: 'e', idempotency_key: 'k1', args: {}, state: 'queued', stages: [], attempts: 0, trace_id: 't', created_at: 'x' };
@@ -13,6 +13,32 @@ function fixture(t: TestContext) {
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   return join(dir, 'data', 'store.json');
 }
+
+test('deleteUser persists removal from every table while the other tenant survives reload', t => {
+  const path = fixture(t), s = fileStore(path);
+  for (const user_id of ['u1', 'u2']) {
+    for (const table of TABLES) s.put(table, { id: 'shared', user_id });
+    s.insertEvent({ ...ev, user_id }); s.insertJob({ ...job, user_id });
+    s.raiseDecision({ user_id, kind: 'first_post', subject: 'shared', why: 'approval', options: [] });
+  }
+  const other = s.exportUser('u2');
+  assert.deepEqual(s.deleteUser('u1'), { events: 1, jobs: 1, decisions: 1, rows: Object.fromEntries(TABLES.map(table => [table, 1])) });
+  const loaded = fileStore(path);
+  assert.deepEqual(loaded.exportUser('u2'), other);
+  assert.deepEqual(loaded.events(), other.events); assert.deepEqual(loaded.jobs(), other.jobs); assert.deepEqual(loaded.decisions(), other.decisions);
+  for (const table of TABLES) assert.deepEqual(loaded.systemRows(table), other.rows[table], table);
+});
+
+test('deleteUser rolls back memory and claims when persistence fails', t => {
+  const path = fixture(t), s = fileStore(path);
+  s.put('account', { id: 'acc_1', user_id: 'u1' }); s.insertEvent(ev);
+  const j = s.insertJob(job).row; s.claimJobs(1, 'worker');
+  const before = readFileSync(path, 'utf8'), exported = s.exportUser('u1');
+  mkdirSync(path + '.tmp');
+  assert.throws(() => s.deleteUser('u1'), 'failed persistence must surface');
+  assert.deepEqual(s.exportUser('u1'), exported); assert.equal(s.claims.get(j.id), 'worker');
+  assert.equal(readFileSync(path, 'utf8'), before);
+});
 
 test('reload preserves events, jobs, decisions, product rows and uniqueness', t => {
   const path = fixture(t), s = fileStore(path);

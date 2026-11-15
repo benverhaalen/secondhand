@@ -71,9 +71,11 @@ test('app-check: --dark opens the page in the dark scheme, so ink written as a l
   assert.match(await ids(body, { dark: true }), /B6 .*"You keep \$46\.95".*contrast/);
 });
 
-test('app-check U8: a main tab without the wash fails, a pushed page with it fails, the rest pass', () => {
-  assert.match(washRule('(tabs)/sell', false)?.msg ?? '', /main tab with no wash/);
-  assert.match(washRule('item/[id]/ship', true)?.msg ?? '', /pushed page with the wash/);
-  assert.equal(washRule('(tabs)/index', true), null);
-  assert.equal(washRule('messages/index', false), null);
+test('app-check U8: a page with a top and no wash fails, a wash with no top fails, the rest pass', () => {
+  assert.match(washRule('(tabs)/sell', false, true)?.msg ?? '', /top with no wash/);
+  assert.match(washRule('messages/index', false, true)?.msg ?? '', /top with no wash/);
+  assert.match(washRule('camera', true, false)?.msg ?? '', /no nav or title/);
+  assert.equal(washRule('(tabs)/index', true, true), null);
+  assert.equal(washRule('item/[id]/ship', true, true), null);
+  assert.equal(washRule('camera', false, false), null);
 });

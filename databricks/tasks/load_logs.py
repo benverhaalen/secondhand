@@ -17,11 +17,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=ROOT, required=ROOT is None)
     ROOT = parser.parse_args().root.resolve()
-sys.path.insert(0, str(ROOT / 'log'))
+sys.path[:0] = [str(ROOT / 'log'), str(ROOT / 'databricks')]
 from secondhand_log import create_log, stdout_sink
+from guard import guard_batch
+from break_glass import break_glass
 
 ENVELOPE = {'ts', 'session', 'seq', 'src', 'level', 'event'}
-LOG_FIELDS = ENVELOPE | {'item', 'job', 'call', 'trace', 'user'}
+LOG_FIELDS = ENVELOPE | {'item', 'job', 'call', 'trace', 'user', 'user_id'}
 LOG_SCHEMA = 'data STRING, user_id STRING, ts TIMESTAMP, session STRING, seq INT, src STRING, level STRING, event STRING, item STRING, job STRING, call STRING, trace STRING, body STRING'
 DECISION_SCHEMA = 'data STRING, id STRING, user_id STRING, created_at TIMESTAMP, updated_at TIMESTAMP, version INT, kind STRING, item_id STRING, action STRING, actor STRING, price_cents BIGINT, floor_cents BIGINT, site STRING, policy_mode STRING, policy_result STRING, policy_version STRING, why STRING, state STRING, buyer_handle STRING'
 REPORT_SCHEMA = 'file STRING, lines BIGINT, loaded BIGINT, rejected BIGINT, reasons STRING'
@@ -50,7 +52,7 @@ def _validate(row) -> None:
         _timestamp(row['ts'])
     except ValueError as error:
         raise ValueError('ts must be a parseable ISO timestamp') from error
-    for field in ('src', 'level', 'item', 'job', 'call', 'trace', 'user'):
+    for field in ('src', 'level', 'item', 'job', 'call', 'trace', 'user', 'user_id'):
         if row.get(field) is not None and not isinstance(row[field], str):
             raise ValueError(f'{field} must be a string')
     if row.get('level') is not None and row['level'] not in ('debug', 'info', 'warn', 'error'):
@@ -75,18 +77,21 @@ def provenance(row: dict) -> str:
     return f'live:{site.strip()}' if isinstance(site, str) and site.strip() else 'example'
 
 
-def parse(lines, source_name: str) -> Parsed:
+def parse(lines, source_name: str, *, erased_users=frozenset()) -> Parsed:
     """Return log rows, decision rows and rejects (file, 1-based line, reason)."""
     logs, decisions, rejects = [], [], []
     for number, line in enumerate(lines, 1):
         try:
             row = json.loads(line)
+            if isinstance(row, dict) and any(isinstance(row.get(key), str) and row[key] in erased_users for key in ('user', 'user_id')):
+                rejects.append({'file': source_name, 'line': number, 'reason': 'erased user skipped'})
+                continue
             _validate(row)
         except (ValueError, TypeError) as error:
             rejects.append({'file': source_name, 'line': number, 'reason': str(error)})
             continue
         ts = _timestamp(row['ts'])
-        user = row.get('user') or 'system'
+        user = row.get('user') or row.get('user_id') or 'system'
         data = provenance(row)
         logs.append({'data': data, 'user_id': user, 'ts': ts, 'session': row['session'], 'seq': row['seq'],
                      **{k: row.get(k) for k in ('src', 'level', 'event', 'item', 'job', 'call', 'trace')},
@@ -107,6 +112,31 @@ def parse(lines, source_name: str) -> Parsed:
     return Parsed(logs, decisions, rejects)
 
 
+def merge_rows(spark, log, table, rows, schema, keys):
+    if not rows:
+        return
+    source = 'load_logs_' + table.rsplit('.', 1)[-1]
+    frame = spark.createDataFrame(rows, schema).dropDuplicates(keys)
+    frame.createOrReplaceTempView(source)
+    predicate = ' AND '.join(f't.{key} = s.{key}' for key in keys)
+    statement = f'MERGE INTO {table} t USING {source} s ON {predicate} WHEN NOT MATCHED THEN INSERT *'
+    log.call('db', 'merge_log_rows', {'table': table, 'rows': len(rows)}, lambda: spark.sql(statement).collect(),
+             describe=lambda result: {'rows': len(result)})
+
+
+def merge_logs(spark, log, logs, decisions):
+    if not logs and not decisions:
+        return
+
+    def sql(statement, args):
+        return log.call('db', 'load_logs_access', {'sql': statement},
+                        lambda: spark.sql(statement, args=args).collect(), describe=lambda rows: {'rows': len(rows)})
+
+    with break_glass(sql, 'load logs'):
+        merge_rows(spark, log, 'secondhand.core.log_event', logs, LOG_SCHEMA, ['session', 'seq'])
+        merge_rows(spark, log, 'secondhand.core.decision', decisions, DECISION_SCHEMA, ['id'])
+
+
 def main() -> dict:
     from pyspark.sql import SparkSession
 
@@ -118,12 +148,16 @@ def main() -> dict:
         files = log.call('tool', 'list_log_files', {'path': str(directory)}, lambda: sorted(directory.glob('*.jsonl')),
                          describe=lambda paths: {'files': len(paths)})
         if not files:
-            raise FileNotFoundError(f'no JSONL files in {directory}; refusing to clear loaded tables')
+            raise FileNotFoundError(f'no JSONL files in {directory}')
+        erased = log.call('db', 'read_erasure', {},
+                          lambda: spark.sql('SELECT user_id FROM secondhand.governance.erasure').collect(),
+                          describe=lambda rows: {'rows': len(rows)})
+        erased_users = {row['user_id'] for row in erased}
         logs, decisions, reports = [], [], []
         for path in files:
             lines = log.call('tool', 'read_log_file', {'file': str(path)}, lambda: path.read_text(encoding='utf-8').splitlines(),
                              describe=lambda rows: {'lines': len(rows)})
-            parsed = parse(lines, str(path))
+            parsed = parse(lines, str(path), erased_users=erased_users)
             logs.extend(parsed.log_events)
             decisions.extend(parsed.decisions)
             reasons = Counter(r['reason'] for r in parsed.rejects)
@@ -131,11 +165,14 @@ def main() -> dict:
                             'rejected': len(parsed.rejects), 'reasons': json.dumps(dict(reasons), sort_keys=True)})
             for reject in parsed.rejects:
                 log.event('note', {'msg': 'log line rejected', **reject}, 'warn')
-        for table, rows, schema in [('secondhand.core.log_event', logs, LOG_SCHEMA),
-                                    ('secondhand.core.decision', decisions, DECISION_SCHEMA),
-                                    ('secondhand.measures.load_report', reports, REPORT_SCHEMA)]:
-            log.call('db', 'overwrite_log_table', {'table': table, 'rows': len(rows)},
-                     lambda: spark.createDataFrame(rows, schema).write.mode('overwrite').saveAsTable(table))
+        batches = [('secondhand.core.log_event', logs, LOG_SCHEMA),
+                   ('secondhand.core.decision', decisions, DECISION_SCHEMA),
+                   ('secondhand.measures.load_report', reports, REPORT_SCHEMA)]
+        for table, rows, _ in batches:
+            guard_batch(spark, log, 'load_logs', table, rows)
+        merge_logs(spark, log, logs, decisions)
+        log.call('db', 'load_report', {'files': len(reports)},
+                 lambda: spark.createDataFrame(reports, REPORT_SCHEMA).write.mode('overwrite').saveAsTable('secondhand.measures.load_report'))
         result = {'files': len(files), 'loaded': len(logs), 'decisions': len(decisions),
                   'rejected': sum(r['rejected'] for r in reports)}
         log.job('load_logs', 'load_logs', 'done', **result)

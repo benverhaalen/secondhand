@@ -50,6 +50,9 @@ export interface PipelineDeps {
 // product.md §6 verbs that change a site; each is policy-checked and stage-guarded.
 export const WRITE_VERBS = new Set(['post', 'revise', 'relist', 'end', 'save', 'send_message', 'answer_offer', 'make_offer']);
 
+// The shared ports Stage union is awaiting the product.md §4 planned state.
+type WriteStage = Omit<Stage, 'state'> & { state: Stage['state'] | 'planned' };
+
 type Err = { code: string; message: string };
 type Outcome =
   | { k: 'refused'; kind?: string }
@@ -127,8 +130,8 @@ export function createPipeline(d: PipelineDeps) {
   const { store, harness, leases, params, log, engines, now, worker } = d;
   const policy = d.policy ?? check;
   const iso = () => new Date(now()).toISOString();
-  const stageOf = (id: string, name: string) => store.getJob(id)?.stages.find(s => s.name === name);
-  const put = (id: string, name: string, patch: Partial<Stage>) => {
+  const stageOf = (id: string, name: string) => store.getJob(id)?.stages.find(s => s.name === name) as WriteStage | undefined;
+  const put = (id: string, name: string, patch: Partial<WriteStage>) => {
     const cur = store.getJob(id)!;
     const old = cur.stages.find(s => s.name === name);
     const next = { ...old, name, ...patch } as Stage;
@@ -137,13 +140,19 @@ export function createPipeline(d: PipelineDeps) {
   };
   const eventOf = (j: JobRow) => store.events({ user_id: j.user_id }).find(e => e.id === j.event_id);
 
-  const raise = (j: JobRow, kind: string, subject?: string) => {
+  const raise = (j: JobRow, kind: string, subject?: string, plannedVerb?: string) => {
     const r = store.raiseDecision({
       user_id: j.user_id, kind, subject: subject ?? j.item_id ?? j.account_id ?? j.id, item_id: j.item_id, job_id: j.id,
-      why: `${kind.replace(/_/g, ' ')} needs your say.`, options: [{ id: 'yes', label: 'Do it' }, { id: 'no', label: 'Not now' }], suggested: 'yes',
+      why: plannedVerb ? 'Planned only. Nothing was sent to the site.' : `${kind.replace(/_/g, ' ')} needs your say.`,
+      options: [{ id: 'yes', label: plannedVerb === 'end' ? 'End it on the site' : plannedVerb ? 'Finish on the site' : 'Do it' }, { id: 'no', label: 'Not now' }], suggested: 'yes',
     });
     if (!r.duplicate) log.ask(r.row.id, kind, 'ask', { job: j.id });
     return r.row.id;
+  };
+
+  const planned = (j: JobRow, verb: string, kind: string, plan: unknown) => {
+    raise(j, kindArg(j, kind), j.listing_id ?? j.item_id ?? j.account_id ?? j.id, verb);
+    return { planned: true, plan };
   };
 
   async function call(j: JobRow, verb: string, args: Record<string, unknown>, stage?: string): Promise<unknown> {
@@ -172,6 +181,7 @@ export function createPipeline(d: PipelineDeps) {
       if (saleDelist && !confirmedOrder(store, j)) throw new Stop({ k: 'refused', kind: 'failed_delist' });
       const st = stageOf(j.id, verb);
       if (st?.state === 'arrived') return st.result;
+      if (st?.state === 'planned') return planned(j, verb, decision_kind, st.result);
       const op = `${j.id}:${verb}`;
       if (st?.state === 'started') { // died mid-write: never replay, read back with the same operation_id
         const back = await call(j, READ_BACK(verb), { account_id: j.account_id, operation_id: op });
@@ -190,6 +200,10 @@ export function createPipeline(d: PipelineDeps) {
       }
       put(j.id, verb, { state: 'started', started_at: iso() });
       const data = await call(j, verb, { ...baseArgs(j, verb), ...extra }, verb);
+      if (data !== null && typeof data === 'object' && 'dry' in data && data.dry === true) {
+        put(j.id, verb, { state: 'planned', result: data, ended_at: iso() });
+        return planned(j, verb, decision_kind, data);
+      }
       put(j.id, verb, { state: 'arrived', result: data, ended_at: iso() });
       return data;
     },

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createLog } from '../log/index.js';
@@ -52,7 +52,9 @@ function python(stage, input, log) {
     const result = spawnSync(PYTHON, ['-c',
       `import json, sys\ndata = json.load(sys.stdin)\n${pythonStages[stage]}\njson.dump(result, sys.stdout)`], {
       cwd: root, input: JSON.stringify(input), encoding: 'utf8', timeout: 5000, killSignal: 'SIGKILL',
-      env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' }, maxBuffer: 1024 * 1024,
+      // jobs/ on the path as jobs/conftest.py puts it: the engine packages import each other as identity.*
+      env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1',
+        PYTHONPATH: [join(root, 'jobs'), process.env.PYTHONPATH].filter(Boolean).join(delimiter) }, maxBuffer: 1024 * 1024,
     });
     if (result.error) throw result.error;
     if (result.status !== 0) throw new Error(`Python exited ${result.status ?? result.signal}: ${result.stderr.trim()}`);
@@ -216,10 +218,11 @@ async function walk(options) {
       const job = store.getJob(inserted.job.id);
       assert.equal(job.state, 'done', JSON.stringify(job.error));
       assert.ok(!job.result?.refused, 'policy refused fixture approval');
-      assert.equal(job.result.dry, true, 'post must return a dry plan');
-      assert.equal(job.result.request.price_amount * 100, draft.price_cents, 'post lost the drafted price');
-      assert.deepEqual(job.result.request.pictures, draft.photo_ids, 'post lost drafted photos');
-      state.post = { plan: job.result, approval: { action: approval.action, actor: approval.actor } };
+      assert.equal(job.result.planned, true, 'post must return a dry plan');
+      assert.equal(job.stages.find(s => s.name === 'post').state, 'planned');
+      assert.equal(job.result.plan.request.price_amount * 100, draft.price_cents, 'post lost the drafted price');
+      assert.deepEqual(job.result.plan.request.pictures, draft.photo_ids, 'post lost drafted photos');
+      state.post = { state: 'planned', plan: job.result.plan, approval: { action: approval.action, actor: approval.actor } };
       return counts(1, 1);
     }],
     ['watch', async () => {
@@ -227,10 +230,10 @@ async function walk(options) {
       for (let minute = 0; minute < 10080; minute++) await rig.tick(minute);
       const sweeps = Object.fromEntries(['depop', 'poshmark', 'ebay'].map(site => [site,
         rig.calls.filter(c => c.site === site && c.verb === 'read_offers').length]));
-      assert.deepEqual(sweeps, { depop: 3124, poshmark: 2475, ebay: 403 }, 'watcher sweep counts changed');
+      assert.deepEqual(sweeps, { depop: 3124, poshmark: 2648, ebay: 576 }, 'watcher sweep counts changed');
       assert.equal(new Set(store.events().map(e => e.item_id).filter(Boolean)).size, 1, 'week escaped the walk item');
-      assert.equal(store.events().length, 12, 'week must have eleven events plus app.list');
-      assert.equal(store.jobs().length, 12, 'week must have eleven jobs plus post');
+      assert.equal(store.events().length, 10, 'week must have nine events plus app.list; dry ends emit no listing.ended');
+      assert.equal(store.jobs().length, 10, 'week must have nine jobs plus post; dry ends start no reconcile');
       assert.equal(store.jobs({ state: 'failed' }).length, 0, 'watcher job failed');
       state.watch = { sweeps, item_count: 1, minutes: 10080, fixture_source: 'events/fixtures/week.ts', includes_stages: ['relink', 'answer_offer', 'listing.sold', 'poll_orders', 'delist'] };
       return counts(10080, Object.values(sweeps).reduce((a, b) => a + b, 0));
@@ -268,10 +271,11 @@ async function walk(options) {
       assert.equal(event.payload.floor_cents, state.floor, 'watcher floor diverged from draft');
       assert.ok(event.payload.price_cents >= event.payload.always_accept_cents);
       assert.equal(call.minute, atMinute('depop', 'offer'), 'rule answer did not happen in the offer tick');
-      assert.equal(job.result.dry, true);
-      assert.equal(job.result.request.action, 'accept');
-      assert.equal(job.result.request.offer_id, event.payload.offer_id);
-      state.answer_offer = { plan: job.result, event, executed_in: 'watch', minute: call.minute };
+      assert.equal(job.result.planned, true);
+      assert.equal(job.stages.find(s => s.name === 'answer_offer').state, 'planned');
+      assert.equal(job.result.plan.request.action, 'accept');
+      assert.equal(job.result.plan.request.offer_id, event.payload.offer_id);
+      state.answer_offer = { state: 'planned', plan: job.result.plan, event, executed_in: 'watch', minute: call.minute };
       return counts(1, answers.length);
     }],
     ['listing.sold', () => {
@@ -294,12 +298,14 @@ async function walk(options) {
     ['delist', () => {
       const jobs = store.jobs({ kind: 'delist' });
       assert.deepEqual(jobs.map(j => j.site).sort(), ['ebay', 'poshmark'], 'delist targeted wrong sites');
-      assert.ok(jobs.every(j => j.state === 'done'), 'unfinished delist jobs');
+      assert.ok(jobs.every(j => j.state === 'done' && j.result.planned === true && j.stages.find(s => s.name === 'end').state === 'planned'), 'delist plan reported as a completed write');
       const ends = rig.calls.filter(c => c.verb === 'end');
       assert.deepEqual(ends.map(c => c.site).sort(), ['ebay', 'poshmark'], 'sold listing ended or duplicate end');
       assert.ok(store.jobs().every(j => j.state === 'done'), 'unfinished jobs');
       for (const site of ['poshmark', 'ebay'])
-        assert.equal(rig.snapshots.get(`acc_${site}`).listings[0].state, 'ended', `${site} scripted read-back still live`);
+        assert.equal(rig.snapshots.get(`acc_${site}`).listings[0].state, 'live', `${site} dry delist changed the listing state`);
+      assert.equal(store.decisions({ kind: 'delist_after_sale', state: 'open' }).length, 2, 'each dry delist must ask the person');
+      state.delist = { state: 'planned' };
       return counts(jobs.length, ends.length);
     }],
     ['restart', () => {
@@ -330,11 +336,11 @@ async function walk(options) {
         const result = await run();
         assert.ok(result.in > 0 && result.out > 0, 'zero rows');
         completed++;
-        log.stage('walk', name, { state: 'arrived', counts: result });
+        log.stage('walk', name, { state: state[name]?.state === 'planned' ? 'planned' : 'arrived', counts: result });
         if (!options.stage || Number(options.stage) === index + 1) emit({ stage: name, ...report.stage(name), counts: result, ms: performance.now() - start,
           ...(['relink', 'answer_offer', 'listing.sold', 'poll_orders', 'delist'].includes(name) && { executed_in: 'watch', ms_scope: 'validation' }),
           ...(name === 'draft' && { price_cents: state.drafts.find(d => d.site === 'depop').price_cents, photo_ids: state.drafts.find(d => d.site === 'depop').photo_ids }),
-          ...(['capture', 'post', 'watch', 'relink', 'answer_offer', 'restart'].includes(name) ? state[name] : {}) });
+          ...(['capture', 'post', 'watch', 'relink', 'answer_offer', 'delist', 'restart'].includes(name) ? state[name] : {}) });
       } catch (error) {
         failed = name;
         log.stage('walk', name, { state: 'failed' });
@@ -352,7 +358,8 @@ async function walk(options) {
     process.exitCode = 1;
   } finally {
     const total = { stage: 'total', ok: !failed, counts: { stages: completed, sold: state.order ? 1 : 0,
-      ended: store.jobs({ kind: 'delist', state: 'done' }).length }, ms: performance.now() - started,
+      ended: store.jobs({ kind: 'delist', state: 'done' }).filter(j => j.stages.some(s => s.name === 'end' && s.state === 'arrived')).length,
+      planned: store.jobs({ kind: 'delist', state: 'done' }).filter(j => j.result?.planned === true).length }, ms: performance.now() - started,
       item: state.item, sites: Object.fromEntries(sites.map(site => {
         const observed = rig.snapshots.get(`acc_${site}`)?.listings[0]?.state;
         return [site, observed ? `${site === 'depop' ? 'observed' : 'scripted'}_${observed}` : 'unobserved'];

@@ -1,0 +1,80 @@
+Attributes: Application, 0x1299675c0, pid: 71084, label: 'secondhand'
+Element subtree:
+ →Application, 0x1299675c0, pid: 71084, label: 'secondhand'
+    Window (Main), 0x129967700, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x129967840, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x129967980, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x129967ac0, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x129967c00, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x129967d40, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x129967e80, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x129970000, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x129970140, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x129970280, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x1299703c0, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x129970500, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x129970640, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x129970780, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x1299708c0, {{0.0, 0.0}, {402.0, 790.0}}
+                                  Other, 0x129970a00, {{0.0, 0.0}, {402.0, 790.0}}
+                                    Other, 0x129970b40, {{0.0, 0.0}, {402.0, 790.0}}
+                                      Other, 0x129970c80, {{0.0, 0.0}, {402.0, 790.0}}
+                                        Other, 0x129970dc0, {{0.0, 0.0}, {402.0, 790.0}}
+                                          Other, 0x129970f00, {{0.0, 0.0}, {402.0, 790.0}}
+                                            Other, 0x129971040, {{0.0, 0.0}, {402.0, 790.0}}
+                                              Other, 0x129971180, {{0.0, 62.0}, {402.0, 728.0}}
+                                                ScrollView, 0x1299712c0, {{0.0, 62.0}, {402.0, 728.0}}
+                                                  Other, 0x129971400, {{0.0, 62.0}, {402.0, 1409.3}}
+                                                    Other, 0x129971540, {{0.0, 62.0}, {402.0, 1409.3}}
+                                                      Other, 0x129971680, {{20.0, 62.0}, {362.0, 44.0}}
+                                                        Button, 0x1299717c0, {{342.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-inbox', label: 'Messages, 1 new'
+                                                        StaticText, 0x129971900, {{149.0, 77.0}, {104.3, 20.3}}, label: 'secondhand'
+                                                          StaticText, 0x129971a40, {{149.0, 77.0}, {104.3, 20.3}}, label: 'secondhand'
+                                                      Other, 0x129971b80, {{20.0, 114.0}, {362.0, 48.0}}
+                                                      Button, 0x129971cc0, {{68.0, 114.0}, {258.0, 48.0}}, identifier: 'buy-search', label: 'Find an item or paste a link'
+                                                      Button, 0x129971e00, {{338.0, 118.0}, {40.0, 40.0}}, identifier: 'buy-search-camera', label: 'Search with a photo'
+                                                      Other, 0x129971f40, {{36.0, 128.0}, {20.0, 20.0}}
+                                                        Other, 0x129972080, {{37.9, 129.9}, {16.2, 16.2}}
+                                                          Other, 0x1299721c0, {{37.9, 129.9}, {14.6, 14.6}}
+                                                          Other, 0x129972300, {{49.5, 141.5}, {4.6, 4.6}}
+                                                      StaticText, 0x129972440, {{20.0, 194.0}, {362.0, 21.3}}, label: 'Needs you'
+                                                        StaticText, 0x129972580, {{20.0, 194.0}, {362.0, 21.3}}, label: 'Needs you'
+                                                      Button, 0x1299726c0, {{20.0, 231.3}, {362.0, 156.0}}, identifier: 'dec_bo-open', label: 'Nike Dunk Low Grey Fog, men’s 10'
+                                                      Button, 0x129972800, {{20.0, 403.3}, {362.0, 156.0}}, identifier: 'dec_ceil-open', label: 'Kindle Paperwhite, 16 GB, signature edition'
+                                                      StaticText, 0x129972940, {{20.0, 591.3}, {362.0, 21.3}}, label: 'New matches'
+                                                        StaticText, 0x129972a80, {{20.0, 591.3}, {362.0, 21.3}}, label: 'New matches'
+                                                      Button, 0x129972bc0, {{20.0, 628.7}, {362.0, 104.0}}, identifier: 'match-mt_d1', label: 'Nike Dunk Low Grey Fog, men’s 10'
+                                                      Button, 0x129972d00, {{20.0, 748.7}, {362.0, 104.0}}, identifier: 'match-mt_d3', label: 'Nike Dunk Low Grey Fog, men’s 10'
+                                                      StaticText, 0x129972e40, {{20.0, 884.7}, {362.0, 21.3}}, label: 'Looking for'
+                                                        StaticText, 0x129972f80, {{20.0, 884.7}, {362.0, 21.3}}, label: 'Looking for'
+                                                      Button, 0x1299730c0, {{20.0, 922.0}, {362.0, 104.0}}, identifier: 'want-want_dunk', label: 'Nike Dunk Low Grey Fog, men’s 10, under $80'
+                                                      Button, 0x129973200, {{20.0, 1042.0}, {362.0, 104.0}}, identifier: 'want-want_kin', label: 'Kindle Paperwhite under $70'
+                                                      Button, 0x129973340, {{20.0, 1162.0}, {362.0, 104.0}}, identifier: 'want-want_oven', label: 'Le Creuset dutch oven, 5.5 qt, any color'
+                                                      StaticText, 0x129973480, {{20.0, 1298.0}, {362.0, 21.3}}, label: 'Bought'
+                                                        StaticText, 0x1299735c0, {{20.0, 1298.0}, {362.0, 21.3}}, label: 'Bought'
+                                                      Button, 0x129973700, {{20.0, 1335.3}, {362.0, 104.0}}, identifier: 'bought-ord_bfl', label: 'Patagonia Retro-X fleece, cream, M'
+                                                  Other, 0x129973840, {{369.0, 62.0}, {30.0, 728.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                                    Other, 0x129973980, {{396.0, 127.0}, {3.0, 404.7}}
+                                                  Other, 0x129973ac0, {{0.0, 757.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                    Other, 0x129973c00, {{3.0, 784.0}, {393.0, 3.0}}
+                                                  Other, 0x129973d40, {{369.0, 62.0}, {30.0, 728.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                                    Other, 0x129973e80, {{396.0, 127.0}, {3.0, 404.7}}
+                                                  Other, 0x129974000, {{0.0, 757.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                    Other, 0x129974140, {{3.0, 784.0}, {393.0, 3.0}}
+                                    Toolbar, 0x129974280, {{0.0, 0.0}, {402.0, 790.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                                      Other, 0x1299743c0, {{0.0, 0.0}, {402.0, 790.0}}
+                                Other, 0x129974500, {{0.0, 790.0}, {402.0, 84.0}}
+                                Button, 0x129974640, {{0.0, 791.0}, {80.3, 84.0}}, identifier: 'tab-today', label: 'Today'
+                                Button, 0x129974780, {{80.3, 791.0}, {80.3, 84.0}}, identifier: 'tab-sell', label: 'Sell'
+                                Button, 0x1299748c0, {{173.0, 791.0}, {56.0, 44.0}}, identifier: 'tab-new', label: 'New'
+                                Button, 0x129974a00, {{241.3, 791.0}, {80.3, 84.0}}, identifier: 'tab-buy', label: 'Buy', Selected
+                                Button, 0x129974b40, {{321.7, 791.0}, {80.3, 84.0}}, identifier: 'tab-you', label: 'You'
+                      Toolbar, 0x129974c80, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                        Other, 0x129974dc0, {{0.0, 0.0}, {402.0, 874.0}}
+Path to element:
+ →Application, 0x1299675c0, pid: 71084, label: 'secondhand'
+Query chain:
+ →Find: Application 'dev.ben.secondhand'
+  Output: {
+    Application, 0x129974f00, pid: 71084, label: 'secondhand'
+  }

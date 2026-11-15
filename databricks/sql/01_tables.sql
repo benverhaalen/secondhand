@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS secondhand.core.guarded_number (
   item_id STRING NOT NULL, metric STRING NOT NULL,
   value_cents BIGINT, lo_cents BIGINT, hi_cents BIGINT, currency STRING,
   basis_count INT NOT NULL, n_eff DOUBLE, as_of TIMESTAMP NOT NULL,
+  basis_level STRING COMMENT 'Fallback level that answered: variant, product, family, kind, prior, or an engine named level (spec/product.md section 3).',
   citation_id STRING COMMENT 'Set on every shown number.',
   state STRING NOT NULL COMMENT 'shown, hidden, not_found.',
   hide_reason STRING COMMENT 'too_few, too_wide, stale, mixed_types, source_gap, conflict, noise.'

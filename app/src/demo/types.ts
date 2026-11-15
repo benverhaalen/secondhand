@@ -39,9 +39,12 @@ export type ItemLimits = { floor_cents: Cents; always_accept_cents: Cents | null
   spread?: Spread; accept_mode?: 'ask' | 'rules' };
 
 export type Valuation = Guard & { range: Range; per_site: { site: Site; low: Cents | null; high: Cents | null; basis_count: number }[]; level: 1 | 2 | 3;
-  // How fast it sells at each way of pricing: the engine's slider point at that mode's mark (engines/valuation/posture.ts,
-  // pointOnSite: days_t50 and p_sale_30 from the site's sale curve). Absent until a curve is fitted for the item.
-  pace?: Partial<Record<'fast' | 'sell' | 'best', { days_t50: number | null; p_sale_30: number }>> };
+  // Each way to price as the engine's Check sets it (engines/valuation/check.ts, modes): posture's point at that mode's
+  // mark on the same comps as the range, on the site that gets the person the most. p_sale_30 and days_t50 are null
+  // until a sale curve exists; modes is null when the range is hidden or the item recalled.
+  modes?: Record<'fast' | 'sell' | 'best', ModePoint> | null };
+export type ModePoint = { site: Site; ask_cents: Cents; list_cents: Cents; keep_cents: Cents; p_sale_30: number | null; days_t50: number | null;
+  held_by: 'floor' | 'ceiling' | 'top_listings' | null };
 
 export type Item = {
   id: string; state: ItemState; title: string; category: KindFamily; product_id?: string;

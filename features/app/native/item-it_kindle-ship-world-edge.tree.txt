@@ -1,0 +1,120 @@
+Attributes: Application, 0x1299666c0, pid: 71106, label: 'secondhand'
+Element subtree:
+ →Application, 0x1299666c0, pid: 71106, label: 'secondhand'
+    Window (Main), 0x1299643c0, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x129964780, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x129966300, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x129966a80, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x129966440, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x129966940, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x1299661c0, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x129964280, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x129964640, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x129964000, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x129966f80, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x1299648c0, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x129966800, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x129966080, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x129966580, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x129965400, {{0.0, 0.0}, {402.0, 874.0}}
+                                    Other, 0x129964b40, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x129964dc0, {{0.0, 0.0}, {402.0, 874.0}}
+                                        Other, 0x129964140, {{0.0, 0.0}, {402.0, 874.0}}
+                                          Other, 0x129965680, {{0.0, 0.0}, {402.0, 874.0}}
+                                            Other, 0x129965040, {{0.0, 0.0}, {402.0, 874.0}}
+                                              Other, 0x129965b80, {{0.0, 0.0}, {402.0, 874.0}}
+                                                Other, 0x129965e00, {{0.0, 62.0}, {402.0, 736.0}}
+                                                  ScrollView, 0x129965f40, {{0.0, 62.0}, {402.0, 736.0}}
+                                                    Other, 0x129964a00, {{0.0, 62.0}, {402.0, 1250.0}}
+                                                      Other, 0x129967700, {{0.0, 62.0}, {402.0, 1250.0}}
+                                                        Other, 0x129967e80, {{20.0, 62.0}, {362.0, 44.0}}
+                                                          Button, 0x129965a40, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                                        StaticText, 0x129964f00, {{20.0, 118.0}, {362.0, 36.3}}, label: 'Ship'
+                                                          StaticText, 0x129967200, {{20.0, 118.0}, {362.0, 36.3}}, label: 'Ship'
+                                                        Button, 0x1299675c0, {{20.0, 166.3}, {362.0, 104.0}}, identifier: 'ship-item', label: 'Kindle Paperwhite 11th gen, 16 GB, black'
+                                                        Button, 0x129965cc0, {{20.0, 286.3}, {154.7, 40.0}}, identifier: 'ship-site', label: 'Open on eBay'
+                                                        Button, 0x129966e40, {{182.7, 286.3}, {172.3, 40.0}}, identifier: 'ship-snapshot', label: 'See the site’s copy'
+                                                        StaticText, 0x129966d00, {{20.0, 358.3}, {362.0, 21.3}}, label: 'Label'
+                                                          StaticText, 0x1283aebc0, {{20.0, 358.3}, {362.0, 21.3}}, label: 'Label'
+                                                        Button, 0x1283af980, {{20.0, 395.7}, {81.3, 40.0}}, identifier: 'ship-scope-one', label: 'This one', Selected
+                                                        Button, 0x1283af340, {{109.3, 395.7}, {56.7, 40.0}}, identifier: 'ship-scope-all', label: 'All 2'
+                                                        Other, 0x12d557700, {{20.0, 463.7}, {24.0, 24.0}}
+                                                          Other, 0x12d557480, {{21.2, 466.9}, {21.5, 17.5}}
+                                                            Other, 0x12d557840, {{21.2, 466.9}, {21.5, 15.0}}
+                                                            Other, 0x12d557340, {{21.2, 469.9}, {7.5, 4.5}}
+                                                            Other, 0x12d557d40, {{23.8, 477.9}, {6.5, 6.5}}
+                                                            Other, 0x12d555040, {{33.8, 477.9}, {6.5, 6.5}}
+                                                        Button, 0x12d557980, {{56.0, 466.0}, {154.3, 19.3}}, identifier: 'ship-service', label: 'Service: USPS Ground Advantage'
+                                                        Other, 0x12d555b80, {{20.0, 499.7}, {362.0, 48.3}}
+                                                        Other, 0x12d555a40, {{20.0, 512.0}, {24.0, 24.0}}
+                                                          Other, 0x12d555900, {{22.2, 513.2}, {19.5, 21.5}}
+                                                            Other, 0x12d5570c0, {{22.2, 513.2}, {19.5, 10.5}}
+                                                            Other, 0x12d554500, {{22.2, 518.2}, {19.5, 16.5}}
+                                                            Other, 0x12d554280, {{26.2, 515.2}, {11.5, 6.5}}
+                                                            Other, 0x12d554dc0, {{25.2, 523.2}, {3.5, 2.5}}
+                                                        Button, 0x12d554640, {{56.0, 514.3}, {180.3, 19.3}}, identifier: 'ship-box', label: 'Box: 9 by 6 by 1 inch padded mailer'
+                                                        StaticText, 0x12d5548c0, {{20.0, 580.0}, {362.0, 21.3}}, label: 'Drop it off'
+                                                          StaticText, 0x12d554a00, {{20.0, 580.0}, {362.0, 21.3}}, label: 'Drop it off'
+                                                        Button, 0x12d5543c0, {{20.0, 617.3}, {362.0, 61.7}}, identifier: 'dropoff-do_main', label: 'Post office, Main St'
+                                                        Other, 0x12d554000, {{20.0, 679.0}, {362.0, 62.0}}
+                                                        Button, 0x12d554140, {{20.0, 679.3}, {362.0, 61.7}}, identifier: 'dropoff-do_oak', label: 'Post office, Oak Ave'
+                                                        Other, 0x12d556d00, {{20.0, 741.0}, {362.0, 62.0}}
+                                                        Button, 0x12d556800, {{20.0, 741.3}, {362.0, 61.7}}, identifier: 'dropoff-do_door', label: 'Picked up at your door'
+                                                        StaticText, 0x12d556a80, {{20.0, 835.0}, {362.0, 21.3}}, label: 'Your money'
+                                                          StaticText, 0x12d5566c0, {{20.0, 835.0}, {362.0, 21.3}}, label: 'Your money'
+                                                        Other, 0x12d556e40, {{20.0, 891.3}, {24.0, 24.0}}
+                                                          Other, 0x12d556940, {{24.2, 897.1}, {15.5, 12.5}}
+                                                            Other, 0x12d556440, {{24.2, 897.1}, {15.5, 12.5}}
+                                                        StaticText, 0x12d556bc0, {{56.0, 884.3}, {326.0, 17.7}}, label: 'Sold'
+                                                          StaticText, 0x12d555f40, {{56.0, 884.3}, {326.0, 17.7}}, label: 'Sold'
+                                                        StaticText, 0x12d556080, {{56.0, 906.0}, {326.0, 16.0}}, label: 'Today'
+                                                          StaticText, 0x12d5561c0, {{56.0, 906.0}, {326.0, 16.0}}, label: 'Today'
+                                                        Other, 0x12d556300, {{20.0, 934.0}, {362.0, 62.0}}
+                                                        Other, 0x12d5557c0, {{20.0, 953.3}, {24.0, 24.0}}
+                                                          Other, 0x12d5552c0, {{21.2, 954.6}, {21.5, 21.5}}
+                                                            Other, 0x12d557e80, {{21.2, 954.6}, {21.5, 21.5}}
+                                                            Other, 0x12d555e00, {{31.2, 960.6}, {3.5, 7.5}}
+                                                        StaticText, 0x12d555680, {{56.0, 946.3}, {326.0, 17.7}}, label: 'On its way'
+                                                          StaticText, 0x12d554c80, {{56.0, 946.3}, {326.0, 17.7}}, label: 'On its way'
+                                                        StaticText, 0x12d555540, {{56.0, 968.0}, {326.0, 16.0}}, label: 'Ship by Tuesday'
+                                                          StaticText, 0x12d555180, {{56.0, 968.0}, {326.0, 16.0}}, label: 'Ship by Tuesday'
+                                                        Other, 0x12d554f00, {{20.0, 996.0}, {362.0, 62.0}}
+                                                        Other, 0x12d555400, {{20.0, 1015.3}, {24.0, 24.0}}
+                                                          Other, 0x12d555cc0, {{21.2, 1016.6}, {21.5, 21.5}}
+                                                            Other, 0x12d557200, {{21.2, 1016.6}, {21.5, 21.5}}
+                                                            Other, 0x12d557ac0, {{31.2, 1022.6}, {3.5, 7.5}}
+                                                        StaticText, 0x129ecc280, {{56.0, 1008.3}, {326.0, 17.7}}, label: 'Ready on the site'
+                                                          StaticText, 0x129ece800, {{56.0, 1008.3}, {326.0, 17.7}}, label: 'Ready on the site'
+                                                        StaticText, 0x129ecea80, {{56.0, 1030.0}, {326.0, 16.0}}, label: 'By Tuesday'
+                                                          StaticText, 0x129ecebc0, {{56.0, 1030.0}, {326.0, 16.0}}, label: 'By Tuesday'
+                                                        Other, 0x129ecef80, {{20.0, 1058.0}, {362.0, 62.0}}
+                                                        Other, 0x129ecee40, {{20.0, 1077.3}, {24.0, 24.0}}
+                                                          Other, 0x129ece6c0, {{21.2, 1078.6}, {21.5, 21.5}}
+                                                            Other, 0x129ecf200, {{21.2, 1078.6}, {21.5, 21.5}}
+                                                            Other, 0x129ecfd40, {{31.2, 1084.6}, {3.5, 7.5}}
+                                                        StaticText, 0x129ecf980, {{56.0, 1070.3}, {326.0, 17.7}}, label: 'In your bank'
+                                                          StaticText, 0x129ecfe80, {{56.0, 1070.3}, {326.0, 17.7}}, label: 'In your bank'
+                                                        StaticText, 0x129eced00, {{56.0, 1092.0}, {326.0, 16.0}}, label: 'By Friday'
+                                                          StaticText, 0x129ecf480, {{56.0, 1092.0}, {326.0, 16.0}}, label: 'By Friday'
+                                                        Button, 0x129ecc000, {{20.0, 1152.0}, {362.0, 56.0}}, identifier: 'ship-myself', label: 'I’ll ship it myself'
+                                                        Button, 0x129ecfac0, {{20.0, 1224.0}, {362.0, 56.0}}, identifier: 'ship-cancel', label: 'Cancel sale'
+                                                    Other, 0x129ecf0c0, {{369.0, 62.0}, {30.0, 736.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                                      Other, 0x129ecc3c0, {{396.0, 127.0}, {3.0, 466.0}}
+                                                    Other, 0x129ecf340, {{0.0, 765.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                      Other, 0x129ecf5c0, {{3.0, 792.0}, {393.0, 3.0}}
+                                                    Other, 0x129ecc140, {{369.0, 62.0}, {30.0, 736.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                                      Other, 0x129ecf840, {{396.0, 127.0}, {3.0, 466.0}}
+                                                    Other, 0x129ecf700, {{0.0, 765.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                      Other, 0x129ecc640, {{3.0, 792.0}, {393.0, 3.0}}
+                                                Button, 0x129ecc780, {{20.0, 810.0}, {362.0, 48.0}}, identifier: 'ship-print', label: 'Buy label $6.40'
+                                    Toolbar, 0x129ecfc00, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                                      Other, 0x129eccc80, {{0.0, 0.0}, {402.0, 874.0}}
+                      Toolbar, 0x129ecd180, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                        Other, 0x129ecd2c0, {{0.0, 0.0}, {402.0, 874.0}}
+Path to element:
+ →Application, 0x1299666c0, pid: 71106, label: 'secondhand'
+Query chain:
+ →Find: Application 'dev.ben.secondhand'
+  Output: {
+    Application, 0x129eccdc0, pid: 71106, label: 'secondhand'
+  }

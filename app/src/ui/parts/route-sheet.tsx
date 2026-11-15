@@ -17,6 +17,7 @@ import { Surface } from '../surface';
 import { Txt } from '../text';
 import { useColors } from '../theme';
 import { motion, radius, space } from '../tokens.generated';
+import { log } from '../log';
 import { mark } from './mark';
 
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);

@@ -3,6 +3,7 @@
 // Ben, round 11 (product/words.md): the photos slide; "different sites might have different listings written different
 // ways with different images", so each site's row says where its listing differs; "things are either unnecessarily big
 // or small", so every part here is a kit part at its one size, and no field or box is drawn that is not a decision.
+// one at a time: sheet-field, paid, why (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useIsFocused, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
 import {

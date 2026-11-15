@@ -5,6 +5,8 @@ import { memoryStore, fakeHarness, memoryLeases, memoryParams } from './ports.ts
 import type { HarnessLike, JobRow } from './ports.ts';
 import type { Actor, EventKind, Site } from './event.ts';
 import { createPipeline, HANDLERS, WRITE_VERBS } from './pipeline.ts';
+import { poshmarkAdapters } from '../harness/sites/poshmark/adapter.ts';
+import { depopAdapters } from '../harness/sites/depop/adapter.ts';
 
 const meta = { route_id: 'fake', ms: 0, fell_back: false };
 const ok = (data: unknown = {}) => ({ ok: true as const, data, meta });
@@ -276,4 +278,60 @@ test('a confirmed sale authorizes an end independently of a negotiation price', 
     price_cents: 1000, floor_cents: 4500 }, { listing_id: 'target' });
   await r.pipe.runOnce(1);
   assert.deepEqual(r.fh.calls.map(c => c.verb), ['end']);
+});
+
+const offlineClient = { signed_in: true,
+  async doc(): Promise<never> { throw new Error('dry write must not fetch a page'); },
+  async json(): Promise<never> { throw new Error('dry write must not fetch JSON'); },
+};
+for (const [site, kind, action, verb, decision_kind, args] of [
+  ['poshmark', 'delist', 'app.delist', 'end', 'delist_after_sale', { listing_external_id: 'fixture-listing', sold_listing_id: 'sold', order_id: 'ord_confirmed' }],
+  ['depop', 'post', 'app.list', 'post', 'first_post', { listing: { description: 'Fixture jacket', pictures: ['fixture-photo'], department: 'menswear', product_type: 'tops', condition: 'used_good', brand_name: 'Acme', price_amount: 60, quantity: 1 } }],
+  ['depop', 'send_message', 'app.message', 'send_message', 'reply_other', { thread_ref: 'fixture-thread', text: 'Fixture reply' }],
+  ['depop', 'answer_offer', 'app.offer', 'answer_offer', 'accept_offer', { offer_id: 'fixture-offer', action: 'accept', received_at: '2026-11-15T00:00:00Z', now: '2026-11-15T00:01:00Z' }],
+] as const) test(`real ${site} ${verb} dry plan never arrives or changes the listing and asks once per subject`, async () => {
+  const adapter = (site === 'poshmark' ? poshmarkAdapters(offlineClient) : depopAdapters(offlineClient)).find(a => a.manifest.verb === verb)!;
+  let calls = 0;
+  const r = rig({ scripts: { [`${site}:${verb}`]: async a => {
+    calls++;
+    const result = await adapter.run(a, new AbortController().signal);
+    assert.ok(result.ok, JSON.stringify(result));
+    return { ...result, meta };
+  } } });
+  r.store.put('order', { id: 'ord_confirmed', user_id: 'u1', kind: 'sale', item_id: 'i1', listing_id: 'sold', state: 'paid' });
+  r.store.put('listing', { id: 'target', user_id: 'u1', state: kind === 'post' ? 'draft' : 'live' });
+  const before = r.store.get('listing', 'u1', 'target');
+  const j = r.job(kind, action, kind === 'delist' ? 'auto' : 'user', { ...args, decision_kind }, { site, listing_id: 'target' });
+  const events = r.store.events().length;
+  await r.pipe.runOnce(1);
+  const done = r.store.getJob(j.id)!;
+  assert.equal(done.state, 'done');
+  assert.equal(done.stages[0].state, 'planned', 'a dry write was reported as arrived');
+  assert.deepEqual(done.result, { planned: true, plan: done.stages[0].result });
+  assert.equal((done.stages[0].result as { dry: boolean }).dry, true);
+  assert.deepEqual(r.store.get('listing', 'u1', 'target'), before);
+  assert.equal(r.store.events().length, events, 'a plan must not emit a landed event');
+  assert.equal(r.store.rows('order', { user_id: 'u1' }).length, 1, 'a plan must not create an order');
+  const decisions = r.store.decisions({ state: 'open' });
+  assert.equal(decisions.length, 1);
+  assert.equal(decisions[0].kind, decision_kind);
+  assert.equal(decisions[0].subject, 'target');
+  if (verb === 'end') assert.deepEqual(decisions[0].options.map(o => o.label), ['End it on the site', 'Not now']);
+  r.store.updateJob(j.id, { state: 'queued', result: undefined });
+  await r.mk().runOnce(1);
+  assert.equal(calls, 1, 'resuming a planned stage must not replay its write');
+  assert.deepEqual(r.store.getJob(j.id)!.result, done.result);
+  r.job(kind, action, 'user', { ...args, decision_kind }, { site, listing_id: 'target' });
+  await r.pipe.runOnce(1);
+  assert.equal(r.store.decisions({ state: 'open' }).length, 1, 'repeat plans share one open decision');
+});
+
+test('a non-dry successful write still arrives without a handoff decision', async () => {
+  const result = { dry: false, landed: true };
+  const r = rig({ scripts: { 'ebay:post': () => ok(result) } });
+  const j = r.job('post', 'app.list', 'user');
+  await r.pipe.runOnce(1);
+  assert.equal(r.store.getJob(j.id)!.stages[0].state, 'arrived');
+  assert.deepEqual(r.store.getJob(j.id)!.result, result);
+  assert.equal(r.store.decisions().length, 0);
 });
