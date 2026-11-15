@@ -45,3 +45,7 @@ bench/out/
 
 # Written by scripts/app-check.mjs on a full run; regenerated, never committed (its inline colors fail the token check).
 features/app/gallery.html
+
+# agent worktrees and local preview config: 2 GB of copies that broke the EAS upload
+.claude/worktrees/
+.claude/launch.json
