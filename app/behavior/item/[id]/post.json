@@ -12,7 +12,9 @@
     "Each site's preview is written for its buyers: brand first, 'size L' where the site labels size, model and specs where the title is short, cut to the length its buyers read; one line says who buys there (edge-cases §5 (agent proposal); lengths and order from platform-fit.json).",
     "Approve names the price and the count of sites ('Post at $235 on 2 sites'), steps through 'Posting 1 of 2', then becomes Undo (pages.md §6.8 and the hand-off rule: posting is the first public act in the person's name).",
     "A failed site says the site's reason and offers Retry, Skip this site and Post it myself, which opens the site (ways-out §6.8 'The post keeps failing'; copying the words needs a clipboard module the app does not have yet).",
-    "Each card is one height (72 row, then 20, 20, 24 lines), its lines inset to the card's corner (B31 one size per part, U5 nothing in a corner's curve)."
+    "Each card is one height (72 row, then 20, 20, 24 lines), its lines inset to the card's corner (B31 one size per part, U5 nothing in a corner's curve).",
+    "Post waits for every field a site still needs: tapping it with one blank says which and posts nothing, so the posting states fill Joy-Con drift first (edge-cases §7 step 7; this table’s own test).",
+    "Edit on a site’s preview changes that site’s title and price only, in place, with Done; nothing else on the item changes (ways-out §6.8; agent proposal: shipping and returns per site wait for the studio block)."
   ],
   "states": [
     {
@@ -57,6 +59,11 @@
       "state": "posting",
       "route": "/item/it_switch/post",
       "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
         "post"
       ],
       "shows": "Posting 1 of 2",
@@ -66,6 +73,11 @@
       "state": "posted",
       "route": "/item/it_switch/post",
       "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
         "post"
       ],
       "shows": "Posted on 2 sites",
@@ -78,22 +90,28 @@
       "state": "site-failed",
       "route": "/item/it_switch/post?fail=ebay",
       "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
         "post"
       ],
-      "missing": true,
       "shows": "Post it myself",
       "also": [
         "Retry",
         "Skip this site"
       ],
-      "why": "a site failed: its reason, Retry, Edit or Skip, and Post it myself (pages §6.8, ways-out §6.8); no demo route makes a site fail"
+      "why": "a site failed: its reason, Retry, Skip and Post it myself (pages §6.8, ways-out §6.8); ?fail=ebay makes eBay fail"
     },
     {
       "state": "recall-blocked",
       "route": "/item/it_switch/post?case=recall",
-      "missing": true,
-      "shows": "recalled",
-      "why": "a failed recall check blocks the post and says why (pages §6.8); no demo route reaches it"
+      "shows": "~recalled",
+      "why": "a failed recall check blocks the post and says why (pages §6.8); ?case=recall draws it",
+      "also": [
+        "Can’t post a recalled item"
+      ]
     },
     {
       "state": "loading",
@@ -112,7 +130,10 @@
       "state": "didnt-load",
       "route": "/item/it_switch/post?state=failed",
       "shows": "Can’t open this item",
-      "why": "what failed; Try again is in the controls, missing"
+      "why": "what failed, and Try again",
+      "also": [
+        "Try again"
+      ]
     },
     {
       "state": "not-found",
@@ -128,6 +149,36 @@
         "Post from $225 on 2 sites"
       ],
       "why": "the last copy; Post waits for signal"
+    },
+    {
+      "state": "needs-field",
+      "route": "/item/it_switch/post",
+      "after": [
+        "post"
+      ],
+      "shows": "Fill in Joy-Con drift first. 2 sites need it.",
+      "why": "a site still missing a field does not post until it is filled (edge-cases §7 step 7, pages §6.8)"
+    },
+    {
+      "state": "sold",
+      "route": "/item/it_kindle/post",
+      "shows": "It sold, so there is nothing to post.",
+      "also": [
+        "Sold. Nothing to post"
+      ],
+      "absent": [
+        "Post"
+      ],
+      "why": "a sold item offers no Post"
+    },
+    {
+      "state": "offline-waiting",
+      "route": "/item/it_switch/post?state=offline",
+      "after": [
+        "post"
+      ],
+      "shows": "Waiting for signal. It posts when you’re back.",
+      "why": "Post tapped with no signal waits, and nothing says it is live (ways-out Everywhere)"
     }
   ],
   "controls": [
@@ -207,15 +258,27 @@
     {
       "id": "post",
       "control": "Post from $225 on 2 sites",
-      "on_tap": "posts on both sites, then becomes Undo",
+      "on_tap": "posts on both sites once Joy-Con drift is filled, then becomes Undo",
       "shows": "Posted on 2 sites",
-      "then": "post-undo"
+      "then": "post-undo",
+      "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ]
+      ]
     },
     {
       "id": "post-undo",
       "control": "Undo",
       "on_tap": "takes the posts down",
       "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
         "post"
       ],
       "gone": "Posted on 2 sites"
@@ -223,8 +286,49 @@
     {
       "id": "edit-ebay",
       "control": "Edit, on eBay’s preview",
-      "on_tap": "edits eBay’s words, price, shipping and returns on their own (ways-out §6.8 “Different words on Depop”)",
-      "missing": true
+      "on_tap": "opens eBay’s title and price to change for eBay only (ways-out §6.8 “Different words on Depop”)",
+      "shows": "Only this site changes",
+      "then": "edit-title"
+    },
+    {
+      "id": "edit-title",
+      "control": "the title, in a site’s edit",
+      "on_tap": "opens the title to type over, for that site only",
+      "after": [
+        "edit-ebay"
+      ],
+      "then": "edit-title-input"
+    },
+    {
+      "id": "edit-price",
+      "control": "the price, in a site’s edit",
+      "on_tap": "opens the price to type over, for that site only",
+      "after": [
+        "edit-ebay"
+      ],
+      "then": "edit-price-input"
+    },
+    {
+      "id": "edit-done",
+      "control": "Done, in a site’s edit",
+      "on_tap": "closes the site’s edit",
+      "after": [
+        "edit-ebay"
+      ],
+      "gone": "Only this site changes"
+    },
+    {
+      "id": "edit-facebook",
+      "control": "Edit, on Facebook’s preview",
+      "on_tap": "opens Facebook’s title and price to change for Facebook only",
+      "then": "edit-title"
+    },
+    {
+      "id": "edit-depop",
+      "control": "Edit, on Depop’s preview",
+      "on_tap": "opens Depop’s title and price to change for Depop only",
+      "route": "/item/it_jacket/post",
+      "then": "edit-title"
     },
     {
       "id": "retry-ebay",
@@ -232,9 +336,14 @@
       "on_tap": "posts eBay again",
       "route": "/item/it_switch/post?fail=ebay",
       "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
         "post"
       ],
-      "missing": true
+      "shows": "Posted on 2 sites"
     },
     {
       "id": "skip-ebay",
@@ -242,9 +351,14 @@
       "on_tap": "posts without eBay",
       "route": "/item/it_switch/post?fail=ebay",
       "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
         "post"
       ],
-      "missing": true
+      "gone": "Post it myself"
     },
     {
       "id": "myself-ebay",
@@ -252,17 +366,20 @@
       "on_tap": "opens eBay with the words copied and the photos saved",
       "route": "/item/it_switch/post?fail=ebay",
       "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
         "post"
-      ],
-      "missing": true
+      ]
     },
     {
       "id": "post-retry",
       "control": "Try again",
       "on_tap": "loads the preview again (frontend-standard §4 Error)",
       "route": "/item/it_switch/post?state=failed",
-      "goes": "/item/it_switch/post",
-      "missing": true
+      "goes": "/item/it_switch/post"
     }
   ],
   "route": "/item/it_switch/post",
