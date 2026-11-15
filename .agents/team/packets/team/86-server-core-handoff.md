@@ -81,3 +81,5 @@ The email sender's vendor (none composed; `configureSender` is ready). Each Fly 
 - Never put backticks inside a double-quoted shell string: on 2026-11-15 one ran `node server/main.ts` on Windows and pasted log lines (with a local path) into finalization.md (48988617, fixed in 1ed63e8e; flagged for the history rewrite). Write text through a file.
 - A dev server with no `SECONDHAND_DATA_DIR` now shares `secondhand-dev/secondhand.db` in the temp folder with every dev server on the machine; another session held it open, so do not delete it.
 - `search-latency.test.ts` failed 3 on main for search's own changes; the search lead is fixing it.
+
+**Last note (13:45 UTC):** the search lead's own restore (eaa2d679) and mine (ff56bbda) agree: on main the 18 files equal 125a56bb and `store/secrets.ts` is present. The search lead saw `server/main.test.ts` fail one test ("one Node server shares sign-in state, rows and streams across route wrappers") in their run; on the Mac at ff56bbda it passed 8 of 8. Rerun it on the Mac at current main first; if it fails only on Windows, suspect a port or a shared temp database held by a running dev server.
