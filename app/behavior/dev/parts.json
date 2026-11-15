@@ -1,0 +1,16 @@
+{
+  "screen": "dev/parts",
+  "what": "The parts sheet: every part of app/src/ui in every state and variant, at 390 wide. /dev/parts is light, /dev/parts?scheme=dark is dark. It is how a part is vetted, not a page a person sees.",
+  "states": [
+    { "state": "all", "shows": "the wash, the nav and the top slot, then each part by section: decision cards (lead gradients, every state, batch, queue), item cards, notices, tags, counts and site badges, pills, foot buttons, guess, blank and approve, the amount, the toast, skeletons and the empty state, the setup slot, and the tab bar" },
+    { "state": "sheet open", "shows": "the sheet over a scrim, with a guessed counter price and a send button" }
+  ],
+  "controls": [
+    { "control": "Open a sheet", "on_tap": "opens the sheet" },
+    { "control": "The scrim", "on_tap": "closes the sheet" },
+    { "control": "Send $42", "on_tap": "closes the sheet" },
+    { "control": "A tab in the tab bar", "on_tap": "moves the pill to that tab; nothing else moves" },
+    { "control": "A blank", "on_tap": "edits it in place; the typed value stays" },
+    { "control": "Every other control", "on_tap": "logs the tap to the app log and globalThis.__events, and does nothing else" }
+  ]
+}
