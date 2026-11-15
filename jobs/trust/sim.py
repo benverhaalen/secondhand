@@ -7,13 +7,12 @@ startup is outside timing. The code budget uses the full fixture-predicate path
 recover signal weights until the nightly signal-weight learner exists.
 """
 import json
-import math
 import random
 import subprocess
 from pathlib import Path
 
 from param.registry import MemoryStore
-from trust.fit import fit, brier, split
+from trust.fit import fit, brier, split, _sig
 
 ROOT=Path(__file__).resolve().parents[2]
 
@@ -24,7 +23,7 @@ def label_stream(*,seed,n,weights):
     for i in range(n):
         signals={k:int(rng.random()<.3) for k in weights}
         z=-2+sum(weights[k]*v for k,v in signals.items())
-        y=int(rng.random()<1/(1+math.exp(-z)))
+        y=int(rng.random()<_sig(z))
         rows.append(dict(mode='synthetic',signals=signals,z=z,
             trust_label=dict(subject_id=f'thread_sim{i}',kind='scam',value=y,weight=1.,source='simulation',
                              observed_at='2026-11-01T00:00:00Z',resolved_at='2026-11-02T00:00:00Z')))
@@ -80,13 +79,13 @@ if(input.op==='poison') {
     await Promise.all(Array.from({length:Math.min(input.burst,input.n-offset)},async(_,j)=>{
       const i=offset+j;
       const msg={id:`msg_sim${i}`,thread_id:`thread_sim${i}`,site:'facebook',n:1,text:i%4===0?'Pay with an Apple gift card':'Does this include the case?',at:'2026-11-01T00:00:00Z'};
-      const ctx={buyer:{age_days:900,ratings:60,good_purchases:12},banner:false,urgent:false,price_usd:80,printHits:{sellers:0,buyers:0},sameTextListings10m:0,p};
+      const ctx={buyer:{age_days:900,ratings:60,good_purchases:12},banner:false,urgent:false,price_cents:8000,printHits:{sellers:0,buyers:0},sameTextListings10m:0,p};
       let start=performance.now();
       codeSignals(msg,ctx);
       code.push(performance.now()-start);
       start=performance.now();
       const result=await decideThread({store,model:async()=>{if(i%4===1)throw new Error('fixture extractor down');return i%4===2?[{signal:'off_platform',confidence:.9,span:'fixture predicate'}]:[];}},
-        {msg,ctx,group:'facebook_local',checkout:false,orderPaid:false,local:true,keep_q50:80,refund_asked:0});
+        {msg,ctx,group:'facebook_local',checkout:false,orderPaid:false,local:true,keep_q50_cents:8000,refund_asked_cents:0});
       full.push(performance.now()-start);
       actions.push(result.action);
       if(i%4===0&&result.action==='block')hardBlocked++;
