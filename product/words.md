@@ -2343,3 +2343,9 @@ Nate, server-core lead's session, 2026-11-15, about 08:30 Central, after the lea
 > LEts fix everything to be fast
 
 Read by the server-core lead as: land the fixes now and run the remaining queued ones at once rather than one after another. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md) (the restore ff56bbda and three workers started in parallel).
+
+## 2026-11-15 nate capture onboarding is line art on glass, one guide per shot
+Nate, the capture lead's session, 2026-11-15, about 13:30 UTC.
+> Ensure the capture onboarding is svg indicating what to do, line art with glass like shaded blurry background so you can still transparently see whats in the camera, similar to how apple measure places graphics telling people to move closer or further. For each product type selected, the onboarding then automatically is set to indicate the photo to take, they press once to dismiss the photo, and cpature the image to move on to the next of several or few more needed steps.
+
+Used in: [the capture design §7a](../spec/engines/capture.md#7a-the-shot-guide), [packet 90](../.agents/team/packets/team/90-capture-shot-guide-for-ben.md).
