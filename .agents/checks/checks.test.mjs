@@ -61,6 +61,14 @@ test('secrets: keys, tokens and tracked .env files fail', () => {
   assert.match(run(secrets, { 'b.md': 'mail ' + 'someone' + '@gmail.com' }).map(o => o.msg).join(), /personal data/);
 });
 
+test('secrets: the licensed brand faces never reach the repo, as files or embedded in a page', () => {
+  const face = 'src: url(data:' + 'font/woff2;' + 'base64,d09GMgABAAAA) format("woff2")';
+  const bad = errors(run(secrets, { 'brand/explore/board.html': `<style>@font-face { font-family: "Clofie"; ${face}; }</style>`, 'fonts/Clofie-SemiBold.woff2': 'x' }));
+  assert.match(bad, /board\.html.*embeds a font/);
+  assert.match(bad, /Clofie-SemiBold\.woff2.*font file/);
+  assert.deepEqual(run(secrets, { 'a.css': '@font-face { font-family: "Clofie"; src: local("Clofie"); }' }), []);
+});
+
 test('secrets: a secret the shipped app could carry fails; server routes and public names pass', () => {
   const bad = errors(run(secrets, {
     'app/src/sell/price.ts': 'const k = process.env.EXPO_PUBLIC_OPENROUTER_API_KEY;\n',
