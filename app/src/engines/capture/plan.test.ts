@@ -160,3 +160,57 @@ test('missing studio measurement does not make complete marketplace dimensions m
  assert.equal(p.complete.facebook!.ready,true);assert.equal(p.complete.ebay!.ready,true);assert.equal(p.complete.studio!.ready,false);
  const q=p.questions.find(q=>q.field==='dimensions')!;assert.ok(q);assert.deepEqual(q.unlocks.ready_after,['studio']);
 });
+
+
+test('furniture on depop asks brand after lookups and becomes ready after the answer', () => {
+  const s = state({type:'furniture',sites:['depop'],kept:['scan'],lookups:'done',facts:{
+    condition:{value:'good',source:'you_said',confidence:1},
+    dimensions:{value:{width:52,depth:55,height:84},source:'measured',confidence:.9},
+  }});
+  const before=plan(s,memoryStore());
+  const q=before.questions.find(question=>question.field==='brand');
+  assert.ok(q,'missing furniture brand must be askable on depop');
+  assert.equal(q.kind,'text');assert.equal(q.words,'Brand?');
+  assert.deepEqual(q.unlocks.ready_after,['depop']);
+  s.candidates={brand:['IKEA','West Elm']};
+  assert.equal(plan(s,memoryStore()).questions.find(question=>question.field==='brand')!.kind,'pick_one');
+  s.facts.brand={value:'IKEA',source:'you_said',confidence:1};
+  assert.equal(plan(s,memoryStore()).complete.depop!.ready,true);
+});
+test('tapped seen colour consumes one optional answer on ebay bags', () => {
+  const p=run({type:'bags',kept:['scan','inside_tab'],lookups:'done',facts:{colour:{value:['black'],source:'seen',confidence:.9,confirmed:true}}});
+  assert.equal(p.questions.filter(q=>q.unlocks.required===0).length,2,'confirmed optional colour must consume the cap');
+});
+test('capped optional retake leaves the kept step kept', () => {
+  const params=memoryStore();
+  const zero={...params,read:(name:string,scope:Parameters<typeof params.read>[1])=>({...params.read(name,scope),...(name==='capture_question_cap'?{value:0}:{})})};
+  const s=state({type:'bags',kept:['scan','inside_tab'],lookups:'done',facts:{brand:{value:null,source:'label',confidence:0,unknown_reason:'not_read',step:'inside_tab'}}});
+  const uncapped=plan(s,{...params,read:(name:string,scope:Parameters<typeof params.read>[1])=>({...params.read(name,scope),...(name==='capture_question_cap'?{value:10}:{})})});
+  assert.ok(uncapped.questions.some(q=>q.shot?.step==='inside_tab'));
+  assert.equal(uncapped.process.find(step=>step.key==='inside_tab')!.state,'retake');
+  const capped=plan(s,zero);
+  assert.ok(!capped.questions.some(q=>q.shot?.step==='inside_tab'));
+  assert.equal(capped.process.find(step=>step.key==='inside_tab')!.state,'kept','hidden retake must not mark a process step');
+});
+test('twelve-piece bundle keeps tag.1 without keeping tag.11', () => {
+  const p=run({type:'apparel',pieces:12,sites:['depop'],kept:['group','tag.1']});
+  assert.equal(p.process.find(step=>step.key==='tag.1')!.state,'kept');
+  assert.equal(p.process.find(step=>step.key==='tag.11')!.state,'pending');
+  assert.equal(p.fields.find(field=>field.field==='size_label.11')!.state,'waiting');
+});
+test('plan fields preserve only known auto-accept markers', () => {
+  const initial={type:'apparel' as const,sites:['depop'] as State['sites'],kept:['front','back','tag'],facts:{
+    size_label:{value:'M',source:'label' as const,confidence:.97},
+    brand:{value:'Gildan',source:'label' as const,confidence:.96},
+    condition:{value:'good',source:'seen' as const,confidence:1},
+  }};
+  const auto=run({...initial,confirm_mode:'auto'});
+  assert.deepEqual(auto.fields.filter(field=>'auto_accepted' in field).map(field=>field.field),['size_label'],'known auto acceptance must reach fields output');
+  assert.equal(auto.fields.find(field=>field.field==='size_label')!.auto_accepted,true);
+  assert.ok(run(initial).fields.every(field=>!('auto_accepted' in field)));
+  assert.ok(run({...initial,confirm_mode:'auto',facts:{...initial.facts,size_label:{...initial.facts.size_label,confirmed:true}}}).fields.every(field=>!('auto_accepted' in field)));
+});
+test('plan always carries inner_class, null for a single item', () => {
+  assert.equal(run({type:'apparel'}).inner_class,null,'non-bundle inner_class must be null');
+  assert.equal(run({type:'apparel',pieces:2}).inner_class,'flat_garment');
+});

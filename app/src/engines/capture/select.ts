@@ -28,7 +28,7 @@ export function select(state: State, params: ParamStore) {
   const key = `${family}.${kind}`;
   const small = bound(params,'capture_small_cm'), large = bound(params,'capture_large_cm');
   let inner = table.family_class[key] ?? table.family_class[family];
-  if (!inner) inner = !state.rigid ? 'soft_goods' : (state.extent_cm ?? 0) >= large ? 'large_bulky' : (state.extent_cm ?? 0) >= small ? 'medium_hard' : 'small_hard';
+  if (!inner) inner = !state.rigid ? 'soft_goods' : state.extent_cm === undefined ? 'medium_hard' : state.extent_cm >= large ? 'large_bulky' : state.extent_cm >= small ? 'medium_hard' : 'small_hard';
   if (state.rigid && state.extent_cm !== undefined && state.extent_cm >= large) inner = 'large_bulky';
   if (inner === 'medium_hard' && state.extent_cm !== undefined && state.extent_cm < small) inner = 'small_hard';
   const pieces = state.pieces ?? 1;
@@ -39,10 +39,10 @@ export function select(state: State, params: ParamStore) {
   const usesRing = steps.some(step => step.step === 'ring');
   if (inner === 'small_hard' || inner === 'soft_goods') {
     const hasFront = steps.some(s=>s.step==='front');
-    steps = steps.flatMap(s => s.kind === 'scan' || s.step === 'ring' ? hasFront ? [] : [{step:'front',kind:'series',role:'front',needs_lidar:false,seconds:5}] : [s]);
+    steps = steps.flatMap(s => s.kind === 'scan' || s.step === 'ring' ? hasFront ? [] : [{...table.steps.front_still}] : [s]);
   }
   const process: (Step & {key:string})[] = bundle ? [
-    {step:'group',key:'group',kind:'instant',role:'group',needs_lidar:false,seconds:5},
+    {...table.steps.group,key:table.steps.group.step},
     ...Array.from({length:pieces},(_,i)=>steps.map(s=>({...s,key:`${s.step}.${i+1}`}))).flat(),
   ] : steps.map(s=>({...s,key:s.step}));
   const merged = [...rowsFor('root')];
@@ -71,5 +71,5 @@ export function select(state: State, params: ParamStore) {
   const rows=merged.flatMap(row=>bundle && row.per_piece ? Array.from({length:pieces},(_,i)=>({...row,field:`${row.field}.${i+1}`,
     ways:row.ways.map(w=>({...w,...(w.view && ['seen','label','measured'].includes(w.way) ? {view:`${w.view}.${i+1}`} : {})}))})) : [row])
     .sort((a,b)=>compare(a.field,b.field));
-  return {family,kind,dimension_class,...(bundle ? {inner_class:inner} : {}),fallback,process,rows,checks:[...cls.checks]};
+  return {family,kind,dimension_class,inner_class:bundle ? inner : null,fallback,process,rows,checks:[...cls.checks]};
 }
