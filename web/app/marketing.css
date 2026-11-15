@@ -282,3 +282,14 @@ main h1.marketing-page-title {
   letter-spacing: var(--tr-50);
   text-transform: lowercase;
 }
+
+.try-steps { display: grid; gap: var(--s-5); margin-top: var(--s-7); max-width: 46ch; }
+.try-steps dt { font-size: var(--t-15); line-height: var(--lh-15); }
+.try-steps dd { margin: var(--s-1) 0 0; font-size: var(--t-15); line-height: 1.5; color: var(--ink-2); }
+.agent-prompt { min-width: 0; padding: var(--s-6); border-radius: var(--r-card); background: var(--surface); }
+.agent-prompt-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); margin-bottom: var(--s-5); }
+.agent-prompt-head figcaption { font-size: var(--t-15); line-height: var(--lh-15); color: var(--ink-2); }
+.agent-prompt-head .marketing-pill { min-width: 9rem; }
+.agent-prompt-text { font-size: var(--t-15); line-height: 1.6; overflow-wrap: anywhere; }
+.agent-prompt-status { min-height: 1.5em; margin-top: var(--s-4); font-size: var(--t-13); line-height: 1.5; color: var(--ink-2); }
+@media (max-width: 760px) { .agent-prompt { padding: var(--s-5); } }

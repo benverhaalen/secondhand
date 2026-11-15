@@ -2694,3 +2694,13 @@ Nate, the orchestrator's session, 2026-11-15, about 16:15 and 16:17 UTC by the m
 > You can then continue improving perfformance in potential update branches
 
 Used in: [finalization §13](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator), the state at 16:17 UTC; the leads hold, one deployer; later work lands from update branches after the build.
+
+## 2026-11-15 nate Try the build, a prompt for your agent
+Nate, relayed by the orchestrator's session to the website session, 2026-11-15, shortly before 16:22 UTC by the machine clock. The section name and the prompt, verbatim:
+> Try the build!
+
+> If Expo Skills are not installed, install them from https://docs.expo.dev/skills/ first, then use the eas-simulator skill. Use Expo Simulators to share a demo of the Expo app @ngarelik/secondhand with people who do not have an Expo login. Follow https://docs.expo.dev/preview/simulators/how-to/hand-off-a-session/. Start one iOS session with --type web-preview-only, --public-link, and --max-duration-minutes 30. Install an iOS Simulator release build at startup with --build-id, so that the demo does not depend on a local Metro server. Give me the public preview link when the app is running.
+
+The orchestrator's brief adds, in its words, not Nate's: Nate also asked for that link and for short instructions for a person sharing it.
+
+Used in: the website home, the Try the build section ([agent-prompt.ts](../web/lib/agent-prompt.ts)); the exclamation mark is dropped on screen by [copy.md](copy.md) (no exclamation marks in UI).

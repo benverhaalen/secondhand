@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, AccordionTrigger } from '@ui-sdk/react/accordion';
 import { log } from '../../lib/log';
 import { wallPhotos } from './wall-photos';
+import { agentPrompt, copyPrompt } from '../../lib/agent-prompt';
 
 const emptyTile = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 const repository = 'https://github.com/benverhaalen/secondhand';
@@ -184,6 +185,38 @@ function FAQ() {
   return <section className="marketing-scene faq-scene" id="faq" aria-labelledby="faq-title"><div className="marketing-wrap marketing-split"><div className="marketing-copy"><p className="section-label">FAQ</p><h2 id="faq-title">What should you know before you start?</h2></div><div className="faq-content"><Accordion className="marketing-faq">{questions.map(item => <AccordionItem key={item.id} value={item.id} className="faq-item"><AccordionHeader><AccordionTrigger className="faq-trigger">{item.question}<Icon name="add-01" size={20} /></AccordionTrigger></AccordionHeader><AccordionPanel className="faq-panel"><p>{item.answer}</p><Link href={item.href}>{item.link} <Icon name="arrow-right-01" size={16} /></Link></AccordionPanel></AccordionItem>)}</Accordion><Link className="marketing-text-link" href="/faq">All questions <Icon name="arrow-right-01" size={16} /></Link></div></div></section>;
 }
 
+function TryTheBuild() {
+  const text = useRef<HTMLParagraphElement>(null);
+  const [status, setStatus] = useState<'idle' | 'copied' | 'select'>('idle');
+  useEffect(() => {
+    if (status !== 'copied') return;
+    const timer = window.setTimeout(() => setStatus('idle'), 2000);
+    return () => window.clearTimeout(timer);
+  }, [status]);
+  async function copy() {
+    try { await copyPrompt(navigator.clipboard); setStatus('copied'); log.input('home', 'copy-agent-prompt', { value: 'copied' }); }
+    catch {
+      if (text.current) window.getSelection()?.selectAllChildren(text.current);
+      setStatus('select');
+      log.error('home.copy-agent-prompt', new Error('Clipboard unavailable'));
+    }
+  }
+  return <section className="marketing-scene try-scene" id="try" aria-labelledby="try-title"><div className="marketing-wrap marketing-split">
+    <div className="marketing-copy"><p className="section-label">Try the build</p><h2 id="try-title">Give this prompt to your agent</h2><p className="section-body">It opens the iPhone app in the cloud and sends back a link anyone can open in a browser.</p>
+      <dl className="try-steps">
+        <div><dt>What it does</dt><dd>Starts one iOS Simulator with a release build of secondhand and shares it as a web preview.</dd></div>
+        <div><dt>You need</dt><dd>An agent that can run terminal commands, such as Claude Code or Codex. The person running it signs in to Expo with access to @ngarelik/secondhand.</dd></div>
+        <div><dt>You get</dt><dd>A public preview link. It works without an Expo login for about 30 minutes.</dd></div>
+      </dl>
+    </div>
+    <figure className="agent-prompt" aria-labelledby="agent-prompt-title">
+      <div className="agent-prompt-head"><figcaption id="agent-prompt-title">Prompt</figcaption><button type="button" className="marketing-pill marketing-pill-secondary" onClick={copy}>{status === 'copied' ? <><Icon name="tick-02" size={16} /> Copied</> : 'Copy prompt'}</button></div>
+      <p className="agent-prompt-text" ref={text}>{agentPrompt}</p>
+      <p className="agent-prompt-status" role="status">{status === 'copied' ? <span className="sr-only">Prompt copied</span> : status === 'select' ? 'Prompt selected. Press Ctrl+C, or ⌘C on a Mac.' : null}</p>
+    </figure>
+  </div></section>;
+}
+
 export function MarketingHome() {
-  return <main id="main" className="marketing-home"><div id="top" /><Hero /><HowItWorks /><Features /><DataUse /><FAQ /><section className="marketing-scene signup-scene" id="access" aria-labelledby="signup-title"><div className="marketing-wrap signup-layout"><div className="marketing-copy"><p className="section-label">Sign Up</p><h2 id="signup-title">Start with one thing</h2></div><AccountAccess label="Create an account" /></div></section></main>;
+  return <main id="main" className="marketing-home"><div id="top" /><Hero /><HowItWorks /><Features /><DataUse /><FAQ /><TryTheBuild /><section className="marketing-scene signup-scene" id="access" aria-labelledby="signup-title"><div className="marketing-wrap signup-layout"><div className="marketing-copy"><p className="section-label">Sign Up</p><h2 id="signup-title">Start with one thing</h2></div><AccountAccess label="Create an account" /></div></section></main>;
 }

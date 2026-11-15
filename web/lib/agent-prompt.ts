@@ -1,0 +1,4 @@
+// Nate's words, verbatim: product/words.md "nate Try the build, a prompt for your agent". The test holds the two equal.
+export const agentPrompt = 'If Expo Skills are not installed, install them from https://docs.expo.dev/skills/ first, then use the eas-simulator skill. Use Expo Simulators to share a demo of the Expo app @ngarelik/secondhand with people who do not have an Expo login. Follow https://docs.expo.dev/preview/simulators/how-to/hand-off-a-session/. Start one iOS session with --type web-preview-only, --public-link, and --max-duration-minutes 30. Install an iOS Simulator release build at startup with --build-id, so that the demo does not depend on a local Metro server. Give me the public preview link when the app is running.';
+
+export const copyPrompt = (clipboard: Pick<Clipboard, 'writeText'>) => clipboard.writeText(agentPrompt);
