@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Icon } from '../../components/icon';
 import itemPhoto from './carhartt-jacket.jpg';
@@ -51,9 +50,8 @@ export default function WhatsNextPage() {
         <div className={styles.appraisalGroup}>
           <figure className={styles.appraisal}>
             <div className={styles.photoGround}>
-              <Image className={styles.itemPhoto} src={itemPhoto} alt="A sample brown Carhartt jacket laid flat." sizes="(max-width: 760px) calc(100vw - 48px), (max-width: 1100px) 50vw, 480px" preload />
+              <img className={styles.itemPhoto} src={itemPhoto.src} alt="Brown Carhartt jacket laid flat." width={itemPhoto.width} height={itemPhoto.height} fetchPriority="high" decoding="sync" />
             </div>
-            <figcaption>Sample Carhartt jacket</figcaption>
           </figure>
           <div className={styles.photoQuestions}>
             <p>What would help price this?</p>

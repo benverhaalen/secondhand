@@ -31,7 +31,6 @@
 .photoQuestions li:last-child { border-bottom: 0; }
 .photoGround { overflow: hidden; border-radius: var(--r-photo); }
 .itemPhoto { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; }
-.appraisal figcaption { color: var(--ink-2); font-size: var(--t-13); line-height: 1.5; margin-top: var(--s-4); }
 .nextSteps { padding-block: calc(var(--s-9) + var(--s-7)); scroll-margin-top: var(--s-8); }
 .sectionIntro { max-width: 1000px; margin-bottom: var(--s-9); }
 .sectionIntro h2 { max-width: 26ch; }

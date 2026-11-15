@@ -50,18 +50,17 @@ function HowItWorks() {
     <div className="marketing-wrap marketing-split how-split">
       <div className="marketing-copy"><p className="section-label">How It Works</p><h2 id="how-title">Get your clothes ready to resell from as little as one photo</h2><p className="section-body">Check sold prices, review the listing and choose where to post.</p><Link className="marketing-text-link" href="/how-it-works">See the selling steps <Icon name="arrow-right-01" size={16} /></Link></div>
       <figure className="selling-journey">
-        <div className="phone-pair"><div><Phone pair screen="capture" alt="App review after adding one photo of the sample Carhartt jacket." /><p className="phone-caption">Start with your photo</p></div><Icon name="arrow-right-01" size={20} className="journey-arrow" /><div><Phone pair screen="preview" alt="Listing review for the same sample jacket." /><p className="phone-caption">Review the listings</p></div></div>
-        <figcaption>App screens with sample data</figcaption>
+        <div className="phone-pair"><div><Phone pair screen="capture" alt="App review after adding one photo of a Carhartt jacket." /><p className="phone-caption">Start with your photo</p></div><Icon name="arrow-right-01" size={20} className="journey-arrow" /><div><Phone pair screen="preview" alt="Listing review for the same jacket." /><p className="phone-caption">Review the listings</p></div></div>
       </figure>
     </div>
   </section>;
 }
 
 const features = [
-  { screen: 'plan', title: 'Choose an asking price', body: 'Check what similar items sold for before you set your price.', alt: 'Asking-price options for a sample Carhartt jacket.' },
-  { screen: 'preview', title: 'Review the listing before you post', body: 'Check the photos, title and price. Copy the details when you’re ready to post on a marketplace.', alt: 'App listing preview for a sample Carhartt jacket.' },
-  { screen: 'watch', title: 'Find a match within your limits', body: 'Set your size and budget, then compare the matches with shipping included when it is known.', alt: 'Sample app Watch screen showing a search request and its limits.' },
-  { screen: 'ship', title: 'See what a sale paid out', body: 'Check the sale amount, marketplace fees and what you kept.', alt: 'App sale details for a sample e-reader.' },
+  { screen: 'plan', title: 'Choose an asking price', body: 'Check what similar items sold for before you set your price.', alt: 'Asking-price options for a Carhartt jacket.' },
+  { screen: 'preview', title: 'Review the listing before you post', body: 'Check the photos, title and price. Copy the details when you’re ready to post on a marketplace.', alt: 'App listing preview for a Carhartt jacket.' },
+  { screen: 'watch', title: 'Find a match within your limits', body: 'Set your size and budget, then compare the matches with shipping included when it is known.', alt: 'Brewers jersey tracking request with a target price and size.' },
+  { screen: 'ship', title: 'See what a sale paid out', body: 'Check the sale amount, marketplace fees and what you kept.', alt: 'App sale details for an e-reader.' },
 ];
 
 function Features() {
@@ -146,7 +145,6 @@ function Features() {
       </div>
       <div className="marketing-copy feature-copy"><p className="section-label">Features</p><h2 id="features-title">AI does the prep. You decide what goes live</h2><p className="section-body feature-summary">It reads item details from photos, helps you prepare a listing and looks for used items that fit.</p><div className="feature-explanation" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><h3>{feature.title}</h3><p className="section-body">{feature.body}</p></div><Link className="marketing-text-link" href="/features">Explore features <Icon name="arrow-right-01" size={16} /></Link></div>
       <div className="carousel-controls"><button className="carousel-arrow" type="button" aria-label="Previous feature" onClick={event => select((requested.current ?? page) - 1, event.detail > 0)}><Icon name="arrow-left-01" size={20} /></button><div className="carousel-dots" role="group" aria-label="Choose a feature">{features.map((item, index) => <button key={item.screen} type="button" aria-current={index === page ? 'true' : undefined} aria-label={item.title} onClick={event => select(index, event.detail > 0)} />)}</div><button className="carousel-arrow" type="button" aria-label="Next feature" onClick={event => select((requested.current ?? page) + 1, event.detail > 0)}><Icon name="arrow-right-01" size={20} /></button><button className="carousel-play" type="button" aria-label={playing ? 'Pause automatic feature changes' : 'Play automatic feature changes'} onClick={() => setPlaying(!playing)}>{playing ? 'Pause' : 'Play'}</button></div>
-      <p className="feature-sample-note">App screens with sample data.</p>
     </div>
   </section>;
 }
@@ -170,7 +168,7 @@ function PricingProof() {
     <div className="proof-heading"><figcaption id="pricing-title"><span className="proof-number">84%</span> fewer big pricing misses</figcaption><a className="marketing-text-link" href={`${repository}/blob/main/scripts/bench/out/backtest-stockx.json`}>Method and full results <ExternalArrow /></a></div>
     <div className="proof-bars" role="img" aria-label="On the same historical sneaker cases, the 90-day median missed by over 20 percent on 9.8 percent of prices. The research model did so on 1.5 percent."><div className="proof-row"><span>90-day median</span><div className="proof-track"><span className="proof-bar baseline-bar" /></div><span>9.8%</span></div><div className="proof-row"><span>Research model</span><div className="proof-track"><span className="proof-bar model-bar" /></div><span>1.5%</span></div></div>
     <div className="proof-axis" aria-hidden="true"><span>0%</span><span>5%</span><span>10%</span></div>
-    <p>Development benchmark on past sneaker sales. A big miss is more than 20% from the sale price. See the separate comparison on unseen months in Data Use.</p>
+    <p>On past sneaker sales, a big miss was more than 20% from the sale price. See the unseen-month results on Data Use.</p>
   </figure>;
 }
 

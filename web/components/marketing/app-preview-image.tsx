@@ -1,4 +1,4 @@
-import Image from 'next/image';
+const widths = [320, 480, 720] as const;
 
 export function AppPreviewImage({ name, alt, sizes, eager = false }: {
   name: string;
@@ -6,13 +6,17 @@ export function AppPreviewImage({ name, alt, sizes, eager = false }: {
   sizes: string;
   eager?: boolean;
 }) {
-  return <Image
-    src={`/marketing/app/${name}.png?v=22f37f6d`}
+  const source = `/marketing/app/${name}`;
+  const sources = widths.map(width => `${source}-${width}.webp ${width}w`).join(', ');
+  return <img
+    src={`${source}-480.webp`}
+    srcSet={sources}
+    sizes={sizes}
     alt={alt}
     width={880}
     height={1840}
-    sizes={sizes}
     loading={eager ? 'eager' : 'lazy'}
-    quality={85}
+    fetchPriority={eager ? 'high' : undefined}
+    decoding={eager ? 'sync' : 'async'}
   />;
 }

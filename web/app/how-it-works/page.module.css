@@ -33,7 +33,6 @@
 .phonePair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-6); align-items: start; }
 .phonePair .phone { width: 100%; }
 .phonePair .phone figcaption { font-size: var(--t-15); color: var(--ink); }
-.sampleNote { grid-column: 1 / -1; color: var(--ink-2); text-align: center; font-size: var(--t-13); line-height: 1.5; }
 .progression { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-5); margin-top: var(--s-8); }
 .progression a { display: inline-flex; align-items: center; min-height: var(--control-min); font-size: var(--t-18); }
 .progression a:hover { color: var(--ink-2); }

@@ -13,7 +13,7 @@
 .node svg { width: 32px; height: 32px; margin-bottom: var(--s-5); }
 .node h2 { font-size: var(--t-21); line-height: 1.2; letter-spacing: 0; max-width: 12ch; }
 .node p { font-size: var(--t-15); line-height: 1.45; margin-top: var(--s-4); color: var(--ink-2); }
-.connector { text-align: center; font-size: var(--t-21); }
+.connector { justify-self: center; font-size: var(--t-21); }
 .branch { margin-left: calc((100% - 108px) / 4 + 36px); display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center; padding-top: var(--s-6); font-size: var(--t-15); }
 .branch > span:first-child { font-size: var(--t-21); }
 .branchReason { color: var(--ink-2); }

@@ -2,7 +2,7 @@
 
 Check from the repository root: `node web/scripts/check.mjs`. This runs the production build, static output checks, each web test file in turn, and copy lint on the app and components.
 
-`/` opens the buying conversation in the hero. `/buy` is the full conversation. `/states` draws empty, typing, photo attached, running, answered, thin data, refused, rate limited, offline, failed, and a long answer with every widget. The header switches light and dark without changing layout.
+`/` opens the public homepage. `/buy` opens search and conversation. In development, `/states` draws empty, typing, photo attached, running, answered, thin data, refused, rate limited, offline, failed, and a long answer with every widget. The header switches light and dark without changing layout.
 
 Recordings work without an API:
 
