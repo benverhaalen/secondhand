@@ -19,7 +19,7 @@ export function seen(list, finding, where) {
   return row;
 }
 // One row per line, built field by field so no string value is touched.
-export const write = list => `[\n${list.map(r => `  { ${Object.entries(r).map(([k, v]) => `${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(', ')} }`).join(',\n')}\n]\n`;
+export const write = list => `[\n${list.map(r => `  { ${Object.entries(r).map(([k, v]) => `${JSON.stringify(k)}: ${Array.isArray(v) ? `[${v.map(x => JSON.stringify(x)).join(', ')}]` : JSON.stringify(v)}`).join(', ')} }`).join(',\n')}\n]\n`;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const root = join(fileURLToPath(new URL('.', import.meta.url)), '..'), [cmd, finding, ...rest] = process.argv.slice(2), where = rest.join(' ');

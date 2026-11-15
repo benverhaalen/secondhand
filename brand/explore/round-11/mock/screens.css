@@ -197,6 +197,7 @@
 /* the sum is a receipt (Ben, round 10: "i like the B. the receipt thing"): white paper with dotted leaders and a torn foot.
    Whether it may be the one thing with a shadow is R31 */
 .sh .sum .ln { align-items: baseline; }
+.sh .sum .ln .ln { align-items: center; }      /* a logo beside a label sits on the middle of its line, not on the baseline */
 .sh .sum .lead { flex: 1; border-bottom: 1.5px dotted var(--ink-disabled); margin: 0 var(--s-2); transform: translateY(-4px); }
 .sh .sum hr { border: 0; border-top: 1.5px dashed var(--ink-disabled); margin: 0; }
 .sh .slip { filter: var(--paper-shadow); }

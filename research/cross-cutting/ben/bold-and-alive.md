@@ -42,7 +42,7 @@ Our candidates for the owned move are the drifting gradient and how the item pho
 
 ## Levers for ideation
 
-Fourteen were brainstormed: photo as hero, one thing, hands on it, alive, brand signature, first action, boldness of scale, new pattern, density, restraint, playfulness, trust and proof, storytelling, sound and touch. Seven were kept, in [frontend-standard §2](../../../product/frontend-standard.md#levers-for-the-steered-designs).
+Fourteen were brainstormed: photo as hero, one thing, hands on it, alive, brand signature, first action, boldness of scale, new pattern, density, restraint, playfulness, trust and proof, storytelling, sound and touch. Seven were kept, in [frontend-standard §2](../../../product/frontend-standard.md#levers-for-the-later-rounds).
 
 - **Boldness and innovation became one lever**, "one departure", because both chase novelty and a model told to "be bold" changes five things at once (*inferred*).
 - **Each lever names a change in structure, not an adjective.** "Playful" and "trust" were dropped because a model answers an adjective with decoration (*inferred*).
