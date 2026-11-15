@@ -460,3 +460,11 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 > May spec/databricks.md be pushed to the public repo? "Yes, push it"
 > Which Databricks workspace is the hackathon entry built on? "The event gives a full one"
 > Give buy, insights, market, score and assist their own feature pages and rows in product/features.md? "Yes, add all five"
+
+## 2026-11-14 nate is 3d for clothes effective
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Would 3d for clothes really be effective, whats the easiest for a user to take?
+
+## 2026-11-14 nate the best way to take every photo, tags delayed, retouch chosen by the person
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Determine the best way to capture every photo, for ease of process and amount of information ascertained. As for the tags, delay whether or not we add them, and make retouch a user select feature during the process of creating the listings. They either can generate, where they are informed its going to be tagged ai, or they can choose to provide further images
