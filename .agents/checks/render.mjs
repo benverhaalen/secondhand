@@ -9,6 +9,8 @@ const warn = (id, where, msg) => ({ level: 'warn', id, where, msg });
 
 export const RING = ['lilac', 'sky', 'aqua', 'mint', 'lime', 'marigold', 'peach', 'pink'];
 const SITES = /\b(?:eBay|Poshmark|Depop|Mercari|Grailed|OfferUp|Etsy|Vinted|Facebook Marketplace)\b/;
+const SITE_FILE = /(?:^|[\/_.-])(ebay|depop|poshmark|mercari|facebook|grailed|offerup|etsy|vinted)(?=[\/_.-])[^\/]*\.(?:png|svg|jpe?g|webp|gif)$/i;
+const SITE_NAME = { ebay: 'eBay', depop: 'Depop', poshmark: 'Poshmark', mercari: 'Mercari', facebook: 'Facebook', grailed: 'Grailed', offerup: 'OfferUp', etsy: 'Etsy', vinted: 'Vinted' };
 const MONEY = /^[\s(]*[-+]?(?:[A-Z]{2,3})?\p{Sc}\s?\d[\d,.]*[kKmM]?[\s)]*$|^[\s(]*[-+]?\d[\d,.]*\s?\p{Sc}[\s)]*$/u;
 
 // "rgb(1, 2, 3)" or "rgba(1, 2, 3, 0.5)" as [r, g, b, a]. Anything else (oklch(), color()) is not a token value.
@@ -300,6 +302,11 @@ function checkView(view, ctx) {
   if (view.els.length > 12 && !view.els.some(e => e.part)) W('B31', '', 'marks nothing data-part, so nothing was checked for one size: mark each kind of repeated thing');
   // L2 not only black and white: a view with no color and no photo. A warning, because a closing slide may be the wordmark alone.
   if (view.share && view.share.color < .005 && !view.els.some(e => e.photo)) W('L2', '', 'is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)');
+  // U6 a site's logo is its saved square icon (ledger L17; Ben, 03:49: "you should always use the icdons you grabbed"). A picture whose file or alt names a marketplace, or that sits where a logo goes, comes from assets/platforms/square/.
+  for (const el of view.els) { if (el.src == null) continue; const file = el.src.split(/[?#]/)[0], site = SITE_NAME[(file.match(SITE_FILE) ?? [])[1]?.toLowerCase()] ?? (SITES.test(el.alt ?? '') && (el.alt ?? '').trim().split(/\s+/).length <= 2 ? SITES.exec(el.alt)[0] : null);
+    if ((site || el.logo) && !/assets\/platforms\/square\/[a-z]+\.png$/.test(file)) E('U6', `<${el.tag}${el.alt ? ` "${el.alt}"` : ''}>`, `shows ${file.startsWith('data:') ? 'an inline picture' : file.split('/').slice(-3).join('/')} as ${site ? `the ${site} logo` : 'a logo'}: a site's logo is its saved square icon, assets/platforms/square/${(site ?? 'site').toLowerCase().split(' ')[0]}.png (ledger L17)`); }
+  // U7 a state changes how a thing looks, never where it or its neighbours sit (Ben, 03:49: "when the gray box is there, things are moving over"). scripts/brand-check.mjs moves the current mark to each sibling and measures.
+  for (const s of view.shifts ?? []) E('U7', `"${s.who}"`, `moves ${s.by} px when ${s.how}: a state changes how a thing looks, never where it or its neighbours sit. Give every item the same box in every state (fixed slots, the state drawn inside or behind)`);
   view.fields = fields.length;
   return out;
 }
