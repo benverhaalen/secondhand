@@ -66,6 +66,8 @@ The levers it runs on its own ([D26](../../spec/determinations/listing-and-marke
 | Grailed, Facebook | Bump or renew | The site's own interval | Low |
 | eBay | Promoted Listings | Never on its own | None |
 
+Poshmark retired its Excessive Listing Removal policy on 2026-07-23; its Seller Cancellation Policy (3% of orders in a rolling 90 days) still applies ([claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)).
+
 The offer to likers uses the site minimum (Poshmark 10%, eBay 5%, Mercari 10%). The eBay case rests on a study that Best Offer raised the sale chance by 3.17% (observed abstract, tier 4). If an account's health is not fine, or a site shows its risk flag, every lever on that site stops and you are told. Each lever turns off by default if matched pairs show no lift after 200 pairs. For the bag on Poshmark, the app shares it once a day if you switched sharing on, and the sample line reads "Shared your 24 Poshmark listings today, 1 each. Paused if Poshmark warns." Relisting to gain rank is used only after the price path reaches the floor and interest is behind plan for 14 days, never on Poshmark, and only as a test with your consent ([D21](../../spec/determinations/listing-and-marketing.md#d21-edit-refresh-or-relist)).
 
 The claim that sharing helps is a vendor's: Vendoo says auto-sharing brings "33% more sales" (asserted, not checked; see the [Shopify suite map](../../research/cross-cutting/nate/shopify-suite-map.md)). No controlled test was found.

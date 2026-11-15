@@ -22,8 +22,8 @@ Measure has no tab of its own. It runs after capture reaches `judged` and shows 
 | Choice | Options considered | Picked | Why | What would change it |
 |---|---|---|---|---|
 | Garment scale without LiDAR | ARKit plane ([measure plan](../../research/measure/ben/build-plan.md)); card or ArUco marker ([garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)); monocular depth ([adaptive-capture](../../research/capture/nate/adaptive-capture.md)); the product's published size | the identified product's published size chart first, with the floor plane as the cross-check; a card or printed marker laid beside the garment is the fallback only when the two disagree or no size chart exists, because it is extra input | a 10 cm marker reached 4.10 to 4.20% (Kowaleczko 2022, *observed*), far under the 12% Ben's plan gave monocular depth; no plane-alone figure exists | the plane test on 30 garments matches the card |
-| Garment scale with LiDAR | LiDAR plus keypoints; plane | LiDAR plus keypoints, card as the cross-check | 1.59 to 2.08% relative error, about 8 to 10 mm on 50 cm (Kim 2022, *observed*) | none expected |
-| Monocular depth | as scale; as a cross-check only | cross-check only | UniDepthV2-L indoor ARel 6.8%, MoGe-2 Rel 15.7 ([garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)) | a model under 2% indoors |
+| Garment scale with LiDAR | LiDAR plus keypoints; plane | LiDAR plus keypoints, card as the cross-check | 1.59% and 2.08% average relative error in two environments, about 8 to 10 mm on 50 cm (Kim 2022, *observed*; averages, not a maximum) | none expected |
+| Monocular depth | as scale; as a cross-check only | cross-check only | UniDepthV2-L indoor ARel 6.8%, MoGe-2 Rel 15.7 averaged over seven mixed datasets, not indoor only ([garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)) | a model under 2% indoors |
 | How points are placed | geometric pass; a pointing model; the person drags ([measure plan](../../research/measure/ben/build-plan.md)) | geometric pass plus a pointing model run 3 times, then one drag | DeepFashion2 landmark AP is only 0.563, so a model alone is not enough; the person settles what disagrees | point error on 30 garments |
 | Rigid items | LiDAR box; Object Capture ([object-capture](../../research/measure/ben/object-capture.md)); published size | LiDAR box or Object Capture, cross-checked with the published size | Luetzenburg: LiDAR about ±1 cm above 10 cm | none expected |
 | Build or buy | build; 3DLOOK; Size AI ([garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)) | build, and run a vendor trial on the same garments | 3DLOOK's 1.5 to 2.0 cm is on bodies and vendor-internal; Size AI's 5 and 9 mm are *asserted* | a vendor beats our error on our garments |
@@ -147,8 +147,8 @@ Geometry rules candidates in or out. It never proves authenticity, function or c
 
 | Claim | Bar | Source |
 |---|---|---|
-| LiDAR path is accurate | relative error at most 2.08% per dimension | Kim 2022, *observed* |
-| Card path is accurate | relative error at most 4.20%; rejected photos at most 76 of 900 (8.4%) | Kowaleczko 2022, *observed* |
+| LiDAR path is accurate | average relative error of 1.59% and 2.08% in two environments (an average, not a per-dimension maximum) | Kim 2022, *observed* |
+| Card path is accurate | mean percentage error 6.45% overall before a trained correction network, 4.10% for tops and 4.20% for skirts after it (per-category means, not a maximum); rejected photos at most 76 of 900 (8.4%) | Kowaleczko 2022, *observed* |
 | Garment error overall | mean absolute error at most 1.27 cm per primary dimension | Paulauskaite-Taraseviciene 2022, *observed*, scale method unstated |
 | Beats the vendor | our error at or under 3DLOOK's 1.5 to 2.0 cm and Size AI on the same garments | vendor trial |
 | Plane alone | error against the card on 30 garments, non-LiDAR iPhone; decides the plane's place in the order | no published figure |
@@ -163,9 +163,9 @@ Error is reported in cm per attribute; model self-confidence is never the measur
 
 | Fact | Link, mark |
 |---|---|
-| LiDAR plus keypoints: 1.59 to 2.08% relative error | [garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md), *observed* |
+| LiDAR plus keypoints: 1.59% and 2.08% average relative error in two environments | [garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md), *observed* |
 | 10 cm ArUco: 6.36% tops, 4.56% skirts, corrected to 4.10% and 4.20%; no card or A4 figure in mm found | same, *observed* |
-| Monocular depth indoors: UniDepthV2-L ARel 6.8%, MoGe-2 Rel 15.7 | same, *observed* |
+| Monocular depth: UniDepthV2-L indoor ARel 6.8%; MoGe-2 Rel 15.7 is an average over seven mixed datasets, not indoor only | same, *observed* |
 | Mask plus rules: 1.27 cm blazers, 0.747 dresses, 1.012 skirts | same, *observed* |
 | 3DLOOK 1.5 to 2.0 cm on bodies; Size AI 5 and 9 mm | same, vendor-internal and *asserted* |
 | No published figure for ARKit plane scale, Object Capture dimensions, or pit to pit alone | same, not found |
