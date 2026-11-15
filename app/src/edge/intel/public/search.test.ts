@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
-import { searchAll, searchSite, searchSource } from './search.ts';
+import { searchAll, searchSite, searchSource, memoryApifyRuns } from './search.ts';
 import { SOURCES } from './sources.ts';
 import type { PageResult } from '../fetch.ts';
 import { _reset, runPlan, searchParams } from '../run.ts';
@@ -49,7 +49,7 @@ test('eBay active page source is on without approval; sold needs a person and th
   assert.equal(source.on, true); assert.equal(source.lane, 'harness'); assert.equal(source.needs_ask, false);
   assert.ok(source.pace); assert.equal(source.pace.per_minute, 6);
   const result = await searchSource(source, 'x', 'sold', { caller: 'background' });
-  assert.equal(result.searched.error_code, 'no_route');
+  assert.equal(result.searched.outcome, 'needs_account');
 });
 
 test('tuning can slow eBay but cannot raise its six-read cap', () => {
@@ -140,8 +140,8 @@ test('Dupe is the first MCP source; Depop uses its harness and Facebook uses per
   assert.equal(SOURCES.find(s => s.id === 'facebook')!.on, true);
   assert.equal(SOURCES.find(s => s.id === 'facebook')!.lane, 'apify');
   const mercari = await searchSource(SOURCES.find(s => s.id === 'mercari')!, 'jeans', 'search', { caller: 'person' });
-  assert.equal(mercari.searched.error_code, 'no_route');
-  assert.equal(mercari.searched.reason, 'no live route composed');
+  assert.equal(mercari.searched.outcome, 'needs_account');
+  assert.equal(mercari.searched.reason, 'needs your account');
 });
 
 test('Dupe sends the specific query to its module and preserves the fixture rows verbatim', async () => {
@@ -240,7 +240,7 @@ test('Apify without a composed token route returns no_route immediately; rows ke
   const apify: NonNullable<import('./search.ts').SearchOpts['apify']> = { search: async (lane, args) => {
     calls.push([lane, args]); return { ok: true, data: { rows: [apifyRow], dropped: 0, total: 1 } };
   } };
-  const result = await searchSource(facebook(), 'levi 501', 'search', { caller: 'person', visitor_id: 'terms', apify });
+  const result = await searchSource(facebook(), 'levi 501', 'search', { caller: 'person', person_id: 'terms', apify, apifyRuns: memoryApifyRuns() });
   assert.deepEqual(result.rows, [apifyRow], 'Apify rows lost their terms or provenance');
   assert.equal(result.searched.cost_usd_est, 0.005);
   assert.equal(result.searched.route_id, 'apify.facebook.search');
@@ -258,20 +258,21 @@ test('Apify reserves both caps before concurrent calls and keys a person before 
   });
   let calls = 0;
   const apify = { search: async () => { calls++; return { ok: true as const, data: { rows: [], dropped: 0, total: 0 } }; } };
-  const results = await Promise.all([0, 1, 2].map(i => searchSource(facebook(), 'cap', 'search', { caller: 'person', person_id: 'same-person', visitor_id: `rotated-${i}`, apify })));
+  const apifyRuns = memoryApifyRuns();
+  const results = await Promise.all([0, 1, 2].map(i => searchSource(facebook(), 'cap', 'search', { caller: 'person', person_id: 'same-person', visitor_id: `rotated-${i}`, apify, apifyRuns })));
   assert.equal(calls, 2, 'Apify called over the person cap');
   assert.equal(results[2].searched.outcome, 'blocked'); assert.equal(results[2].searched.error_code, 'rate_limited');
   assert.match(results[2].searched.reason!, /search_apify_runs_per_person_day/);
-  await searchSource(facebook(), 'cap', 'search', { caller: 'person', visitor_id: 'other-person', apify });
-  const global = await searchSource(facebook(), 'cap', 'search', { caller: 'person', visitor_id: 'another-person', apify });
-  assert.equal(calls, 3, 'Apify called over the process cap with a rotated visitor');
+  await searchSource(facebook(), 'cap', 'search', { caller: 'person', person_id: 'other-person', apify, apifyRuns });
+  const global = await searchSource(facebook(), 'cap', 'search', { caller: 'person', person_id: 'another-person', apify, apifyRuns });
+  assert.equal(calls, 3, 'Apify called over the daily cap across people');
   assert.equal(global.searched.error_code, 'rate_limited'); assert.match(global.searched.reason!, /search_apify_runs_per_day/);
   t.mock.timers.tick(24 * 60 * 60 * 1000);
-  await searchSource(facebook(), 'new day', 'search', { caller: 'person', person_id: 'same-person', apify });
+  await searchSource(facebook(), 'new day', 'search', { caller: 'person', person_id: 'same-person', apify, apifyRuns });
   assert.equal(calls, 4, 'daily counts did not reset at the next UTC day');
 });
 
-test('eBay Apify fallback runs only for a person after blocked or no_route, never after hit or empty', async () => {
+test('eBay never falls back to Apify after blocked, no_route, hit or empty', async () => {
   const { createHarness, fakeAdapter, fail } = await import('../../harness/protocol.ts');
   let calls = 0;
   const apify: NonNullable<import('./search.ts').SearchOpts['apify']> = { search: async (lane, args) => {
@@ -281,10 +282,11 @@ test('eBay Apify fallback runs only for a person after blocked or no_route, neve
   for (const code of ['blocked', 'no_route'] as const) {
     const adapter = { ...fakeAdapter('ebay', 'search'), run: async () => fail(code, code, code === 'blocked' ? { do: 'pause_session' as const, site: 'ebay' as const } : { do: 'handoff' as const, url: '' }) };
     const result = await searchSource(ebay(), 'fallback', 'search', { paced: true, caller: 'person', visitor_id: 'fallback', apify, harness: createHarness({ adapters: [adapter] }) });
-    assert.equal(result.searched.route_id, 'apify.ebay.search'); assert.equal(result.searched.fallback, 'apify'); assert.equal(result.searched.outcome, 'hit');
+    assert.equal(result.searched.fallback, undefined); assert.equal(result.searched.error_code, code);
   }
   const direct = await searchSource(ebay(), 'fallback', 'search', { caller: 'person', visitor_id: 'fallback', apify });
-  assert.equal(direct.searched.fallback, 'apify');
+  assert.equal(direct.searched.error_code, 'no_route'); assert.equal(direct.searched.fallback, undefined);
+  assert.equal(calls, 0, 'eBay fallback called Apify');
   const before = calls;
   for (const rows of [[], [{ external_id: 'ok', title: 'levi 501', price_cents: 1200, currency: 'USD', url: 'https://www.ebay.com/itm/ok', state: 'active' }]]) {
     const page = await searchSource(ebay(), 'fallback', 'search', { paced: true, caller: 'person', visitor_id: 'fallback', apify, harness: createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => ({ ok: true as const, data: rows }) }] }) });
@@ -294,17 +296,29 @@ test('eBay Apify fallback runs only for a person after blocked or no_route, neve
   assert.equal(calls, before, 'eBay Apify fallback ran after a page-lane hit, empty, or a background read');
 });
 
-test('eBay fallback cannot bypass Facebook spend already reserved against the shared person cap', async t => {
-  t.mock.timers.enable({ apis: ['Date'], now: new Date('2040-02-01T12:00:00Z').getTime() });
-  searchParams.declare({ name: 'search_apify_runs_per_person_day', family: 'scalar', prior: 1 });
-  t.after(() => searchParams.declare({ name: 'search_apify_runs_per_person_day', family: 'scalar', prior: 10 }));
+test('a visitor id never reserves Apify spend, even if a caller claims to be a person', async () => {
+  let reservations = 0, calls = 0;
+  const result = await searchSource(facebook(), 'visitor', 'search', { caller: 'person', visitor_id: 'rotated',
+    apifyRuns: { reserve: async () => { reservations++; return { ok: true }; } },
+    apify: { search: async () => { calls++; return { ok: true, data: { rows: [], dropped: 0, total: 0 } }; } },
+  });
+  assert.equal(reservations, 0); assert.equal(calls, 0); assert.equal(result.searched.outcome, 'blocked');
+});
+
+test('Apify requires a reservation port and honors a durable reservation refusal across reader restarts', async () => {
   let calls = 0;
   const apify = { search: async () => { calls++; return { ok: true as const, data: { rows: [], dropped: 0, total: 0 } }; } };
-  const opts = { caller: 'person' as const, visitor_id: 'shared-cap', apify };
-  const [facebookResult, ebayResult] = await Promise.all([
-    searchSource(facebook(), 'cap', 'search', opts), searchSource(ebay(), 'cap', 'search', opts),
-  ]);
-  assert.equal(facebookResult.searched.outcome, 'empty'); assert.equal(ebayResult.searched.outcome, 'blocked');
-  assert.equal(ebayResult.searched.error_code, 'rate_limited'); assert.match(ebayResult.searched.reason!, /search_apify_runs_per_person_day/);
-  assert.equal(calls, 1, 'the eBay fallback evaded the person cap');
+  const missing = await searchSource(facebook(), 'no port', 'search', { caller: 'person', person_id: 'person', apify });
+  assert.equal(missing.searched.error_code, 'no_route'); assert.equal(calls, 0);
+  const reservations: [string, string][] = [];
+  const apifyRuns = { reserve: async (person: string, day: string) => {
+    reservations.push([person, day]); return { ok: false as const, cap: 'search_apify_runs_per_day' };
+  } };
+  for (let i = 0; i < 2; i++) {
+    _reset();
+    const restarted = await searchSource(facebook(), 'restart', 'search', { caller: 'person', person_id: 'person', apify, apifyRuns });
+    assert.equal(restarted.searched.error_code, 'rate_limited');
+    assert.equal(restarted.searched.reason, 'search_apify_runs_per_day');
+  }
+  assert.equal(calls, 0); assert.deepEqual(reservations, Array.from({ length: 2 }, () => ['person', new Date().toISOString().slice(0, 10)]));
 });

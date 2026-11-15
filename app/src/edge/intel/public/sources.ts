@@ -32,7 +32,7 @@ const facebookPace = pace('facebook', 'apify', 20, 3000);
 searchParams.declare({ name: 'search_facebook_city', family: 'scalar', prior: 'chicago' });
 // Apify README: $0.05 maximum a run, about $0.50 a person each day.
 searchParams.declare({ name: 'search_apify_runs_per_person_day', family: 'scalar', prior: 10, guard_lo: 0 });
-// About $10 a day per process; a visitor id can be rotated.
+// About $10 a day across all people; reserved through SearchOpts.apifyRuns.
 searchParams.declare({ name: 'search_apify_runs_per_day', family: 'scalar', prior: 200, guard_lo: 0 });
 // Apify README probe: $0.05 for 10 Facebook rows.
 searchParams.declare({ name: 'search_apify_cost_per_row_usd', family: 'scalar', prior: 0.005, guard_lo: 0 });
@@ -48,6 +48,6 @@ export const SOURCES: Source[] = [
 ];
 
 export const sourcesFor = (caller: Caller = 'background', sources: readonly Source[] = SOURCES) =>
-  sources.filter(source => source.on && (!(source.needs_ask || source.person_only) || caller === 'person'));
+  sources.filter(source => source.on && (!source.person_only || caller === 'person'));
 
 export const routeId = (source: Source) => source.lane === 'apify' ? `apify.${source.id}.search` : source.lane === 'mcp' ? 'dupe.search.api' : source.lane === 'public_page' ? `public.${source.id}` : `${source.id}.search.page`;
