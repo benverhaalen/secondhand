@@ -214,3 +214,33 @@ test('plan always carries inner_class, null for a single item', () => {
   assert.equal(run({type:'apparel'}).inner_class,null,'non-bundle inner_class must be null');
   assert.equal(run({type:'apparel',pieces:2}).inner_class,'flat_garment');
 });
+test('unsettled variants keep the reading visible and hold the question until shooting ends', () => {
+ const reading={value:{width:60,height:50,depth:30},source:'measured' as const,confidence:.9};
+ const initial={type:'bags' as const,lookups:'done' as const,variants:{dimensions:[{label:'Small',value:{width:30,height:22,depth:12},p:.6},{label:'Large',value:{width:40,height:30,depth:20},p:.6}]},facts:{dimensions:reading}};
+ for(const kept of [['inside_tab'],['scan','inside_tab']]) {
+  const p=run({...initial,kept}),field=p.fields.find(field=>field.field==='dimensions')!;
+  assert.equal(field.state,kept.includes('scan')?'missing':'waiting');
+  assert.deepEqual(field.value,reading.value);assert.equal(field.source,'measured');
+  assert.equal(p.questions.filter(q=>q.field==='dimensions').length,kept.includes('scan')?1:0);
+ }
+});
+test('weak matching reading leaves a variant question without a proposed option', () => {
+ const p=run({...furniture,facts:{dimensions:{...measured,confidence:.5}}});
+ const q=p.questions.find(q=>q.field==='dimensions');
+ assert.ok(q,'weak measurement must leave the variant question');
+ assert.ok(q.options.every(option=>!option.proposed));
+});
+test('zone-less graphic and flaw asks each collapse into one shot by type', () => {
+ for(const type of ['graphic','flaw'] as const) {
+  const asks=[{type,text:'Take a close photo.'},{type,text:'Take another close photo.'}];
+  const p=run({...tee,studio:{requested:true,measurements:['pit_to_pit','length'],asks}});
+  const shots=p.questions.filter(q=>q.kind==='shot');
+  assert.equal(shots.length,1,'duplicate studio steps require one shot');
+  assert.equal(shots[0].shot!.step,type);
+  assert.equal(shots[0].words,asks[0].text);
+  assert.ok(!shots[0].shot!.step.includes('undefined'));
+  const settled=run({...tee,kept:[...tee.kept,type],studio:{requested:true,measurements:['pit_to_pit','length'],asks}});
+  assert.equal(settled.complete.studio!.ready,true);
+  assert.ok(!settled.questions.some(q=>q.kind==='shot'));
+ }
+});

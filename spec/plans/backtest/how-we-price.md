@@ -15,6 +15,8 @@ The one-public-tool comparison that motivated the range rule: a vendor's 80% ran
 
 ## 2. The pricing logic, step by step
 
+*Observed:* [Pricing modes](pricing-modes.md) compares each objective, its numeric rationale, the current toggle display and the tests that wait for the backend.
+
 There are two engines. The one the app serves is the comps engine; the Python model is the nightly challenger it is checked against.
 
 **The comps engine** ([app/src/engines/valuation/comps.ts](../../../app/src/engines/valuation/comps.ts), money D1 to D5, *observed*):
@@ -42,7 +44,7 @@ There are two engines. The one the app serves is the comps engine; the Python mo
 | Retail ([M2](../../determinations/market-insight.md#m2-retail-price-and-release-date)) | Launch retail and price new today, by identifier | Rechecked monthly | Designed |
 | The `comp` table on Databricks ([fit.py](../../../jobs/valuation/fit.py)) | Every stored sold and asking comp with product, brand, category, size, era, site | Nightly | The nightly fit reads it |
 
-**The honest gap** (*observed*): `POST /v1/valuations` ([valuations.ts](../../../app/src/edge/api/valuations.ts)) calls the engine with `warm_comps: []` and `sources: []`, so the app today shows a fixed family band from an example item, not live comps. Wiring the Mercari and Poshmark sold searches into `sources` is what turns the engine on.
+**The gap, and where it stands** (*observed*): `POST /v1/valuations` ([valuations.ts](../../../app/src/edge/api/valuations.ts)) called the engine with no comps. It now passes Mercari and Poshmark sold-search sources ([sold.ts](../../../app/src/engines/valuation/sold.ts)), but the runtime harness has no route for either site yet, so they add nothing and the app still shows the family band. Registering the two adapters, plus condition, size and a sale date on search rows, is asked of the harness side in [packet 69](../../../.agents/team/packets/price/69-live-sold-comps-into-the-valuation.md).
 
 ## 4. Is there a proxy for depreciation?
 

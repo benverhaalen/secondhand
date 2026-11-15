@@ -66,27 +66,27 @@ def test_better_challenger_promoted_with_enough_resolved():
     store = MemoryStore()
     champ = _hist(400, 6.0, 3)  # wide, poorly placed
     chall = _hist(400, 3.0, 3)  # well calibrated
-    ok, why = fold(store, "demand_weights", SCOPE, champion=champ, challenger=chall, value=PRIOR_W, at="t1")
+    ok, why = fold(store, "demand_weight_sold", SCOPE, champion=champ, challenger=chall, value=PRIOR_W["sold"], at="2026-11-14")
     assert ok, why
-    assert store.champion("demand_weights", SCOPE)["held_out_score"] is not None
+    assert store.champion("demand_weight_sold", SCOPE)["held_out_score"] is not None
 
 
 def test_no_promote_below_300_resolved():
     store = MemoryStore()
-    ok, why = fold(store, "demand_weights", SCOPE, champion=_hist(100, 6.0, 4), challenger=_hist(100, 3.0, 4),
-                   value=PRIOR_W, at="t1")
+    ok, why = fold(store, "demand_weight_sold", SCOPE, champion=_hist(100, 6.0, 4), challenger=_hist(100, 3.0, 4),
+                   value=PRIOR_W["sold"], at="2026-11-14")
     assert not ok and "300" in why
 
 
 def test_coverage_drop_rolls_back():
     store = MemoryStore()
-    assert fold(store, "demand_weights", SCOPE, champion=_hist(400, 9.0, 5), challenger=_hist(400, 6.0, 5),
-                value=PRIOR_W, at="t1")[0]
-    assert fold(store, "demand_weights", SCOPE, champion=_hist(400, 6.0, 5), challenger=_hist(400, 3.0, 5),
-                value=PRIOR_W, at="t2")[0]
+    assert fold(store, "demand_weight_sold", SCOPE, champion=_hist(400, 9.0, 5), challenger=_hist(400, 6.0, 5),
+                value=PRIOR_W["sold"], at="2026-11-14")[0]
+    assert fold(store, "demand_weight_sold", SCOPE, champion=_hist(400, 6.0, 5), challenger=_hist(400, 3.0, 5),
+                value=PRIOR_W["sold"], at="2026-11-15")[0]
     # the champion's newly resolved forecasts fall outside their ranges far more than 20% of the time
-    ok, why = fold(store, "demand_weights", SCOPE, champion=_hist(400, 0.3, 6), challenger=_hist(400, 0.3, 6),
-                   value=PRIOR_W, at="t3")
+    ok, why = fold(store, "demand_weight_sold", SCOPE, champion=_hist(400, 0.3, 6), challenger=_hist(400, 0.3, 6),
+                   value=PRIOR_W["sold"], at="2026-11-16")
     assert not ok and "coverage" in why
-    assert store.champion("demand_weights", SCOPE)["promoted_at"] == "t3"  # the t1 version, restored at t3
-    assert store.champion("demand_weights", SCOPE)["version"] == 1
+    assert store.champion("demand_weight_sold", SCOPE)["promoted_at"] == "2026-11-16"  # the t1 version, restored at t3
+    assert store.champion("demand_weight_sold", SCOPE)["version"] == 1

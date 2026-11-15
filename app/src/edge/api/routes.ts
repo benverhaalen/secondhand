@@ -56,9 +56,5 @@ export const exampleReasons: Record<string, string> = {
   "POST /v1/orders/:id/ship": "No rate/label purchase engine exists; the order book does not buy shipping labels.",
   "POST /v1/orders/labels": "No batch label purchase/rendering engine exists.",
   "GET /v1/orders/pick-list": "No packing/location/parcel read service exists; those fields are absent from orderBook.",
-  "PATCH /v1/captures/:id": "No capture-session, upload-signing or realtime-session service exists; capture/process.ts only defines the process/picker calculation.",
-  "POST /v1/captures": "No capture-session, upload-signing or realtime-session service exists; capture/process.ts only defines the process/picker calculation.",
-  "POST /v1/captures/:id/finish": "No capture-session, upload-signing or realtime-session service exists; capture/process.ts only defines the process/picker calculation.",
-  "POST /v1/captures/:id/photos": "No capture-session, upload-signing or realtime-session service exists; capture/process.ts only defines the process/picker calculation.",
   "POST /v1/captures/:id/talk": "No capture-session, upload-signing or realtime-session service exists; capture/process.ts only defines the process/picker calculation."
 };

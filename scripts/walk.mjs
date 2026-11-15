@@ -185,7 +185,7 @@ async function walk(options) {
       const { rows } = JSON.parse(readFileSync(new URL('../spec/fixtures/requirement/requirement.json', import.meta.url), 'utf8'));
       const attr = value => ({ value, source: 'you_said', confirmed: true });
       const card = { ...state.item, kind: state.type.preselect, photos: state.photos,
-        attrs: { brand: attr('Acme'), type: attr('Shirt'), size_label: attr('M'), condition: attr('Good'), colour: attr('Blue') } };
+        attrs: { brand: attr('Acme'), type: attr('Shirt'), size_label: attr('M'), condition: attr('good'), department: attr('unisex'), colour: attr('Blue') } };
       state.floor = state.valuation.range.q10;
       const built = engine(buildAll, card, sites, { rows, price_cents: state.valuation.range.q50,
         floor_cents: state.floor, posted_before: false, promoted: false });

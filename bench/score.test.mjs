@@ -260,3 +260,57 @@ test('CLI defaults to market and accepts either option order', t => {
     assert.equal(coverage.n,1); assert.equal(coverage.of,2);
   }
 });
+
+test('speed rows use nearest rank, cite records, list zero facts and unknown costs for baseline too', t => {
+  const base=rows()[0];
+  const records=[1,2,3,4].flatMap((n)=>['secondhand','baseline'].map(tool=>({...base,tool,
+    first_at:new Date(Date.parse(base.asked_at)+n*1000).toISOString(),full_at:new Date(Date.parse(base.asked_at)+n*2000).toISOString(),
+    numbers:n===4?[]:[{name:'price',value_cents:100,citation_id:'ci_1',evidence:[]},{name:'shipping',value_cents:200,citation_id:null,evidence:['https://example.com/item']}],
+    cited_facts:n===4?0:2,cost:{browser_s:0,proxy_bytes:0,model_calls:0,cents:n===4?null:n},
+    reads:[{site:'poshmark',lane:'plain',ms:n*100,outcome:'hit',rows:2,warm:n>1}],
+  })));
+  const {run,manifestPath}=planted(t,records); const result=scoreRun(run,manifestPath,'owned');
+  assert.deepEqual(result.tools.map(x=>x.tool),['baseline','secondhand']);
+  for(const tool of result.tools) {
+    const speed=tool.rows['8'];
+    assert.equal(speed.first.p50.value,2); assert.equal(speed.full.p95.value,8);
+    assert.equal(speed.seconds_per_cited_fact.p50.value,2); assert.equal(speed.seconds_per_cited_fact.p95.value,3);
+    assert.equal(speed.seconds_per_cited_fact.zero_cited_facts.value,1);
+    assert.equal(speed.seconds_per_cited_fact.zero_cited_facts.items[0].item_id,base.item_id);
+    assert.equal(speed.cost.p50.value,2); assert.equal(speed.cost.p95.value,3);
+    assert.equal(speed.cost.unknown.value,1); assert.equal(speed.cost.unknown.items.length,1);
+    assert.equal(speed.reads_by_lane[0].p50.value,.2); assert.equal(speed.reads_by_lane[0].p95.value,.4);
+    assert.equal(speed.cold_warm[0].cold.p50.value,.1); assert.equal(speed.cold_warm[0].warm.p50.value,.3);
+    assert.equal(speed.cold_warm[0].warm.p50.n,3);
+    assert.ok(speed.cost.unknown.records.every(r=>/^records.jsonl:/.test(r)));
+  }
+});
+
+test('legacy records keep old rows and list missing new measurements', t => {
+  const {run,manifestPath}=planted(t); const speed=scoreRun(run,manifestPath,'owned').tools[0].rows['8'];
+  assert.equal(speed.full.p50.value,30);
+  assert.equal(speed.cost.p50.value,null); assert.equal(speed.cost.unknown.value,7);
+  assert.equal(speed.seconds_per_cited_fact.p50.value,null);
+  assert.equal(speed.seconds_per_cited_fact.missing.value,7);
+  assert.deepEqual(speed.reads_by_lane,[]);
+});
+
+test('a separate baseline run can sit beside ours with resolvable records', t => {
+  const ours=rows().map(r=>({...r,tool:'secondhand'}));
+  const baseline=rows().map(r=>({...r,tool:'baseline',run_id:'baseline-run'}));
+  const primary=planted(t,ours), comparison=planted(t,baseline);
+  const result=scoreRun(primary.run,primary.manifestPath,'owned',comparison.run);
+  assert.deepEqual(result.tools.map(t=>t.tool),['baseline','secondhand']);
+  const reference=result.tools[0].rows['8'].full.p50.records[0];
+  const [file,line]=reference.split(':');
+  assert.ok(JSON.parse(fs.readFileSync(path.resolve(primary.run,file),'utf8').split('\n')[Number(line)-1]));
+  const child=spawnSync(process.execPath,[scorer,primary.run,'--manifest',primary.manifestPath,'--set','owned','--baseline',comparison.run],{encoding:'utf8'});
+  assert.equal(child.status,0,child.stderr);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(primary.run,'results.json'))),result);
+});
+
+test('cited fact count cannot contradict the evidence in the answer', t => {
+  const record={...rows()[0],cited_facts:1000};
+  const {run,manifestPath}=planted(t,[record]);
+  assert.throws(()=>scoreRun(run,manifestPath,'owned'),/records.jsonl:1.*cited_facts.*numbers/);
+});
