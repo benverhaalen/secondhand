@@ -40,21 +40,14 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 
 | Id | State | Where |
 |---|---|---|
-| SV0 | built, on main; fresh Opus review running | the store is SQLite through node:sqlite (decision: [server-store.md](server-store.md)), c19e8af6; {"ts":"2026-11-15T12:34:12.673Z","session":"s_mwhtgl6pynvno5","seq":0,"src":"edge.api","level":"info","event":"session.start","build":"dev","seed":1850318978}
-{"ts":"2026-11-15T12:34:12.676Z","session":"s_mwhtgl6shrdrde","seq":0,"src":"edge.store","level":"info","event":"session.start","build":"dev","seed":1355229073}
-{"ts":"2026-11-15T12:34:12.678Z","session":"s_mwhtgl6shrdrde","seq":1,"src":"edge.store","level":"debug","event":"note","msg":"SQLite opened","path":"C:\Users\Nate2\AppData\Local\Temp\secondhand-dev\secondhand.db"}
-{"ts":"2026-11-15T12:34:12.678Z","session":"s_mwhtgl6umjnshz","seq":0,"src":"intel.fetch","level":"info","event":"session.start","build":"dev","seed":2237667159}
-{"ts":"2026-11-15T12:34:12.679Z","session":"s_mwhtgl6v6vn9fb","seq":0,"src":"intel.dupe","level":"info","event":"session.start","build":"dev","seed":3139887932}
-{"ts":"2026-11-15T12:34:12.679Z","session":"s_mwhtgl6v40dpu0","seq":0,"src":"edge.harness.reads","level":"info","event":"session.start","build":"dev","seed":3694956719}
-{"ts":"2026-11-15T12:34:12.680Z","session":"s_mwhtgl6w9twuu0","seq":0,"src":"edge.runtime","level":"info","event":"session.start","build":"dev","seed":3537699876}
-{"ts":"2026-11-15T12:34:12.770Z","session":"s_mwhtgl9ed5jitc","seq":0,"src":"edge","level":"info","event":"session.start","build":"dev","seed":192068730}, 9221b28a; proof  (6/6 on the Mac: a session written in  is read by the  route; limits and rules written in turn both survive). The full email sign-in through the server waits on SV3 |
+| SV0 | built, on main; fresh Opus review running | the store is SQLite through node:sqlite (decision: [server-store.md](server-store.md)), c19e8af6; `node server/main.ts`, 9221b28a; proof `node --test server/main.test.ts` (6/6 on the Mac: a session written in `auth.ts` is read by the `/v1/me` route; limits and rules written in turn both survive). The full email sign-in through the server waits on SV3 |
 | SV1 | building | Mac workers srv-auth-1 (sign-in state), srv-http-1 (idempotency, visitor limits, decision key and versions, last open), srv-jobs-1 (jobs and frames on disk) |
-| SV2 | building | srv-jobs-1: a row is written only when its own  is true and  has not passed; the search lead adds those fields to every row |
-| SV3 | building | srv-auth-1: the  port,  for development only, refused in production; the vendor is open (§9.2) |
+| SV2 | building | srv-jobs-1: a row is written only when its own `may_store` is true and `keep_until` has not passed; the search lead adds those fields to every row |
+| SV3 | building | srv-auth-1: the `sendCode` port, `SECONDHAND_DEV_CODE` for development only, refused in production; the vendor is open (§9.2) |
 | SV4 | partly on main | the entry starts the watcher and the pipeline (watch ticks logged, SIGTERM exits 0, run on the Mac); Dockerfile and fly.toml building (srv-host-1). Nothing created on Fly |
 | SV5 | partly on main; review running | account lookups scoped by person, fd545dcb; the job read and the example visitor in srv-jobs-1 |
 | SV6 | the engines lead's (EN6), agreed 2026-11-15 | built on the SV7 port |
-| SV7 | next | land the observation writer from  with the rights refusal and per-row fields; ports agreed with the engines and data leads |
+| SV7 | next | land the observation writer from `w/int-obs-1` with the rights refusal and per-row fields; ports agreed with the engines and data leads |
 | SV8 | not started | |
 | SV9 | not started | needs Nate's linked account (§9.3) |
 | SV10 | building in part | srv-http-1 (signing key required, signed visitor id, idempotency slot first, required variables), srv-auth-1 (refresh replay revokes the family), srv-vault-1 next (vault on disk, push tokens in the vault, examples off in production) |
