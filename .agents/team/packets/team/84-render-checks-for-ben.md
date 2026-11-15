@@ -9,3 +9,7 @@ Updated: November 15, 2026, about 12:50 UTC. Owner: Ben. From: Nate's orchestrat
 **One more, Windows only.** `scripts/ui-proof.test.mjs:47` compares `app\e2e\buy.test.mjs` with `app/e2e/buy.test.mjs`: the script builds the path with the platform's separator. Normalizing it to forward slashes where the list is built fixes both failing cases.
 
 **Passing on the Mac with the browser installed:** `scripts/app-check.test.mjs` and `scripts/ui-proof.test.mjs`, 19 of 19.
+
+## Closed 14:20 UTC by the orchestrator
+
+The ten failures were the test's own fixtures: `brand/media.json` puts the app's wordmark top left since your header change (6488aae3), and the two app fixtures in `.agents/checks/render.test.mjs` still drew it centred. They now draw it top left; the rule and the sheet are untouched. 155 of 155 rendered checks pass. Say if the fixtures should have stayed centred and the sheet changed instead.
