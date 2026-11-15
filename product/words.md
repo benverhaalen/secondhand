@@ -1764,3 +1764,34 @@ Nate, build session (orchestrator), 2026-11-15 about 12:30 Central, answering wh
 > we own backtests and such
 
 Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+
+## 2026-11-15 the first screen: our fonts, one family with the app, no gradient, a shadow under the text, a gradient hover, hands moved in code
+
+Ben, 09:16 UTC, thread "Make the website hero match the reference":
+> it needs to use our fonts. ensure all tests pass with the design system as far as it extends to here. just focus on the first screen right now. use the brand kit well and use the principles from the app about writing, organization, layout, etc. i think the subheading should be improved. dont work on any other pages or parts for the timebeing of the website
+
+Ben, 09:21 UTC, same thread:
+> tell me how you are going to try and model it off of the reference image and use gpt image 2 effectively to prompt and brainstorm in a modified ui loop but with me in the loop to give feedback. make the icons for the sites larger and centered right below the see how it works thing. when working through the site for each thing i want to talk through the possible options an expert ui ux designer aligned with our constitution and the range of audiences and the brand rules and guidelines and components to build everything out would make this. or how it would critique essentially. i hate the blue gradient at the top id rather the entire page had no gradient and just a very tasteful shadow underneath the text to separate from the background effectively. also when all buttons are hovered, the gradient that moves around and changes slowly should have an animation expertly chosen to change the button color. also ask for each one if there are any notes from the brand and how the app designs how it should design this.
+
+Ben, 09:21 UTC, project chat:
+> scrap the dap idea and the ai sprite idea. just use the icons given to create animations and you move them on your own
+
+Ben, 09:23 UTC, project chat:
+> scrap 1/d2. 2 yea keep this. 3. yes. cleos style more than layout just adapted to how the app's ui looks. they all should look like the same family. 4. yes. 5. site images through codex cli
+
+Ben, 09:23 to 09:24 UTC, project chat:
+> so why do you think the first ui mocks for the website dont look like the same family under the same ui and brand rules as the app.
+
+> for each of those problems can you ensure they are enforced in website mocks
+
+Ben, 09:24 UTC, on a card asking "Set the hero's 'secondhand' in the text face or keep Clofie?": chose "Keep Clofie, log an exception".
+
+Ben, 09:26 UTC, project chat:
+> what do you think about how you should use the cleo idea to design the site and other pages. primitives specific to the site adapted to the brand design
+
+> and how are you going to use expert decision making to determine everything about it
+
+> yes
+
+Used in: [brand/ledger.md](../brand/ledger.md) L54 to L58, [the website constitution](constitutions/web.md) W8, W13, W14 and W15, `.agents/checks/site.mjs`, and the first screen in `brand/explore/web-home/hero/`.

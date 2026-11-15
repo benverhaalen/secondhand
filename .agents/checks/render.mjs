@@ -3,6 +3,15 @@
 // The numbers for each medium are in brand/media.json; the scales and colors come from the constitution and tokens.css.
 import { scan } from '../../scripts/copy-lint.mjs';
 import { oklch, contrast } from './picks.mjs';
+import { readFileSync } from 'node:fs';
+
+// What Ben waived, and where: a Locked row in brand/ledger.md that says "Waives B32 and B3" turns those checks off for the
+// text inside an element marked data-ledger="<row>", and nowhere else. A row an agent decided waives nothing.
+export const waivers = ledger => { const part = ledger.split(/^## /m).find(s => s.startsWith('Locked')) ?? '';
+  return Object.fromEntries([...part.matchAll(/^\|\s*(L\d+)\s*\|([^\n]*)$/gm)].map(m => [m[1], (m[2].match(/\bWaives\b([^.|]*)/)?.[1].match(/\bB\d+\b/g)) ?? []])); };
+const WAIVED = (() => { try { return waivers(readFileSync(new URL('../../brand/ledger.md', import.meta.url), 'utf8')); } catch { return {}; } })();
+const waives = (t, id) => (t.ledger ?? []).some(l => WAIVED[l]?.includes(id));
+// A line Ben let carry "secondhand" in the wordmark face (a Locked row that waives B32) is not the wordmark.
 
 const err = (id, where, msg) => ({ level: 'error', id, where, msg });
 const warn = (id, where, msg) => ({ level: 'warn', id, where, msg });
@@ -112,7 +121,7 @@ function checkView(view, ctx) {
   const { sheet, scales, pal, medium } = ctx, out = [], at = `view ${view.index + 1}`, u = sheet.unit ?? 1;
   const E = (id, where, msg) => out.push(err(id, `${at} ${where}`.trim(), msg)), W = (id, where, msg) => out.push(warn(id, `${at} ${where}`.trim(), msg));
   const text = view.texts, sizes = sheet.sizes[String(view.canvas?.[0])] ?? Object.values(sheet.sizes)[0], top = Math.max(...sizes);
-  const isMark = t => t.display && t.text.trim().toLowerCase() === 'secondhand';
+  const isMark = t => t.display && t.text.trim().toLowerCase() === 'secondhand' && !waives(t, 'B32');
   // A state tag keeps its light fill and black text in dark (Art. 5, Dark mode 4), so it and what is on it are read in the
   // light palette first. In light mode that is the same palette.
   const lit = new Set(); view.els.forEach((el, i) => { if (lit.has(el.parent) || el.part === 'tag') lit.add(i); });
@@ -134,6 +143,7 @@ function checkView(view, ctx) {
     // B14 sizes
     const mark = isMark(t);
     if (mark) { if (markSizes.length && !markSizes.some(s => near(t.size, s))) E('B3', '', `the wordmark is ${t.size} px: on a ${medium}${Array.isArray(sheet.wordmark.sizes) ? '' : ` ${view.canvas[0]} wide`} it is ${markSizes.join(' or ')} px (Part III)`); }
+    else if (waives(t, 'B14')) { /* a size Ben set by hand, on a Locked row */ }
     else if (t.size > top + .5) { if (!sheet.peak || t.size > sheet.peak + .5) E('B14', q, `is ${t.size} px: the largest size on a ${medium} is ${sheet.peak ?? top} (Part III)`); }
     else if (!sizes.some(s => near(t.size, s))) E('B14', q, `is ${t.size} px: the sizes on a ${medium} are ${sizes.join(', ')} (Part III)`);
     // B14 off the app, a size of 32 and up is set at leading 1.1 and tracking -0.02em; the wordmark is -0.01em (Art. 6.4, 6.12)
@@ -156,7 +166,7 @@ function checkView(view, ctx) {
     if (sampled) { const a = color[3] * (t.opacity ?? 1), ends = [t.under.lo, t.under.hi], inside = a >= .99 && lum(color) > lum(ends[0]) && lum(color) < lum(ends[1]);
       const worst = inside ? 1 : Math.min(...ends.map(p => ratio(lum(over([color[0], color[1], color[2], a], p)), lum(p)))), need = g.wash ? 7 : t.size >= 24 ? 3 : 4.5;
       if (worst < need) E('B6', q, `has ${worst.toFixed(1)}:1 contrast at its worst point over ${g.wash ? 'the wash' : g.kind === 'field' ? 'the field' : 'the gradient'}; it needs ${need}:1 (Art. 5.1${g.wash ? ', Art. 5 The wash' : ''})`); }
-    if (g.kind === 'photo') E('B6', q, 'sits on a photo: text over a photo goes on the field or a white bar, in black (Art. 5.1)');
+    if (g.kind === 'photo' && !waives(t, 'B6')) E('B6', q, 'sits on a photo: text over a photo goes on the field or a white bar, in black (Art. 5.1)');
     else if (g.kind === 'state' || g.kind === 'pale') { const ok = ['on-field', 'on-field-2'].map(pal.raw).filter(Boolean);
       if (g.kind === 'state' && !ok.includes(t.color)) E('B6', q, `is ${name ? `--${name}` : t.color} on a state gradient: text on it is --on-field or --on-field-2, the ink of its mode, light in dark and black in light (Art. 5, State gradients 3)`); }
     else if (g.kind === 'field' || g.kind === 'built') { const ok = ['on-field', 'on-field-2'].map(pal.raw).filter(Boolean);
@@ -223,7 +233,7 @@ function checkView(view, ctx) {
     if (g.kind === 'tag' || g.kind === 'fill' && g.name !== 'page' && !(g.name === 'ink' && n !== 'ink')) E('B32', '', `the wordmark sits on ${g.name ? `--${g.name}` : 'a color'}: it goes on the page or the field (C1)`);
     const unit = t.size / 2, zone = [t.rect[0] - unit, t.rect[1] - unit, t.rect[2] + unit, t.rect[3] + unit], up = new Set(); for (let i = t.el; i >= 0; i = view.els[i].parent) up.add(i);
     const near = [...text.filter(o => o !== t && hits(o.rect, zone)).map(o => short(o.text)),
-      ...view.els.filter((el, i) => !up.has(i) && el.part !== 'hand' && (el.paints || el.bg || el.borders.length) && hits(el.rect, zone) && !(el.rect[0] <= t.rect[0] && el.rect[1] <= t.rect[1] && el.rect[2] >= t.rect[2] && el.rect[3] >= t.rect[3])).map(el => el.part ? `[${el.part}]` : `<${el.tag}>`)];
+      ...view.els.filter((el, i) => !up.has(i) && el.part !== 'hand' && (el.paints || el.bg || el.borders.length) && el.seen !== null && hits(el.seen ?? el.rect, zone) && !(el.rect[0] <= t.rect[0] && el.rect[1] <= t.rect[1] && el.rect[2] >= t.rect[2] && el.rect[3] >= t.rect[3])).map(el => el.part ? `[${el.part}]` : `<${el.tag}>`)];
     if (near.length) E('B32', '', `${[...new Set(near)].slice(0, 3).join(', ')} sits within ${unit} px of the wordmark: nothing but its ground comes within half its type size (C1)`);
   }
   // B33 logos in a row (C5): one height, one gap, none taller than the wordmark's type
@@ -404,7 +414,7 @@ export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
     for (const [s, why] of d.skip) if (!why) out.push(err('B35', `${d.kind} "${d.name}"`, `skips "${s}" with no reason: data-skip="${s}: why it can't happen"`));
     const missing = list.required.filter(s => !d.have.has(s) && !d.skip.has(s));
     if (missing.length) out.push(err('B35', `${d.kind} "${d.name}"`, `is not drawn ${missing.length === 1 ? 'in the state' : 'in the states'} ${missing.join(', ')}: draw each, or say why it can't happen with data-skip="${missing[0]}: why"`)); }
-  const marks = facts.views.map(v => v.texts.filter(t => t.display && t.text.trim().toLowerCase() === 'secondhand'));
+  const marks = facts.views.map(v => v.texts.filter(t => t.display && t.text.trim().toLowerCase() === 'secondhand' && !waives(t, 'B32')));
   // Every output carries the wordmark. An app screen may be a sheet, which has no navigation bar, so there it is a warning.
   if (!marks.some(m => m.length)) out.push((medium === 'app' ? warn : err)('B3', medium, medium === 'app' ? 'has no wordmark: a main screen carries "secondhand" in its navigation bar, and a sheet does not (C1)' : 'has no wordmark: every output carries "secondhand" in the display face (C1, Art. 14.2)'));
   // B31 things of one kind are one size, on every view of the output at one width

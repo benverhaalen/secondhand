@@ -222,6 +222,22 @@ CASES.push(['B32', 'a tilted wordmark with a shadow', `<section class="s" data-v
   ['B32', 'the wordmark on a gray box', `<section class="s" data-view><div style="background:var(--gray);padding:64px"><p class="m">secondhand</p></div></section>`, /B32 .*sits on --gray/],
   ['B33', 'logos of two heights in a row', deck(`<div>${LOGO(48)}${LOGO(64)}</div>`), /B33 .*48, 64 px tall/],
   ['B33', 'a row of logos taller than the wordmark', deck(`<div>${LOGO(96)}${LOGO(96)}</div>`), /B33 .*96 px tall: none is taller/]);
+// A box that hides its overflow clips what runs past it: the part cut away is not drawn, so it does not crowd the wordmark.
+// A Locked ledger row can waive named checks for what it marks: L54 lets the site hero's line carry "secondhand" in the
+// wordmark face (B3, B32) and L56 lets text sit on the wall of photos (B6). A row that waives nothing, or an agent's row, waives nothing.
+browserTest('render: a Locked ledger row waives the checks it names, only where it is marked', { skip: !pw }, async () => {
+  const two = led => deck(`<p class="b"${led}>Your second hand, for everything <span class="m">secondhand</span></p>`);
+  assert.deepEqual((await ids(two(' data-ledger="L54"'))).filter(f => /^B32 .*times|^B3 /.test(f)), []);
+  assert.ok((await ids(two(' data-ledger="L1"'))).some(f => /^B32 .*2 times/.test(f)));
+  const over = led => deck(`<div style="position:relative"${led}><img alt="A jacket" src="${PX}" style="width:800px;height:400px;display:block"><p class="b" style="position:absolute;top:32px;left:32px">Carhartt jacket</p></div>`);
+  assert.deepEqual((await ids(over(' data-ledger="L56"'))).filter(f => /sits on a photo/.test(f)), []);
+  assert.ok((await ids(over(' data-ledger="A1"'))).some(f => /sits on a photo/.test(f)));
+});
+
+browserTest('render: a photo that a box clips away above it does not crowd the wordmark', { skip: !pw }, async () => {
+  const html = `<section class="s" data-view><p class="m">secondhand</p><div style="margin-top:64px;height:200px;overflow:hidden;position:relative"><img data-photo alt="A jacket" src="${PX}" style="position:absolute;top:-120px;left:0;width:48px;height:320px"></div></section>`;
+  assert.deepEqual((await ids(html)).filter(f => f.startsWith('B32')), []);
+});
 browserTest('render: a logo standing alone where a photo would be passes at any size', { skip: !pw }, async () => assert.deepEqual(await ids(deck(`<div>${LOGO(160)}</div>`)), []));
 // The wash and the field are tokens, used as they stand. The field takes the ink of its mode, and the wash is not a field.
 const WASH = (style = 'top:0', inner = '') => `<header style="position:absolute;left:0;right:0;${style};height:var(--wash-h);background:var(--wash)">${inner}</header>`;
