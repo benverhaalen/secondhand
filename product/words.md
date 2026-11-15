@@ -468,3 +468,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate the best way to take every photo, tags delayed, retouch chosen by the person
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Determine the best way to capture every photo, for ease of process and amount of information ascertained. As for the tags, delay whether or not we add them, and make retouch a user select feature during the process of creating the listings. They either can generate, where they are informed its going to be tagged ai, or they can choose to provide further images
+
+## 2026-11-14 nate front, back and tag for clothes, lidar for objects, the least extra input
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> front, back, maybe also the tag, no side photos but just clothing tag for clothing? for furniture and objects we can do lidar, like shoes, whatever would be instant and intuitive for capturing and creating the listings, with the least amount of additional input. There still is value in the fact the user just takes some pictures, and we not only add them to each listing on each platform, but control how its described and the listing is created to optimize seo.

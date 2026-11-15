@@ -38,12 +38,12 @@ Model steps (text or image to comparable facts) are named in each Method; everyt
 1. Model step: extract `{brand, model, variant terms, size, colour, codes[]}` from title, fields and text; extract codes from photos (OCR of labels).
 2. Arithmetic: if any code normalises (check digit valid) to a catalogue code, label `exact` and stop.
 3. Block candidates by brand and category; compute `s = 0.30 * field_agree + 0.50 * text_sim + 0.20 * image_sim`, where `text_sim` is token-set Jaccard on normalised model and variant terms, `image_sim` is cosine of the stored embedding, both on fixed model versions.
-4. Label: `s >= 0.85` and variant terms equal: `likely_same_model`; `s >= 0.70`: `same_family`; variant terms conflict: `different_variant`; else no match. Thresholds *t*.
-5. Market numbers use `exact` and `likely_same_model` only. `same_family` feeds family-level numbers.
+4. Label with the canon set `exact`, `likely_same_model`, `same_family_other_variant`, `comparable`, `unresolved`. The thresholds, the rungs and the cross-check that confirms `exact` are owned by [seeing-the-item card 9](seeing-the-item.md#9-which-product-it-is-and-when-identity-is-confirmed); this card does not restate them.
+5. How a product-level match differs from card 9: card 9 identifies one capture the person holds; here strangers' listings are pooled, so blocking and the weighted score above rank the candidates before card 9's thresholds apply, and one wrong merge moves a whole page, not one item. Market numbers use `exact` and `likely_same_model` only. `same_family_other_variant` feeds family-level numbers; `comparable` feeds only [M17](#m17-a-cheaper-equivalent-of-similar-quality-and-material) and [M24](#m24-same-purpose-match); `unresolved` feeds nothing.
 
 **Why this method**: Record linkage practice blocks first, then scores pairs, and keeps a deterministic identifier above any similarity (*asserted*, the Fellegi and Sunter framing, not fetched this session). A learned end-to-end matcher is the alternative; it would beat the weighted score once there are labels, but it cannot show its reasons, and the label flow here creates the training set for it (*inferred*). Unsure pairs stay apart, because one wrong merge poisons every number on two product pages (*inferred*, [watch](../features/watch.md)).
 
-**When it is not shown**: a product page needs one `exact` or 3 `likely_same_model` observations; below that the search shows candidate chips. A `different_variant` result never enters this product's numbers.
+**When it is not shown**: a product page needs one `exact` or 3 `likely_same_model` observations; below that the search shows candidate chips. A `same_family_other_variant` result never enters this product's numbers.
 
 **How it is explained**: "Matched by the style code on the label" or "Same model by name and photo; tap if it is not". Tap opens the codes, the matching words and the photos side by side.
 
@@ -70,6 +70,7 @@ Model steps (text or image to comparable facts) are named in each Method; everyt
 2. `release_date` = the earliest in-stock observation at rank 1 or 2; if none, rank 3; if none, the announced date at rank 4, labelled "announced".
 3. `current_retail` = the latest rank 1 or 2 price within 7 days, with `on_sale = current < launch_retail`.
 4. US dollars for US products; other regions kept separately, never converted into one launch price.
+5. This card owns the name and the value `launch_retail`. [money.md D7](money.md#d7-original-retail-price) links here and uses this name, not `original_retail`.
 
 **Why this method**: the premium, retention and depreciation cards all divide by launch retail, so it must be the list price and not a passing discount (*inferred*). Taking the lowest price seen is the competent alternative (what a buyer could have paid), but it moves with every sale event and would make retention look better than it was (*inferred*).
 
@@ -89,23 +90,23 @@ Model steps (text or image to comparable facts) are named in each Method; everyt
 
 | Source | Contributes | Weight | Why |
 |---|---|---|---|
-| sold-final (eBay sold, our `order`) | price paid | 1.0 | the price paid is the market value ([what market value is](../../research/price/ben/what-market-value-is.md)) |
-| sold-tag (Poshmark, Mercari, Depop) | last ask of a sold listing | 0.7 *t* | an accepted offer is often below the shown price, so it overstates (*inferred*) |
-| ended (Facebook and removals) | nothing | 0 | disappearance is not a sale ([insights](../features/insights.md), *asserted*) |
+| Comp weight per sold comp | `w_type x w_match x w_age x w_extract` | as owned by [money.md D1](money.md#d1-comparable-set-and-weights), not restated here | one rule per quantity across the app, so a product page and an item's fair value never disagree on the same sales |
+| ended (Facebook and removals) | nothing | 0 (D1) | disappearance is not a sale ([insights](../features/insights.md), *asserted*) |
 | asking (live) | separate ask series | never mixed into sold | asks are not sales; mixing gives `mixed_types` |
-| Recency | weight `0.5 ^ (age_days / 30)` within the 90-day window | half-life 30 days *t* | markets move; 30 days keeps about 8 effective weeks |
 | Duplicate cross-post | one item counted once | the cluster's sold-final copy wins | one physical item sold once |
+
+What differs from D1 for a product-level index, and why: there are no per-item adjustments (D2), because the page describes the product, not one item; there is no back off to the family, because a family number is shown as its own labelled number, not mixed in; and the range is weighted quantiles of the comps, not D5's model, because a person must be able to recount it from the listed sales (*inferred*).
 
 **Method**
 1. Model step: read condition band and the flags lot, bundle, for parts, box only, replica, from text and photos. Flagged comps leave the set.
 2. Arithmetic: work on `x = ln(price)`. Drop comps with `|x - median(x)| > 3 * 1.4826 * MAD(x)` (Hampel rule) within (product, condition band, 90 days).
-3. Weekly point = weighted quantiles q25, q50, q75 of the remaining comps sold in the 90 days up to that week, weight = source weight x recency weight, quantile taken as the smallest price whose cumulative weight reaches the share (inverse of the weighted step function, so it is exact and repeatable).
+3. Weekly point = weighted quantiles q25, q50, q75 of the remaining comps sold in the 90 days up to that week, weight = D1's `w_i`, quantile taken as the smallest price whose cumulative weight reaches the share (inverse of the weighted step function, so it is exact and repeatable).
 4. Store as `product_snapshot (product, site, band, day, n, n_eff, p25, p50, p75, table_version)`, where `n_eff = (sum w)^2 / sum w^2`.
 5. Across sites (the product page's main range) = the same weighted quantiles over the pooled comps of all sites. Per-site rows appear beside it ([M23](#m23-where-it-is-cheaper-to-buy-and-better-to-sell)).
 
 **Why this method**: weighted quantiles of recent sold comps are what working pricers use (sold comps, recent first) and need no model fit, so anyone can recompute them (*inferred*; Card Ladder and the tracker in [market-intelligence](../../research/data/nate/market-intelligence.md#6-uncertainty-thin-data-and-what-makes-people-return) never mix sold and asking, *observed*). The alternative is the calibrated quantile model [price](../features/price.md) runs for one item; that is right for an item with drivers, but a product page needs a number a person can check by counting sales (*inferred*).
 
-**When it is not shown**: `too_few` under 6 sold in 12 months or 2 in 90 days (the shared rule); `n_eff < 5` *t* shows a low-basis mark; `stale` when the newest comp is over 14 days old (dated) or 45 days (dropped); a week with no sale carries no point. The person sees "Not enough sales yet" and the ask series, labelled "asking, not sold".
+**When it is not shown**: `too_few` by [D1's minimum basis](money.md#d1-comparable-set-and-weights) (today `n_eff < 6` or fewer than 2 sold in 90 days; D1 wins if it changes); `stale` when the newest comp is over 14 days old (dated) or 45 days (dropped); a week with no sale carries no point. The person sees "Not enough sales yet" and the ask series, labelled "asking, not sold".
 
 **How it is explained**: "Sold for $36 to $52 lately, from 41 sales in 90 days". Tap opens the sales list with date, site, price, condition and a link to each.
 
@@ -470,7 +471,7 @@ At most one mention per product per week; nothing moved, no digest.
 4. Complementary suppression: when a total and all but one of its parts are shown, drop the next-smallest part too, so no cell can be had by subtraction.
 5. Counts rounded to the nearest 5; time no finer than a week for cells under 50.
 
-**Why this method**: counting contributors and applying a dominance rule is the standard in statistical disclosure control for business tables (*asserted*, the threshold and dominance rules used by national statistics offices, not fetched). The market spec's rule removes cells under 5 rows ([market](../features/market.md)), which still exposes a seller with 5 listings. Differential privacy is the alternative and is stronger, but its noise ruins small counts and breaks recomputation unless seeded (*inferred*).
+**Why this method**: counting contributors and applying a dominance rule is the standard in statistical disclosure control for business tables (*asserted*, the threshold and dominance rules used by national statistics offices, not fetched). A rule that removes cells under 5 rows, which [market](../features/market.md) used before it adopted this card, still exposes a seller with 5 listings. Differential privacy is the alternative and is stronger, but its noise ruins small counts and breaks recomputation unless seeded (*inferred*).
 
 **When it is not shown**: any cell failing 2 to 4 is removed from the share and shown as "too few to show".
 
@@ -534,13 +535,179 @@ At most one mention per product per week; nothing moved, no digest.
 
 **Check later**: our users' sales by site against the prediction. Wrong if the predicted best net site is wrong more often than the second.
 
+## The better official option (M24 to M29)
+
+*agent proposal*. From Nate's "a suite like shopify, and the better official option" ([words](../../product/words.md)). Beside any used listing, in the app or pasted from any site, the app shows the best new, official refurbished or brand resale option for the same purpose and says which is the better buy for this person. The person's purpose and constraints arrive as purpose slots defined in `spec/determinations/asking-and-intent.md` and gathered by `spec/features/assist.md`; these cards read the slots by name (`use`, `keep_for`, `needed_by`, `budget`, `size`, `must_have[]`) and do not decide what to ask. The evidence is [buyer-intent and official alternatives](../../research/watch/nate/buyer-intent-and-official-alternatives.md), [Shopify catalog and agentic commerce](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md) and [buy-side products and search](../../research/watch/nate/buy-side-products-and-search-experience.md).
+
+A referral never enters any of M24 to M29: the inputs below list every source, and `referral_tag`, commission and promoted placement are not among them.
+
+## M24. Same-purpose match
+
+**Determines**: for a used listing or a `product`, the official offers that serve the same purpose, each with a `relation`: `same_product` (the same product, new or official refurbished), `successor` (the next generation of it) or `functional_equivalent` (another product that does the same job for this person).
+
+**Sources and weights**
+
+| Source | Contributes | Rank or weight | Why |
+|---|---|---|---|
+| Identity of the used side, [M1](#m1-same-product) | the product and its label | `same_product` needs `exact` or `likely_same_model` | a relation built on an unsure identity misleads twice |
+| Shopify Global Catalog over MCP: `lookup_catalog` by barcode or id, `search_catalog` with `catalog.like` by image or id | official offers grouped by Universal Product ID, `list_price`, `condition` new or secondhand | rank 1 for offers where it has them | one call returns many merchants' offers of one product (*observed*, [Shopify note 1.2 to 1.3](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#12-data-model-observed-global-catalog-docs-and-the-ucp-variant-schema)) |
+| Klarna Agentic Product API (approved partners) | offers with `shippingCost`, `stockStatus`, `deliveryTime` | rank 1 where approved | delivered price and stock in the offer itself (*observed*, [same note 5](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#5-klarna-agentic-product-protocol-and-search-and-compare)) |
+| Maker stores and authorised retailers as in [M2](#m2-retail-price-and-release-date) (Amazon Creators API, Best Buy, the maker's page) | new offers | rank 2 | same ranks as retail price |
+| Official refurbished programmes (Apple Certified Refurbished, eBay Refurbished, Back Market, Amazon Renewed, Google Refurbished) | refurbished offers with grade and warranty | rank 2 | the maker or a graded refurbisher stands behind them ([buyer-intent note 3](../../research/watch/nate/buyer-intent-and-official-alternatives.md#3-how-do-official-refurbished-and-brand-resale-programs-define-official-alternative)) |
+| Brand resale (Patagonia Worn Wear, Lululemon Like New, Levi's SecondHand, Trove and Archive storefronts) | brand-owned used offers | rank 2 | used stock the brand stands behind, terms differ by brand (*asserted*, same section) |
+| Catalogue family link (predecessor and successor), the same link [M16](#m16-how-new-retail-releases-relate-to-used-supply-and-price) uses | `successor` | confirmed when 2 sources agree | no open dataset maps a model to its successor (*observed* absence, [buyer-intent note 5](../../research/watch/nate/buyer-intent-and-official-alternatives.md#5-how-are-successors-and-equivalents-found)) |
+| [M17](#m17-a-cheaper-equivalent-of-similar-quality-and-material) facet similarity, run against new-retail products | `functional_equivalent` | similarity at least 0.75 *t* | same facets and weights as M17; no price filter here |
+| Purpose slots | hard filters on every relation | each set slot must hold | the catalogs carry no purpose field (*observed* absence, [Shopify note 1.2](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#12-data-model-observed-global-catalog-docs-and-the-ucp-variant-schema)) |
+
+**Method**
+1. Arithmetic: `same_product` = catalogue lookup by GTIN, Universal Product ID, maker SKU or style code of the M1 product; new and refurbished offers both qualify.
+2. Arithmetic: `successor` = the family link's next generation, released or announced, kept when 2 sources agree.
+3. Model step: read the candidate's typed attributes (fit, capacity, size, compatibility, material) for the purpose slots. Arithmetic: M17's facet score; a set slot whose attribute is unknown on the candidate fails it.
+4. Arithmetic: per relation, rank by delivered price ([M26](#m26-delivered-price)); show at most one offer per relation and condition, best first; the others sit behind "other stores".
+
+**Why this method**: an identifier first, a two-source family link second and a facet score last keeps each relation as checkable as its evidence allows (*inferred*). The alternative is image nearest neighbour across the catalogue (`catalog.like` alone); it finds things that look alike, which is the look-alike weakness the buy-side note records for Dupe.com ([buy-side note 8](../../research/watch/nate/buy-side-products-and-search-experience.md#8-design-what-an-intuitive-unified-search-and-shopping-experience-takes-from-these-inferred)), so it is used for recall in step 3, never to decide.
+
+**When it is not shown**: `same_product` hidden unless M1 is `exact` or `likely_same_model`; `successor` hidden on one source; `functional_equivalent` hidden when the purpose slots its category needs are unset (`spec/determinations/asking-and-intent.md` decides whether to ask); an offer older than its source's cache limit is refetched or dropped (Shopify: price 10 minutes, no standing copy, *observed* terms). The person sees the used listing alone with "No official option found".
+
+**How it is explained**: "Same product, new from the maker" or "Its newer model" or "Does the same job: same capacity, fits the same mounts". Tap opens the identity evidence, the family link's two sources, or the facet table.
+
+**Speed**: kept ready: the family links and facets per product. On demand: the offer lookups, in parallel, streamed as they arrive, first official offer under 2 s *t*. Shopify offers are never stored past their cache limit (`rights.may_store` false, `ttl` 10 minutes).
+
+**Check later**: 200 used listings with a person's judgement of the right official option. Wrong if the shown `same_product` is wrong on more than 2%, or people judge the `functional_equivalent` not fit for the stated purpose on more than 20%.
+
+## M25. One condition scale
+
+**Determines**: one condition scale across the five marketplaces, official refurbished programmes, brand resale and new retail, so one filter spans every offer: `new`, `refurbished`, `like_new`, `good`, `fair`, `parts`, in that order, plus who stands behind it (`seller_kind`: `maker`, `authorised_retailer`, `official_refurbisher`, `graded_refurbisher`, `brand_resale`, `marketplace_seller`).
+
+**Sources and weights**
+
+| Source | Maps to | Why |
+|---|---|---|
+| Each marketplace's own grade | the inverse of [seeing-the-item card 14](seeing-the-item.md#14-condition-on-each-markets-own-scale), which owns the per-market tables | one table per market, read both ways |
+| Our reading of the photos and text (the condition band, [identify](../features/identify.md)) | `like_new` to `parts` | the seller's grade is a claim |
+| Google, OpenAI feed and schema.org `condition` new, refurbished, used | `new`, `refurbished`, used read from text | the three values agree by design (*observed*, [Shopify note 7](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#7-open-standards)) |
+| Shopify `condition` new or secondhand | `new`; secondhand read from text, never `refurbished` alone | refurbished is not mapped by Shopify (*not found*, [note 1.4](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#14-new-versus-used-access-cost-limits-observed-unless-marked)) |
+| Apple Certified Refurbished, eBay Certified Refurbished, Back Market Certified Renewed | `refurbished`, `official_refurbisher` | maker or authorised refurbisher with maker parts ([buyer-intent note 3](../../research/watch/nate/buyer-intent-and-official-alternatives.md#3-how-do-official-refurbished-and-brand-resale-programs-define-official-alternative)) |
+| eBay refurbished Excellent, Very Good, Good; Amazon Renewed Premium, Excellent, Good, Acceptable; Back Market Excellent, Good, Fair | `refurbished`, `graded_refurbisher`, with grade `like_new`, `good`, `fair` *t* (Premium and Excellent to `like_new`) | graded by third parties; the grade words differ by programme (*inferred* map) |
+| Brand resale grades (Lululemon excellent, great, good) | `like_new`, `good`, `good` *t*, `brand_resale` | brand-graded used, not refurbished |
+
+**Method** (arithmetic after the condition band's model step): map the source grade by table; where the seller's grade and our reading differ, the offer takes the lower and says both. The condition band `new_tags` maps to `new`, and `new` from a `marketplace_seller` stays `new`; the warranty row ([M29](#m29-new-against-used-verdict)) carries the difference.
+
+**Why this method**: the order puts what a buyer can count on first, and `seller_kind` keeps "who stands behind it" apart from wear, which the three kinds of official programme need (*inferred*, [buyer-intent note 3](../../research/watch/nate/buyer-intent-and-official-alternatives.md#3-how-do-official-refurbished-and-brand-resale-programs-define-official-alternative)). The alternative is the three-value new, refurbished, used of the feeds; it cannot tell a scuffed item from a mint one.
+
+**When it is not shown**: an unknown source grade with no reading leaves the offer `unknown`, shown in every filter with "condition not stated"; a grade map row marked *t* that people dispute is shown with the source's own words beside it.
+
+**How it is explained**: "Refurbished by Apple" or "Good: light wear, seller says Excellent". Tap opens the source's grade words and our reading.
+
+**Speed**: a lookup table, kept ready.
+
+**Check later**: 300 offers across programmes and sites graded by people. Wrong if more than 10% land two or more steps from the people's grade.
+
+## M26. Delivered price
+
+**Determines**: what an offer costs to the person's door, with when it arrives, whether it is in stock, and where it ships from and to.
+
+**Sources and weights**
+
+| Part | Source, by rank | Why |
+|---|---|---|
+| Item price | the offer itself (Shopify `price` in minor units, Klarna `price`, the listing) | the price shown by the seller |
+| Shipping | Klarna `shippingCost`; the listing's shipping field; the site's shipping rule from [price](../features/price.md); local pickup 0 with the distance | a total without shipping is not real ([Shopify note 9](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#9-feature-table), "so cheaper is real") |
+| Tax estimate | the destination's combined rate from a sales tax rate service (Avalara AvaTax or TaxJar *t*; the state base rate labelled as an estimate when neither answers), applied where the seller or the marketplace collects | a flat rate is wrong across states; no flat 7% |
+| Delivery window | Klarna `deliveryTime {minDays, maxDays}`; the site's estimated delivery; handling days plus carrier transit by zone | the offer's own estimate first |
+| Stock | `in_stock`, `out_of_stock`, `preorder`, `backorder`, `collect_in_store`, `unknown` (Klarna's values); a marketplace listing's state from [watch](../features/watch.md) | Shopify external `available` does not reflect stock, so it maps to `unknown` (*observed*, [note 1.4](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#14-new-versus-used-access-cost-limits-observed-unless-marked)) |
+| Ships from and to | seller location, Shopify `ships_from` and `ships_to`, Klarna `international` | filters, and the delivery estimate |
+
+**Method** (arithmetic after a model step that reads shipping and handling from listing text when no field exists): `delivered_cents = price + shipping + tax`, with `tax = rate x (price + shipping where shipping is taxed)`. A part known only as a range makes the total a range. Offers ranked by delivered price; an offer with unknown shipping is ranked at its price plus the category's median shipping and marked.
+
+**Why this method**: the buyer compares totals at the door; ranking by item price favours offers that hide cost in shipping (*inferred*). The alternative, item price only, is what most aggregators show.
+
+**When it is not shown**: no item price (Shopify external offers may lack one, *observed*) shows "price at the store"; unknown shipping shows "plus shipping" instead of a total; a price past its source's cache limit is refetched before any buy tap.
+
+**How it is explained**: "$412 to your door by Thursday: $389, $0 shipping, $23 tax". Tap opens each part and its source.
+
+**Speed**: on demand per offer, under 300 ms after the offer arrives; tax rates cached per destination for a day *t*.
+
+**Check later**: 100 completed purchases with receipts. Wrong if the delivered total is off by more than 5% on more than 10%, or delivery is later than the window on more than 20%.
+
+## M27. Value it will keep
+
+**Determines**: the share of today's used price a product is expected to keep after the person's horizon (1, 2 or 3 years, or `keep_for`), with a range, and whether a successor is announced.
+
+**Sources and weights**: the category curve of [M10](#m10-depreciation-by-category-and-brand); the product's edge over its category from [M11](#m11-price-retention-of-one-product); the release effect of [M16](#m16-how-new-retail-releases-relate-to-used-supply-and-price) when a `successor` (M24) is announced or released; Swappa's completed-sale retention by model age as a rank-2 prior for phones, tablets, watches and laptops until M10 has 2 years of our own data (*asserted*, highlights, a marketplace's own figures, [buyer-intent note 4](../../research/watch/nate/buyer-intent-and-official-alternatives.md#4-decision-factors-with-numbers)).
+
+**Method** (arithmetic)
+1. `R(h) = curve(a + h) / curve(a) x k`, where `a` is the product's age, `curve` M10's, and `k = 1 + (versus_category - 1) x n / (n + 30)` *t* (M11's edge, shrunk toward the category by its `n` sales).
+2. If a successor is announced and not yet released, apply M16's category median effect once at its expected date; if released within 12 months, the curve already carries it.
+3. Range: 500 bootstrap draws of the M10 fit and `n`, fixed seed; report p25 and p75.
+
+**Why this method**: a forward value is the past curve read from the product's age, so it needs no new model and inherits M10's checks (*inferred*). The alternative is a forecast model per category; it needs years of history we do not have yet. Swappa's figures blend grades and carriers by its own note (*asserted*), so they are a prior, not the answer.
+
+**When it is not shown**: M10 hidden for the category; the horizon reaches past the oldest age bin with data (never extrapolated); `too_wide` when p75 - p25 exceeds 0.5 *t*. The successor flag shows on its own even when the value is hidden.
+
+**How it is explained**: "Likely worth 55% to 65% of today's price in 2 years; a newer model was announced in October". Tap opens the curve, the product's edge and the announcement.
+
+**Speed**: on demand from ready curves.
+
+**Check later**: forecasts made 12 months earlier against today's M3. Wrong if fewer than 40% fall inside p25 to p75.
+
+## M28. Net cost of ownership
+
+**Determines**: what an option costs the person over their horizon: delivered price minus what it should sell for later, with its range.
+
+**Sources and weights**: delivered price ([M26](#m26-delivered-price)); today's used p50 of the product in the condition it will likely be in, from [M3](#m3-used-price-per-site-over-time) (band `good` *t*); `R(h)` from [M27](#m27-value-it-will-keep); the cost of selling it later at the best net site from [M23](#m23-where-it-is-cheaper-to-buy-and-better-to-sell) (fees and shipping from [price](../features/price.md)); a repair cost only where a typed source states it (a maker's battery service price) and the item's state calls for it within the horizon. Horizon: the `keep_for` slot; else 2 years for electronics and 1 year for other categories *t*.
+
+**Method** (arithmetic): `resale(h) = p50_good x R(h) - selling_cost(p50_good x R(h))`; `NCO(h) = delivered - resale(h) + repair(h)`. The range takes M26's range, M3's p25 and p75 and M27's range together, low with low and high with high. Warranty and returns are not turned into money here; they are rows in [M29](#m29-new-against-used-verdict). No vendor publishes this formula (*not found*, [buyer-intent note 4](../../research/watch/nate/buyer-intent-and-official-alternatives.md#4-decision-factors-with-numbers)).
+
+**Why this method**: it is the simple ownership sum the buyer-intent note sets out (purchase plus shipping plus repair minus exit value, *inferred*), every term already a shown number, so the person can check it. The alternative is price alone, which hides that a new item that holds value can cost less to own than a used one that does not.
+
+**When it is not shown**: resale hidden (M3 or M27 hidden) shows the delivered price only, with "can't tell what it would sell for later"; `too_wide` when the range is wider than the delivered price.
+
+**How it is explained**: "Costs about $140 to $190 to own for 2 years: $412 now, sells for about $250 later". Tap opens each term.
+
+**Speed**: on demand, under 100 ms from ready parts.
+
+**Check later**: our users who resell an item bought through the app. Wrong if the realised cost falls outside the range on more than half.
+
+## M29. New against used verdict
+
+**Determines**: for a used listing and its best official option (M24), which is the better buy for this person, or that it is a close call, and the row-by-row comparison behind it: delivered price, condition, warranty and return rights, authenticity risk, recall status, delivery time, value kept and net cost.
+
+**Sources and weights**
+
+| Input | Source | Use |
+|---|---|---|
+| Net cost of each option | [M28](#m28-net-cost-of-ownership) | the money comparison |
+| Most a buyer should pay for the used item, and its deal verdict | [money.md D17](money.md#d17-most-a-buyer-should-pay), [D18](money.md#d18-good-deal-verdict-on-a-listing) | a used item over D17 cannot win |
+| Warranty and return rights | the programme's terms (Apple 1 year; eBay Certified 2 years; eBay other refurbished grades 1 year; Back Market 1 year; Lululemon Like New none; peer listings none stated, [buyer-intent note 4](../../research/watch/nate/buyer-intent-and-official-alternatives.md#4-decision-factors-with-numbers)); the marketplace's buyer protection from [buy](../features/buy.md) | rows, and the risk cost below |
+| Authenticity risk | the authenticity and seller signals of [score](../features/score.md) | a gate when high, else a row |
+| Recall status | [seeing-the-item card 20](seeing-the-item.md#20-recall-or-safety-flag), on both options | a gate |
+| Delivery window, condition | [M26](#m26-delivered-price), [M25](#m25-one-condition-scale) | `needed_by` gate, rows |
+| Risk cost of the used option | `delivered x p_problem x (1 - cover)`, `p_problem` 5% electronics, 3% other *t*, `cover` 1 with returns or protection, 0 without | money a buyer loses on average to a bad used item |
+
+**Method** (arithmetic)
+1. Gates: an option with an open recall and no remedy, one that misses `needed_by` at its latest delivery day or a `must_have[]` slot, or a used item with high authenticity risk or a price over D17, is out; if one option is out, the other is the verdict.
+2. `gap = (NCO_used + risk_used) - NCO_official`, as a range.
+3. `used_better` when the whole gap range is below `-max(5% of the official delivered price, $10)` *t*; `official_better` when it is above `+max(...)`; else `close_call`, naming the row that differs most.
+4. A referral, commission or promoted placement is not an input. The verdict is computed by code that has no access to referral fields, and a check runs it with and without them and requires the same result.
+
+**Why this method**: gates first, because no saving makes a recalled or late item the better buy; then money over the person's horizon, because that is what they pay; a band, so a near tie is called a near tie (*inferred*). The alternative is a weighted score over all rows; it hides the trade-off in a weight the person cannot see.
+
+**When it is not shown**: no official option (M24 hidden); either NCO hidden (the rows still show, without a verdict); `functional_equivalent` with the purpose slots unset; the person has not said they are buying for themselves when the verdict would turn on `keep_for` (the default horizon is then named in the sentence).
+
+**How it is explained**: "The new one is the better buy for you: about $40 more now, but a year of warranty and it keeps more of its value". Tap opens the rows. A link that earns a referral carries, next to it and visible without a tap, "We may earn a referral fee. It never changes the order or the verdict." The FTC Endorsement Guides require a material connection to be disclosed clearly and conspicuously, which online means unavoidable, not behind a "more" link, and a ranking set by payments is deceptive even with a disclosure (16 CFR 255.0(f), 255.1 Example 3, 255.5, *observed*, [buy-side note 6](../../research/watch/nate/buy-side-products-and-search-experience.md#6-referral-and-affiliate-programmes)).
+
+**Speed**: on demand from ready parts and the streamed offers, under 200 ms after the last part.
+
+**Check later**: people who took the verdict and people who did not, 6 months on, asked whether they would choose the same. Wrong if regret is no lower among those who followed it.
+
 ## All determinations
 
 | # | Name | Owning feature | Main sources | Method in five words | Hide rule |
 |---|---|---|---|---|---|
 | M1 | Same product | identify, market | codes, catalogue, text, image | identifier first, then weighted similarity | 1 exact or 3 likely |
 | M2 | Retail price and release date | market | maker store, retailers, Keepa, KicksDB | ranked sources, highest regular price | rank conflict over 5%; current over 30 days |
-| M3 | Used price per site | market | sold-final, sold-tag, recency | weighted quantiles of sold comps | under 6 in 12 months or 2 in 90 days; 45 days old |
+| M3 | Used price per site | market | comps weighted per money.md D1 | weighted quantiles of sold comps | D1 minimum basis; 45 days old |
 | M4 | For sale now | market | eBay total, search reads, Keepa | deduped clusters, capped lower bound | site unread; 7 days old |
 | M5 | Sold in a period | market, insights | eBay sold, sold tags, orders | distinct sold clusters, lower bound | under 3 |
 | M6 | Sell-through | market, score | listing cohort, outcomes | 30-day cohort share sold | under 10 in cohort |
@@ -561,6 +728,12 @@ At most one mention per product per week; nothing moved, no digest.
 | M21 | Citation | data | table versions, basis ids | time-travel recompute with hash | no citation, never shown |
 | M22 | Price change | market | M3 | two medians with a band | either end hidden |
 | M23 | Cheaper to buy, better to sell | market, price | per-site M3, fees | per-site medians net of fees | under 2 sites; ranges overlap |
+| M24 | Same-purpose match | buy, market | M1, Shopify catalog, Klarna, retailers, programmes, family link, M17 | identifier, family link, facet score | identity unsure; one source; slots unset |
+| M25 | One condition scale | buy, market | site grades, programme grades, our reading | table map, lower wins | no grade and no reading |
+| M26 | Delivered price | buy, market | offer, shipping, tax rate, delivery | price plus shipping plus tax | no price; shipping unknown |
+| M27 | Value it will keep | buy, market | M10, M11, M16, Swappa prior | age curve read forward | M10 hidden; past data; too wide |
+| M28 | Net cost of ownership | buy, market | M26, M3, M27, M23 | delivered minus resale later | resale hidden; too wide |
+| M29 | New against used verdict | buy, market | M28, D17, D18, warranty, score, recall | gates, then gap band | no option; cost hidden |
 
 ## What cannot be made credibly
 
@@ -569,7 +742,7 @@ At most one mention per product per week; nothing moved, no digest.
 | True search volume or views on the five marketplaces | no site publishes them for others' listings ([analytics](../../research/data/nate/analytics-and-recommendations.md#3-what-cannot-be-known-and-the-proxy), *asserted*); M8 uses proxies and says so |
 | Full sold counts on Facebook | Facebook has no sold mark; an ended listing may have sold, been given away or been removed |
 | Full sold counts on Poshmark, Mercari, Depop | only the sales our reads saw; shown as "at least" |
-| The accepted price behind a sold-tag | the site shows the last ask; weighted down in M3, never corrected to a guessed value |
+| The accepted price behind a sold-tag | the site shows the last ask; weighted per money.md D1, never corrected to a guessed value |
 | StockX and GOAT prices and premiums on our pages | the terms bar commercial use and display (*observed*, [market-intelligence](../../research/data/nate/market-intelligence.md#5-rights-and-limits)); recorded as a fact, used nowhere person-facing |
 | Seasonality and depreciation from our own data before 2 years | too short; M10 and M12 lean on Keepa and Trends until then, labelled |
 | A hype forecast for an unreleased product | no sales exist; a thesis-level model at 65 to 70% accuracy on profit or not ([market-intelligence](../../research/data/nate/market-intelligence.md#25-academic-work), *observed*) is not a number to show |
@@ -580,10 +753,12 @@ At most one mention per product per week; nothing moved, no digest.
 
 | From | Need |
 |---|---|
-| identify | the match labels and thresholds of M1 as one shared definition, the condition bands, and the flags lot, bundle, parts, box only, replica on every comp |
-| price | per-site fee functions and shipping defaults for M23, and agreement that M3's product series and price's item range use the same sold weights (sold-tag 0.7, Facebook ended 0) |
-| market and score | a decision between the cohort sell-through of M6 and the stock formula sold / (sold + active) now in both specs; this file proposes the cohort |
-| market | the hide reasons `conflict` and `noise`, the contributor rule of M20 (10 distinct contributors and dominance) in place of "cells under 5", and the noise band added to the follow rule in M19 |
+| identify | the condition bands, and the flags lot, bundle, parts, box only, replica on every comp (labels and thresholds are now card 9's) |
+| price | per-site fee functions and shipping defaults for M23 and M26, read by M3 through money.md D1 |
+| score | the authenticity risk level M29 gates on, as one field |
+| assist | the purpose slots `use`, `keep_for`, `needed_by`, `budget`, `size`, `must_have[]` by those names, in `spec/determinations/asking-and-intent.md` |
+| data | `official_offer` rows {product_id, relation, seller_kind, condition, price_cents, shipping_cents, tax_cents, delivery_min_days, delivery_max_days, stock, ships_from, ships_to, warranty_months, returns_days, source, fetched_at, rights} with Shopify rows never stored past 10 minutes |
+| everyone | a tax rate service (Avalara AvaTax or TaxJar) for M26, and the Shopify Catalog and Klarna partner access M24 reads |
 | data | `comp.first_seen_at`, `comp.listed_at_source`, `comp.ended_at` and `ended_reason (sold, ended)`, cluster ids on comps, a `release_event` table (product, store, kind release or restock, date, source rank), and `basis_hash` on `citation` |
 | data | a product family link (predecessor and successor) in the catalogue, for M16 |
 | identify, studio | material composition and build specs as typed attributes with evidence, for M17 |

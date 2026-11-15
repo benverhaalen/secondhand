@@ -89,6 +89,7 @@ This follows [§10 want to match](../product.md#want-to-match-to-saved-listing).
 | `POST /v1/wants` | `{text?, product_id?, fit, max_total_cents?, sites?, alert}` returns `{want, questions:[{name, options, suggested}]}` |
 | `GET /v1/wants/:id/matches?state=` | matches with delivered total, `also_on:[{site, url, total}]`, `fit {method: measured or label, delta_cm?}`, score axes and fair range as guarded numbers |
 | `POST /v1/matches/:id/act` | `{action: dismiss, save, not_same, bought}`; save opens `save_match`, and bought creates the purchase order ([buy.md](buy.md)) |
+| `GET /v1/wants` | each want with `checked {site: at}` and `behind[]`; a site enters `behind[]` on the page monitor's `monitor.behind` event and leaves on `monitor.recovered` ([spec/product.md](../product.md)) |
 | `GET /v1/stream` | `match.alerted`, `want.checked {site, at, behind}` |
 
 Errors follow [§7](../product.md#errors): `{code, message, failed_step, retry}`. A site that is behind is a `502 site_failed` on that site's check and shows as "Facebook: behind". It is never shown as raw text.
@@ -137,10 +138,6 @@ Errors follow [§7](../product.md#errors): `{code, message, failed_step, retry}`
 - Rules that protect people: watch reads with no login wherever a site allows. Where a site needs the person's session, the risk to that real account is shown per site at connect ([connect.md](connect.md)). A want never stores a home address; the pickup radius is set from a point the person taps. A recalled product is never alerted.
 - Licences and terms are recorded and do not shape the build ([decision](../../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build)).
 
-## Demo path
-
-For Ben and Nate to mark.
-
 ## Open for Ben and Nate
 
 | Question | Recommendation | Depends on it |
@@ -151,7 +148,6 @@ For Ben and Nate to mark.
 ## Needs from the shared model
 
 - `want.schedule` holds quiet hours, and the want links a fit reference: an owned `item`'s measured attributes, or a stored garment measurement set.
-- `PATCH /v1/wants/:id` (fit, ceiling, state, quiet hours) and `GET /v1/wants` (with `checked {site: at}` and `behind[]`) are missing from [§7](../product.md#resources).
 - The `watch_run` stages above, with `claim` added for the runtime.
 - `match` needs `cluster_id` and `alerted_total` for dedupe and re-alerts.
 - The harness verb sets in product.md §6 and in the agent runtime frame differ (`save` is in both). Only one should exist.

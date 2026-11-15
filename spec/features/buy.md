@@ -13,7 +13,7 @@ The Buy tab mirrors Sell: a search box with a camera and a link field, then the 
 |---|---|---|
 | 1 | Types, photographs or pastes a link ([search box](../../product/words.md#2026-11-14-search-box), [appraise from Buy](../../product/words.md#2026-11-14-appraise-from-buy)). A visitor can do this without an account ([words](../../product/words.md#2026-11-14-nate-visitors-and-full-users)). | First, what it is: the product, identified with the same engine as selling. One chip corrects it; one radio choice settles a variant only when the search cannot. |
 | 2 | Waits | Sites fill in as they answer. New retail price where it is sold new, the guarded fair used range per site, and how many are out there "as of" a time. A link to the product page (`market.md`) for its history. |
-| 3 | Scrolls | Results ranked by delivered total against the fair range. Each shows its match label, its score axes from `score.md`, the return terms and the seller terms. Then "Similar for less" (Nate). |
+| 3 | Scrolls | Results from the five marketplaces and official stores in one list, filtered by condition, ranked by delivered total against the fair range ([one search](#one-search-across-every-store)). Each shows its match label, its score axes from `score.md`, the return terms and the seller terms. On a used result, the better official option sits beside it ([below](#the-better-official-option)). Then "Similar for less" (Nate). |
 | 4 | Taps Open on site | The listing opens on its own site with a referral tag. For a visitor this is the only action. |
 | 5 | Taps Save (full users) | It goes to Watching. Saving it on the site too is a `save_match` card. |
 | 6 | Taps Offer or Ask | The agent drafts the offer or the question. The person approves each one (`buy_offer`). Replies land in the chat icon ([messages.md](messages.md)). |
@@ -22,11 +22,45 @@ The Buy tab mirrors Sell: a search box with a camera and a link field, then the 
 | 9 | Opens For you (opt in) | A shelf built from their sizes, brands, wants and past purchases. It never shows their own items. Each card says what it inferred ("your size M, from 6 items"), and one tap resets it. |
 | 10 | Sells something they still use (a desk, a phone) | A `replace_after_sale` card with matches under the sale price. |
 
-Match labels, from identify, are shown on every card: exact match, likely same model, same family, different variant, comparable substitute, looks similar but unverified. Following the certainty principle, identity, variant and size are stated as confirmed once settled. Price is a range, and authenticity and hidden condition are stated as not known. "Similar for less" shows only comparable substitutes whose material and condition are known.
+Match labels are the canon set on `match` ([§4](../product.md#4-states)), with thresholds owned by [seeing-the-item card 9](../determinations/seeing-the-item.md#9-which-product-it-is-and-when-identity-is-confirmed), shown on every card: `exact`, `likely_same_model`, `same_family_other_variant`, `comparable`, `unresolved`. Following the certainty principle, identity, variant and size are stated as confirmed once settled. Price is a range, and authenticity and hidden condition are stated as not known. "Similar for less" shows only `comparable` items whose material and condition are known ([M17](../determinations/market-insight.md#m17-a-cheaper-equivalent-of-similar-quality-and-material)).
 
-Delivered total = price + shipping + fees and tax where the site charges them. Local pickup shows distance instead. Buyer protection is shown per site: a Facebook local pickup carries none, and Poshmark does not cover fit ([trust note §9](../../research/sold/nate/trust-returns-disputes.md#9-buyer-protection-per-marketplace-and-what-voids-it), *observed* and *asserted*).
+Delivered total = price + shipping + fees and tax where the site charges them, as [M26](../determinations/market-insight.md#m26-delivered-price) works it out. Local pickup shows distance instead. Buyer protection is shown per site: a Facebook local pickup carries none, and Poshmark does not cover fit ([trust note §9](../../research/sold/nate/trust-returns-disputes.md#9-buyer-protection-per-marketplace-and-what-voids-it), *observed* and *asserted*).
 
 Where the design makes a person stumble: we never see the payment, so Bought depends on the "Did you buy it?" prompt, and on eBay on reading the Won list through connect's `import`.
+
+## One search across every store
+
+*agent proposal*, from Nate's "a suite like shopify, and the better official option" ([words](../../product/words.md)). Buy owns the search and its results. The catalog behind them (one product id grouping every offer) is on the product page ([market.md](market.md#one-catalog)).
+
+| Part | What the person gets | How |
+|---|---|---|
+| One list | the five marketplaces, the maker's store, authorised retailers, official refurbished programmes and brand resale, one result per offer, grouped under the product | fan-out above plus the official sources of [M24](../determinations/market-insight.md#m24-same-purpose-match); the Shopify Catalog's Universal Product ID already groups merchants' offers (*observed*, [Shopify note 1.2](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#12-data-model-observed-global-catalog-docs-and-the-ucp-variant-schema)) |
+| Condition filter | one row of chips: New, Refurbished, Like new, Good, Fair, For parts, and "from the maker or brand" | the one scale of [M25](../determinations/market-insight.md#m25-one-condition-scale) |
+| Delivered price per offer | item, shipping, tax estimate, the arrival window | [M26](../determinations/market-insight.md#m26-delivered-price) |
+| Stock and where it ships | In stock, Preorder, Backorder, Pickup in store, Unknown; ships from, and a "ships to me" filter | M26 |
+| More like this | a tap on any result, or a photo, finds the same or similar products | `like` on `POST /v1/search`: the product id, or the photo's embedding through identify; Shopify's `catalog.like` takes an image or an id (*observed*, [note 1.3](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#13-query-to-results-observed)) |
+
+A filter that would leave nothing says how many it hid ("4 hidden by Ships to me"), with one tap to clear it ([buy-side note 8](../../research/watch/nate/buy-side-products-and-search-experience.md#8-design-what-an-intuitive-unified-search-and-shopping-experience-takes-from-these-inferred), *inferred*).
+
+## The better official option
+
+*agent proposal*. On any used result, and on a link pasted from any site, the app shows the best new, official refurbished or brand resale option for the same purpose and says which is the better buy for this person. The person's purpose comes from the slots in `spec/determinations/asking-and-intent.md`, asked by `spec/features/assist.md`; Buy reads them and does not decide what to ask.
+
+| Row | Used listing | Official option | Card |
+|---|---|---|---|
+| Match | | "Same product, new", "Its newer model" or "Does the same job" | [M24](../determinations/market-insight.md#m24-same-purpose-match) |
+| Delivered price | to the door | to the door | M26 |
+| Condition | on the one scale, with who stands behind it | the same | M25 |
+| Warranty and returns | the site's buyer protection, the seller's terms | the programme's terms | [M29](../determinations/market-insight.md#m29-new-against-used-verdict) |
+| Authenticity risk | from [score](score.md) | none for the maker; stated for others | M29 |
+| Recall | [card 20](../determinations/seeing-the-item.md#20-recall-or-safety-flag) | card 20 | |
+| Delivery | the window | the window | M26 |
+| Value it keeps | share after the person's horizon; "newer model announced" | the same | [M27](../determinations/market-insight.md#m27-value-it-will-keep) |
+| Cost to own | with its range | with its range | [M28](../determinations/market-insight.md#m28-net-cost-of-ownership) |
+
+Above the rows, one sentence: the verdict of M29 (used, official or a close call, and why). It is not shown when M29 hides it, and the rows still show.
+
+Referral rule: a referral, commission or placement payment never enters the order or the verdict; M29's check runs it with and without referral fields and requires the same result. A link that earns a referral carries "We may earn a referral fee. It never changes the order or the verdict." beside it, visible without a tap, because the FTC requires a material connection to be disclosed where it cannot be missed and treats a ranking set by payment as deceptive even when disclosed (*observed*, [buy-side note 6](../../research/watch/nate/buy-side-products-and-search-experience.md#6-referral-and-affiliate-programmes)). A link with no programme (Facebook, Vinted) carries no line.
 
 ## Design choices
 
@@ -34,10 +68,12 @@ Where the design makes a person stumble: we never see the payment, so Bought dep
 |---|---|---|---|---|
 | What search does first | keyword fan-out; identify first, then fan out ([identification-technologies](../../research/identify/nate/identification-technologies.md), [one-search-box](../../research/watch/ben/one-search-box.md), [Nate](../../product/words.md#2026-11-14-nate-vision)) | Identify the product first (text, photo or link), then fan out to retail and used sites in parallel, streaming batches | One identity gives one fair range, one product page and dedupe across sites. Parallel image search takes 1 to 3 s (*asserted*). | Identify top-1 under 0.8 on the 50-search test, which would make the fallback a keyword search with labels. |
 | Who can search | full users only; visitors too ([words](../../product/words.md#2026-11-14-nate-visitors-and-full-users), [referrals](../../product/words.md#2026-11-14-nate-referrals-and-market-data)) | Visitors search and link out with a referral, rate limited at the edge. Only full users save, watch, offer or sell. | Nate's call; a visitor's search is also market data. | |
-| Link-outs | plain URL; EPN `itemAffiliateWebUrl` on eBay; per-site programmes ([buyer-side §5](../../research/watch/nate/buyer-side-actions-and-affiliate.md#5-affiliate-and-partner-programmes)) | The EPN URL on eBay; a tagged plain URL elsewhere; every tap writes a `referral_click`. A referral fee never changes the ranking. | EPN pays on a Buy It Now within 24 h of the click, by category (*observed*). | The used-item EPN rate, if it is too low to matter. |
+| Link-outs | plain URL; EPN `itemAffiliateWebUrl` on eBay; per-site programmes ([buyer-side §5](../../research/watch/nate/buyer-side-actions-and-affiliate.md#5-affiliate-and-partner-programmes)) | The EPN URL on eBay; a tagged plain URL elsewhere; every tap writes a `referral_click`. A referral fee never changes the ranking or a verdict, and a tagged link says so beside it ([disclosure](#the-better-official-option)). | EPN pays on a Buy It Now within 24 h of the click, by category (*observed*). | The used-item EPN rate, if it is too low to matter. |
 | Saving on the site | Watching only; like, watch or cart through the harness ([buyer-side §1](../../research/watch/nate/buyer-side-actions-and-affiliate.md#1-ebay-what-exists-per-action)) | `save_match`, ask, promotable. eBay goes through `AddToWatchList` (official, user token, 300 at most). Other sites go through the cloud-browser harness. Never Poshmark likes. | The official route on eBay carries no account risk. | |
 | Offers and questions | auto inside a ceiling; ask each time ([buyer-side §2](../../research/watch/nate/buyer-side-actions-and-affiliate.md#2-user-agreements-on-agents-acting-for-buyers), [messages-and-offers](../../research/messages/ben/messages-and-offers.md)) | `buy_offer`, ask every time, not promotable. An accepted offer binds on eBay, so sending one is the person's tap. | eBay and Depop terms bar buying agents without human review, and the person's real account is the one at risk. | |
 | Ranking | delivered total against fair value; a learned ranker ([fanout §ranking](../../research/watch/ben/fanout-and-watch-loop.md#ranking-against-fair-value), [analytics §5](../../research/data/nate/analytics-and-recommendations.md#5-recommendations-how-marketplaces-personalise-and-cold-start)) | Plain code: the delivered total's place in the guarded fair range, then match label, then the `score.md` quality axis | The person can check it. | The price backtest finds a better order. |
+| An agent-readable search | none; our own, over HTTP and MCP ([Shopify note 9](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#9-feature-table)) | Expose it: `search`, `product` and `compare` as MCP tools served by the same handlers as `POST /v1/search`, `GET /v1/products/:id` and `POST /v1/compare`, visitor rate limits, referral disclosure in every result. Rows return only where `rights.may_share` holds, so Shopify Catalog offers (no redistribution, *observed*) and anything personal are left out. | Assistants already shop through MCP catalogs (Shopify, Klarna); ours adds used markets and the verdict, which they lack (*inferred*). | Abuse cost above the visitor budget, or a source's terms that bar it. |
+| Users' listings as assistant feeds | never; on by default; per listing opt in | Per listing opt in, at publish: the OpenAI product feed, Google Merchant Center and Shopify's catalog, with `condition` `used` or `refurbished` from M25. | More buyers see the item; the person chooses, since the listing leaves our control. Feeds are push only (*observed*, [Shopify note 2](../../research/watch/nate/shopify-catalog-and-agentic-commerce.md#2-openai-chatgpt-shopping-acp-product-feed)). | A feed's rules excluding peer sellers or used goods, or a privacy cost (a home location in the feed). |
 | For you | off; on by default; opt in ([analytics §5](../../research/data/nate/analytics-and-recommendations.md#5-recommendations-how-marketplaces-personalise-and-cold-start)) | Opt in. An inferred size or taste is personal data, shown and editable in You ([§8](../product.md#8-cross-cutting-requirements)). | | The click and save rate, against search alone. |
 
 ## What it reads and writes
@@ -90,7 +126,7 @@ Saving follows [§10 want to match](../product.md#want-to-match-to-saved-listing
 
 | Call | Shape |
 |---|---|
-| `GET /v1/search?q=` | visitor or user; streams batches on `GET /v1/stream` with `{product, results[], sites_pending[]}` |
+| `POST /v1/search` | `{text?, photo_id? or upload, url?, filters?: {condition[], seller_kind[], ships_to?, ships_from?, max_delivered_cents?, in_stock_only?}, like?: product_id or photo_id}`; visitor or user; streams batches on `GET /v1/stream` with `{product, results[], official[], sites_pending[]}` |
 | `POST /v1/matches/:id/act` | watch owns it; `save` opens `save_match`, and `bought` creates the order |
 | `POST /v1/orders` | `{kind: purchase, match_id, price_cents, date}` |
 | `POST /v1/decisions/:id/act` | answers `buy_offer`, `offer_over_ceiling`, `seller_counter`, `did_you_buy`, `replace_after_sale`, `save_match`, `unbacked_claim` |
@@ -151,7 +187,8 @@ Errors follow [§7](../product.md#errors). A visitor over the edge limit gets `4
 
 ## Needs from the shared model
 
-- A harness verb for a buyer's offer: neither verb set (product.md §6, or the agent runtime frame's) has one; propose `make_offer`.
-- `GET /v1/search?q=` cannot carry a photo or a link upload: add `POST /v1/search {photo_upload_id or url}`. `market.md` lists both.
-- `unbacked_claim` in the [decision kinds list](../product.md#decision-kinds-the-complete-list).
 - The `search` job stages above.
+- The `filters` and `like` fields on `POST /v1/search`, and `official[]` in its stream batches.
+- An `offer_view` on each result {condition on the one scale, seller_kind, delivered_cents, delivery_min_days, delivery_max_days, stock, ships_from, ships_to}; for official rows, the `official_offer` entity listed in [market-insight's needs](../determinations/market-insight.md#what-i-need-from-other-areas).
+- `POST /v1/compare {url or match_id}` for a pasted link from any site, returning the verdict block below.
+- The search tools on the agent endpoint below, served from the same handlers.

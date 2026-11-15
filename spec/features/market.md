@@ -22,9 +22,25 @@ Market is what secondhand knows about products and how their markets move, for a
 | Price history | one chart, new against used, from release day where a public series exists; eras mark source changes | observation tables |
 | Resale premium | used median over retail, since release | retail and sold comps |
 | Cheaper equivalents | similar products with their used range | `score` axis `financial`, similarity |
+| Offers | every offer for this product in one list: new, refurbished and used, each with its delivered price, condition, stock and where it ships | [one catalog](#one-catalog) |
+| Better official option | the official offer that serves the same purpose, and whether new or used costs less to own | [../determinations/market-insight.md](../determinations/market-insight.md#the-better-official-option-m24-to-m29); shown beside each used result in [buy.md](buy.md#the-better-official-option) |
 | Follow | one button; a visitor is asked to sign up | |
 
 Every number is a guarded number; tapping it opens its `citation`: the rows behind it, each with its `evidence` (source link, read time, snapshot). A hidden number says why, in the wordings of [insights.md](insights.md).
+
+## One catalog
+
+*agent proposal*, from Nate's "a suite like shopify, and the better official option" ([words](../../product/words.md#2026-11-14-nate-a-suite-like-shopify-and-the-better-official-option)). One `product` id groups every offer for the same thing: the maker's and authorised retailers' new stock, official and graded refurbished, brand resale, and used listings on every site. The product page is where the catalog lives; [buy.md](buy.md#one-search-across-every-store) is its search and results, and returns the same product id.
+
+| Part | What it does | Built from |
+|---|---|---|
+| Identity | which offers are the same product | [seeing-the-item card 9](../determinations/seeing-the-item.md#9-which-product-it-is-and-when-identity-is-confirmed) thresholds; product-level match per [M1](../determinations/market-insight.md#m1-same-product) |
+| Same-purpose relations | `same_product`, `successor`, `functional_equivalent` | [M24](../determinations/market-insight.md#m24-same-purpose-match) |
+| Condition | one scale across new, refurbished and used | [M25](../determinations/market-insight.md#m25-one-condition-scale) |
+| Delivered price, stock, ships | price plus shipping plus tax; stock; ships from and to | [M26](../determinations/market-insight.md#m26-delivered-price) |
+| Official offers | read on demand from Shopify Catalog (grouped by its product id; prices cached 10 minutes, no standing copy, no redistribution) and Klarna's product feed, plus M2's retailers | `official_offer` |
+
+Best tools for the catalog, not Databricks-bound: Shopify Catalog and Klarna for official offers, Avalara AvaTax or TaxJar for tax, AI Search for similarity; Delta keeps only what each source's `rights` allow.
 
 **Trends**: per category, what is rising and falling over 7 and 30 days, from movement in our observations, each row opening its page.
 
@@ -32,7 +48,7 @@ Every number is a guarded number; tapping it opens its `citation`: the rows behi
 
 | Event | Threshold | Delivered |
 |---|---|---|
-| Used median moved | 10% or more over 14 days, at least 10 sold | weekly digest |
+| Used median moved 10% or more over 14 days, at least 10 sold, and past the noise band in [M19](../determinations/market-insight.md#m19-when-a-followed-product-has-moved-enough-to-tell-its-follower) | weekly digest |
 | Release or restock | a retail comp with a new date | weekly digest; same day only if turned on |
 | Entered the category's top 10 risers | 2 weekly reads running | weekly digest |
 | Nothing moved | | no digest |
@@ -88,7 +104,7 @@ flowchart LR
 
 | Thing | States |
 |---|---|
-| Guarded number | `shown`; `hidden` with hide_reason `too_few`, `stale`, `mixed_types`, `source_gap` |
+| Guarded number | `shown`; `hidden` with hide_reason `too_few`, `stale`, `mixed_types`, `source_gap`, `conflict`, `noise` |
 | Product page | `loading`, `ready`, `partial` (missing sites named), `not_found` |
 | History chart | `none` (under 3 points on different days), `young` (under 30 days), `ready` |
 | `follow` | `active`, `muted`, `removed` |
@@ -100,7 +116,7 @@ flowchart LR
 |---|---|
 | Delta observation tables, append only | every read and backfilled point, dated, with `evidence`; a citation's `table_versions[]` points here |
 | Unity Catalog metric views | one versioned definition per metric; hide rules live in the definition |
-| Lakeflow jobs | backfill, crawl, daily snapshot, weekly digest, index recompute |
+| Lakeflow jobs | `market_refresh` (retail, used asking and sold per followed product, including the Serper and Keepa reads), `notify_follow` (the weekly digest and any same-day release), backfill, daily snapshot, index recompute; names per [spec/product.md](../product.md) |
 | Genie space over UC views, row filters on `user_id` ([spec/product.md](../product.md)) | full users' questions |
 | Delta Sharing | the anonymous dataset ([words](../../product/words.md#2026-11-14-nate-referrals-and-market-data)) |
 | Public edge, option A in [spec/product.md](../product.md) | visitor search and rate limits |
@@ -110,22 +126,22 @@ flowchart LR
 
 | Metric | Definition | Hidden when |
 |---|---|---|
-| Used price | p25, p50, p75 of sold comps, 90 days; asking apart, labelled | under 6 sold in 12 months or 2 in 90 days |
+| Used price | weighted p25, p50, p75 of sold comps per [money.md D1](../determinations/money.md#d1-comparable-set-and-weights) and [D5](../determinations/money.md#d5-fair-value-range-overall-and-per-site); product level per [M3](../determinations/market-insight.md#m3-used-price-per-site-over-time); asking apart, labelled | D1's minimum basis |
 | Days to sell | median sold_at minus listed_at | under 5 sold |
-| Sell-through | sold in 30 days over sold plus still listed; formula on tap | under 10 listings |
+| Sell-through | 30-day cohort per [M6](../determinations/market-insight.md#m6-sell-through); formula on tap | M6's hide rule |
 | Resale premium | used p50 over retail since release | no retail comp |
 | Trend | change in share of category sold count, 7 and 30 days | under 5 per cell |
 | Any | | basis older than 14 days (dated, then dropped) |
 
 **Genie** answers "what sold fastest in sneakers this month", "how has this jacket's used price moved since release", "which of my follows moved most". It does not serve visitors, predict a price or see other users' rows; under a metric's floor it says so instead of a number.
 
-**Delta Sharing**: `product_snapshot`, `market_metric`, `index_point` only; no user ids; cells under 5 removed; consent per [privacy-and-data.md](../../research/cross-cutting/nate/privacy-and-data.md).
+**Delta Sharing**: `product_snapshot`, `market_metric`, `index_point` only; no user ids; a cell is shared only under [M20](../determinations/market-insight.md#m20-making-an-anonymous-dataset-safe-to-share)'s contributor rule (10 distinct contributors, none over 50%, complementary suppression); consent per [privacy-and-data.md](../../research/cross-cutting/nate/privacy-and-data.md).
 
 ## Contract for the frontend
 
 | Endpoint | Who | Returns |
 |---|---|---|
-| `GET /v1/search?q=`, `POST /v1/search` (SSE) | all | per [spec/product.md](../product.md), with product_id when matched |
+| `POST /v1/search` (SSE) | all | per [spec/product.md](../product.md), with product_id when matched |
 | `GET /v1/products/:id` | all | page blocks as guarded numbers |
 | `GET /v1/products/:id/history?range=` | all | series per source, eras |
 | `GET /v1/trends?category=&window=7d\|30d` | all | ranked rows |
@@ -135,7 +151,7 @@ flowchart LR
 | `GET /v1/out?listing=` | all | 302 with referral; writes `referral_click` |
 | `POST /v1/genie` | user | answer, SQL, rows |
 
-Errors: `429 rate_limited` with `after_s`; `401 sign_in_needed` with the action to resume.
+Errors: `429 rate_limited` with `after_s`; `401 unauthenticated` with the action to resume.
 
 ## Who may act
 
@@ -177,15 +193,13 @@ Visitors and users as in the first table. Jobs write observations, snapshots and
 | KicksDB carries release_date and retail_price, refreshed every 24 hours at most | *observed* | per its licence |
 | Sites' own terms (Meta, Poshmark) ban automated collection ([spec/product.md](../product.md)) | *observed* | each source's `rights` enforced per row |
 | Archived and other open-web pages carry their own site's terms | *inferred* | `rights` per source, enforced |
-| Sell-through has two formulas in circulation | *observed* | |
+| Sell-through has two formulas in circulation; [M6](../determinations/market-insight.md#m6-sell-through) owns the one used | *observed* | |
 | eBay Partner Network pays 1.5 to 4% ([buyer-side-actions-and-affiliate.md](../../research/watch/nate/buyer-side-actions-and-affiliate.md)) | *asserted* | network disclosure rules apply |
 | Free Edition limits compute for jobs and Genie ([what-databricks-rewards.md](../../research/data/nate/what-databricks-rewards.md)) | *observed* | |
 
 Unmarked links are [market-intelligence.md](../../research/data/nate/market-intelligence.md). Rules that protect people hold regardless: no user id leaves in a share; a recalled product is marked; anything sent out passes a `claim_check`.
 
-## Demo path
-
-For Ben and Nate to mark.
+## A walk-through that proves it end to end
 
 1. Signed out, search a sneaker: retail, release date, a used range per site.
 2. Tap the range: the citation and its sold rows with sources.
@@ -194,6 +208,7 @@ For Ben and Nate to mark.
 5. Sneaker trends: the top riser opens its page.
 6. Ask Genie "what sold fastest in sneakers this week": SQL and rows.
 7. Recompute one index point from its citation in a notebook.
+8. On the product page, Offers lists new, refurbished and used together by delivered price; the better official option shows its verdict and its rows.
 
 ## Open for Ben and Nate
 
@@ -206,7 +221,5 @@ For Ben and Nate to mark.
 
 ## Needs from the shared model
 
-- `follow`, `referral_click`, `visitor`, and new `product_snapshot`, `market_metric`, `index_point`, `citation` in [spec/product.md](../product.md).
-- `score` axis `trend` for products, in `score.md`.
-- The public edge (option A) carrying visitor search and its limits.
-- A digest decision kind for Today, or a card without a decision.
+- `official_offer` entity (fields in [../determinations/market-insight.md](../determinations/market-insight.md#what-i-need-from-other-areas)) and an `offers` block on `GET /v1/products/:id`.
+- `GET /v1/products/:id/history`, `GET /v1/trends`, `GET /v1/index/:id`, `GET /v1/out` and `POST /v1/genie` in [spec/product.md](../product.md)'s endpoint list.
