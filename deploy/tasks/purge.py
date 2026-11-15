@@ -67,11 +67,21 @@ def run_purge(sql, user_id: str, catalog: str, tables: list[str], rewrite_logs, 
 
     statements = plan(user_id, catalog, tables)
     governance = f'{identifier(catalog)}.`governance`'
-    with break_glass(sql, f'delete_user {user_id}', catalog=catalog):
+    with break_glass(sql, f'delete_user {user_id}', catalog=catalog) as grant_id:
+        def confirm_grant():
+            rows = sql(f'SELECT m.grant_id FROM {governance}.`principal_map` m '
+                       "WHERE m.principal = current_user() AND m.user_id = '*' AND m.grant_id = :id "
+                       f'AND EXISTS (SELECT 1 FROM {governance}.`break_glass` b '
+                       'WHERE b.id = m.grant_id AND b.ended_at IS NULL)', {'id': grant_id})
+            if len(rows) != 1:
+                raise RuntimeError(f'break-glass grant lost before counts: {grant_id}')
+
         sql(*statements.tombstone)
         for statement, args in [*statements.deletes, *statements.reorgs]:
             sql(statement, args)
+        confirm_grant()
         left = {table: sql(statement, args)[0]['n'] for table, (statement, args) in zip(tables, statements.counts)}
+        confirm_grant()
         if any(left.values()):
             raise RuntimeError(f'rows remain after delete: {left}')
         sql(*statements.principal_delete)

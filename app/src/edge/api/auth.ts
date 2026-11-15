@@ -2,30 +2,30 @@
 import { auth as defaultAuth, store as defaultStore, type Auth, type AuthStore } from '../auth.ts';
 import { ApiError, deps, requireFields, type Ctx, type Handler } from './http.ts';
 import { createHash } from 'node:crypto';
+import { db } from '../store/db.ts';
+import { kv } from '../store/kv.ts';
 
 // J2 priors: 5 codes per address per hour; 20 codes per connecting IP per hour.
 export const EMAIL_CODES_PER_ADDRESS_HOUR = 5;
 export const EMAIL_CODES_PER_IP_HOUR = 20;
 const HOUR_MS = 3600000;
-const EMAIL_LIMIT_MAX_ENTRIES = 10000;
-type Bucket = { at: number; n: number };
-
-export function makeAuthHandlers(auth: Auth, store: AuthStore) {
-  const addresses = new Map<string, Bucket>(), ips = new Map<string, Bucket>();
+export function makeAuthHandlers(auth: Auth, store: AuthStore, limits = kv(db())) {
   const limitEmail = (email: string, ip: string | null) => {
     const now = deps.now();
-    for (const buckets of [addresses, ips]) for (const [key, bucket] of buckets) {
-      if (now - bucket.at >= HOUR_MS) buckets.delete(key);
+    // Without a host-bound client address, only the per-address limit applies.
+    const buckets: [string, string, number][] = [['email_code_address', email, EMAIL_CODES_PER_ADDRESS_HOUR]];
+    if (ip !== null) buckets.push(['email_code_ip', ip, EMAIL_CODES_PER_IP_HOUR]);
+    const reached = (ns: string, key: string) => new ApiError('rate_limited', 'email code limit reached', 'send_code', {
+      by: 'auto', after_s: Math.max(1, Math.ceil(((limits.get<number>(ns, `${key}:reset_at`) ?? now + HOUR_MS) - now) / 1000)),
+    });
+    for (const [ns, key, maximum] of buckets) {
+      if ((limits.get<number>(ns, key) ?? 0) >= maximum) throw reached(ns, key);
     }
-    // With no client address bound by the host, only the per-address limit applies: one shared IP bucket would throttle every sign-in at once.
-    const address = addresses.get(email), peer = ip === null ? undefined : ips.get(ip);
-    for (const [bucket, maximum] of [[address, EMAIL_CODES_PER_ADDRESS_HOUR], [peer, EMAIL_CODES_PER_IP_HOUR]] as const) {
-      if (bucket && bucket.n >= maximum) throw new ApiError('rate_limited', 'email code limit reached', 'send_code', { by: 'auto', after_s: Math.ceil((bucket.at + HOUR_MS - now) / 1000) });
+    for (const [ns, key, maximum] of buckets) {
+      const count = limits.incr(ns, key, HOUR_MS);
+      if (count === 1) limits.set(ns, `${key}:reset_at`, now + HOUR_MS, HOUR_MS);
+      if (count > maximum) throw reached(ns, key);
     }
-    // Bounded like the visitor map: drop the oldest entries past the cap.
-    for (const buckets of [addresses, ips]) while (buckets.size >= EMAIL_LIMIT_MAX_ENTRIES) buckets.delete(buckets.keys().next().value!);
-    addresses.set(email, { at: address?.at ?? now, n: (address?.n ?? 0) + 1 });
-    if (ip !== null) ips.set(ip, { at: peer?.at ?? now, n: (peer?.n ?? 0) + 1 });
   };
   const userOf = async (user_id: string) => {
     const u = await store.getUser(user_id);
@@ -58,7 +58,6 @@ export function makeAuthHandlers(auth: Auth, store: AuthStore) {
   } satisfies Record<string, Handler>;
 }
 
-// shortcut: process memory until the Store has auth_session; lost on restart
 export const handlers = makeAuthHandlers(defaultAuth, defaultStore);
 
 export const routeHandlers = {

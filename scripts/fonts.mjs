@@ -5,7 +5,8 @@
 // repo-root fonts/ folder; this script makes both read the same files.
 //
 //   node scripts/fonts.mjs            copy what it finds, say what is missing, exit 0
-//   node scripts/fonts.mjs --check    exit 1 when a face the app needs is missing (a native build runs this first)
+//   node scripts/fonts.mjs --check    exit 1 only when the committed open fallback files are gone; a missing brand face
+//                                     is reported and the open pair draws in its place (no longer a silent platform face)
 //
 // Where it looks, in order: $SECONDHAND_FONTS, the repo-root fonts/, ~/Library/Fonts, ~/.local/share/fonts.
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
@@ -46,13 +47,23 @@ export function install({ dirs = sources(), dest = DEST } = {}) {
   });
 }
 
+// The open pair that draws where a brand face is missing (agent proposal, Nate 2026-11-15; brand/explore/open-fallback/).
+// Committed, so always present; the website carries a copy in web/public/fonts-open/ because a deploy uploads only web/.
+export const OPEN = [
+  { app: 'app/assets/fonts-open/hanken-grotesk/HankenGrotesk-Medium.ttf', web: 'web/public/fonts-open/HankenGrotesk-Medium.ttf', for: 'PP Neue Montreal' },
+  { app: 'app/assets/fonts-open/outfit/Outfit-SemiBold.ttf', web: 'web/public/fonts-open/Outfit-SemiBold.ttf', for: 'Clofie' },
+];
+export const openMissing = (base = root) => OPEN.flatMap(o => [o.app, o.web]).filter(p => !existsSync(join(base, p)));
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const check = process.argv.includes('--check');
   const got = install();
   for (const f of got) process.stdout.write(f.ok ? `ok  ${f.file}  ${f.from}\n` : `missing  ${f.file}  (${f.role})\n`);
+  const lost = openMissing();
+  for (const p of lost) process.stderr.write(`missing open fallback file  ${p}  (committed; restore it from git)\n`);
   const missing = got.filter(f => !f.ok);
-  if (missing.length) {
-    process.stderr.write(`\n${missing.length} brand face missing. Put the files in fonts/ at the repo root, or set SECONDHAND_FONTS to the folder that holds them, then run this again.\nWithout them the phone shows San Francisco, not the brand.\n`);
-    if (check) process.exit(1);
+  if (missing.length && !lost.length) {
+    process.stderr.write(`\n${missing.length} brand face missing: drawing in the open fallback (${OPEN.map(o => o.for).join(', ')} -> Hanken Grotesk, Outfit). Put the licensed files in fonts/ at the repo root, or set SECONDHAND_FONTS to the folder that holds them, then run this again.\n`);
   }
+  if (check && lost.length) process.exit(1);
 }

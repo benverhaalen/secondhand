@@ -1,9 +1,12 @@
 const roots = ['app/', 'log/', 'spec/', 'jobs/capture/', 'research/list/ben/platforms/', 'scripts/'];
 export const touchesApp = paths => paths.some(path => roots.some(root => path.startsWith(root)));
 
+// Builds once main has been quiet for 3 minutes. main gets a push about every minute on a busy day, so the wait also ends
+// 15 minutes after the first relevant push it began with; otherwise the phone would never be updated while people work.
 export function debounce(previous, { sha, relevant, now, immediate = false }) {
   const changedAt = previous.sha === sha ? previous.changedAt : now;
-  return { sha, changedAt, ready: immediate || (relevant && now - changedAt >= 180000) };
+  const firstAt = relevant ? previous.firstAt ?? now : previous.firstAt;
+  return { sha, changedAt, firstAt, ready: immediate || (relevant && (now - changedAt >= 180000 || now - firstAt >= 900000)) };
 }
 
 export function patchSwift(source) {

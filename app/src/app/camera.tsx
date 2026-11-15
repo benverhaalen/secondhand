@@ -34,6 +34,7 @@ import {
   List, usePlus, type Bubble, type CirclePhase, type PhotoSrc,
 } from '@/ui';
 import { CandidateRow } from '@/ui/parts/candidates';
+import { LiveCapture } from '@/capture/live';
 
 type Phase = 'typical' | 'loading' | 'found' | 'done';
 type Drawn = 'loading' | 'found' | 'same' | 'offline' | 'done' | 'denied' | 'unsure' | 'valuable';
@@ -69,6 +70,11 @@ function start(drawn: Drawn | null, mode: Mode, lidar: boolean) {
 }
 
 export default function Camera() {
+  const params = useLocalSearchParams<{ mode?: string; world?: string; state?: string }>();
+  return params.world || params.state ? <DemoCamera /> : <LiveCapture mode={params.mode ?? 'sell'} />;
+}
+
+function DemoCamera() {
   const params = useLocalSearchParams<{ mode?: string; state?: string; lidar?: string }>();
   const lidar = params.lidar !== '0';
   const drawn = DRAWN.includes(params.state as Drawn) ? (params.state as Drawn) : null;
