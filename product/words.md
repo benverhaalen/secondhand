@@ -2257,3 +2257,11 @@ Nate, search lead's session, 2026-11-15, about 06:34 Central.
 > ebay can not be a linkable platform rn, so therefore wont be shown unless they go to their store settings and link it. Then ebay will be a good way to show the responsive through animations. We will login as users when testing the app as ourselves, and we'll test first selling by me listing two items one on depop, the shirt, and then the table on ebay, but will just create the listings for both, following that, we also then demo the buying, taking a picture of something, which because its the buy search it utilizes all sources, and we can have other fast load times populate, followed then by ebays. its ok if thats fast, but ebay loads only when called, only on the long ones, for the web version, people can toggle with a drop down in the chat the sources to aggregate, with the platforms, but not all mentioned, open source intelligence we can say for anything that isnt the platforms we also link
 
 Used in: [finalization §3](../spec/plans/finalization.md#3-search-and-the-sources-lead-search) (search sources and the eBay lane).
+
+## 2026-11-15 nate ebay last in every buy search, with the conversation answering while it waits; dupe keeps its row credit
+Nate, search lead's session, 2026-11-15, about 06:40 Central, answering "On a buy search, when should the signed-out eBay read run?" (options: long searches only, only when picked, every search) and "is it OK if each Dupe row still carries a small 'via Dupe.com'?" (options: keep row credit, drop Dupe instead).
+> on app, ebay is last in buy always, with some ai responses already coming in while it waits on ebay. it can understand it almost like a tool call with multiple outputs coming in
+
+To the second: "Keep row credit" (the recommended option). Dupe sits under "open source intelligence" in the sources dropdown, and each Dupe row keeps "via Dupe.com".
+
+Used in: [finalization §3](../spec/plans/finalization.md#3-search-and-the-sources-lead-search).
