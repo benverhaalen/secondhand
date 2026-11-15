@@ -140,8 +140,9 @@ export function createClient(options: Options) {
     }
   }
 
-  function search(text: string, filters?: Record<string, unknown>): Promise<SearchStart> {
-    return call<SearchStart>('POST /v1/search', { body: { text, ...(filters === undefined ? {} : { filters }) } });
+  // `sources` narrows the search to the named sources; left out, every source is asked.
+  function search(text: string, filters?: Record<string, unknown>, sources?: string[]): Promise<SearchStart> {
+    return call<SearchStart>('POST /v1/search', { body: { text, ...(filters === undefined ? {} : { filters }), ...(sources?.length ? { sources } : {}) } });
   }
 
   async function jobFrames(jobId: string, { signal, onFrame }: { signal?: AbortSignal; onFrame: (frame: SseFrame) => void }): Promise<void> {

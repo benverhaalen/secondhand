@@ -9,7 +9,23 @@ import { createLog, memorySink } from '../../../../log/index.js';
 import { sha256Hex } from '../../engines/proof/sha256.ts';
 import type { AssistEvent, ToolResult } from './types.ts';
 
-const fixture = (name: string): Message[] => JSON.parse(readFileSync(new URL(`./fixtures/converse/${name}.json`, import.meta.url), 'utf8'));
+const cite = (text: string, id = 'r1') => {
+  const masked = text.replace(/\b(?:Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec|Rs|no)\.|U\.S\./gi, word => word.replace(/\./g, ' '));
+  let cited = '', cursor = 0;
+  for (const match of masked.matchAll(/[.!?](?=\s|$)|$/g)) {
+    if (!match[0] && /[.!?]$/.test(masked)) continue;
+    cited += `${text.slice(cursor, match.index)} [${id}]${match[0]}`;
+    cursor = match.index + match[0].length;
+  }
+  return cited;
+};
+const fixture = (name: string): Message[] => {
+  const messages: Message[] = JSON.parse(readFileSync(new URL(`./fixtures/converse/${name}.json`, import.meta.url), 'utf8'));
+  if (name === 'numbers' || name === 'normalization') {
+    for (const message of messages) for (const block of message.content) if (block.type === 'text') block.text = cite(block.text);
+  }
+  return messages;
+};
 const result: ToolResult = {
   tool: 'value_item', ok: true, rows: [{ price: '$45', price_cents: 4500 }], counts: { sold: 3 },
   as_of: '2026-11-15', citation_ids: ['c1'], basis: '3 sold on Mercari', not_built: [],
@@ -148,37 +164,36 @@ test('parallel tool_use calls run concurrently and all results return in one use
   }
 });
 
-test('an invented $999 sentence is cut while the tool-backed $45 sentence stays', async () => {
+test('an invented $999 sentence is cut while the cited $45 sentence stays', async () => {
   const t = setup('numbers');
   const answer = await t.run();
-  assert.equal(prose(answer), 'It costs $45.');
+  assert.equal(prose(answer), cite('It costs $45.'));
   assert.equal(answer.gate.checked, 2);
   assert.equal(answer.gate.cut, 1);
-  assert.deepEqual(answer.gate.cut_sentences, ['It costs $999.']);
+  assert.deepEqual(answer.gate.cut_sentences, [cite('It costs $999.')]);
 });
 
-test('number normalization preserves money variants, shares, bare decimals, negation and standalone years', async () => {
+test('normalization preserves cited money, decimals, counts and year parts', async () => {
   const t = setup('normalization');
-  t.options.tools.run = async () => ({ ...result, rows: [{ price_cents: 129900, score: 4.5, sold_share: 0.12 }], counts: { sold: 3 } });
+  t.options.tools.run = async () => ({ ...result, rows: [{ price_cents: 129900, score: 4.5, share: 12 }], counts: { sold: 3 } });
   const answer = await t.run();
-  assert.equal(answer.gate.cut, 1);
-  assert.deepEqual(answer.gate.cut_sentences, ['The rating is 4.']);
-  for (const s of ['$1,299.', '$1,299.00.', '1299 dollars.', '12%.', '4.5.', 'not enough data: 3 listings.', 'In 2026.']) assert.ok(prose(answer).includes(s), s);
+  assert.deepEqual(answer.gate.cut_sentences, [cite('The rating is 4.')]);
+  for (const text of ['$1,299', '$1,299.00', '1299 dollars', '12%', '4.5', '3 listings', '2026']) assert.ok(prose(answer).includes(text), text);
 });
 
-test('money and percent strings back their normalized claims, but money cannot borrow a bare count', async () => {
+test('money and percent strings back equal figures; an absent figure is still cut', async () => {
   const t = setup('normalization');
   t.options.tools.run = async () => ({ ...result, rows: [{ price: '$1,299.00', share: '12%', score: 4.5 }], counts: { sold: 3 } });
-  assert.equal((await t.run()).gate.cut, 1);
+  assert.deepEqual((await t.run()).gate.cut_sentences, [cite('The rating is 4.')]);
   const bare = setup('numbers');
-  bare.options.tools.run = async () => ({ ...result, rows: [{ count: 45 }], counts: {} });
+  bare.options.tools.run = async () => ({ ...result, rows: [{ count: 46 }], counts: {} });
   assert.equal((await bare.run()).gate.cut, 2);
 });
 
-test('numbers attached to units are gated, and only standalone years are exempt', async () => {
+test('units and standalone years cannot use person text as evidence', async () => {
   const answer = await setup('attached-units', { text: 'I measured 4.5 cm' }).run();
-  assert.deepEqual(answer.gate.cut_sentences, ['The length is 999cm.', 'The length is 2026cm.']);
-  assert.equal(prose(answer), 'The length is 4.5cm. In 2026.');
+  assert.deepEqual(answer.gate.cut_sentences, ['The length is 999cm.', 'The length is 4.5cm.', 'In 2026.', 'The length is 2026cm.']);
+  assert.equal(prose(answer), '');
 });
 
 test('this turn backs counts, while money and history alone supply no facts', async () => {
@@ -188,16 +203,17 @@ test('this turn backs counts, while money and history alone supply no facts', as
   assert.deepEqual(t.requests[0].messages[0], t.options.history?.[0]);
 });
 
-test('a web citation cited_text backs a number; sources retain indexes and dates', async () => {
-  const t = setup('citation');
+test('web sources retain indexes and dates but cited_text cannot back an uncited number', async () => {
+  const messages = fixture('citation');
+  const block = messages[0].content.find(block => block.type === 'text');
+  assert.ok(block?.type === 'text');
+  block.text += ' Read the report.';
+  const t = setup('answer', { client: replay(messages).client });
   const answer = await t.run();
-  assert.equal(answer.gate.cut, 0);
-  assert.match(prose(answer), /73%/);
+  assert.deepEqual(answer.gate.cut_sentences, ['The report found 73%.']);
   assert.deepEqual(answer.sources, [{ url: 'https://example.org/report', title: 'Audience report', page_age: 'November 2026' }]);
-  assert.deepEqual(answer.blocks.find(b => b.type === 'text' && b.text.includes('73%')), {
-    type: 'text', text: 'The report found 73%.', web_sources: [0],
-  });
-  assert.ok(answer.blocks.some(b => b.type === 'widget' && b.result_id === 'web'));
+  assert.deepEqual(answer.blocks.find(block => block.type === 'text'), { type: 'text', text: 'Read the report.', web_sources: [0] });
+  assert.ok(answer.blocks.some(block => block.type === 'widget' && block.result_id === 'web'));
   assert.equal(answer.calls[0].tool, 'web_search');
   assert.equal(answer.calls[0].counts.sources, 1);
 });
@@ -461,51 +477,56 @@ test('unbacked streamed money never reaches assist.text but a clean sentence doe
   assert.ok(answer.ms.first_text !== null && answer.ms.first_text < answer.ms.done);
 });
 
-test('years need facts outside date context, and date context cannot exempt unit quantities', async () => {
-  const { answer } = await backedText('There are 2026 listings. In 2026. Since 2026. By 2026. From 2026. Until 2026. Of 2026. November 2026. In 2026 listings. November 2026 dollars.');
-  assert.deepEqual(answer.gate.cut_sentences, ['There are 2026 listings.', 'In 2026 listings.', 'November 2026 dollars.']);
-  const clean = await backedText('There are 2026 listings.', { ...result, counts: { listings: 2026 } });
-  assert.equal(clean.answer.gate.cut, 0);
+test('all year-shaped figures need equal figures in the cited result', async () => {
+  const text = cite('There are 2027 listings. In 2027. Since 2027. By 2027. From 2027. Until 2027. Of 2027. November 2027. In 2027 listings. November 2027 dollars.');
+  const held = await backedText(text);
+  assert.equal(held.answer.gate.cut, 10);
+  assert.equal(prose(held.answer), '');
+  const clean = cite('There are 2027 listings.');
+  assert.equal(prose((await backedText(clean, { ...result, counts: { listings: 2027 } })).answer), clean);
 });
 
-test('percent, per cent and USD normalize without borrowing counts', async () => {
+test('percent spellings and currency words use equal figures without unit inference', async () => {
   for (const spelling of ['percent', 'per cent', '%']) {
-    const { answer } = await backedText(`The share is 12 ${spelling}. The share is 13 ${spelling}.`, { ...result, rows: [{ sold_share: 0.12 }], counts: { listed: 13 } });
-    assert.equal(answer.gate.cut, 1, spelling);
-    assert.match(prose(answer), /12/);
-    assert.ok(!prose(answer).includes('13'));
+    const clean = cite(`The share is 12 ${spelling}.`);
+    const bad = cite(`The share is 13 ${spelling}.`);
+    const { answer } = await backedText(`${clean} ${bad}`, { ...result, rows: [{ share: 12, sold_share: 0.12 }], counts: { listed: 14 } });
+    assert.deepEqual(answer.gate.cut_sentences, [bad]);
+    assert.equal(prose(answer), clean);
   }
-  const { answer } = await backedText('It costs 45 USD. It costs 46 USD.');
+  const clean = cite('It costs 45 USD.');
+  const { answer } = await backedText(`${clean} ${cite('It costs 46 USD.')}`);
   assert.equal(answer.gate.cut, 1);
-  assert.equal(prose(answer), 'It costs 45 USD.');
+  assert.equal(prose(answer), clean);
 });
 
-test('ISO dates and timestamps are whole tokens backed only by result dates or today', async () => {
+test('ISO dates and timestamps compare their parts with the cited result', async () => {
   for (const key of ['as_of', 'sold_at', 'listed_at', 'read_at']) {
-    const returned = key === 'as_of' ? { ...result, as_of: '2026-11-14' }
-      : { ...result, rows: [{ [key]: '2026-11-14T12:30:00Z' }] };
-    const { answer } = await backedText('Read on 2026-11-14. Read on 2026-11-13.', returned);
+    const returned = key === 'as_of' ? { ...result, as_of: '2026-11-14' } : { ...result, rows: [{ [key]: '2026-11-14T12:30:00Z' }] };
+    const clean = cite('Read on 2026-11-14.');
+    const { answer } = await backedText(`${clean} ${cite('Read on 2026-11-13.')}`, returned);
     assert.equal(answer.gate.cut, 1, key);
-    assert.equal(prose(answer), 'Read on 2026-11-14.');
+    assert.equal(prose(answer), clean);
   }
   const recording = replay([textMessage('Today is 2026-11-15. Next is 2026-11-16.')]);
   const t = setup('answer', { client: recording.client, now: () => Date.parse('2026-11-15T20:00:00Z'), text: 'My note says 2026-11-16' });
-  assert.equal(prose(await t.run()), 'Today is 2026-11-15. Next is 2026-11-16.');
-  const timestamp = await backedText('Read at 2026-11-14T12:30:00Z. Read at 2026-11-14T13:30:00Z.', { ...result, rows: [{ read_at: '2026-11-14T12:30:00Z' }] });
+  assert.equal((await t.run()).gate.cut, 2);
+  const clean = cite('Read at 2026-11-14T12:30:00Z.');
+  const timestamp = await backedText(`${clean} ${cite('Read at 2026-11-14T13:30:00Z.')}`, { ...result, rows: [{ read_at: '2026-11-14T12:30:00Z' }] });
   assert.equal(timestamp.answer.gate.cut, 1);
-  assert.equal(prose(timestamp.answer), 'Read at 2026-11-14T12:30:00Z.');
+  assert.equal(prose(timestamp.answer), clean);
 });
 
-test('only successful cited rows and top-level figures back money and percentages, never inputs or counts', async () => {
-  for (const patch of [{ citation_ids: [] }, { ok: false }]) {
-    const { answer } = await backedText('It costs $45.', { ...result, ...patch });
-    assert.equal(answer.gate.cut, 1);
+test('only successful results explicitly cited by a unit supply figures', async () => {
+  for (const text of ['It costs $45.', cite('It costs $45.', 'r9')]) {
+    assert.equal((await backedText(text)).answer.gate.cut, 1);
   }
-  assert.equal((await backedText('It costs $45.')).answer.gate.cut, 0);
-  const echoed = Object.assign({ ...result, rows: [], counts: { price_cents: 4500, sold_share: 0.12 } }, { input: { price_cents: 4500, sold_share: 0.12 } });
-  assert.equal((await backedText('It costs $45. The share is 12%.', echoed)).answer.gate.cut, 2);
-  const topLevel = Object.assign({ ...result, rows: [] }, { price_cents: 4500, sold_share: 0.12 });
-  assert.equal((await backedText('It costs $45. The share is 12%.', topLevel)).answer.gate.cut, 0);
+  assert.equal((await backedText(cite('It costs $45.'), { ...result, ok: false })).answer.gate.cut, 1);
+  assert.equal((await backedText(cite('It costs $45.'), { ...result, citation_ids: [] })).answer.gate.cut, 0);
+  const echoed = Object.assign({ ...result, rows: [], counts: {} }, { input: { price_cents: 4500, sold_share: 0.12 } });
+  assert.equal((await backedText(cite('It costs $45. The share is 12%.'), echoed)).answer.gate.cut, 2);
+  const topLevel = Object.assign({ ...result, rows: [], counts: {} }, { price_cents: 4500, sold_share: 0.12 });
+  assert.equal((await backedText(cite('It costs $45. The share is 12%.'), topLevel)).answer.gate.cut, 2);
 });
 
 test('vendor error details stay in logs and settled calls omit input', async () => {
@@ -528,7 +549,7 @@ test('echoed input strings are not top-level figures or row evidence', async () 
     Object.assign({ ...result, rows: [] }, { input: '45 dollars' }),
     { ...result, rows: [{ inputs: '45 dollars' }] },
   ]) {
-    assert.equal((await backedText('It costs $45.', returned)).answer.gate.cut, 1);
+    assert.equal((await backedText(cite('It costs $45.'), returned)).answer.gate.cut, 1);
   }
 });
 
@@ -544,9 +565,9 @@ test('malformed model or person dates are held without losing clean text', async
   }
 });
 
-for (const join of ['-', '–', ' to ']) test(`money range joined by ${join} cannot borrow its upper end from a count`, async () => {
-  const text = `Most sell for $85${join}120.`;
-  const low = { ...result, rows: [{ price_cents: 8500 }], counts: { sold: 120 } };
+for (const join of ['-', '–', ' to ']) test(`money range joined by ${join} needs both endpoint figures`, async () => {
+  const text = cite(`Most sell for $85${join}120.`);
+  const low = { ...result, rows: [{ price_cents: 8500 }], counts: { sold: 121 } };
   const held = await backedText(text, low);
   assert.deepEqual(held.answer.gate.cut_sentences, [text]);
   assert.ok(!streamed(held.events).includes('120'));
@@ -555,7 +576,7 @@ for (const join of ['-', '–', ' to ']) test(`money range joined by ${join} can
   assert.equal(prose(backed.answer), text);
 });
 
-test('person text backs only counts and valid dates, never money or percentages', async () => {
+test('person text backs no counts, dates, money or percentages', async () => {
   for (const [text, claim] of [
     ['Is $400 fair for this?', 'Comparable sales put it at $400.'],
     ['Is 12% realistic?', 'The share is 12%.'],
@@ -566,7 +587,7 @@ test('person text backs only counts and valid dates, never money or percentages'
   }
   const recording = replay([textMessage('You have 7 items. Sold on 2026-11-12.')]);
   const t = setup('answer', { client: recording.client, text: 'I have 7 items sold on 2026-11-12' });
-  assert.equal((await t.run()).gate.cut, 0);
+  assert.equal((await t.run()).gate.cut, 2);
 });
 
 function continuingRound(usage: Partial<Message['usage']> & { cost?: number }) {
@@ -627,64 +648,55 @@ test('each round sizes max_tokens from remaining output budget, bounded by 1024 
 });
 
 for (const spelling of ['USD 412', 'USD412', 'US$412', '€412', '£412', '412 bucks', 'approx412']) {
-  test(`unbacked ${spelling} cannot borrow a plain count`, async () => {
-    const { answer, events } = await backedText(`It costs ${spelling}.`, { ...result, rows: [], counts: { sold: 412 } });
-    // A glued plain count still needs evidence, unlike a currency figure.
-    if (spelling === 'approx412') {
-      assert.equal(answer.gate.checked, 1);
-      assert.equal(answer.gate.cut, 0);
-      assert.equal((await backedText(`It costs ${spelling}.`)).answer.gate.cut, 1);
-    } else {
-      assert.equal(answer.gate.cut, 1);
-      assert.ok(!streamed(events).includes('412'));
-    }
+  test(`${spelling} needs an equal figure in its cited result`, async () => {
+    const text = cite(`It costs ${spelling}.`);
+    const held = await backedText(text, { ...result, rows: [], counts: { sold: 413 } });
+    assert.equal(held.answer.gate.cut, 1);
+    assert.equal(streamed(held.events), '');
+    assert.equal(prose((await backedText(text, { ...result, rows: [], counts: { sold: 412 } })).answer), text);
   });
 }
 
-test('currency spellings match cited figures only in their own unit', async () => {
-  const usd = { ...result, rows: [{ price_cents: 41200 }] };
-  for (const spelling of ['USD 412', 'USD412', 'US$412', '412 bucks']) {
-    assert.equal((await backedText(`It costs ${spelling}.`, usd)).answer.gate.cut, 0, spelling);
-  }
-  for (const symbol of ['€', '£']) {
-    assert.equal((await backedText(`It costs ${symbol}412.`, usd)).answer.gate.cut, 1, symbol);
-    const matching = { ...result, rows: [{ price: `${symbol}412` }] };
-    assert.equal((await backedText(`It costs ${symbol}412.`, matching)).answer.gate.cut, 0, symbol);
-    const other = { ...result, rows: [{ price: `${symbol === '€' ? '£' : '€'}412` }] };
-    assert.equal((await backedText(`It costs ${symbol}412.`, other)).answer.gate.cut, 1, symbol);
+test('currency spellings compare figures without interpreting the currency', async () => {
+  for (const spelling of ['USD 412', 'USD412', 'US$412', '412 bucks', '€412', '£412']) {
+    const text = cite(`It costs ${spelling}.`);
+    assert.equal(prose((await backedText(text, { ...result, rows: [{ price_cents: 41200 }] })).answer), text);
+    assert.equal((await backedText(text, { ...result, rows: [{ price: '$413' }] })).answer.gate.cut, 1);
   }
 });
 
-for (const [label, count] of [['4k', 4], ['32x32', 32]] as const) {
-  test(`${label} keeps its current count matching`, async () => {
-    const text = `The size is ${label}.`;
+for (const [label, count] of [['4k', 4000], ['32x32', 32]] as const) {
+  test(`${label} compares its expanded figure`, async () => {
+    const text = cite(`The size is ${label}.`);
     assert.equal((await backedText(text, { ...result, counts: { size: count } })).answer.gate.cut, 0);
     assert.equal((await backedText(text, { ...result, counts: {} })).answer.gate.cut, 1);
   });
 }
 
-test('month-first and day-first dates match a whole result date', async () => {
+test('month-first and day-first dates compare their parts', async () => {
   const returned = { ...result, rows: [{ sold_at: '2026-11-15' }] };
-  const { answer } = await backedText('Sold November 15, 2026. Sold 15 November 2026. Sold November 14, 2026.', returned);
+  const clean = cite('Sold November 15, 2026. Sold 15 November 2026.');
+  const bad = cite('Sold November 14, 2026.');
+  const { answer } = await backedText(`${clean} ${bad}`, returned);
   assert.equal(answer.gate.checked, 3);
-  assert.deepEqual(answer.gate.cut_sentences, ['Sold November 14, 2026.']);
-  assert.equal(prose(answer), 'Sold November 15, 2026. Sold 15 November 2026.');
+  assert.deepEqual(answer.gate.cut_sentences, [bad]);
+  assert.equal(prose(answer), clean);
 });
 
-test('today accepts UTC and UTC-12 dates without accepting tomorrow', async () => {
+test('the current date supplies no implicit evidence', async () => {
   const recording = replay([textMessage('Today is 2026-11-14. Today is 2026-11-15. Today is 2026-11-16.')]);
   const t = setup('answer', { client: recording.client, now: () => Date.parse('2026-11-15T02:00:00Z') });
   const answer = await t.run();
-  assert.deepEqual(answer.gate.cut_sentences, ['Today is 2026-11-16.']);
-  assert.equal(prose(answer), 'Today is 2026-11-14. Today is 2026-11-15.');
+  assert.deepEqual(answer.gate.cut_sentences, ['Today is 2026-11-14.', 'Today is 2026-11-15.', 'Today is 2026-11-16.']);
+  assert.equal(prose(answer), '');
 });
 
-test('naive date-times are UTC regardless of the server time zone', async () => {
+test('naive date-times compare their literal parts regardless of the server time zone', async () => {
   const originalZone = process.env.TZ;
   process.env.TZ = 'America/Chicago';
   try {
     for (const date of ['2026-11-15 10:00', '2026-11-15T10:00:00Z']) {
-      const { answer } = await backedText(`Read at ${date}.`, { ...result, rows: [{ read_at: '2026-11-15 10:00' }] });
+      const { answer } = await backedText(cite(`Read at ${date}.`), { ...result, rows: [{ read_at: '2026-11-15 10:00' }] });
       assert.equal(answer.gate.cut, 0, date);
     }
   } finally {
@@ -745,30 +757,20 @@ test('a later tool fact cannot erase a streamed cut when the cap ends the turn',
   for (const event of t.events) assert.ok(!JSON.stringify(event).includes('$412'));
 });
 
-for (const [spelling, amount, other] of [
-  ['400 euros', '€400', '$400'], ['400 euro', '€400', '£400'],
-  ['400 pounds sterling', '£400', '$400'], ['400 pound sterling', '£400', '€400'],
-  ['400 EUR', '€400', '$400'], ['400 GBP', '£400', '$400'],
-  ['a 400-dollar jacket', '$400', '€400'], ['400-dollars', '$400', '£400'],
-  ['400-USD', '$400', '€400'], ['400 - bucks', '$400', '£400'],
-  ['$-400', '$400', '€400'], ['USD-400', '$400', '£400'],
-  ['50 cents', '$0.50', '$50'], ['1 cent', '$0.01', '$1'],
-] as const) {
-  test(`${spelling} needs cited money in its currency, never a count or the person's number`, async () => {
-    const text = `It is ${spelling}.`;
-    const counts = { ...result, rows: [], counts: { sold: 400, listed: 50, items: 1 } };
-    const input = 'I counted 400, 50 and 1 items.';
-    const held = await backedText(text, counts, input);
-    assert.deepEqual(held.answer.gate.cut_sentences, [text], 'counts and person numbers cannot back money');
-    assert.equal(streamed(held.events), '', 'unbacked money must not stream');
-    const cited = { ...counts, rows: [{ price: amount }] };
-    const kept = await backedText(text, cited, input);
-    assert.equal(prose(kept.answer), text, 'same currency and amount backs money');
-    assert.equal(streamed(kept.events), text);
-    assert.equal((await backedText(text, { ...cited, citation_ids: [] }, input)).answer.gate.cut, 1, 'money needs a citation');
-    assert.equal((await backedText(text, { ...cited, rows: [{ price: other }] }, input)).answer.gate.cut, 1, 'units and cents scale must agree');
-    const reverse = await backedText(`It costs ${amount}.`, { ...counts, rows: [{ price: spelling }] });
-    assert.equal(reverse.answer.gate.cut, 0, 'suffixes normalize in result fields too');
+for (const spelling of [
+  '400 euros', '400 euro', '400 pounds sterling', '400 pound sterling', '400 EUR', '400 GBP',
+  'a 400-dollar jacket', '400-dollars', '400-USD', '400 - bucks', '$-400', 'USD-400', '50 cents', '1 cent',
+]) {
+  test(`${spelling} needs its literal signed figure in a cited result`, async () => {
+    const text = cite(`It is ${spelling}.`);
+    const value = spelling === '$-400' ? -400 : spelling.startsWith('50') ? 50 : spelling.startsWith('1 ') ? 1 : 400;
+    const returned = { ...result, rows: [{ value }], counts: {} };
+    const held = await backedText(text, { ...returned, rows: [] }, 'I counted 400, 50 and 1 items.');
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+    assert.equal(streamed(held.events), '');
+    assert.equal(prose((await backedText(text, returned)).answer), text);
+    assert.equal((await backedText(text.replace(' [r1]', ''), returned)).answer.gate.cut, 1, 'a matching result still needs a citation');
+    assert.equal((await backedText(text, { ...returned, rows: [{ value: 401 }] })).answer.gate.cut, 1, 'the signed figure must agree');
   });
 }
 
@@ -778,9 +780,10 @@ const hyphenCases: [string, Record<string, number>][] = [
   ['The MA-1 is available.', { model: 1 }],
   ['COVID-19 affected sales.', { version: 19 }],
 ];
-for (const [text, counts] of hyphenCases) {
+for (const [original, counts] of hyphenCases) {
+  const text = cite(original);
   test(`a hyphen in ${text} does not make a negative number`, async () => {
-    const returned = { ...result, rows: [], counts };
+    const returned = { ...result, rows: [], counts, basis: '' };
     const kept = await backedText(text, returned);
     assert.equal(kept.answer.gate.cut, 0);
     assert.equal(prose(kept.answer), text);
@@ -792,38 +795,37 @@ for (const [text, counts] of hyphenCases) {
   });
 }
 
-for (const text of ['-8 items remain.', 'There are -8 items.', 'There are (-8) items.', 'There are [-8] items.', 'There are {-8} items.']) {
+for (const original of ['-8 items remain.', 'There are -8 items.', 'There are (-8) items.', 'There are [-8] items.', 'There are {-8} items.']) {
+  const text = cite(original);
   test(`a sign at an allowed boundary stays negative: ${text}`, async () => {
     assert.equal((await backedText(text, { ...result, rows: [], counts: { items: 8 } })).answer.gate.cut, 1);
     assert.equal((await backedText(text, { ...result, rows: [], counts: { items: -8 } })).answer.gate.cut, 0);
   });
 }
 
-for (const [title, text, money] of [
-  ['MacBook A1466 2017', 'The A1466 is the 2017 model.', '$1466'],
-  ['Jeans W32', 'The size is W32.', '$32'],
-  ['Sony PS5', 'The PS5 is available.', '$5'],
-  ['Y2K', 'The style is Y2K.', '$2'],
+for (const [title, original] of [
+  ['MacBook A1466 2017', 'The A1466 is the 2017 model.'], ['Jeans W32', 'The size is W32.'],
+  ['Sony PS5', 'The PS5 is available.'], ['Y2K', 'The style is Y2K.'],
 ] as const) {
-  test(`an ok string field backs counts in ${title} without backing money`, async () => {
+  test(`cited title ${title} backs its figures`, async () => {
+    const text = cite(original);
     for (const citation_ids of [[], ['c1']]) {
       const returned = { ...result, rows: [{ title }], counts: {}, citation_ids };
       const kept = await backedText(text, returned);
-      assert.equal(kept.answer.gate.cut, 0, 'plain counts in strings need no citation');
+      assert.equal(kept.answer.gate.cut, 0);
       assert.equal(prose(kept.answer), text);
-      assert.equal((await backedText(`It costs ${money}.`, returned)).answer.gate.cut, 1);
-      assert.equal((await backedText(text, { ...returned, ok: false })).answer.gate.cut, 1, 'failed results supply no facts');
+      assert.equal((await backedText('It costs $999.', returned)).answer.gate.cut, 1);
+      assert.equal((await backedText(text, { ...returned, ok: false })).answer.gate.cut, 1);
+      assert.equal((await backedText(text, { ...returned, rows: [] })).answer.gate.cut, 1);
     }
-    const topLevel = Object.assign({ ...result, rows: [], counts: {}, citation_ids: [] }, { title });
-    assert.equal((await backedText(text, topLevel)).answer.gate.cut, 0, 'top-level string fields also back counts');
   });
 }
 
-test('strings without citations supply counts but cannot supply money or percent', async () => {
+test('uncited strings supply no counts, money or percent', async () => {
   const returned = { ...result, rows: [{ title: 'A1466 costs $400 with 12% sold' }], counts: {}, citation_ids: [] };
   const { answer } = await backedText('The model is A1466. It costs $400. The share is 12%.', returned);
-  assert.equal(prose(answer), 'The model is A1466.');
-  assert.deepEqual(answer.gate.cut_sentences, ['It costs $400.', 'The share is 12%.']);
+  assert.equal(prose(answer), '');
+  assert.deepEqual(answer.gate.cut_sentences, ['The model is A1466.', 'It costs $400.', 'The share is 12%.']);
 });
 
 test('a round without token fields or provider cost uses max_tokens pricing and logs the estimate once', async () => {
@@ -854,13 +856,13 @@ test('a round without token fields or provider cost uses max_tokens pricing and 
 
 for (const text of ['It costs dollars five.',
   'I am one hundred percent sure.', 'I am one hundred percent certain.']) {
-  test(`number words keep ordinary prose: ${text}`, async () => {
+  test(`number words always require cited figures: ${text}`, async () => {
     const t = setup('answer', { client: replay([textMessage(text)]).client });
     const answer = await t.run();
-    assert.equal(prose(answer), text);
-    assert.equal(streamed(t.events), text);
-    assert.equal(answer.gate.cut, 0);
-    assert.doesNotMatch(t.sink.text(), /number_words/);
+    assert.equal(prose(answer), '');
+    assert.equal(streamed(t.events), '');
+    assert.deepEqual(answer.gate.cut_sentences, [text]);
+    assert.match(t.sink.text(), /number_words/);
   });
 }
 
@@ -877,8 +879,8 @@ for (const text of ['The share is one percent.', 'The share is one percent surel
 }
 
 for (const date of ['Nov 15, 2026', 'Nov. 15 2026', 'November 15 2026']) {
-  test(`${date} is one date, never independent day and year counts`, async () => {
-    const text = `Sold on ${date}.`;
+  test(`${date} needs every date part including its month`, async () => {
+    const text = cite(`Sold on ${date}.`);
     const returned = { ...result, rows: [{ sold_at: '2026-11-15' }], counts: {} };
     const kept = await backedText(text, returned);
     assert.equal(kept.answer.gate.checked, 1);
@@ -886,7 +888,7 @@ for (const date of ['Nov 15, 2026', 'Nov. 15 2026', 'November 15 2026']) {
     assert.equal(prose(kept.answer), text);
     assert.equal(streamed(kept.events), text);
     const held = await backedText(text, { ...returned, rows: [], as_of: '', counts: { day: 15, year: 2026 } });
-    assert.deepEqual(held.answer.gate.cut_sentences, [text], 'plain counts cannot back a date');
+    assert.deepEqual(held.answer.gate.cut_sentences, [text], 'day and year alone do not back the month');
   });
 }
 
@@ -894,7 +896,7 @@ for (const date of ['Nov 15, 2026', 'Nov. 15 2026', 'November 15 2026']) {
 const plantedMoney: [string, string[]][] = [
   ['It is 400 US dollars.', ['$400']], ['It is 400 U.S. dollars.', ['$400']],
   ['It costs 400 (dollars).', ['$400']], ['It costs _400_ dollars.', ['$400']],
-  ['400 €', ['€400']], ['50¢', ['$0.50']], ['¥400', ['JPY 400']],
+  ['400 €', ['€400']], ['50¢', ['$0.50', '50']], ['¥400', ['JPY 400']],
   ['400 yen', ['JPY 400']], ['₹400', ['INR 400']], ['Rs. 400', ['INR 400']],
   ['CHF 400', ['CHF 400']], ['400 CAD', ['CAD 400']], ['400 quid', ['GBP 400']],
   ['It sells for $４００.', ['$400']], ['It sells for ٤٠٠ dollars.', ['$400']],
@@ -912,7 +914,8 @@ const plantedMoney: [string, string[]][] = [
   ['It costs **400** [dollars].', ['$400']], ['It costs `400` dollars.', ['$400']],
 ];
 
-for (const [text, prices] of plantedMoney) {
+for (const [original, prices] of plantedMoney) {
+  const text = cite(original, 'r2');
   test(`BC2 cuts planted ${text} and keeps its cited currency and value`, async () => {
     const run = async (citedPrices: string[]) => {
       const t = setup('answer', { text: 'I counted 400 and 85 items.' });
@@ -922,7 +925,7 @@ for (const [text, prices] of plantedMoney) {
         : { ...result, counts: {}, rows: citedPrices.map(price => ({ price })) };
       return { answer: await t.run(), events: t.events };
     };
-    const held = await run(text === '$400k' || text === 'CA$400' ? ['$400'] : ['$120']);
+    const held = await run(original === '$400k' ? ['$400'] : ['$121']);
     assert.deepEqual(held.answer.gate.cut_sentences, [text]);
     assert.equal(streamed(held.events), '', 'planted price must never stream');
     const kept = await run(prices);
@@ -954,62 +957,65 @@ test('BC1 missing input or output logs a note even when provider cost is present
   }
 });
 
-test('BC2 weight, size, signed percent fractions and certainty keep their meaning', async () => {
-  for (const text of ['It weighs 5 pounds.', 'It weighs 5 lb.', 'It weighs 5 lbs.', 'It weighs 5 oz.']) {
-    const kept = await backedText(text, { ...result, citation_ids: [], rows: [{ weight: 5 }], counts: {} });
-    assert.equal(prose(kept.answer), text);
+test('weight, size and signed fractions need literal cited figures', async () => {
+  for (const original of ['It weighs 5 pounds.', 'It weighs 5 lb.', 'It weighs 5 lbs.', 'It weighs 5 oz.']) {
+    const text = cite(original);
+    assert.equal(prose((await backedText(text, { ...result, rows: [{ weight: 5 }], counts: {}, citation_ids: [] })).answer), text);
   }
-  const size = await backedText('Size 10 sells for $120.', { ...result, rows: [{ price_cents: 12000 }] }, 'Size 10');
-  assert.equal(prose(size.answer), 'Size 10 sells for $120.');
-  const percent = await backedText('It is down 5%.', { ...result, rows: [{ change: -0.05 }] });
-  assert.equal(prose(percent.answer), 'It is down 5%.');
-  assert.equal((await backedText('It is down 5%.', { ...result, citation_ids: [], rows: [{ change: -0.05 }] }, '5')).answer.gate.cut, 1);
+  const size = await backedText(cite('Size 10 sells for $120.'), { ...result, rows: [{ price_cents: 12000 }] }, 'Size 10');
+  assert.equal(size.answer.gate.cut, 1);
+  const percent = await backedText(cite('It is down 5%.'), { ...result, rows: [{ change: -0.05 }] });
+  assert.equal(percent.answer.gate.cut, 1);
+  assert.equal((await backedText('It is down 5%.', { ...result, rows: [{ change: -0.05 }] }, '5')).answer.gate.cut, 1);
   for (const text of ['I am 100% sure.', 'I am 100 percent certain.', 'I am one hundred percent sure.']) {
-    const kept = await backedText(text);
-    assert.equal(prose(kept.answer), text);
-    assert.equal(streamed(kept.events), text);
+    const held = await backedText(text);
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+    assert.equal(streamed(held.events), '');
   }
 });
 
 for (const context of ['10 items', '10 times', '10 sizes', '10 pairs', '10 colors', '10 stars', '10 reviews', '10 photos', '10 lb', '10 lbs', '10 oz', '10 pounds', 'size 10', '#10', 'no. 10', 'model 10', 'style 10', 'lot 10', 'item 10', 'A10', 'PS10', 'Y10K', 'MA-10', 'W10']) {
-  test(`BC2 explains ${context} as a count beside money`, async () => {
-    const text = `For ${context}, it costs $120.`;
-    const kept = await backedText(text, { ...result, rows: [{ price: '$120' }] }, '10');
-    assert.equal(prose(kept.answer), text);
-    assert.equal(streamed(kept.events), text);
+  test(`${context} is never explained by adjacent words or the person`, async () => {
+    const text = cite(`For ${context}, it costs $120.`);
+    const held = await backedText(text, { ...result, rows: [{ price: '$120' }] }, '10');
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+    assert.equal(streamed(held.events), '');
+    const value = context === 'Y10K' ? 10000 : 10;
+    assert.equal(prose((await backedText(text, { ...result, rows: [{ price: '$120', title: context, value }] })).answer), text);
   });
 }
 
-test('BC2 shared normalization applies to result fields and person counts and dates', async () => {
-  const money = await backedText('It costs $400.', { ...result, rows: [{ price: '_٤٠٠_ (dollars)' }] });
-  assert.equal(prose(money.answer), 'It costs $400.');
+test('shared normalization applies to result fields but supplies no person facts', async () => {
+  const text = cite('It costs $400.');
+  const money = await backedText(text, { ...result, rows: [{ price: '_٤٠٠_ (dollars)' }] });
+  assert.equal(prose(money.answer), text);
   const count = await backedText('There are 4 items. Sold on 2026-11-12.', { ...result, rows: [], counts: {} }, '４ items sold on ٢٠٢٦-١١-١٢');
-  assert.equal(count.answer.gate.cut, 0);
+  assert.equal(count.answer.gate.cut, 2);
 });
 
 for (const key of ['id', 'external_id', 'url', 'photo_url', 'href', 'item_href', 'link', 'source_link', 'image', 'hero_image', 'src', 'photo_src']) {
   test(`BC2 ${key} fields cannot back counts or money`, async () => {
     for (const value of [400, '400', '$400']) {
-      const held = await backedText('There are 400 items. It costs $400.', { ...result, rows: [{ [key]: value }], counts: {} });
+      const held = await backedText(cite('There are 400 items. It costs $400.'), { ...result, rows: [{ [key]: value }], counts: {} });
       assert.equal(held.answer.gate.cut, 2);
     }
   });
 }
 
 test('BC2 a URL string under an innocent field name cannot supply figures', async () => {
-  const held = await backedText('There are 400 items. There are 85 items.', { ...result, rows: [{ title: 'https://www.ebay.com/itm/400?x=85' }], counts: {} });
+  const held = await backedText(cite('There are 400 items. There are 85 items.'), { ...result, rows: [{ title: 'https://www.ebay.com/itm/400?x=85' }], counts: {} });
   assert.equal(held.answer.gate.cut, 2);
-  const kept = await backedText('There are 400 items.', { ...result, citation_ids: [], rows: [{ title: '400 items' }], counts: {} });
+  const kept = await backedText(cite('There are 400 items.'), { ...result, citation_ids: [], rows: [{ title: '400 items' }], counts: {} });
   assert.equal(kept.answer.gate.cut, 0);
 });
 
-test('BC2 an unknown currency cannot be backed even by the identical cited spelling', async () => {
-  const text = 'It costs ₿400.';
-  const held = await backedText(text, { ...result, rows: [{ price: '₿400' }], counts: { sold: 400 } }, '400');
+test('an unknown currency supplies no exemption and needs an equal cited figure', async () => {
+  const text = cite('It costs ₿400.');
+  const held = await backedText(text, { ...result, rows: [{ price: '₿401' }], counts: { sold: 399 } }, '400');
   assert.deepEqual(held.answer.gate.cut_sentences, [text]);
   assert.equal(streamed(held.events), '');
+  assert.equal(prose((await backedText(text, { ...result, rows: [{ price: '₿400' }] })).answer), text);
 });
-
 
 test('BC2 a minus before currency and a currency multiplier cannot borrow an unscaled positive price', async () => {
   for (const text of ['-$40', '-CA$40', '$400k', '$1.2M', '$2bn']) {
@@ -1019,13 +1025,13 @@ test('BC2 a minus before currency and a currency multiplier cannot borrow an uns
 });
 
 test('BC2 count metadata identifiers cannot supply counts', async () => {
-  const held = await backedText('There are 400 items.', { ...result, rows: [], counts: { external_id: 400 } });
+  const held = await backedText(cite('There are 400 items.'), { ...result, rows: [], counts: { external_id: 400 } });
   assert.equal(held.answer.gate.cut, 1);
 });
 
 test('BC2 normalized result dates remain whole dates', async () => {
-  const kept = await backedText('Sold on 2026-11-12.', { ...result, rows: [{ sold_at: '٢٠٢٦-١١-١٢' }] });
-  assert.equal(prose(kept.answer), 'Sold on 2026-11-12.');
+  const kept = await backedText(cite('Sold on 2026-11-12.'), { ...result, rows: [{ sold_at: '٢٠٢٦-١١-١٢' }] });
+  assert.equal(prose(kept.answer), cite('Sold on 2026-11-12.'));
 });
 
 
@@ -1033,20 +1039,20 @@ test('BC2 a year-shaped price or range endpoint cannot use the standalone year e
   for (const [text, prices] of [
     ['It runs from 4000 to 5000 dollars.', ['$5000']],
     ['It runs from 2026 to 4000 dollars.', ['$4000']],
-    ['In 2026 EUR.', ['$2026']],
+    ['In 2027 EUR.', ['$2026']],
   ] as const) {
-    const held = await backedText(text, { ...result, rows: prices.map(price => ({ price })), counts: { sold: 4000 } }, '2026 and 4000');
+    const held = await backedText(text, { ...result, rows: prices.map(price => ({ price })), counts: { sold: 4001 } }, '2026 and 4000');
     assert.deepEqual(held.answer.gate.cut_sentences, [text]);
     assert.equal(streamed(held.events), '');
   }
-  const kept = await backedText('In 2026, it costs $120.', { ...result, rows: [{ price: '$120' }] });
+  const kept = await backedText(cite('In 2026, it costs $120.'), { ...result, rows: [{ price: '$120' }] });
   assert.equal(kept.answer.gate.cut, 0);
 });
 
 
 for (const [suffix, value] of [['k', 120000], ['m', 120000000], ['M', 120000000], ['bn', 120000000000]] as const) {
   test(`BC2 range endpoint ${suffix} scales as money rather than a glued count`, async () => {
-    const text = `It costs $85–120${suffix}.`;
+    const text = cite(`It costs $85–120${suffix}.`);
     const returned = { ...result, rows: [{ price: '$85' }] };
     const held = await backedText(text, returned, '120 items');
     assert.deepEqual(held.answer.gate.cut_sentences, [text]);
@@ -1057,7 +1063,7 @@ for (const [suffix, value] of [['k', 120000], ['m', 120000000], ['M', 120000000]
 }
 
 test('BC2 quid alone does not turn pounds of weight into currency', async () => {
-  const text = 'It weighs 5 pounds and costs 10 quid.';
+  const text = cite('It weighs 5 pounds and costs 10 quid.');
   const returned = { ...result, rows: [{ price: 'GBP 10', weight: 5 }] };
   const kept = await backedText(text, returned, '5 pounds');
   assert.equal(prose(kept.answer), text);
@@ -1071,7 +1077,7 @@ for (const [words, wrong, honest] of [
   ['one and a half', '$0.50', '$1.50'], ['half a million', '$1000000', '$500000'],
 ] as const) {
   test(`BC2 ${words} cannot be backed by a partial number-word value`, async () => {
-    const text = `It costs ${words} dollars.`;
+    const text = cite(`It costs ${words} dollars.`);
     const held = await backedText(text, { ...result, rows: [{ price: wrong }] });
     assert.deepEqual(held.answer.gate.cut_sentences, [text]);
     assert.equal(streamed(held.events), '');
@@ -1081,7 +1087,7 @@ for (const [words, wrong, honest] of [
 }
 
 test('BC2 a left multiplier inherits the range currency even with another currency present', async () => {
-  const text = 'It costs 85k–120 CAD or US$5.';
+  const text = cite('It costs 85k–120 CAD or US$5.');
   const returned = { ...result, rows: [{ price: 'CAD 85000' }, { price: 'CAD 120' }, { price: 'US$5' }] };
   const kept = await backedText(text, returned);
   assert.equal(prose(kept.answer), text);
@@ -1106,7 +1112,7 @@ for (const [words, wrong, honest] of [
   ['two dozen', '$14', '$24'], ['half dozen', '$12.50', '$6'], ['one half', '$1.50', '$0.50'],
 ] as const) {
   test(`BC2 ${words} uses its full number-word amount`, async () => {
-    const text = `It costs ${words} dollars.`;
+    const text = cite(`It costs ${words} dollars.`);
     const held = await backedText(text, { ...result, rows: [{ price: wrong }] });
     assert.deepEqual(held.answer.gate.cut_sentences, [text]);
     const kept = await backedText(text, { ...result, rows: [{ price: honest }] });
@@ -1115,17 +1121,272 @@ for (const [words, wrong, honest] of [
 }
 
 test('BC2 uncertain consecutive number-word scales cannot back themselves', async () => {
-  const text = 'It costs one thousand million dollars.';
+  const text = cite('It costs one thousand million dollars.');
   const held = await backedText(text, { ...result, rows: [{ price: text }] });
   assert.deepEqual(held.answer.gate.cut_sentences, [text]);
   assert.equal(streamed(held.events), '');
 });
 
+for (const text of [
+  'It costs NZ$400 [r1].', 'new ones from 1299 [r1].', '400ish dollars [r1].',
+  'four hundred new [r1].', 'sells for about 400 [r1].', '400 ZAR [r1].',
+  '−400 [r1].', 'a dozen [r1].', 'a couple hundred [r1].', 'mid-300s [r1].',
+]) test(`equal-figure gate cuts the review hole: ${text}`, async () => {
+  const held = await backedText(text, { ...result, rows: [{ price: '$120' }], counts: { sources: 1 } }, 'I have 400 items. I have 1299 items. I have 300 items. NZ$400');
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.equal(streamed(held.events), '');
+});
+
+test('equal-figure gate checks each list item with its header and never a sibling citation', async () => {
+  const text = 'Prices in US dollars:\n- New: 400\n- Used: 120 [r1]';
+  const held = await backedText(text, { ...result, rows: [{ price: '$120' }], counts: {} });
+  assert.deepEqual(held.answer.gate.cut_sentences, ['- New: 400']);
+  assert.equal(prose(held.answer), 'Prices in US dollars:\n- Used: 120 [r1]');
+  assert.equal(streamed(held.events), 'Prices in US dollars:\n- Used: 120 [r1]');
+});
+
+test('equal-figure gate keeps a clean cited price and sold count whole', async () => {
+  const text = 'It costs $129 with 11 sold [r1].';
+  const kept = await backedText(text, { ...result, rows: [{ price: '$129', price_cents: 12900 }], counts: { sold: 11 } });
+  assert.equal(prose(kept.answer), text);
+  assert.equal(streamed(kept.events), text);
+  assert.equal(kept.answer.gate.cut, 0);
+});
+
+test('equal-figure gate keeps a cited list item and cuts only its invented sibling', async () => {
+  const text = 'Prices in US dollars:\n- New: $139 [r1]\n- Used: $129 [r1]';
+  const returned = { ...result, rows: [{ price: '$129' }], counts: {} };
+  const held = await backedText(text, returned);
+  assert.deepEqual(held.answer.gate.cut_sentences, ['- New: $139 [r1]']);
+  assert.equal(prose(held.answer), 'Prices in US dollars:\n- Used: $129 [r1]');
+  const clean = 'Prices in US dollars:\n- New: $129 [r1]';
+  assert.equal(prose((await backedText(clean, returned)).answer), clean);
+});
+
+test('equal-figure gate accepts equal digits across currency words', async () => {
+  const text = '400 Canadian dollars [r1].';
+  assert.equal(prose((await backedText(text, { ...result, rows: [{ price: 'USD 400' }] })).answer), text);
+});
+
+test('equal-figure gate requires a citation even for returned numbers and person counts', async () => {
+  for (const text of ['It costs $45.', 'You have 3 items.', 'In 2026.', 'about 2 weeks.']) {
+    const held = await backedText(text, result, text);
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+    assert.equal(streamed(held.events), '');
+  }
+});
+
+test('equal-figure gate cannot borrow another result or another sentence citation', async () => {
+  const text = 'It costs $400 [r1]. It costs $120 [r2]. It costs $120.';
+  const t = setup('answer', { client: replay([fixture('parallel')[0], textMessage(text)]).client });
+  t.options.tools.run = async name => ({ ...result, rows: [{ price: name === 'search_market' ? '$120' : '$400' }], counts: {} });
+  const answer = await t.run();
+  assert.equal(answer.gate.cut, 3);
+  assert.equal(streamed(t.events), '');
+});
+
+for (const spelling of ['1,299', '1 299', '1299.00', '1.299k', 'one thousand two hundred and ninety-nine']) {
+  test(`equal-figure gate expands ${spelling} and preserves its display`, async () => {
+    const text = `${spelling} [r1].`;
+    const kept = await backedText(text, { ...result, rows: [{ price_cents: 129900 }] });
+    assert.equal(prose(kept.answer), text);
+    assert.equal(streamed(kept.events), text);
+  });
+}
+
+test('equal-figure gate reads counts, basis, ISO and written date parts from the cited result', async () => {
+  const text = '11 sold over 90 days as of November 14, 2026 [r1]. 2026-11-14 [r1]. 129900 [r1].';
+  const returned = { ...result, rows: [{ price_cents: 129900 }], counts: { sold: 11 }, basis: 'over 90 days', as_of: '2026-11-14' };
+  assert.equal(prose((await backedText(text, returned)).answer), text);
+});
+
+test('equal-figure gate checks numbered headers independently and includes them in each row', async () => {
+  const text = 'Prices for 400 items:\n- Used: 120 [r1]\nClean prose.';
+  const held = await backedText(text, { ...result, rows: [{ price: '$120' }], counts: {} });
+  assert.deepEqual(held.answer.gate.cut_sentences, ['Prices for 400 items:', '- Used: 120 [r1]']);
+  assert.equal(prose(held.answer), 'Clean prose.');
+});
+
+for (const text of [
+  '## Prices\n- New: 400\n- Used: 120 [r1]',
+  '| Condition | Price |\n| --- | --- |\n| New | 400 |\n| Used | 120 [r1] |',
+]) test(`equal-figure gate separates markdown rows: ${text.split('\n')[0]}`, async () => {
+  const held = await backedText(text, { ...result, rows: [{ price: '$120' }], counts: {} });
+  assert.equal(held.answer.gate.cut, 1);
+  assert.doesNotMatch(prose(held.answer), /400/);
+  assert.match(prose(held.answer), /120 \[r1\]/);
+});
+
+test('equal-figure gate ordinals require a cited row title', async () => {
+  for (const title of ['The 21st edition', 'The twenty-first edition']) {
+    const text = `${title} [r1].`;
+    assert.equal(prose((await backedText(text, { ...result, rows: [{ title }], counts: {} })).answer), text);
+    assert.equal((await backedText(text, { ...result, rows: [{ price: '$21' }], counts: { edition: 21 } })).answer.gate.cut, 1);
+  }
+});
+
+for (const [words, value] of [
+  ['four hundred new', 400], ['a dozen', 12], ['a couple hundred', 200], ['mid-300s', 300],
+  ['zero', 0], ['one and a half', 1.5], ['forty thousand', 40000], ['1.2m', 1200000],
+] as const) test(`equal-figure gate backs the full phrase ${words}`, async () => {
+  const text = `${words} [r1].`;
+  const returned = { ...result, rows: [{ value }], counts: {}, basis: '', as_of: '' };
+  assert.equal(prose((await backedText(text, returned)).answer), text);
+  const held = await backedText(text, { ...returned, rows: [{ value: value + 1 }] });
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+});
+
+for (const digits of ['４００', '٤٠٠', '۴۰۰', '४००', '৪০০', '๔๐๐', '၄၀၀', '𞥔𞥐𞥐', '𝟜𝟘𝟘']) {
+  test(`equal-figure gate normalizes Nd digits ${digits} on both sides`, async () => {
+    const text = `It costs **${digits}** ZAR [r1].`;
+    const returned = { ...result, rows: [{ value: '４\u200b００' }], counts: {} };
+    assert.equal(prose((await backedText(text, returned)).answer), text);
+    const held = await backedText(text, { ...returned, rows: [{ value: 401 }] });
+    assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+    assert.equal(streamed(held.events), '');
+  });
+}
+
+for (const minus of ['−', '–', '—', '﹣', '－']) test(`equal-figure gate preserves the sign of ${minus}400`, async () => {
+  const text = `${minus}400 [r1].`;
+  const returned = { ...result, rows: [{ value: -400 }], counts: {} };
+  assert.equal(prose((await backedText(text, returned)).answer), text);
+  assert.equal((await backedText(text, { ...returned, rows: [{ value: 400 }] })).answer.gate.cut, 1);
+});
+
+test('equal-figure gate inherits header citations and checks whole list items', async () => {
+  const returned = { ...result, rows: [{ price: '$129' }], counts: {} };
+  const text = 'Prices [r1]:\n- New: 129. Available now.\n- Used: 139. Check this row.';
+  const held = await backedText(text, returned);
+  assert.deepEqual(held.answer.gate.cut_sentences, ['- Used: 139. Check this row.']);
+  assert.equal(prose(held.answer), 'Prices [r1]:\n- New: 129. Available now.');
+  assert.equal(streamed(held.events), 'Prices [r1]:\n- New: 129. Available now.\n');
+});
+
+test('equal-figure gate can cite multiple results in one sentence without pooling other results', async () => {
+  const clean = 'Asks are 120 [r1] and sold are 400 [r2].';
+  const bad = 'Asks are 120 and 400 [r1].';
+  const t = setup('answer', { client: replay([fixture('parallel')[0], textMessage(`${clean} ${bad}`)]).client });
+  t.options.tools.run = async name => ({ ...result, rows: [{ price: name === 'search_market' ? '$120' : '$400' }], counts: {} });
+  const answer = await t.run();
+  assert.equal(prose(answer), clean);
+  assert.deepEqual(answer.gate.cut_sentences, [bad]);
+});
+
+for (const text of ['November 14th, 2026 [r1].', '14th November 2026 [r1].']) {
+  test(`equal-figure gate treats written date ordinals as date parts: ${text}`, async () => {
+    const returned = { ...result, rows: [], counts: {}, as_of: '2026-11-14', basis: '' };
+    assert.equal(prose((await backedText(text, returned)).answer), text);
+    assert.equal((await backedText(text, { ...returned, as_of: '2026-11-13' })).answer.gate.cut, 1);
+  });
+}
+
+test('equal-figure gate does not turn title years into money cents', async () => {
+  const returned = { ...result, rows: [{ title: '2019 Nike shoes, $45' }], counts: {}, basis: '', as_of: '' };
+  const text = 'There are 201900 listings [r1].';
+  const held = await backedText(text, returned);
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.equal(streamed(held.events), '');
+  const clean = '4500 cents [r1].';
+  assert.equal(prose((await backedText(clean, returned)).answer), clean);
+});
+
+test('equal-figure gate cannot back a different title number from a sold count', async () => {
+  const returned = { ...result, rows: [{ title: 'Air Jordan 2' }], counts: { sold: 1 }, basis: '', as_of: '' };
+  const text = 'Air Jordan 1 [r1].';
+  const held = await backedText(text, returned);
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.equal(streamed(held.events), '');
+  const clean = 'Air Jordan 2 [r1].';
+  assert.equal(prose((await backedText(clean, returned)).answer), clean);
+});
+
+test('equal-figure gate compares a decimal number phrase as its full value', async () => {
+  const returned = { ...result, rows: [{ left: 4, right: 5 }], counts: {}, basis: '', as_of: '' };
+  const text = 'The score is four point five [r1].';
+  const held = await backedText(text, returned);
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.equal(streamed(held.events), '');
+  assert.equal(prose((await backedText(text, { ...returned, rows: [{ score: 4.5 }] })).answer), text);
+});
+
+test('equal-figure gate cannot borrow the model number from a different row title', async () => {
+  const returned = { ...result, rows: [{ title: 'Air Jordan 2' }, { title: 'Reebok 1' }], counts: {}, basis: '', as_of: '' };
+  const text = 'Air Jordan 1 [r1].';
+  const held = await backedText(text, returned);
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  const honest = { ...returned, rows: [...returned.rows, { title: 'Air Jordan 1' }] };
+  assert.equal(prose((await backedText(text, honest)).answer), text);
+});
+
+test('equal-figure gate numeric-only titles do not turn citations into claims', async () => {
+  const returned = { ...result, rows: [{ title: '1984', price: '$129' }], counts: {}, basis: '', as_of: '' };
+  const text = 'Available now [r1].';
+  const kept = await backedText(text, returned);
+  assert.equal(prose(kept.answer), text);
+  assert.equal(kept.answer.gate.checked, 0);
+  assert.equal(prose((await backedText('129 [r1].', returned)).answer), '129 [r1].');
+});
+
+for (const title of ['Air Jordan 2 Retro', 'Nike Air Jordan 2 Retro', 'Nike Air Jordan two Retro']) {
+  test(`equal-figure gate checks title numbers when the answer shortens ${title}`, async () => {
+    const returned = { ...result, rows: [{ title }, { title: 'Reebok 1' }], counts: { sold: 1 }, basis: '', as_of: '' };
+    const text = 'Air Jordan 1 [r1].';
+    assert.deepEqual((await backedText(text, returned)).answer.gate.cut_sentences, [text]);
+    assert.equal(prose((await backedText('Air Jordan 2 [r1].', returned)).answer), 'Air Jordan 2 [r1].');
+  });
+}
+
+for (const title of ['2019 Nike shoes', '2019 Nike shoes Retro']) {
+  test(`equal-figure gate checks leading title years in ${title}`, async () => {
+    const returned = { ...result, rows: [{ title }, { title: '2020 Adidas shoes' }], counts: { sold: 2020 }, basis: '', as_of: '' };
+    const text = '2020 Nike shoes [r1].';
+    assert.deepEqual((await backedText(text, returned)).answer.gate.cut_sentences, [text]);
+    assert.equal(prose((await backedText('2019 Nike shoes [r1].', returned)).answer), '2019 Nike shoes [r1].');
+  });
+}
+
+test('equal-figure gate checks every figure in a title with adjacent numbers', async () => {
+  const returned = { ...result, rows: [{ title: 'Air Jordan 2/2019' }], counts: { sold: 2020 }, basis: '', as_of: '' };
+  const text = 'Air Jordan 2/2020 [r1].';
+  assert.deepEqual((await backedText(text, returned)).answer.gate.cut_sentences, [text]);
+  assert.equal(prose((await backedText('Air Jordan 2/2019 [r1].', returned)).answer), 'Air Jordan 2/2019 [r1].');
+});
+
+for (const sign of ['minus', 'negative']) test(`equal-figure gate preserves the written sign ${sign}`, async () => {
+  const text = `It costs ${sign} four hundred dollars [r1].`;
+  const returned = { ...result, rows: [{ value: 400 }], counts: {}, basis: '', as_of: '' };
+  assert.deepEqual((await backedText(text, returned)).answer.gate.cut_sentences, [text]);
+  assert.equal(prose((await backedText(text, { ...returned, rows: [{ value: -400 }] })).answer), text);
+});
+
+test('equal-figure gate never takes only three digits from a four-digit space-separated figure', async () => {
+  const text = 'The figures are 2 2019 [r1].';
+  const returned = { ...result, rows: [{ left: 2201, right: 9 }], counts: {}, basis: '', as_of: '' };
+  assert.deepEqual((await backedText(text, returned)).answer.gate.cut_sentences, [text]);
+  assert.equal(prose((await backedText(text, { ...returned, rows: [{ left: 2, right: 2019 }] })).answer), text);
+});
+
+for (const sign of ['minus', 'negative']) test(`equal-figure gate keeps ${sign} before a currency symbol`, async () => {
+  const text = `It costs ${sign} $400 [r1].`;
+  const returned = { ...result, rows: [{ value: 400 }], counts: {}, basis: '', as_of: '' };
+  assert.deepEqual((await backedText(text, returned)).answer.gate.cut_sentences, [text]);
+  assert.equal(prose((await backedText(text, { ...returned, rows: [{ value: -400 }] })).answer), text);
+});
+
+for (const [words, value] of [['point five', 0.5], ['minus point five', -0.5]] as const) {
+  test(`equal-figure gate reads the leading decimal phrase ${words}`, async () => {
+    const text = `The ratio is ${words} [r1].`;
+    const returned = { ...result, rows: [{ value: 5 }], counts: {}, basis: '', as_of: '' };
+    assert.deepEqual((await backedText(text, returned)).answer.gate.cut_sentences, [text]);
+    assert.equal(prose((await backedText(text, { ...returned, rows: [{ value }] })).answer), text);
+  });
+}
 test('seed rows reach the first user message, back their price, and keep invented money cut', async () => {
   const recording = replay(fixture('numbers').slice(1));
   const t = setup('answer', { client: recording.client, seed: [result] });
   const answer = await t.run();
-  assert.equal(prose(answer), 'It costs $45.');
+  assert.equal(prose(answer), 'It costs $45 [r1].');
   assert.equal(answer.gate.cut, 1);
   assert.equal(answer.results.r1.citation_ids[0], 'c1');
   assert.ok(JSON.stringify(recording.requests[0].messages).includes('r1'));
@@ -1134,7 +1395,7 @@ test('seed rows reach the first user message, back their price, and keep invente
 
 test('queued late rows get a new id and one bounded round after end_turn', async () => {
   const messages = [fixture('answer')[0], fixture('numbers')[1]];
-  messages[1].content = [{ type: 'text', text: 'The late listing costs $60. It costs $999.', citations: null }];
+  messages[1].content = [{ type: 'text', text: 'The late listing costs $60 [r2]. It costs $999.', citations: null }];
   const recording = replay(messages);
   let receive: ((u: import('./tools.ts').LateUpdate) => void) | undefined;
   let off = 0;
@@ -1172,4 +1433,42 @@ test('late updates remain bounded by max_rounds and the cost cap', async () => {
     assert.equal(t.requests.length, 1);
     assert.equal(answer.reason, limit === 'rounds' ? 'max_rounds' : 'cost_cap');
   }
+});
+
+for (const [words, value, unscaled] of [
+  ['a grand', 1000, 400], ['grand', 1000, 400], ['two grand', 2000, 2],
+  ['twelve grand', 12000, 12], ['12 grand', 12000, 12], ['1.5 grand', 1500, 1.5],
+  ['minus two grand', -2000, 2000], ['-2 grand', -2000, 2000],
+  ['zero grand', 0, 1000], ['two point five grand', 2500, 2.5],
+] as const) {
+  test(`equal-figure gate reads ${words} as its full thousand-scaled value`, async () => {
+    const text = `It is worth ${words} [r1].`;
+    const returned = { ...result, rows: [{ value: unscaled }], counts: {}, basis: '', as_of: '' };
+    const held = await backedText(text, returned);
+    assert.deepEqual(held.answer.gate.cut_sentences, [text], 'an unscaled figure cannot back grand');
+    assert.equal(streamed(held.events), '', 'unbacked grand must not stream');
+    const kept = await backedText(text, { ...returned, rows: [{ value }] });
+    assert.equal(kept.answer.gate.cut, 0);
+    assert.equal(prose(kept.answer), text);
+    assert.equal(streamed(kept.events), text);
+  });
+}
+
+test('numerals separate adjacent number-word claims instead of joining their values', async () => {
+  const text = 'The sequence is one 2 three [r1].';
+  const returned = { ...result, rows: [{ value: 4, middle: 2 }], counts: {}, basis: '', as_of: '' };
+  const held = await backedText(text, returned);
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.equal(streamed(held.events), '');
+  const kept = await backedText(text, { ...returned, rows: [{ first: 1, middle: 2, last: 3 }] });
+  assert.equal(prose(kept.answer), text);
+  assert.equal(streamed(kept.events), text);
+});
+
+test('decimal number words with grand cannot borrow separate coefficient and scale facts', async () => {
+  const text = 'It is worth two point five grand [r1].';
+  const returned = { ...result, rows: [{ value: 2.5, scale: 1000 }], counts: {}, basis: '', as_of: '' };
+  const held = await backedText(text, returned);
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.equal(streamed(held.events), '');
 });

@@ -7,7 +7,7 @@ const pages = [
   ['/how-it-works', 'How It Works'],
   ['/features', 'Features'],
   ['/data-use', 'Data Use'],
-  ['/#faq', 'FAQ'],
+  ['/faq', 'FAQ'],
 ] as const;
 
 export function AccountAccess({ label, className = '' }: { label: string; className?: string }) {
@@ -25,12 +25,12 @@ export function MarketingHeader({ current }: { current: string }) {
   return <header className="marketing-header"><div className="marketing-wrap marketing-header-row">
     <Mark />
     <nav className="marketing-nav" aria-label="Main">{pages.map(([url, label]) => <Link key={url} href={url} aria-current={current === url ? 'page' : undefined}>{label}</Link>)}</nav>
-    <div className="marketing-header-actions"><a className="github-link" href={repository}>GitHub <span aria-hidden="true">↗</span></a>{session ? <Link className="marketing-avatar" aria-label="Open your account" href="/account">{session.profile.photo ? <img src={session.profile.photo} alt="" referrerPolicy="no-referrer" /> : <span aria-hidden="true">{session.profile.name?.slice(0, 1) || <img src="/brand/mark.svg" alt="" />}</span>}</Link> : <AccountAccess label="Sign in" className="marketing-pill-secondary" />}</div>
+    <div className="marketing-header-actions"><a className="github-link" href={repository}>GitHub <span aria-hidden="true">↗</span></a>{session ? <Link className="marketing-avatar" aria-label="Open your workspace" href="/app">{session.profile.photo ? <img src={session.profile.photo} alt="" referrerPolicy="no-referrer" /> : <span aria-hidden="true">{session.profile.name?.slice(0, 1) || <img src="/brand/mark.svg" alt="" />}</span>}</Link> : <AccountAccess label="Sign in" className="marketing-pill-secondary" />}</div>
   </div></header>;
 }
 
 export function MarketingFooter() {
-  return <footer className="marketing-footer"><div className="marketing-wrap"><Mark /><nav aria-label="Footer">{pages.map(([url, label]) => <Link key={url} href={url}>{label}</Link>)}<a href={repository + '/blob/main/product/vision.md'}>What’s Next ↗</a><Link href="/buy">Try search</Link><a href={repository}>GitHub ↗</a><a href="#main">Back to top ↑</a></nav></div></footer>;
+  return <footer className="marketing-footer"><div className="marketing-wrap"><Mark /><nav aria-label="Footer">{pages.map(([url, label]) => <Link key={url} href={url}>{label}</Link>)}<Link href="/whats-next">What’s Next</Link><Link href="/buy">Try search</Link><a href={repository}>GitHub ↗</a><a href="#main">Back to top ↑</a></nav></div></footer>;
 }
 
 export function isMarketingRoute(path: string) {

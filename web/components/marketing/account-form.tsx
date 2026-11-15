@@ -49,7 +49,7 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
         setStatus('Check your email for a six-digit code.');
       } else if (route !== 'email/start' && result === 200) {
         await rememberSession(response, route === 'google' ? googleProfile(body.id_token) : {});
-        router.replace('/account');
+        router.replace('/app');
       } else if (result === 429) {
         setError('Too many requests. Wait a moment before trying again.');
       } else if (route === 'email/verify' && (result === 400 || result === 401 || result === 422)) {
@@ -139,7 +139,7 @@ export function AccountStatus() {
   return <main id="main" className="account-page"><div className="account-form-wrap">
     <h1>your account</h1>
     {state === 'checking' && <p role="status">Checking your sign-in…</p>}
-    {state === 'active' && <><p>You’re signed in.</p><Link className="account-primary" href="/buy">Find something used</Link><button className="account-options-button" type="button" disabled={signingOut} onClick={signOut}>{signingOut ? 'Signing out…' : 'Sign out'}</button></>}
+    {state === 'active' && <><p>You’re signed in.</p><Link className="account-primary" href="/app">Open your workspace</Link><button className="account-options-button" type="button" disabled={signingOut} onClick={signOut}>{signingOut ? 'Signing out…' : 'Sign out'}</button></>}
     {state === 'signed-out' && <Link className="account-primary" href="/signin">Sign in</Link>}
     {state === 'error' && <p role="alert">Could not check your session. <Link href="/signin">Return to sign-in</Link>.</p>}
     {error && <p role="alert" className="account-error">{error}</p>}

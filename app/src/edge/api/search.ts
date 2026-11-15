@@ -5,7 +5,8 @@ import { searchSource, sourceUnavailable, runtimePorts as searchRuntime, type Se
 import { BASE, searchUrl } from '../intel/public/readers.ts';
 import { fetchPage } from '../intel/fetch.ts';
 import { SOURCES, sourcesFor, routeId, type Caller, type Source, type SourceSite } from '../intel/public/sources.ts';
-import { runPlan, searchParams } from '../intel/run.ts';
+import { normalize, runPlan, searchParams } from '../intel/run.ts';
+import { readLedger } from '../harness/read-ledger.ts';
 import { PROTOCOLS } from '../intel/protocols.ts';
 import { emptyFound, type Answer, type Found } from '../intel/answer.ts';
 import { sameProduct, type Judged, type Result } from '../intel/reconcile.ts';
@@ -17,6 +18,10 @@ import { storable } from './keep.ts';
 const protocol = PROTOCOLS.listings_matching;
 // The Apify adapter keeps DEADLINE_MS private; search.test.ts checks this clock against that source.
 const APIFY_READ_DEADLINE_MS = 75_000;
+// Node's largest timer delay: queue expiry is below, and a started late read uses its harness timeout.
+const HARNESS_OWNS_DEADLINE_MS = 2 ** 31 - 1;
+// Only start status is shared here. runPlan owns single flight, results, caching and pace slots.
+const lateStarts = new Map<string, { started: boolean; callers: number }>();
 export const ports = Object.assign(searchRuntime, {
   fetchPage, ask: jevAsk, deadline_ms: protocol.budget.settled_ms, sources: SOURCES as readonly Source[],
 });
@@ -143,7 +148,11 @@ function offerView(row: BuyRow) {
 
 async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typeof ports, caller: Caller, sources: readonly Source[]) {
   const query = String(ctx.body.text || ctx.body.url), filters = object(ctx.body.filters) ? ctx.body.filters : {};
-  const t0 = performance.now(), pending = new Set(sources.map(s => s.id)), batches = new Map<string, Batch>();
+  const startedAt = Date.parse(stages[0]?.started_at ?? new Date().toISOString());
+  const t0 = performance.now() - (Date.now() - startedAt), pending = new Set(sources.map(s => s.id)), batches = new Map<string, Batch>();
+  const allowance = sources.some(source => source.site === 'depop' && opts.harness) ? Number(searchParams.read('search_browser_start_ms', {}).value) : 0;
+  const settleMs = opts.deadline_ms + allowance;
+  const lateCutoffMs = settleMs + Number(searchParams.read('search_late_window_ms', {}).value);
   let first: number | null = null, settledAt: number | null = null, settled = false;
   const sourceCounts = new Map<string, { count: number; dropped?: number }>();
   const controllers = new Map<string, AbortController>();
@@ -184,7 +193,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     ctx.log.event(event, { job: job.id, answer: storable(a, Date.now()) }); // the log keeps only rows a source lets us store
     jobs.append(job.id, event, { job_id: job.id, ...data, answer: a });
   };
-  const land = (source: Source, batch: Batch, late = false) => {
+  const land = (source: Source, batch: Batch, late = false, keepPending = false) => {
     const site = source.site;
     const state = jobs.st.getJob(job.id)?.state;
     if (state !== 'running' && !(late && settled && state === 'done')) {
@@ -209,13 +218,14 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
         dupe.found.dropped_by_reason.read_directly = (dupe.found.dropped_by_reason.read_directly ?? 0) + copies;
       }
     }
-    pending.delete(source.id);
+    if (!keepPending) pending.delete(source.id);
     const stage = stages.find(s => s.name === `site:${source.id}`)!;
-    stage.state = batch.searched.outcome === 'timeout' ? 'late' : batch.searched.error_code && batch.searched.outcome !== 'empty' ? 'failed' : 'arrived';
+    stage.state = batch.searched.error_code && batch.searched.outcome !== 'empty' && batch.searched.outcome !== 'timeout' ? 'failed'
+      : batch.searched.outcome === 'timeout' || late && source.lands_late ? 'late' : 'arrived';
     if (stage.state === 'failed') stage.error = { code: batch.searched.error_code!, message: batch.searched.reason ?? 'source failed' };
     stage.ended_at = new Date().toISOString(); stage.found = batch.found;
     first ??= Math.round(performance.now() - t0);
-    saveStages(); if (!late) jobs.update(job.id, { result: result() });
+    saveStages(); if (!late || source.lands_late) jobs.update(job.id, { result: result() });
     // events.json still has the old stage enum; state.change records the brief's late state without falsifying it.
     if (stage.state === 'late') ctx.log.event('state.change', { entity: 'job.stage', id: `${job.id}:${stage.name}`, to: 'late', job: job.id, stage: stage.name, group: source.group, found: stage.found });
     else ctx.log.stage(job.id, stage.name, { group: source.group, state: stage.state, found: stage.found, ...(stage.error ? { error: stage.error } : {}) });
@@ -224,29 +234,62 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
   };
   const timeout = (source: Source): Batch => ({ searched: { site: source.site, group: source.group, kind: 'search', url: null, outcome: 'timeout', count: 0,
     ms: Math.round(performance.now() - t0), pace: source.pace }, rows: [], offers: [], ranked: [], found: { ...emptyFound(), sources_searched: 1 } });
+  const recordQueueTimeout = (source: Source) => {
+    if (source.site !== 'dupe' && source.site !== 'google_shopping')
+      readLedger.record(source.site, 'search', 'timed_out', Math.round(performance.now() - t0));
+  };
+  const extendFillUntil = (until: number) => {
+    const current = (jobs.st.getJob(job.id) as ApiJobRow & { fill_until?: string } | undefined)?.fill_until;
+    if (!current || Date.parse(current) < until) {
+      const patch: Partial<ApiJobRow> & { fill_until: string } = { fill_until: new Date(until).toISOString() };
+      jobs.update(job.id, patch);
+      ctx.log.note('Search fill deadline extended', { job: job.id, fill_until: patch.fill_until });
+    }
+  };
   const sitePlan = async (source: Source, freshness_s: number) => {
     const site = source.site;
     const readOptions: SearchOpts = { paced: true, caller, person_id: ctx.user_id ?? undefined, visitor_id: ctx.visitor_id ?? undefined,
       accounts: opts.accounts, harness: opts.harness, routed: opts.routed, dupe: opts.dupe, shopping: opts.shopping, fetchPage: opts.fetchPage, log: ctx.log };
-    const unavailable = await sourceUnavailable(source, 'search', readOptions);
+    const admit = async () => {
+      const unavailable = await sourceUnavailable(source, 'search', readOptions);
+      const account = !unavailable && source.lane === 'harness' && ctx.user_id && opts.accounts
+        ? (await opts.accounts.linked(ctx.user_id)).find(a => a.site === site && a.person_id === ctx.user_id) : undefined;
+      return { unavailable, account };
+    };
+    let admissionCut: ReturnType<typeof setTimeout> | undefined;
+    const admitted = await (source.lands_late ? Promise.race([admit(), new Promise<null>(resolve => {
+      admissionCut = setTimeout(() => resolve(null), Math.max(0, lateCutoffMs - (performance.now() - t0)));
+    })]) : admit()).finally(() => clearTimeout(admissionCut));
+    if (!admitted) { recordQueueTimeout(source); return timeout(source); }
+    const { unavailable, account } = admitted;
     if (unavailable) return rank(source, [], unavailable.searched, filters);
-    const account = source.lane === 'harness' && ctx.user_id && opts.accounts
-      ? (await opts.accounts.linked(ctx.user_id)).find(a => a.site === site && a.person_id === ctx.user_id) : undefined;
     readOptions.account = account ?? null;
     const scopedRoute = account ? `${routeId(source)}:${ctx.user_id}` : routeId(source);
     let ran = false, rows: JudgedRow[] = [];
     // One browser-start allowance per search. The harness owns and reuses its browser.
     const startup = source.site === 'depop' && opts.harness ? searchParams.read('search_browser_start_ms', {}).value as number : 0;
-    const remaining = Math.max(0, opts.deadline_ms + startup - (performance.now() - t0));
-    if (!pending.has(source.id) || remaining === 0) return timeout(source);
+    const remaining = Math.max(0, (source.lands_late ? lateCutoffMs : opts.deadline_ms + startup) - (performance.now() - t0));
+    if (!pending.has(source.id) || remaining === 0) {
+      if (source.lands_late) recordQueueTimeout(source);
+      return timeout(source);
+    }
     const controller = new AbortController(); controllers.set(source.id, controller);
+    const startKey = `${scopedRoute}|${normalize(query)}|${freshness_s}`;
+    const sharedStart = source.lands_late ? lateStarts.get(startKey) ?? { started: false, callers: 0 } : undefined;
+    let queueCut: ReturnType<typeof setTimeout> | undefined;
+    if (sharedStart) {
+      sharedStart.callers++; lateStarts.set(startKey, sharedStart);
+      queueCut = setTimeout(() => { if (!sharedStart.started) controller.abort(); }, remaining);
+    }
+    const planDeadline = source.lands_late ? HARNESS_OWNS_DEADLINE_MS : remaining;
     // A one-target plan lets empty and blocked sites settle independently too; runPlan only emits partials for hits.
     const a = await runPlan({ kind: 'listings_matching', slots: { text: query }, protocol_version: protocol.version,
-      first_ms: protocol.budget.first_ms, settled_ms: remaining, signal: controller.signal,
-      targets: [{ target_id: `site:${source.id}`, query, deadline_ms: remaining, freshness_s, routes: [{
+      first_ms: protocol.budget.first_ms, settled_ms: planDeadline, signal: controller.signal,
+      targets: [{ target_id: `site:${source.id}`, query, deadline_ms: planDeadline, freshness_s, routes: [{
         route_id: scopedRoute, site, lane: source.lane, pace: source.pace, cache: source.rights.may_store && source.lane !== 'mcp', host: site === 'dupe' ? 'mcp.dupe.com' : site === 'google_shopping' ? 'treg.to' : new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
         async run(q, { signal, readEnded }) {
           const readAt = performance.now();
+          if (sharedStart) sharedStart.started = true;
           ran = true;
           let count = 0, dropped: number | undefined;
           try {
@@ -256,22 +299,28 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
             const judged = await sameProduct({ title: q }, candidates(source, eligible), (s, questions) => opts.ask(s, questions, { log: ctx.log }));
             let index = 0;
             const rows = page.rows.map(row => row.may_model === false ? shownOnly(source, row) : { row, judged: judged[index++] });
-            if (!pending.has(source.id)) land(source, rank(source, rows, page.searched, filters), true);
+            if (!source.lands_late && !pending.has(source.id)) land(source, rank(source, rows, page.searched, filters), true);
             return { outcome: planOutcome(page.searched.outcome), rows, site, detail: page.searched };
           } catch (e) {
             ctx.log.error(`search.${source.id}`, e);
             const detail: SiteSearched = { site, group: source.group, kind: 'search', url: null, outcome: 'failed', count, ...(dropped ? { dropped } : {}),
               ms: Math.round(performance.now() - readAt), error_code: 'site_failed',
               reason: e instanceof Error ? e.message : 'source failed', ...(source.pace ? { pace: source.pace } : {}) };
-            if (!pending.has(source.id)) land(source, rank(source, [], detail, filters), true);
+            if (!source.lands_late && !pending.has(source.id)) land(source, rank(source, [], detail, filters), true);
             return { outcome: 'blocked', rows: [], site, detail };
           }
         },
       }] }],
       calculate(arrivals) { rows = arrivals.flatMap(a => a.rows as JudgedRow[]); return { facts: [] }; },
+    }).finally(() => {
+      clearTimeout(queueCut);
+      if (sharedStart && --sharedStart.callers === 0) {
+        lateStarts.delete(startKey);
+        if (!sharedStart.started && controller.signal.aborted) recordQueueTimeout(source);
+      }
     });
     const searched = a.searched[0]?.detail as SiteSearched | undefined;
-    const outcome = a.searched[0]?.outcome ?? 'timeout';
+    const outcome = source.lands_late && controller.signal.aborted ? 'timeout' : a.searched[0]?.outcome ?? 'timeout';
     const observed: SiteSearched = searched && outcome !== 'timeout' ? searched : {
       site, group: source.group, kind: 'search', url: source.lane === 'public_page' && site !== 'dupe' && site !== 'google_shopping' ? searchUrl(site, query, 'search') : null, outcome: outcome === 'over_budget' ? 'timeout' : outcome,
       count: rows.length, ms: a.searched[0]?.ms ?? Math.round(remaining), ...(source.pace ? { pace: source.pace } : {}),
@@ -281,28 +330,30 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
   };
   try {
     const work = Promise.all(sources.map(async source => {
-      try { const batch = await sitePlan(source, protocol.freshness.listings); if (pending.has(source.id)) land(source, batch); }
+      try { const batch = await sitePlan(source, protocol.freshness.listings); if (pending.has(source.id)) land(source, batch, settled && source.lands_late); }
       catch (e) {
         ctx.log.error(`search.${source.id}`, e);
         const searched: SiteSearched = { site: source.site, group: source.group, kind: 'search', url: null, outcome: 'failed', count: sourceCounts.get(source.id)?.count ?? 0, dropped: sourceCounts.get(source.id)?.dropped,
           ms: Math.round(performance.now() - t0), error_code: 'site_failed', reason: e instanceof Error ? e.message : 'source failed', pace: source.pace };
-        land(source, rank(source, [], searched, filters));
+        land(source, rank(source, [], searched, filters), settled && source.lands_late);
       }
     }));
     let cut: ReturnType<typeof setTimeout> | undefined;
-    const allowance = sources.some(source => source.site === 'depop' && opts.harness) ? Number(searchParams.read('search_browser_start_ms', {}).value) : 0;
     try {
       await Promise.race([work, new Promise<void>(resolve => { cut = setTimeout(() => {
-        for (const source of sources) if (pending.has(source.id)) land(source, timeout(source));
-        for (const controller of controllers.values()) controller.abort();
+        for (const source of sources) if (pending.has(source.id)) {
+          land(source, timeout(source), false, source.lands_late);
+          if (!source.lands_late) controllers.get(source.id)?.abort();
+        }
         resolve();
-      }, Math.max(0, opts.deadline_ms + allowance - (performance.now() - t0))); })]);
+      }, Math.max(0, settleMs - (performance.now() - t0))); })]);
     } finally { clearTimeout(cut); }
     if (jobs.st.getJob(job.id)?.state !== 'running') return;
     const final = result(); jobs.update(job.id, { result: final });
     settledAt = Math.round(performance.now() - t0); first ??= settledAt;
     emit('answer.settled', final);
     settled = true;
+    if (sources.some(source => source.lands_late && pending.has(source.id))) extendFillUntil(startedAt + lateCutoffMs);
     const facebook = opts.sources.find(source => source.on && source.site === 'facebook' && source.lane === 'apify');
     const fillStarted = Promise.withResolvers<void>();
     const fillController = new AbortController();
@@ -311,9 +362,8 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
       ? searchSource(facebook, query, 'search', { caller: 'person', person_id: ctx.user_id, apifyRuns: opts.apifyRuns, log: ctx.log, signal: fillController.signal,
         apify: { search(...args) {
           fillController.signal.throwIfAborted();
-          const patch: Partial<ApiJobRow> & { fill_until: string } = { fill_until: new Date(Date.now() + APIFY_READ_DEADLINE_MS).toISOString() };
-          jobs.update(job.id, patch);
-          ctx.log.note('Facebook fill started', { job: job.id, fill_until: patch.fill_until });
+          extendFillUntil(Date.now() + APIFY_READ_DEADLINE_MS);
+          ctx.log.note('Facebook fill started', { job: job.id });
           fillStarted.resolve();
           return apify.search(...args);
         } },
