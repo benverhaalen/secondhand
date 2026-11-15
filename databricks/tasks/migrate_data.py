@@ -12,9 +12,10 @@ TABLES = (
     'decision', 'event', 'job', 'storefront_snapshot', 'log_event',
 )
 COMMENT = 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).'
+BASIS_COMMENT = 'Fallback level that answered: variant, product, family, kind, prior, or an engine named level (spec/product.md section 3).'
 
 
-def plan(existing_columns_by_table: dict[str, str], tables) -> list[str]:
+def plan(existing_columns_by_table: dict[str, str], tables, *, basis_level_exists=False) -> list[str]:
     """Plan from information_schema is_nullable values (YES/NO); absent means missing."""
     statements = []
     for table in tables:
@@ -29,6 +30,8 @@ def plan(existing_columns_by_table: dict[str, str], tables) -> list[str]:
         if table == 'observation':
             statements.append(f"ALTER TABLE {name} SET TBLPROPERTIES ('delta.appendOnly' = 'true')")
         statements.append(f'ALTER TABLE {name} ALTER COLUMN data SET NOT NULL')
+    if 'guarded_number' in tables and not basis_level_exists:
+        statements.append(f"ALTER TABLE secondhand.core.guarded_number ADD COLUMNS (basis_level STRING COMMENT '{BASIS_COMMENT}')")
     return statements
 
 
@@ -65,13 +68,14 @@ def main() -> None:
     log.job('migrate_data', 'migrate_data', 'running')
     try:
         spark = SparkSession.getActiveSession() or SparkSession.builder.getOrCreate()
-        query = """SELECT table_name, is_nullable
+        query = """SELECT table_name, column_name, is_nullable
                    FROM secondhand.information_schema.columns
-                   WHERE table_schema = 'core' AND column_name = 'data'"""
+                   WHERE table_schema = 'core' AND column_name IN ('data', 'basis_level')"""
         columns = log.call('db', 'read_data_columns', {'sql': query},
                            lambda: spark.sql(query).collect(),
                            describe=lambda rows: {'rows': len(rows)})
-        statements = plan({row['table_name']: row['is_nullable'] for row in columns}, TABLES)
+        statements = plan({row['table_name']: row['is_nullable'] for row in columns if row['column_name'] == 'data'},
+                          TABLES, basis_level_exists=any(row['table_name'] == 'guarded_number' and row['column_name'] == 'basis_level' for row in columns))
 
         def execute(statement):
             return log.call('db', 'migrate_data', {'sql': statement}, lambda: spark.sql(statement).collect())

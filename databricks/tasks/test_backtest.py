@@ -91,7 +91,10 @@ def test_hidden_comp_estimate_keeps_basis_but_not_display_citation():
     assert guarded[0]['state'] == 'hidden'
     assert guarded[0]['citation_id'] is None
     assert guarded[0]['hide_reason'] == 'too_few'  # baseline never hides a nonempty basis: ambiguous reason
-    assert b.guarded_rows([{**est, 'contestant': 'model', 'comp_ids': []}], rows, basis_hash, citation_id, 'run', '2019-02-01') == ([], [])
+    no_basis, no_citations = b.guarded_rows([{**est, 'contestant': 'model', 'shown': False, 'comp_ids': []}], rows, basis_hash, citation_id, 'run', '2019-02-01')
+    assert no_basis[0]['state'] == 'hidden' and no_basis[0]['basis_level'] == 'prior'
+    assert no_basis[0]['basis_count'] == 0 and no_basis[0]['citation_id'] is None
+    assert no_citations == []
     for key in ['c', 'd', 'e']:
         rows[key] = sale(key, '2018-12-04')
     random_hidden = {**est, 'contestant': 'random_comps', 'shown': False, 'comp_ids': ['a', 'b', 'c', 'd', 'e']}
@@ -261,3 +264,61 @@ def test_current_market_model_cited_hides_distinguish_count_from_width():
     rows = {k: v for k, v in rows.items() if k in ('a', 'b', 'test')}
     guards, _ = b.guarded_rows([cited], rows, basis_hash, citation_id, 'run', '2019-02-01')
     assert guards[0]['hide_reason'] == 'too_few'
+
+
+@pytest.mark.parametrize('contestant', [e.PRIMARY, 'last_sale', 'model'])
+def test_product_contestants_name_their_basis_and_preserve_engine_levels(contestant):
+    rows, est = sample()
+    guards, _ = b.guarded_rows([{**est, 'contestant': contestant}], rows, basis_hash, citation_id, 'run', '2019-02-01')
+    assert guards[0]['basis_level'] == 'product'
+    guards, _ = b.guarded_rows([{**est, 'contestant': contestant, 'basis_level': 'family'}], rows, basis_hash, citation_id, 'run', '2019-02-01')
+    assert guards[0]['basis_level'] == 'family'
+
+
+@pytest.mark.parametrize('fault, expected', [({'basis_level': 'unknown'}, 'guarded_number_basis_level'),
+                                          ({'citation_id': 'missing'}, 'guarded_number_citation_fk')])
+def test_backtest_refuses_entire_append_and_audits_each_violation(monkeypatch, fault, expected):
+    from types import SimpleNamespace as NS
+    from guard import GuardRefused
+    from secondhand_log import create_log, memory_sink
+
+    rows, est = sample()
+    guards, _ = b.guarded_rows([est], rows, basis_hash, citation_id, 'run', '2019-02-01')
+    writes = []
+
+    class Spark:
+        def sql(self, query):
+            return NS(collect=lambda: [{'id': guards[0]['citation_id']}])
+        def createDataFrame(self, records, schema):
+            return NS(write=NS(mode=lambda mode: NS(saveAsTable=lambda table: writes.append((table, records)))))
+
+    def frame(spark, table, records):
+        return spark.createDataFrame(records, 'fixture')
+
+    monkeypatch.setattr(b, 'table_frame', frame)
+    log = create_log(src='job.backtest_test', build='fixture', sink=memory_sink())
+    with pytest.raises(GuardRefused) as refused:
+        b.append_rows(Spark(), log, 'secondhand.core.guarded_number', guards + [{**guards[0], 'id': 'bad', **fault}])
+    assert expected in {v['rule'] for v in refused.value.violations}
+    assert [table for table, _ in writes] == ['secondhand.measures.guard_refusals'], 'good rows leaked out of a refused batch'
+    refusal, = writes[0][1]
+    assert refusal['job'] == 'valuation_backtest' and refusal['row_id'] == 'bad'
+    assert refusal['data'] == 'synthetic' and refusal['refused_at']
+
+
+def test_backtest_checks_all_batches_before_writing_citations(monkeypatch):
+    from guard import GuardRefused
+    from secondhand_log import create_log, memory_sink
+
+    rows, est = sample()
+    guards, citations = b.guarded_rows([est], rows, basis_hash, citation_id, 'run', '2019-02-01')
+    writes = []
+    class Spark:
+        def createDataFrame(self, records, schema):
+            from types import SimpleNamespace as NS
+            return NS(write=NS(mode=lambda mode: NS(saveAsTable=lambda table: writes.append(table))))
+    log = create_log(src='job.backtest_test', build='fixture', sink=memory_sink())
+    with pytest.raises(GuardRefused):
+        b.write_batches(Spark(), log, [('secondhand.core.citation', citations),
+                                     ('secondhand.core.guarded_number', [{**guards[0], 'basis_level': 'unknown'}])])
+    assert writes == ['secondhand.measures.guard_refusals'], 'backtest wrote citations before validating the numbers'

@@ -17,8 +17,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=ROOT, required=ROOT is None)
     ROOT = parser.parse_args().root.resolve()
-sys.path.insert(0, str(ROOT / 'log'))
+sys.path[:0] = [str(ROOT / 'log'), str(ROOT / 'databricks')]
 from secondhand_log import create_log, stdout_sink
+from guard import guard_batch
 
 ENVELOPE = {'ts', 'session', 'seq', 'src', 'level', 'event'}
 LOG_FIELDS = ENVELOPE | {'item', 'job', 'call', 'trace', 'user'}
@@ -131,9 +132,12 @@ def main() -> dict:
                             'rejected': len(parsed.rejects), 'reasons': json.dumps(dict(reasons), sort_keys=True)})
             for reject in parsed.rejects:
                 log.event('note', {'msg': 'log line rejected', **reject}, 'warn')
-        for table, rows, schema in [('secondhand.core.log_event', logs, LOG_SCHEMA),
-                                    ('secondhand.core.decision', decisions, DECISION_SCHEMA),
-                                    ('secondhand.measures.load_report', reports, REPORT_SCHEMA)]:
+        batches = [('secondhand.core.log_event', logs, LOG_SCHEMA),
+                   ('secondhand.core.decision', decisions, DECISION_SCHEMA),
+                   ('secondhand.measures.load_report', reports, REPORT_SCHEMA)]
+        for table, rows, _ in batches:
+            guard_batch(spark, log, 'load_logs', table, rows)
+        for table, rows, schema in batches:
             log.call('db', 'overwrite_log_table', {'table': table, 'rows': len(rows)},
                      lambda: spark.createDataFrame(rows, schema).write.mode('overwrite').saveAsTable(table))
         result = {'files': len(files), 'loaded': len(logs), 'decisions': len(decisions),

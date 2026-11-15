@@ -1,0 +1,25 @@
+resources:
+  alerts:
+    guard_violations_alert:
+      display_name: secondhand guard violations
+      query_text: SELECT violations_now FROM secondhand.measures.guard_status
+      warehouse_id: ${var.warehouse_id}
+      schedule:
+        quartz_cron_schedule: "0 0 * * * ?"
+        timezone_id: America/Chicago
+        pause_status: UNPAUSED
+      evaluation:
+        source:
+          name: violations_now
+          aggregation: SUM
+          display: violations_now
+        comparison_operator: GREATER_THAN
+        threshold:
+          value:
+            double_value: 0
+        empty_result_state: OK
+        notification:
+          notify_on_ok: true
+          retrigger_seconds: 3600
+      custom_summary: Open secondhand.measures.guard_violations for rows written past the door.
+      custom_description: secondhand.measures.guard_status counts nightly net violations and refusals at the write door.

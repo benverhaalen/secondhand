@@ -90,3 +90,40 @@ def test_real_writer_session_start_at_sequence_zero_is_loaded():
     result = parse(sink.lines, 'writer.jsonl')
     assert not result.rejects
     assert [r['seq'] for r in result.log_events] == [0, 1]
+
+
+@pytest.mark.parametrize('bad_mode', [False, True])
+def test_load_checks_all_batches_before_first_write_and_persists_only_refusals(monkeypatch, tmp_path, bad_mode):
+    import sys
+    from pathlib import Path
+    from types import SimpleNamespace as NS
+    from tasks import load_logs
+    from guard import GuardRefused
+
+    path = tmp_path / 'input.jsonl'
+    rows = [{**BASE, 'event': 'decision.answer', 'kind': 'first_post', 'mode': 'ask'},
+            {**BASE, 'seq': 2, 'event': 'decision.answer', 'kind': 'first_post',
+             'mode': 'broken' if bad_mode else 'never'}]
+    path.write_text('\n'.join(json.dumps(r) for r in rows))
+    monkeypatch.setattr(Path, 'glob', lambda *_: [path])
+    writes = []
+
+    class Spark:
+        def createDataFrame(self, rows, schema):
+            def save(table):
+                writes.append((table, list(rows)))
+            return NS(write=NS(mode=lambda mode: NS(saveAsTable=save)))
+
+    spark = Spark()
+    monkeypatch.setitem(sys.modules, 'pyspark.sql', NS(SparkSession=NS(getActiveSession=lambda: spark)))
+    if bad_mode:
+        with pytest.raises(GuardRefused) as refused:
+            load_logs.main()
+        assert refused.value.violations[0]['rule'] == 'decision_policy_mode'
+        assert [table for table, _ in writes] == ['secondhand.measures.guard_refusals'], 'a refused load partly overwrote core tables'
+        refusal, = writes[0][1]
+        assert refusal['job'] == 'load_logs' and refusal['data'] == 'example'
+        assert refusal['row_id'] == parse([json.dumps(rows[1])], 'fixture').decisions[0]['id']
+    else:
+        assert load_logs.main()['loaded'] == 2
+        assert [table for table, _ in writes] == ['secondhand.core.log_event', 'secondhand.core.decision', 'secondhand.measures.load_report']

@@ -16,8 +16,15 @@ resources:
             file:
               path: ../../databricks/sql/08_constraints.sql
               source: WORKSPACE
-        - task_key: guard
+        - task_key: sources
           depends_on: [{ task_key: constraints }]
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../../databricks/sql/11_sources.sql
+              source: WORKSPACE
+        - task_key: guard
+          depends_on: [{ task_key: sources }]
           sql_task:
             warehouse_id: ${var.warehouse_id}
             file:

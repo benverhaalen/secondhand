@@ -43,6 +43,30 @@ def test_plan_preserves_requested_table_order():
     )
 
 
+def test_basis_level_is_added_even_when_data_is_already_migrated_without_backfill_or_check():
+    statements = plan({'guarded_number': 'NO'}, ['guarded_number'], basis_level_exists=False)
+    assert len(statements) == 1
+    assert statements[0].startswith('ALTER TABLE secondhand.core.guarded_number ADD COLUMNS (basis_level STRING COMMENT ')
+    assert 'NOT NULL' not in statements[0] and 'CHECK' not in statements[0]
+    assert plan({'guarded_number': 'NO'}, ['guarded_number'], basis_level_exists=True) == []
+
+
+def test_basis_level_and_data_migrate_together_and_do_not_touch_other_tables():
+    statements = plan({}, ['guarded_number'], basis_level_exists=False)
+    assert len(statements) == 4
+    assert 'basis_level STRING' in statements[-1]
+    assert not any('UPDATE' in s and 'basis_level' in s for s in statements), 'legacy rows must stay nullable'
+    assert len(plan({}, ['evidence'], basis_level_exists=False)) == 3
+
+
+def test_fresh_guarded_number_schema_declares_nullable_basis_without_check():
+    from pathlib import Path
+    sql = (Path(__file__).resolve().parents[2] / 'databricks/sql/01_tables.sql').read_text()
+    body = sql.split('CREATE TABLE IF NOT EXISTS secondhand.core.guarded_number (', 1)[1].split(') COMMENT', 1)[0]
+    assert 'basis_level STRING COMMENT' in body
+    assert 'basis_level STRING NOT NULL' not in body and 'CHECK' not in body
+
+
 GRANT = 'INSERT INTO ' + "secondhand.governance.principal_map (principal, user_id) VALUES (current_user(), '*')"
 REVOKE = "DELETE FROM secondhand.governance.principal_map WHERE principal = current_user() AND user_id = '*'"
 
