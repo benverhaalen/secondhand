@@ -78,7 +78,8 @@ async function read(res: Response, n: number) {
 }
 const readAll = async (res: Response) => {
   const r = res.body!.getReader(), dec = new TextDecoder(); let text = '';
-  for (;;) { const c = await r.read(); if (c.done) return text; text += dec.decode(c.value); }
+  try { for (;;) { const c = await r.read(); if (c.done) return text; text += dec.decode(c.value); } }
+  finally { r.releaseLock(); }
 };
 const ids = (text: string) => [...text.matchAll(/^id: (\d+)$/gm)].map((m) => Number(m[1]));
 const job = (id: string, extra: Partial<JobRow> = {}): Pick<JobRow, 'id' | 'kind' | 'state' | 'stages'> => ({ id, kind: 'identify', state: 'running', stages: [], ...extra });
@@ -161,6 +162,157 @@ test('a live stream wakes on append, then ends after job.state done; listener an
   assert.deepEqual(ids(await all), [1, 2]);
   assert.equal(s.listenerCount('job_live'), 0);
   assert.equal(s.get('job_live', 'usr_8f2k')!.state, 'done');
+});
+
+function fillClock(t: TestContext) {
+  t.mock.timers.enable({ apis: ['Date', 'setInterval', 'setTimeout'], now: Date.parse('2026-11-15T12:00:00Z') });
+  const timers = new Set<ReturnType<typeof setTimeout>>();
+  const interval = globalThis.setInterval, timeout = globalThis.setTimeout;
+  const clearIntervalTimer = globalThis.clearInterval, clearTimeoutTimer = globalThis.clearTimeout;
+  t.mock.method(globalThis, 'setInterval', (...args: Parameters<typeof setInterval>) => {
+    const timer = interval(...args); timers.add(timer); return timer;
+  });
+  t.mock.method(globalThis, 'setTimeout', (...args: Parameters<typeof setTimeout>) => {
+    const timer = timeout(...args); timers.add(timer); return timer;
+  });
+  t.mock.method(globalThis, 'clearInterval', (timer: ReturnType<typeof setInterval>) => { timers.delete(timer); clearIntervalTimer(timer); });
+  t.mock.method(globalThis, 'clearTimeout', (timer: ReturnType<typeof setTimeout>) => { timers.delete(timer); clearTimeoutTimer(timer); });
+  return timers;
+}
+
+function fillNotes(sink: ReturnType<typeof memorySink>) {
+  return sink.lines.map(line => JSON.parse(line) as Record<string, unknown>)
+    .filter(line => line.msg === 'Job stream waiting for fill' || line.msg === 'Job stream fill closed')
+    .map(({ msg, job, reason }) => ({ msg, job, reason }));
+}
+
+test('done keeps streaming late answers and heartbeats until fill_until, then releases every timer', async t => {
+  const timers = fillClock(t);
+  const s = memoryJobs(), sink = memorySink();
+  deps.log = createLog({ src: 'test', build: 'test', sink });
+  const was = streamOpts.heartbeatMs; streamOpts.heartbeatMs = 500;
+  t.after(() => { streamOpts.heartbeatMs = was; });
+  s.put({ ...job('job_fill'), kind: 'search', fill_until: new Date(Date.now() + 2000).toISOString() }, 'usr_8f2k');
+  const response = await call(handlers(s).events, '/v1/jobs/job_fill/events');
+  t.after(() => response.body!.cancel());
+  s.append('job_fill', 'job.state', { state: 'done' });
+  assert.equal(s.listenerCount('job_fill'), 1, 'done must keep the stream open for the pending fill');
+  t.mock.timers.tick(1000);
+  s.append('job_fill', 'answer.late', { site: 'facebook', results: [] });
+  t.mock.timers.tick(999);
+  assert.equal(s.listenerCount('job_fill'), 1, 'the fill is still pending before its exact deadline');
+  t.mock.timers.tick(1);
+  assert.equal(s.listenerCount('job_fill'), 0, 'fill_until closes at its deadline');
+  assert.equal(timers.size, 0, 'fill_until closure clears every timer');
+  const text = await readAll(response);
+  assert.deepEqual(ids(text), [1, 2]);
+  assert.match(text, /event: answer.late/);
+  assert.match(text, /: heartbeat/);
+  assert.deepEqual(fillNotes(sink), [
+    { msg: 'Job stream waiting for fill', job: 'job_fill', reason: 'fill pending' },
+    { msg: 'Job stream fill closed', job: 'job_fill', reason: 'fill_until passed' },
+  ]);
+  assert.deepEqual(checkLog(sink.text()).problems, []);
+});
+
+test('job_fill_grace_s caps a distant fill from the time done is seen, without resetting on late frames', async t => {
+  const timers = fillClock(t);
+  const readParam = searchParams.read.bind(searchParams);
+  assert.equal(readParam('job_fill_grace_s', {}).value, 60, 'the named grace param has a 60-second prior');
+  t.mock.method(searchParams, 'read', (...args: Parameters<typeof searchParams.read>) => {
+    const value = readParam(...args);
+    return args[0] === 'job_fill_grace_s' ? { ...value, value: 2 } : value;
+  });
+  const s = memoryJobs(), sink = memorySink();
+  deps.log = createLog({ src: 'test', build: 'test', sink });
+  s.put({ ...job('job_grace'), kind: 'search', fill_until: new Date(Date.now() + 600000).toISOString() }, 'usr_8f2k');
+  const response = await call(handlers(s).events, '/v1/jobs/job_grace/events');
+  t.after(() => response.body!.cancel());
+  t.mock.timers.tick(1000);
+  s.append('job_grace', 'job.state', { state: 'done' });
+  assert.equal(s.listenerCount('job_grace'), 1, 'a future fill waits after done');
+  t.mock.timers.tick(1000);
+  s.append('job_grace', 'answer.late', { site: 'ebay', results: [] });
+  t.mock.timers.tick(999);
+  assert.equal(s.listenerCount('job_grace'), 1, 'grace starts at done, not when the stream opened');
+  t.mock.timers.tick(1);
+  assert.equal(s.listenerCount('job_grace'), 0, 'the grace cap closes before the distant fill_until');
+  assert.equal(timers.size, 0, 'grace closure clears every timer');
+  assert.deepEqual(ids(await readAll(response)), [1, 2]);
+  assert.equal(fillNotes(sink).at(-1)?.reason, 'grace reached');
+});
+
+test('a row-only fill_until extension after done is re-read at polls and the original deadline', async t => {
+  const timers = fillClock(t);
+  const open = disk(t), a = open().s, b = open().s;
+  a.put({ ...job('job_extended'), kind: 'search', fill_until: new Date(Date.now() + 1500).toISOString() }, 'usr_8f2k');
+  a.append('job_extended', 'job.state', { state: 'done' });
+  const response = await call(handlers(a).events, '/v1/jobs/job_extended/events');
+  t.after(() => response.body!.cancel());
+  assert.equal(a.listenerCount('job_extended'), 1, 'replaying done also waits for a pending fill');
+  t.mock.timers.tick(1000);
+  b.update('job_extended', { fill_until: new Date(Date.now() + 2500).toISOString() });
+  t.mock.timers.tick(500);
+  assert.equal(a.listenerCount('job_extended'), 1, 'the old deadline must read the extended row again');
+  t.mock.timers.tick(500);
+  b.append('job_extended', 'answer.late', { site: 'ebay', results: [] });
+  t.mock.timers.tick(1000);
+  t.mock.timers.tick(499);
+  assert.equal(a.listenerCount('job_extended'), 1, 'the updated fill_until is still in the future');
+  t.mock.timers.tick(1);
+  assert.equal(a.listenerCount('job_extended'), 0);
+  assert.equal(timers.size, 0, 'the extended deadline clears every timer');
+  assert.deepEqual(ids(await readAll(response)), [1, 2]);
+});
+
+test('done without a future fill and failed or cancelled with a fill close immediately', async t => {
+  fillClock(t);
+  for (const state of ['done', 'expired', 'failed', 'cancelled']) {
+    const s = memoryJobs(), id = `job_immediate_${state}`;
+    s.put({ ...job(id), kind: state === 'cancelled' ? 'assist' : 'search', ...(state === 'done' ? {} : {
+      fill_until: new Date(Date.now() + (state === 'expired' ? -1 : 10000)).toISOString(),
+    }) }, 'usr_8f2k');
+    s.append(id, 'job.state', { state: state === 'expired' ? 'done' : state });
+    const response = await call(handlers(s).events, `/v1/jobs/${id}/events`);
+    t.after(() => response.body!.cancel());
+    assert.equal(s.listenerCount(id), 0, `${state} must close immediately`);
+    assert.deepEqual(ids(await readAll(response)), [1]);
+  }
+});
+
+test('a late fill from another SQLite store reaches the stream on the one-second poll', async t => {
+  fillClock(t);
+  const open = disk(t), a = open().s, b = open().s;
+  a.put({ ...job('job_remote_fill'), kind: 'search', fill_until: new Date(Date.now() + 2000).toISOString() }, 'usr_8f2k');
+  const response = await call(handlers(a).events, '/v1/jobs/job_remote_fill/events');
+  t.after(() => response.body!.cancel());
+  b.append('job_remote_fill', 'job.state', { state: 'done' });
+  t.mock.timers.tick(1000);
+  assert.equal(a.listenerCount('job_remote_fill'), 1, 'remote done must keep polling for the fill');
+  b.append('job_remote_fill', 'answer.late', { site: 'facebook', results: [] });
+  t.mock.timers.tick(1000);
+  assert.equal(a.listenerCount('job_remote_fill'), 0);
+  assert.deepEqual(ids(await readAll(response)), [1, 2], 'the final poll drains remote late frames before closing');
+});
+
+test('cancelling during a fill clears every interval, deadline timer and listener and logs the reason once', async t => {
+  const timers = fillClock(t);
+  const s = memoryJobs(), sink = memorySink();
+  deps.log = createLog({ src: 'test', build: 'test', sink });
+  s.put({ ...job('job_cancel_fill'), kind: 'search', fill_until: new Date(Date.now() + 2000).toISOString() }, 'usr_8f2k');
+  const response = await call(handlers(s).events, '/v1/jobs/job_cancel_fill/events');
+  t.after(() => response.body!.cancel());
+  s.append('job_cancel_fill', 'job.state', { state: 'done' });
+  assert.equal(s.listenerCount('job_cancel_fill'), 1, 'cancellation is tested while waiting for a fill');
+  await response.body!.cancel();
+  assert.equal(timers.size, 0, 'cancelling a fill clears all timers');
+  assert.equal(s.listenerCount('job_cancel_fill'), 0);
+  t.mock.timers.tick(10000);
+  assert.deepEqual(fillNotes(sink), [
+    { msg: 'Job stream waiting for fill', job: 'job_cancel_fill', reason: 'fill pending' },
+    { msg: 'Job stream fill closed', job: 'job_cancel_fill', reason: 'client cancelled' },
+  ]);
+  assert.deepEqual(checkLog(sink.text()).problems, []);
 });
 
 test('the heartbeat is sent, and cancelling removes the listener', async () => {
