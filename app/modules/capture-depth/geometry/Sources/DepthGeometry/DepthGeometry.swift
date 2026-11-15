@@ -48,7 +48,7 @@ private struct Point2: Equatable {
 
 /// The central sensor window, defined by pixel centres in [15%, 85%).
 public struct DepthWindow {
-    private static let inset = 0.15 // Keep support and item away from the sensor's outer edges.
+    fileprivate static let inset = 0.15 // Keep support and item away from the sensor's outer edges.
     public let columns: Range<Int>, rows: Range<Int>
     private let minU: Double, maxU: Double, minV: Double, maxV: Double
     public init(width: Int, height: Int) {
@@ -66,6 +66,32 @@ public struct DepthWindow {
     func touchesBorder(u: Double, v: Double) -> Bool {
         u <= minU || u >= maxU || v <= minV || v >= maxV
     }
+}
+
+/// A fixed square: its side is 10% of the shorter dimension of DepthWindow.
+struct DepthDistanceWindow {
+    private let centreU: Double, centreV: Double, halfSide: Double
+    init(width: Int, height: Int) {
+        centreU = Double(width) / 2; centreV = Double(height) / 2
+        // Use the continuous window size rather than rounded pixel counts.
+        halfSide = Double(min(width, height)) * (1 - 2 * DepthWindow.inset) * 0.10 / 2
+    }
+    func contains(_ sample: DepthSample) -> Bool {
+        sample.u >= centreU - halfSide && sample.u < centreU + halfSide
+            && sample.v >= centreV - halfSide && sample.v < centreV + halfSide
+    }
+}
+
+/// Median camera-space Z in metres, independent of support-plane or item fitting.
+public func distanceMeters(samples: [DepthSample], width: Int, height: Int) -> Double? {
+    guard width > 0, height > 0 else { return nil }
+    let window = DepthDistanceWindow(width: width, height: height)
+    let depths = samples.filter {
+        $0.highConfidence && $0.depth.isFinite && $0.depth > 0 && window.contains($0)
+    }.map(\.depth).sorted()
+    guard depths.count >= 20 else { return nil }
+    let middle = depths.count / 2
+    return depths.count.isMultiple(of: 2) ? depths[middle - 1] / 2 + depths[middle] / 2 : depths[middle]
 }
 
 /// Copies scalar samples only; row strides are bytes and may include padding.
@@ -265,6 +291,7 @@ public enum DepthGeometry {
                     }
                 }
             }
+            guard indices.count >= minimumPoints else { continue }
             if distance < nearest { nearest = distance; chosen = indices }
         }
         return chosen.map { item[$0] }

@@ -1,4 +1,7 @@
 import type { State, Fact } from './select.ts';
+import { readParts } from './parts.ts';
+import { bound, table } from './table.ts';
+import { memoryStore } from '../param/param.ts';
 export type Expected = [string,string,unknown];
 export type Event = {patch:Partial<State>; questions:Expected[]; status:'shooting'|'asking'|'done'; cls?:string; keys?:string[]};
 const f=(value:unknown,source:Fact['source']='you_said',confidence=1,rest:Partial<Fact>={}):Fact=>({value,source,confidence,...rest});
@@ -39,7 +42,7 @@ walk('C Handbag',{sites:['ebay','poshmark','depop'],has_lidar:false,suggestion:{
  {patch:{refused:['model']},questions:[],status:'done'},
 ]);
 const phoneQs=[q('function'),q('signed_out','yes_no')];
-walk('D Phone',{sites:['ebay','mercari','facebook'],kind:'phones_laptops',suggestion:{family:'electronics',p:.88,second_p:.05}},'small_hard',['about_screenshot','front_screen_on','back'],[
+walk('D Phone',{sites:['ebay','mercari','facebook'],kind:'phones',suggestion:{family:'electronics',p:.88,second_p:.05}},'small_hard',['about_screenshot','front_screen_on','back'],[
  {patch:{kept:['about_screenshot'],facts:{model:f('iPhone 13','label',.97),storage_gb:f(128,'label',.97),battery_health_pct:f(87,'label',.96),brand:f('Apple','label',.97)}},questions:[q('type','pick_one','electronics')],status:'shooting'},
  {patch:{type:'electronics'},questions:[],status:'shooting'},
  {patch:{kept:['about_screenshot','front_screen_on']},questions:[],status:'shooting'},
@@ -77,3 +80,44 @@ for(const has_lidar of [true,false]) {
   ...(!has_lidar?[{patch:{facts:{dimensions:f(tableVariants[1].value)}},questions:[],status:'done' as const}]:[]),
  ]);
 }
+
+const desktopKeys=['scan','model_plate'];
+const desktopSeen={brand:f('Example','label',.95),colour:f(['black'],'seen',.95),dimensions:f({width:20,height:45,depth:40},'measured',.95)};
+const desktopRequired=[q('condition'),q('function')];
+const desktopInitial={type:'electronics' as const,kind:'desktops',sites:['ebay','facebook'] as State['sites']};
+const prebuiltParts:Record<string,Fact>={};
+for(const [name,value] of Object.entries({graphics:'NVIDIA GeForce RTX 3060',processor:'Intel Core i7-10700',memory:16,storage:512,power_supply:650,board:'Example board',case:'Example case'}))prebuiltParts[`part.${name}`]=f(value,'lookup',.95);
+// data: example, constructed system-screen lines, not real captures.
+const screenParts=(kind:string,step:string,lines:string[]):Record<string,Fact>=>Object.fromEntries(
+ readParts(lines.map(line=>({line,confidence:.95})),table.components[`electronics.${kind}`].parts,bound(memoryStore(),'capture_part_size_slack'))
+  .map(({field,...fact})=>[field,{...fact,step}]));
+walk('H Prebuilt desktop',desktopInitial,'medium_hard',desktopKeys,[
+ {patch:{kept:['scan'],facts:{colour:desktopSeen.colour}},questions:[],status:'shooting'},
+ {patch:{kept:desktopKeys,lookups:'done',facts:{...desktopSeen,...prebuiltParts,model:f('Example desktop','lookup',.95),custom_build:f(false,'lookup',.95)}},questions:desktopRequired,status:'asking'},
+ {patch:{facts:{condition:f('good')}},questions:[q('function')],status:'asking'},
+ {patch:{facts:{function:f('works')}},questions:[],status:'done'},
+]);
+for(const screen of [false,true])walk(`I Custom desktop ${screen?'screen read':'no screen'}`,desktopInitial,'medium_hard',desktopKeys,[
+ {patch:{kept:['scan'],facts:{colour:desktopSeen.colour,dimensions:desktopSeen.dimensions}},questions:[],status:'shooting'},
+ {patch:{kept:desktopKeys,lookups:'done',facts:{brand:desktopSeen.brand,model:f('Case plate','label',.95)}},questions:[q('custom_build','yes_no'),...desktopRequired],status:'asking'},
+ {patch:{facts:{custom_build:f(true)}},questions:[...desktopRequired,q('system_info','shot')],status:'asking'},
+ {patch:{facts:{condition:f('good')}},questions:[q('function'),q('system_info','shot')],status:'asking'},
+ {patch:{facts:{function:f('works')}},questions:[q('system_info','shot')],status:'asking'},
+ ...(screen?[
+  {patch:{kept:[...desktopKeys,'system_info'],facts:screenParts('desktops','system_info',[
+   'Graphics Card NVIDIA GeForce RTX 3060','Processor Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz 2.90 GHz','Installed RAM 16 GB','Storage 512 GB',
+  ])},questions:[],status:'done' as const},
+ ]:[
+  {patch:{refused:['system_info']},questions:[q('part.graphics','text'),q('part.processor','text')],status:'asking' as const},
+  {patch:{facts:{'part.graphics':f('NVIDIA GeForce RTX 3060')}},questions:[q('part.processor','text')],status:'asking' as const},
+  {patch:{facts:{'part.processor':f('Intel Core i7-10700')}},questions:[],status:'done' as const},
+ ]),
+]);
+walk('J Laptop',{type:'electronics',kind:'laptops',sites:['ebay','facebook']},'small_hard',['about_screenshot','front_screen_on','back'],[
+ {patch:{kept:['about_screenshot'],facts:{brand:f('Apple','label',.97),model:f('MacBook Pro','label',.97),storage_gb:f(512,'label',.97),battery_health_pct:f(90,'label',.96),
+  ...screenParts('laptops','about_screenshot',['Chip Apple M2 Pro','Memory 16 GB','Graphics Apple M2 Pro','Storage 512 GB'])}},questions:[],status:'shooting'},
+ {patch:{kept:['about_screenshot','front_screen_on','back'],lookups:'done',facts:{colour:f(['silver'],'seen',.95)}},questions:[q('condition'),q('function'),q('signed_out','yes_no')],status:'asking'},
+ {patch:{facts:{condition:f('good')}},questions:[q('function'),q('signed_out','yes_no')],status:'asking'},
+ {patch:{facts:{function:f('works')}},questions:[q('signed_out','yes_no')],status:'asking'},
+ {patch:{facts:{signed_out:f(true)}},questions:[],status:'done'},
+]);

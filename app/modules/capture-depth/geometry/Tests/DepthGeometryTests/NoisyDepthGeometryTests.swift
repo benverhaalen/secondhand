@@ -140,6 +140,12 @@ final class NoisyDepthGeometryTests: XCTestCase {
         // The box is left of centre; the detached stick is farther to the right.
         try assertBox(measure(fixture.frame(tilt: 0, stickGap: 0.15, offset: -0.20)))
     }
+    func testSingleCentralTableOutlierCannotHideNoisyOffCentreBox() throws {
+        var fixture = DepthFrameFixture()
+        let points = fixture.frame(tilt: 0, noise: 0.003, offset: -0.20)
+        let stray = DepthSample(u: 320, v: 240, depth: 1.17, highConfidence: true)
+        try assertBox(measure(points + [stray]))
+    }
     func testBoxWiderThanWindowIsClippedInsteadOfUnderestimated() {
         var fixture = DepthFrameFixture()
         let result = DepthGeometry.measurement(samples: fixture.frame(tilt: 0, boxWidth: 1.5),

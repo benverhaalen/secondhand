@@ -78,4 +78,4 @@ For Google, set `NEXT_PUBLIC_SECONDHAND_GOOGLE_CLIENT_ID` in the web build and i
 
 ### Brand fonts
 
-Both licensed faces are optional local files. Set `SECONDHAND_FONTS` to their folder or put them in `fonts/` at the repository root before building. Browser clients load fonts from the website, including on Windows. When the licensed files are absent, the bundled Hanken Grotesk and Outfit supply the text and wordmark respectively.
+Both licensed faces are optional local files. Set `SECONDHAND_FONTS` to their folder or put them in `fonts/` at the repository root before building. For a build that has only the web directory, set the same folder variable or place the files in `web/public/fonts/` before packaging. Git excludes the licensed files. A deployment built without them serves the open fallbacks on every operating system. Windows browsers request the files from the website. When the licensed files are absent, the bundled Hanken Grotesk and Outfit supply the text and wordmark respectively.

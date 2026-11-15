@@ -45,7 +45,7 @@ Two people read the site, and neither is using the product yet. A **judge** afte
 
 **W13. Item examples and app captures.** Use the complete screen from the current app build with nonpersonal sample data. The Carhartt and Kindle examples use items from the [demo collection](../../assets/demo-items/README.md). Preserve the source, capture build and fixture details in [image sources](../../web/public/marketing/SOURCES.md). Design images can explore composition. Site screenshots must come from the app itself.
 
-**W14. One header, a different opening for each job.** Use the same [header and footer](../../web/components/marketing/chrome.tsx) across public pages. Use the same sized pill for a primary action and an underlined link for evidence or a related page. Clofie appears in the lowercase secondhand wordmark and in each public entry page’s largest headline. Use PP Neue Montreal elsewhere. The paired tags and wordmark align visually at every width. On phones the three-dot menu contains the public page links, GitHub and Sign in.
+**W14. One header, a different opening for each job.** Use the same [header and footer](../../web/components/marketing/chrome.tsx) across public pages. Use the same sized pill for a primary action and an underlined link for evidence or a related page. Clofie appears in the lowercase secondhand wordmark and in each public entry page’s largest headline. Use PP Neue Montreal elsewhere. The paired tags and wordmark align visually at every width. What’s Next stays in its own top pill. On phones the three-dot menu contains the other page links, GitHub and Sign in.
 
 | Page | What the visitor came to learn | Opening and color |
 |---|---|---|

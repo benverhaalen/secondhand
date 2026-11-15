@@ -48,7 +48,7 @@ def test_other_and_toys_branch_on_rigid():
 
 
 def test_kind_override_for_phones():
-    steps = P.process_for("electronics", True, kind="phones_laptops")
+    steps = P.process_for("electronics", True, kind="phones")
     assert [s["role"] for s in steps] == ["screenshot", "front", "back"]
     assert P.process_for("electronics", True, kind="headphones") == P.process_for("electronics", True)
 

@@ -21,8 +21,8 @@ export function matchBrands(text: string, line = 0, wholeLine = false): Brand[] 
       const before = text.slice(text.lastIndexOf('\n', match.index - 1) + 1, match.index);
       const after = text.slice(match.index + match[0].length, text.indexOf('\n', match.index) < 0 ? text.length : text.indexOf('\n', match.index));
       const candidate = {brand: row.brand, s: 0.9, rule: 'brand_lexicon', span: span(line, match.index, match[0])};
-      if (wholeLine ? !brandTag(text, candidate) :
-        'common_word' in row && row.common_word && !commonWordTag(match[0], before, after)) continue;
+      if (wholeLine && !brandTag(text, candidate)) continue;
+      if ('common_word' in row && row.common_word && !commonWordTag(before, after)) continue;
       matches.push(candidate);
     }
   }
@@ -46,11 +46,9 @@ const fibres: Record<string, Fibre> = {
 const folded = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const colourRows: Record<string, string> = colours.rows;
 const rnRows: Record<string, {brand: string}> = registrations.rows;
-function commonWordTag(word: string, before: string, after: string): boolean {
-  if (!/^\s*(?:Brand\s*:\s*)?[™®]?\s*$/i.test(before)) return false;
-  if (/^\s*(?:TM\b|[™®]|,?\s*(?:Inc|Co)\.)/i.test(after) || /[™®]/.test(before)) return true;
-  return word === word.toUpperCase() && after.trim().split(/\s+/).every(token => !token ||
-    /^(?:size|sz|style|no|art|model|item|US|UK|EU|XXXL|XXL|XXS|XL|XS|S|M|L|\d{1,5}|[x×]|[A-Z]{1,3}\d{2,5})[:.#]?$/i.test(token) || Object.hasOwn(colourRows, token.toUpperCase()));
+function commonWordTag(before: string, after: string): boolean {
+  if (/^[\s\p{P}®™]*(?:brand|marque|marca)\s*:[\s\p{P}®™]*$/iu.test(before)) return true;
+  return /^[\s\p{P}®™]*$/u.test(before) && /^[\s\p{P}®™]*$/u.test(after);
 }
 const countryRows = countries.rows.flatMap(row => [row.name, row.display_name, ...row.aliases].map(name => ({code: row.code, name: row.display_name, token: folded(name)})))
   .sort((a, b) => b.token.length - a.token.length);
@@ -76,9 +74,20 @@ const styleLabel = /^(?:(?:Style(?:\s+No\.?)?|Model)\s*[:#.]?\s+|Art\s+)/i;
 const notStyle = /^(?:(?:RN|CA|LOT|US|UK|EU|EUR|FR|IT|JP|CN|MX|XXXL|XXL|XXS|XS|XL|S|M|L|W)\d+|(?:FW|SS|AW|FY|F|S|H|SP|FA|HO|SU)(?:\d{2}|\d{4}))$/i;
 const colourLabel = /^(?:colour|color|colore|couleur|farbe)\s*:?$/i;
 const colourSegment = /^(?:colour|color|colore|couleur|farbe)\s*:/i;
-const licensorLine = /^(?:officially\s+licensed\b|licensed\b|under\s+license\s+from\b|©.*\blicensed\b|TM\s*&\s*©)/i;
+const licensorLine = /^(?:(?:distributed\s+(?:by|for)|imported\s+(?:and\s+distributed\s+)?by|manufactured\s+for|mfd\.?\s+for|made\s+for|exclusively\s+for|officially\s+licensed|licensed|under\s+license)\b|a\s+.+\s+company\b|©|(?:TM|™)\s*&)/i;
 const shoeWidth = /^(?:M|W|D|B|E|EE|2E|4E|N)$/i;
-const numericSize = /^(?:(?:size|sz)\s*:?\s*)?(?:(?:US|UK|EU|EUR|CM)\s*)?\d+(?:[.,]\d+|\s+\d+\/\d+|\s*[¼½¾⅓⅔])?$/i;
+const numericSize = /^(?:(?:size|sz)\s*:?\s*)?(?:(?:US|UK|EU|EUR|CM|MENS|WOMENS)\s*)?\d+(?:[.,]\d+|\s+\d+\/\d+|\s*[¼½¾⅓⅔])?$/i;
+const sizeQualifier = /\b(?:youth|kids|boys|girls|toddler|tall|petite|plus|big|maternity|long)\b|\bage\s*\d/i;
+const originStatement = /\b(?:made\s+in|sewn\s+in|assembled\s+in|leather\s+from)\b/gi;
+// A translated origin beside an assembly line may name another country ("Hecho en Mexico" with "Assembled in USA"):
+// abstain then (review 6, must-fix 4). The same country in three languages alone stays one origin.
+const translatedOrigin = /(?:\bhecho\s+en\b|\bfabricado\s+en\b|fabriqu[ée]\s+en\b|\bfabbricato\s+in\b|\bhergestellt\s+in\b)/iu;
+const assemblyOrigin = /\b(?:sewn\s+in|assembled\s+in|leather\s+from)\b/i;
+// A line with licence or trademark wording names a licensor, not the maker: no lexicon brand from it (RN and CA still
+// count), and "Officially Licensed Product" refers back to the line above it (review 6, must-fix 1 and 2).
+const licensedProduct = /\blicensed\s+(?:product|merchandise|apparel)\b/i;
+const licenceText = /\b(?:licen[cs]ed\b|under\s+licen[cs]e\b|trademarks?\s+of\b|are\s+(?:registered\s+)?trademarks\b|interactive\s+entertainment\b)|©|(?:TM|™)\s*&/iu;
+const originPart = /^(?:fabric|leather|shell|trim)\s*[:.-]?$/i;
 const undecoratedStart = (text: string) => text.replace(/[®™©]/g, '').replace(/^[\s\p{P}]+/u, '').trim();
 
 function brandTag(text: string, brand: Brand): boolean {
@@ -175,6 +184,7 @@ function styleSegment(text: string, line: number, brands: Brand[]): (Reading & {
   else if (!brand) return undefined;
   const match = /^((?:[A-Z]{1,3})?\d+)(?:\s+([A-Z]{2,4}))?(?:\s+((?:Size|Sz|Taille|Talla|Größe)\b.*))?$/i.exec(rest);
   if (!match || notStyle.test(match[1])) return undefined;
+  if (labelled && /^model\b/i.test(labelled[0]) && /^\d+$/.test(match[1])) return undefined;
   const colour = match[2] ? colourRows[match[2].toUpperCase()] : undefined;
   if ((match[2] && !colour) || (match[3] && !sizeSegment(folded(match[3])))) return undefined;
   if (brand) {
@@ -193,7 +203,9 @@ export function parseTag(input: unknown): Parsed {
   const sizes: (Reading & {line: number})[] = [], origins: {code: string; value: string; line: number}[] = [];
   const fabric: Composition[] = [];
   const styles: NonNullable<ReturnType<typeof styleSegment>>[] = [];
-  let uncertainSize = false, uncertainOrigin = false, uncertainFabric = false, uncertainStyle = false;
+  let uncertainSize = false, uncertainFabric = false, uncertainStyle = false;
+  let uncertainOrigin = lines.reduce((count, {line}) => count + [...line.matchAll(originStatement)].length, 0) > 1 ||
+    lines.some(({line}) => translatedOrigin.test(line)) && lines.some(({line}) => assemblyOrigin.test(line));
   let section: 'main'|'part'|'unknown' = 'main';
   const georgiaCountryLines = lines.flatMap(({line}, index) => /\brepublic of georgia\b|\btbilisi\b/.test(folded(line)) ? [index] : []);
   lines.forEach(({line}, index) => {
@@ -204,7 +216,8 @@ export function parseTag(input: unknown): Parsed {
       }
     const colourValue = index > 0 && colourLabel.test(lines[index - 1].line.trim());
     if (colourValue || colourSegment.test(line.trim())) return;
-    brands.push(...matchBrands(line, index, true));
+    if (!licenceText.test(line) && !(index + 1 < lines.length && licensedProduct.test(lines[index + 1].line)) &&
+      (index === 0 || !licensorLine.test(lines[index - 1].line.trim()))) brands.push(...matchBrands(line, index, true));
     const normalized = folded(line).trim();
     const style = styleSegment(line, index, brands);
     if (style) styles.push(style);
@@ -215,7 +228,8 @@ export function parseTag(input: unknown): Parsed {
     const styleSize = style && /\b(?:size|sz|taille|talla|große)\b.*$/.exec(normalized)?.[0];
     const labelledSize = styleSize ? sizeSegment(styleSize) : undefined;
     if (labelledSize) sizes.push({...labelledSize, line: index});
-    const width = shoeWidth.test(normalized) && index > 0 && numericSize.test(lines[index - 1].line.trim());
+    const neighbors = lines.slice(Math.max(0, index - 1), index + 2);
+    const width = shoeWidth.test(normalized) && neighbors.some(({line}) => numericSize.test(line.trim()));
     const inlineWidth = /\s+(M|W|D|B|E|EE|2E|4E|N)$/i.exec(normalized);
     if (width || (inlineWidth && numericSize.test(normalized.slice(0, inlineWidth.index)))) uncertainSize = true;
     if (!width && !claimedNumberLine.test(normalized)) for (const segment of segments) {
@@ -230,8 +244,11 @@ export function parseTag(input: unknown): Parsed {
     }
 
     // A delimiter closes the preceding clause; a bare qualifier word never does.
-    for (const segment of segments.flatMap(text => text.split(/\s*[;|/!?)]\s*(?=made\s+in|hecho\s+en|fabrique\s+(?:au|en))|(?<=[.])\s+(?=made\s+in|hecho\s+en|fabrique\s+(?:au|en))/))) {
+    const originSegments = segments.flatMap(text => text.split(/\s*[;|/!?)]\s*(?=made\s+in|hecho\s+en|fabrique\s+(?:au|en))|(?<=[.])\s+(?=made\s+in|hecho\s+en|fabrique\s+(?:au|en))/));
+    for (const [position, segment] of originSegments.entries()) {
       if (!originLabel.test(segment)) continue;
+      if ((index > 0 && originPart.test(lines[index - 1].line.trim())) ||
+        (position > 0 && originPart.test(originSegments[position - 1]))) uncertainOrigin = true;
       const origin = originSegment(segment);
       if (!origin.valid) uncertainOrigin = true;
       origins.push(...origin.values.map(value => ({...value, line: index})));
@@ -252,6 +269,8 @@ export function parseTag(input: unknown): Parsed {
       else fabric.push(...entries);
     }
   });
+  // A youth, fit or age qualifier anywhere on the tag can change what a letter size means (review 6, must-fix 3).
+  if (sizes.some(size => size.rule !== 'waist_length') && lines.some(({line}) => sizeQualifier.test(line))) uncertainSize = true;
   if (!uncertainSize && new Set(sizes.map(size => size.value)).size === 1) add('size_label', sizes[0].value, sizes[0].rule, sizes.map(size => size.line));
   if (!uncertainOrigin && new Set(origins.map(origin => origin.value)).size === 1) {
     const origin = origins[0];
