@@ -17,14 +17,14 @@ export function Loading({ name, nav, rows = 'card-item', skip }: { name: string;
   );
 }
 
-// "Couldn’t load your list": what did not load, that nothing changed, and Retry, which loads the page afresh.
+// "Couldn’t load your list": what did not load, and Retry, which loads the page afresh.
 export function Failed({ name, nav, what, again, skip }: { name: string; nav: ReactNode; what: string; again: Href; skip?: string }) {
   return (
     <Screen name={name} state="failed" skip={skip} nav={nav}>
-      <EmptyState title={`Couldn’t load ${what}`} line="Nothing changed. Try again in a moment." action={{ id: `${name}-retry`, label: 'Retry', onPress: () => router.replace(again) }} />
+      <EmptyState title={`Couldn’t load ${what}`} action={{ id: `${name}-retry`, label: 'Retry', onPress: () => router.replace(again) }} />
     </Screen>
   );
 }
 
 // Offline keeps the last copy on screen, with this line at the top.
-export const OfflineLine = () => <Txt role="caption">Waiting for signal. This is the last copy.</Txt>;
+export const OfflineLine = () => <Txt role="caption">Waiting for signal; showing saved results.</Txt>;

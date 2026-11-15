@@ -80,7 +80,7 @@
     {
       "state": "offline",
       "route": "/buy?state=offline",
-      "shows": "Waiting for signal. This is the last copy."
+      "shows": "Waiting for signal; showing saved results."
     }
   ],
   "controls": [

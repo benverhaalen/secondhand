@@ -102,7 +102,7 @@ env:
 # State: new
 - openLink: ${URL}/search
 - extendedWaitUntil:
-    visible: "Type what you want, paste a link, or take a photo\\. It looks on five sites at once\\."
+    visible: "Search five sites at once\\."
     timeout: 15000
 # State: one
 - openLink: ${URL}/search?state=one
@@ -124,5 +124,5 @@ env:
 # State: offline
 - openLink: ${URL}/search?state=offline
 - extendedWaitUntil:
-    visible: "Waiting for signal\\. This is the last copy\\."
+    visible: "Waiting for signal; showing saved results\\."
     timeout: 15000

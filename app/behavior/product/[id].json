@@ -53,7 +53,7 @@
     {
       "state": "offline",
       "route": "/product/pr_dunk?state=offline",
-      "shows": "Waiting for signal. This is the last copy."
+      "shows": "Waiting for signal; showing saved results."
     }
   ],
   "controls": [

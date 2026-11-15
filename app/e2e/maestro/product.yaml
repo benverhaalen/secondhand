@@ -136,5 +136,5 @@ env:
 # State: offline
 - openLink: ${URL}/product/pr_dunk?state=offline
 - extendedWaitUntil:
-    visible: "Waiting for signal\\. This is the last copy\\."
+    visible: "Waiting for signal; showing saved results\\."
     timeout: 15000

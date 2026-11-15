@@ -50,7 +50,7 @@
     {
       "state": "new",
       "route": "/search",
-      "shows": "Type what you want, paste a link, or take a photo. It looks on five sites at once."
+      "shows": "Search five sites at once."
     },
     {
       "state": "one",
@@ -68,7 +68,7 @@
     {
       "state": "offline",
       "route": "/search?state=offline",
-      "shows": "Waiting for signal. This is the last copy."
+      "shows": "Waiting for signal; showing saved results."
     }
   ],
   "controls": [
