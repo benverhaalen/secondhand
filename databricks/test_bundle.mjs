@@ -291,3 +291,14 @@ test('public observation loader runs on demand with serverless version 3 and the
   assert.match(job, /python_file: \s*\.\.\/\.\.\/databricks\/tasks\/load_observations\.py/);
   assert.ok(job.includes('parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}"]'));
 });
+
+test('param export is a manual serverless job with the synced root and export volume', () => {
+  const resource = read('deploy/resources/export.yml');
+  const job = block(block(block(resource, 'resources', 0), 'jobs', 2), 'export_params', 4);
+  assert.ok(job, 'export_params job must exist');
+  assert.doesNotMatch(job, /schedule:/);
+  assert.match(job, /environment_version: "3"/);
+  assert.match(job, /python_file: ..\/..\/databricks\/tasks\/export_params.py/);
+  assert.ok(job.includes('parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}"]'));
+  assert.match(read('databricks/sql/00_layout.sql'), /CREATE VOLUME IF NOT EXISTS secondhand\.raw\.export COMMENT 'params\/latest\.json and dated copies the server reads on a timer';/);
+});
