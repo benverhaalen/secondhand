@@ -7,3 +7,12 @@
 /web/.env*
 /web/.vercel
 /brand/explore
+!/app
+/app/*
+!/app/src
+/app/src/*
+!/app/src/engines
+/app/src/engines/*
+!/app/src/engines/valuation
+!/app/src/engines/money
+!/app/src/engines/param
