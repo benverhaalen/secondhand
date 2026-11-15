@@ -62,7 +62,7 @@ export function RouteSheet({ name, state, skip, title, foot, onClosed, children 
   const scrim = useAnimatedStyle(() => ({ opacity: Math.max(0, Math.min(1, 1 - y.get() / height)) }));
   return (
     <CloseCtx.Provider value={close}>
-      <GestureHandlerRootView {...({ dataSet: { screen: name, state, skip } } as object)} style={{ flex: 1, justifyContent: 'flex-end' }}>
+      <GestureHandlerRootView {...({ dataSet: { screen: name, state, skip } } as object)} style={{ flex: 1, justifyContent: 'flex-end', paddingTop: insets.top + space.s8 }}>
         <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: c.scrim }, scrim]}>
           {/* The scrim is not a button that gives way: a tap anywhere on it closes the sheet, as on iOS. */}
           {/* It logs its tap like any control (log/README.md: every input), since closing the sheet is the person's act. */}
@@ -71,7 +71,9 @@ export function RouteSheet({ name, state, skip, title, foot, onClosed, children 
         </Animated.View>
         {/* The item peeks 48 above the tallest sheet, as an iOS sheet leaves the page it came from in view, so there is
             always scrim to tap. */}
-        <Animated.View style={[{ maxHeight: height - insets.top - space.s8 }, panel]}>
+        {/* The cap is the room left under that peek, by flex, not the window's height: the page's server copy has no
+            window, and a cap read from it would stay off once the page comes alive, letting a tall sheet run off the top. */}
+        <Animated.View style={[{ flexShrink: 1, minHeight: 0 }, panel]}>
           <Surface kind="sheet" part="sheet" box={{ flexShrink: 1 }}>
             <GestureDetector gesture={pan}>
               <View style={{ paddingTop: space.s2, paddingHorizontal: space.gutter, paddingBottom: space.s4, gap: space.s4 }}>
