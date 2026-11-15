@@ -1052,3 +1052,10 @@ Ben, project chat and thread "Roll the UI system out everywhere", 2026-11-15, ti
 > dont use the quote a human always decides use it as a decision when navigating when to hand off to human vs agent.
 
 Used in: [.agents/ui-build/README.md](../.agents/ui-build/README.md) (the page contract, the method, the one intake, the hand-off rule), checks U6 and U7 in [.agents/checks/render.mjs](../.agents/checks/render.mjs), [.agents/vendor/](../.agents/vendor/).
+
+## 2026-11-15 logs that can hill-climb speed and efficiency, the whole repo
+
+Ben, thread "Set up logging of everything", 04:36:
+> also ensure that logging is doing well on everything and logging can effectively create ways to hillclimb speed and efficiency if need be across both me and nate's work; the whole repo
+
+Used in: [log/README.md](../log/README.md#hill-climb), [log/climb.mjs](../log/climb.mjs), [packet 48](../.agents/team/packets/team/48-logs-that-rank-speed-and-cost.md).
