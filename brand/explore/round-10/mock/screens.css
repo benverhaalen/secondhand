@@ -19,6 +19,7 @@
   background: var(--page); color: var(--ink); font: var(--w-regular) var(--t-15)/var(--lh-15) var(--font-text);
   text-align: start; -webkit-font-smoothing: antialiased; }
 .sh.fixed { height: 844px; }
+.sh.strip { min-height: 0; height: var(--tab-h); }               /* a specimen that shows the tab bar alone */
 .sh *, .sh *::before, .sh *::after { box-sizing: border-box; }
 .sh button { font: inherit; color: inherit; margin: 0; }
 .sh .ln { display: flex; }
@@ -116,6 +117,7 @@
 .sh .tab[aria-current] { color: var(--ink); font-weight: var(--w-medium); }
 .sh .tab[aria-current] .ic > :first-child { fill: currentColor; }
 .sh .tab[aria-current] .ic > :not(:first-child) { stroke: var(--page); }
+.sh.w-same .tab[aria-current] { font-weight: var(--w-regular); }   /* the other option for L29: the weight never changes with state */
 .sh .tab.add { color: var(--ink); }
 .sh .tab.add i { width: var(--control-min); height: var(--control-min); border-radius: var(--r-pill); background: var(--gray); display: grid; place-items: center; }
 .sh .badge { position: absolute; width: 8px; height: 8px; border-radius: var(--r-pill); background: var(--marigold); margin: -22px 0 0 22px; }
@@ -153,7 +155,7 @@
 .sh.sold { color: var(--on-color); }
 .sh .fieldbg { position: absolute; inset: 0; z-index: 0; }
 .sh.sold > :not(.fieldbg):not(.home) { position: relative; z-index: 1; }
-.sh .p160 { width: 160px; height: 160px; }
+.sh .p240 { width: 240px; height: 240px; }
 .sh .foldmark { position: absolute; left: 0; right: 0; top: 844px; border-top: 1px dashed var(--ink-disabled); z-index: 7; pointer-events: none; }
 .sh .foldmark::after { content: "the screen ends here"; position: absolute; right: 8px; top: 4px; font: 400 11px/1 ui-sans-serif, sans-serif; color: var(--ink-2); background: var(--page); padding: 2px 4px; border-radius: 3px; }
 .bare .sh .foldmark { display: none; }
@@ -167,7 +169,9 @@
 .sh.t-hand .hand { display: block; animation: sh-tick 60s steps(60, end) infinite; }
 .sh .hand.inline { position: relative; left: auto; top: auto; margin: 0; flex: none; }
 @keyframes sh-tick { from { transform: rotate(30deg); } to { transform: rotate(390deg); } }
-.sh.t-hand.sold .fieldbg { inset: -40%; animation: sh-drift var(--drift) ease-in-out infinite alternate, sh-tick 60s linear infinite; }
+/* On a sale the field turns once a minute. The turning layer is a square wider than the screen's diagonal (930), so no corner shows. */
+.sh.t-hand.sold .fieldbg { inset: auto; left: 50%; top: 50%; width: 960px; height: 960px; margin: -480px 0 0 -480px; animation: sh-drift var(--drift) ease-in-out infinite alternate, sh-turn 60s linear infinite; }
+@keyframes sh-turn { to { transform: rotate(360deg); } }
 
 /* 2. Paper tags. A state is a cut paper tag with a punched hole. On a photo it hangs a few degrees off level. */
 .sh.t-tags .tag { border-radius: 0; height: 22px; padding: 0 var(--s-2) 0 18px;
