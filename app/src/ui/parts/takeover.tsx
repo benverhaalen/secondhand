@@ -15,11 +15,12 @@
 // kind of be integrated in other things").
 //
 // Sizes, each with its reason:
-//   PLUS 56      the tab bar's New button (chrome.tsx), so the circle starts exactly where the button is.
+//   PLUS 48      the tab bar's New button (chrome.tsx, NEW_D), so the circle and the close button start exactly where it is.
 //   CHOICE 88    a choice: large, so the three doors read at a glance. Its icon well is 88 less 2 × 16, so 56, and its
 //                corner nests in the capsule's (Art. 9.1).
 import { useEffect, type ReactNode } from 'react';
-import { View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
+import { useWindow } from '../window';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Icon, type IconName } from '../icon';
@@ -29,6 +30,7 @@ import { Txt } from '../text';
 import { OnGround, useColors, useScheme } from '../theme';
 import { motion, radius, size, space } from '../tokens.generated';
 import { useBar } from './camera';
+import { NEW_D, newCenter } from './chrome';
 import { mark } from './mark';
 import { alpha } from '../paint';
 
@@ -39,7 +41,7 @@ const ms = (k: keyof typeof MOTIONS) => { const v = MOTIONS[k].ms; return typeof
 export const OVER = { animation: 'none', presentation: 'transparentModal', contentStyle: { backgroundColor: 'transparent' } } as const;
 // The icon of each of New's doors, which the camera's modes carry too.
 export const MODE_ICON = { sell: 'tag-01', worth: 'money-03', find: 'search-01' } as const satisfies Record<string, IconName>;
-export const PLUS = 56;
+export const PLUS = NEW_D;
 export const CHOICE = 88;
 const WELL_INSET = space.s4;
 const WELL = CHOICE - 2 * WELL_INSET;
@@ -49,10 +51,10 @@ const STAGGER = 30;
 const TYPE = size.pillCardH;
 const fill: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
 
-// Where the ＋ sits: centered in the tab bar, standing 12 above its top line (chrome.tsx, NewCircle), under the 1 px rule.
+// Where the ＋ sits: in the middle of the tab bar's capsule (chrome.tsx, newCenter), so New opens from it and closes into it.
 export function usePlus() {
-  const { width, height } = useWindowDimensions();
-  return { x: width / 2, y: height - size.tabH + 1 - space.s3 + PLUS / 2, width, height };
+  const { width, height } = useWindow(), inset = useSafeAreaInsets();
+  return { ...newCenter(width, height, inset.bottom), width, height };
 }
 
 export type CirclePhase = 'opening' | 'open' | 'closing' | 'closed';
@@ -68,7 +70,7 @@ export function CircleStage({ origin, start = PLUS, phase, ground, onSettled, ch
   onSettled?: (phase: CirclePhase) => void;
   children?: ReactNode;
 }) {
-  const b = useBar(), c = useColors(), reduced = useReducedMotion(), { width, height } = useWindowDimensions();
+  const b = useBar(), c = useColors(), reduced = useReducedMotion(), { width, height } = useWindow();
   const r = Math.ceil(Math.max(Math.hypot(origin.x, origin.y), Math.hypot(width - origin.x, origin.y), Math.hypot(origin.x, height - origin.y), Math.hypot(width - origin.x, height - origin.y)));
   const least = start / (2 * r);
   const grow = useSharedValue(phase === 'open' ? 1 : 0);

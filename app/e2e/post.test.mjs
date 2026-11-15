@@ -78,14 +78,14 @@ async function coversOnce(s, not) {
 }
 
 test('post: one draft goes to all five sites with one tap that says so', async () => {
-  const s = await ctx.open(STAGE);
+  const s = await reach(ctx, STAGE);
   await s.shows(/on 5 sites/);
   assert.equal(await s.page.locator('[data-part="listing-preview"]').count(), 5);
   await s.page.close();
 });
 
 test('post: Clean up and Enhance with AI change every site’s cover live', async () => {
-  const s = await ctx.open(STAGE);
+  const s = await reach(ctx, STAGE);
   await s.shows('Enhance with AI');
   const ai = await covers(s);
   assert.equal(new Set(ai).size, 1, 'every site shows the same cover');

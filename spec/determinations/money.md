@@ -200,7 +200,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 
 **Method**
 1. Model step (a trained tabular model, deterministic at inference): LightGBM quantile heads q10, q50 and q90 with a site feature ([price.md](../features/price.md)). Per site, set site = s. Overall, set site missing (the model's missing branch learns the pooled answer).
-2. Conformal step, arithmetic: [D6](#d6-range-calibration-and-display-state) widens or narrows by `Q_g`: `low = q10 - Q_g`, `high = q90 + Q_g`.
+2. Conformal step, arithmetic: [D6](#d6-range-calibration-and-display-state) widens or narrows by `Q_g`, a log ratio, so the step is the same for a $20 item and a $2,000 one: `low = q10 / exp(Q_g)`, `high = q90 × exp(Q_g)`, each rounded half-up to whole cents (*agent proposal*, the engines lead, 2026-11-15; built in `app/src/engines/valuation/check.ts` and `aci.ts`, measured in [valuation.md §9](../engines/valuation.md#development-reading-the-ablation-of-2026-11-15)).
 3. Bracketing: when D1 marks the set `extrapolated: up`, raise `high` by the parent group's `Q_g` and label that side "less sure"; `extrapolated: down` widens `low` the same way (*agent proposal*, starting rule, checked in D6 by the coverage of extrapolated sets alone).
 4. Ask cap: when the item is new with tags, `high <= min(lowest live ask for the same product and condition, retail D7 price new today)`. A buyer can buy the same thing for that. The cap applies after the widening.
 5. Before the model is trained (cold start): weighted quantiles p10 and p90 of the adjusted comps, widened by the parent's `Q_g` and by step 3, with state "not checked yet".
@@ -230,7 +230,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 | Recent residuals over older ones | weighting | weight `0.5^(age/90 days)` | drift breaks exchangeability (*observed* arXiv 2202.13415) |
 
 **Method** (arithmetic)
-1. Score per calibration sale: `E_i = max(q10_i - y_i, y_i - q90_i)`.
+1. Score per calibration sale, on the log scale: `E_i = max(ln(q10_i / y_i), ln(y_i / q90_i))` (scale-free; the additive form in cents let a dear item's misses widen a cheap item's range).
 2. `Q_g` = the weighted `ceil((n_g + 1)(1 - alpha_g)) / n_g` quantile of the group's scores. alpha starts at 0.2 (crepes `MondrianCategorizer`).
 3. ACI per group: `alpha_{t+1} = alpha_t + 0.005 x (0.2 - err_t)`, where `err_t` is 1 when a sale fell outside the range issued for it.
 4. Backtest coverage per group: rolling origin by month, a 7-day gap, comps limited to before each test sale, and the tested item and its relists removed (the leakage list in [range-calibration.md](../../research/price/nate/range-calibration.md) section 7). Report coverage with a Wilson 95% interval.

@@ -126,6 +126,9 @@
         "identifier": "secondhand.measures.hidden_numbers"
       },
       {
+        "identifier": "secondhand.measures.locks_in_force"
+      },
+      {
         "identifier": "secondhand.measures.never_automated"
       },
       {
@@ -138,7 +141,7 @@
         "identifier": "secondhand.measures.pipeline_funnel"
       },
       {
-        "identifier": "secondhand.measures.policies_in_force"
+        "identifier": "secondhand.measures.price_basis"
       },
       {
         "identifier": "secondhand.measures.rights_audit_summary"
@@ -165,11 +168,11 @@
           "A price statistic (median, average, percentile) over fewer than 30 sold rows is not answered. Say \"too few: N sales\" with the actual N, including zero, and name what would resolve it: a wider date range or the parent kind. Count the requested set before calculating a price statistic. Use sold rows only; asking and ended-unsold prices are not sales.",
           "Every accuracy answer names the dataset, the families and the date range from secondhand.measures.backtest_run and secondhand.measures.backtest_headline. Never call it today's market. The backtest is StockX sneaker sales, Off-White x Nike and Yeezy 350, 2017-09 to 2019-02 unless the table says otherwise. Include counts; refuse accuracy cells marked too_few. Distinguish configured test_from/test_to (exclusive end, possibly open) from observed sales dates. Unknown families or dates must be stated as unknown, never guessed. Families absent from the dataset are a gap, including furniture, one-off and unbranded items and Depop, Poshmark, Mercari and Facebook sales.",
           "Rows whose data is synthetic or example are never presented as real; say which they are. Keep data provenance groups separate in summaries.",
-          "For \"Why is this number what it is\" or \"where does number X come from\", use SELECT * FROM secondhand.measures.why('<id>'), substituting a literal shown number id, and report equal exactly. A false or null equal is not verified; include its reason. No rows means the id is unresolved. Do not pass a subquery into why().",
+          "For \"why is this number what it is\", \"where does number X come from\" or \"which sales does a price rest on\", read secondhand.measures.price_basis: one row per earlier sale behind each shown price, with rebuilt_exactly. In the SQL editor the same rows come from SELECT * FROM secondhand.measures.why('<id>'), which Genie does not call. Report rebuilt_exactly as given: false or null is not verified. No rows means the price is not shown or not visible to the asker.",
           "Only rows with may_model = true were used to train; when asked what a model learned from, use secondhand.market.comp_for_model counts. These counts show eligible inputs; do not claim every eligible row was used in a particular fit without its fit evidence.",
           "A question about the earliest, latest or first N sales asks for a statistic over that row-limited set. Count the set first with the same filter and limit. If the count is under 30, the whole answer is \"too few: N sales\" with the actual N, the dataset and dates available, and a suggestion (a wider date range or the parent kind). Give no median, average or other price for that set, not even with a caveat.",
           "Price accuracy by who priced it, week, kind or dataset comes from the metric view secondhand.measures.valuation_metrics with MEASURE(); its rates are already null under 30 shown estimates. Families of a backtest come from secondhand.measures.backtest_estimate joined to secondhand.market.comp on item_id; query them rather than writing 'unknown'.",
-          "guard_violations reads only the rows the asker may see, so it is not a count across every owner; say so when quoting it. Governance questions read secondhand.measures.governance_coverage and policies_in_force; both are readable."
+          "guard_violations reads only the rows the asker may see, so it is not a count across every owner; say so when quoting it. Governance questions read secondhand.measures.locks_in_force, a snapshot of the catalog policies taken at each governance run; give its read_at."
         ]
       }
     ],
@@ -311,14 +314,13 @@
           "Which core tables are locked to their owner, and which columns are masked?"
         ],
         "sql": [
-          "SELECT p.catalog_name, p.schema_name, p.table_name, p.has_owner_tag,",
-          "       p.masked_columns, p.retention_class, p.rights_mode",
-          "FROM secondhand.measures.policies_in_force p",
-          "WHERE p.schema_name = 'core'",
-          "ORDER BY p.table_name"
+          "SELECT l.schema_name, l.table_name, l.has_owner_tag, l.masked_columns, l.retention_class, l.read_at",
+          "FROM secondhand.measures.locks_in_force l",
+          "WHERE l.schema_name = 'core'",
+          "ORDER BY l.table_name"
         ],
         "usage_guidance": [
-          "has_owner_tag means the catalog ABAC row filter sh_owner_only applies through its governed tag; masked_columns are masked by sh_mask_handle. Read only policies_in_force for governance; system information_schema is not a source here."
+          "has_owner_tag means the catalog ABAC row filter sh_owner_only applies through its governed tag; masked_columns are masked by sh_mask_handle. The rows are a snapshot from the last governance run; give read_at."
         ]
       },
       {
@@ -327,10 +329,13 @@
           "Why is this shown number what it is?"
         ],
         "sql": [
-          "SELECT * FROM secondhand.measures.why('<id>')"
+          "SELECT b.id, b.item, b.metric, b.value_cents, b.basis_id, b.basis_price_cents, b.basis_at, b.basis_source, b.source_url, b.rebuilt_exactly",
+          "FROM secondhand.measures.price_basis b",
+          "WHERE b.id = 'gn_00000520996a26239ffc085f'",
+          "ORDER BY b.basis_at DESC"
         ],
         "usage_guidance": [
-          "Substitute the shown number id for <id> before execution. Use a literal id, never a subquery argument. Report equal exactly, including false or null and its reason; never infer that a number is verified from the presence of basis rows."
+          "Substitute the shown number id the person gives. Each row is one earlier sale behind the price; rebuilt_exactly says whether its basis hash was rebuilt from those rows."
         ]
       },
       {
@@ -391,19 +396,20 @@
         ],
         "sql": [
           "WITH p AS (",
-          "  SELECT s.id, s.item, s.value_cents, s.lo_cents, s.hi_cents, s.basis_count, s.basis_level, s.as_of, s.data, s.sold_cents",
-          "  FROM secondhand.measures.shown_prices s",
+          "  SELECT s.id FROM secondhand.measures.shown_prices s",
           "  WHERE s.metric = 'valuation.model.q50' AND lower(s.item) LIKE '%zebra%'",
           "  ORDER BY s.as_of DESC, s.id",
           "  LIMIT 1",
           ")",
-          "SELECT p.item, p.value_cents / 100.0 AS our_price_dollars, p.lo_cents / 100.0 AS low_dollars, p.hi_cents / 100.0 AS high_dollars,",
-          "       p.sold_cents / 100.0 AS it_sold_for_dollars, p.basis_count, p.basis_level, p.as_of, p.data,",
-          "       w.basis_id, w.basis_price_cents / 100.0 AS earlier_sale_dollars, w.basis_source, w.source_url, w.equal",
-          "FROM p, LATERAL secondhand.measures.why(p.id) w"
+          "SELECT b.item, b.value_cents / 100.0 AS our_price_dollars, b.lo_cents / 100.0 AS low_dollars, b.hi_cents / 100.0 AS high_dollars,",
+          "       b.sold_cents / 100.0 AS it_sold_for_dollars, b.basis_count, b.basis_level, b.as_of, b.data,",
+          "       b.basis_price_cents / 100.0 AS earlier_sale_dollars, b.basis_at, b.basis_source, b.source_url, b.rebuilt_exactly",
+          "FROM secondhand.measures.price_basis b",
+          "JOIN p ON p.id = b.id",
+          "ORDER BY b.basis_at DESC"
         ],
         "usage_guidance": [
-          "Our price is valuation.model.q50 from the latest backtest estimate for that item; name the dataset (StockX 2019 public sales, history, not today) and its date. List the earlier sales it rests on from measures.why and say whether equal is true (the price rebuilds exactly from them). Money is cents divided by 100."
+          "Our price is valuation.model.q50 from the latest backtest estimate for that item: name the dataset (StockX 2019 public sales, history, not today) and its date, the range, what it really sold for, and each earlier sale it rests on with rebuilt_exactly. Money is cents divided by 100."
         ]
       },
       {
@@ -611,15 +617,15 @@
           {
             "format": "SQL",
             "content": [
-              "SELECT p.schema_name, p.table_name, p.has_owner_tag, p.masked_columns",
-              "FROM secondhand.measures.policies_in_force p",
-              "WHERE p.schema_name = 'core'",
-              "ORDER BY p.table_name"
+              "SELECT l.schema_name, l.table_name, l.has_owner_tag, l.masked_columns, l.read_at",
+              "FROM secondhand.measures.locks_in_force l",
+              "WHERE l.schema_name = 'core'",
+              "ORDER BY l.table_name"
             ]
           }
         ],
         "evaluation_note": [
-          "List each core table with has_owner_tag and its masked columns. Tags drive the catalog ABAC policies; do not claim more than policies_in_force shows."
+          "List each core table with has_owner_tag and its masked columns, and the snapshot time read_at. Tags drive the catalog ABAC policies; do not claim more than the snapshot shows."
         ]
       },
       {

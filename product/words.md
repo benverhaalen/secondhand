@@ -2019,3 +2019,39 @@ Nate, orchestrator's session, 2026-11-15, about 08:35 Central, continuing "we ca
 > that includes the way we scrape browsers, the system could drop like a listing parser onto every site with the listing that also narrows by the type or keyword and checks for the name, just things to improve accuracy, and efficeincy.
 
 Used in: `app/src/edge/harness/public-client.ts` (the in-page parser, when built), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate the buying side is a conversation: text or a photo in, the broad search and the engines behind it, and general questions too
+Nate, orchestrator's session, 2026-11-15, about 09:20 Central.
+> For our buying side, it should be a sonnet 5.5 on low or medium as a text box, or photo input, which then runs the broad every platform search, can then output general details about the product, but then get into specifics like pricing trends, assess when it'll be best listed and probably where. Also the engine can be used for general knowledge queries that compound its available power and use of the system and whats delivered that I can ask, and want this to be whats best tested, "What are the latest fashion trends millenials are wearing, what about gen z". perhaps databricks could have the built in engine to output a dashboard, or ideally some storage type of all info, that then a conversation model can use almost as a tool calls output to combine with basic internet search and the truly accurate engine and what data we can deliver and can be understood by the agent
+
+Used in: `features/assist/`, `features/buy/` (the conversation, when specced), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate the next.js site on vercel with the buy side as its own page and the home hero demo
+Nate, buying-conversation lead's session, 2026-11-15, about 05:05 Central.
+> Lets get the next.js site looked at if it hasnt been started yet. And we can begin testing the website hosted buy side which is a dedicated page, and on our homepage top hero as a fun visitable demonstration of its power, responsive and built for mobile and web view. Built on next.js and hosted with vercel
+
+Used in: `features/buy/README.md` (the web page and the hero, when specced), `web/` (the site, when built).
+
+## 2026-11-15 nate the conversation drops widgets into its answer: the model writes a tag and the page draws it
+Nate, buying-conversation lead's session, 2026-11-15, about 05:10 Central.
+> With this, we shouid practice the intelligent dynamic ui, dropping widgets and populating fields with text, generated graphs, obviously working on a framework we design like graphs just require the model in its output to out put like "the pricing was [price graph:iphone16-678l iphone17-999] etc
+
+Used in: `features/assist/README.md` (the widget tags, when specced), `web/` (the renderer, when built).
+
+## 2026-11-15 nate build the lidar module before a testflight build
+Nate, capture lead's session, 2026-11-15, evening Central. Asked "can you push to testflight, ill test the lidar"; told the app has no LiDAR code yet, he chose:
+> Build the module first
+
+Used in: `spec/engines/capture.md` §7 (the Swift capture module), `.agents/team/packets/team/72-capture-handoff.md` (queue item 5).
+
+## 2026-11-15 nate wrap up the sessions, review the whole project, then the presentation
+Nate, orchestrator's session, 2026-11-15, about 10:00 Central.
+> Lets wrap up models as they stand when finished on whats currently happening. End all extra sessions and ill archive. We'll review through all of the project. The ios build, website, backend system and every feature. Fully launch with the /goal to fully complete all aspects. Focus then on the presentation, highlighting everything, Which in a way will depend on how we market the site. I know ben did alot of work on that, and we'll get to it after everything wraps currently, we assess what works, what doesnt, whats left. Ensure every aspect of our half is finished, then wait on ben or help, then one will focus on finishing the site, the other testing the ui/ux, capture, and all app stuff. But the mac can test things humans dont need to do
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `spec/plans/completion.md` (the review).
+
+## 2026-11-15 nate if it is not in the repo, ben has not worked on it
+Nate, orchestrator's session, 2026-11-15, about 10:20 Central, asked where Ben's site and marketing work lives.
+> If its not in the repo then he hasnt worked on it. Now talk through all questions you have for me
+
+Used in: [packet 78](../.agents/team/packets/team/78-assist-handoff.md) (the site is built from what the repo holds).
