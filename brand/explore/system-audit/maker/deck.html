@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>secondhand pitch deck</title>
+<link rel="stylesheet" href="../../../tokens.css">
+<style>
+  /* Deck: 1920 x 1080, margin 96, unit 2 (constitution Part III). Every value is a token or a token times the unit. */
+  :root {
+    --d-1: calc(var(--s-1) * 2);   /* 8 */
+    --d-2: calc(var(--s-2) * 2);   /* 16 */
+    --d-3: calc(var(--s-3) * 2);   /* 24 */
+    --d-4: calc(var(--s-4) * 2);   /* 32 */
+    --d-5: calc(var(--s-5) * 2);   /* 40 */
+    --d-6: calc(var(--s-6) * 2);   /* 48 */
+    --d-7: calc(var(--s-7) * 2);   /* 64 */
+    --d-8: calc(var(--s-8) * 2);   /* 96, the deck margin */
+    --d-body: calc(var(--s-4) * 2);    /* 32 */
+    --d-head: calc(var(--s-7) * 2);    /* 64 */
+    --d-peak: calc(var(--t-50) * 4);   /* 200 */
+    --d-r-photo: calc(var(--r-photo) * 2);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--page); }
+  body { color: var(--ink); font-family: var(--font-text); font-weight: var(--w-regular); }
+  p, h2, ul, li, figure, figcaption { margin: 0; padding: 0; }
+  ul { list-style: none; }
+
+  section[data-view] {
+    width: 1920px; height: 1080px; padding: var(--d-8);
+    display: flex; flex-direction: column; justify-content: space-between;
+    overflow: hidden; background: var(--page);
+  }
+  section.fill { background: var(--field); color: var(--on-color); }
+
+  /* padding-block on the two display styles: brand-check B17 measures the glyph box, which is taller than these line heights */
+  .wordmark { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--d-head); line-height: var(--lh-21); letter-spacing: var(--tr-21); padding-block: var(--d-1); }
+  .head { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--d-head); line-height: var(--lh-36); letter-spacing: var(--tr-50); white-space: nowrap; padding-block: var(--d-1); }
+  .body { font-size: var(--d-body); line-height: var(--lh-18); letter-spacing: var(--tr-18); }
+  .second { color: var(--ink-2); }
+  .amount { font-size: var(--d-head); line-height: var(--lh-36); letter-spacing: var(--tr-50); font-variant-numeric: tabular-nums; }
+  .peak { font-size: var(--d-peak); line-height: var(--lh-50); letter-spacing: var(--tr-50); font-variant-numeric: tabular-nums; }
+
+  /* a list: rows of one height, a hairline between them (Art. 5, What separates 3) */
+  .rows > li { display: grid; align-items: center; }
+  .rows > li + li { border-top: 1px solid var(--rule); }
+
+  /* slide 2: three columns of 544 with 48 between; the way in one, what you keep in two */
+  .ways > li { grid-template-columns: repeat(3, 1fr); column-gap: var(--d-6); height: calc(var(--d-7) * 2); }
+  .ways > li > :last-child { grid-column: span 2; }
+  .problem { display: flex; flex-direction: column; gap: var(--d-3); }
+
+  /* slides 3 and 5: the number and the words that say what it is are one group */
+  .stat { display: flex; flex-direction: column; gap: var(--d-2); }
+  /* the eBay file is a wordmark in a square with air above and below; cover crops the air, not the mark */
+  .logo-inline { height: var(--d-5); width: var(--d-7); object-fit: cover; vertical-align: middle; }
+
+  /* slide 4: steps on the left, the item on the right */
+  section.how { flex-direction: row; column-gap: var(--d-8); }
+  .how .steps { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: var(--d-6); }
+  .steps .rows > li { grid-template-columns: 1fr auto; height: var(--d-8); }
+  .logos { display: flex; gap: var(--d-3); align-items: center; }
+  .logos img { height: var(--d-6); width: var(--d-6); display: block; }
+  .logos img.wide { width: calc(var(--d-6) * 5 / 3); object-fit: cover; }
+  .item { display: flex; flex-direction: column; gap: var(--d-2); }
+  .item img { display: block; aspect-ratio: 1; object-fit: cover; border-radius: var(--d-r-photo); outline: 1px solid var(--rule); outline-offset: -1px; }
+  .how .item img { height: calc(100% - var(--d-2) - var(--d-body) * var(--lh-18)); }
+
+  /* slide 6: three real items, then the line */
+  .close-group { display: flex; flex-direction: column; gap: var(--d-7); }
+  .strip { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: var(--d-6); }
+  .strip img { width: 100%; }
+</style>
+</head>
+<body>
+
+<!-- 1. Title. The field fills it (Part III: title slide). Wordmark top left, one plain line bottom left. -->
+<section data-view class="fill">
+  <p class="wordmark">secondhand</p>
+  <p class="body">A second pair of hands for everything you'd sell, if selling weren't a second job.</p>
+</section>
+
+<!-- 2. The problem. Two ways to sell a $20 shirt; the amounts are one step up from the text (C6). -->
+<section data-view>
+  <span></span>
+  <div class="problem">
+    <p class="body second">Selling a $20 shirt</p>
+    <ul class="rows ways">
+      <li data-part="way">
+        <p class="body">Consignment</p>
+        <p class="body">You keep <span class="amount">$3</span></p>
+      </li>
+      <li data-part="way">
+        <p class="body">Yourself</p>
+        <p class="body">About <span class="amount">$17</span>, plus the work</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- 3. One number. -->
+<section data-view>
+  <span></span>
+  <div class="stat">
+    <p class="peak">8.6%</p>
+    <p class="body">of <img class="logo-inline" src="../../../../assets/platforms/ebay.svg" alt="eBay"> listings under $15 sell in 30 days</p>
+  </div>
+</section>
+
+<!-- 4. How it works, with a real item photo (Ben's own listing photo, assets/demo-items/real). -->
+<section data-view class="how">
+  <div class="steps">
+    <ul class="rows">
+      <li data-part="step"><p class="body">Shoots</p></li>
+      <li data-part="step"><p class="body">Measures</p></li>
+      <li data-part="step"><p class="body">Prices</p></li>
+      <li data-part="step">
+        <p class="body">Posts</p>
+        <div class="logos">
+          <img data-part="logo" class="wide" src="../../../../assets/platforms/ebay.svg" alt="eBay">
+          <img data-part="logo" src="../../../../assets/platforms/depop.svg" alt="Depop">
+          <img data-part="logo" src="../../../../assets/platforms/mercari.svg" alt="Mercari">
+        </div>
+      </li>
+      <li data-part="step"><p class="body">Answers</p></li>
+      <li data-part="step"><p class="body">Delists</p></li>
+    </ul>
+    <h2 class="head">You decide.</h2>
+  </div>
+  <figure class="item" data-part="item-hero">
+    <img src="../../../../assets/demo-items/real/chico-hoodie/01_cover.jpg" alt="Russell Athletic Chico State hoodie, faded crimson, XXL, flat on concrete">
+    <figcaption class="body second">Chico State hoodie, XXL</figcaption>
+  </figure>
+</section>
+
+<!-- 5. What you keep. The field fills it (Part III: one key slide); the one peak amount (C6). -->
+<section data-view class="fill">
+  <span></span>
+  <div class="stat">
+    <p class="body">You keep about</p>
+    <p class="peak">$17</p>
+    <p class="body">of a $20 shirt, and we do the work.</p>
+  </div>
+</section>
+
+<!-- 6. Close. Wordmark where it sat on the title; three real items; the closing line from the pitch. -->
+<section data-view>
+  <p class="wordmark">secondhand</p>
+  <div class="close-group">
+    <div class="strip">
+      <figure class="item" data-part="item-tile"><img src="../../../../assets/demo-items/real/marquette-tee/01_cover.jpg" alt="Marquette 74 Final Four tee, gold, XL, flat on concrete"></figure>
+      <figure class="item" data-part="item-tile"><img src="../../../../assets/demo-items/real/chico-hoodie/01_cover.jpg" alt="Russell Athletic Chico State hoodie, faded crimson, XXL, flat on concrete"></figure>
+      <figure class="item" data-part="item-tile"><img src="../../../../assets/demo-items/real/carhartt-pants/01_cover.jpg" alt="Carhartt canvas dungaree work pants, faded black, 38x36, flat on concrete"></figure>
+    </div>
+    <h2 class="head">Your second hand. Done in seconds.</h2>
+  </div>
+</section>
+
+</body>
+</html>

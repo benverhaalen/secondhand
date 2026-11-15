@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>secondhand launch carousel</title>
+<link rel="stylesheet" href="../../../tokens.css">
+<style>
+  /* Post: 1080 x 1350, margin 72, unit 3 (constitution Part III). Every value is a token or a token times a number. */
+  :root {
+    --p-1: calc(var(--s-1) * 3);   /* 12 */
+    --p-2: calc(var(--s-2) * 3);   /* 24 */
+    --p-3: calc(var(--s-3) * 3);   /* 36 */
+    --p-4: calc(var(--s-4) * 3);   /* 48 */
+    --p-6: calc(var(--s-6) * 3);   /* 72, the post margin */
+    --p-7: calc(var(--s-7) * 3);   /* 96 */
+    --p-body: calc(var(--s-5) * 2);    /* 40 */
+    --p-head: calc(var(--s-6) * 3);    /* 72 */
+    --p-peak: calc(var(--t-50) * 4);   /* 200 */
+    --p-r-photo: calc(var(--r-photo) * 3);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--page); }
+  body { color: var(--ink); font-family: var(--font-text); font-weight: var(--w-regular); }
+  p, h2, ul, li, figure { margin: 0; padding: 0; }
+  ul { list-style: none; }
+
+  section[data-view] {
+    width: 1080px; height: 1350px; padding: var(--p-6);
+    display: flex; flex-direction: column; justify-content: space-between;
+    overflow: hidden; background: var(--page);
+  }
+  section.fill { background: var(--field); color: var(--on-color); }
+
+  /* the wordmark: bottom center, 40, the same place on all four panels (C1) */
+  .wordmark { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--p-body); line-height: var(--lh-21); letter-spacing: var(--tr-21); text-align: center; margin-top: var(--p-7); padding-block: var(--p-1); }
+  .head { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--p-head); line-height: var(--lh-36); letter-spacing: var(--tr-50); white-space: nowrap; }
+  .body { font-size: var(--p-body); line-height: var(--lh-18); letter-spacing: var(--tr-18); }
+  .second { color: var(--ink-2); }
+  .peak { font-size: var(--p-peak); line-height: var(--lh-50); letter-spacing: var(--tr-50); font-variant-numeric: tabular-nums; }
+
+  .main { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; }
+  .stat { display: flex; flex-direction: column; gap: var(--p-1); }
+
+  .item img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--p-r-photo); outline: 1px solid var(--rule); outline-offset: -1px; }
+
+  .rows > li { display: grid; grid-template-columns: 1fr auto; align-items: center; height: calc(var(--p-4) * 2); }
+  .rows > li + li { border-top: 1px solid var(--rule); }
+  .logos { display: flex; gap: var(--p-3); align-items: center; }
+  /* logos are no taller than the wordmark's type, 40 on a post (C5) */
+  .logos img { height: var(--p-body); width: var(--p-body); display: block; }
+  /* the eBay file is a wordmark in a square with air above and below; cover crops the air, not the mark */
+  .logos img.wide { width: calc(var(--p-body) * 5 / 3); object-fit: cover; }
+</style>
+</head>
+<body>
+
+<!-- 1. The item. The photo is the post (Part III). Ben's own listing photo. -->
+<section data-view>
+  <div class="main">
+    <figure class="item" data-part="item-hero">
+      <img src="../../../../assets/demo-items/real/chico-hoodie/01_cover.jpg" alt="Russell Athletic Chico State hoodie, faded crimson, XXL, flat on concrete">
+    </figure>
+    <h2 class="head">Sell it in seconds.</h2>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- 2. What it is worth today: the consignment number, as the one peak amount (C6). -->
+<section data-view>
+  <div class="main">
+    <span></span>
+    <div class="stat">
+      <p class="body">Consignment pays you</p>
+      <p class="peak">$3</p>
+      <p class="body">for a $20 shirt.</p>
+    </div>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- 3. Where it goes and what it does. -->
+<section data-view>
+  <div class="main">
+    <ul class="rows">
+      <li data-part="step"><p class="body">Shoots</p></li>
+      <li data-part="step"><p class="body">Measures</p></li>
+      <li data-part="step"><p class="body">Prices</p></li>
+      <li data-part="step">
+        <p class="body">Posts</p>
+        <div class="logos">
+          <img data-part="logo" class="wide" src="../../../../assets/platforms/ebay.svg" alt="eBay">
+          <img data-part="logo" src="../../../../assets/platforms/depop.svg" alt="Depop">
+          <img data-part="logo" src="../../../../assets/platforms/mercari.svg" alt="Mercari">
+        </div>
+      </li>
+      <li data-part="step"><p class="body">Answers</p></li>
+      <li data-part="step"><p class="body">Delists</p></li>
+    </ul>
+    <h2 class="head">You decide.</h2>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- 4. What you keep. The field is the background of this one panel (Part III). -->
+<section data-view class="fill">
+  <div class="main">
+    <span></span>
+    <div class="stat">
+      <p class="body">You keep about</p>
+      <p class="peak">$17</p>
+      <p class="body">of a $20 shirt, and we do the work.</p>
+    </div>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+</body>
+</html>
