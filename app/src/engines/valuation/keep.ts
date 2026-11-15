@@ -45,6 +45,10 @@ const DAY = 86400e3;
 export type Keep = { keep_cents: number; fee_cents: number; base_cents: number; fee_row: FeeRow; fees_may_have_changed: boolean };
 
 export function fee(row: FeeRow, price_cents: number, sale: Sale = {}): { fee_cents: number; base_cents: number } {
+  for (const name of ['buyer_shipping_cents', 'seller_shipping_cents', 'boost_cents'] as const) {
+    const value = sale[name];
+    if (value !== undefined && (!Number.isSafeInteger(value) || value < 0)) throw new RangeError(`${name} must be whole cents, zero or more`);
+  }
   const tax = row.base.tax ? price_cents * (sale.tax_rate ?? TAX_RATE) : 0;
   const ship = row.base.shipping ? (sale.buyer_shipping_cents ?? 0) : 0;
   const base = price_cents + ship + tax;

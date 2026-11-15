@@ -56,3 +56,25 @@ test('an offer state with no usable floor is refused, never accepted (review fin
     assert.throws(() => offer(state, p, 0.5), /floor_cents must be a whole number/, String(floor_cents));
   }
 });
+
+test('F2: neither policy auto accepts below the firm accept line when waiting is cheap', () => {
+  for (const policy of ['champion', 'challenger'] as const) {
+    for (const p of [.02, .98]) {
+      const d = offer({ ...state(), v_wait_cents: 3000 }, () => p, 1, policy);
+      assert.ok(d.kind !== 'accept_offer' || d.ask, `${policy} bypassed the posture`);
+    }
+    const d = offer({ ...state(), offer_cents: 7999, always_accept_cents: 8000 }, () => .02, 1, policy);
+    assert.equal(d.ask, true, 'no counter space still requires approval under the accept line');
+  }
+});
+test('F8: posture thresholds and keeps leave the policy in whole cents', () => {
+  const x = { ...state(), floor_cents: 0, offer_cents: 100, always_accept_cents: 7211, keep: (p: number) => .864 * p - 940 };
+  const thresholds: number[] = [];
+  offer(x, (_p, s) => { thresholds.push(s.always_accept_cents); return .5; }, .51);
+  assert.ok(thresholds.length > 0);
+  assert.ok(thresholds.every(Number.isInteger), 'the interpolated posture accept line is whole cents');
+  for (const policy of ['champion', 'challenger'] as const) {
+    const d = offer(x, () => .02, 1, policy);
+    assert.ok(d.keep_at_amount === null || Number.isInteger(d.keep_at_amount));
+  }
+});
