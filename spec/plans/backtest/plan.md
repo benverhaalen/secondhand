@@ -139,10 +139,10 @@ Reconciled with the pitch thread's D6 and M12 changes: their seasonal naive base
 
 | Command | Does |
 |---|---|
-| `python3 jobs/valuation/experiment.py self-test` | Decision 23 on the synthetic market: the oracle scores 100%, random comps lose to the product median, a planted leak is refused. Exit code 1 if any fails |
-| `python3 jobs/valuation/experiment.py backtest --rows R --test-from D --out O` | Freezes every contestant per test sale (the day before listing, or before the sale when no listing date, counted), refits per month with the 7-day gap, and writes the report: closeness three ways, bias, tail, coverage with Wilson, hit rate, the baseline on items we declined, the paired within-20% lift with a by-product interval, slices by kind, condition, site and price band, the ceiling, and the pre-written sentence |
-| `python3 jobs/valuation/experiment.py duel-record --live L --rows R --out duel.json` | Freezes every contestant's answer for live listings, with a sha256 of the file |
-| `python3 jobs/valuation/experiment.py duel-score --duel duel.json --outcomes O` | Scores only sales dated after the record; counts refused, ended and still live |
+| `python3 scripts/bench/backtest.py self-test` | Decision 23 on the synthetic market: the oracle scores 100%, random comps lose to the product median, a planted leak is refused. Exit code 1 if any fails |
+| `python3 scripts/bench/backtest.py backtest --rows R --test-from D --out O` | Freezes every contestant per test sale (the day before listing, or before the sale when no listing date, counted), refits per month with the 7-day gap, and writes the report: closeness three ways, bias, tail, coverage with Wilson, hit rate, the baseline on items we declined, the paired within-20% lift with a by-product interval, slices by kind, condition, site and price band, the ceiling, and the pre-written sentence |
+| `python3 scripts/bench/backtest.py duel-record --live L --rows R --out duel.json` | Freezes every contestant's answer for live listings, with a sha256 of the file |
+| `python3 scripts/bench/backtest.py duel-score --duel duel.json --outcomes O` | Scores only sales dated after the record; counts refused, ended and still live |
 
 Rows follow `FIELDS` in the runner (the schema sent to the sold-data thread). Contestants today: the 90-day product median (primary), the last sale, the Python market model, and the two controls. The real engine plugs in as one more class with `fit` and `predict`.
 

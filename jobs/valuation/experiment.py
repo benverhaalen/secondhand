@@ -4,10 +4,11 @@ A contestant is anything with `fit(train_rows)` and `predict(item, as_of, histor
 The runner hands each one only rows from before the item's freeze date, so the real engine plugs in later and is scored
 on the same frozen rows as the baselines. Rows follow the schema in FIELDS (plan.md §6 and decision 32).
 
-  python jobs/valuation/experiment.py self-test                       the test of the test, on the synthetic market
-  python jobs/valuation/experiment.py backtest --rows R --test-from D --out O
-  python jobs/valuation/experiment.py duel-record --live L --rows R --out duel.json
-  python jobs/valuation/experiment.py duel-score --duel duel.json --outcomes O --out O2
+  python scripts/bench/backtest.py self-test                           the test of the test, on the synthetic market
+  python scripts/bench/backtest.py backtest --rows R --test-from D --out O
+  python scripts/bench/backtest.py duel-record --live L --rows R --out duel.json
+  python scripts/bench/backtest.py duel-score --duel duel.json --outcomes O --out O2
+(The script prints the summary; this module logs it and writes --out.)
 """
 from __future__ import annotations
 
@@ -405,9 +406,9 @@ def main(argv=None):
     if a.cmd == "self-test":
         brief["overall"] = {k: v["overall"] for k, v in out["report"]["contestants"].items()}
         brief["ceiling"], brief["sentence"] = out["report"]["ceiling"], out["report"].get("sentence")
-    print(json.dumps(brief, indent=1))
-    return 0 if ok else 1
+    log.event("experiment.result", brief)
+    return (0 if ok else 1), brief
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main()[0])
