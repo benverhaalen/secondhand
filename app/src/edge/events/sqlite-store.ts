@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { DatabaseSync, SQLInputValue } from 'node:sqlite';
 import { migrate, tx } from '../store/db.ts';
 import { EVENT_KINDS, SOURCES, type EventRow } from './event.ts';
-import { TABLES, type DecisionRow, type JobRow, type Row, type Store, type Table } from './ports.ts';
+import { TABLES, type DecisionRow, type JobRow, type Row, type Store, type StoreState, type Table } from './ports.ts';
 
 const uid = (prefix: string) => `${prefix}_${randomUUID().replaceAll('-', '').slice(0, 16)}`;
 const record = (value: unknown): value is Record<string, unknown> =>
@@ -20,7 +20,7 @@ function validRow(table: string, row: unknown): boolean {
   if (table === 'jobs') return strings(row, ['event_id', 'idempotency_key', 'trace_id', 'created_at'])
     && typeof row.kind === 'string' && row.kind.length > 0 && oneOf(row.state, ['queued', 'running', 'done', 'failed'])
     && record(row.args) && Number.isInteger(row.attempts) && (row.attempts as number) >= 0
-    && arrayOf(row.stages, stage => strings(stage, ['name']) && oneOf(stage.state, ['started', 'running', 'arrived', 'planned', 'failed']));
+    && arrayOf(row.stages, stage => strings(stage, ['name']) && oneOf(stage.state, ['started', 'running', 'arrived', 'planned', 'failed', 'late']));
   if (table === 'decisions') return strings(row, ['kind', 'subject', 'why'])
     && oneOf(row.state, ['open', 'acting', 'answered', 'failed', 'expired', 'superseded'])
     && arrayOf(row.options, option => strings(option, ['id', 'label']));
@@ -49,7 +49,7 @@ function checkOperationEnvelope(value: unknown, seen = new Set<object>()): void 
   }
 }
 
-export function sqliteStore(db: DatabaseSync): Store & { recover(): number } {
+export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; recover(): number } {
   migrate(db, 'store-1', `
     CREATE TABLE rows (tbl TEXT, user_id TEXT, id TEXT, version INTEGER, body TEXT, PRIMARY KEY(tbl, user_id, id));
     CREATE TABLE events (id TEXT PRIMARY KEY, user_id TEXT, dedupe_key TEXT, item_id TEXT, account_id TEXT,
@@ -78,7 +78,13 @@ export function sqliteStore(db: DatabaseSync): Store & { recover(): number } {
     row.account_id ?? null, row.item_id ?? null, row.site ?? null, row.paused ?? null, JSON.stringify(row)];
   const decisionValues = (row: DecisionRow): SQLInputValue[] => [row.id, row.user_id, row.kind, row.subject, row.state, JSON.stringify(row)];
 
-  const s: Store & { recover(): number } = {
+  const s: Store & { dump(): StoreState; recover(): number } = {
+    dump() {
+      return {
+        events: s.events(), jobs: s.jobs(), decisions: s.decisions(),
+        rows: Object.fromEntries(TABLES.map(table => [table, s.systemRows(table)])),
+      };
+    },
     put(table, row) {
       return tx(db, () => {
         const old = s.get(table, row.user_id, row.id);

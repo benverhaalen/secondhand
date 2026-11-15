@@ -7,7 +7,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { spawnSync } from 'node:child_process';
 import { openDb } from '../store/db.ts';
 import { sqliteStore } from './sqlite-store.ts';
-import { memoryStore, TABLES, type JobRow } from './ports.ts';
+import { memoryStore, TABLES, type JobRow, type StoreState } from './ports.ts';
 
 const ev = { user_id: 'u1', source: 'app', action: 'app.list', dedupe_key: 'k1', actor: 'user', observed_at: 'x', effective_at: 'x', trace_id: 't' } as const;
 const job: Omit<JobRow, 'id'> = { kind: 'post', user_id: 'u1', event_id: 'e', idempotency_key: 'k1', args: {}, state: 'queued', stages: [], attempts: 0, trace_id: 't', created_at: 'x' };
@@ -21,6 +21,48 @@ function fixture(t: TestContext) {
   const connect = () => { const handle = new DatabaseSync(path); handles.push(handle); return handle; };
   return { path, connect, reopen: () => sqliteStore(connect()) };
 }
+
+test('late search stages survive insertion, updates and getJob after reopening', t => {
+  const { reopen } = fixture(t), s = reopen();
+  const stages = [{ name: 'site:ebay', state: 'late' }] as unknown as JobRow['stages'];
+  const inserted = s.insertJob({ ...job, stages }).row;
+  assert.deepEqual(reopen().getJob(inserted.id), inserted);
+  const updated = s.updateJob(inserted.id, { attempts: 1, stages });
+  assert.deepEqual(reopen().getJob(inserted.id), updated);
+});
+
+test('job stage validation refuses a missing name or a non-string state', t => {
+  const { reopen, connect } = fixture(t), s = reopen(), handle = connect();
+  const inserted = s.insertJob(job).row;
+  for (const stage of [{ state: 'late' }, { name: 'site:ebay', state: 1 }]) {
+    handle.prepare('UPDATE jobs SET body = ? WHERE id = ?').run(JSON.stringify({ ...inserted, stages: [stage] }), inserted.id);
+    assert.throws(() => reopen().getJob(inserted.id), /Cannot load Store jobs/);
+  }
+});
+
+test('dump returns every tenant and table in insertion order as independent plain copies', t => {
+  const { reopen } = fixture(t), s = reopen();
+  const expected: StoreState = { events: [], jobs: [], decisions: [], rows: Object.fromEntries(TABLES.map(table => [table, []])) };
+  assert.deepEqual(s.dump(), expected);
+  for (const user_id of ['u2', 'u1']) {
+    expected.events.push(s.insertEvent({ ...ev, user_id }).row);
+    expected.jobs.push(s.insertJob({ ...job, user_id, args: { nested: { value: 1 } } }).row);
+    expected.decisions.push(s.raiseDecision({ ...decision, user_id }).row);
+    for (const table of TABLES) expected.rows[table]!.push(s.put(table, { id: user_id, user_id, nested: { value: 1 } }));
+  }
+  expected.jobs[0] = s.updateJob(expected.jobs[0].id, { attempts: 1 });
+  expected.decisions[0] = s.updateDecision(expected.decisions[0].id, { state: 'answered' });
+  expected.rows.item![0] = s.put('item', { ...expected.rows.item![0], state: 'live' });
+  const loaded = reopen(), dumped = loaded.dump();
+  assert.deepEqual(dumped, expected);
+  assert.equal(Object.getPrototypeOf(dumped.jobs[0]), Object.prototype);
+  dumped.events[0].why = 'changed';
+  (dumped.jobs[0].args.nested as { value: number }).value = 2;
+  dumped.decisions[0].options.push({ id: 'changed', label: 'changed' });
+  (dumped.rows.item![0].nested as { value: number }).value = 2;
+  dumped.rows.account!.pop();
+  assert.deepEqual(loaded.dump(), expected);
+});
 
 test('independent route connections cannot overwrite each other with stale snapshots (review B2)', t => {
   const { reopen } = fixture(t), a = reopen(), b = reopen();

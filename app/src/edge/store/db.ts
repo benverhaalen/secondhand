@@ -47,15 +47,13 @@ export function tx<T>(handle: DatabaseSync, fn: () => T): T {
   handle.exec(depth === 0 ? 'BEGIN IMMEDIATE' : `SAVEPOINT ${savepoint}`);
   depths.set(handle, depth + 1);
   try {
-    return log.timed('sqlite.tx', () => {
-      const result = fn();
-      if (isPromise(result)) {
-        void result.catch(error => log.error('sqlite.tx.async', error));
-        throw new Error('SQLite transaction must be synchronous; fn returned a Promise');
-      }
-      handle.exec(depth === 0 ? 'COMMIT' : `RELEASE ${savepoint}`);
-      return result;
-    }, { depth });
+    const result = fn();
+    if (isPromise(result)) {
+      void result.catch(error => log.error('sqlite.tx.async', error));
+      throw new Error('SQLite transaction must be synchronous; fn returned a Promise');
+    }
+    handle.exec(depth === 0 ? 'COMMIT' : `RELEASE ${savepoint}`);
+    return result;
   } catch (error) {
     handle.exec(depth === 0 ? 'ROLLBACK' : `ROLLBACK TO ${savepoint}; RELEASE ${savepoint}`);
     log.error('sqlite.tx', error);

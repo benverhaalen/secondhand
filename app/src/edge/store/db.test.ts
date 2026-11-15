@@ -6,12 +6,26 @@ import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { spawnSync } from 'node:child_process';
 import { dataPath, openDb, migrate, tx, db } from './db.ts';
+import { memorySink, observeLogs } from '../../../../log/index.js';
 
 function fixture(t: TestContext) {
   const dir = mkdtempSync(join(tmpdir(), 'secondhand-db-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   return join(dir, 'nested', 'secondhand.db');
 }
+
+test('transactions emit no timing lines and log a synchronous failure once', t => {
+  const handle = new DatabaseSync(':memory:');
+  const sink = memorySink(), stop = observeLogs(sink);
+  t.after(() => { stop(); handle.close(); });
+  assert.equal(tx(handle, () => 42), 42);
+  assert.deepEqual(sink.lines, [], 'successful transactions must not flood the log');
+  assert.throws(() => tx(handle, () => { throw new Error('synthetic transaction failure'); }), /synthetic transaction failure/);
+  const entries: Record<string, unknown>[] = sink.lines.map(line => JSON.parse(line));
+  assert.equal(entries.length, 1, 'failed transactions must log once');
+  assert.equal(entries[0].event, 'error');
+  assert.equal(entries[0].where, 'sqlite.tx');
+});
 
 test('dataPath chooses the explicit folder, test memory, development temp, and refuses unset production', () => {
   assert.equal(dataPath({ SECONDHAND_DATA_DIR: '/data', NODE_TEST_CONTEXT: 'child-v8', NODE_ENV: 'production' }), join('/data', 'secondhand.db'));
