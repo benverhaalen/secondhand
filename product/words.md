@@ -1833,3 +1833,50 @@ Ben, same thread, 09:47 UTC.
 > wait stop on this just focus on deslopping and improving the ai. through this note down where things break and where things need to change and use effective logging
 
 Used in: [brand/constitution.md Art. 7.11 to 7.16](../brand/constitution.md#article-7-space-and-layout), `scripts/composition.mjs` (U9 to U14), [the audit](../research/cross-cutting/ben/why-the-app-missed-the-mocks.md), [the breaks log](../features/app/breaks.md).
+
+## 2026-11-15 show how deep the project goes, and the novel ways we used the technology
+
+Ben, project chat, 09:57 UTC.
+> add more into it for dig deep how we created a project with absurd depth. also absurd depth in how we used the technologies and used them in a novel way.
+
+Used in: [devpost.md](devpost.md#how-deep-we-dug), [pitch.md](pitch.md#how-deep-we-dug).
+## 2026-11-15 every page earns its spot, a title on every tab, Today sorted differently, the bar and the plus
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 09:56 UTC.
+
+> audit how you are ensuring the whole app meets the standard of expert ui design and try and improve it. i recall the way i had prompted the dark mode original design had somehow created something that was actually good. for some reason those principles were lost. everything needs to earn its spot on the screen and all composure and structure and evaluating the app as a whole should ensure similar things have similar hierarchy and tests need to be written with this. also hopefully you have some sort of decision tree for figuring out what animations when or if an animation should play. also there are some fixes i have for things that make no sense to me. i think the today page should be sorted completely differently. i think the money thing at the top should change. the bottom bar looks odd with the iphone curves. the middle + circle isnt aligned. each page isnt designed for how the user would want to do something. it isnt designed like how a user would probably end up wanting to do things. everything feels cramped. i feel like the font weight hierarchy is not imposed. i think the second hand font isnt used enough. the today page should say today, the sell sell, the buy page, buy. then the main actions a user would want to do should be there. messages should just list the messages. also the gradient at the top of the screen is on some pages and not on others. think of how to group things in today better. the color makes no sense to me too. ensure there is no excessive text. recall all text needs to be written with the de claudish skill i hae in my harness.
+
+Ben, same thread, 09:59 UTC.
+
+> another note, i think that there should be lint rules and you should continue making lint rules based on what you see too. also like i think some things are just too small. like the little tags for pickup or offers etc. also you need to ensure that data can effectively wire up to the ui too. it should all feel familiar and be organized in a familiar way
+
+Ben, same thread, 10:00 UTC.
+
+> also what ui would you remove or what would you add to show rather than tell. and improve hierarchy and coherence. note down on the screens all the issues with cohesiveness and a combined brand family and where it wasnt enforced and trying to improve all those checks and rules that are deterministic and not just a prompt
+
+Ben, same thread, 10:01 UTC.
+
+> the scale and organization of each page is completely intentional and standard to apple iphone design
+## 2026-11-15 nate how credible and research-proven are our scorers, real time against 2012 to 2013, and proving we beat the other tools
+Nate, adaptation lead's session, 2026-11-15, evening Central.
+> So with this prompt, I was focused on you establishing how our engines are credible and accurate. Theres value to realtime vs 2012 to 2013. We research current market data, so I wanted you to assess how credible and research proven our scorers and such deterministic system we had in place were. What are the ways we can. /research  to understand what would make it such. What would help us easily prove or exhibit outperfroming competitors and other tools in our depth of research, and how we aid people.
+
+Used in: `spec/engines/credibility.md`.
+
+## 2026-11-15 nate fresh leads replace the ones with heavy context
+Nate, orchestrator's session, 2026-11-15, about 04:30 Central.
+> get all new leads in replacing old ones with very heavy context windows
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills).
+
+## 2026-11-15 nate the trial workspace is the one the judges see
+Nate, the Databricks lead's session, 2026-11-15, about 04:00 Central, as that lead relayed it to the orchestrator (not heard first hand).
+> thats what we have, yeah lets do the trial
+
+Used in: [packet 71](../.agents/team/packets/team/71-databricks-handoff.md), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate the dashboard is rebuilt before any deploy
+Nate, orchestrator's session, 2026-11-15, about 05:00 Central, asked whether to force the Databricks deploy before the dashboard is rebuilt.
+> Rebuild first
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 71](../.agents/team/packets/team/71-databricks-handoff.md).

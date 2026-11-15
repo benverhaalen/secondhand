@@ -3,7 +3,7 @@
 // Tests read the event log and the words on screen, not pixels.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { behavior, start } from './behavior.mjs';
+import { behavior, start, WAIT } from './behavior.mjs';
 
 const table = behavior('(tabs)/index');
 let app;
@@ -29,25 +29,25 @@ const STATES = {
     const s = await open('/?state=failed'); await s.shows('Today didn’t load'); assert.equal(await count(s, '[data-part="card-decision"]'), 0);
     await s.tap('retry'); await s.shows('Meet in public');
   },
-  loading: async () => { const s = await open('/?state=loading'); await s.page.locator('[data-skeleton="true"]').first().waitFor({ timeout: 3000 }); assert.equal(await count(s, '[data-skeleton="true"]'), 3); assert.equal(await count(s, '[data-part="money-news"]'), 0); },
+  loading: async () => { const s = await open('/?state=loading'); await s.page.locator('[data-skeleton="true"]').first().waitFor({ timeout: WAIT }); assert.equal(await count(s, '[data-skeleton="true"]'), 3); assert.equal(await count(s, '[data-part="money-news"]'), 0); },
   working: async () => { const s = await open(); await s.tap('dec_jacket-acc'); await s.shows('Accepting'); },
   done: async () => {
-    const s = await open(); await s.tap('dec_jacket-acc'); await s.shows('Accepted $85', { timeout: 4000 });
-    await s.page.getByTestId('dec_jacket-open').waitFor({ state: 'detached', timeout: 2000 }); // the answered card left, after its fade
-    await s.tap('dec_jacket-undo'); await s.page.getByTestId('dec_jacket-open').waitFor({ state: 'visible', timeout: 3000 });
+    const s = await open(); await s.tap('dec_jacket-acc'); await s.shows('Accepted $85', { timeout: WAIT });
+    await s.page.getByTestId('dec_jacket-open').waitFor({ state: 'detached', timeout: WAIT }); // the answered card left, after its fade
+    await s.tap('dec_jacket-undo'); await s.page.getByTestId('dec_jacket-open').waitFor({ state: 'visible', timeout: WAIT });
   },
-  failed: async () => { const s = await open('/?world=clearing&fail=dec_jacket'); await s.tap('dec_jacket-acc'); await s.shows('The site did not answer', { timeout: 4000 }); await s.shows('Retry'); },
+  failed: async () => { const s = await open('/?world=clearing&fail=dec_jacket'); await s.tap('dec_jacket-acc'); await s.shows('The site did not answer', { timeout: WAIT }); await s.shows('Retry'); },
   'batch failed': async () => {
     const s = await open('/?world=clearing&fail=dec_lbl2'); await s.tap('batch-buy_label-all'); await s.shows('1 of 2');
-    await s.shows(/did not go through/, { timeout: 5000 }); await s.shows('Retry');
+    await s.shows(/did not go through/, { timeout: WAIT }); await s.shows('Retry');
   },
   queue: async () => {
     const s = await open(ROUTE.flipper); await s.tap('shelf-when_you_can-all'); await s.tap('queue-first_post-review'); await s.shows('Ready to post'); await s.shows('1 of 40');
-    await s.tap('queue-approve'); await s.shows('2 of 40', { timeout: 4000 });
+    await s.tap('queue-approve'); await s.shows('2 of 40', { timeout: WAIT });
   },
   offline: async () => {
     const s = await open('/?state=offline'); await s.shows('Waiting for signal'); await s.tap('dec_jacket-acc');
-    await s.page.getByTestId('dec_jacket-acc').getByText('Waiting for signal').waitFor({ timeout: 3000 });
+    await s.page.getByTestId('dec_jacket-acc').getByText('Waiting for signal').waitFor({ timeout: WAIT });
   },
   stops: async () => {
     const s = await open(ROUTE.stops); await s.tap('shelf-when_you_can-all'); for (const t of ['Sold twice', 'Both paid, $42 and $40', '3 sold, after fees', 'Do the Joy-Cons drift?', 'The tag photo is blurry', 'The site shows $44, not your $48']) await s.shows(t);
@@ -56,9 +56,9 @@ const STATES = {
   fanned: async () => {
     const s = await open(); const shelf = '[data-shelf="when_you_can"] [data-part="card-decision"]';
     await s.page.locator('[data-pile="when_you_can"]').waitFor(); assert.equal(await count(s, shelf), 1, 'piled: one card in full');
-    await s.tap('when_you_can-pile'); await s.page.waitForFunction(sel => document.querySelectorAll(sel).length === 4, shelf, { timeout: 3000 });
-    await s.tap('shelf-when_you_can-less'); await s.page.waitForFunction(sel => document.querySelectorAll(sel).length === 1, shelf, { timeout: 3000 });
-    await s.tap('shelf-when_you_can-all'); await s.page.waitForFunction(sel => document.querySelectorAll(sel).length === 4, shelf, { timeout: 3000 });
+    await s.tap('when_you_can-pile'); await s.page.waitForFunction(sel => document.querySelectorAll(sel).length === 4, shelf, { timeout: WAIT });
+    await s.tap('shelf-when_you_can-less'); await s.page.waitForFunction(sel => document.querySelectorAll(sel).length === 1, shelf, { timeout: WAIT });
+    await s.tap('shelf-when_you_can-all'); await s.page.waitForFunction(sel => document.querySelectorAll(sel).length === 4, shelf, { timeout: WAIT });
   },
   'could bring': async () => { const s = await open('/?world=one'); await s.shows('Your listing could bring'); await s.shows('$85'); await s.shows('up to $115, before fees'); },
   break: async () => {
@@ -90,7 +90,7 @@ for (const c of table.controls) test(`today: ${c.id} ${c.on_tap}`, async () => {
   for (const id of BEFORE[c.id] ?? []) await s.tap(id);
   await s.tap(c.id);
   await s.saw({ type: 'tap', id: c.id });
-  if (c.goes) await s.page.waitForURL(u => new URL(u).pathname === c.goes, { timeout: 3000 });
+  if (c.goes) await s.page.waitForURL(u => new URL(u).pathname === c.goes, { timeout: WAIT });
 });
 
 // An amount under the person's lowest asks once before it goes (edge-cases §3).

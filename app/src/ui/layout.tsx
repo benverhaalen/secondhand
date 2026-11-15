@@ -12,10 +12,11 @@ import { radius, space } from './tokens.generated';
 export const GAP = { tight: space.s2, group: space.s3, cards: space.s4, section: space.s7 } as const;
 
 // The whole view: the safe area, the 20 gutter, one scroll. `nav` sits first, 8 above what follows (Art. 7.8).
-// `wash` draws the header gradient behind the nav (Art. 5, The wash): main screens with news at the top only.
+// The wash is under every nav (U8; Ben, 09:56: "the gradient at the top of the screen is on some pages and not on others"):
+// a page with a top has it, and a sheet or a full-screen moment, which have no nav, do not.
 // `name` and `state` mark the root (data-screen, data-state on the web) so tests and the gallery know which state is drawn.
 // `foot` is the page's one act pinned to the foot, 16 above the safe area (Art. 7.9), when it is not in the first 844.
-export function Screen({ children, nav, wash = false, center = false, name, state, skip, sheet, foot }: {
+export function Screen({ children, nav, wash = nav != null, center = false, name, state, skip, sheet, foot }: {
   children: ReactNode;
   nav?: ReactNode;
   wash?: boolean;

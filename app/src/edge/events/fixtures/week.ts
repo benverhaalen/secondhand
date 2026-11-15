@@ -46,7 +46,6 @@ export async function weekRig(noLimits = false, options: {
     account_id: `acc_${site}`, external_id: site === 'depop' ? '999002396' : `ext_${site}`, state: 'live' }));
   const active = (site: Site, kind: string) => script.filter(s => s.site === site && s.kind === kind && s.minute <= minute);
   const expired = () => minute >= atMinute('ebay', 'auth_expired') && minute < atMinute('ebay', 'relinked');
-  const ended = new Set<Site>();
   const client: Client = { signed_in: true, async doc() { throw new Error('week must use fixture JSON, never the network'); }, async json(path) {
     const fixtures = '../../harness/sites/depop/fixtures/';
     if (path === PATHS.products('shop_walk') || path === PATHS.sold('shop_walk')) {
@@ -73,8 +72,8 @@ export async function weekRig(noLimits = false, options: {
   const verbs: Verb[] = ['read_listings', 'read_offers', 'read_inbox', 'read_orders', 'answer_offer', 'end'];
   for (const site of ['poshmark', 'ebay'] as const) for (const verb of verbs) adapters.push({ route_id: `fake.${site}.${verb}.week`, manifest: fakeManifest(site, verb), async run(args) {
     if (site === 'ebay' && expired()) return fail('auth_expired', 'simulated expiry', { do: 'relink', site });
-    if (verb === 'end') { if (args.item_id === 'it_walk') { assert.equal(args.external_id, `ext_${site}`, 'delist carries target site id'); ended.add(site); } return { ok: true, data: { dry: true } }; }
-    if (verb === 'read_listings') return { ok: true, data: [{ external_id: `ext_${site}`, state: ended.has(site) ? 'ended' : 'live', price_cents: 6000 }] };
+    if (verb === 'end') { if (args.item_id === 'it_walk') { assert.equal(args.external_id, `ext_${site}`, 'delist carries target site id'); } return { ok: true, data: { dry: true } }; }
+    if (verb === 'read_listings') return { ok: true, data: [{ external_id: `ext_${site}`, state: 'live', price_cents: 6000 }] };
     if (verb === 'read_offers') return { ok: true, data: active(site, 'quiet').length ? [] : active(site, 'offer').map(s => ({ external_id: s.id, listing_external_id: `ext_${site}`, amount_cents: s.amount_cents, state: 'open' })) };
     return { ok: true, data: [] };
   } });

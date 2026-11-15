@@ -162,3 +162,15 @@ Read on Nate's workspace, 2026-11-15. Each line names the command that gives it.
 - **An App showing "why this price"** from a citation: needs Nate's go (an App is a resource).
 - **NBER eBay**: the workspace's egress is limited to trusted domains, and Windows got HTTP 403 on a HEAD to data.nber.org; tried again with a GET before giving up.
 - **Data quality monitoring** on `market`: billed as serverless; on only with Nate's say.
+
+## 11. Platform findings, 2026-11-15
+
+Observed on the workspace; exact errors supplied by the build orchestrator:
+
+1. **CHECK constraints and row-level security cannot share a table.** ``[ROW_LEVEL_SECURITY_CHECK_CONSTRAINT_UNSUPPORTED] Creating CHECK constraint on table `secondhand`.`core`.`guarded_number` with row level security policies is not supported.`` We use the [guard view and failing job](../databricks/sql/09_guard.sql), the [door check](../databricks/guard.py), and an [hourly alert](../deploy/resources/alerts.yml). `guard_refusals` records the door's refusals; `guard_violations` finds rows written past it. Design (b), an unfiltered staging table with CHECKs merged into the filtered table, is the option for a full workspace; it is not built.
+2. **The owner filter hides other people's rows from the operator's own job.** `[DELTA_NEW_NOT_NULL_VIOLATION] 53 rows in secondhand.core.observation violate the new NOT NULL constraint on data`. The backfill needed a logged break-glass window (76 s, `governance.break_glass`). [migrate_data.py](../databricks/tasks/migrate_data.py) brackets the migration with access, an audit row, and revocation even when it fails.
+3. **Metric views need the Statements API.** The CLI's `aitools tools query` drops indented YAML lines: `[METRIC_VIEW_INVALID_VIEW_DEFINITION] … Missing required creator property 'expr'`. We create metric views through the Statements API, preserving the YAML.
+
+Serverless Python has no `__file__`: entrypoints take `--root ${workspace.file_path}` ([§1](#1-the-workspace-we-build-on)).
+
+SQL file tasks split at semicolons: compound SQL runs from a Python task ([§1](#1-the-workspace-we-build-on)).

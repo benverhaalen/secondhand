@@ -15,7 +15,7 @@ pageTests(test, table, () => app);
 test('message: Take over puts the draft away and says offers still follow the Plan', async () => {
   const s = await reach(app, table, { route: '/messages/cv_pd', after: ['draft-take'] });
   await s.shows('You answer here. Offers still follow your Plan');
-  assert.equal(await s.page.getByTestId('draft-send').count(), 0);
+  assert.equal(await s.countId('draft-send'), 0);
   await s.page.getByTestId('composer-input').waitFor({ state: 'visible' });
 });
 
@@ -47,7 +47,7 @@ test('message: guessed words are the agent’s until the person changes them', a
 test('message: Correct it drafts a fix to send instead of sending one', async () => {
   const s = await reach(app, table, { after: ['why-msg_jd2', 'why-correct'] });
   await s.page.getByTestId('draft-input').waitFor({ state: 'visible' });
-  assert.equal(await s.page.getByText('Now', { exact: true }).count(), 0);
+  assert.equal(await s.count('Now', { exact: true }), 0);
 });
 
 test('message: a possible scam says why, and Block takes it out of the thread', async () => {

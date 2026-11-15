@@ -1,0 +1,46 @@
+Attributes: Application, 0x129fc30c0, pid: 71097, label: 'secondhand'
+Element subtree:
+ →Application, 0x129fc30c0, pid: 71097, label: 'secondhand'
+    Window (Main), 0x129fc2940, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x129fc3480, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x129fc2800, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x129fc2a80, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x129fc0780, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x129fc0000, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x129fc26c0, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x129fc0640, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x129fc0500, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x129fc0140, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x129fc03c0, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x129fc08c0, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x129fc0a00, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x129fc0280, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x129fc0b40, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x129fc0c80, {{0.0, 62.0}, {402.0, 812.0}}
+                                    ScrollView, 0x129fc0dc0, {{0.0, 62.0}, {402.0, 812.0}}
+                                      Other, 0x129fc1180, {{0.0, 62.0}, {402.0, 812.0}}
+                                        Other, 0x129fc0f00, {{0.0, 62.0}, {402.0, 812.0}}
+                                          Other, 0x129fc1040, {{20.0, 62.0}, {362.0, 44.0}}
+                                            Button, 0x129fc1540, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                          StaticText, 0x1283aef80, {{20.0, 165.0}, {362.0, 20.3}}, label: 'Nothing to clear here'
+                                            StaticText, 0x1283ad2c0, {{20.0, 165.0}, {362.0, 20.3}}, label: 'Nothing to clear here'
+                                          StaticText, 0x1283af0c0, {{20.0, 194.3}, {362.0, 17.7}}, label: 'The camera found nothing in this room to sell or give away.'
+                                            StaticText, 0x1283ad180, {{20.0, 194.3}, {362.0, 17.7}}, label: 'The camera found nothing in this room to sell or give away.'
+                                          Button, 0x1283aee40, {{20.0, 232.0}, {124.3, 40.0}}, identifier: 'scan', label: 'Scan the room'
+                                      Other, 0x1283ac640, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x1283acc80, {{396.0, 65.0}, {3.0, 772.0}}
+                                      Other, 0x1283ad040, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x1283afc00, {{3.0, 834.0}, {396.0, 3.0}}
+                                      Other, 0x1283ad7c0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x1283ada40, {{396.0, 65.0}, {3.0, 772.0}}
+                                      Other, 0x1283ad540, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x1283af700, {{3.0, 834.0}, {396.0, 3.0}}
+                      Toolbar, 0x1283af5c0, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                        Other, 0x1283afac0, {{0.0, 0.0}, {402.0, 874.0}}
+Path to element:
+ →Application, 0x129fc30c0, pid: 71097, label: 'secondhand'
+Query chain:
+ →Find: Application 'dev.ben.secondhand'
+  Output: {
+    Application, 0x1283af340, pid: 71097, label: 'secondhand'
+  }
