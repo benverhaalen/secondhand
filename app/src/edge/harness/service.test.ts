@@ -14,6 +14,45 @@ const options = () => {
 };
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+test('an aborted queued read answers immediately, leaves the active read alone and never enters an adapter', async () => {
+  const o = options(), hold = Promise.withResolvers<AdapterResult>(), began = Promise.withResolvers<void>();
+  let runs = 0;
+  const adapter: Adapter = { route_id: 'held', manifest: fakeManifest('depop', 'search'), run() {
+    runs++; began.resolve(); return hold.promise;
+  } };
+  const service = createSiteService('depop', [adapter], { ...o, concurrency: 1, timeoutMs: 100 });
+  const active = service.call('search'); await began.promise;
+  const ctl = new AbortController();
+  const queued = service.call('search', {}, { signal: ctl.signal });
+  await sleep(1); assert.equal(service.queued(), 1);
+  const start = performance.now(); ctl.abort();
+  try {
+    const result = await queued;
+    assert.ok(performance.now() - start < 30);
+    assert.ok(!result.ok && result.error.code === 'rate_limited');
+    assert.equal(service.running(), 1); assert.equal(service.queued(), 0); assert.equal(runs, 1);
+    assert.equal(o.ledger.counts('depop')[0]!.classes.timed_out, 1);
+    assert.equal(o.ledger.paused('depop'), undefined);
+  } finally { hold.resolve({ ok: true, data: [] }); await active; }
+});
+
+test('an aborted read does not wait for startup or warm an adapter on its own', async () => {
+  const o = options(), warmed = Promise.withResolvers<void>();
+  let runs = 0;
+  const adapter: Adapter = { route_id: 'cold', manifest: fakeManifest('depop', 'search'), async run() {
+    runs++; return { ok: true, data: [] };
+  } };
+  const service = createSiteService('depop', [adapter], { ...o, concurrency: 1, warm: () => warmed.promise });
+  const ctl = new AbortController(), pending = service.call('search', {}, { signal: ctl.signal });
+  ctl.abort();
+  try {
+    const result = await Promise.race([pending, sleep(30).then(() => undefined)]);
+    assert.ok(result && !result.ok && result.error.code === 'rate_limited');
+    assert.equal(runs, 0); assert.equal(service.running(), 0);
+    assert.equal(o.ledger.counts('depop')[0]!.classes.timed_out, 1);
+  } finally { warmed.resolve(); await pending; }
+});
 const p95 = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.ceil(xs.length * 0.95) - 1];
 
 // §5 budgets scaled by 1/20: endpoint read 1.5 s -> 75 ms, page read 8 s -> 400 ms, write 20 s -> 1000 ms. Real latency is 30% of the budget.

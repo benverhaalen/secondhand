@@ -7,12 +7,20 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { secret, requireProduction } from './secrets.ts';
 
-const names = ['SECONDHAND_DATA_DIR', 'SECONDHAND_PEER_HEADER', 'SECONDHAND_VISITOR_KEY', 'DECISION_SIGNING_KEY'];
+const names = ['SECONDHAND_DATA_DIR', 'SECONDHAND_PEER_HEADER', 'SECONDHAND_VISITOR_KEY', 'DECISION_SIGNING_KEY', 'SECONDHAND_VAULT_KEY'];
+test('production without SECONDHAND_VAULT_KEY names it and rejects vault keys other than 64 hex characters', () => {
+  const value = randomBytes(32).toString('hex');
+  const env = { NODE_ENV: 'production', SECONDHAND_DATA_DIR: '/data', SECONDHAND_PEER_HEADER: 'Fly-Client-IP', SECONDHAND_VISITOR_KEY: value, DECISION_SIGNING_KEY: value };
+  assert.throws(() => requireProduction(env), /SECONDHAND_VAULT_KEY/);
+  for (const key of [undefined, 'a'.repeat(32), 'a'.repeat(63), 'a'.repeat(65), 'g'.repeat(64)]) {
+    assert.throws(() => secret('vault', { ...env, SECONDHAND_VAULT_KEY: key }), /SECONDHAND_VAULT_KEY/);
+  }
+  assert.equal(secret('vault', { ...env, SECONDHAND_VAULT_KEY: value }), value);
+});
 test('production missing or short signing keys throw naming the variable without exposing values', () => {
   for (const [name, variable] of [['visitor', 'SECONDHAND_VISITOR_KEY'], ['decision', 'DECISION_SIGNING_KEY']] as const) {
     for (const value of [undefined, randomBytes(8).toString('hex')]) {
-      const env = { NODE_ENV: 'production', [variable]: value };
-      assert.throws(() => secret(name, env), (error: Error) => {
+      for (const env of [{ NODE_ENV: 'production', [variable]: value }, { [variable]: value }, { NODE_ENV: 'staging', [variable]: value }]) assert.throws(() => secret(name, env), (error: Error) => {
         assert.match(error.message, new RegExp(variable));
         if (value) assert.ok(!error.message.includes(value));
         return true;
@@ -21,6 +29,7 @@ test('production missing or short signing keys throw naming the variable without
     const value = randomBytes(32).toString('hex');
     assert.equal(secret(name, { NODE_ENV: 'production', [variable]: value }), value);
     assert.equal(secret(name, { [variable]: value }), value);
+    assert.equal(secret(name, { NODE_ENV: 'development', [variable]: value }), value);
   }
 });
 
@@ -35,18 +44,19 @@ test('production boot lists every missing variable and never includes a supplied
     assert.ok(!error.message.includes(value));
     return true;
   });
-  requireProduction({ NODE_ENV: 'production', SECONDHAND_DATA_DIR: '/data', SECONDHAND_PEER_HEADER: 'Fly-Client-IP', SECONDHAND_VISITOR_KEY: value, DECISION_SIGNING_KEY: value });
+  requireProduction({ NODE_ENV: 'production', SECONDHAND_DATA_DIR: '/data', SECONDHAND_PEER_HEADER: 'Fly-Client-IP', SECONDHAND_VISITOR_KEY: value, DECISION_SIGNING_KEY: value, SECONDHAND_VAULT_KEY: value });
   requireProduction({ NODE_ENV: 'development' });
+  for (const env of [{}, { NODE_ENV: 'staging' }]) assert.throws(() => requireProduction(env), /Missing production variables/, JSON.stringify(env));
 });
 
 test('development signing keys persist across fresh bundles and restarted processes on the same SQLite file', () => {
   const dir = mkdtempSync(join(tmpdir(), 'secrets-'));
   const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: 'development', SECONDHAND_DATA_DIR: dir };
-  delete env.SECONDHAND_VISITOR_KEY; delete env.DECISION_SIGNING_KEY;
+  delete env.SECONDHAND_VISITOR_KEY; delete env.DECISION_SIGNING_KEY; delete env.SECONDHAND_VAULT_KEY;
   const url = new URL('./secrets.ts', import.meta.url).href;
   const code = `const { createHash } = await import('node:crypto'); const a = await import(${JSON.stringify(url)}); const b = await import(${JSON.stringify(url + '?bundle=2')});
-    const keys = ['visitor', 'decision'].map(name => a.secret(name));
-    if (keys.some((key, i) => key !== b.secret(['visitor', 'decision'][i]))) throw Error('bundle keys differ');
+    const keys = ['visitor', 'decision', 'vault'].map(name => a.secret(name));
+    if (keys.some((key, i) => key !== b.secret(['visitor', 'decision', 'vault'][i]))) throw Error('bundle keys differ');
     if (keys.some(key => !/^[a-f0-9]{64}$/.test(key))) throw Error('invalid key format');
     process.stdout.write(JSON.stringify(keys.map(key => createHash('sha256').update(key).digest('hex'))));`;
   try {

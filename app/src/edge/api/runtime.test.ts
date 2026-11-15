@@ -12,13 +12,67 @@ import { depopAdapters, PATHS } from '../harness/sites/depop/adapter.ts';
 import { fakeAdapter, fail, WRITE_VERBS, type Adapter, type CallArgs } from '../harness/protocol.ts';
 import { URLS, type PageClient } from '../harness/sites/ebay/adapter.ts';
 import type { composeSources } from '../harness/compose.ts';
+import { memoryVault } from '../browser/auth.ts';
+import { DatabaseSync } from 'node:sqlite';
+import { sqliteVault, vault as defaultVault } from '../store/vault.ts';
+
+test('a session linked through one route vault is found by runtime accounts over another database handle', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'secondhand-route-vault-'));
+  const path = join(dir, 'secondhand.db'), first = new DatabaseSync(path), second = new DatabaseSync(path);
+  t.after(() => { first.close(); second.close(); rmSync(dir, { recursive: true, force: true }); });
+  const key = crypto.getRandomValues(Buffer.alloc(32)), session = { cookies: [], origins: [] };
+  const linking = sqliteVault(first, key), reading = sqliteVault(second, key), st = memoryStore();
+  st.put('account', { id: 'acc_shared', user_id: 'usr_shared', site: 'depop', token_ref: 'account/shared-route' });
+  const r = createRuntime(st, log(), { vault: reading });
+  assert.deepEqual(await r.accounts.linked('usr_shared'), []);
+  await linking.put('account/shared-route', session);
+  assert.deepEqual(await r.accounts.linked('usr_shared'), [{ account_id: 'acc_shared', person_id: 'usr_shared', site: 'depop', token_ref: 'account/shared-route' }]);
+  await linking.delete('account/shared-route');
+  assert.deepEqual(await r.accounts.linked('usr_shared'), []);
+});
+
+test('runtime defaults to the shared SQLite vault so recreated runtimes retain linked sessions', async t => {
+  const ref = `account/${crypto.randomUUID()}`, st = memoryStore();
+  t.after(async () => { await defaultVault().delete(ref); });
+  const first = createRuntime(st, log());
+  st.put('account', { id: 'acc_default', user_id: 'usr_default', site: 'depop', token_ref: ref });
+  await first.vault.put(ref, { cookies: [], origins: [] });
+  assert.deepEqual(await defaultVault().get(ref), { cookies: [], origins: [] });
+  const second = createRuntime(st, log());
+  assert.equal((await second.accounts.linked('usr_default'))[0]?.account_id, 'acc_default');
+});
+
+test('examples off prevents runtime from seeding rows for the example user', t => {
+  const before = process.env.SECONDHAND_EXAMPLES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = before; });
+  process.env.SECONDHAND_EXAMPLES = '0';
+  const st = memoryStore();
+  const empty = st.exportUser('usr_8f2k');
+  createRuntime(st, log(), { vault: memoryVault() });
+  assert.deepEqual(st.exportUser('usr_8f2k'), empty);
+  assert.deepEqual(st.decisions({ user_id: 'usr_8f2k' }), []);
+  assert.deepEqual(st.events({ user_id: 'usr_8f2k' }), []);
+});
+
+test('examples on seeds the example user and preserves existing rows as before', t => {
+  const before = process.env.SECONDHAND_EXAMPLES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = before; });
+  process.env.SECONDHAND_EXAMPLES = '1';
+  const st = memoryStore();
+  createRuntime(st, log(), { vault: memoryVault() });
+  assert.ok(st.get('account', 'usr_8f2k', 'acc_dp1'));
+  assert.ok(st.rows('item', { user_id: 'usr_8f2k' }).length > 0);
+  const beforeSeed = st.exportUser('usr_8f2k');
+  createRuntime(st, log(), { vault: memoryVault() });
+  assert.deepEqual(st.exportUser('usr_8f2k'), beforeSeed);
+});
 
 for (const site of ['depop', 'ebay'] as const) test(`${site} reads without publicClients stay no_route even when SECONDHAND_LIVE_SITES enables writes`, async t => {
   const before = process.env.SECONDHAND_LIVE_SITES;
   t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
   process.env.SECONDHAND_LIVE_SITES = 'depop,ebay';
   const network = t.mock.method(globalThis, 'fetch', async () => { assert.fail('a site read reached plain fetch without publicClients'); });
-  const r = createRuntime(memoryStore(), log());
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
   const result = await r.harness.call(site, 'search', { q: 'levis 501 jeans' });
   assert.equal(network.mock.callCount(), 0);
   assert.ok(!result.ok && result.error.code === 'no_route', JSON.stringify(result));
@@ -33,7 +87,7 @@ test('Mercari linked browser names SECONDHAND_CHROME when that variable is unset
   process.env.SECONDHAND_LIVE_SITES = 'mercari';
   delete process.env.SECONDHAND_CHROME;
   delete process.env.SECONDHAND_CHROME_PATH;
-  const r = createRuntime(memoryStore(), log(), { adapters: [] });
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault(), adapters: [] });
   r.store.put('account', { id: 'acc_mc', user_id: 'owner', site: 'mercari', token_ref: 'fixture/mercari' });
   await r.vault.put('fixture/mercari', { cookies: [], origins: [] });
   const result = await r.harness.call('mercari', 'search', { q: 'jeans', account_id: 'acc_mc', person_id: 'owner' });
@@ -81,7 +135,7 @@ test('offline eBay search tries endpoint then page, both no_route, without netwo
   process.env.SECONDHAND_LIVE_SITES = 'depop';
   const network = t.mock.method(globalThis, 'fetch', async () => { throw new Error('offline eBay must not fetch'); });
   const sink = memorySink();
-  const r = createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink }));
+  const r = createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink }), { vault: memoryVault() });
   const result = await r.harness.call('ebay', 'search', { q: 'levis 501 jeans' });
   assert.ok(!result.ok && result.error.code === 'no_route');
   assert.equal(result.meta.route_id, 'ebay.search.page', 'offline page route must remain registered');
@@ -98,7 +152,7 @@ test('offline eBay does not use a planted page client', async t => {
   process.env.SECONDHAND_LIVE_SITES = '';
   let loads = 0;
   const ebayPageClient: PageClient = { signed_in: false, async page() { loads++; throw new Error('offline eBay must not load pages'); } };
-  const r = createRuntime(memoryStore(), log(), { ebayPageClient });
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault(), ebayPageClient });
   const result = await r.harness.call('ebay', 'search', { q: 'levis 501 jeans' });
   assert.ok(!result.ok && result.error.code === 'no_route');
   assert.equal(loads, 0);
@@ -117,7 +171,7 @@ test('eBay publicClients falls from the keyless endpoint to the planted page cli
     assert.ok(fixture, 'unexpected page URL');
     return { status: 200, html: readFileSync(new URL(`../harness/sites/ebay/fixtures/${fixture}`, import.meta.url), 'utf8') };
   } };
-  const r = createRuntime(memoryStore(), log(), { publicClients: {
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault(), publicClients: {
     ebay: ebayPageClient,
     depop: { signed_in: false, doc: async () => { assert.fail('unexpected Depop read'); }, json: async () => { assert.fail('unexpected Depop read'); } },
     close: async () => {},
@@ -154,7 +208,7 @@ test('watcher sweeps only the linked Depop account through site adapters and sav
   st.put('account', { id: 'acc_linked', user_id: 'usr_watch', site: 'depop', token_ref: 'fixture/session', shop_id: 'fixture-shop', next_check_at: '2020-01-01T00:00:00Z' });
   st.put('account', { id: 'acc_unlinked', user_id: 'usr_watch', site: 'ebay', next_check_at: '2020-01-01T00:00:00Z' });
   st.put('listing', { id: 'ls_watch', user_id: 'usr_watch', item_id: 'it_watch', account_id: 'acc_linked', site: 'depop', external_id: '999002396', state: 'live', data: 'live:depop' });
-  const r = createRuntime(st, log(), { adapters: [...adapters, other] });
+  const r = createRuntime(st, log(), { vault: memoryVault(), adapters: [...adapters, other] });
   await r.vault.put('fixture/session', { cookies: [], origins: [] });
   assert.deepEqual((await r.watcher.tick()).ran, ['acc_linked']);
   assert.deepEqual(calls, [PATHS.products('fixture-shop'), PATHS.sold('fixture-shop'), PATHS.offers, PATHS.inbox, PATHS.orders]);
@@ -165,7 +219,7 @@ test('watcher sweeps only the linked Depop account through site adapters and sav
   const reopened = fileStore(path);
   reopened.put('account', { ...saved, next_check_at: '2020-01-01T00:00:00Z' });
   products.objects[0].pricing.current_price.price_breakdown.price.amount = '80.00';
-  const restarted = createRuntime(reopened, log(), { adapters });
+  const restarted = createRuntime(reopened, log(), { vault: memoryVault(), adapters });
   await restarted.vault.put('fixture/session', { cookies: [], origins: [] });
   await restarted.watcher.tick();
   assert.ok(reopened.events({ user_id: 'usr_watch' }).some(event => event.action === 'price.changed' && event.item_id === 'it_watch' && event.listing_id === 'ls_watch'), 'restart must diff against the saved baseline and resolve the stored listing');
@@ -181,7 +235,7 @@ test('runtime writes use the durable site ledger, dedupe across restart, and kee
   const path = join(dir, 'store.json');
   let writes = 0;
   const adapter: Adapter = { ...fakeAdapter('depop', 'end'), async run() { writes++; return { ok: true, data: { ended: true } }; } };
-  const r = createRuntime(fileStore(path), log(), { adapters: [adapter] });
+  const r = createRuntime(fileStore(path), log(), { vault: memoryVault(), adapters: [adapter] });
   const a = r.store.get('account', 'usr_8f2k', 'acc_dp1')!;
   r.store.put('account', { ...a, token_ref: 'fixture/session' });
   const args = { account_id: a.id, person_id: 'usr_8f2k', operation_id: 'op-once', slug: 'fixture-listing' };
@@ -192,7 +246,7 @@ test('runtime writes use the durable site ledger, dedupe across restart, and kee
   const first = await r.harness.call('depop', 'end', args);
   assert.equal(first.ok, true);
   await r.harness.call('depop', 'end', args);
-  const restarted = createRuntime(fileStore(path), log(), { adapters: [adapter] });
+  const restarted = createRuntime(fileStore(path), log(), { vault: memoryVault(), adapters: [adapter] });
   await restarted.vault.put('fixture/session', { cookies: [], origins: [] });
   assert.equal((await restarted.harness.call('depop', 'end', args)).ok, true);
   assert.equal(writes, 1, 'duplicate operation must never reach the adapter');
@@ -211,7 +265,7 @@ test('site services label writes live only for the enabled site', async t => {
   const before = process.env.SECONDHAND_LIVE_SITES;
   t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
   process.env.SECONDHAND_LIVE_SITES = 'depop';
-  const r = createRuntime(memoryStore(), log(), { adapters: [fakeAdapter('depop', 'end'), fakeAdapter('ebay', 'end')] });
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault(), adapters: [fakeAdapter('depop', 'end'), fakeAdapter('ebay', 'end')] });
   for (const [site, id] of [['depop', 'acc_dp1'], ['ebay', 'acc_eb1']] as const) {
     const a = r.store.get('account', 'usr_8f2k', id)!;
     r.store.put('account', { ...a, token_ref: `fixture/${site}` });
@@ -234,7 +288,7 @@ for (const liveSites of [undefined, '', 'depop']) test(`write guard enforces the
     },
   })));
   const sink = memorySink();
-  const r = createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink }), { adapters });
+  const r = createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink }), { vault: memoryVault(), adapters });
   for (const site of ['depop', 'poshmark'] as const) {
     const account_id = `acc_guard_${site}`;
     r.store.put('account', { id: account_id, user_id: 'usr_guard', site, token_ref: `fixture/${site}` });
@@ -268,7 +322,7 @@ for (const setting of ['auto', 'ask_all', 'ask_every_time', 'stricter_rule', 'co
       ? { objects: [{ ...offer, product_id: 999002396, amount: { amount: setting === 'counter_without_model' ? '62.00' : setting === 'below_floor_without_model' ? '45.00' : '75.00' }, created_at: new Date(now).toISOString(), status: 'pending' }] } : { objects: [] };
     return { status: 200, body };
   } });
-  const r = createRuntime(memoryStore(), log(), { adapters, now: () => now });
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault(), adapters, now: () => now });
   r.store.put('account', { id: 'acc_offer', user_id: 'usr_offer', site: 'depop', token_ref: 'fixture/offer', shop_id: 'fixture-shop', next_check_at: new Date(now).toISOString() });
   r.store.put('listing', { id: 'ls_offer', user_id: 'usr_offer', item_id: 'it_offer', account_id: 'acc_offer', site: 'depop', external_id: '999002396', state: 'live' });
   r.store.put('limits', { id: 'it_offer', user_id: 'usr_offer', ask_cents: { amount_cents: 8000, currency: 'USD' }, floor_cents: { amount_cents: 5000, currency: 'USD' }, always_accept_cents: { amount_cents: 7000, currency: 'USD' } });
@@ -306,7 +360,7 @@ for (const setting of ['auto', 'ask_all', 'ask_every_time', 'stricter_rule', 'co
 });
 
 test('watcher leaves API import jobs for the runtime worker that owns their engine', async () => {
-  const r = createRuntime(memoryStore(), log());
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
   const job = r.store.insertJob({ user_id: 'usr_8f2k', event_id: 'api-import', kind: 'import' as JobRow['kind'], state: 'queued', account_id: 'acc_dp1', site: 'depop', idempotency_key: 'api-import', args: { listing_ids: [] }, stages: [], attempts: 0, trace_id: 'test', created_at: new Date().toISOString() }).row;
   await r.watcher.tick();
   assert.equal(r.store.getJob(job.id)?.state, 'queued');
@@ -316,7 +370,7 @@ test('watcher leaves API import jobs for the runtime worker that owns their engi
 });
 
 test('route worker leaves sale confirmation to the watcher and can still claim its own job', async () => {
-  const r = createRuntime(memoryStore(), log());
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
   const at = new Date().toISOString();
   const event = r.store.insertEvent({ user_id: 'usr_8f2k', source: 'watcher_signed_in', action: 'listing.sold', actor: 'site', dedupe_key: 'sale', observed_at: at, effective_at: at, trace_id: 'test' }).row;
   const queued = { user_id: event.user_id, event_id: event.id, account_id: 'acc_dp1', site: 'depop' as const, state: 'queued' as const, args: {}, stages: [], attempts: 0, trace_id: 'test', created_at: at };
@@ -332,7 +386,7 @@ test('runtime preserves the site service fallback route and observation ids', as
   const first = fakeAdapter('depop', 'search'), second = fakeAdapter('depop', 'search');
   first.route_id = 'first'; first.run = async () => fail('page_changed', 'fixture moved', { do: 'author', missing: ['fixture'] });
   second.route_id = 'second'; second.run = async () => ({ ok: true, data: [], observation_ids: ['obs-second'] });
-  const r = createRuntime(memoryStore(), log(), { adapters: [first, second] });
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault(), adapters: [first, second] });
   const result = await r.harness.call('depop', 'search');
   assert.equal(result.meta.route_id, 'second');
   assert.equal(result.meta.fell_back, true);
@@ -350,7 +404,7 @@ test('composed watcher confirms a sale and ends the other stored listing through
         return { ok: true as const, data: [] };
       },
     })));
-  const r = createRuntime(memoryStore(), log(), { adapters, now: () => now });
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault(), adapters, now: () => now });
   for (const site of ['depop', 'ebay'] as const) {
     r.store.put('account', { id: 'sale_' + site, user_id: 'usr_sale', site, token_ref: 'fixture/' + site, next_check_at: new Date(now).toISOString() });
     await r.vault.put('fixture/' + site, { cookies: [], origins: [] });
@@ -379,7 +433,7 @@ test('composed watcher relinks an expired account and resumes it', async () => {
       return expired ? fail('auth_expired', 'fixture expiry', { do: 'relink', site: 'depop' }) : { ok: true as const, data: [] };
     },
   }));
-  const r = createRuntime(memoryStore(), log(), { adapters, now: () => now });
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault(), adapters, now: () => now });
   r.store.put('account', { id: 'acc_watch', user_id: 'usr_watch', site: 'depop', token_ref: 'fixture/watch', next_check_at: new Date(now).toISOString() });
   await r.vault.put('fixture/watch', { cookies: [], origins: [] });
   await r.watcher.tick();
@@ -404,7 +458,7 @@ test('system accounts are supplied only to the watcher', () => {
 
 test('account lookup and harness gate enforce the asking person', async () => {
   const adapter = fakeAdapter('depop', 'search');
-  const r = createRuntime(memoryStore(), log(), { adapters: [adapter] });
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault(), adapters: [adapter] });
   r.store.put('account', { id: 'acc_owner', user_id: 'owner', site: 'depop', token_ref: 'fixture/owner' });
   await r.vault.put('fixture/owner', { cookies: [], origins: [] });
   assert.equal(await r.accounts.byId('acc_owner', 'other'), undefined, 'another person cannot look up the account');
@@ -420,7 +474,7 @@ test('account lookup and harness gate enforce the asking person', async () => {
 test('runtime shares the route Store and never links a row without vault state', async () => {
   const { store } = await import('./store.ts');
   assert.equal(runtime.store, store);
-  const r = createRuntime(memoryStore(), log());
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
   assert.equal(await r.accounts.byId('acc_dp1'), undefined);
   const a = r.store.get('account', 'usr_8f2k', 'acc_dp1')!;
   r.store.put('account', { ...a, token_ref: 'test/session' });
@@ -432,7 +486,7 @@ test('runtime shares the route Store and never links a row without vault state',
 });
 
 test('unlinked account is policy_refused before any adapter runs; offline reads are no_route', async () => {
-  const r = createRuntime(memoryStore(), log());
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
   const reply = await r.harness.call('depop', 'read_listings', { account_id: 'acc_dp1', shop_id: 'test' });
   assert.equal(reply.ok, false);
   if (!reply.ok) { assert.equal(reply.error.code, 'policy_refused'); assert.equal(reply.meta.route_id, 'none'); }
@@ -442,7 +496,7 @@ test('unlinked account is policy_refused before any adapter runs; offline reads 
 });
 
 test('pipeline Depop write returns a dry plan and current limits override stale job arguments', async () => {
-  const r = createRuntime(memoryStore(), log());
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
   const account = r.store.get('account', 'usr_8f2k', 'acc_dp1')!;
   r.store.put('account', { ...account, token_ref: 'test/session' });
   await r.vault.put('test/session', { cookies: [], origins: [] });
@@ -494,7 +548,7 @@ test('limits and rules survive a child-process restart without example reseeding
 
 test('current thresholds, rule conditions and ask_all refuse queued automatic acceptance', async () => {
   for (const [threshold, mode, rule] of [[null, 'auto', false], [{ amount_cents: 7500, currency: 'USD' }, 'ask_all', false], [null, 'auto', true]] as const) {
-    const r = createRuntime(memoryStore(), log());
+    const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
     const account = r.store.get('account', 'usr_8f2k', 'acc_dp1')!;
     r.store.put('account', { ...account, token_ref: 'test/session' });
     await r.vault.put('test/session', { cookies: [], origins: [] });
@@ -509,7 +563,7 @@ test('current thresholds, rule conditions and ask_all refuse queued automatic ac
 });
 
 test('turning markdown off refuses an automatic reprice that was already queued', async () => {
-  const r = createRuntime(memoryStore(), log());
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
   const limits = r.store.get('limits', 'usr_8f2k', 'it_7c2m')!;
   r.store.put('limits', { ...limits, markdown_on: false });
   const event = r.store.insertEvent({ user_id: 'usr_8f2k', source: 'app', action: 'app.reprice', actor: 'auto', site: 'depop', account_id: 'acc_dp1', item_id: 'it_7c2m', dedupe_key: 'no-markdown', observed_at: new Date().toISOString(), effective_at: new Date().toISOString(), trace_id: 'test' }).row;
@@ -523,7 +577,7 @@ test('turning markdown off refuses an automatic reprice that was already queued'
 test('runtime harness logs conform to the shared log contract', async () => {
   const sink = memorySink();
   const logger = createLog({ src: 'test.runtime', build: 'test', sink });
-  const r = createRuntime(memoryStore(), logger);
+  const r = createRuntime(memoryStore(), logger, { vault: memoryVault() });
   await r.harness.call('depop', 'search', { q: 'test' });
   logger.end();
   const dir = mkdtempSync(join(tmpdir(), 'secondhand-runtime-log-'));
@@ -544,7 +598,7 @@ test('system account discovery finds every tenant after restart without route re
   for (const user_id of ['usr_new', 'usr_another']) st.put('account', { id: 'acc_' + user_id, user_id, site: 'depop', token_ref: 'test/' + user_id });
   st.put('account', { id: 'acc_missing', user_id: 'usr_new', site: 'depop', token_ref: 'test/missing' });
   st.put('account', { id: 'acc_deleted', user_id: 'usr_new', site: 'depop', token_ref: 'test/usr_new', deleted: true });
-  const r = createRuntime(fileStore(path), log());
+  const r = createRuntime(fileStore(path), log(), { vault: memoryVault() });
   for (const user_id of ['usr_new', 'usr_another']) await r.vault.put('test/' + user_id, { cookies: [], origins: [] });
   assert.deepEqual((await r.accounts.linked()).map(row => row.person_id).sort(), ['usr_another', 'usr_new']);
   assert.deepEqual((await r.accounts.linked('usr_new')).map(row => row.account_id), ['acc_usr_new']);
@@ -561,17 +615,17 @@ test('route modules never call the system cross-tenant read', async () => {
 });
 
 test('all seeded product rows keep example provenance through reseeding', () => {
-  const st = memoryStore(), r = createRuntime(st, log());
+  const st = memoryStore(), r = createRuntime(st, log(), { vault: memoryVault() });
   for (const table of ['item', 'listing', 'account', 'limits', 'rule'] as const) {
     for (const row of st.rows(table, { user_id: 'usr_8f2k' })) assert.equal(row.data, 'example', table + ':' + row.id);
   }
   assert.ok(st.decisions().every(row => row.data === 'example'), 'seeded decisions carry example provenance');
-  createRuntime(r.store, log());
+  createRuntime(r.store, log(), { vault: memoryVault() });
   assert.equal(st.get('account', 'usr_8f2k', 'acc_dp1')?.data, 'example');
 });
 
 test('Mercari sold reads are registered but make no network call with live sites off', async () => {
-  const r = createRuntime(memoryStore(), log());
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
   r.store.put('account', { id: 'acc_mc', user_id: 'owner', site: 'mercari', token_ref: 'mercari-test' });
   await r.vault.put('mercari-test', { cookies: [], origins: [] });
   const fetchBefore = globalThis.fetch;
@@ -591,11 +645,11 @@ test('runtime composes search harness, accounts and explicit unrouted sites; no 
   const liveSites = process.env.SECONDHAND_LIVE_SITES;
   t.after(() => { if (liveSites === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = liveSites; });
   process.env.SECONDHAND_LIVE_SITES = '';
-  const r = createRuntime(memoryStore(), log());
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
   assert.equal(ports.harness, r.harness); assert.equal(ports.accounts, r.accounts);
   assert.equal(ports.routed('depop'), false); assert.equal(ports.routed('ebay'), false);
   assert.equal(ports.apify, undefined, 'Apify was composed with no passed token');
-  createRuntime(memoryStore(), log(), { apifyToken: 'fixture-token' });
+  createRuntime(memoryStore(), log(), { vault: memoryVault(), apifyToken: 'fixture-token' });
   assert.ok(ports.apify, 'a passed token did not compose the Apify lane');
 });
 
@@ -612,7 +666,7 @@ test('public clients route anonymous Depop and eBay reads with no live write sit
     ebay: { signed_in: false, page: async () => { ebayReads++; return { status: 200, html: readFileSync(new URL('../harness/sites/ebay/fixtures/page-search.html', import.meta.url), 'utf8') }; } },
     close: async () => { closes++; },
   };
-  const r = createRuntime(memoryStore(), log(), { publicClients });
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault(), publicClients });
   assert.equal(ports.routed('depop'), true); assert.equal(ports.routed('ebay'), true);
   for (const site of ['depop', 'ebay'] as const) {
     const result = await r.harness.call(site, 'search', { q: 'levis 501 jeans' }); assert.ok(result.ok, JSON.stringify(result));
@@ -631,7 +685,7 @@ test('public clients route anonymous Depop and eBay reads with no live write sit
 
 
 test('the watcher uses the runtime system account lookup with the owner scope when account ids overlap', async t => {
-  const r = createRuntime(memoryStore(), log());
+  const r = createRuntime(memoryStore(), log(), { vault: memoryVault() });
   for (const user_id of ['first', 'second']) {
     r.store.put('account', { id: 'shared', user_id, site: 'depop', token_ref: 'fixture/' + user_id, paused: 'blocked' });
     await r.vault.put('fixture/' + user_id, { cookies: [], origins: [] });

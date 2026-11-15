@@ -46,7 +46,7 @@ type Outcome<T> = { ok: true; value: T } | { ok: false; error: PublicClientError
 
 export function publicClients({ launcher, log, now = () => performance.now(), idleMs = 120_000, timeoutMs = 30_000 }: {
   launcher: Launcher<PublicPage>; log: Log; now?: () => number; idleMs?: number; timeoutMs?: number;
-}): { ebay: PageClient; depop: Client; close(): Promise<void> } {
+}): { ebay: PageClient; depop: Client; warm(site: Site): boolean; close(): Promise<void> } {
   if (!(idleMs > 0 && Number.isFinite(idleMs)) || !(timeoutMs > 0 && Number.isFinite(timeoutMs))) throw new Error('public client limits must be positive finite milliseconds');
   const lanes: Record<Site, Lane> = { ebay: { tail: Promise.resolve() }, depop: { tail: Promise.resolve() } };
   const reads = new Set<(error: PublicClientError) => void>();
@@ -187,6 +187,7 @@ export function publicClients({ launcher, log, now = () => performance.now(), id
     return { status: code, ...parsed };
   });
   return {
+    warm: site => !closed && !!lanes[site].slot?.page && !lanes[site].slot!.dead,
     ebay: { signed_in: false, page: (url, signal) => ebayRead(url, signal) as Promise<EbayPage>, listings: ebayRead },
     depop: { signed_in: false, doc, json: (path, signal) => read<Reply>('depop', API + path, signal, async (page, status, cold, metrics) => {
       // live.ts first navigates via search. A standalone JSON read also needs an open Depop origin for CORS.
@@ -212,26 +213,51 @@ export function publicClients({ launcher, log, now = () => performance.now(), id
 async function ebayListingsInPage({ spec, ask, challenge, firstCardMs }: {
   spec: ListingSpec; ask: ListingAsk; challenge: string; firstCardMs: number;
 }, parse: typeof parseListings) {
-  const selector = [spec.card_selector, spec.empty_selector].filter(Boolean).join(', ');
-  let waited_ms = 0;
-  if (!document.querySelector(selector)) {
-    const started = performance.now();
+  const started = performance.now();
+  const countCards = () => [...document.querySelectorAll(spec.card_selector)].filter(card => {
+    if (!spec.skip || card.getAttribute(spec.skip.unless_attribute)) return true;
+    const titleField = spec.fields.title, source = Array.isArray(titleField) ? titleField[0] : titleField;
+    const node = source?.selector ? card.querySelector(source.selector) : card;
+    let title = node?.textContent ?? '';
+    if (source?.remove) title = title.replace(new RegExp(source.remove, 'g'), '');
+    title = source?.preserve_space ? title.trim() : title.replace(/\s+/g, ' ').trim();
+    return title !== spec.skip.title;
+  }).length;
+  let count = countCards();
+  const empty = () => {
+    const node = spec.empty_selector && document.querySelector(spec.empty_selector);
+    return !!(node && (!spec.empty_pattern || new RegExp(spec.empty_pattern).test(node.textContent ?? '')));
+  };
+  if (!empty() && (!count || document.readyState === 'loading')) {
     await new Promise<void>(resolve => {
-      const observer = new MutationObserver(() => { if (document.querySelector(selector)) finish(); });
-      const finish = () => { observer.disconnect(); clearTimeout(timer); resolve(); };
-      observer.observe(document, { childList: true, subtree: true });
+      let quiet: ReturnType<typeof setTimeout> | undefined;
+      const finish = () => {
+        observer.disconnect(); clearTimeout(timer); clearTimeout(quiet);
+        document.removeEventListener('readystatechange', changed); resolve();
+      };
+      const changed = () => {
+        const next = countCards();
+        if (empty() || document.readyState !== 'loading') { finish(); return; }
+        if (!next) clearTimeout(quiet);
+        if (next > count) { clearTimeout(quiet); quiet = setTimeout(finish, 150); }
+        count = next;
+      };
+      const observer = new MutationObserver(changed);
       const timer = setTimeout(finish, firstCardMs);
+      if (count) quiet = setTimeout(finish, 150);
+      observer.observe(document, { childList: true, subtree: true });
+      document.addEventListener('readystatechange', changed);
     });
-    waited_ms = performance.now() - started;
   }
+  const waited_ms = performance.now() - started;
   const title = document.title;
-  const empty = spec.empty_selector && document.querySelector(spec.empty_selector);
+  const emptyNode = spec.empty_selector && document.querySelector(spec.empty_selector);
   const heading = spec.heading_selector && document.querySelector(spec.heading_selector);
   const state = {
     blocked: new RegExp(challenge, 'i').test(title) || new RegExp(challenge, 'i').test(document.documentElement.outerHTML.slice(0, 20_000)),
     signin: /^sign in or register\b/i.test(title), error: /^error page\b/i.test(title),
     heading: !spec.heading_selector || !!heading,
-    empty: !!((empty && (!spec.empty_pattern || new RegExp(spec.empty_pattern).test(empty.textContent ?? ''))) ||
+    empty: !!((emptyNode && (!spec.empty_pattern || new RegExp(spec.empty_pattern).test(emptyNode.textContent ?? ''))) ||
       (heading && spec.empty_heading_pattern && new RegExp(spec.empty_heading_pattern).test(heading.textContent?.trim() ?? ''))),
   };
   const parsed = state.blocked || state.signin || state.error || !state.heading ? undefined : parse(document, spec, ask);

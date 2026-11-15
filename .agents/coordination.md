@@ -42,6 +42,7 @@ These carry over from Magic UW. Ben's exact words are in [team/sources.md](team/
 
 | Moment | Do this |
 |---|---|
+| Once in each clone | `git config core.hooksPath .agents/hooks`: git then refuses a commit, merge or push that sets a file back to an older copy of itself (`STALE_OK=1` for a revert you mean) |
 | Starting or resuming work | `git pull` on `main` and work on `main` |
 | A piece works (a test passes, a screen renders, a step of the plan is done) | Commit it |
 | After every commit that works | Pull, then push to `main` right away so Nate's and Ben's agents pick it up |
