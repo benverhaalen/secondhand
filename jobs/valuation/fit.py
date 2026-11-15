@@ -1,9 +1,9 @@
 """Nightly valuation fold (deploy/databricks.yml nightly_fits -> deploy/tasks/fold.py valuation -> main()).
 
-On Databricks: reads sold and asking rows from `comp` joined to `product` (spec/product.md data model), fits the market
+On Databricks: reads product-cleared sold and asking rows joined to `product` (spec/product.md data model), fits the market
 model (market.py), backtests it on the newest sales, and appends one challenger row to `valuation_fit` with its held-out
 scores and fitted premiums. The D6 per-cell gate promotes held-out wins through jobs/param and persists the registry.
-With no `comp` table yet it is skipped, not failed, and nothing is invented.
+With no product-cleared rows it is skipped and writes no parameters.
 
 Locally: python jobs/valuation/fit.py --comps rows.json [--items items.json] --out result.json writes the backtest,
 the premiums and the estimates. Both paths log through log/ (logs/valuation-fit-*.jsonl).
@@ -11,6 +11,7 @@ the premiums and the estimates. Both paths log through log/ (logs/valuation-fit-
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -27,12 +28,15 @@ from param.registry import MemoryStore, FIELDS, scope_key  # noqa: E402
 
 CATALOG = os.environ.get("SECONDHAND_CATALOG", "workspace")
 SCHEMA = os.environ.get("SECONDHAND_SCHEMA", "secondhand")
+REGISTRY_TABLE = f"{CATALOG}.core.param"
+COMPS_VIEW = f"{CATALOG}.market.comp_for_product"
+PARAM_ADDITIONS = {"origin": "STRING", "previous_version": "INT", "keep": "STRING", "days_since_last": "DOUBLE"}
 
 # comp + product to the flat row market.py reads. size and era live in product.spec (json) where identify found them.
-ROWS_SQL = """
+ROWS_SQL = f"""
 SELECT c.comp_id, c.product_id, c.site, c.price_cents, c.price_type, coalesce(c.sold_at, c.observed_at) AS at, c.condition,
        p.brand, p.category, p.family_id, get_json_object(p.spec, '$.size') AS size, get_json_object(p.spec, '$.era') AS era, c.url_ref AS url
-FROM {cat}.{sch}.comp c LEFT JOIN {cat}.{sch}.product p ON c.product_id = p.product_id
+FROM {COMPS_VIEW} c LEFT JOIN {CATALOG}.market.product p ON c.product_id = p.product_id
 WHERE c.price_type IN ('sold', 'asking') AND c.price_cents > 0 AND size(coalesce(c.lot_parts, array())) = 0
 """
 
@@ -62,45 +66,78 @@ def main() -> dict:
     job = f"valuation_fit_{datetime.now(timezone.utc):%Y%m%d}"
     log.job(job, "fit", "running")
     spark = SparkSession.getActiveSession() or SparkSession.builder.getOrCreate()
-    table = f"{CATALOG}.{SCHEMA}.comp"
+    table = COMPS_VIEW
     if not log.call("db", "table_exists", {"table": table}, lambda: spark.catalog.tableExists(table)):
         log.job(job, "fit", "done", skipped=f"no {table} table yet")
         return {"state": "skipped", "why": f"no {table} table yet"}
-    rows = log.call("db", "read_comps", {"table": table}, lambda: [r.asDict() for r in spark.sql(ROWS_SQL.format(cat=CATALOG, sch=SCHEMA)).collect()],
+    rows = log.call("db", "read_comps", {"table": table}, lambda: [r.asDict() for r in spark.sql(ROWS_SQL).collect()],
                     describe=lambda rs: {"rows": len(rs)})
+    if not rows:
+        why = "no rows cleared for a shipped model"
+        log.job(job, "fit", "done", skipped=why)
+        return {"state": "skipped", "why": why}
     for r in rows:
         r["at"] = r["at"].isoformat() if hasattr(r["at"], "isoformat") else r["at"]
     if sum(r.get("price_type") == "sold" for r in rows) < 2 * market.MIN_GROUP:
         log.job(job, "fit", "done", skipped=f"{len(rows)} comp rows, too few sold")
         return {"state": "skipped", "why": f"{len(rows)} comp rows, too few sold to fit and backtest"}
     out = run(rows)
-    registry_table = f"{CATALOG}.{SCHEMA}.param"
     store = MemoryStore()
-    exists = log.call("db", "param_exists", {"table": registry_table}, lambda: spark.catalog.tableExists(registry_table))
+    exists = log.call("db", "param_exists", {"table": REGISTRY_TABLE}, lambda: spark.catalog.tableExists(REGISTRY_TABLE))
     if exists:
-        history = log.call("db", "read_valuation_param", {"table": registry_table},
-                           lambda: [r.asDict() for r in spark.sql(f"SELECT * FROM {registry_table} WHERE name = 'valuation'").collect()],
+        history = log.call("db", "read_valuation_param", {"table": REGISTRY_TABLE},
+                           lambda: [r.asDict() for r in spark.sql(f"SELECT * FROM {REGISTRY_TABLE} WHERE name = 'valuation'").collect()],
                            describe=lambda rs: {"rows": len(rs)})
         for r in history:
-            for key in ("scope", "value_or_hyperparams", "prior"):
-                if isinstance(r[key], str):
+            r = {**dict.fromkeys(PARAM_ADDITIONS), **r}
+            for key in ("scope", "value_or_hyperparams", "prior", "keep"):
+                if isinstance(r.get(key), str):
                     r[key] = json.loads(r[key])
             store.rows.setdefault((r["name"], scope_key(r["scope"])), []).append(r)
     promotion = log.timed("valuation.switch", lambda: nightly(rows, store, {}, datetime.now(timezone.utc).isoformat()))
     if promotion["promoted"]:
         records = store.history("valuation", {})
-        encoded = [{k: json.dumps(r[k]) if k in ("scope", "value_or_hyperparams", "prior") else r[k] for k in FIELDS} for r in records]
-        schema = ", ".join(f"{k} " + ("INT" if k == "version" else "BOOLEAN" if k == "frozen" else "DOUBLE" if k in ("n_eff", "held_out_score", "guard_lo", "guard_hi") else "STRING") for k in FIELDS)
+        column_types = {k: "STRING" for k in FIELDS}
+        column_types.update(version="INT", previous_version="INT", frozen="BOOLEAN",
+                            **{k: "DOUBLE" for k in ("n_eff", "held_out_score", "guard_lo", "guard_hi", "days_since_last")})
+        encoded = []
+        for record in records:
+            row = {k: record[k] for k in FIELDS}
+            row["scope"] = scope_key(record["scope"])
+            identity = json.dumps([row["name"], row["scope"], row["version"]], separators=(",", ":"))
+            row["id"] = "par_" + hashlib.sha256(identity.encode()).hexdigest()[:24]
+            for key in ("value_or_hyperparams", "prior", "keep"):
+                row[key] = json.dumps(row[key])
+            for key, dtype in column_types.items():
+                if dtype == "DOUBLE" and row[key] is not None:
+                    row[key] = float(row[key])
+            if isinstance(row["promoted_at"], datetime):
+                row["promoted_at"] = row["promoted_at"].isoformat()
+            encoded.append(row)
+        schema = "id STRING, " + ", ".join(f"{k} {dtype}" for k, dtype in column_types.items())
+        columns = ("id", "user_id", "created_at", "updated_at", *FIELDS, "moved_by")
+        values = {k: f"s.{k}" for k in columns}
+        values.update(user_id="NULL", created_at="current_timestamp()", updated_at="current_timestamp()",
+                      promoted_at="CAST(s.promoted_at AS TIMESTAMP)", moved_by="'promote nightly_fits valuation'")
+
+        def migrate_registry():
+            existing = spark.table(REGISTRY_TABLE).columns
+            missing = [f"{k} {dtype}" for k, dtype in PARAM_ADDITIONS.items() if k not in existing]
+            if missing:
+                spark.sql(f"ALTER TABLE {REGISTRY_TABLE} ADD COLUMNS ({', '.join(missing)})")
+
+        log.call("db", "migrate_valuation_param", {"table": REGISTRY_TABLE}, migrate_registry)
+
         def save_registry():
             frame = spark.createDataFrame(encoded, schema=schema)
-            if not exists:
-                frame.write.mode("append").saveAsTable(registry_table)
-            else:
-                frame.createOrReplaceTempView("valuation_param_update")
-                spark.sql(f"""MERGE INTO {registry_table} t USING valuation_param_update s
-                    ON t.name = s.name AND t.scope = s.scope AND t.version = s.version
-                    WHEN MATCHED THEN UPDATE SET * WHEN NOT MATCHED THEN INSERT *""")
-        log.call("db", "write_valuation_param", {"table": registry_table}, save_registry)
+            frame.createOrReplaceTempView("valuation_param_update")
+            updates = ", ".join(f"t.{k} = {values[k]}" for k in columns)
+            spark.sql(f"""MERGE INTO {REGISTRY_TABLE} t USING valuation_param_update s
+                ON t.name = s.name AND t.scope = s.scope AND t.version = s.version
+                WHEN MATCHED THEN UPDATE SET {updates}
+                WHEN NOT MATCHED THEN INSERT ({', '.join(columns)}) VALUES ({', '.join(values[k] for k in columns)})""")
+
+        log.call("db", "write_valuation_param", {"table": REGISTRY_TABLE}, save_registry)
         log.change("param", "valuation", "champion", reason=promotion["reason"])
     fit_row = {"fitted_at": datetime.now(timezone.utc).isoformat(), "role": "challenger", "n_rows": out["n_rows"],
                "coverage": out["backtest"]["coverage"], "median_ape": out["backtest"]["median_ape"],
@@ -169,7 +206,7 @@ def nightly(rows, store, scope, at):
         raise ValueError("champion training/held-out overlap")
     old = held_out_report(champion, training, held)
     fresh = held_out_report(model, training, held)
-    promoted, reason = publish(store, scope, model_payload(model), old, fresh, at)
+    promoted, reason = publish(store, scope, model_payload(model), old, fresh, at, n_eff=len(model.sold))
     return {"promoted": promoted, "reason": reason, "report": fresh,
             "held_out_from": datetime.fromtimestamp(cutoff, timezone.utc).isoformat()}
 
@@ -188,13 +225,13 @@ def switch_rule(champion: dict, challenger: dict) -> tuple[bool, str]:
     return (True, "held-out win") if gain >= 0.01 - 1e-12 else (False, "kept: median error")
 
 
-def publish(store, scope, model_ref, champion, challenger, at):
+def publish(store, scope, model_ref, champion, challenger, at, n_eff=0):
     allowed, reason = switch_rule(champion, challenger)
     if not allowed:
         return False, reason
     history = store.history("valuation", scope)
     row = store.propose({"name": "valuation", "scope": scope, "family": "model_ref",
-                         "value_or_hyperparams": model_ref, "prior": None,
+                         "value_or_hyperparams": model_ref, "prior": None, "n_eff": n_eff,
                          "held_out_score": -challenger["overall"]["q50_median_error"],
                          "metric": "negative_q50_median_error"}, max((r["version"] for r in history), default=0))
     current = store.champion("valuation", scope)
