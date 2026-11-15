@@ -21,7 +21,9 @@ export function snapshot({ insetTop = 0 } = {}) {
   const VH = innerHeight;
   const ITEM = /^(card|tile|sale-row|notice|thread-row|keep-row|pulse-row|money-row|site-row)/;
   const partOf = (el, re) => { for (let n = el; n; n = n.parentElement) if (n.dataset?.part && re.test(n.dataset.part)) return n; return null; };
-  const inBar = el => !!partOf(el, /^(tab-bar|nav)$/);
+  // The bars: the tab bar, a pushed page's nav, and a main tab's title row (page-head, TabNav), which took the nav's place on
+  // the tabs: its title, count and Select are the nav, not lines before the first item (U11).
+  const inBar = el => !!partOf(el, /^(tab-bar|nav|page-head)$/);
   const seen = r => r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < VH;
   const shown = el => { const s = getComputedStyle(el); return s.visibility !== 'hidden' && Number(s.opacity) > 0.05; };
   const texts = [...document.querySelectorAll('[data-role]')].filter(shown).map(el => {
@@ -37,7 +39,7 @@ export function snapshot({ insetTop = 0 } = {}) {
   const items = [...document.querySelectorAll('[data-part]')].filter(e => ITEM.test(e.dataset.part) && shown(e) && !partOf(e.parentElement ?? e, ITEM)).map(e => ({ part: e.dataset.part, ...box(e) })).filter(p => p.seen);
   const shelves = [...document.querySelectorAll('[data-shelf]')].map(sh => ({ id: sh.dataset.shelf, head: !!sh.querySelector('[data-part="shelf-head"]'),
     tags: [...sh.querySelectorAll('[data-part="tag"]')].filter(shown).map(t => t.dataset.state) }));
-  const navEl = document.querySelector('[data-part="nav"]'), nav = navEl ? box(navEl) : null;
+  const navEl = document.querySelector('[data-part="nav"]') ?? document.querySelector('[data-part="page-head"]'), nav = navEl ? box(navEl) : null;
   return { vh: VH, insetTop, nav, texts, pills, items, shelves };
 }
 
