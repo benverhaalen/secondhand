@@ -242,7 +242,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     // Hazard omitted until the engines lead supplies its port; the watcher's tier cadence applies.
     readArgs(account) {
       const row = st.get('account', account.user_id, account.account_id)!;
-      // shortcut: spec/plans/waiting.md "A site handle on the account row" is still open.
+      // shortcut: spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator "A site handle on the account row" is still open.
       // Pass stored handles only; a secondhand account id is never a marketplace handle.
       return { person_id: account.user_id, ...Object.fromEntries(['shop_id', 'username', 'seller_id'].flatMap(key =>
         typeof row[key] === 'string' || typeof row[key] === 'number' ? [[key, row[key]]] : [])) };

@@ -77,7 +77,7 @@ export const STEPS = [
   step('brand', 200, 'brand proposes Carhartt from RN 14806', (b, c) => sameCapture(b, c) && hasProposedBrand(b)),
   step('answer', 200, 'brand answer removes the question and advances version', (b, c) => sameCapture(b, c) &&
     b.version > c.capture.version && !b.plan.questions.some(q => q?.field === 'brand')),
-  step('finish', 202, 'judged capture and an item in review name the identify job', hasFinishedJobs),
+  step('finish', 202, 'judged capture and the item in review name the identify job', hasFinishedJobs),
   step('b.capture', 404, 'B cannot read A capture', notFound),
   step('b.job', 404, 'B cannot read A identify job', notFound),
   step('b.upload', 404, 'B cannot reuse consumed upload capability', notFound),

@@ -2,20 +2,20 @@
 
 Updated: November 15, 2026, about 05:15 Central. Owner: Nate. From: Ben's thread "List what's left to build in scope" (Claude Code, with four Codex runs on Ben's Mac). Status: an audit, nothing built. Read it to pick the next backend piece; nothing here changes canon.
 
-Ben asked for every planned feature to be marked done, partial or not done, with what's left. The merged list is [spec/plans/whats-left.md](../../../../spec/plans/whats-left.md), and the rows with file and line evidence are in [spec/plans/scope/](../../../../spec/plans/scope/). Checked against main at `22ef056`. The Python tests in `jobs/` and `databricks/` did not run (no `.venv` on Ben's Mac), so those marks rest on reading the code. Rerun them on your side before trusting a mark there.
+Ben asked for every planned feature to be marked done, partial or not done, with what's left. The merged list is [spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator), and the rows with file and line evidence are in [spec/plans/scope/](../../../../spec/plans/scope/). Checked against main at `22ef056`. The Python tests in `jobs/` and `databricks/` did not run (no `.venv` on Ben's Mac), so those marks rest on reading the code. Rerun them on your side before trusting a mark there.
 
 ## Build priority
 
-Pick work from the [ranked plan](../../../../spec/plans/whats-left.md#build-priority). Start the signed-in marketplace proof and the durable records it needs alongside phone capture, the saved-want alert, and the Databricks connection. Join each through the app as its inputs become available. The rows below retain the audit snapshot and its scope.
+Pick work from the [ranked plan](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestratorbuild-priority). Start the signed-in marketplace proof and the durable records it needs alongside phone capture, the saved-want alert, and the Databricks connection. Join each through the app as its inputs become available. The rows below retain the audit snapshot and its scope.
 
 ## Why most rows are "partial"
 
 A row was done only with code, a test or phone capture, and live inputs behind it. Four of the five gaps that keep rows partial are on your side:
 
-1. **Served answers are still examples.** The valuation picks the contract's example item. The insights API returns example money and a fixture funnel. Market product, history and trend return examples. The listing route returns an example. The inbox is seeded from an example thread. ([whats-left §2](../../../../spec/plans/whats-left.md#2-engines-whose-served-answer-is-still-an-example))
-2. **State lives in process memory.** The default store is memory or files; 24 `Map`s in `app/src/edge/api/*.ts` hold state a restart loses, including decision versions and last visit (`app/src/edge/api/today.ts:15`). The Databricks client only runs health checks. ([§3](../../../../spec/plans/whats-left.md#3-state-lives-in-process-memory))
-3. **Outward actions are dry.** Board milestones M1 to M9 are all unticked. No live post, signed-in read or delist on a real account is recorded, and Ben wants the five-site live post in the demo. ([§4](../../../../spec/plans/whats-left.md#4-outward-actions-are-proved-dry-not-live))
-4. **Outside services are not composed.** `createNotifier` has no caller outside its test, so a sale or a watched match cannot ping, as decided. No production watch runner. Studio and identify workers are not joined to stored items and photos. ([§5](../../../../spec/plans/whats-left.md#5-outside-services-are-not-composed))
+1. **Served answers are still examples.** The valuation picks the contract's example item. The insights API returns example money and a fixture funnel. Market product, history and trend return examples. The listing route returns an example. The inbox is seeded from an example thread. ([whats-left §2](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator2-engines-whose-served-answer-is-still-an-example))
+2. **State lives in process memory.** The default store is memory or files; 24 `Map`s in `app/src/edge/api/*.ts` hold state a restart loses, including decision versions and last visit (`app/src/edge/api/today.ts:15`). The Databricks client only runs health checks. ([§3](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator3-state-lives-in-process-memory))
+3. **Outward actions are dry.** Board milestones M1 to M9 are all unticked. No live post, signed-in read or delist on a real account is recorded, and Ben wants the five-site live post in the demo. ([§4](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator4-outward-actions-are-proved-dry-not-live))
+4. **Outside services are not composed.** `createNotifier` has no caller outside its test, so a sale or a watched match cannot ping, as decided. No production watch runner. Studio and identify workers are not joined to stored items and photos. ([§5](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator5-outside-services-are-not-composed))
 
 The fifth gap, screens reading `@/demo` instead of `/v1`, is on Ben's UI side. It shows real data only after gaps 1 and 2 close, so the order between you matters: a screen wired to an example route still shows the example.
 

@@ -55,9 +55,9 @@ Load these at the start, before the first dispatch, and name the right ones in e
 ## Start here
 
 1. [spec/README.md](../../../../spec/README.md): the index of everything below.
-2. [spec/plans/workstreams.md](../../../../spec/plans/workstreams.md): the build piece by piece. The sessions the orchestrator launches, what each owns and delivers, what a platform team builds, and the seams fixed in the first hour.
-3. [spec/plans/board.md](../../../../spec/plans/board.md): the one place progress is tracked. Every item is a box with its proving command; nothing is built that is not on it.
-4. [spec/plans/start-now.md](../../../../spec/plans/start-now.md): every task that can begin this minute, with its files and proving command, and the block to paste into every build brief. The full graph is `spec/plans/backend/plan.md` and `plan.json` when they land.
+2. [spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator): the build piece by piece. The sessions the orchestrator launches, what each owns and delivers, what a platform team builds, and the seams fixed in the first hour.
+3. [spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator): the one place progress is tracked. Every item is a box with its proving command; nothing is built that is not on it.
+4. [spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator): every task that can begin this minute, with its files and proving command, and the block to paste into every build brief. The full graph is `spec/plans/backend/plan.md` and `plan.json` when they land.
 5. [spec/engines/](../../../../spec/engines/): one document per engine. Each has what it decides, its signals, the calculation, how it learns, its speed design, what the person sees, how it beats what exists, protections, proof and build tasks.
 6. [spec/product.md](../../../../spec/product.md): the canon. Names, tables, the API and the five machines. A name not in it is added there first.
 7. [spec/assessment.md](../../../../spec/assessment.md): what is settled, what needs a check, and the ten workspace checks for the first hour.
@@ -108,7 +108,7 @@ Each is in [product/words.md](../../../../product/words.md) under 2026-11-14 and
 | No Depop partner access: the person's signed-in session is the API, agents author and repair the commands; the template for every site with no API | protocol and adapters, 3.7 |
 | Saved passwords by choice, as secrets only the sign-in job can read; the system is the person's own agent | protocol and adapters, 3.7 |
 | We host every engine and every browser ourselves; the phone's web view is a route while the app is open; no browser vendor and no Apify | protocol and adapters, 3.8 |
-| Five sites: eBay, Facebook Marketplace, Depop, Poshmark, Mercari. OfferUp and Grailed are a future idea. eBay's own sale notification is kept only if measured faster than our watcher, and only as a trigger | [workstreams](../../../../spec/plans/workstreams.md) |
+| Five sites: eBay, Facebook Marketplace, Depop, Poshmark, Mercari. OfferUp and Grailed are a future idea. eBay's own sale notification is kept only if measured faster than our watcher, and only as a trigger | [workstreams](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator) |
 | Our own gathering is built on the patterns of Firecrawl, crawl4ai, browser-use and Jev | [intelligence API](../../../../spec/engines/intelligence-api.md) |
 | Expert research sessions per engine are the first wave of the build | the plan, wave 0 |
 
@@ -149,13 +149,13 @@ Each engine's section 7 holds its rival table, and the plan holds one table that
 Paste this as the first message of the fresh session (Fable 5.2 as orchestrator, in this repo):
 
 ```text
-You are the orchestrator for Nate's side of secondhand. Read .agents/team/packets/team/45-handoff-to-the-build-session.md first, then spec/plans/workstreams.md and spec/plans/start-now.md (and spec/plans/backend/plan.md and plan.json if they exist), then spec/engines/README.md. Follow AGENTS.md and the build skill.
+You are the orchestrator for Nate's side of secondhand. Read .agents/team/packets/team/45-handoff-to-the-build-session.md first, then spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator and spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator (and spec/plans/backend/plan.md and plan.json if they exist), then spec/engines/README.md. Follow AGENTS.md and the build skill.
 
-Goal: every backend feature built, working and testable with no UI, by 03:00 Central, starting with every task in spec/plans/start-now.md at once, then the full plan wave by wave.
+Goal: every backend feature built, working and testable with no UI, by 03:00 Central, starting with every task in spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator at once, then the full plan wave by wave.
 
 How to run it:
-00. Load the skills and connectors in the packet's table. Track everything on spec/plans/board.md: tick a box only when its proving command exits 0 on main and a seat that did not write it has reviewed it; add new work to the board before starting it; post the counts per stream to Nate at each checkpoint. Keep a Codex review, test and fix sweep running the whole time (stream 16).
-0. You launch each stream in spec/plans/workstreams.md as its own session, led by Opus or Fable, each with Sonnet seats and Codex workers on GPT-6.1 as builders. Streams 1, 2, 10, 13 and 15 push their interface first; the five platform teams and the scoring streams start the moment the protocol envelope is pushed. You hold the canon, the walk and the clock.
+00. Load the skills and connectors in the packet's table. Track everything on spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator: tick a box only when its proving command exits 0 on main and a seat that did not write it has reviewed it; add new work to the board before starting it; post the counts per stream to Nate at each checkpoint. Keep a Codex review, test and fix sweep running the whole time (stream 16).
+0. You launch each stream in spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator as its own session, led by Opus or Fable, each with Sonnet seats and Codex workers on GPT-6.1 as builders. Streams 1, 2, 10, 13 and 15 push their interface first; the five platform teams and the scoring streams start the moment the protocol envelope is pushed. You hold the canon, the walk and the clock.
 1. Wave 0 first: the workspace checks on the event workspace, the scaffolds, the fixtures, the failure reporter, and the eleven expert research sessions (one per engine, from a working professional's view: what must be determined, the best way, what to consider). Fold each session's findings into its engine document and its tasks' accepts and breaks before that engine's build tasks start.
 2. Dispatch every task whose dependencies are done and whose owned files are disjoint, all in one message. Paste the plan's "Say this in every build brief" block into each brief, with the task's rests, owns, check, accepts and breaks. Specified tasks go to Sonnet or a Codex worker; Opus only where the approach must be found in the code.
 3. A seat settles in writing how the thing is built before it finishes building: how the agent operates on the page, the pipeline of actions, what runs in parallel. No guess and check.

@@ -1553,7 +1553,7 @@ Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.
 Nate, build session (orchestrator), 2026-11-15 about 04:00 Central, after the integration lead found the benchmark's item set unfilled.
 > Oh wow, well ensure workers aren't going to get confused and all wait in a way that connects to it working, that they check through all docs and that you have expert data scientists and ai software engineers, databricks professional subagents, sweep over the spec of whats imagined and suggest improvements
 
-Used in: [who is waiting on what](../spec/plans/waiting.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+Used in: [who is waiting on what](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
 
 ## 2026-11-15 nate the reviewers know what we are trying to outperform, and the benchmark may run alongside
 Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages, the second a minute after the first.
@@ -1561,7 +1561,7 @@ Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages
 
 > or let everything go its cool if they can benchmark at the same time
 
-Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/waiting.md).
+Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator).
 
 ## 2026-11-15 nano banana stays, app store coming soon, the voice waits
 Ben, project chat, 08:33 UTC, answering the image model, App Store and capture voice questions.
@@ -1586,7 +1586,7 @@ Nate, build session (orchestrator), 2026-11-15 about 04:40 Central, after the Po
 
 > just the poshmark one
 
-Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/waiting.md).
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator).
 
 ## 2026-11-15 nate mercari under the person's approval, broad search through sites that already show it, ebay on the harness until the api is approved
 Nate, build session (orchestrator), 2026-11-15 about 05:15 Central, after the Mercari harness build quoted Mercari's rule against automated access.
@@ -1630,19 +1630,19 @@ Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages
 
 > read ebay pages anyway
 
-Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
+Used in: [what Ben's packets ask of the backend](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestratorhow-we-take-these), [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
 
 ## 2026-11-15 nate dimensions come from the published ones first, not from a required tape
 Nate, build session (orchestrator), 2026-11-15 about 06:30 Central, after the orchestrator relayed Ben's studio rule as "no AI redraw without a tape measurement".
 > So bens request wasn't to require that we rely on tape measurement, it was misinterpreted so please don't change that. Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify
 
-Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 67](../.agents/team/packets/team/67-nates-rulings-and-where-they-meet-bens-plans.md).
+Used in: [what Ben's packets ask of the backend](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestratorhow-we-take-these), [packet 67](../.agents/team/packets/team/67-nates-rulings-and-where-they-meet-bens-plans.md).
 
 ## 2026-11-15 nate the system always prices with fallbacks, and its power is what it weighs in real time
 Nate, build session (orchestrator), 2026-11-15 about 07:00 Central, after the leads confirmed stronger forms of Ben's asks, among them a bar on automatic pricing that needed thirty sales in a cell.
 > Ok, while bens asks are confirmed, and you see autopricing as fair, of course the system must price and have established fallbacks, but the power of the system relies on things being realtime determined and weighed by how the system was designed
 
-Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+Used in: [what Ben's packets ask of the backend](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestratorhow-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
 
 ## 2026-11-15 ben a bug may be fixed if the same system generalizes; claim the most each experiment allows without lying
 Ben, project timeline, 08:49 and 08:54 UTC, after the first StockX backtest and its fix. Two messages.
@@ -1725,7 +1725,7 @@ Used in: `research/data/nate/data-services-on-marketplace-apis.md` when it lands
 Nate, build session (orchestrator), 2026-11-15 about 10:50 Central.
 > Turn on captcha solver if it sovles problems, address all running team leads and assess the state of completion as a percent for the system.
 
-Used in: the completion table on [the board](../spec/plans/board.md) when the leads report. The captcha solver was not turned on: the orchestrator does not operate one, and no read today met a captcha.
+Used in: the completion table on [the board](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator) when the leads report. The captcha solver was not turned on: the orchestrator does not operate one, and no read today met a captcha.
 
 ## 2026-11-15 nate correct the answers that come in, and check the engines' spec makes scientific sense and the real-time gathering works
 Nate, build session (orchestrator), 2026-11-15 about 11:30 Central.
@@ -1790,7 +1790,7 @@ Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-
 Nate, build session (orchestrator), 2026-11-15 about 14:40 Central.
 > Can we get mercari data in realtime? and can we fix the search. Identify what we need to fix.  All the perecents need to be addresseed and expertly worked on to perfection
 
-Used in: [state of completion](../spec/plans/completion.md).
+Used in: [state of completion](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator).
 
 ## 2026-11-15 nate the apple account is his, and the first testflight build is the demo we improve
 Nate, build session (orchestrator), 2026-11-15 about 14:55 Central. His name is left out of this public file.
@@ -1995,7 +1995,7 @@ Used in: [packet 69](../.agents/team/packets/team/69-integration-handoff.md), [j
 Nate, orchestrator's session, 2026-11-15, about 07:30 Central.
 > The system assess for the user, based on their given linked platforms, the one that it'd perform best on, or to possibly list both but we've accounted for how to handle multiple listings
 
-Used in: `spec/engines/adaptation.md` (AD5, rank sites by expected keep), `spec/plans/engines-queue.md`.
+Used in: `spec/engines/adaptation.md` (AD5, rank sites by expected keep), `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator`.
 
 ## 2026-11-15 nate show how the engine weighs what it learned, with genie answering and every way databricks helped
 Nate, orchestrator's session, 2026-11-15, about 07:45 Central.
@@ -2055,7 +2055,7 @@ Used in: `spec/engines/capture.md` §7 (the Swift capture module), `.agents/team
 Nate, orchestrator's session, 2026-11-15, about 10:00 Central.
 > Lets wrap up models as they stand when finished on whats currently happening. End all extra sessions and ill archive. We'll review through all of the project. The ios build, website, backend system and every feature. Fully launch with the /goal to fully complete all aspects. Focus then on the presentation, highlighting everything, Which in a way will depend on how we market the site. I know ben did alot of work on that, and we'll get to it after everything wraps currently, we assess what works, what doesnt, whats left. Ensure every aspect of our half is finished, then wait on ben or help, then one will focus on finishing the site, the other testing the ui/ux, capture, and all app stuff. But the mac can test things humans dont need to do
 
-Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `spec/plans/completion.md` (the review).
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator` (the review).
 
 
 ## 2026-11-15 Shared header, icon-only navigation and lowercase display type
@@ -2655,3 +2655,10 @@ Nate, the capture lead's session, 2026-11-15, after the trace showed an app capt
 > Yes, wire Lens
 
 Used in: `app/src/edge/identify/compose.ts`, [the capture design](../spec/engines/capture.md) (the paid visual rung).
+## 2026-11-15 nate benchmarks, readme and docs current, stale docs out; then audit and TestFlight
+Nate, the orchestrator's session, 2026-11-15, about 15:45 to 15:53 UTC by the machine clock, two messages.
+> Push the benchmarks, update the readme and docs to reflect where we are, and remove stale docs
+
+> Can you when fully realized its complete, send sonnets out now to triage and review and audit. and when passed complete or ready to at least see most features, upload to testflight so ben and I, part of the same team, can download it right from testflight app
+
+Used in: [bench/RESULTS.md](../bench/RESULTS.md), [README.md](../README.md); three Sonnet audits (server, app client, tests and release config); then an EAS production build and a TestFlight submission, which this message authorizes.

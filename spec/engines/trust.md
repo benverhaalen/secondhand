@@ -24,7 +24,7 @@ Paths: `T/` is `app/src/engines/trust/`, `J/` is `jobs/trust/`. References are `
 
 ## Wrong today
 
-From the "Trust" rows of [the audit](audit.md#trust) not yet fixed, the [science audit](../plans/sweep/science-audit.md) row for trust, [the completion table](../plans/completion.md) and my own read of the code. The security, production and completion pages name no trust finding. Order is by harm. Each fix is done when its test passes.
+From the "Trust" rows of [the audit](audit.md#trust) not yet fixed, the [science audit](../plans/sweep/science-audit.md) row for trust, [the completion table](../plans/finalization.md#13-what-works-kept-by-the-orchestrator) and my own read of the code. The security, production and completion pages name no trust finding. Order is by harm. Each fix is done when its test passes.
 
 | # | What is wrong | Where | Fix | Test that proves it |
 |---|---|---|---|---|

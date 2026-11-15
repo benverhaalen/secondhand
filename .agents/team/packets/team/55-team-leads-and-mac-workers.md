@@ -11,7 +11,7 @@ Nate asked for this ([words](../../../../product/words.md#2026-11-15-nate-opus-t
 | databricks | `databricks/`, `jobs/`, `spec/plans/sql/`, the Databricks parts of `spec/data.md` and `features/data/` | engine code in `app/src/engines/` |
 | engines | `app/src/engines/`, `jobs/` engine twins, `spec/engines/*.md` except `capture.md` and `photo.md`, `spec/determinations/money.md`, `market-insight.md`, `listing-and-marketing.md`, `managing-and-buyers.md` | `app/src/edge/harness/`, `app/src/edge/browser/` |
 | capture | `spec/engines/capture.md`, `photo.md`, `identity.md` (shared with engines: ask first), `spec/determinations/capture-shots.md`, `fields-by-kind.md`, `seeing-the-item.md`, `asking-and-intent.md`, the capture and identify code in `app/src/engines/` and `app/src/edge/api/` | Ben's screens in `app/src/app/` outside `v1/`, `app/src/ui/` |
-| integration | `app/src/edge/api/`, `app/src/app/v1/`, `scripts/walk.mjs`, `spec/examples/`, `spec/plans/board.md`, the joins between engines, harness and Databricks | the inside of an engine: it sends the owning lead a message |
+| integration | `app/src/edge/api/`, `app/src/app/v1/`, `scripts/walk.mjs`, `spec/examples/`, `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator`, the joins between engines, harness and Databricks | the inside of an engine: it sends the owning lead a message |
 
 The orchestrator (the session that started the leads) holds the harnesses in `app/src/edge/harness/` and `app/src/edge/browser/`, `spec/product.md` canon changes, and anything Nate says. A change to a name or state in `spec/product.md` goes to the orchestrator as a message with the exact rows; a lead never edits canon on its own.
 
@@ -21,7 +21,7 @@ The orchestrator (the session that started the leads) holds the harnesses in `ap
 2. Decides the design itself and writes it into the spec page first (marked *agent proposal* where it is a product choice; taste, direction and scope go to Nate or Ben).
 3. Writes a brief per piece of build work and sends it to a Codex worker on the Mac. The lead thinks and checks; Codex writes the code.
 4. Reads the worker's diff against the brief, reruns its tests, sends back what fails, and merges only what passes.
-5. Writes what is proved, and how, onto its rows of [the board](../../../../spec/plans/board.md). A row is ticked only after a fresh reader (a reviewer subagent that did not write it) has checked the diff.
+5. Writes what is proved, and how, onto its rows of [the board](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator). A row is ticked only after a fresh reader (a reviewer subagent that did not write it) has checked the diff.
 
 Every calculation is deterministic: same inputs, same answer, integer cents for money, every tunable number a `param` row, every shown number guarded with a citation. A model fills a gap only where the spec says a model does, and its output is checked before use.
 
@@ -124,7 +124,7 @@ Nate: "remember to account for all documentation for relevant platforms, languag
 ## Tests, measurements and the record
 
 - Test what can break and what a person would see break: one test per real failure mode, the edges of money and state, each join between two parts. Do not test the same thing at three levels, do not test a constant, and do not rerun a suite that did not change. A piece is done when its own checks pass and a fresh reader has read the diff, not when every test in the repo has run again.
-- Every piece ends with a number someone can check: accuracy against real data, time to answer, cost per call, share of shown numbers with a citation, endpoints on engines against on examples. Record the number, the command that produced it and the date on the lead's rows of [the board](../../../../spec/plans/board.md) and in the spec or feature page it belongs to. A number that got better says what it was before.
+- Every piece ends with a number someone can check: accuracy against real data, time to answer, cost per call, share of shown numbers with a citation, endpoints on engines against on examples. Record the number, the command that produced it and the date on the lead's rows of [the board](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator) and in the spec or feature page it belongs to. A number that got better says what it was before.
 - The benchmark these numbers feed is [spec/benchmark.md](../../../../spec/benchmark.md), ten rows measured on one fixed set of real items through our public API ([Nate](../../../../product/words.md#2026-11-15-nate-the-benchmark-measures-specbenchmarkmd)). A lead's measurement is taken in that benchmark's terms wherever a row covers it, so it can go straight onto the page, not a private timing of an inner function:
 
 | Row of the benchmark | Lead |
@@ -155,12 +155,12 @@ The orchestrator (Fable 5.2) oversees the four leads and answers to Nate. A lead
 
 Nate ([words](../../../../product/words.md#2026-11-15-nate-wrap-the-leads-up-at-a-good-spot-then-spec-from-what-we-have)): "lets wrap up the current leads at a good spot. Then fully focus on speccing based on what we currently have, and focusing to improve fix, and further develop".
 
-**Wrap up first.** Each lead brings its area to a clean stop: the workers already running finish, are read, and are merged only if they pass (tests, `tsc` for their files, the diff against the brief); a worker that cannot pass is left on its branch with a note, not merged. No new build brief is started, with one exception: a safety fault already found and named (a write recorded as done that was not sent, a delist that can be blocked or wrongly made, a decision that crashes, an isolation hole) is finished. Then the lead writes its state where the next reader will find it: its board rows and its row of [the completion table](../../../../spec/plans/completion.md) made true, every open branch and what it holds, and the queue it would have run next.
+**Wrap up first.** Each lead brings its area to a clean stop: the workers already running finish, are read, and are merged only if they pass (tests, `tsc` for their files, the diff against the brief); a worker that cannot pass is left on its branch with a note, not merged. No new build brief is started, with one exception: a safety fault already found and named (a write recorded as done that was not sent, a delist that can be blocked or wrongly made, a decision that crashes, an isolation hole) is finished. Then the lead writes its state where the next reader will find it: its board rows and its row of [the completion table](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator) made true, every open branch and what it holds, and the queue it would have run next.
 
 **Then spec, before more code.** Each lead rewrites its area's spec pages from what is true now:
 
 1. What exists: the page says what the code does today, with file references, not what was planned. Where the page and the code disagree, the page says which is right and why.
-2. What is wrong: every finding from the audits ([science](../../../../spec/plans/sweep/science-audit.md), [security](../../../../spec/plans/sweep/round-2/security-and-privacy.md), [production](../../../../spec/plans/sweep/round-2/production-readiness.md), [repo](../../../../spec/plans/sweep/round-2/repo-organization.md), the first round's three), the leads' own reviews and [the real-time proof](../../../../spec/plans/completion.md), placed in the page it belongs to as a named fix with its test.
+2. What is wrong: every finding from the audits ([science](../../../../spec/plans/sweep/science-audit.md), [security](../../../../spec/plans/sweep/round-2/security-and-privacy.md), [production](../../../../spec/plans/sweep/round-2/production-readiness.md), [repo](../../../../spec/plans/sweep/round-2/repo-organization.md), the first round's three), the leads' own reviews and [the real-time proof](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator), placed in the page it belongs to as a named fix with its test.
 3. What comes next: improvements and further development, each with the measure that will say it worked, in the order it should be built.
 
 One rule in one place: a rule stated on two pages is cut down to one, and the other links to it. Every threshold is a named param with its prior. Every number on a page says where it came from. Product choices are marked *agent proposal* and go to Nate; the backend is his to decide ([words](../../../../product/words.md#2026-11-15-nate-ben-has-given-me-the-backend)). Spec pages are written and read on Windows; a Sonnet seat may draft, an Opus seat reviews. Building resumes from the reviewed spec, piece by piece.
@@ -181,6 +181,6 @@ A fresh session is started by the orchestrator from that packet and packet 55. I
 
 ## Talking to each other
 
-Nobody waits idle, and no worker ever waits. What one seat needs from another is a row in [who is waiting on what](../../../../spec/plans/waiting.md), with one owner and what the waiter builds meanwhile; read its five rules and keep your rows true.
+Nobody waits idle, and no worker ever waits. What one seat needs from another is a row in [who is waiting on what](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator), with one owner and what the waiter builds meanwhile; read its five rules and keep your rows true.
 
 A lead that needs something from another area sends the orchestrator one message naming the file, the change and why. A lead reports at the end of each piece: what is now true, the command that proves it, what is open.

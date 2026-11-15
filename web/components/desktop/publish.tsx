@@ -1,7 +1,7 @@
 'use client';
 import { useId, useRef, useState } from 'react';
 import { amount, type Item } from '../../lib/desktop-api';
-import { ErrorNotice, Site } from './primitives';
+import { ErrorNotice, Icon, Site } from './primitives';
 import styles from './publish.module.css';
 
 export type ReviewItem = Item & { description?: string };
@@ -52,7 +52,7 @@ export function PublishItem({ item, edit }: { item: ReviewItem; edit: () => void
       <div className={styles.step}>
         <h3>2. Add photos and publish on your chosen site</h3>
         <div className={styles.sites}>{destinations.map(destination => <a key={destination.site} href={destination.url} target="_blank" rel="noopener noreferrer" className={styles.destination} aria-label={`Open ${destination.name} listing form in a new tab`}>
-          <Site site={destination.site} /><span><span>{destination.name}</span><span className="desk-meta">Open listing form ↗</span></span>
+          <Site site={destination.site} /><span><span>{destination.name}</span><span className={`desk-meta ${styles.linkLabel}`}>Open listing form <Icon name="link-01" size={16} /></span></span>
         </a>)}</div>
 
       </div>

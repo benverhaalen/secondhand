@@ -1149,6 +1149,26 @@ test('equal-figure gate checks each list item with its header and never a siblin
   assert.equal(streamed(held.events), 'Prices in US dollars:\n\n- Used: 120 [r1]');
 });
 
+test('a table that ends one round and a heading that starts the next are kept apart by a blank line', async () => {
+  // Seen on the dev server 2026-11-15: "| [r1] |## What is listed most" when a table ended a round with one line break.
+  const first = continuingRound({});
+  first.content.unshift({ type: 'text', text: 'Found across the sites.\n', citations: null });
+  const t = setup('answer', { client: replay([first, textMessage('## What is listed most')]).client });
+  const answer = await t.run();
+  const settled = answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join('');
+  assert.equal(settled, 'Found across the sites.\n\n## What is listed most');
+  assert.equal(streamed(t.events), settled);
+});
+
+test('a heading after a table in one round keeps its blank line in settled and streamed text', async () => {
+  const text = '| Site | Listings |\n|---|---|\n| Depop | 18 [r1] |\n\n## What is listed most\n\nDepop has 18 [r1].';
+  const held = await backedText(text, { ...result, rows: [{ site: 'depop', n: 18 }], counts: { depop: 18 } });
+  const settled = held.answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join('');
+  assert.doesNotMatch(settled, /\|[ \t]*## /, 'settled: a heading never joins a table row');
+  assert.doesNotMatch(streamed(held.events), /\|## /, 'streamed: a heading never joins a table row');
+  assert.match(settled, /\|\n\n## What is listed most/);
+});
+
 test('the gate checks a sentence against a 3000-row seeded search in well under a second', async () => {
   // Measured 2026-11-15: the claim gate's contradiction check was cubic in the cited figures and froze the server.
   const rows = Array.from({ length: 3000 }, (_, i) => ({ price: '$' + (i + 1), price_cents: (i + 1) * 100, title: 'Jacket ' + i }));

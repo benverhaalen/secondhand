@@ -2,7 +2,7 @@
 
 Updated: November 15, 2026, about 10:15 UTC. Owner: Nate. Agent: Claude Code, the orchestrator for Nate's side (Fable), written before its context fills ([packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills)). For: the next orchestrator session, or Nate reading where things stand.
 
-The orchestrator holds the whole backend for Nate: it starts and briefs the team leads, takes the problems that change what was imagined, owns the site harnesses and the cloud browser (`app/src/edge/harness/`, `app/src/edge/browser/`), and records what Nate says in [words](../../../../product/words.md). Read first: [packet 55](55-team-leads-and-mac-workers.md), [completion](../../../../spec/plans/completion.md), [where the backend is not optimized](../../../../spec/plans/optimization-gaps.md), then the lead handoffs below.
+The orchestrator holds the whole backend for Nate: it starts and briefs the team leads, takes the problems that change what was imagined, owns the site harnesses and the cloud browser (`app/src/edge/harness/`, `app/src/edge/browser/`), and records what Nate says in [words](../../../../product/words.md). Read first: [packet 55](55-team-leads-and-mac-workers.md), [completion](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator), [where the backend is not optimized](../../../../spec/plans/optimization-gaps.md), then the lead handoffs below.
 
 ## 0a. Where things stand at 14:26 UTC on 2026-11-15, and what the orchestrator does next
 

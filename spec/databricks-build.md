@@ -187,7 +187,7 @@ Read on Nate's workspace, 2026-11-15. Each line names the command that gives it.
 | F4 | A champion marked served reads only `comp_for_product` | `databricks/sql/09_guard.sql`, `jobs/valuation/fit.py` (engines) | a guard rule returns 0 rows on the workspace; a fixture fit over a `may_model = false` row fails its test |
 | F5 | A weekly view of which fallback level priced each shown number, once engines' `guard()` writes `basis_level` | `databricks/sql/10_dashboard.sql` | the view returns one row per week and level; the share at the top level is on the board |
 | F6 | `databricks/README.md` says what each folder holds and how a change ships (§8) | `databricks/README.md` | a reader finds the deploy order and the review step without this page |
-| F7 | nightly-fits stays paused until `fit.py` stops reading `may_model = false` rows (row in [waiting.md](plans/waiting.md), owner engines) | `deploy/resources/*.yml` | `databricks jobs get` shows PAUSED until engines' fix lands |
+| F7 | nightly-fits stays paused until `fit.py` stops reading `may_model = false` rows (row in [waiting.md](plans/finalization.md#13-what-works-kept-by-the-orchestrator), owner engines) | `deploy/resources/*.yml` | `databricks jobs get` shows PAUSED until engines' fix lands |
 
 
 - **Claude on the gateway, claim checks at the gateway**: needs a full workspace or Nate's go on a provider; designed, not built.

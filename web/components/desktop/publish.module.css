@@ -9,3 +9,5 @@
 .destination > img { width:var(--s-8); height:var(--s-8); }
 .destination > span { display:grid; gap:var(--s-1); }
 @media (prefers-reduced-motion:reduce) { .destination { transition:none; } }
+
+.linkLabel { display:inline-flex; align-items:center; gap:var(--s-1); }

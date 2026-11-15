@@ -72,12 +72,12 @@ export function MarketingHeader({ current }: { current: string }) {
   return <header className={current === '/buy' ? 'marketing-header marketing-header-in-flow' : 'marketing-header'}><div className="marketing-wrap marketing-header-row">
     <Mark />
     <nav className="marketing-nav" aria-label="Main">{pages.map(([url, label]) => <Link key={url} href={url} aria-current={current === url ? 'page' : undefined}>{label}</Link>)}</nav>
-    <div className="marketing-header-actions"><Link href="/whats-next" className="marketing-pill marketing-pill-secondary marketing-next-link" aria-current={current === '/whats-next' ? 'page' : undefined}>What’s Next</Link><a className="github-link marketing-desktop-action" href={repository}>GitHub <span aria-hidden="true">↗</span></a>{session ? <Link className="marketing-avatar" aria-label="Open your workspace" href="/app">{session.profile.photo ? <img src={session.profile.photo} alt="" referrerPolicy="no-referrer" /> : <span aria-hidden="true">{session.profile.name?.slice(0, 1) || <img src="/brand/mark.svg" alt="" />}</span>}</Link> : <AccountAccess label="Sign in" className="marketing-pill-secondary marketing-desktop-action" />}<MobileNavigation current={current} signedIn={Boolean(session)} /></div>
+    <div className="marketing-header-actions"><Link href="/whats-next" className="marketing-pill marketing-pill-secondary marketing-next-link" aria-current={current === '/whats-next' ? 'page' : undefined}>What’s Next</Link><a className="github-link marketing-desktop-action" href={repository}>GitHub <Icon name="link-01" size={16} /></a>{session ? <Link className="marketing-avatar" aria-label="Open your workspace" href="/app">{session.profile.photo ? <img src={session.profile.photo} alt="" referrerPolicy="no-referrer" /> : <span aria-hidden="true">{session.profile.name?.slice(0, 1) || <img src="/brand/mark.svg" alt="" />}</span>}</Link> : <AccountAccess label="Sign in" className="marketing-pill-secondary marketing-desktop-action" />}<MobileNavigation current={current} signedIn={Boolean(session)} /></div>
   </div></header>;
 }
 
 export function MarketingFooter() {
-  return <footer className="marketing-footer"><div className="marketing-wrap"><Mark /><nav aria-label="Footer">{pages.map(([url, label]) => <Link key={url} href={url}>{label}</Link>)}<Link href="/whats-next">What’s Next</Link><Link href="/buy">Try search</Link><a href={repository}>GitHub ↗</a><a href="#main">Back to top ↑</a></nav></div></footer>;
+  return <footer className="marketing-footer"><div className="marketing-wrap"><Mark /><nav aria-label="Footer">{pages.map(([url, label]) => <Link key={url} href={url}>{label}</Link>)}<Link href="/whats-next">What’s Next</Link><Link href="/buy">Try search</Link><a href={repository}>GitHub <Icon name="link-01" size={16} /></a><a href="#main">Back to top ↑</a></nav></div></footer>;
 }
 
 export function isMarketingRoute(path: string) {
