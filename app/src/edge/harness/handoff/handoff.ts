@@ -9,9 +9,9 @@ import type { Site } from '../protocol.ts';
 import type { Leases, Store } from '../../events/ports.ts';
 import { markStale } from '../../events/stale.ts';
 
-export type HandoffInput = { person_id: string; account_id: string; handoff_id: string; go?: readonly Site[] };
+export type HandoffInput = { person_id: string; account_id: string; site: Site; handoff_id: string; go?: readonly Site[] };
 export type HandoffResult = { state: 'dry' | 'ok' | 'paused' | 'account_stale' | 'not_linked' | 'busy'; steps?: readonly string[]; decision_id?: string; session_id?: string; signin_session_url?: string };
-type Session<P extends PoolPage> = { account: LinkedAccount; ctx: PoolContext<P>; page: P; result: HandoffResult; job: string; viewer_id: string; live_url?: string; expires: number; closed: boolean; assertLease(): void; release(): void };
+type Session<P extends PoolPage> = { account: LinkedAccount; ctx: PoolContext<P>; page: P; result: HandoffResult; job: string; viewer_id: string; live_url?: string; expires: number; closed: boolean; renewLease(): void; assertLease(): void; release(): void };
 export function createHandoff<P extends PoolPage & { goto(url: string): Promise<unknown> }>(o: {
   accounts: Accounts; vault: AuthVault; launcher: Launcher<P>; profileRoot: string; leases: Leases; leaseTtlMs: number;
   invalidatePool(account_id: string): Promise<void>; now?: () => number;
@@ -79,7 +79,7 @@ export function createHandoff<P extends PoolPage & { goto(url: string): Promise<
   async function run(i: HandoffInput, resume: boolean): Promise<HandoffResult> {
     const id = key(i), s = sessions.get(id);
     const a = await o.accounts.byId(i.account_id);
-    if (!a || a.person_id !== i.person_id) {
+    if (!a || a.person_id !== i.person_id || a.site !== i.site || s && a.site !== s.account.site) {
       if (s) { s.result = { state: 'not_linked' }; await close(s); }
       return { state: 'not_linked' };
     }
@@ -87,14 +87,19 @@ export function createHandoff<P extends PoolPage & { goto(url: string): Promise<
     if (s && (!resume || s.result.state !== 'paused')) return s.result;
     const job = `handoff:${i.handoff_id}`;
     if (!o.leases.take(a.account_id, job, o.leaseTtlMs).ok) return { state: 'busy' };
-    if (s) return verify(s);
-    const expires = now() + o.leaseTtlMs;
+    if (s) { s.renewLease(); return verify(s); }
+    let expires = now() + o.leaseTtlMs;
     let lost = false;
-    const renew = setInterval(() => {
-      if (now() >= expires) { clearInterval(renew); return; }
-      if (!o.leases.take(a.account_id, job, o.leaseTtlMs).ok) lost = true;
-    }, Math.max(1, Math.floor(o.leaseTtlMs / 3)));
-    renew.unref();
+    let renew: ReturnType<typeof setInterval>;
+    const renewLease = () => {
+      clearInterval(renew); expires = now() + o.leaseTtlMs; lost = false;
+      renew = setInterval(() => {
+        if (now() >= expires) { clearInterval(renew); return; }
+        if (!o.leases.take(a.account_id, job, o.leaseTtlMs).ok) lost = true;
+      }, Math.max(1, Math.floor(o.leaseTtlMs / 3)));
+      renew.unref();
+    };
+    renewLease();
     const release = () => { clearInterval(renew); o.leases.give(a.account_id, job); };
     const assertLease = () => {
       if (lost || now() >= expires || !o.leases.take(a.account_id, job, o.leaseTtlMs).ok) throw new Error('handoff lease expired');
@@ -107,7 +112,7 @@ export function createHandoff<P extends PoolPage & { goto(url: string): Promise<
       await call('handoff.load', a, () => ctx!.loadState!(state));
       const page = await call('handoff.page', a, () => ctx!.newPage());
       await call('handoff.open', a, () => page.goto(PROFILES[a.site].home));
-      const session: Session<P> = { account: a, ctx, page, result: { state: 'paused' }, job, viewer_id: randomUUID(), live_url: (ctx as PoolContext<P> & { live_url?: string }).live_url, expires, closed: false, assertLease, release };
+      const session: Session<P> = { account: { ...a }, ctx, page, result: { state: 'paused' }, job, viewer_id: randomUUID(), live_url: (ctx as PoolContext<P> & { live_url?: string }).live_url, expires, closed: false, renewLease: () => { renewLease(); session.expires = expires; }, assertLease, release };
       sessions.set(id, session);
       return await verify(session);
     } catch {
@@ -132,7 +137,7 @@ export function createHandoff<P extends PoolPage & { goto(url: string): Promise<
       const s = [...sessions.values()].find(s => s.viewer_id === session_id && s.account.person_id === person_id);
       if (!s || s.closed || s.result.state !== 'paused') return undefined;
       const a = await o.accounts.byId(s.account.account_id);
-      if (!a || a.person_id !== person_id) { s.result = { state: 'not_linked' }; await close(s); return undefined; }
+      if (!a || a.person_id !== person_id || a.site !== s.account.site) { s.result = { state: 'not_linked' }; await close(s); return undefined; }
       if (now() >= s.expires) { s.result = stale(s.account); await close(s); return undefined; }
       return s.live_url;
     },

@@ -7,8 +7,9 @@ import { createLog } from '../../../../../log/index.js';
 
 async function setup() {
   const vault = memoryVault(); await vault.put('ref', { cookies: [], origins: [] });
-  const accounts = memoryAccounts([{ account_id: 'acc_1', person_id: 'usr_1', site: 'depop', token_ref: 'ref' }], vault);
-  const store = memoryStore(), leases = memoryLeases(() => 0), lines: unknown[] = [];
+  const rows: import('../../browser/auth.ts').LinkedAccount[] = [{ account_id: 'acc_1', person_id: 'usr_1', site: 'depop', token_ref: 'ref' }];
+  const accounts = memoryAccounts(rows, vault);
+  const store = memoryStore(), leases = memoryLeases(() => time), lines: unknown[] = [];
   const log = createLog({ src: 'test', build: 'test', sink: line => { lines.push(line); } });
   let launches = 0, closes = 0, loads = 0, phoneReads = 0, refreshed = 0;
   let time = 0, expireProbe = false;
@@ -19,8 +20,8 @@ async function setup() {
     invalidatePool: async () => { refreshed++; },
     launcher: { persistent: async () => { launches++; return ctx; }, anonymous: async () => { throw new Error('wrong route'); } },
     readPhone: async () => { phoneReads++; return { cookies: [], origins: [] }; }, probe: async () => { if (expireProbe) time = 1001; return status; } });
-  const input = { person_id: 'usr_1', account_id: 'acc_1', handoff_id: 'ho_1', go: ['depop'] as const };
-  return { handoff, input, store, vault, leases, lines, expireDuringProbe: () => { expireProbe = true; }, refreshed: () => refreshed, status: (s: typeof status) => { status = s; }, counts: () => ({ launches, closes, loads, phoneReads }) };
+  const input = { site: 'depop' as const, person_id: 'usr_1', account_id: 'acc_1', handoff_id: 'ho_1', go: ['depop'] as const };
+  return { changeSite: () => { rows[0].site = 'ebay'; }, advance: (ms: number) => { time = ms; }, handoff, input, store, vault, leases, lines, expireDuringProbe: () => { expireProbe = true; }, refreshed: () => refreshed, status: (s: typeof status) => { status = s; }, counts: () => ({ launches, closes, loads, phoneReads }) };
 }
 test('dry by default and unlinked owner never opens or reads a session', async () => {
   const s = await setup();
@@ -66,4 +67,24 @@ test('probe crossing the lease deadline cannot publish storage or refresh the po
   const s = await setup(); s.expireDuringProbe();
   assert.equal((await s.handoff.start(s.input)).state, 'account_stale');
   assert.equal(s.refreshed(), 0); assert.equal(s.counts().closes, 1);
+});
+
+test('F7: a changed account site cannot resume or expose the old hand-off', async () => {
+  const s = await setup(); s.status('blocked'); const r = await s.handoff.start(s.input);
+  s.changeSite();
+  assert.equal(await s.handoff.liveView('usr_1', r.session_id!), undefined);
+  assert.equal((await s.handoff.resume(s.input)).state, 'not_linked');
+  assert.equal(s.counts().closes, 1);
+});
+test('F7: resume starts a fresh lease deadline and renews beyond the original expiry', async () => {
+  const s = await setup(); s.status('blocked'); await s.handoff.start(s.input);
+  s.advance(1001); s.status('ok');
+  assert.equal((await s.handoff.resume(s.input)).state, 'ok');
+  assert.equal(s.refreshed(), 1); assert.equal(s.counts().closes, 1);
+});
+
+test('F7: a hand-off for another site cannot read or launch the linked account', async () => {
+  const s = await setup();
+  assert.equal((await s.handoff.start({ ...s.input, site: 'ebay' })).state, 'not_linked');
+  assert.equal(s.counts().launches, 0); assert.equal(s.counts().phoneReads, 0);
 });
