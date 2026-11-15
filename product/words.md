@@ -2073,3 +2073,15 @@ Nate, orchestrator's session, 2026-11-15, about 11:25 Central, three messages in
 Also, on the buying assistant: "Wait, can genie ai be the buying ai people talk to?", "Like or some sort of ai model we build on it, combining databricks backend storage we do, with ai stuff like that", "or is that not recommended".
 
 Used in: `spec/plans/finalization.md`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate audit our own code first, then read Ben's plan
+Nate, orchestrator's session, 2026-11-15, about 05:25 Central (the session's earlier "Central" times were written six hours late; the machine clock is the source here).
+> Great, when data bricks closes out, compact, lets first fully audit and review through the codebase, then look at bens sessions new plan called whats left. But only after we get our own opinion of the fresh codebase
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate every search shows how far it reaches while it loads; scaffold the screens with everything wired so design can pass over
+Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
+> In some way we need to deliver in every search, responsive ui for loading states that shows how broad we reach, how thorough and credible and impressive the search is, technical the computation is. Just a needed feature, there are im sure many examples of this type of ui being practiced with many professional sites now, even as animations on their site for marketing. Ben right now is working on the views and such, but its important we plan to integrate all working technologies and such, like we did for lidar, we can build out and template the needed views and screens, Utilize professional ui and ux skills, and expo skills to send a team lead and codex builder to fully understand and perfectly scaffold with everything integrated, that design can pass over.
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), the app-wiring lead's brief.
