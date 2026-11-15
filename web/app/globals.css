@@ -1,3 +1,8 @@
+/* The open pair (agent proposal, Nate 2026-11-15), drawn when the brand faces are not installed. One static weight each, so nothing is faked bold.
+   size-adjust matches the brand x-height (.510 / .500); the overrides are the brand's ascent, descent and gap divided by it, so lines sit where the brand's do.
+   Same declaration, with the same numbers, as app/src/ui/fonts.ts. Files are copies of app/assets/fonts-open/ (scripts/fonts.test.mjs checks they match). */
+@font-face { font-family: "Hanken Grotesk"; src: url("/fonts-open/HankenGrotesk-Medium.ttf") format("truetype"); font-weight: 500; font-style: normal; font-display: swap; size-adjust: 103.45%; ascent-override: 92.6%; descent-override: 23.4%; line-gap-override: 0%; }
+@font-face { font-family: "Outfit"; src: url("/fonts-open/Outfit-SemiBold.ttf") format("truetype"); font-weight: 600; font-style: normal; font-display: swap; size-adjust: 103.5%; ascent-override: 72.5%; descent-override: 24.2%; line-gap-override: 9.7%; }
 * { box-sizing: border-box; }
 html { background: var(--page); color: var(--ink); scroll-padding-top: var(--s-6); }
 body { margin: 0; font-family: var(--font-text); font-size: var(--t-15); font-weight: var(--w-text); line-height: var(--lh-15); overflow-wrap: anywhere; }

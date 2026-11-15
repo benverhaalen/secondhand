@@ -1,6 +1,7 @@
 """Offline checks of the purge statement plan and temporary cross-user access."""
 import builtins
 import json
+import sqlite3
 from io import BytesIO
 import sys
 from pathlib import Path
@@ -21,10 +22,11 @@ def modules():
 
 
 class SQL:
-    def __init__(self, fail=None, remaining=0):
+    def __init__(self, fail=None, remaining=0, grants=(1, 1)):
         self.calls = []
         self.fail = fail
         self.remaining = remaining
+        self.grants = iter(grants)
 
     def __call__(self, statement, args):
         self.calls.append((statement, args))
@@ -32,6 +34,8 @@ class SQL:
             raise RuntimeError(f'failed: {self.fail}')
         if statement == 'SELECT current_timestamp() AS vacuum_started_at':
             return [{'vacuum_started_at': '2026-11-15T04:00:00Z'}]
+        if statement.startswith('SELECT m.grant_id'):
+            return [{'grant_id': args['id']}] * next(self.grants)
         return [{'n': self.remaining}] if statement.startswith('SELECT count(*)') else []
 
 
@@ -41,10 +45,79 @@ def test_delete_failure_revokes_grant_and_closes_break_glass_without_done_decisi
     with pytest.raises(RuntimeError, match='observation'):
         purge.run_purge(sql, 'usr_fixture', 'secondhand', ['observation', 'evidence'], lambda: 0, lambda: None)
     statements = [s for s, _ in sql.calls]
-    assert statements[0].startswith('INSERT INTO `secondhand`.`governance`.`principal_map`')
+    assert statements[0].startswith('INSERT INTO `secondhand`.`governance`.`break_glass`')
+    assert statements[1].startswith('INSERT INTO `secondhand`.`governance`.`principal_map`')
+    assert 'grant_id' in statements[1] and sql.calls[1][1]['id'] == sql.calls[0][1]['id']
     assert any(s.startswith('DELETE FROM `secondhand`.`governance`.`principal_map`') for s in statements), 'failed purge leaked cross-user access'
     assert 'ended_at = current_timestamp()' in statements[-1]
     assert not any('REORG TABLE' in s or 'INSERT INTO `secondhand`.`core`.`decision`' in s for s in statements)
+
+
+@pytest.mark.parametrize('grants', [(0,), (1, 0), (2,), (1, 2)])
+def test_lost_or_duplicate_grant_cannot_record_done_before_or_after_counts(grants):
+    _, purge = modules()
+    sql = SQL(grants=grants)
+    with pytest.raises(RuntimeError, match='break-glass grant lost before counts: bg_') as error:
+        purge.run_purge(sql, 'usr_fixture', 'secondhand', ['observation', 'evidence'],
+                        lambda: pytest.fail('logs touched after grant lost'),
+                        lambda: pytest.fail('captures touched after grant lost'))
+    grant_id = sql.calls[0][1]['id']
+    assert str(error.value) == f'break-glass grant lost before counts: {grant_id}'
+    assert not any(s.startswith('UPDATE `secondhand`.`governance`.`erasure`') or
+                   s.startswith('INSERT INTO `secondhand`.`core`.`decision`') for s, _ in sql.calls)
+    assert not any(s.endswith('WHERE user_id = :user_id') and '`principal_map`' in s for s, _ in sql.calls)
+    counts = [s for s, _ in sql.calls if s.startswith('SELECT count(*)')]
+    assert len(counts) == (0 if len(grants) == 1 else 2)
+    assert sql.calls[-2] == ('DELETE FROM `secondhand`.`governance`.`principal_map` WHERE grant_id = :id', {'id': grant_id})
+    assert 'ended_at = current_timestamp()' in sql.calls[-1][0]
+    assert sql.calls[-1][1]['id'] == grant_id
+
+
+def test_overlapping_grants_revoke_only_their_own_wildcard():
+    break_glass, _ = modules()
+    db = sqlite3.connect(':memory:')
+    db.execute('CREATE TABLE principal_map (principal, user_id, grant_id)')
+    db.execute('CREATE TABLE break_glass (id, principal, reason, started_at, ended_at)')
+
+    def sql(statement, args):
+        statement = statement.replace('`', '').replace('secondhand.governance.', '')
+        statement = statement.replace('current_user()', "'runner'").replace('current_timestamp()', 'CURRENT_TIMESTAMP')
+        return db.execute(statement, args).fetchall()
+
+    with break_glass(sql, 'outer') as outer:
+        assert outer is not None
+        with break_glass(sql, 'inner') as inner:
+            assert inner is not None and inner != outer
+            assert set(db.execute('SELECT grant_id FROM principal_map')) == {(outer,), (inner,)}
+        assert db.execute('SELECT grant_id FROM principal_map').fetchall() == [(outer,)]
+        assert db.execute('SELECT ended_at FROM break_glass WHERE id = ?', (outer,)).fetchone() == (None,)
+        assert db.execute('SELECT ended_at FROM break_glass WHERE id = ?', (inner,)).fetchone()[0]
+    assert db.execute('SELECT * FROM principal_map').fetchall() == []
+
+
+@pytest.mark.parametrize('loss', ['wildcard', 'audit', 'closed_audit', 'other_principal', 'ordinary_mapping'])
+def test_confirm_requires_own_current_wildcard_and_open_audit_even_with_another_live_grant(loss):
+    _, purge = modules()
+    sql = SQL()
+    purge.run_purge(sql, 'usr_fixture', 'secondhand', ['observation'], lambda: 0, lambda: None)
+    statement, args = next((s, a) for s, a in sql.calls if s.startswith('SELECT m.grant_id'))
+    statement = statement.replace('`', '').replace('secondhand.governance.', '').replace('current_user()', "'runner'")
+    db = sqlite3.connect(':memory:')
+    db.execute('CREATE TABLE principal_map (principal, user_id, grant_id)')
+    db.execute('CREATE TABLE break_glass (id, ended_at)')
+    db.executemany('INSERT INTO principal_map VALUES (?, ?, ?)',
+                   [('runner', '*', args['id']), ('runner', '*', 'bg_other')])
+    db.executemany('INSERT INTO break_glass VALUES (?, NULL)', [(args['id'],), ('bg_other',)])
+    assert db.execute(statement, args).fetchall() == [(args['id'],)]
+    losses = {
+        'wildcard': 'DELETE FROM principal_map WHERE grant_id = :id',
+        'audit': 'DELETE FROM break_glass WHERE id = :id',
+        'closed_audit': 'UPDATE break_glass SET ended_at = CURRENT_TIMESTAMP WHERE id = :id',
+        'other_principal': "UPDATE principal_map SET principal = 'other' WHERE grant_id = :id",
+        'ordinary_mapping': "UPDATE principal_map SET user_id = 'usr_fixture' WHERE grant_id = :id",
+    }
+    db.execute(losses[loss], args)
+    assert db.execute(statement, args).fetchall() == [], f'{loss}: another live grant hid loss of the purge grant'
 
 
 @pytest.mark.parametrize('failure', ['INSERT INTO `secondhand`.`governance`.`break_glass`',
@@ -107,12 +180,19 @@ def test_success_records_zero_counts_and_system_owned_decision_then_revokes():
     decision, args = next((s, a) for s, a in sql.calls if s.startswith('INSERT INTO `secondhand`.`core`.`decision`'))
     assert all(word in decision for word in ["'delete_user'", "'purge'", "'user'", "'ask'", "'done'", "'live:secondhand'", "'system'"])
     assert json.loads(args['why']) == {'tables': left, 'user_id': 'usr_fixture'}
-    assert statements.index(decision) < next(i for i, s in enumerate(statements) if "user_id = '*'" in s and s.startswith('DELETE FROM `secondhand`.`governance`'))
+    revoke = next(i for i, s in enumerate(statements) if s.startswith('DELETE FROM `secondhand`.`governance`.`principal_map` WHERE grant_id'))
+    assert statements.index(decision) < revoke
     opened = next(a for s, a in sql.calls if s.startswith('INSERT INTO `secondhand`.`governance`.`break_glass`'))
     closed = sql.calls[-1][1]
     assert opened['reason'] == 'delete_user usr_fixture'
     assert opened['id'] == closed['id']
-    assert all('current_user()' in s and "user_id = '*'" in s for s in statements if "user_id = '*'" in s and s.startswith('DELETE FROM `secondhand`.`governance`'))
+    assert sql.calls[revoke][1] == {'id': opened['id']}
+    confirms = [i for i, s in enumerate(statements) if s.startswith('SELECT m.grant_id')]
+    counts = [i for i, s in enumerate(statements) if s.startswith('SELECT count(*)')]
+    mapping = next(i for i, s in enumerate(statements) if s.endswith('WHERE user_id = :user_id') and '`principal_map`' in s)
+    assert confirms == [min(counts) - 1, max(counts) + 1]
+    assert confirms[-1] + 1 == mapping
+    assert all(sql.calls[i][1] == {'id': opened['id']} for i in confirms)
 
 
 def test_nonzero_counts_or_capture_failure_cannot_claim_done_and_still_revoke():
@@ -237,7 +317,7 @@ def test_tombstone_prevents_reload_before_any_core_delete_and_completion_is_last
     mapping = index('DELETE FROM `secondhand`.`governance`.`principal_map` WHERE user_id = :user_id')
     complete = index('UPDATE `secondhand`.`governance`.`erasure`')
     decision = index('INSERT INTO `secondhand`.`core`.`decision`')
-    revoke = index("AND user_id = '*'")
+    revoke = index('WHERE grant_id = :id')
     assert tombstone < first_delete, 'reload can restore the user unless the tombstone precedes every delete'
     assert 'requested_at' in calls[tombstone][0]
     assert 'WHEN NOT MATCHED THEN INSERT' in calls[tombstone][0], 'retry must preserve the original tombstone'
@@ -274,7 +354,7 @@ def test_every_failure_revokes_access_and_does_not_advance_later_steps(failure):
     with pytest.raises((RuntimeError, OSError)):
         purge.run_purge(sql, 'usr_fixture', 'secondhand', ['observation'],
                         lambda: step('logs'), lambda: step('captures'))
-    assert "AND user_id = '*'" in sql.calls[-2][0], f'{failure}: wildcard access leaked'
+    assert 'WHERE grant_id = :id' in sql.calls[-2][0], f'{failure}: wildcard access leaked'
     assert 'ended_at = current_timestamp()' in sql.calls[-1][0]
     if failure != 'decision':
         assert not any(s.startswith('INSERT INTO `secondhand`.`core`.`decision`') for s, _ in sql.calls)

@@ -1,4 +1,4 @@
-# Finalization: every fix, in order, and who carries it
+# Finalization: every fix, in order, and who carries it Built: `harness/compose.ts` on main (87363be1), `SECONDHAND_CHROME` the one name. Waiting on the server lead to call it from runtime.ts; then the benchmark | Done (5477b7e7): `api/search.test.ts` 59 rerun by the lead | Built (5477b7e7): settles without Apify, no shown-only row reaches the call (tests rerun). Open: the run-cap port in the Store and the token, both the server lead's; the late frame after `done` | In build (search-route-1, round 2) | Done (5477b7e7): ten visitors, one eBay and one Depop read (test rerun by the lead) | In build (search-route-1, round 2) | Built (5477b7e7): commit navigation, one in-page call, `bench/reads.mjs` keeps the log. Live run 2026-11-15 12:28 UTC: eBay answered 403 on the first read; rerun after the back-off | Built (06e40795): seven classes, counts in `/v1/sources/health`, a refusal pauses the site 15 min doubling to 4 h. Depop live 12:29 UTC: 24 answered, 8 empty, 0 refused or challenged of 32 | Done (06e40795): `scripts/search-errors-check.mjs` prints [] (rerun by the lead) | Built (87363be1): compose.test.ts shows the live flag never reaches a fetch; done when the server lead removes runtime.ts's fetch clients |
 
 Written 2026-11-15 by the orchestrator for Nate's side (Claude Code, Fable), on Nate's word: "Lets address all fixes, and then also fully realize the system" ([words](../../product/words.md#2026-11-15-nate-address-every-fix-then-fully-realize-the-system-how-capture-should-run)). It rests on [the audit of main](audit-2026-11-15.md), written first from the code, and on Ben's plan, read after it ([what's left](whats-left.md), [the redesign's wiring list](../redesign/README.md#8-left-to-wire)). Everything here that Nate has not said himself is an *agent proposal* until he rules.
 
@@ -36,10 +36,26 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 | SV9 | Monitoring a linked account: the signed-in client composed, and the watcher reading inbox, offers, orders and listing interest on its schedule. Writes stay dry | One real account linked by Nate in the live view; a read of each kind recorded |
 | SV10 | The rest of the server review: a decision signing key that is required and shared, a visitor id the server issues and signs, the idempotency slot taken before the handler runs, a replayed refresh token revoking its family, example rows no longer seeded into the real store, push tokens not stored raw, a refusal to start when a required variable is missing | The test the [review](audit-2026-11-15/review-server.md) names for each |
 
+**State** (server lead, 2026-11-15, about 12:40 UTC; a row is done only when someone who did not write it reran its proof):
+
+| Id | State | Where |
+|---|---|---|
+| SV0 | built, on main; fresh Opus review running | the store is SQLite through node:sqlite (decision: [server-store.md](server-store.md)), c19e8af6; `node server/main.ts`, 9221b28a; proof `node --test server/main.test.ts` (6/6 on the Mac: a session written in `auth.ts` is read by the `/v1/me` route; limits and rules written in turn both survive). The full email sign-in through the server waits on SV3 |
+| SV1 | building | Mac workers srv-auth-1 (sign-in state), srv-http-1 (idempotency, visitor limits, decision key and versions, last open), srv-jobs-1 (jobs and frames on disk) |
+| SV2 | building | srv-jobs-1: a row is written only when its own `may_store` is true and `keep_until` has not passed; the search lead adds those fields to every row |
+| SV3 | building | srv-auth-1: the `sendCode` port, `SECONDHAND_DEV_CODE` for development only, refused in production; the vendor is open (§9.2) |
+| SV4 | partly on main | the entry starts the watcher and the pipeline (watch ticks logged, SIGTERM exits 0, run on the Mac); Dockerfile and fly.toml building (srv-host-1). Nothing created on Fly |
+| SV5 | partly on main; review running | account lookups scoped by person, fd545dcb; the job read and the example visitor in srv-jobs-1 |
+| SV6 | the engines lead's (EN6), agreed 2026-11-15 | built on the SV7 port |
+| SV7 | next | land the observation writer from `w/int-obs-1` with the rights refusal and per-row fields; ports agreed with the engines and data leads |
+| SV8 | not started | |
+| SV9 | not started | needs Nate's linked account (§9.3) |
+| SV10 | building in part | srv-http-1 (signing key required, signed visitor id, idempotency slot first, required variables), srv-auth-1 (refresh replay revokes the family), srv-vault-1 next (vault on disk, push tokens in the vault, examples off in production) |
+
 ## 3. Search and the sources (lead: search)
 
-| Id | Fix | Proof |
-|---|---|---|
+| Id | Fix | Proof | State |
+|---|---|---|---|
 | SR1 | The anonymous browser clients are composed into the runtime when their key or a local browser is present, so Depop and eBay answer a person who is not signed in. One name for the local browser path | The dev server shows four sources arriving; the benchmark's 20 items run twice |
 | SR2 | A visitor is a visitor: the caller comes from the request, person-only rows are not asked for a visitor, and Mercari says "needs your account" | Tests for each; the visitor's job has no failed Facebook or Mercari stage |
 | SR3 | Apify never sits in the path an answer waits on: it fills in the background, its rows are stored as shown-only and never handed to a model, and the per-person cap is in the Store. The Facebook row is not shown until the fill exists | A test that a search with the token set settles without waiting on Apify, and that no shown-only row reaches the same-product call |
@@ -50,6 +66,7 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 | SR8 | Every Depop read is classified (answered, empty, refused, challenged, shape changed, timed out) and counted, shown in `/v1/sources/health`. A refusal or a challenge makes the site back off; nothing retries around one | A day's counts by class from the log |
 | SR9 | Swallowed errors in the harness and browser files logged with their cause; the static findings under `harness/sites/` cleared | The gate shows none in those folders |
 | SR10 | The server cannot call Depop's own web data address by setting a variable; that read stays inside the site's page | A test that the "live" setting does not reach it |
+| SR11 | The person picks the sources: `POST /v1/search` takes `sources` (ids, or `osint` for the group), every source, stage and searched entry says `platform` or `osint`, and Dupe rows keep "via Dupe.com". eBay is read in every buy search and lands last, the conversation answering from the earlier frames ([Nate](../../product/words.md#2026-11-15-nate-ebay-last-in-every-buy-search-with-the-conversation-answering-while-it-waits-dupe-keeps-its-row-credit)) | Tests for the filter, the refusals and the group on every source | Briefed (search-route-1, round 3) |
 
 ## 4. Engines and the buying conversation (lead: engines)
 
@@ -68,27 +85,29 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 
 ## 5. Databricks, the jobs and the data (lead: data)
 
-| Id | Fix | Proof |
-|---|---|---|
-| DB0 | After 1 PM Central on 2026-11-15, the guard alert moves from hourly to daily at 4 AM (a deploy without force) | The alert's schedule read back |
-| DB1 | A fit writes its parameters to the governed registry and reads only rows it may model on, checking both rights fields | A test that no fit's SQL names the bare comps table; the registry table named once |
-| DB2 | A purge cannot record "done" with rows left: each grant has an id, and the grant is confirmed before the counts | The failing-path test, rewritten to the current order, and a new one for a lost grant |
-| DB3 | A shown-only row has a home: a per-row `use_scope` on observations and evidence, and one job that loads what the server lands (SV7) from a volume | The loader's test; a count by scope |
-| DB4 | Fitted parameters, calibration and sale curves are exported for the server to read on a timer. The warehouse is never queried while a person waits | The export file's shape test, and EN3 reading it |
-| DB5 | The Python suites run and are in the gate: the import path, the optional library skipped, the parameter row's four missing fields, the two stale tests | `pytest` green in `jobs/`, `databricks/` and `deploy/` on the Mac; the gate runs them where Python is present |
-| DB6 | The alert tells someone and cannot read "never ran" as healthy; the engine figures come from a table, not literals | The bundle's tests |
-| DB7 | The governed functions the conversation calls, a benchmark run landed in the volume, the six numbers that do not rebuild, and the summary rows for Genie | The conversation handoff's named fix; the dashboard's bench section filled |
-| DB8 | The nightly fits are switched back on only after DB1 and DB2, and only on Nate's yes, because each run spends trial credits | His yes, then one run's cost recorded |
+| Id | Fix | Proof | State |
+|---|---|---|---|
+| DB0 | After 1 PM Central on 2026-11-15, the guard alert moves from hourly to daily at 4 AM (a deploy without force) | The alert's schedule read back | Waiting for 19:00 UTC: the change is built (`w/dbx-alert-1`, 3f76e334, held off main until judging ends); deploy and read-back after |
+| DB1 | A fit writes its parameters to the governed registry and reads only rows it may model on, checking both rights fields | A test that no fit's SQL names the bare comps table; the registry table named once | **Done in the repo** (e1fe59a2): reads `market.comp_for_product`, which now checks the row's and the source's rights; writes `core.param` by explicit columns; `jobs/valuation/test_fit.py` and `databricks/test_guard.py` rerun by the lead on the Mac. Today no source is product-cleared, so the fit skips with "no rows cleared for a shipped model". The four columns and the view reach the workspace after judging |
+| DB2 | A purge cannot record "done" with rows left: each grant has an id, and the grant is confirmed before the counts | The failing-path test, rewritten to the current order, and a new one for a lost grant | **Done in the repo** (5296f08d, a9b2439f): `principal_map.grant_id`, revoke and sweep by grant id, the grant confirmed before and after the counts; `deploy/tasks/test_purge.py` 48 and `databricks/` 393 rerun by the lead. On the workspace, `migrate_data` adds the column first, after judging, before any break-glass job runs |
+| DB3 | A shown-only row has a home: a per-row `use_scope` on observations and evidence, and one job that loads what the server lands (SV7) from a volume | The loader's test; a count by scope | **Built in the repo** (8105cdcf): `databricks/tasks/load_observations.py`, job `load_observations` with no schedule, 86 tests; the line shape was sent to the server lead for SV7 (no reply yet). Runs on the workspace once lines land |
+| DB4 | Fitted parameters, calibration and sale curves are exported for the server to read on a timer. The warehouse is never queried while a person waits | The export file's shape test, and EN3 reading it | Waiting on the engines lead's reply on the shape EN3 reads (asked 12:10 UTC) |
+| DB5 | The Python suites run and are in the gate: the import path, the optional library skipped, the parameter row's four missing fields, the two stale tests | `pytest` green in `jobs/`, `databricks/` and `deploy/` on the Mac; the gate runs them where Python is present | **Done** (db01c98e, 12b2e1e2, this commit): `jobs/` 1182, `databricks/` 393, `deploy/` 48 pass on the Mac and on Windows; the gate runs them through `scripts/python-suites.mjs` in UTF-8 mode, always in CI and locally when a change touches what they read |
+| DB6 | The alert tells someone and cannot read "never ran" as healthy; the engine figures come from a table, not literals | The bundle's tests | Built (`w/dbx-alert-1`, with DB0): one daily row that fires on violations, on a guard that never ran or ran over 26 hours ago; the deployer is subscribed; the market model's row reads the backtest table |
+| DB7 | The governed functions the conversation calls, a benchmark run landed in the volume, the six numbers that do not rebuild, and the summary rows for Genie | The conversation handoff's named fix; the dashboard's bench section filled | Functions built (4d904366, `databricks/sql/15_market.sql`, offline tests 19; the seeded check runs on the workspace after judging; the EXECUTE grant needs the API principal's name). Genie summary rows built (7bb5ccc7, 32 tests). Benchmark load and the six numbers: after judging |
+| DB9 | Standing on Databricks' retail solutions, shown at judging ([the mapping](../../research/data/nate/databricks-retail-solutions.md)): three additive pieces in a new schema, plain SQL, no bundle deploy and no change to the dashboard or the Genie space the judges open: views over our tables under the Open Retail Data Model's entity names with the resale additions (condition, marketplace, rights on every row); one `ai_forecast` view over the daily comps; and `databricks/RETAIL.md`, the judges' one-page map of their solution, what we use and what we add | Each view returns rows; the page's "live" column matches what was read back; what the pass spent |
+| DB10 | After judging, in the mapping's order: a nightly matcher job over stored observations in the fuzzy-item-matching pattern; Many Models Forecasting for the sale curve (feeds EN3); an Agent Bricks supervisor as a measured trial beside our own conversation loop; one table synced to Lakebase, only on Nate's yes with the hourly cost read first; a Delta share of a public-scope price index, only on his yes | Each with its measured result against what it replaces |
+| DB8 | The nightly fits are switched back on only after DB1 and DB2, and only on Nate's yes, because each run spends trial credits | His yes, then one run's cost recorded | Ask Nate after DB1 and DB2 reach the workspace |
 
 ## 6. The app (lead: app wiring; the look is Ben's)
 
 | Id | Fix | Proof |
 |---|---|---|
-| AP1 | One client: the server's address per build, a token kept in the device's secure store, refresh serialized, a job's stream read with the fetch that works on a device | Tests; the health screen answers on a simulator |
-| AP2 | Every search shows its reach while it loads, from the job's real frames | On the dev server the screen shows each source landing with its counts |
-| AP3 | The wiring map: Ben's 23 items answered one by one, the N contracts marked ours or his with the shape proposed, then each screen wired in the map's order with the demo world kept as the fallback | `spec/plans/app-wiring.md`, and a reply packet to Ben |
-| AP4 | The client faults the review found: three links to pages that do not exist, fold state that resets on a device, crash uploads sent to a path the server does not serve, development screens in a release build, an undeclared dependency, no not-found page | Tests and the type check |
-| AP5 | What a first internal build needs, listed and prepared: the development client, the address per profile, the privacy manifest. No build or submit runs without Nate's word | The list, checked on a simulator |
+| AP1 | One client: the server's address per build, a token kept in the device's secure store, refresh serialized, a job's stream read with the fetch that works on a device | Tests; the health screen answers on a simulator. **Done but the simulator**: `app/src/api/` (vault in the secure store on the phone, memory on web; one refresh shared by every 401; `expo/fetch` on the phone, UTF-8 by hand); `client.test.ts` 23 of 23, including five 401s sharing one refresh; `/dev/health` answers through the client on the dev server. Open: the simulator run, which needs a development build (AP5) |
+| AP2 | Every search shows its reach while it loads, from the job's real frames | On the dev server the screen shows each source landing with its counts. **Done** (a98c8861, 822ca173): `/shop`, seen live on the dev server; `app/e2e/shop.test.mjs` 3 of 3 on the Mac |
+| AP3 | The wiring map: Ben's 23 items answered one by one, the N contracts marked ours or his with the shape proposed, then each screen wired in the map's order with the demo world kept as the fallback | `spec/plans/app-wiring.md`, and a reply packet to Ben. **Map and reply done** ([packet 85](../../.agents/team/packets/team/85-reply-to-79-left-to-wire.md): 19 items ours, 1 Ben's, 3 shared, 20 shapes proposed); wiring screen by screen continues in the map's order |
+| AP4 | The client faults the review found: three links to pages that do not exist, fold state that resets on a device, crash uploads sent to a path the server does not serve, development screens in a release build, an undeclared dependency, no not-found page | Tests and the type check. **Partly done**: the three links and the fold state are gone from main (Ben's rework); `+not-found.tsx` added; `/dev` redirects home outside `__DEV__`; `expo-file-system` declared. Open: crash uploads still post to `/api/log`, which only `log/receive.mjs` serves (a server route under `/v1`, the server lead's) |
+| AP5 | What a first internal build needs, listed and prepared: the development client, the address per profile, the privacy manifest. No build or submit runs without Nate's word | The list, checked on a simulator. **Prepared** ([app-wiring.md](app-wiring.md#the-first-internal-build-finalization-ap5)): development client, the simulator's address, privacy manifest. Waits on Nate: the production host, and his go for the first simulator build |
 
 ## 7. Capture, and the website
 
@@ -106,7 +125,7 @@ The gate and the type check on every merge; the Python suites (after DB5); the p
 3. One marketplace account linked through the live view (SV9).
 4. His own sign-in on Fly.io, and his yes before anything is deployed.
 5. Whether the served-engine figure stays on the judges' dashboard before Ben has seen it.
-6. Whether Apify rows may ever be counted in a measure (today: shown only).
+6. Whether a row marked `may_model: false` (Apify rows today, eBay interface rows later) may enter the comps a shown price range is computed from. [The valuation spec](../engines/valuation.md) says such a row can be shown and cited as a comp and never fit a weight; the ruling on Apify says shown and never modelled on. Until he rules, the engines lead keeps those rows out of every price basis and out of the observation store; they are still shown as listings.
 7. Real items photographed and measured, eight to ten for the stopwatch and twenty for the benchmark.
 
 ## 10. Done, as one condition

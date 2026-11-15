@@ -101,7 +101,7 @@ const TABS: { key: TabKey | 'new'; word: string; icon: IconName }[] = [
   { key: 'index', word: 'Today', icon: 'home-01' },
   { key: 'sell', word: 'Sell', icon: 'tag-01' },
   { key: 'new', word: 'New', icon: 'add-01' },
-  { key: 'buy', word: 'Buy', icon: 'search-01' },
+  { key: 'buy', word: 'Buy', icon: 'money-03' },
   { key: 'you', word: 'You', icon: 'user' },
 ];
 

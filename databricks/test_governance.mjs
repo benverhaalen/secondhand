@@ -31,6 +31,8 @@ test('owner filter allows the temporary maintenance mapping and records its wind
   const body = owner.slice(owner.indexOf('RETURN '))
   assert.match(body, /m\.principal = current_user\(\)/)
   assert.match(body, /m\.user_id = '\*'/)
+  const mapping = statements(sql).find(s => s.startsWith('CREATE TABLE IF NOT EXISTS secondhand.governance.principal_map '))
+  assert.match(mapping, /grant_id STRING COMMENT 'The break_glass\.id this wildcard row belongs to\.'/)
   const audit = statements(sql).find(s => s.startsWith('CREATE TABLE IF NOT EXISTS secondhand.governance.break_glass '))
   assert.ok(audit, 'maintenance windows need an audit table')
   for (const [column, type] of [['id', 'STRING'], ['principal', 'STRING'], ['reason', 'STRING'], ['started_at', 'TIMESTAMP'], ['ended_at', 'TIMESTAMP']]) {
