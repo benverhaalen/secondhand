@@ -126,7 +126,7 @@ The canonical list of every feature worth showing is [features-proof.md](feature
 
 ## How deep we dug
 
-When a judge asks what we did with the technology, open [Let's dig in](devpost.md#lets-dig-in) and the [tested cases](devpost.md#how-deep-we-dug). Start with an item the judge can picture, trace its price through Databricks, and show the photo check that initially missed a stretch. This gives the judge a concrete example of why the work matters, what the tools enabled, and what changed when the team found an error.
+When a judge asks what we did with the technology, open [Let's dig in](devpost.md#lets-dig-in) and the [tested cases](devpost.md#challenges). Start with an item the judge can picture, trace its price through Databricks, and show the photo check that initially missed a stretch. This gives the judge a concrete example of why the work matters, what the tools enabled, and what changed when the team found an error.
 
 ## Proof without sales
 

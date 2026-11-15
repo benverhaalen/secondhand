@@ -1,138 +1,161 @@
-# Devpost draft
+<!-- Devpost write-up. Agent proposal until Ben and Nate approve it; every benchmark number needs both of them before it is published. -->
 
-The write-up for the MadHacks 2026 submission. Ben: "considering we can only live demo the app we really need the written portions to convey its use and what it does super well and super easily. we need to be personable." Plain, personal, every claim true on the day: check each number against [numbers.md](numbers.md) and each "it does" against the [honesty gate](qa.md#before-you-say-it-the-honesty-gate). Lines in [brackets] are for Ben or Nate to fill or cut. *Agent proposal*.
+# secondhand
 
-Images to put in, in this order: the $3 against $17 card; one phone screen of Today; the keep-per-site table; the couch's site verdicts; [gate-side-by-side.jpg](../scripts/bench/out/gate-side-by-side.jpg); the architecture diagram from the website.
+Your second hand for buying and selling used things.
 
----
+![The secondhand app icon: two price tags, one mint and one white.](../app/assets/images/icon.png)
 
-## secondhand
+## The problem
 
-**Your second hand for buying and selling used things.** We're building secondhand to help you turn a few photos into a plan for selling: what the item is worth, where to list it, and what you would keep after fees. The goal is to handle the work around a sale while you approve the decisions and send the replies. For buyers, the goal is to compare used listings across marketplaces, including shipping.
+Ben thrifts most of his clothes. Over time he grew out of a lot of them. They still have value, so he always means to sell them, and they pile up in his room. He has hundreds of photos of clothes from different angles. Getting a single listing up took hours. He had to shoot it, sort the photos, write it, note every flaw and work out a price. If you want more buyers to see it, you do much of that again on the next site, where a good title reads differently and the fees leave you with a different amount.
 
-The app demonstrates that workflow with demo data. Its engines have separate tests and dated live experiments; a complete sale across all five marketplaces is still to be demonstrated. Our historical StockX research benchmark recorded **84% fewer big pricing misses**, with the comparison and limits below. [Feature proof](https://github.com/benverhaalen/secondhand/blob/main/product/features-proof.md).
+Buying has its own versions of this:
 
-## Inspiration
-
-[Ben or Nate, one true sentence: the thing you meant to sell and never did, and why.]
-
-Most of what people own and don't use never gets sold. There are two options, and both are bad. Hand it to a consignment store and a $20 shirt pays you $3. Sell it yourself and you keep about $17, if you can face five apps, thirty "is this still available?" messages, a sale on one site while it's still up on four others, and a pickup with a stranger. So it sits in the closet.
-
-AI can already write a listing in seconds. That was never the hard part. The hard part is everything after you post, so that's what we built.
+- You have something and no idea what it is or what it costs.
+- Someone who isn't comfortable with technology sells something valuable for hundreds less than it's worth, because looking it up was too hard.
+- You want one specific thing. Ben is a Brewers fan and wants a jersey, but jerseys are overpriced. He'd like to set his price and hear about it when one comes up.
 
 ## Let's dig in
 
-We read "Let's dig in" three ways.
+For us, digging in meant not stopping at the first answer. At each step of selling and buying, the first idea we had was usually a chatbot or a guess, so we kept reading and testing until we understood the step.
 
-**Dig through your closet.** Start with something you meant to sell and never did. In its [2020 Recommerce Report](https://static.ebayinc.com/assets/Uploads/Documents/eBay-Recommerce-Report-2020.pdf), eBay reported an average of 36 sellable household items for its U.S. respondents. Our goal is to make selling it worth the trouble, with you in charge of the price, the conversation and the handoff.
+That changed where we use AI. Most of secondhand isn't a language model: prices come from sales records, fees come from a table, and listing titles are assembled by rules. A model reads your photos and answers follow-up questions, and when it does, it works through the app's own interface. It fills in facts as small labels you confirm, asks by offering options to tap, and answers with a table or a price range. A person confirms every step.
 
-**Dig into the complex tooling.** Follow that item beneath the screen: comparable sales behind a price, fees behind what you keep, and a photo checked against the original. We explored 931,406 states in a model of one item selling on four sites, and planted 174 lies in our photos to find what the check missed. Those are tests of the mechanisms; the complete live selling journey is still to be demonstrated.
+```mermaid
+flowchart LR
+    A["You<br/>a few photos"] --> B["AI<br/>fills in brand, size, condition"]
+    B --> C["You<br/>confirm or correct"]
+    C --> D["Code<br/>a price from sold listings"]
+    D --> E["Code<br/>a listing built for each site"]
+    E --> F["You<br/>read, edit, post"]
+```
 
-**Dig into what we got wrong.** Our first pricing model missed which shoe it was. We changed it to start from that product's own recent sales. On the same 39,707 historical StockX sneaker sales, the research model then made **84% fewer big pricing misses** than the shoe's 90-day sold-price median: **1.5% versus 9.8%** more than 20% from the actual sale price. This was the development window where we found the bug, covering deadstock sneakers from November 2018 to February 2019. It measures historical pricing accuracy, not seller savings or sale speed, and it is not a result for the live app. On 35,862 paired sales from eight unseen months, the fixed model priced 97.5% within 20% of the sale price, against 90.5% for the median. [Development results](https://github.com/benverhaalen/secondhand/blob/main/scripts/bench/out/backtest-stockx.json). [Unseen-month results](https://github.com/benverhaalen/secondhand/blob/main/scripts/bench/out/backtest-stockx-2018-03-to-10.json).
+## What is the item?
 
-We found a similar failure in the photo check: aligning two images could hide a stretch. The planted tests exposed it, and we changed the check. Digging in means showing what failed and what we learned from it.
+An upload button would have been simpler. The trouble is that a model can't report a stain it was never shown, and condition is what buyers and sellers argue about later. So the camera asks what kind of thing you're selling and then asks only for the shots that kind needs. A t-shirt and a pair of headphones get different steps. The app has 14 kinds of item, and each one opens with its own shot list. The camera is a native Swift module inside an Expo app, which lets it guide each shot.
 
-The theme comes from Dean Remzi Arpaci-Dusseau's essay ["Time to Dig"](https://cai.wisc.edu/2026/07/01/time-to-dig-founding-dean-essay/), which calls for tools that are "clearly for us". That is the connection to our handoff rule: secondhand helps with the work, and you keep the judgment.
+AI reads the photos and fills in the brand, the model and the size. You confirm each one or fix it, and you set the condition yourself, because you're the one who knows about the loose button.
 
-## The workflow we're building
+![Two screens of the app. The first shows facts the AI read from the photos. The second asks the seller to confirm the condition.](graphics/devpost/capture-ai-fills-you-confirm.png)
 
-These are the intended selling and buying journeys. The [feature proof](https://github.com/benverhaalen/secondhand/blob/main/product/features-proof.md) distinguishes what is built, measured, observed live and designed.
+*One of Ben's own listings. Left: the brand, model and size the AI read from the tag. Right: Ben confirms the condition.*
 
-**Selling.** You take a few guided photos. secondhand works out what the thing is, measures it, and finds what it really sells for. Then it:
-- picks the sites where it will sell, and tells you where it won't. A couch goes to Facebook Marketplace, not Depop, because Depop only ships and its buyers want clothes;
-- writes a different listing for each site's buyers, at a price worked out from what lands in your account after that site's fees;
-- answers buyers' questions with facts from your item, and handles offers inside the lowest price you set;
-- notices when it sells, and takes it down everywhere else.
+## What is it worth?
 
-You see one short list of decisions. Anything that touches your money, your address or a stranger waits for your tap.
+We price from what sold. In one run, the app priced an item we had just photographed in 3.6 seconds, from 31 sold listings on Poshmark. If it can't tell what the item is, it doesn't give a price.
 
-**Buying.** Type, photograph or paste a link to something you want. One search covers eBay, Depop, Poshmark, Mercari and Facebook Marketplace, plus official stores. You get what it usually sells for, the total with shipping, and a heads-up when new or refurbished is the better buy. Save it, and it watches for you.
+To know whether the prices are any good, we backtested the pricing code. A backtest hides a real sale, prices the item using only the sales that came before it, and compares the estimate with what the buyer paid. We did that for 41.9k StockX sneaker sales, because StockX publishes real sale prices.
 
-**Our goal is a free app.** We plan to fund it through purchase referrals, with referral fees excluded from ranking. Estimated per-item processing costs are only part of that plan; the full operating cost and referral revenue still need to be measured.
+The median error was 3.89%, and 96.0% of estimates landed within 20% of the sale price, against 89.1% for the 90-day median price. In plain terms, on a $100 pair the typical estimate is off by about $4. It misses by more than $20 about once in 25 tries, where the 90-day median misses about once in 9.
 
-## One jacket, start to finish
+We haven't run a backtest that size on clothes yet. Clothes are priced the same way, from sold listings.
 
-This is a worked example of the intended journey, not a recorded live sale.
+## Why that price?
 
-You take three photos of a $40 jacket. It becomes one record: what it is, its size, its flaws, each fact pointing to the spot in the photo it came from. Before anything goes live, it picks the sites and the price from what similar jackets actually sold for, and where there's too little to go on, it says so. You set the limits once; inside them it acts, outside them it asks. Saturday at 2:14 it sells on Depop. From that moment the other listings are a risk, so it takes them down and checks each one is gone. If a second buyer pays anyway, that's a case we planned for: the model explored 931,406 states for one item across four sites and flagged every state with multiple payments. Every step is written down and never overwritten.
+A seller's next question is "why that number?", and we wanted a real answer. This is where we used Databricks.
 
-## How we built it
+Unity Catalog can tell you which tables and columns a number came from. A seller is asking about rows: which sales? So we wrote a SQL table function, `why(id)`. Give it any price or figure the app shows, and it returns the exact sales behind it and rebuilds the number from them. We ran that rebuild on all 42,405 figures in the workspace. 42,399 came back exactly. The other six are five asking-price figures and one sold-price figure, and the workspace lists them.
 
-**It's open source.** The whole project is public on GitHub under the Apache 2.0 licence. [Add the repo link.]
+```mermaid
+flowchart LR
+    P["A price in the app"] --> W["why(id)<br/>our SQL table function"]
+    W --> R["The exact sold listings<br/>behind that price"]
+    R --> S["Each row's source<br/>and what that source allows"]
+    R --> C["Rebuild the number<br/>and compare"]
+    C --> G["Scheduled job and SQL alert<br/>if any number can't be rebuilt"]
+```
 
-[Say only what runs on the day; cut the rest or mark it "designed".] The full list, with each feature's proof mark, is [features-proof.md](https://github.com/benverhaalen/secondhand/blob/main/product/features-proof.md); pull from it.
+Here is the path one sale record takes to make that possible.
 
-- **One record per item.** Every fact on an item (brand, size, a stain) keeps where it came from: a region of a photo, a line of the tag, a measurement, or "you said". Listings for every site are built from that record.
-- **A harness for each marketplace.** eBay through its official API. For the others, your own signed-in session runs in a cloud browser (Browser Use Cloud) and does each action the way the site's own web app does it, then reads the site back to confirm. Nothing counts as done until the site shows it.
-- **Seeing a sale without watching all day.** A sold Poshmark or Mercari listing stays public with a sold mark, so we check the public page, which took 0.44 seconds in one observed read, and use a signed-in browser for actions that require one.
-- **A fee engine.** One dated row per site per fee. On a $20 item you keep $18.69 on Depop and $16.00 on Poshmark; to keep $17 you'd ask $18.25 and $21.25.
-- **Photos that can't lie.** Clean up only adjusts the light in your own photo. AI relighting is optional, labeled, and checked against your original before you see it: color, structure, and every logo, tag and flaw box. The AI doesn't keep sizes on its own: on a tee that tapes 21.25 in across, it drew 18.6 in, and all 15 raw redraws came out 8 to 21% narrow. So every AI photo is measured against your tape before it posts, set back to the measured shape or thrown out; the three published slides landed within 1.2%. That's one tee so far, not a rate. The real photo is always first.
-- **Databricks** [only what's deployed]: live state in Lakebase, every event and comparable sale in Delta tables, photos in a Unity Catalog volume, every model call through one gateway, and every agent step as an MLflow trace that the app shows when you tap Why?.
-- **The phone app** is Expo with a native Swift camera module; the website is the same app on the web.
+It arrives in a Unity Catalog volume, one of six public datasets of sold items we loaded. A Lakeflow Declarative Pipeline checks it and drops it if it's bad. A Unity Catalog tag records which dataset it came from and what that dataset's terms let us do with it.
 
-## What's new here
+Delta Lake keeps every version of the table, so the backtest above can name the exact data it ran on. MLflow stores that backtest as a run.
 
-Three things we haven't seen another tool do (we checked the crosslisters, the price-check apps and the photo tools first; [details](https://github.com/benverhaalen/secondhand/blob/main/product/unique.md)):
-- **We proved a double sale can't go unnoticed.** Every order of events for one item on four sites, 931,406 of them, ends with you seeing it. Break the refund rule on purpose and the check fails in 6 steps.
-- **AI photos are checked by something that isn't AI.** Other photo tools grade AI edits with another model. Ours compares the edit to your photo with plain image math, protects every logo, tag and stain one by one, and shows your real photo when in doubt: 173 of 174 planted lies caught.
-- **A reply can't say what your item doesn't back.** Every claim in a draft is matched to a fact on the item before it can be sent; "smoke-free home" with nothing behind it is held for you.
+A metric view defines each measure once. The AI/BI dashboard and Genie both read it, so anyone with the workspace can ask a question in plain words and see the SQL behind the answer. When there are too few sales to say, Genie answers "too few" and gives the count.
 
-## How deep we dug
+Row filters and column masks are set up so one person's rows are visible only to that person, and buyer and seller handles are hidden.
 
-The theme says dig. We took it literally, on the product and on how we built it. The links below lead to the decisions, checks and measured results.
+Two things didn't work the way we expected. Delta wouldn't accept a CHECK constraint on a row-filtered table. So our rule that every figure has its sales behind it is held another way: a Lakeflow job checks 18 rules on a schedule, and a SQL alert is set to fire if one breaks. On the last run, none had. Genie can't call a table function, so the rows behind `why(id)` are also a view it can read.
 
-**How the project was made**
+## Where should it go?
 
-- **Every decision has a reason someone can check.** The project records who made each decision and why ([decisions](https://github.com/benverhaalen/secondhand/blob/main/product/decisions.md)). The decision record links to what Ben and Nate said ([words](https://github.com/benverhaalen/secondhand/blob/main/product/words.md)). Nothing gets marked decided without one of them agreeing.
-- **The rules are written down, then enforced by code.** A brand constitution, a UI constitution and a pitch constitution give a reason for every rule. The repo records UI rules and checks them in code ([checks](https://github.com/benverhaalen/secondhand/blob/main/.agents/checks)). For example, the render check limits Clofie to the wordmark and lead public-page headlines.
-- **Research before building.** The research notes mark what we observed, what a source said and what we inferred ([research](https://github.com/benverhaalen/secondhand/blob/main/research)). Pricing alone has 32 money rules and 29 market rules, each with its method, when it's shown, when it's hidden, and how we'd know it was wrong ([money](https://github.com/benverhaalen/secondhand/blob/main/spec/determinations/money.md), [market](https://github.com/benverhaalen/secondhand/blob/main/spec/determinations/market-insight.md)).
-- **Everything is logged against one contract**: 27 event kinds, personal data masked, and a checker that replays a run and fails on a leak ([log](https://github.com/benverhaalen/secondhand/blob/main/log/README.md)).
-- **A backtest designed before any data, so it can't be tuned to flatter us.** 32 decisions: how to split by time so nothing leaks, what to compare against (the eBay sold median people look up today), why the headline is "within 20%" when identical items resell about 11% apart, and how to test the test itself ([plan](https://github.com/benverhaalen/secondhand/blob/main/spec/plans/backtest/plan.md)).
+Each marketplace is its own search engine with its own form, so the same listing doesn't fit every site. We built this part as tables and rules.
 
-**Technology used in ways we haven't seen**
+- **Which sites.** A fit table scores each kind of product against each marketplace, from vintage clothing to fan apparel to furniture. An item goes only where that kind of thing sells.
+- **Which fields.** For each kind of item, a requirements table lists the fields every site has, what the site calls each one, its length limit, and how much it matters in that site's search.
+- **The title.** Code puts the fields in the order that site's search rewards and shortens whole words to fit the limit. Then a check rejects any word that a confirmed fact doesn't support.
+- **The price.** The engine starts from the amount you'd keep, and solves for the asking price on each site that leaves you that amount after that site's fees.
+- **The photos.** Scored, then cut to each site's limit.
 
-- **A model checker for selling one thing in four places.** The model explored 931,406 states for one item on four sites, including simulated failures. It flagged every state with multiple payments and caught a deliberately broken refund rule in six steps. [Model results](https://github.com/benverhaalen/secondhand/blob/main/scripts/bench/out/bench-sites-4.json).
-- **AI photos measured against the item.** The AI on its own drew a tee that tapes 21.25 in across as 18.6 in, and all 15 of its raw drafts came out 8 to 21% narrow. Every published slide landed within 1.2%, because each redraw is measured against the tape, set back to the real shape or thrown out ([measure proof](https://github.com/benverhaalen/secondhand/blob/main/research/studio/ben/measure-proof.md)). On LiDAR phones the measurement comes from the capture itself (designed; Ben's call). The same check catches 173 of 174 planted lies with plain image math, not another model.
-- **A used item priced like a thinly traded asset.** A hedonic model with calibrated ranges and comparable sales weighted by how close they are, across sites, after collapsing a cross-post into one sale ([market.py](https://github.com/benverhaalen/secondhand/blob/main/jobs/valuation/market.py), [cluster.py](https://github.com/benverhaalen/secondhand/blob/main/jobs/identity/cluster.py)). With too few sales, it refuses to give a price and says why.
-- **Identification that knows when it isn't sure.** Four ways of recognising an item run at once, and a conformal set decides how many candidates to show you, so "not sure" is measured, not guessed ([ladder.py](https://github.com/benverhaalen/secondhand/blob/main/jobs/identity/ladder.py)).
-- **Site readers that repair themselves.** When a page changes, a fast typed model picks which data on the page are the listings, reading text only, and the fix becomes the new recorded step: 48 of 48 listings found in 0.64 s (observed).
-- **Databricks as the place every learned number lives.** Each learned weight is a versioned row; a nightly job fits a challenger and promotes it only when it beats the current one on held-out data, with a rollback ([registry.py](https://github.com/benverhaalen/secondhand/blob/main/jobs/param/registry.py), [bundle](https://github.com/benverhaalen/secondhand/blob/main/deploy/databricks.yml)). Sign-ins sit in a secret scope readable only by the sign-in job. Genie answers questions over our market tables with the query it ran.
-- **Codex as an image pipeline with a judge.** Every image is its own fresh Codex call with nothing but the sign-in, told how it will be judged rather than what to draw; a separate call critiques it. Cleaning out the context cut Codex's fixed cost per call from 9,030 tokens to 4,089 (measured, [image-gen](https://github.com/benverhaalen/secondhand/blob/main/.agents/skills/image-gen/SKILL.md)).
-- **An API for other AI agents.** Search, prices, history and trends as MCP tools, serving only data we're allowed to share and never anything about a person ([mcp.ts](https://github.com/benverhaalen/secondhand/blob/main/app/src/edge/mcp/mcp.ts)).
-- **One Expo app for phone and web**, with EAS build profiles set up for a first TestFlight build, and native screen tests in Swift ([eas.json](https://github.com/benverhaalen/secondhand/blob/main/app/eas.json)).
+The same confirmed facts come out differently on each site:
 
-## Keeping a human in the loop, on purpose
+| eBay | Depop | Poshmark |
+|---|---|---|
+| Carhartt Detroit Jacket Men's L Brown | Vintage 90s Carhartt Detroit Jacket Brown Size L | Carhartt Detroit Jacket Brown Size L |
 
-We didn't want an agent that acts alone. In September, an assistant on another platform, set to "Allow Always", accepted a lowball offer and sent a stranger to a seller's home. So:
-- **Code decides, the model words it.** Offers are checked against your minimum by plain code. Every sentence the agent wants to send is matched to a fact on your item first; a claim it can't back ("smoke-free home") is held and shown to you.
-- **It earns trust slowly.** After you approve the same kind of thing three times without changing it, it offers "Always do this". Your address, payments and off-site deals can never be automatic.
-- **Your sign-ins stay locked away.** Marketplace sessions live in a Databricks secret scope, never in a log or a prompt; the AI models never see them. Saved passwords are off unless you turn them on, and never kept for eBay.
-- **You can check everything.** Every automatic action has a Why? and a link to the same thing on the site.
+"Vintage 90s" leads on Depop because the seller confirmed it and our Depop rules put the era first.
+
+What you get is a draft for each site. We chose drafts over posting for you, because it's your account and your name on the listing. The same code can start from listings you already have. Ben's Depop listings, with the photos he already took, can become drafts for the other sites.
+
+![The listing preview screen for a pair of Carhartt jeans, with the asking price and the item's details.](graphics/devpost/listing-preview.png)
+
+*One of Ben's own listings, in the listing preview. Every field can be edited before anything is posted.*
+
+## Where is the one you want?
+
+For buyers we built one search that reads the marketplaces at once. Our rule was to use a site's own API wherever it offers one. eBay does, so we use it. Other sites turn away ordinary automated requests, so we read those pages through Browser Use Cloud, which runs a real browser for us, with Playwright driving it. Treg puts specialist data tools behind one account, and we used it for Google Shopping, to see what an item costs new. A small model answers one narrow question through OpenRouter's Decisions API: are these two results the same product? A price comparison is only worth showing if the answer is yes.
+
+We ran 16 test searches. All 16 returned results, and the first ones usually showed up in about 0.6 seconds.
+
+You can ask a follow-up question about the results. The app answers in the shape that fits the question, such as a table or a price range, built from the same parts as the rest of the app. Before it reaches you, every price in it is checked against a listing the search found. We planted 20 false prices to test that check. The first version stopped 2. The current one stops all 20.
+
+![Two screens of the app. The first shows one search with results from several marketplaces. The second shows the answer to a follow-up question as a table and a price range.](graphics/devpost/search-and-answer.png)
+
+*For these two screenshots we loaded Ben's own Depop listings in as the results, so the data here is sample data and the screens are the app's. Left: one search. Right: a follow-up answer drawn as a table and a range, with the app's note that these are asking prices.*
+
+If the thing you want isn't there at your price, you can track it. The app keeps the search and shows you new matches when you open it.
 
 ## Challenges
 
-- **Two sites can sell the same thing at once.** Our three-site model reached 60,936 states for one item. We checked whether each simulated second payment triggers an alert. We broke the refund rule on purpose to make sure the check can fail: it found the double sale in 6 steps.
-- **Proving an AI photo is honest.** We painted out details, swapped tag text, stretched, shifted colors and mirrored Ben's own photos, then checked whether the gate caught them: 173 of 174. The test found a hole first (lining the photos up undid a stretch), so the gate now checks for stretch too. It's cautious, and holds about half of the honest relights too; when it holds one, you get your real photo instead.
-- **Sites that refuse robots.** Depop and Mercari turned away a headless browser, so each site's harness is built from how that site actually works, and every action falls back to typed steps, then to an agent, when a page changes.
-- **Cost.** An always-open browser would be expensive. We’re testing public reads as a cheaper check when the marketplace shows the listing status.
+**The same item, listed twice.** People post one item on several marketplaces. If we counted each post as its own sale, popular items would look like they sell more often, and for different prices, than they do. Our pricing code compares the photos with a perceptual hash and the titles by text similarity, and treats matching posts as one item.
 
-## Accomplishments we're proud of
+**Two buyers at the same moment.** If your jacket is up on four sites, two people can pay for it before any listing comes down. We wrote out our rules for that case and checked them with a model that walks through every order of events for one item on four sites, 931,406 states in all. In every state where two buyers had paid, the seller sees both and chooses which buyer to refund. To make sure the check could fail, we broke the refund rule on purpose, and it found the double sale in six steps. This tests our rules. We haven't run it against live sales.
 
-- [Live on the web at URL.] [Submitted to the App Store / App Store coming soon.]
-- 173 of 174 planted photo lies caught; 76 of 76 cleaned-up photos within the color limit.
-- The four-site model flagged every simulated state with multiple payments.
-- The frozen research model priced 97.5% of 35,862 paired sneaker sales within 20% of what buyers paid in eight unseen months.
+**Sites that turn automation away.** Depop and Mercari answered a plain headless browser with a 403. That is why the search uses a site's own API where there is one, and a real browser through Browser Use Cloud where there isn't.
 
-## What we learned
+## Ideas we tried and left out
 
-The interesting problems were never the AI writing. They were the moments where software meets a stranger: a second buyer, a meetup, a sentence that sounds right but isn't true. Deciding exactly when the agent hands back to a person was the real design work.
+![The original photo, the outline we gave the model, and the result.](../research/studio/ben/renders/trials-2026-11-14/template-trial-original-guide-result.jpg)
 
-## What's next
+*One of Ben's own shirts. The original photo, the outline we gave the model, and the result.*
 
-- List 100 real items with students during move-out week, and publish how long it took, how much people kept, and how many sold.
-- Apply for Depop's partner API and eBay's Partner Network.
-- Cut the cost of watching further with official order events where sites offer them.
+This one worked, and we still left it out. We gave an image model (Seedream 5.0 Pro, through Higgsfield) Ben's photo of a shirt and a second image with the outline of one laid flat. The outline tells the model where the body and sleeves go. It came back laid out evenly, with the same graphic and the same wrinkles.
+
+Then we talked it through with a mentor. A listing photo shows one specific used item. If an edit changes that item even a little, the seller has posted something they don't own, and the buyer finds out when the box arrives. A nicer photo isn't worth that risk, so we decided it doesn't belong in the product yet.
+
+We had already started on the check it would need. It compares an edited photo to the original with plain image math, and we tested it by planting 174 false edits in our own photos. It caught 173. Along the way we found a hole in our own check: lining the two photos up before comparing them hid a stretch. We fixed that. We've only run it on our own photos, so for now the original photo is the listing photo.
+
+Other ideas we set aside for later:
+
+- Video capture, where a short scan picks the useful photos for you.
+- More marketplaces. The item facts carry over, and each new site needs its own rows in the tables above.
+- Posting for you through each site's official partner program.
+- A pricing model that keeps learning from the sales the app sees.
+- Push notifications when a tracked item shows up at your price.
+
+## If this scaled
+
+This part is hypothetical. We'd want the app to be free. By our estimate from the list prices of the tools we use, it costs 2 to 8 cents to identify, price and draft one item, and that cost is about the same for a $5 shirt as for a $200 bag.
+
+The money would come from buyers. When someone buys an item we helped them find, the marketplace pays a referral fee. On eBay's published rates we estimate about $0.71 per purchase. At those numbers, the app covers the cost of a seller who also buys one thing through it every two months. A referral fee can't move a listing up. The search already ranks results without looking at referral fees.
+
+More sales would also mean better prices, for more kinds of things. That is what would help the person who has something and doesn't know what it is.
+
+We'd start small. We'd list 100 real items with students during move-out week and publish how long it took and how much they kept.
 
 ## Built with
 
-[Keep only what the build uses: Expo, React Native, Swift, TypeScript, Python, Databricks (Lakebase, Delta Lake, Unity Catalog, MLflow, Databricks Apps), Browser Use Cloud, Playwright, OpenRouter, Seedream, eBay APIs.]
+Expo and React Native, Swift, TypeScript, Python, Databricks (Lakeflow Declarative Pipelines, Delta Lake, Unity Catalog, Databricks SQL, MLflow, metric views, AI/BI dashboards, Genie, Lakeflow Jobs), Browser Use Cloud, Playwright, Treg, OpenRouter, the eBay API.
+
+Built by Ben Verhaalen and Nate Garelik at MadHacks 2026.
