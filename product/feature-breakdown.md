@@ -249,7 +249,7 @@ So the sentence is: "If you list on four sites, a double sale happens about once
 |---|---|---|
 | Covered | the listing is on a site we read | Poshmark's newest-first search on stage; production reads 7 public sites. Facebook hides new listings for minutes; Depop's terms rule out reading |
 | Seen in time | our read cadence catches it before someone buys it | every 10 s on stage; production cadence per site not yet set |
-| Matched | the words say Brewers, the size fits, the delivered total is under your price | **a gap:** [watch.ts](../app/src/edge/watch/watch.ts) `fits` compares sizes as exact strings, so a want for "L" misses a listing that says "Large", and a title saying "Milwaukee 1982 Yount" without "Brewers" misses the text match |
+| Matched | the words say Brewers, the size fits, the delivered total is under your price | fixed 2026-11-15: sizes are normalized before comparing ("Large" is L, a jersey's 48 is L) in [watch.ts](../app/src/edge/watch/watch.ts) and the stage watcher; the stage watcher also reads the listing page, so a title without "Brewers" no longer misses |
 | Still there | the price and listing are re-checked before the ping | built |
 
 The Brewers thread (project chat) is measuring hit rate, latency and false matches across sites; the size gap above is sent to it. And demand matters to the buyer too: right after a win, §10's effect means more buyers chasing the same jerseys, so seconds of latency decide who gets one.
@@ -316,5 +316,5 @@ Ben: "depop is different from ebay. userbases are different. it might want to ha
 - Apply to Depop's partner programme: it decides whether free makes money (§13).
 - Calibrate per-kind percentages for the identify choices once each kind has about 30 confirmations (§1).
 - Run the 30-minute proofs: planted claims in replies (§8), the offer simulator, recalls; and the hands-on stopwatch with the chair and the headphones (§1).
-- Fix the size match in buy alerts ("L" against "Large"), with the Brewers thread (§11).
+- Run the timed Brewers trial (waiting on Ben's OK, since it reads a Poshmark search page its robots.txt disallows) and put its numbers in §11.
 - Run the studio check on a batch of real Seedream 5.5 renders (§2).

@@ -29,6 +29,17 @@ export function movedEnough(m: Movement | undefined): boolean {
   return Math.abs(m.p50_recent / m.p50_prior - 1) >= Math.max(0.10, m.band90);
 }
 
+// One name per size, so a want for "L" finds "Large" and "Men's L" (the Brewers trial, 2026-11-15, scripts/demo/want.mjs).
+// An MLB jersey's chest number maps to its letter (40 S, 44 M, 48 L, 52 XL, 56 XXL; the authentic scale, inferred), only when
+// the want is a jersey: a blazer's 40 is not a small.
+const SIZE_WORDS: Record<string, string> = { small: 'S', medium: 'M', large: 'L', 'x-large': 'XL', xlarge: 'XL', 'extra large': 'XL',
+  'xx-large': 'XXL', xxlarge: 'XXL', '2xl': 'XXL', '3xl': 'XXXL', 'xxx-large': 'XXXL' };
+const JERSEY_CHEST: Record<string, string> = { 40: 'S', 44: 'M', 48: 'L', 52: 'XL', 56: 'XXL', 60: 'XXXL' };
+export function sizeKey(size: string, jersey = false): string {
+  const t = size.trim().toLowerCase().replace(/^(?:men'?s|women'?s|us)\s*/, '');
+  return SIZE_WORDS[t] ?? (jersey ? JERSEY_CHEST[t] : undefined) ?? t.toUpperCase();
+}
+
 export function fits(want: Want, l: Listing): Match['fit'] | null {
   const f = want.fit;
   if (!f) return 'unknown';
@@ -37,7 +48,8 @@ export function fits(want: Want, l: Listing): Match['fit'] | null {
     const shared = Object.keys(f.measurements).filter(k => l.measurements![k] !== undefined);
     if (shared.length) return shared.every(k => Math.abs(l.measurements![k]! - f.measurements![k]!) <= tol) ? 'measured' : null;
   }
-  if (f.size) return l.size && l.size.toLowerCase() === f.size.toLowerCase() ? 'size_only' : null;
+  const jersey = /\bjersey\b/i.test(want.text);
+  if (f.size) return l.size && sizeKey(l.size, jersey) === sizeKey(f.size, jersey) ? 'size_only' : null;
   return 'unknown';
 }
 
