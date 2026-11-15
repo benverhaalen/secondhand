@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { DatabaseSync } from 'node:sqlite';
 import { statements } from './run-sql.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -82,15 +83,15 @@ test('nightly task DAG has no missing dependencies or cycles and is at most four
     assert.ok(ready.length <= 4, `nightly_fits: ${ready.length} tasks ready together`);
     ready.forEach(t => done.add(t.key));
   }
-  for (const t of tasks) assert.ok(t.text.includes(`parameters: [${t.key}, "--catalog", "\${var.catalog}", "--schema", "\${var.market_schema}"]`), `${t.key}: missing table location parameters`);
+  for (const t of tasks) assert.ok(t.text.includes(`parameters: [${t.key}, "--catalog", "\${var.catalog}", "--schema", "\${var.market_schema}", "--root", "\${workspace.file_path}"]`), `${t.key}: missing table location parameters`);
 });
 
-test('setup runs layout, tables, then governance on the existing warehouse', () => {
+test('setup runs layout, tables, provenance migration, then governance', () => {
   const setup = read('deploy/resources/setup.yml');
   const tasks = [...setup.matchAll(/- task_key: (\w+)([\s\S]*?)(?=\n        - task_key:|$)/g)];
-  assert.equal(tasks.length, 3);
+  assert.equal(tasks.length, 4);
   tasks.forEach((t, i) => {
-    assert.ok(t[2].includes(['00_layout.sql', '01_tables.sql', '02_governance.sql'][i]));
+    assert.ok(t[2].includes(['00_layout.sql', '01_tables.sql', '01b_data.sql', '02_governance.sql'][i]));
     assert.match(t[2], /warehouse_id: \$\{var.warehouse_id\}/);
     assert.match(t[2], /source: WORKSPACE/);
     if (i) assert.ok(t[2].includes(`task_key: ${tasks[i - 1][1]}`));
@@ -171,4 +172,113 @@ test('product and daily summaries keep undated rows and the valuation product sh
   const daily = market('comp_daily');
   for (const value of ['date(at) AS day', 'count(*) AS n', 'percentile_approx(price_cents, 0.5) AS median_cents', 'min(price_cents)', 'max(price_cents)', 'GROUP BY source, site, kind, price_type, date(at)']) assert.ok(daily.includes(value), value);
   assert.doesNotMatch(daily, /WHERE/i, 'undated rows must remain under day NULL');
+});
+
+
+test('every proof Python task gets the synced repository root', () => {
+  const proof = read('deploy/resources/proof.yml');
+  for (const name of ['recompute', 'load_logs', 'parity']) {
+    const task = block(block(block(proof, 'resources', 0), 'jobs', 2), name, 4);
+    assert.ok(task.includes('parameters: ["--root", "${workspace.file_path}"]'), name);
+  }
+});
+
+const provenanceTables = ['observation', 'evidence', 'citation', 'guarded_number', 'claim_check', 'decision', 'event', 'job', 'storefront_snapshot', 'log_event'];
+
+test('fresh core tables and existing example rows carry non-null provenance', () => {
+  const fresh = read('databricks/sql/01_tables.sql');
+  const migration = read('databricks/sql/01b_data.sql');
+  for (const table of provenanceTables) {
+    const ddl = fresh.split(`CREATE TABLE IF NOT EXISTS secondhand.core.${table} (`)[1]?.split(') COMMENT')[0];
+    assert.match(ddl ?? '', /data STRING NOT NULL COMMENT '[^']+'/i, table);
+    const start = migration.indexOf(`table_name = '${table}'`);
+    assert.ok(start >= 0, `${table}: metadata guard`);
+    const section = migration.slice(migration.lastIndexOf('BEGIN', start), migration.indexOf('SET NOT NULL;', start) + 'SET NOT NULL;'.length);
+    assert.match(section, /IF NOT EXISTS \(SELECT 1 FROM secondhand\.information_schema\.columns/);
+    assert.match(section, /table_catalog = 'secondhand' AND table_schema = 'core'/);
+    assert.match(section, /column_name = 'data'/);
+    assert.ok(section.includes(`ALTER TABLE secondhand.core.${table} ADD COLUMNS (data STRING COMMENT`));
+    assert.ok(section.includes(`UPDATE secondhand.core.${table} SET data = 'example' WHERE data IS NULL;`));
+    assert.ok(section.includes(`ALTER TABLE secondhand.core.${table} ALTER COLUMN data SET NOT NULL;`));
+    assert.ok(section.indexOf('ADD COLUMNS') < section.indexOf('UPDATE secondhand'));
+    if (table === 'observation') {
+      assert.ok(section.indexOf("'delta.appendOnly' = 'false'") < section.indexOf('UPDATE secondhand'));
+      assert.ok(section.indexOf("'delta.appendOnly' = 'true'") > section.indexOf('UPDATE secondhand'));
+      assert.match(section, /SET TBLPROPERTIES \('delta.appendOnly' = 'false'\);/);
+      assert.match(section, /SET TBLPROPERTIES \('delta.appendOnly' = 'true'\);/);
+    }
+  }
+});
+
+test('market comps fail the update if dataset provenance is missing', () => {
+  const sql = market('comp');
+  assert.match(sql, /data STRING COMMENT '[^']+'/);
+  assert.match(sql, /concat\('dataset:', r\.source\) AS data/i);
+  assert.match(sql, /EXPECT \(data IS NOT NULL\) ON VIOLATION FAIL UPDATE/);
+});
+
+test('all proof count views expose provenance and group counts by it', () => {
+  const sql = read('databricks/sql/03_measures.sql');
+  for (const view of ['citation_coverage', 'hidden_numbers', 'decisions_by_policy', 'never_automated']) {
+    const statement = statements(sql).find(s => s.startsWith(`CREATE OR REPLACE VIEW secondhand.measures.${view}`));
+    assert.ok(statement, view);
+    assert.match(statement, /SELECT[^;]*\bdata\b[^;]*FROM/s, view);
+    if (view !== 'never_automated') assert.match(statement, /GROUP BY[^;]*\bdata\b/, view);
+  }
+});
+
+test('governance uses measured metadata names and includes ABAC tags alongside direct coverage', () => {
+  const sql = statements(read('databricks/sql/03_measures.sql')).find(s => s.startsWith('CREATE OR REPLACE VIEW secondhand.measures.governance_coverage'));
+  for (const view of ['row_filters', 'column_masks']) {
+    const selection = sql.slice(sql.lastIndexOf('SELECT', sql.indexOf(`FROM secondhand.information_schema.${view}`)), sql.indexOf(`FROM secondhand.information_schema.${view}`));
+    assert.match(selection, /table_catalog AS catalog_name, table_schema AS schema_name, table_name/);
+  }
+  assert.match(sql, /column_name = 'user_id' AND tag_name = 'sh_owner' AND tag_value = 'user_id'/);
+  assert.match(sql, /tag_name = 'sh_personal' AND tag_value = 'handle'/);
+  assert.match(sql, /UNION[\s\S]*FROM secondhand\.information_schema\.column_tags/);
+  assert.match(sql, /count\(DISTINCT column_name\) AS masked_columns/);
+  assert.match(sql, /AS direct_filter_count/);
+  assert.match(sql, /AS direct_masked_columns/);
+  assert.match(sql, /coalesce\(f\.filter_count, 0\) > 0 OR coalesce\(o\.owner_tags, 0\) > 0 AS has_row_filter/);
+});
+
+test('governance query covers direct, tagged and overlapping columns without double counting', () => {
+  const db = new DatabaseSync(':memory:');
+  try {
+    db.exec(`
+      CREATE TABLE tables (table_catalog TEXT, table_schema TEXT, table_name TEXT, table_type TEXT);
+      CREATE TABLE row_filters (table_catalog TEXT, table_schema TEXT, table_name TEXT, filter_name TEXT, target_columns TEXT);
+      CREATE TABLE column_masks (table_catalog TEXT, table_schema TEXT, table_name TEXT, column_name TEXT, mask_name TEXT, using_columns TEXT);
+      CREATE TABLE table_tags (catalog_name TEXT, schema_name TEXT, table_name TEXT, tag_name TEXT, tag_value TEXT);
+      CREATE TABLE column_tags (catalog_name TEXT, schema_name TEXT, table_name TEXT, column_name TEXT, tag_name TEXT, tag_value TEXT);
+      INSERT INTO tables VALUES
+        ('secondhand', 'core', 'direct', 'MANAGED'), ('secondhand', 'core', 'tagged', 'MANAGED'),
+        ('secondhand', 'core', 'overlap', 'MANAGED'), ('secondhand', 'core', 'bare', 'MANAGED');
+      INSERT INTO row_filters VALUES
+        ('secondhand', 'core', 'direct', 'owner_only', 'user_id'), ('secondhand', 'core', 'overlap', 'owner_only', 'user_id');
+      INSERT INTO column_masks VALUES
+        ('secondhand', 'core', 'direct', 'handle', 'mask_handle', ''), ('secondhand', 'core', 'overlap', 'handle', 'mask_handle', '');
+      INSERT INTO column_tags VALUES
+        ('secondhand', 'core', 'tagged', 'user_id', 'sh_owner', 'user_id'),
+        ('secondhand', 'core', 'tagged', 'handle', 'sh_personal', 'handle'),
+        ('secondhand', 'core', 'overlap', 'user_id', 'sh_owner', 'user_id'),
+        ('secondhand', 'core', 'overlap', 'handle', 'sh_personal', 'handle'),
+        ('secondhand', 'core', 'overlap', 'other_handle', 'sh_personal', 'handle'),
+        ('secondhand', 'core', 'bare', 'other_column', 'sh_owner', 'user_id'),
+        ('secondhand', 'core', 'bare', 'handle', 'sh_personal', 'other_value'),
+        ('secondhand', 'market', 'bare', 'user_id', 'sh_owner', 'user_id');
+    `);
+    const sql = statements(read('databricks/sql/03_measures.sql')).find(s => s.startsWith('CREATE OR REPLACE VIEW secondhand.measures.governance_coverage'));
+    // Only adapt tag-array display and catalog qualification; execute the coverage joins and counts as written.
+    const query = sql.slice(sql.indexOf('WITH filters AS ('))
+      .replaceAll('secondhand.information_schema.', '')
+      .replace('sort_array(collect_set(tag))', 'json_group_array(tag)')
+      .replace('cast(array() AS ARRAY<STRING>)', "'[]'");
+    const rows = db.prepare(query).all();
+    const coverage = Object.fromEntries(rows.map(r => [r.table_name,
+      [r.has_row_filter, r.masked_columns, r.direct_filter_count, r.direct_masked_columns, r.has_owner_tag]]));
+    assert.deepEqual(coverage, { direct: [1, 1, 1, 1, 0], tagged: [1, 1, 0, 0, 1], overlap: [1, 2, 1, 1, 1], bare: [0, 0, 0, 0, 0] });
+  } finally {
+    db.close();
+  }
 });
