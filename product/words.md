@@ -1096,3 +1096,10 @@ Used in: [log/README.md](../log/README.md#hill-climb), the render and image-gen 
 ## 2026-11-15 notifications reasoned from business, ux, psychology and personas
 Ben, project chat, 2026-11-15 05:23 UTC.
 > also i hope youve thought about notifications and all that. what info needs to be in them. whats useful. everything from a business entrepreneur ui ux psychology and persona type thing.
+
+## 2026-11-15 a skill i name that is not in the repo gets fetched
+
+Ben, project chat, 05:37:
+> if i tell you about a skill and its not in the repo i probably want you to fetch it
+
+Used in: [AGENTS.md](../AGENTS.md#how-to-work-here), [.agents/vendor/poteto/](../.agents/vendor/poteto/SOURCE.md), [.agents/skills/hillclimb](../.agents/skills/hillclimb/SKILL.md).
