@@ -1989,3 +1989,9 @@ Nate, orchestrator's session, 2026-11-15, about 07:30 Central.
 > The system assess for the user, based on their given linked platforms, the one that it'd perform best on, or to possibly list both but we've accounted for how to handle multiple listings
 
 Used in: `spec/engines/adaptation.md` (AD5, rank sites by expected keep), `spec/plans/engines-queue.md`.
+
+## 2026-11-15 nate show how the engine weighs what it learned, with genie answering and every way databricks helped
+Nate, orchestrator's session, 2026-11-15, about 07:45 Central.
+> So we should exemplify how the engine we built to deliver and determinstically weigh aggregated and learned product information from official and second hand retailers. like if databricks builds stuff for genie to be able to answer questions than we can show off the product, exhbit all the ways databricks helped, the feature set it offered to us, how we expanded on it, and optimized to create what we present
+
+Used in: `databricks/DEMO.md`, `databricks/genie/market.json`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
