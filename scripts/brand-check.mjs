@@ -57,6 +57,7 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
       bg: clear(cs.backgroundColor) ? null : cs.backgroundColor,
       borders: [...new Set(['Top', 'Right', 'Bottom', 'Left'].filter(s => parseFloat(cs[`border${s}Width`]) > 0 && cs[`border${s}Style`] !== 'none' && !clear(cs[`border${s}Color`])).map(s => cs[`border${s}Color`]))],
       radius: ['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft'].map(c => cs[`border${c}Radius`].split(' ')[0]).filter(v => parseFloat(v) > 0),
+      corners: ['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft'].map(c => { const v = cs[`border${c}Radius`].split(' ')[0]; return Math.min(v.endsWith('%') ? parseFloat(v) / 100 * Math.min(r.width, r.height) : parseFloat(v) || 0, r.width / 2, r.height / 2); }),
       // A shadow is depth when it is soft. A layer with no blur is a ring: the focus ring, a selected photo.
       shadow: cs.boxShadow !== 'none' && cs.boxShadow.split(/,(?![^(]*\))/).some(l => parseFloat(l.replace(/rgba?\([^)]*\)|inset/g, '').trim().split(/\s+/)[2]) > 0),
       space: ['padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'row-gap', 'column-gap'].map(p => [p, px(p)]).filter(([, v]) => v) });

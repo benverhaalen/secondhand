@@ -224,6 +224,13 @@ CASES.push(['B4', 'the wash twice on a screen', app(`${WASH()}${WASH()}`), /B4 .
   ['B4', 'the wash on a slide', deck(`<div style="height:160px;background:var(--wash)"></div>`), /B4 .*uses the wash on a deck/],
   ['B7', 'the ink of the field used off the field', app('<p style="font-size:15px;margin:16px 20px;color:var(--on-field-2)">after fees</p>'), /B7 .*off the field/, 'app', 'dark'],
   ['B6', 'the second ink of the page used on a dark field', app('<div class="f" style="margin:16px 20px;height:156px;padding:16px"><p style="font-size:15px;color:var(--ink-2)">after fees</p></div>'), /B6 .*on the field/, 'app', 'dark']);
+// Ben, 02:46: the countdown "a little too close to the corner. think of the shape and the extreme ends".
+const CARD = inner => app(`<div data-part="card-decision" style="margin:16px 20px;height:156px;border-radius:36px;background:var(--gray);padding:16px;position:relative">${inner}</div>`);
+test('render: a countdown 24 from the edge of a card with a 36 corner, and a photo concentric with it, pass', { skip: !pw }, async () => {
+  assert.deepEqual(await ids(CARD(`<img data-photo alt="A jacket" src="${PX}" style="width:72px;height:72px;border-radius:20px;display:block"><span style="position:absolute;top:16px;right:24px;font-size:13px;line-height:18px">2h left</span>`), 'app'), []);
+});
+CASES.push(['U5', 'a countdown in the curve of a card corner', CARD('<span style="position:absolute;top:16px;right:16px;font-size:13px;line-height:18px">2h left</span>'), /U5 .*"2h left" sits 1\d px from the curve of the top right corner of \[card-decision\]/, 'app'],
+  ['U5', 'a square photo in the curve of a card corner', CARD(`<img data-photo alt="A jacket" src="${PX}" style="width:72px;height:72px;display:block">`), /U5 .*<img> sits \d+ px from the curve of the top left corner/, 'app']);
 for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
 
 // The rule list knows the render checks, the media, and Part IV's "Runs" column.
