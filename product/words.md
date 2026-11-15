@@ -2091,3 +2091,9 @@ Nate, buying-conversation lead's session, 2026-11-15, about 07:45 Central.
 > yes $5 a spend cap, but also then indicate they go to the repo, with a responsive github logo widget popping in, we also have github and our linkedin's available. visitor photos can be sent sure, ideally no, maybe the system we built can pass over it. that'd be cool for safety reasons. but then again, isnt our system that checks images read by claude and other things that drive the image classification for capture. Did we confirm hetzner? and yes on vercel. You have vercel cli logged in no?
 
 Used in: `features/assist/README.md` (the cap and photos), `features/buy/README.md` (the cap's repo widget, the deploy).
+
+## 2026-11-15 nate wire more than search; finish the audit with expert reviewers, then Ben's list, then our own spec
+Nate, orchestrator's session, 2026-11-15, about 05:55 Central.
+> Wire more than that, we'll have you finish auditing the app right now, of course sending out expert subagent reviewers to capture every aspect, followed by checking in on bens to do list for additional understanding, and we formulate for ourselves whats needed, and spec out
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), `spec/plans/finalization.md`, the app-wiring lead's brief.
