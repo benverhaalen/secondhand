@@ -238,7 +238,9 @@ def run_item(folder: str, out: str) -> dict:
         if s["type"] in ("cover", "back") and s["route"] in ("relay", "light"):
             r = make_whole(s, look, ks, imgs, log)
             whole_tiles = [tile(level0(r["src"]), "real photo")]
-            for c in r["cands"]:
+            for k, c in enumerate(r["cands"]):
+                if c.get("raw"):  # every candidate as the model drew it, for the planted-lie bench and for review
+                    Image.fromarray(C.fit(rgb(c["raw"]), 1024)).save(os.path.join(out, f"cand_{s['type']}_{k}.jpg"), quality=88)
                 if c.get("image") is not None:
                     tag = "KEPT" if c.get("ok") else "DROPPED"
                     whole_tiles.append(tile(c["image"], f"{tag} {c['model'].split('/')[1]} seed {c['seed']}\n" + "; ".join(c.get("reasons") or ["passed every check"]),
