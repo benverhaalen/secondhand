@@ -2025,3 +2025,9 @@ Nate, orchestrator's session, 2026-11-15, about 09:20 Central.
 > For our buying side, it should be a sonnet 5.5 on low or medium as a text box, or photo input, which then runs the broad every platform search, can then output general details about the product, but then get into specifics like pricing trends, assess when it'll be best listed and probably where. Also the engine can be used for general knowledge queries that compound its available power and use of the system and whats delivered that I can ask, and want this to be whats best tested, "What are the latest fashion trends millenials are wearing, what about gen z". perhaps databricks could have the built in engine to output a dashboard, or ideally some storage type of all info, that then a conversation model can use almost as a tool calls output to combine with basic internet search and the truly accurate engine and what data we can deliver and can be understood by the agent
 
 Used in: `features/assist/`, `features/buy/` (the conversation, when specced), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate the next.js site on vercel with the buy side as its own page and the home hero demo
+Nate, buying-conversation lead's session, 2026-11-15, about 05:05 Central.
+> Lets get the next.js site looked at if it hasnt been started yet. And we can begin testing the website hosted buy side which is a dedicated page, and on our homepage top hero as a fun visitable demonstration of its power, responsive and built for mobile and web view. Built on next.js and hosted with vercel
+
+Used in: `features/buy/README.md` (the web page and the hero, when specced), `web/` (the site, when built).
