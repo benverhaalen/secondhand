@@ -1,0 +1,154 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:"NM";src:url(fonts/text-400.otf);font-weight:400}
+@font-face{font-family:"NM";src:url(fonts/text-500.otf);font-weight:500}
+@font-face{font-family:"CL";src:url(fonts/display-600.otf) format("truetype");font-weight:600}
+:root{--ft:"NM","Helvetica Neue",Arial,sans-serif;--fd:"CL","NM",Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:#D5D9DC;font-family:var(--ft);display:flex;gap:28px;align-items:flex-start;font-feature-settings:"tnum"}
+.col{display:flex;flex-direction:column;gap:10px;align-items:center}
+.cap{font:400 15px/20px var(--ft);color:#222}
+.ph{width:390px;height:844px;padding:0 20px;display:flex;flex-direction:column;background:var(--page);color:var(--ink);border-radius:44px;overflow:hidden;position:relative}
+.ph>*{position:relative}
+.ph>.wash{position:absolute;left:0;right:0;top:0;height:200px;background:var(--wash)}
+.top{height:54px;flex:none}
+/* header: wordmark left, inbox right, one 44 row (Instagram, Threads) */
+.nav{height:44px;flex:none;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin:0 -10px}
+.wm{text-align:center}
+.wm{font:600 21px/1 var(--fd);letter-spacing:-.01em;position:relative;top:.12em}
+.inbox{width:44px;height:44px;display:grid;place-items:center;position:relative}
+.badge{position:absolute;top:3px;right:0px;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--ink);color:var(--page);font:500 13px/20px var(--ft);text-align:center;box-shadow:0 0 0 2px var(--badge-ring)}
+.money{flex:none;padding-top:8px}
+.money .lbl{font:400 13px/18px var(--ft);color:var(--ink2)}
+.money .amt{font:400 36px/40px var(--ft);letter-spacing:-.015em}
+.stack{display:flex;flex-direction:column;gap:16px;padding-top:32px}
+svg.i{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.card{flex:none;height:156px;border-radius:36px;padding:16px;background:var(--surface);box-shadow:var(--card-edge);display:flex;flex-direction:column;gap:12px;color:var(--ink)}
+.card.field{box-shadow:none;color:var(--ink);background:radial-gradient(at 30% 100%,var(--f2),transparent 60%),radial-gradient(at 100% 100%,var(--f3),transparent 65%),var(--f1)}
+.row{height:72px;display:flex;gap:12px}
+.ph-wrap{position:relative;width:72px;height:72px;flex:none}
+.photo{width:72px;height:72px;border-radius:20px;overflow:hidden;background:var(--gray)}
+.photo img{width:100%;height:100%;object-fit:cover;filter:var(--photo);display:block}
+/* site badge: 20 on the photo's corner, ringed in the card's own color */
+.logo{position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:12px;border:2px solid var(--ring)}
+.field .logo{border-color:var(--ring-field)}
+.txt{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
+.meta-row{height:20px;display:flex;justify-content:space-between;align-items:center;margin-right:8px}
+.ktag{height:20px;padding:0 8px 0 4px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;font:400 13px/1 var(--ft);color:#0A0A0A}
+.ktag .ti{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.needs{background:#F5D297}.sold{background:#A1EACB}
+.clock{display:inline-flex;align-items:center;gap:4px;font:400 13px/18px var(--ft);color:var(--ink2)}
+.ci{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+.t{font:400 18px/24px var(--ft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m{font:400 15px/20px var(--ft);color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m b{font-weight:400;color:var(--ink)}
+.acts{height:40px;display:flex;gap:8px;flex:none}
+.pill{height:40px;padding:0 20px;border-radius:20px;display:inline-flex;align-items:center;font:500 15px/1 var(--ft);white-space:nowrap}
+.act{background:var(--act);color:var(--act-ink)}
+.sec{background:var(--sec);color:var(--ink)}
+.field .sec{background:var(--sec-field)}
+.more{width:40px;padding:0;justify-content:center}
+/* notice: a tappable row; the chevron says it leads somewhere */
+.notice{height:56px;flex:none;border-radius:28px;padding:0 12px 0 16px;display:flex;align-items:center;gap:12px;background:var(--surface);box-shadow:var(--card-edge);font:400 15px/20px var(--ft)}
+.notice span{flex:1}
+.notice .chev{width:20px;height:20px;color:var(--ink2);stroke-width:1.8}
+.tabs{position:absolute!important;left:0;right:0;bottom:0;height:84px;border-top:1px solid var(--rule);display:flex;justify-content:space-around;padding-top:10px;color:var(--ink2);font:500 11px/13px var(--ft);background:var(--page)}
+.tabs div{display:flex;flex-direction:column;align-items:center;gap:3px}
+.tabs .on{color:var(--ink)}
+.L{--scrim:rgb(10 10 10/.4);--page:#F1F3F5;--ink:#0A0A0A;--ink2:rgb(10 10 10/.62);--surface:#FFFFFF;--gray:#EFF1F2;--rule:rgb(10 10 10/.08);
+ --card-edge:0 0 0 1px rgb(10 10 10/.07);
+ --f1:#A5E1FE;--f2:#A1EACB;--f3:#EBF08F;--act:#0A0A0A;--act-ink:#FFFFFF;--sec:#EFF1F2;--sec-field:rgb(255 255 255/.72);
+ --photo:none;--ring:#FFFFFF;--ring-field:#FFFFFF;--badge-ring:#F1F3F5;
+ --wash:radial-gradient(120% 90% at 15% 0%,rgb(165 225 254/.32),transparent 70%),radial-gradient(90% 80% at 95% 0%,rgb(161 234 203/.26),transparent 70%)}
+.Dk{--scrim:rgb(0 0 0/.6);--page:#101315;--ink:#ECEFF1;--ink2:#B4BABD;--surface:#1A1D20;--gray:#2A2F31;--rule:rgb(255 255 255/.12);
+ --card-edge:inset 0 0 0 1px rgb(255 255 255/.08);
+ --f1:#0A4C65;--f2:#03523B;--f3:#025050;--act:#ECEFF1;--act-ink:#0A0A0A;--sec:#2A2F32;--sec-field:rgb(255 255 255/.14);
+ --photo:brightness(.92);--ring:#1A1D20;--ring-field:#0E3B4D;--badge-ring:#101315;
+ --wash:radial-gradient(120% 90% at 15% 0%,rgb(10 76 101/.34),transparent 70%),radial-gradient(90% 80% at 95% 0%,rgb(3 82 59/.26),transparent 70%)}
+.Dk .field{--ink2:#CDD2D4}
+
+/* New: a 56 circle in the middle of the tab bar, raised 12 */
+.tabs .new{position:relative;top:-14px;width:56px;height:56px;border-radius:28px;background:var(--act);color:var(--act-ink);display:grid!important;place-items:center;gap:0!important}
+.tabs .new svg{width:26px;height:26px;stroke-width:1.8}
+.tabs .new.open svg{transform:rotate(45deg)}
+.scrim{position:absolute!important;inset:0;background:var(--scrim);z-index:5}
+.menu{position:absolute!important;left:0;right:0;bottom:118px;z-index:6;display:flex;flex-direction:column;align-items:center;gap:12px}
+.menu .opt{height:56px;min-width:220px;padding:0 24px 0 16px;border-radius:28px;background:var(--surface);color:var(--ink);display:flex;align-items:center;gap:12px;font:500 15px/20px var(--ft);box-shadow:var(--card-edge)}
+.menu .opt:nth-child(1){transform:translateY(0)}
+.tabs.raised{z-index:7}
+/* camera */
+.cam{background:#000!important;color:#fff;padding:0!important}
+.cam .feed{position:absolute!important;inset:0;background:url(img/img/r8/carhartt-jacket.jpg) center/cover;filter:brightness(.9)}
+.cam .shade{position:absolute!important;inset:0;background:linear-gradient(#000a,transparent 22%,transparent 70%,#000c)}
+.cam .bar{position:absolute!important;top:54px;left:20px;right:20px;height:44px;display:flex;align-items:center;justify-content:space-between;z-index:2}
+.cam .bar .x{width:44px;height:44px;border-radius:22px;background:rgb(0 0 0/.35);display:grid;place-items:center}
+.cam .steps{display:flex;gap:6px;align-items:center;font:500 15px/20px var(--ft)}
+.cam .steps i{width:6px;height:6px;border-radius:3px;background:rgb(255 255 255/.4);display:inline-block}
+.cam .steps i.on{background:#fff;width:18px}
+.frame{position:absolute!important;left:48px;right:48px;top:210px;height:380px;z-index:2}
+.frame b{position:absolute;width:40px;height:40px;border:3px solid #fff}
+.frame b:nth-child(1){left:0;top:0;border-right:0;border-bottom:0;border-radius:20px 0 0 0}
+.frame b:nth-child(2){right:0;top:0;border-left:0;border-bottom:0;border-radius:0 20px 0 0}
+.frame b:nth-child(3){left:0;bottom:0;border-right:0;border-top:0;border-radius:0 0 0 20px}
+.frame b:nth-child(4){right:0;bottom:0;border-left:0;border-top:0;border-radius:0 0 20px 0}
+.sweep{position:absolute;left:6px;right:6px;top:46%;height:84px;background:linear-gradient(180deg,transparent,rgb(165 225 254/.0) 20%,rgb(165 225 254/.35) 70%,rgb(161 234 203/.9) 98%,transparent);border-bottom:2px solid #A1EACB}
+.found{position:absolute!important;left:20px;right:20px;bottom:150px;z-index:2;display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:32px;padding:0 12px;border-radius:16px;background:rgb(255 255 255/.92);color:#0A0A0A;display:inline-flex;align-items:center;gap:6px;font:400 15px/20px var(--ft)}
+.chip.wait{background:rgb(255 255 255/.22);color:#fff}
+.chip svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8}
+.work{position:absolute!important;left:20px;right:20px;bottom:112px;z-index:2;font:400 13px/18px var(--ft);color:rgb(255 255 255/.8)}
+.shutter{position:absolute!important;left:50%;bottom:28px;margin-left:-38px;width:76px;height:76px;border-radius:38px;border:4px solid #fff;display:grid;place-items:center;z-index:2}
+.shutter i{width:60px;height:60px;border-radius:30px;background:#fff;display:block}
+.dot{position:absolute;width:5px;height:5px;border-radius:3px;background:#fff;box-shadow:0 0 0 2px rgb(165 225 254/.5)}
+</style><style>
+.money.news .amtrow{display:flex;align-items:center;gap:4px}.money.news .chev{width:22px;height:22px;color:var(--ink2);stroke-width:1.8}
+.stack.first{padding-top:16px}
+.fan{position:relative;width:72px;height:72px;flex:none}
+.fan .photo{position:absolute;width:56px;height:56px;border-radius:16px;box-shadow:0 0 0 2px var(--surface)}
+.fan .photo:nth-child(1){left:0;top:16px}.fan .photo:nth-child(2){left:8px;top:8px}.fan .photo:nth-child(3){left:16px;top:0}
+.ktag.live{background:#E3E6E8}
+.count{font:400 13px/18px var(--ft);color:var(--ink2);margin-right:0}
+.qwrap{position:relative;height:176px;flex:none}
+.qwrap .card{position:relative;z-index:3}
+.qwrap .sl{position:absolute;left:14px;right:14px;height:156px;top:10px;border-radius:32px;background:var(--surface);box-shadow:var(--card-edge);z-index:2}
+.qwrap .sl.s2{left:28px;right:28px;top:20px;z-index:1}
+.setup{margin-top:24px;padding:20px;border-radius:36px;background:var(--surface);box-shadow:var(--card-edge);display:flex;flex-direction:column;gap:8px}
+.setup .lbl{font:400 13px/18px var(--ft);color:var(--ink2)}.setup .t2{font:400 21px/28px var(--ft)}
+.setup .logos{display:flex;gap:8px;margin:8px 0 12px}.setup .logos img{width:40px;height:40px;border-radius:12px}
+.pill.wide{justify-content:center;height:48px;border-radius:24px}
+.empty{margin-top:56px;text-align:center;display:flex;flex-direction:column;gap:6px;padding:0 24px}.empty .m{white-space:normal}
+.youtitle{font:400 18px/24px var(--ft)!important}
+.chart{display:flex;align-items:flex-end;gap:12px;height:150px;margin-top:28px}
+.chart .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.chart .bar i{display:block;width:100%;border-radius:8px;background:rgb(10 10 10/.16)}
+.chart .bar i.now{background:linear-gradient(180deg,var(--f1),var(--f2))}
+.chart .bar span{font:400 13px/18px var(--ft);color:var(--ink2)}
+.cap2{margin-top:8px}
+</style><style>
+.v7.L{--page:#FFFFFF;--badge-ring:#FFFFFF}
+.v7>.wash{height:236px!important}
+.v7.L>.wash{background:linear-gradient(180deg,rgb(255 255 255/0) 0%,rgb(255 255 255/.25) 45%,rgb(255 255 255/.8) 80%,#fff 100%),linear-gradient(105deg,#A5E1FE 0%,#BCEBF4 45%,#A1EACB 100%)!important}
+.v7.Dk>.wash{background:linear-gradient(180deg,rgb(16 19 21/0) 0%,rgb(16 19 21/.3) 45%,rgb(16 19 21/.85) 80%,#101315 100%),linear-gradient(105deg,#0A4C65 0%,#064E57 50%,#03523B 100%)!important}
+.v7 .tabs>div{display:flex;flex-direction:column;align-items:center;gap:2px}
+.v7 .tabs .on{color:var(--ink);font-weight:500}
+.v7 .tabs .on svg{box-sizing:content-box;padding:4px 16px;border-radius:16px;background:var(--tab-on);stroke-width:2}
+.v7.L{--tab-on:rgb(10 10 10/.08)}.v7.Dk{--tab-on:rgb(255 255 255/.14)}
+.v7 .tabs>div:not(.on):not(.new) svg{box-sizing:content-box;padding:4px 0}
+.v7 .qwrap .sl{box-shadow:var(--card-edge),0 6px 14px rgb(0 0 0/.07)}
+.v7 .qwrap .sl.s1{opacity:.75;transform:scale(.97);top:12px;left:0;right:0}
+.v7 .qwrap .sl.s2{opacity:.4;transform:scale(.93);top:24px;left:0;right:0}
+.v7 .qwrap{height:184px}
+.v7.Dk .qwrap .sl{box-shadow:var(--card-edge)}
+.ttl{font:500 21px/28px var(--ft);flex:1;text-align:center}
+.later{font:500 15px/20px var(--ft);color:var(--ink2);width:44px;text-align:right}
+.conn .lead{font:400 21px/28px var(--ft);margin-top:24px}.conn .sub{font:400 15px/20px var(--ft);color:var(--ink2);margin-top:4px}
+.clist{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.crow{height:64px;border-radius:32px;padding:0 12px 0 12px;display:flex;align-items:center;gap:12px;background:var(--surface);box-shadow:var(--card-edge)}
+.crow img{width:40px;height:40px;border-radius:12px}.crow .cn{flex:1;font:400 15px/20px var(--ft)}
+.pill.sm{height:40px;padding:0 16px}
+.st{display:flex;align-items:center;gap:8px;font:400 15px/20px var(--ft);color:var(--ink2);padding-right:8px}
+.st.err{padding-right:0}.st .et{color:#C52B17}
+.okc{width:24px;height:24px;border-radius:12px;background:#A1EACB;display:grid;place-items:center}.okc svg{width:14px;height:14px;fill:none;stroke:#0A0A0A;stroke-width:2.4}
+.spin{width:20px;height:20px;border-radius:10px;border:2px solid rgb(10 10 10/.12);border-top-color:#0A0A0A;box-sizing:border-box}
+.foot{position:absolute!important;left:20px;right:20px;bottom:40px}
+.conn .foot .pill{width:100%;box-sizing:border-box}
+</style></head><body><div class="col"><div class="ph L v7"><div class="wash"></div><div class="top"></div><div class="nav" data-part="nav"><span class="nav-side"></span><span class="wm">secondhand</span><span class="inbox" data-part="nav-icon"><svg class="i" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z"/></svg><span class="badge" data-part="badge">2</span></span></div><div class="money news" data-part="summary"><div class="lbl">Since yesterday</div><div class="amtrow"><span class="amt">$64.84</span><svg class="i chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></div><div class="m">2 sold, after fees</div></div><div class="stack"><div class="card field" data-part="card-decision"><div class="row"><div class="ph-wrap"><div class="photo" data-part="photo-thumb"><img src="img/img/r8/carhartt-jacket.jpg" alt=""></div><img class="logo" data-part="site-badge" src="img/img/r8/depop.png" alt="Depop"></div><div class="txt"><div class="meta-row"><span class="ktag needs" data-part="tag-kind"><svg class="ti" viewBox="0 0 24 24"><path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8.5" cy="8.5" r="1.2"/></svg>Offer</span><span class="clock" data-part="countdown"><svg class="ci" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></svg>3h 40m</span></div><div class="t">Carhartt Detroit jacket</div><div class="m">You keep <b>$33.44</b></div></div></div><div class="acts"><span class="pill act" data-part="pill-card">Accept $38</span><span class="pill sec" data-part="pill-card">Counter</span><span class="pill sec more" data-part="pill-icon"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.1"/><circle cx="12" cy="12" r="1.1"/><circle cx="18" cy="12" r="1.1"/></svg></span></div></div><div class="qwrap" data-part="queue"><div class="card" data-part="card-decision"><div class="row"><div class="ph-wrap"><div class="photo" data-part="photo-thumb"><img src="img/d/switch-oled.jpg"></div></div><div class="txt"><div class="meta-row"><span class="ktag live" data-part="tag-kind"><svg class="ti" viewBox="0 0 24 24"><path d="M12 4v11M7 9l5-5 5 5"/><path d="M5 15v4h14v-4"/></svg>Ready to post</span><span class="count">1 of 40</span></div><div class="t">Nintendo Switch OLED</div><div class="m">Lists at <b>$215</b></div></div></div><div class="acts"><span class="pill act" data-part="pill-card">Review 40</span><span class="pill sec" data-part="pill-card">Post all</span></div></div><i class="sl s1"></i><i class="sl s2"></i></div><div class="notice" data-part="notice"><svg class="i" viewBox="0 0 24 24"><path d="M4 16l5.5-5.5 4 4L20 8"/><path d="M15 8h5v5"/></svg><span>Your Patagonia fleece went up $12</span><svg class="i chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></div></div><div class="tabs"><div class="on"><svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>Today</div><div><svg class="i" viewBox="0 0 24 24"><path d="M4 4h7l9 9-7 7-9-9z"/></svg>Sell</div><div class="new" data-part="tab-new"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></svg>Buy</div><div><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-4 3.5-6 7-6s6 2 7 6"/></svg>You</div></div></div><div class="cap">Today, light: the wash is an accent above the first card</div></div><div class="col"><div class="ph Dk v7"><div class="wash"></div><div class="top"></div><div class="nav" data-part="nav"><span class="nav-side"></span><span class="wm">secondhand</span><span class="inbox" data-part="nav-icon"><svg class="i" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z"/></svg><span class="badge" data-part="badge">2</span></span></div><div class="money news" data-part="summary"><div class="lbl">Since yesterday</div><div class="amtrow"><span class="amt">$64.84</span><svg class="i chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></div><div class="m">2 sold, after fees</div></div><div class="stack"><div class="card field" data-part="card-decision"><div class="row"><div class="ph-wrap"><div class="photo" data-part="photo-thumb"><img src="img/img/r8/carhartt-jacket.jpg" alt=""></div><img class="logo" data-part="site-badge" src="img/img/r8/depop.png" alt="Depop"></div><div class="txt"><div class="meta-row"><span class="ktag needs" data-part="tag-kind"><svg class="ti" viewBox="0 0 24 24"><path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8.5" cy="8.5" r="1.2"/></svg>Offer</span><span class="clock" data-part="countdown"><svg class="ci" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></svg>3h 40m</span></div><div class="t">Carhartt Detroit jacket</div><div class="m">You keep <b>$33.44</b></div></div></div><div class="acts"><span class="pill act" data-part="pill-card">Accept $38</span><span class="pill sec" data-part="pill-card">Counter</span><span class="pill sec more" data-part="pill-icon"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.1"/><circle cx="12" cy="12" r="1.1"/><circle cx="18" cy="12" r="1.1"/></svg></span></div></div><div class="qwrap" data-part="queue"><div class="card" data-part="card-decision"><div class="row"><div class="ph-wrap"><div class="photo" data-part="photo-thumb"><img src="img/d/switch-oled.jpg"></div></div><div class="txt"><div class="meta-row"><span class="ktag live" data-part="tag-kind"><svg class="ti" viewBox="0 0 24 24"><path d="M12 4v11M7 9l5-5 5 5"/><path d="M5 15v4h14v-4"/></svg>Ready to post</span><span class="count">1 of 40</span></div><div class="t">Nintendo Switch OLED</div><div class="m">Lists at <b>$215</b></div></div></div><div class="acts"><span class="pill act" data-part="pill-card">Review 40</span><span class="pill sec" data-part="pill-card">Post all</span></div></div><i class="sl s1"></i><i class="sl s2"></i></div><div class="notice" data-part="notice"><svg class="i" viewBox="0 0 24 24"><path d="M4 16l5.5-5.5 4 4L20 8"/><path d="M15 8h5v5"/></svg><span>Your Patagonia fleece went up $12</span><svg class="i chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></div></div><div class="tabs"><div class="on"><svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>Today</div><div><svg class="i" viewBox="0 0 24 24"><path d="M4 4h7l9 9-7 7-9-9z"/></svg>Sell</div><div class="new" data-part="tab-new"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></svg>Buy</div><div><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-4 3.5-6 7-6s6 2 7 6"/></svg>You</div></div></div><div class="cap">Today, dark</div></div><div class="col"><div class="ph L v7 conn"><div class="top"></div><div class="nav" data-part="nav"><span class="nav-side"></span><span class="ttl">Connect</span><span class="later">Later</span></div><div class="lead">Where do you sell?</div><div class="sub">Connect any you use. You can add the rest later.</div><div class="clist"><div class="crow" data-part="row-connect"><img src="img/d/depop.svg"><span class="cn">Depop</span><span class="st ok"><i class="okc"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>Connected</span></div><div class="crow" data-part="row-connect"><img src="img/d/ebay.svg"><span class="cn">eBay</span><span class="st"><i class="spin"></i>Connecting</span></div><div class="crow" data-part="row-connect"><img src="img/d/poshmark.svg"><span class="cn">Poshmark</span><span class="st err"><span class="et">Didn't connect</span><span class="pill sec sm" data-part="pill-card">Try again</span></span></div><div class="crow" data-part="row-connect"><img src="img/d/mercari.svg"><span class="cn">Mercari</span><span class="pill sec sm" data-part="pill-card">Connect</span></div><div class="crow" data-part="row-connect"><img src="img/d/facebook.svg"><span class="cn">Facebook Marketplace</span><span class="pill sec sm" data-part="pill-card">Connect</span></div></div><div class="foot"><span class="pill act wide" data-part="pill-primary">Continue</span></div></div><div class="cap">Connect: each site's own state; Continue once one works</div></div><div class="col"><div class="ph L v7"><div class="wash"></div><div class="top"></div><div class="nav" data-part="nav"><span class="nav-side"></span><span class="ttl">You</span><span class="nav-side"></span></div><div class="money" data-part="summary"><div class="lbl">Kept in November</div><div class="amt">$161.04</div><div class="m">5 sold, after fees. $31.40 on its way</div></div><div class="chart" data-part="chart"><div class="bar"><i style="height:3px" class=""></i><span>Oct 6</span></div><div class="bar"><i style="height:32px" class=""></i><span>13</span></div><div class="bar"><i style="height:3px" class=""></i><span>20</span></div><div class="bar"><i style="height:120px" class=""></i><span>27</span></div><div class="bar"><i style="height:66px" class=""></i><span>Nov 3</span></div><div class="bar"><i style="height:97px" class="now"></i><span>10</span></div></div><div class="m cap2">Money kept each week</div><div class="stack"><div class="notice" data-part="notice"><span>By site</span><svg class="i chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></div><div class="notice" data-part="notice"><span>Your things are worth $410 to $560</span><svg class="i chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></div></div><div class="tabs"><div><svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>Today</div><div><svg class="i" viewBox="0 0 24 24"><path d="M4 4h7l9 9-7 7-9-9z"/></svg>Sell</div><div class="new" data-part="tab-new"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></svg>Buy</div><div class="on"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-4 3.5-6 7-6s6 2 7 6"/></svg>You</div></div></div><div class="cap">You: the title in the text face, Medium; the tab you are on is marked</div></div></body></html>

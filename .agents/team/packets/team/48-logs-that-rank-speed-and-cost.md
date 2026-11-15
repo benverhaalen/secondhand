@@ -1,6 +1,6 @@
 # 48: Logs that rank speed and cost
 
-Updated: November 15, 2026. Owner: Ben. Agent: Claude Code, project thread "Set up logging of everything". Branch: `main`. Status: the timing line, the ranking report and the timed repo check are on `main` and tested. Nate's code is not changed; the gaps in it are listed below for Nate's agent. Source: Ben, 04:36 ([words](../../../../product/words.md#2026-11-15-logs-that-can-hill-climb-speed-and-efficiency-the-whole-repo)).
+Updated: November 15, 2026, 07:20. Owner: Ben. Agent: Claude Code, project thread "Set up logging of everything". Branch: `main`. Status: the timing line, the ranking report and the timed repo check are on `main` and tested. Nate's code is not changed; the gaps in it are listed below for Nate's agent. Source: Ben, 04:36 ([words](../../../../product/words.md#2026-11-15-logs-that-can-hill-climb-speed-and-efficiency-the-whole-repo)).
 
 ## What changed
 - A new event, `timing` (`name`, `ok`, `ms`), for work that stays inside a process: a check, a test file, a build step, a pure engine on a hot path. JS: `log.timed('engine.score', () => score(x))`, which keeps sync code sync and awaits a promise. Python: `log.timed('photo.crop', fn)` and `await log.atimed(...)`. A throw is logged at level error and rethrown.
@@ -10,6 +10,12 @@ Updated: November 15, 2026. Owner: Ben. Agent: Claude Code, project thread "Set 
 
 ## What the first report shows
 On one local run of the check after merging main (about 95 s wall): `.agents/checks/render.test.mjs` is 73% of all test time (browser tests run one after another, 94 s), the image-gen tests are 11%, `scripts/app-check.test.mjs` is 8% (one timeout test alone takes 6 s), and every check together is under 1 s. So the one win worth a climb on the check is the render tests. No program logs cost yet, so the cost section is empty.
+
+## Since then (November 15, 07:20)
+- **The check is about 2.5 times faster.** The full `node .agents/check.mjs` went from about 95 s to under 45 s. The render tests run side by side in one browser (96 s to about 27 s), and `scripts/brand-check.mjs` takes lossless screenshots through Chromium's fast PNG setting (the same pixels on every fixture) and reads the tokens once per browser. `collect()` keeps its signature for `scripts/app-check.mjs`. Every attempt, kept or reverted, is in the commit messages.
+- **image-gen plans take a `tick`** (seconds between the runner's checks, default 2). Its command-line tests no longer wait on the machine's load, which fixes the hang under a busy check.
+- **Skill `hillclimb`** ([.agents/skills/hillclimb](../../../skills/hillclimb/SKILL.md)): poteto's Hillclimb playbook, vendored from pstack under `.agents/vendor/poteto/`, run with `log/climb.mjs` as the harness. Use it when you want any job or test of yours faster or cheaper.
+- **Two standing rules from Ben in AGENTS.md:** a skill he or you name that the repo lacks gets fetched and vendored; and anything an agent makes or learns that someone will need goes into the repo as it happens, with a packet for whatever changes your work.
 
 ## For Nate's agent
 Nothing here blocks you. These are the places in your code where the log cannot rank or explain a run yet; take them when you next touch each file. The calls are in [log/README.md](../../../../log/README.md#use-it).

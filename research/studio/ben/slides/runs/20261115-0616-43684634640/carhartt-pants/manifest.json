@@ -1,0 +1,588 @@
+{
+ "item": "carhartt-pants",
+ "kind": "pants",
+ "read": {
+  "kind": "pants",
+  "name": "black Carhartt Relaxed Fit carpenter pants",
+  "item_text": "carhartt",
+  "tag_text": "RN# 14806 1010 179045 7311750 16 Carhartt, Inc. P. O. Box 600 Dearborn, MI 48121 USA Made in Mexico Fabriqu\u00e9 au Mexique Hecho en M\u00e9xico 100% Cotton Exclusive of Trimming 100% Coton Sans garniture 100% Algod\u00f3n Sin incluir adorno Carhartt Care on reverse side Entretien au verso Instrucciones de cuidado al dorso B324 BLK 38 X 36 Relaxed Fit",
+  "photos": [
+   {
+    "index": 0,
+    "role": "front",
+    "side": "front",
+    "zone": null,
+    "item_box": [
+     265,
+     78,
+     713,
+     956
+    ],
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": 1,
+    "laid_well": true
+   },
+   {
+    "index": 1,
+    "role": "detail",
+    "side": "front",
+    "zone": "waistband",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 2,
+    "role": "tag",
+    "side": null,
+    "zone": "waistband",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 3,
+    "role": "back",
+    "side": "back",
+    "zone": null,
+    "item_box": [
+     269,
+     72,
+     715,
+     998
+    ],
+    "graphics": [
+     {
+      "zone": "back_pocket",
+      "box": [
+       359,
+       159,
+       385,
+       188
+      ],
+      "text": "carhartt"
+     }
+    ],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": 1,
+    "laid_well": true
+   },
+   {
+    "index": 4,
+    "role": "graphic",
+    "side": "back",
+    "zone": "back_pocket",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   }
+  ]
+ },
+ "read_model": "google/gemini-4-carbon",
+ "plan": {
+  "kind": "pants",
+  "whole_route": "relay",
+  "slides": [
+   {
+    "type": "cover",
+    "photo": "01_cover",
+    "crop": null,
+    "route": "relay",
+    "zone": null,
+    "why": "front photo",
+    "slot": 1
+   },
+   {
+    "type": "back",
+    "photo": "04",
+    "crop": null,
+    "route": "relay",
+    "zone": null,
+    "why": "back photo",
+    "slot": 2
+   },
+   {
+    "type": "detail",
+    "photo": "02",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "detail",
+    "slot": 3
+   },
+   {
+    "type": "graphic",
+    "photo": "05",
+    "crop": null,
+    "route": "level0",
+    "zone": "back_pocket",
+    "why": "its own close-up",
+    "slot": 4
+   },
+   {
+    "type": "tag",
+    "photo": "03",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "brand and size",
+    "slot": 5
+   }
+  ],
+  "asks": [],
+  "notes": [
+   "no tape photo: measurements for waist, inseam, rise, leg_opening come from capture, and the redraw's proportions are checked against the real photo with a wider band"
+  ]
+ },
+ "slides": [
+  {
+   "type": "cover",
+   "photo": "01_cover",
+   "crop": null,
+   "route": "relay",
+   "zone": null,
+   "why": "front photo",
+   "slot": 1,
+   "file": "slide_01_cover.jpg",
+   "how": "relay",
+   "ai_marked": true,
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 2
+  },
+  {
+   "type": "back",
+   "photo": "04",
+   "crop": null,
+   "route": "relay",
+   "zone": null,
+   "why": "back photo",
+   "slot": 2,
+   "file": "slide_02_back.jpg",
+   "how": "level0",
+   "ai_marked": false,
+   "fallback": "every redraw was dropped; the real photo is used"
+  },
+  {
+   "type": "detail",
+   "photo": "02",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "detail",
+   "slot": 3,
+   "file": "slide_03_detail.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "graphic",
+   "photo": "05",
+   "crop": null,
+   "route": "level0",
+   "zone": "back_pocket",
+   "why": "its own close-up",
+   "slot": 4,
+   "file": "slide_04_graphic.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "tag",
+   "photo": "03",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "brand and size",
+   "slot": 5,
+   "file": "slide_05_tag.jpg",
+   "how": "level0",
+   "ai_marked": false
+  }
+ ],
+ "sites": {
+  "depop": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "mercari": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "ebay": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "facebook": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  }
+ },
+ "candidates": [
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 1,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 0.88,
+    "color": 0.73,
+    "shape": {
+     "render": 0.411,
+     "truth": 0.401,
+     "against": "photo",
+     "off": 0.025
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.91,
+     "tilt": -0.3
+    }
+   },
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 1,
+    "why": "Aside from slightly squaring the lower leg hem, the pants remain sideways on the floor with nearly all original wrinkles and bunching intact."
+   },
+   "cost": 0.040602,
+   "seconds": 8.7
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 2,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 0.96,
+    "color": 0.62,
+    "shape": {
+     "render": 0.41,
+     "truth": 0.401,
+     "against": "photo",
+     "off": 0.022
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.93,
+     "tilt": -0.6
+    }
+   },
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The garment is identical with only the lower leg hem slightly straightened while retaining almost all original wrinkles."
+   },
+   "cost": 0.040632,
+   "seconds": 8.4
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 3,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 0.79,
+    "color": 0.71,
+    "shape": {
+     "render": 0.407,
+     "truth": 0.401,
+     "against": "photo",
+     "off": 0.015
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.92,
+     "tilt": -0.3
+    }
+   },
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "Only the lower leg cuff was straightened, leaving the heavy creases and sideways concrete background virtually unchanged."
+   },
+   "cost": 0.040137,
+   "seconds": 8.1
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-3-pro-image",
+   "seed": 1,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 0.86,
+    "color": 0.68,
+    "shape": {
+     "render": 0.411,
+     "truth": 0.401,
+     "against": "photo",
+     "off": 0.025
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.94,
+     "tilt": -0.3
+    }
+   },
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The pants are straightened at the crotch and hems while preserving original details and surface wrinkles."
+   },
+   "cost": 0.141158,
+   "seconds": 16.1
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 1,
+   "ok": false,
+   "reasons": [
+    "judge: printed text changed"
+   ],
+   "numbers": {
+    "color_before": 1.14,
+    "color": 0.85,
+    "print_0": {
+     "found": true,
+     "inliers": 83,
+     "ncc": 0.853
+    },
+    "shape": {
+     "render": 0.447,
+     "truth": 0.405,
+     "against": "photo",
+     "off": 0.104
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.92,
+     "tilt": 1.7
+    }
+   },
+   "judge": {
+    "same_item": true,
+    "text_exact": false,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The legs are straightened neatly while preserving original garment details, though noticeable wrinkles remain and the tiny pocket text is illegible."
+   },
+   "cost": 0.041946,
+   "seconds": 7.1
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 2,
+   "ok": false,
+   "reasons": [
+    "judge: printed text changed",
+    "judge: lost readable 'carhartt' text on the pocket logo patch"
+   ],
+   "numbers": {
+    "color_before": 0.9,
+    "color": 0.69,
+    "print_0": {
+     "found": true,
+     "inliers": 87,
+     "ncc": 0.788
+    },
+    "shape": {
+     "render": 0.423,
+     "truth": 0.405,
+     "against": "photo",
+     "off": 0.044
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.95,
+     "tilt": -0.1
+    }
+   },
+   "judge": {
+    "same_item": true,
+    "text_exact": false,
+    "text_seen": "",
+    "invented": [],
+    "lost": [
+     "readable 'carhartt' text on the pocket logo patch"
+    ],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The pants are laid out straighter with separated legs while preserving original details, though surface wrinkles remain and the small logo text is illegible."
+   },
+   "cost": 0.0422535,
+   "seconds": 7.6
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 3,
+   "ok": false,
+   "reasons": [
+    "judge: printed text changed"
+   ],
+   "numbers": {
+    "color_before": 1.11,
+    "color": 0.68,
+    "print_0": {
+     "found": true,
+     "inliers": 103,
+     "ncc": 0.797
+    },
+    "shape": {
+     "render": 0.421,
+     "truth": 0.405,
+     "against": "photo",
+     "off": 0.04
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.96,
+     "tilt": 0.2
+    }
+   },
+   "judge": {
+    "same_item": true,
+    "text_exact": false,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The pants retain their original color and creases while the legs are straightened into a neater layout, though the tiny patch text becomes illegible."
+   },
+   "cost": 0.043536,
+   "seconds": 8.1
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-3-pro-image",
+   "seed": 1,
+   "ok": false,
+   "reasons": [
+    "print 0 not found as it is in the real photo",
+    "judge: not the same item",
+    "judge: printed text changed",
+    "judge: invented front pockets, waistband button, front fly, heavy fading on thighs and knees",
+    "judge: lost back pockets, Carhartt logo patch, carpenter utility pockets, hammer loop"
+   ],
+   "numbers": {
+    "color_before": 0.92,
+    "color": 0.85,
+    "print_0": {
+     "found": false,
+     "inliers": 6
+    },
+    "shape": {
+     "render": 0.431,
+     "truth": 0.405,
+     "against": "photo",
+     "off": 0.064
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.95,
+     "tilt": 0.2
+    }
+   },
+   "judge": {
+    "same_item": false,
+    "text_exact": false,
+    "text_seen": "",
+    "invented": [
+     "front pockets",
+     "waistband button",
+     "front fly",
+     "heavy fading on thighs and knees"
+    ],
+    "lost": [
+     "back pockets",
+     "Carhartt logo patch",
+     "carpenter utility pockets",
+     "hammer loop"
+    ],
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "The redrawn image replaces the original back view with an invented front view, removing the back pockets and logo patch while adding front details and thigh fading."
+   },
+   "cost": 0.141946,
+   "seconds": 16.8
+  }
+ ],
+ "seconds": 389.4,
+ "cost": 0.5322
+}

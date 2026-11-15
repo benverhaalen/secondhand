@@ -1,0 +1,695 @@
+{
+ "item": "carhartt-pants",
+ "kind": "pants",
+ "read": {
+  "kind": "pants",
+  "name": "black Carhartt carpenter pants",
+  "item_text": "carhartt",
+  "tag_text": "RN# 14806\n1010 179045 7311750 16\nCarhartt, Inc. P.O. Box 600\nDearborn, MI 48121 USA\nMade in Mexico\nFabriqu\u00e9 au Mexique\nHecho en M\u00e9xico\n100% Cotton\nExclusive of Trimming\n100% Coton\nSans garniture\n100% Algod\u00f3n\nSin incluir adorno\nCarhartt\nCare on reverse side\nEntretien au verso\nInstrucciones de cuidado al dorso\nB324 BLK 38 X 36\nRelaxed Fit",
+  "photos": [
+   {
+    "index": 0,
+    "role": "front",
+    "side": "front",
+    "zone": null,
+    "item_box": [
+     264,
+     78,
+     715,
+     956
+    ],
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": 1,
+    "laid_well": true
+   },
+   {
+    "index": 1,
+    "role": "detail",
+    "side": "front",
+    "zone": "waistband",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 2,
+    "role": "tag",
+    "side": "front",
+    "zone": "waistband",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 3,
+    "role": "back",
+    "side": "back",
+    "zone": null,
+    "item_box": [
+     270,
+     73,
+     715,
+     998
+    ],
+    "graphics": [
+     {
+      "zone": "back_pocket",
+      "box": [
+       359,
+       159,
+       385,
+       188
+      ],
+      "text": "carhartt"
+     }
+    ],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": 1,
+    "laid_well": true
+   },
+   {
+    "index": 4,
+    "role": "graphic",
+    "side": "back",
+    "zone": "back_pocket",
+    "item_box": null,
+    "graphics": [
+     {
+      "zone": "back_pocket",
+      "box": [
+       368,
+       450,
+       449,
+       535
+      ],
+      "text": "carhartt"
+     }
+    ],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   }
+  ]
+ },
+ "read_model": "google/gemini-4-carbon",
+ "plan": {
+  "kind": "pants",
+  "whole_route": "relay",
+  "slides": [
+   {
+    "type": "cover",
+    "photo": "01_cover",
+    "crop": null,
+    "route": "relay",
+    "zone": null,
+    "why": "front photo",
+    "slot": 1
+   },
+   {
+    "type": "back",
+    "photo": "04",
+    "crop": null,
+    "route": "relay",
+    "zone": null,
+    "why": "back photo",
+    "slot": 2
+   },
+   {
+    "type": "detail",
+    "photo": "02",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "detail",
+    "slot": 3
+   },
+   {
+    "type": "graphic",
+    "photo": "05",
+    "crop": null,
+    "route": "level0",
+    "zone": "back_pocket",
+    "why": "its own close-up",
+    "slot": 4
+   },
+   {
+    "type": "tag",
+    "photo": "03",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "brand and size",
+    "slot": 5
+   }
+  ],
+  "asks": [
+   {
+    "type": "measure",
+    "text": "Lay a tape straight across the waist and take a photo where the numbers are readable.",
+    "name": "waist"
+   }
+  ],
+  "notes": [
+   "no tape photo: measurements for waist, inseam, rise, leg_opening come from capture; the redraw's shape is checked against the real photo only when that photo is laid flat"
+  ]
+ },
+ "slides": [
+  {
+   "type": "cover",
+   "photo": "01_cover",
+   "crop": null,
+   "route": "relay",
+   "zone": null,
+   "why": "front photo",
+   "slot": 1,
+   "file": "slide_01_cover.jpg",
+   "how": "relay",
+   "ai_marked": true,
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 3
+  },
+  {
+   "type": "back",
+   "photo": "04",
+   "crop": null,
+   "route": "relay",
+   "zone": null,
+   "why": "back photo",
+   "slot": 2,
+   "file": "slide_02_back.jpg",
+   "how": "level0",
+   "ai_marked": false,
+   "fallback": "every redraw was dropped; the real photo is used"
+  },
+  {
+   "type": "detail",
+   "photo": "02",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "detail",
+   "slot": 3,
+   "file": "slide_03_detail.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "graphic",
+   "photo": "05",
+   "crop": null,
+   "route": "level0",
+   "zone": "back_pocket",
+   "why": "its own close-up",
+   "slot": 4,
+   "file": "slide_04_graphic.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "tag",
+   "photo": "03",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "brand and size",
+   "slot": 5,
+   "file": "slide_05_tag.jpg",
+   "how": "level0",
+   "ai_marked": false
+  }
+ ],
+ "sites": {
+  "depop": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "mercari": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "ebay": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "facebook": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  }
+ },
+ "candidates": [
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 1,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 0.95,
+    "color": 0.69,
+    "shape": {
+     "render": 0.4,
+     "truth": 0.396,
+     "against": "photo",
+     "off": 0.01
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.92,
+     "tilt": -0.7
+    }
+   },
+   "repairs": [],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The garment retains all original details with only the lower leg hem straightened, leaving heavy creasing across the hips."
+   },
+   "cost": 0.040143,
+   "seconds": 8.3
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 2,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 0.72,
+    "color": 0.57,
+    "shape": {
+     "render": 0.403,
+     "truth": 0.396,
+     "against": "photo",
+     "off": 0.018
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.91,
+     "tilt": -1.0
+    }
+   },
+   "repairs": [],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 1,
+    "why": "The garment is identical in details and color, though only the bottom hem was slightly straightened while heavy creasing and bunching remain."
+   },
+   "cost": 0.040368,
+   "seconds": 9.2
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 3,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 0.89,
+    "color": 0.61,
+    "shape": {
+     "render": 0.402,
+     "truth": 0.396,
+     "against": "photo",
+     "off": 0.015
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.91,
+     "tilt": -0.7
+    }
+   },
+   "repairs": [],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The garment retains all original details and color, with only the lower leg hem straightened while heavy creases remain."
+   },
+   "cost": 0.0398955,
+   "seconds": 8.7
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 4,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 0.88,
+    "color": 0.67,
+    "shape": {
+     "render": 0.408,
+     "truth": 0.396,
+     "against": "photo",
+     "off": 0.03
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.91,
+     "tilt": -0.5
+    }
+   },
+   "repairs": [],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The pants match the original item with only the lower leg hem straightened, though significant wrinkling and sideways orientation remain."
+   },
+   "cost": 0.0404655,
+   "seconds": 8.8
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-3-pro-image",
+   "seed": 1,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 0.74,
+    "color": 0.67,
+    "shape": {
+     "render": 0.406,
+     "truth": 0.396,
+     "against": "photo",
+     "off": 0.025
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.92,
+     "tilt": 0.6
+    }
+   },
+   "repairs": [],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The pants retain identical fabric wear and construction details, with the folded leg hem straightened out while notable creasing remains."
+   },
+   "cost": 0.140546,
+   "seconds": 15.8
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 1,
+   "ok": false,
+   "reasons": [
+    "judge: printed text changed"
+   ],
+   "numbers": {
+    "color_before": 1.34,
+    "print_0": {
+     "found": true,
+     "inliers": 104,
+     "ncc": 0.822
+    },
+    "color": 0.77,
+    "shape": {
+     "render": 0.433,
+     "truth": 0.398,
+     "against": "photo",
+     "off": 0.088
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.94,
+     "tilt": 0.1
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": false,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The pants retain their exact features and color with straighter legs, though heavy wrinkles remain and the small patch text is illegible."
+   },
+   "cost": 0.041697,
+   "seconds": 7.3
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 2,
+   "ok": false,
+   "reasons": [
+    "judge: printed text changed"
+   ],
+   "numbers": {
+    "color_before": 1.7,
+    "print_0": {
+     "found": true,
+     "inliers": 91,
+     "ncc": 0.798
+    },
+    "color": 0.76,
+    "shape": {
+     "render": 0.413,
+     "truth": 0.398,
+     "against": "photo",
+     "off": 0.038
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.94,
+     "tilt": 0.1
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": false,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The pants retain the exact fabric, pockets, wear, and color while separating the legs neatly, though creases remain and the tiny patch text is too blurry to read."
+   },
+   "cost": 0.042942,
+   "seconds": 8.5
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 3,
+   "ok": false,
+   "reasons": [
+    "judge: printed text changed"
+   ],
+   "numbers": {
+    "color_before": 1.32,
+    "print_0": {
+     "found": true,
+     "inliers": 70,
+     "ncc": 0.837
+    },
+    "color": 0.74,
+    "shape": {
+     "render": 0.404,
+     "truth": 0.398,
+     "against": "photo",
+     "off": 0.015
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.93,
+     "tilt": -0.1
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": false,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The pants retain their original pockets, color, and wear while the legs are laid straighter, though heavy creasing remains and the tiny patch text is indistinct."
+   },
+   "cost": 0.042642,
+   "seconds": 7.8
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 4,
+   "ok": false,
+   "reasons": [
+    "judge: printed text changed"
+   ],
+   "numbers": {
+    "color_before": 1.2,
+    "print_0": {
+     "found": true,
+     "inliers": 83,
+     "ncc": 0.815
+    },
+    "color": 0.77,
+    "shape": {
+     "render": 0.409,
+     "truth": 0.398,
+     "against": "photo",
+     "off": 0.028
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.94,
+     "tilt": 0.4
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": false,
+    "text_seen": "",
+    "invented": [],
+    "lost": [],
+    "color": "same",
+    "flat": 1,
+    "laid": 2,
+    "why": "The pants retain the exact same cut, color, pockets, and wear with straightened legs, though heavy creases remain and the tiny patch text is illegible at full-garment resolution."
+   },
+   "cost": 0.041982,
+   "seconds": 7.7
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-3-pro-image",
+   "seed": 1,
+   "ok": false,
+   "reasons": [
+    "print 0 not found as it is in the real photo",
+    "judge: not the same item",
+    "judge: printed text changed",
+    "judge: invented front waistband button, zipper fly, slanted front pockets",
+    "judge: lost Carhartt logo patch, back patch pockets, utility side pockets"
+   ],
+   "numbers": {
+    "color_before": 1.62,
+    "print_0": {
+     "found": false,
+     "inliers": 6
+    },
+    "color": 0.73,
+    "shape": {
+     "render": 0.421,
+     "truth": 0.398,
+     "against": "photo",
+     "off": 0.058
+    },
+    "layout": {
+     "template": "pants",
+     "overlap": 0.94,
+     "tilt": -0.3
+    }
+   },
+   "repairs": [],
+   "judge": {
+    "same_item": false,
+    "text_exact": false,
+    "text_seen": "",
+    "invented": [
+     "front waistband button",
+     "zipper fly",
+     "slanted front pockets"
+    ],
+    "lost": [
+     "Carhartt logo patch",
+     "back patch pockets",
+     "utility side pockets"
+    ],
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "The generated image depicts the front side of the pants with a fly and button instead of the back side with patch pockets and logo shown in the original photos."
+   },
+   "cost": 0.14125,
+   "seconds": 17.2
+  }
+ ],
+ "seconds": 332.6,
+ "cost": 0.6119
+}

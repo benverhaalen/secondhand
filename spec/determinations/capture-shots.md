@@ -108,7 +108,7 @@ Default: scan, then the model plate. Glossy plastic weakens depth, so dimensions
 | 1 | Scan | One ring at 0.9 to 1.5 m, or the 8-still ring on a phone without LiDAR. | 25 | kind, shape for identity (card 9), dimensions where depth holds (card 10), outside flaws | cover, sides, all sites |
 | 2 | Model plate | The label underneath or in the battery bay, at 25 to 30 cm. | 8 | model and serial (card 4) | label photo, all sites |
 
-Asked only when: the screen on (function unsettled), the ports, the accessories laid out ([card 15](seeing-the-item.md#15-completeness)), a short video powering on ([card 6](#6-when-a-scan-or-a-video-replaces-photos)).
+Asked only when: the screen on (function unsettled), the ports, the accessories laid out ([card 15](seeing-the-item.md#15-completeness)), a short video powering on ([card 6](#6-when-a-scan-or-a-video-replaces-photos)). [Card 3](#3-whether-an-extra-shot-is-asked) weighs the power-on clip by how much `works` moves the price: the D2 function priors put `verified` against `unknown` at 1.00 to 0.80, a placeholder until the paired-sales fit replaces it ([money D2](money.md#d2-condition-variant-completeness-and-size-adjustment)), and it answers the buyer's first question (*agent proposal*).
 
 ### furniture
 

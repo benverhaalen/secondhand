@@ -1,0 +1,93 @@
+{
+  "board": "Section 1, the hero",
+  "question": "What does the first screen show besides the line?",
+  "faces": true,
+  "variants": [
+    {
+      "390": {
+        "words": 24,
+        "pill_y": 560,
+        "headline_lines": 4,
+        "photos": 0,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ]
+      },
+      "1440": {
+        "words": 33,
+        "pill_y": 621,
+        "headline_lines": 3,
+        "photos": 0,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ]
+      },
+      "id": "a",
+      "label": "A. The line alone on the field",
+      "brand_errors": [],
+      "brand_warnings": 2
+    },
+    {
+      "390": {
+        "words": 29,
+        "pill_y": 420,
+        "headline_lines": 4,
+        "photos": 1,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ]
+      },
+      "1440": {
+        "words": 38,
+        "pill_y": 668,
+        "headline_lines": 4,
+        "photos": 1,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ]
+      },
+      "id": "b",
+      "label": "B. The line beside the product working",
+      "brand_errors": [
+        "B6 view 1 \"Live\" has 2.1:1 contrast with what is behind it; it needs 4.5:1 (Art. 5.1)",
+        "B6 view 2 \"Live\" has 2.9:1 contrast with what is behind it; it needs 4.5:1 (Art. 5.1)"
+      ],
+      "brand_warnings": 0
+    },
+    {
+      "390": {
+        "words": 24,
+        "pill_y": 500,
+        "headline_lines": 4,
+        "photos": 1,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ]
+      },
+      "1440": {
+        "words": 49,
+        "pill_y": 470,
+        "headline_lines": 2,
+        "photos": 1,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ]
+      },
+      "id": "c",
+      "label": "C. The line above the scene",
+      "brand_errors": [
+        "B8 view 1 is 62% color: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)",
+        "B8 view 2 is 37% color: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)",
+        "B8 view 3 is 69% color: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)",
+        "B8 view 4 is 53% color: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)"
+      ],
+      "brand_warnings": 1
+    }
+  ]
+}
