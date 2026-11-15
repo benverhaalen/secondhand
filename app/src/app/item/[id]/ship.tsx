@@ -159,7 +159,7 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
           {offline ? <Meta icon="hourglass" text="Waiting for signal" /> : null}
         </Stack>
         <ItemCard id="ship-item" title={mine.item.title} photo={pic(mine.item.photos[0].key)} site={mine.order.site} state="ship" word={mine.order.clocks.ship_by ? `Ship by ${byDay(mine.order.clocks.ship_by, w.now)}` : 'Ship'}
-          fact={{ label: 'You keep', amount: usd(mine.order.price_cents - mine.order.fees_cents - mine.cost) }} due={dueOf(w, mine.order.clocks.ship_by)}
+          fact={{ label: 'You get', amount: usd(mine.order.price_cents - mine.order.fees_cents - mine.cost) }} due={dueOf(w, mine.order.clocks.ship_by)}
           onPress={() => router.push(`/item/${mine.item.id}` as Href)} />
         {/* The way back to the sale on its site, and the site's own picture of the order to check the ship-by date against (Ben, 06:19). */}
         <Line>

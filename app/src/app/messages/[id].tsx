@@ -189,7 +189,7 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
               </Message>
               {offer && l && item && !blocked ? (
                 <DecisionCard id={`offer-${offer.id}`} kind="need" word="Offer" title={item.title} photo={pic(item.photos[0].key)} site={offer.site}
-                  fact={{ label: 'You keep', amount: usd(offer.you_keep_cents) }} due={dueOf(w, offer.expires_at)} lead={leadOffer === offer.id}
+                  fact={{ label: 'You get', amount: usd(offer.you_keep_cents) }} due={dueOf(w, offer.expires_at)} lead={leadOffer === offer.id}
                   status={offers[offer.id] ?? 'open'} step="Accepting"
                   primary={{ id: 'offer-accept', label: l.accept, onPress: () => accept(offer) }}
                   second={{ id: 'offer-counter', label: 'Counter', onPress: () => { setCounter(l.suggest); setOpen({ kind: 'counter', offer }); } }}
@@ -249,7 +249,7 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
         {open?.kind === 'counter' ? (
           <Stack>
             <Guess id="counter-amount" name="Your counter" value={counter ? `$${counter}` : ''} numeric onChange={v => setCounter(v.replace(/[^0-9.]/g, ''))} />
-            {Number(counter) > 0 ? <Txt role="body" tone="ink-2">{`You’d keep ${usd(youKeep(open.offer.site, Math.round(Number(counter) * 100)))}`}</Txt> : null}
+            {Number(counter) > 0 ? <Txt role="body" tone="ink-2">{`You’d get ${usd(youKeep(open.offer.site, Math.round(Number(counter) * 100)))}`}</Txt> : null}
             <Approve id="counter-send" does={`Send ${counter ? `$${counter}` : 'counter'}`} status={counterStatus === 'working' ? 'working' : 'ready'} step="Sending" onApprove={() => sendCounter(open.offer)} />
           </Stack>
         ) : null}
