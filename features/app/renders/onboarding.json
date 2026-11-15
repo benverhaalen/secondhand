@@ -1,46 +1,21 @@
 {
   "route": "onboarding",
+  "path": "/onboarding",
   "screen": "onboarding",
   "states": [
-    "new",
-    "loading",
-    "failed",
-    "offline"
+    "new"
   ],
-  "skip": "empty: sign-in is only for a person with no account on this phone; one: same; dense: same; typical: same",
+  "skip": "",
   "catalog": false,
-  "wash": false,
+  "wash": true,
+  "top": true,
   "status": "fail",
   "findings": [
     {
-      "level": "warn",
-      "id": "L2",
-      "where": "screen",
-      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
-    },
-    {
-      "level": "warn",
-      "id": "B15",
-      "where": "app",
-      "msg": "the brand faces are not on this machine, so line counts, widths and margins were measured in a fallback face. Put the files in fonts/ (gitignored) or set BRAND_FONTS"
-    },
-    {
       "level": "error",
-      "id": "B7",
-      "where": "dark screen \"secondhand lists your things on the s...\"",
-      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B32",
-      "where": "dark screen",
-      "msg": "the wordmark sits on --white: it goes on the page or the field (C1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen [pill-card]",
-      "msg": "has a fill of rgb(239, 241, 242), which is not a color in tokens.css: use var(--token)"
+      "id": "B35",
+      "where": "screen \"onboarding\"",
+      "msg": "is not drawn in the states empty, one, typical, dense, loading, failed, offline, at /onboarding?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"empty: why\">"
     }
   ]
 }

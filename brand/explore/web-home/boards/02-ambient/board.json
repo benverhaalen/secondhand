@@ -1,7 +1,7 @@
 {
   "title": "Section 1, the hero: what moves behind the line",
   "question": "What moves behind the line, so a visitor knows in a second that this is about their clothes?",
-  "purpose": "Ben picked the line alone (board 1) and asked for something ambient that reads as clothing, dark by default, with the hands and the wordmark face marking words.",
+  "purpose": "Ben picked the line alone (board 1) and asked for something ambient that reads as clothing, dark by default, with the paired-tag mark and the wordmark face marking words.",
   "motion": true,
   "variants": [
     { "id": "a", "label": "A. The rail: real listings drift past" },

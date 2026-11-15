@@ -27,14 +27,12 @@ jobs:
         run: |
           W=brand/explore/web-home
           if [ "$GITHUB_EVENT_NAME" != push ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then files=ALL; else files=$(git diff --name-only "$BEFORE" HEAD); fi
-          shared="^($W/site.css|$W/hands-fit.js|brand/tokens.css|scripts/brand-check.mjs|\.github/workflows/web-boards.yml)$"
+          shared="^($W/site.css|brand/mark.svg|brand/mark-light.svg|brand/tokens.css|scripts/brand-check.mjs|\.github/workflows/web-boards.yml)$"
           all=no; { [ "$files" = ALL ] || printf '%s\n' "$files" | grep -Eq "$shared"; } && all=yes
           boards=""; for d in $W/boards/*/; do
             if [ $all = yes ] || printf '%s\n' "$files" | grep -v '/out/' | grep -Eq "^${d}|^$W/boards/(render|audit)\.mjs$"; then boards="$boards $d"; fi; done
-          hands=no; { [ $all = yes ] || printf '%s\n' "$files" | grep -v '/out/' | grep -q "^$W/boards/03-hands/"; } && hands=yes
           hero=no; { [ $all = yes ] || printf '%s\n' "$files" | grep -v '/out/' | grep -Eq "^$W/(hero|photos/wall)/|^$W/boards/audit\.mjs$"; } && hero=yes
-          echo "boards=$boards" >> "$GITHUB_OUTPUT"; echo "hands=$hands" >> "$GITHUB_OUTPUT"; echo "hero=$hero" >> "$GITHUB_OUTPUT"
-          echo "boards:${boards:- none}; hand sheets: $hands; hero: $hero"
+          echo "boards=$boards" >> "$GITHUB_OUTPUT"; echo "hero=$hero" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - name: Install Playwright and Chromium
@@ -61,9 +59,6 @@ jobs:
         if: steps.changed.outputs.boards != ''
         env: { RECORD: "${{ inputs.record && '1' || '0' }}" }
         run: node brand/explore/web-home/boards/render.mjs ${{ steps.changed.outputs.boards }}
-      - name: Draw every hand position in each pack
-        if: steps.changed.outputs.hands == 'yes'
-        run: node brand/explore/web-home/boards/03-hands/poses.mjs
       - name: Check the hero on every screen
         if: steps.changed.outputs.hero == 'yes'
         env: { RECORD: "${{ inputs.record && '1' || '0' }}" }

@@ -126,3 +126,18 @@ pre { font-family: var(--font-text); font-size: var(--t-15); white-space: pre-wr
   .home-sections { margin-block: var(--s-9); }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+.wordmark, .footer-mark { display: inline-flex; align-items: center; gap: var(--s-2); white-space: nowrap; }
+.brand-symbol { display: block; width: calc(var(--s-6) * 100 / 116); height: var(--s-6); flex-shrink: 0; }
+.brand-symbol img { display: block; width: 100%; height: 100%; }
+.brand-symbol .mark-dark { display: none; }
+[data-theme="dark"] .brand-symbol .mark-dark { display: block; }
+[data-theme="dark"] .brand-symbol .mark-light { display: none; }
+.footer-mark .brand-symbol { width: .983em; height: 1.14em; }
+.footer-mark { gap: var(--s-3); }
+@media (max-width: 389px) {
+  .site-header { gap: var(--s-2); }
+  .site-header nav { gap: var(--s-1); flex-shrink: 0; white-space: nowrap; }
+  .site-header nav a { padding-inline: var(--s-2); }
+  .theme-toggle { padding-inline: var(--s-3); }
+}
