@@ -1,12 +1,14 @@
 // Step 1 of first launch (spec/pages.md §6.1; spec/features/connect.md, "Signing in to secondhand"): Apple, Google or an
-// email code, and it cannot be skipped. The app has no client for /v1/auth yet, so the demo drives it: Apple and Google
-// succeed after a short wait, and the email code takes any 6 digits except 000000, which fails so Retry can be seen.
+// email code, and it cannot be skipped. The email code is real: Send code and Sign in call /v1/auth/email through
+// sign-in-wire.ts, which keeps the token pair on the device (finalization AP1). Apple and Google are still the demo's:
+// Apple is out (Nate), and Google needs its client ids, so both succeed after a short wait.
 // Every tap, state change and error goes through the app's log (src/ui/log.ts).
 import { useEffect, useRef, useState } from 'react';
 import { Blank, EmptyState, FootButton, Line, Nav, Pill, Screen, Stack, Txt } from '@/ui';
 import { log } from '@/ui/log';
 import { ListRow } from '@/ui/parts/list-row';
 import { changed } from '@/you/state';
+import { emailSignIn, why } from '@/you/sign-in-wire';
 import type { ScreenState } from '@/demo/screen';
 
 type Way = 'apple' | 'google' | 'email';
@@ -32,9 +34,17 @@ export function SignIn({ asked, onDone }: { asked: ScreenState | null; onDone: (
   };
   const send = () => {
     if (!address.includes('@')) { log.event('error', { where: 'sign-in', way: 'email', why: 'no address' }); setHint('Enter your email'); return; }
-    changed('session', 'email', 'code_sent'); setHint(null); setMode('code');
+    if (offline || busy) return;
+    last.current = 'email'; setBusy('email'); setHint(null);
+    emailSignIn().start(address).then(() => { changed('session', 'email', 'code_sent'); setBusy(null); setMode('code'); },
+      e => { log.error('sign-in.email_start', e); fail('email', why(e)); });
   };
-  const verify = () => { if (code.length === 6) run('email', code !== '000000'); else setHint('Enter the 6 digits'); };
+  const verify = () => {
+    if (code.length !== 6) { setHint('Enter the 6 digits'); return; }
+    if (offline || busy) return;
+    last.current = 'email'; setBusy('email'); setFailed(false);
+    emailSignIn().verify(address, code).then(() => done('email'), e => { log.error('sign-in.email_verify', e); fail('email', why(e)); });
+  };
   const back = mode === 'choose' ? undefined : () => { setHint(null); setFailed(false); setMode(mode === 'code' ? 'email' : 'choose'); };
   const state = failed ? 'failed' : busy ? 'loading' : offline ? 'offline' : 'new';
 
