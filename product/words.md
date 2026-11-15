@@ -1406,6 +1406,19 @@ Ben, project chat, 07:42 UTC.
 
 Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), app/src/engines/listing/aspects.ts.
 
+## 2026-11-15 prove the redraw keeps the real size, on LiDAR phones
+
+Ben, project chat (relayed), 07:51 UTC.
+> is there any downside to doing it on the dev acct? also another thing - there could be a hesitation with how the ai enhancement of the shirts or clothing etc dewrinkling and like essentially just ironing them and framing the pictures nicely people could say it lies. how do we prove in some respect it doesnt. by using its actual measurements (of course with a boundary of error) to audit and compare the ai generated outputs against the actual image of the shirt. it looks like it isnt getting rid of wrinkles as much as i thought though. but keeping dimensions super accurate. how do you prove this? we have measurements from the items. can show images are accurate to measurements by knowing what the pit to pit and length on a shirt is and plan on showing this visually somewhere on the website or pitch etc.
+
+Ben, studio thread, 08:14 UTC.
+> no, the marquette listing in the photos shows the actual measurements. also considering it being scrunched and all and estimating some error there but the alternate photos show it with actual measurements and use those to measure size too. like how are you going to detect like in the scrunched photo how you would know the actual pit to pit or top to bottom say it would be flattened. think about solving that problem
+
+Ben, studio thread, 09:00 UTC.
+> how about just allow this feature for lidar phones. assume all phones have lidar. dont overengineer
+
+Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md), jobs/studio/plan.py (`relay_measured`).
+
 ## 2026-11-15 demo the buy side live, Nate posts and my phone pings
 
 Ben, project chat, 07:46 UTC.
@@ -1617,6 +1630,13 @@ Nate, build session (orchestrator), 2026-11-15 about 07:00 Central, after the le
 
 Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
 
+## 2026-11-15 ben a bug may be fixed if the same system generalizes; claim the most each experiment allows without lying
+Ben, project timeline, 08:49 and 08:54 UTC, after the first StockX backtest and its fix. Two messages.
+> get git back . also you can selectively remove a bug. just ensure the same system generalizes. think about what each dataset proves too. and how we can make the best claims for a given experiment without lying. think about the project evidence skill and how i frame my projects in my get-hired repo
+
+> with the 70 20 rule thing im interested where that came from and why like the logic behind our pricing algorithm. i feel like there could be like proxies in a small dataset possibly where its more realistic to how we price based on the market at the time. idk. again all research use codex from here on out if you need it. but like actually using the harness what data do we ingest essentially and is there some proxy of depreciation.
+
+Used in: [backtest claims](../spec/plans/backtest/claims.md), [how we price](../spec/plans/backtest/how-we-price.md).
 ## 2026-11-15 nate ebay does work in cases
 Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the orchestrator reported that eBay refused every public page with a 403.
 > you havent worked out far enough, ebay does work in cases, I've seen it used
@@ -1628,3 +1648,8 @@ Ben, project chat, 08:59 UTC.
 > ensure in whatever constitution all the evidence and decisions need to be explained as to why. just saying 70 20 isnt a why. also those numbers arent even helpful. recall how i think about my projects on my resume and how those are described and extrapolate some principles also about how to evaluate and present information. also with stockx the idea is we get a percent where we get more money on average. like whatever percent more money compared to just taking the median. creating a statistic and being able to defend it.
 
 Used in: [evidence constitution](constitutions/evidence.md), [price constitution](constitutions/price.md).
+## 2026-11-15 nate there is a way to use browser use cloud we are not considering
+Nate, build session (orchestrator), 2026-11-15 about 08:00 Central, after the eBay finding.
+> Theres some way to browser use cloud you aren't considering
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.

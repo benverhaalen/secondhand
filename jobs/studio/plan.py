@@ -63,6 +63,16 @@ def _ask(t, **kw):
     return {"type": t, "text": text, **kw}
 
 
+RELAY_NEEDS = {"shirt": ("pit_to_pit", "length"), "sweatshirt": ("pit_to_pit", "length")}
+
+
+def relay_measured(ks: dict, measured: dict) -> bool:
+    """A re-lay needs the item's measurements, and a check that can hold the redraw to them. Tops have both. Pants
+    have no ruler yet (measure.py reads tops), so they are touched up in place."""
+    need = RELAY_NEEDS.get(ks.get("template"))
+    return bool(need) and all(measured.get(k) for k in need)
+
+
 def plan(look: dict) -> dict:
     kind = kind_of(look.get("kind", ""))
     ks = SPEC["kinds"][kind]
@@ -70,6 +80,12 @@ def plan(look: dict) -> dict:
     whole = {s: _best(photos, role=s) for s in ("front", "back")}
     slides, asks, notes = [], [], []
     used = set()
+    route = ks["whole_route"]
+    if route == "relay" and not relay_measured(ks, look.get("measured") or {}):
+        # Ben, 09:00: the re-lay is for phones that measure (LiDAR). No measurement, nothing to hold a redrawn shape to,
+        # so the whole photo is only touched up where it lies
+        route = "light"
+        notes.append("not measured (no LiDAR reading or tape), so the cover is touched up in place, not re-laid")
 
     def add(t, p, route, why, crop=None, zone=None, extra=None):
         slides.append({"type": t, "photo": p["id"], "crop": crop, "route": route, "zone": zone, "why": why, **(extra or {})})
@@ -77,14 +93,14 @@ def plan(look: dict) -> dict:
 
     # 1. whole-item slides: only ever from a real photo of the same side
     if whole["front"]:
-        add("cover", whole["front"], ks["whole_route"], "front photo")
+        add("cover", whole["front"], route, "front photo")
     else:
         angle = _best(photos, role="angle")
         if angle:
             add("cover", angle, "level0", "no straight front photo; the best angle stands in, not redrawn")
         asks.append(_ask("cover"))
     if whole["back"]:
-        add("back", whole["back"], ks["whole_route"], "back photo")
+        add("back", whole["back"], route, "back photo")
     else:
         asks.append(_ask("back"))
         notes.append("no back photo, so no back slide: a back is never drawn from the front")
@@ -173,7 +189,7 @@ def plan(look: dict) -> dict:
         notes.append("no tape photo: measurements for " + ", ".join(ks["measurements"]) + " come from capture; the redraw's shape is checked against the real photo only when that photo is laid flat")
         if ks["whole_route"] == "relay":
             asks.append(_ask("measure", name=ks["measurements"][0]))
-    return {"kind": kind, "whole_route": ks["whole_route"], "slides": slides, "asks": asks, "notes": notes}
+    return {"kind": kind, "whole_route": route, "slides": slides, "asks": asks, "notes": notes}
 
 
 def for_site(p: dict, cap: int) -> dict:

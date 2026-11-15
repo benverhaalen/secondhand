@@ -47,15 +47,19 @@ test('each site gets the title its own buyers search: size spelled out where the
 
 test('which site a kind of thing goes to is the verdict platform-fit.json holds, word for word', () => {
   for (const [type, sites] of Object.entries(FIT)) {
-    assert.ok(Object.values(FIT_TYPE).includes(type), `${type} is mapped from a demo category`);
+    assert.ok(Object.values(FIT_TYPE).includes(type) || type === 'fan_apparel', `${type} is mapped from a demo category or an item's kind`);
     for (const [site, [verdict, why]] of Object.entries(sites)) {
       const [v, w] = fit.fit[type][site];
       assert.equal(verdict, v, `${type} on ${site}`);
-      const said = w.replace(/'/g, '’').replace('but Depop ships', 'but it ships').replace('which Facebook does', 'which a local site does');
+      const said = w.replace(/'/g, '’').replace('but Depop ships', 'but it ships').replace('which Facebook does', 'which a local site does')
+        .replace('is core eBay', 'is core here').replace('eBay has the fan buyer', 'another site has the fan buyer');
       assert.equal(why, said, `${type} on ${site} reason`);
     }
   }
-  assert.equal(fitOf('furniture', 'poshmark')?.verdict, 'blocked');
-  assert.equal(fitOf('furniture', 'depop')?.why.startsWith('A Home'), true);
+  assert.equal(fitOf({ category: 'furniture' }, 'poshmark')?.verdict, 'blocked');
+  assert.equal(fitOf({ category: 'furniture' }, 'depop')?.why.startsWith('A Home'), true);
+  // A fan tee is apparel, but its own kind decides: eBay has the fan buyer, not the menswear one.
+  assert.equal(fitOf({ category: 'apparel' }, 'ebay')?.verdict, 'good');
+  assert.equal(fitOf({ category: 'apparel', kind: 'fan_apparel' }, 'ebay')?.verdict, 'best');
   for (const line of Object.values(RETURNS)) assert.ok(line.length <= 36, `${line} fits one caption line`);
 });

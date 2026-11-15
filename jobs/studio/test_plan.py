@@ -13,7 +13,7 @@ def test_tee_from_casual_photos_is_ordered_cover_back_print_tag_measure():
     look = {"kind": "t-shirt", "photos": [
         ph("m", "measure"), ph("t", "tag"), ph("b", "back"),
         ph("f", "front", graphics=[{"zone": "chest_centre", "box": [0.4, 0.3, 0.6, 0.45], "text": "MARQUETTE 74"}]),
-        ph("g", "graphic", zone="chest_centre")]}
+        ph("g", "graphic", zone="chest_centre")], "measured": {"pit_to_pit": 21.25, "length": 27.0}}
     p = P.plan(look)
     assert p["kind"] == "tee" and p["whole_route"] == "relay"
     assert types(p) == ["cover", "back", "graphic", "tag", "fabric", "measure"]
@@ -70,3 +70,11 @@ def test_kind_names_pick_the_longest_match():
     assert P.kind_of("crewneck") == "sweatshirt"
     assert P.kind_of("levi's jeans") == "pants"
     assert P.kind_of("long sleeve tee") == "long_sleeve"
+
+
+def test_no_measurement_no_relay_the_cover_is_touched_up_in_place():
+    tee = {"kind": "tee", "photos": [ph("f", "front"), ph("b", "back"), ph("t", "tag")]}
+    assert P.plan(tee)["slides"][0]["route"] == "light"
+    assert P.plan({**tee, "measured": {"pit_to_pit": 21.25, "length": 27.0}})["slides"][0]["route"] == "relay"
+    pants = {"kind": "jeans", "photos": [ph("f", "front"), ph("t", "tag")], "measured": {"waist": 19, "inseam": 32}}
+    assert P.plan(pants)["slides"][0]["route"] == "light"  # no ruler for pants yet
