@@ -30,6 +30,17 @@ export function brandFaces(tokensCss, dir = fontDir()) {
   return rules.length ? rules.join('\n') : null;
 }
 
+// The faces brandFaces() names are served from that folder to a page or a whole browser context, never from the repo.
+export async function routeFaces(target, dir = fontDir()) {
+  await target.route('https://secondhand-fonts.invalid/**', route => { const name = decodeURIComponent(new URL(route.request().url()).pathname.slice(1));
+    return readdirSync(dir).includes(name) ? route.fulfill({ path: join(dir, name), headers: { 'access-control-allow-origin': '*' } }) : route.abort(); });
+}
+// Whether the page draws in the brand faces: text set in each measures differently from the same text in two generic
+// fallbacks. document.fonts.check() says yes to a face it has never heard of.
+export const facesDrawn = (page, tokensCss) => { const family = v => tokensCss.match(new RegExp(`--font-${v}:\\s*"([^"]+)"`))?.[1];
+  return page.evaluate(f => { const g = document.createElement('canvas').getContext('2d'), w = font => { g.font = font; return g.measureText('secondhand $46.95 Wag').width; };
+    return f.every(face => face && ['monospace', 'serif'].some(fb => w(`40px "${face}", ${fb}`) !== w(`40px ${fb}`))); }, [family('text'), family('display')]); };
+
 export function playwright() {
   for (const from of [import.meta.url, pathToFileURL(join(process.env.NODE_PATH?.split(':')[0] ?? '/nonexistent', 'x.js')).href, pathToFileURL('/opt/node-tools/x.js').href])
     try { return createRequire(from)('playwright'); } catch { /* try the next place */ }
@@ -60,6 +71,12 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
   for (const el of document.querySelectorAll('html, body, body *')) {
     const cs = getComputedStyle(el); if (!shown(el, cs) || chrome(el)) continue;
     const r = el.getBoundingClientRect(); if (!inView(r)) continue;
+    // What a box that hides its overflow cuts away is not drawn: `seen` is the part left showing, null when none is (a scroller is
+    // not a cut). The wordmark's clear space (B32) reads it; everything else reads the whole box.
+    const seen = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    for (let a = el.parentElement; a && a !== document.documentElement; a = a.parentElement) { const s = getComputedStyle(a), c = a.getBoundingClientRect();
+      if (/hidden|clip/.test(s.overflowX)) { seen.left = Math.max(seen.left, c.left); seen.right = Math.min(seen.right, c.right); }
+      if (/hidden|clip/.test(s.overflowY)) { seen.top = Math.max(seen.top, c.top); seen.bottom = Math.min(seen.bottom, c.bottom); } }
     const tag = el.tagName.toLowerCase(), map = el.computedStyleMap(), bi = cs.backgroundImage;
     const px = p => { const v = map.get(p); return v && v.unit === 'px' ? v.value : null; };
     const photo = ['img', 'video', 'canvas'].includes(tag) && !el.closest('[data-logo]') && !/platforms\//.test(el.currentSrc || el.src || '') || el.hasAttribute('data-photo') || /url\(/.test(bi) && !(cs.backgroundRepeat.startsWith('no-repeat') && cs.backgroundSize.split(' ').every(v => v === 'auto' || v.endsWith('px') && parseFloat(v) <= 32));
@@ -67,7 +84,7 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
       colors: [...new Set([...(bi.match(/(?:rgba?|hsla?|oklch|oklab|lch|lab|color|color-mix)\((?:[^()]|\([^()]*\))*\)/g) ?? []), cs.backgroundColor].filter(c => !clear(c)))] } : null;
     ids.set(el, els.length);
     const logo = tag === 'img' && !photo;
-    els.push({ tag, part: el.dataset.part ?? null, current: el.hasAttribute('aria-current') && el.getAttribute('aria-current') !== 'false', item: el.hasAttribute('data-item'), link: el.matches('a[href], [role=link]'), button: el.matches('button, [role=button]'), pointer: cs.cursor === 'pointer', block: !/^inline/.test(cs.display) && cs.display !== 'contents', fit: el.dataset.fit ?? null, fill: el.dataset.fill ?? null, marks: marksOf(el), rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
+    els.push({ tag, part: el.dataset.part ?? null, ledger: (() => { const l = []; for (let a = el; a && a !== document.documentElement; a = a.parentElement) if (a.dataset?.ledger) l.push(...a.dataset.ledger.trim().split(/\s+/)); return l; })(), current: el.hasAttribute('aria-current') && el.getAttribute('aria-current') !== 'false', item: el.hasAttribute('data-item'), link: el.matches('a[href], [role=link]'), button: el.matches('button, [role=button]'), pointer: cs.cursor === 'pointer', block: !/^inline/.test(cs.display) && cs.display !== 'contents', fit: el.dataset.fit ?? null, fill: el.dataset.fill ?? null, marks: marksOf(el), rect: rel(r), seen: seen.right - seen.left > 0 && seen.bottom - seen.top > 0 ? rel(seen) : null, parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
       alt: tag === 'img' ? el.getAttribute('alt') : el.getAttribute('aria-label'), src: tag === 'img' ? decodeURI(el.currentSrc || el.src || '') : /url\(/.test(bi) ? decodeURI(bi.match(/url\(["']?([^"')]+)/)?.[1] ?? '') : null, noAlt: tag === 'img' && !el.hasAttribute('alt'), hasText: /\S/.test(el.innerText ?? ''),
       bg: clear(cs.backgroundColor) ? null : cs.backgroundColor,
       borders: [...new Set(['Top', 'Right', 'Bottom', 'Left'].filter(s => parseFloat(cs[`border${s}Width`]) > 0 && cs[`border${s}Style`] !== 'none' && !clear(cs[`border${s}Color`])).map(s => cs[`border${s}Color`]))],
@@ -120,7 +137,7 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
       display: family === faces.display, textFace: family === faces.text, color: cs.webkitTextFillColor || cs.color, upper: cs.textTransform === 'uppercase',
       caps: cs.textTransform === 'capitalize' ? 'capitalized by CSS' : cs.fontVariantCaps !== 'normal' ? 'set in small capitals' : null, italic: cs.fontStyle !== 'normal', stroked: parseFloat(cs.webkitTextStrokeWidth) > 0,
       lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control, controlAt, disabled, lead, opacity: alpha,
-      cut: all.some(r => r.cut), dots: all.some(r => r.dots), fill: p.closest('[data-fill]')?.dataset.fill ?? null, full: rel(range.getBoundingClientRect()), ink: (() => { const f = rel(range.getBoundingClientRect()), g = document.createElement('canvas').getContext('2d'); g.font = cs.font; const m = g.measureText(n.data);
+      cut: all.some(r => r.cut), dots: all.some(r => r.dots), fill: p.closest('[data-fill]')?.dataset.fill ?? null, ledger: (() => { const l = []; for (let a = p; a && a !== document.documentElement; a = a.parentElement) if (a.dataset?.ledger) l.push(...a.dataset.ledger.trim().split(/\s+/)); return l; })(), full: rel(range.getBoundingClientRect()), ink: (() => { const f = rel(range.getBoundingClientRect()), g = document.createElement('canvas').getContext('2d'); g.font = cs.font; const m = g.measureText(n.data);
         // The range box is the font's content area; the letters sit inside it. A thing holds its ink, which is what a person sees.
         return m.fontBoundingBoxAscent ? [f[0], f[1] + Math.max(0, m.fontBoundingBoxAscent - m.actualBoundingBoxAscent), f[2], f[3] - Math.max(0, m.fontBoundingBoxDescent - m.actualBoundingBoxDescent)] : f; })(),
       alone: !/\p{L}/u.test((group.innerText ?? '').replace(n.data, '')) });

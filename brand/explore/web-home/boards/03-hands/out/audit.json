@@ -9,14 +9,22 @@
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "1440": {
         "words": 3,
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "id": "a",
       "label": "A. Phosphor, regular",
@@ -40,14 +48,22 @@
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "1440": {
         "words": 3,
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "id": "b",
       "label": "B. Phosphor, light",
@@ -71,14 +87,22 @@
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "1440": {
         "words": 3,
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "id": "c",
       "label": "C. Phosphor, filled",
@@ -102,14 +126,22 @@
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "1440": {
         "words": 3,
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "id": "d",
       "label": "D. Lucide, at 1.5",
@@ -133,14 +165,22 @@
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "1440": {
         "words": 3,
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "id": "e",
       "label": "E. Tabler, at 1.5",
@@ -164,14 +204,22 @@
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "1440": {
         "words": 3,
         "pill_y": null,
         "headline_lines": null,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "id": "f",
       "label": "F. Heroicons, at 1.5",

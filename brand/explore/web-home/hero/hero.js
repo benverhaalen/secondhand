@@ -1,4 +1,4 @@
-// The hero's motion: the open (the hands meet, part, and the wordmark is between them, then it settles in the header),
+// The hero's motion: the open (the wordmark with its hands stepping in beside it, then it settles in the header),
 // the wall of things drifting behind the line with items swapping out at random, and the wall speeding up and leaving
 // as the visitor scrolls or presses "See how it works". Everything runs on one clock, so it can be stepped for a check:
 // window.__hero.step(ms) advances it, and ?intro=0 or ?intro=1 skips or forces the open.
@@ -19,7 +19,7 @@
   const put = (img, p) => { img.src = p.src; img.alt = p.alt ?? p.kind; };
 
   // The wall: columns of tiles; a tile that drifts off one end comes back at the other with a new photo.
-  const cols = document.querySelector('.cols'), wall = document.querySelector('.wall'), tint = document.querySelector('.tint'), copy = document.querySelector('.copy');
+  const cols = document.querySelector('.cols'), wall = document.querySelector('.wall'), copy = document.querySelector('.copy');
   let columns = [], step = 0;
   function build() {
     cols.textContent = ''; columns = [];
@@ -57,10 +57,6 @@
       while (c.offset < 0) { c.offset += step; const t = c.tiles.shift(); c.tiles.push(t); renew(t); c.place(); }
       c.el.style.transform = `translate3d(0, ${(c.offset - step).toFixed(2)}px, 0)`;
     }
-    // The gradient wanders on three slow sines that never line up, so it never visibly repeats.
-    const s = clock / 1000;
-    if (!reduce) turn();
-    tint.style.backgroundPosition = `${50 + 30 * Math.sin(s / 23) + 12 * Math.sin(s / 9.7 + 1)}% ${50 + 26 * Math.cos(s / 31) + 9 * Math.sin(s / 13.3)}%`;
     // Leaving: the wall fades and opens up as the line rises away.
     if (opened) {
       wall.style.opacity = String(1 - smooth(0.05, 0.75, p));
@@ -69,21 +65,6 @@
       copy.style.opacity = String(1 - smooth(0.15, 0.7, p));
     }
     if (!reduce && opened) { swapIn -= dt; if (swapIn <= 0) { swap(); swapIn = rand(1600, 3200); } }
-  }
-  // The field turns into the next one: one of its three colors is swapped for that color's neighbor on the ring, over
-  // a few seconds, after a full drift; four fields there and back (C2; Ben, 08:31: "a moving gradient that slowly changes
-  // color"). In dark the home field is the deep sky, mint and aqua of --field-1 to -3, and lilac comes in as its deep.
-  const dark = html.dataset.theme === 'dark', root = getComputedStyle(html), cv = document.createElement('canvas').getContext('2d');
-  const rgb = v => { cv.fillStyle = '#000'; cv.fillStyle = v.trim(); const h = cv.fillStyle.slice(1); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); };
-  const FIELDS = dark ? [['sky', 'mint', 'aqua'], ['lilac', 'mint', 'aqua'], ['lilac', 'mint', 'sky'], ['lilac', 'aqua', 'sky']]
-    : [['sky', 'mint', 'lime'], ['sky', 'aqua', 'lime'], ['sky', 'aqua', 'mint'], ['lilac', 'aqua', 'mint']];
-  const home = Object.fromEntries(FIELDS[0].map((n, i) => [n, rgb(root.getPropertyValue(`--field-${i + 1}`))]));
-  const hue = n => home[n] ?? rgb(root.getPropertyValue(dark ? `--${n}-deep` : `--${n}`));
-  const ORDER = [0, 1, 2, 3, 2, 1], HOLD = (parseFloat(root.getPropertyValue('--drift')) || 26) * 1000, SWAP = 6000;
-  function turn() {
-    const n = Math.floor(clock / (HOLD + SWAP)), u = smooth(HOLD, HOLD + SWAP, clock % (HOLD + SWAP));
-    const a = FIELDS[ORDER[n % 6]], b = FIELDS[ORDER[(n + 1) % 6]];
-    a.forEach((name, i) => { const x = hue(name), y = hue(b[i]); tint.style.setProperty(`--field-${i + 1}`, `rgb(${x.map((v, k) => Math.round(v + (y[k] - v) * u)).join(' ')})`); });
   }
   let last = performance.now(), driven = false;
   const loop = now => { if (!driven) frame(Math.min(64, Math.max(0, now - last))); last = now; requestAnimationFrame(loop); };
@@ -102,39 +83,40 @@
     copy.animate([{ opacity: 0, transform: 'translate3d(0, 12px, 0)' }, { opacity: 1, transform: 'none' }], { duration: 700, delay: 120, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
   };
   function open() {
-    const dap = intro.querySelector('.dap'), [h1, h2] = dap.querySelectorAll('.hand'), word = dap.querySelector('.intro-word');
-    const g = (window.fitHands && fitHands(dap, word, [h1, h2])) || 24;
-    const W = word.scrollWidth; word.style.width = '0px';
-    lockup.style.visibility = 'hidden'; intro.classList.add('playing');
-    // Stop motion, not smooth (Ben, 08:31): every move jumps from frame to frame, about ten frames a second.
-    const run = [], hold = { fill: 'forwards' };
-    // 1 and 2. The dap, from Codex's sprite (sprites/dap.svg, 8 frames of 48 by 24): the hands come in, meet and bump,
-    // frames 1 to 5. The sprite is scaled so its hands stand as tall as the hands beside the word.
-    const sprite = intro.querySelector('.sprite'), u = h1.getBoundingClientRect().height / 19;
-    Object.assign(sprite.style, { width: `${48 * u}px`, height: `${24 * u}px` });
-    for (const i of sprite.children) run.push(i.animate([{ maskPosition: '0% 0' }, { maskPosition: `${400 / 7}% 0` }], { duration: 500, easing: 'steps(5, jump-none)', ...hold }));
-    run.push(sprite.animate([{ visibility: 'visible' }, { visibility: 'hidden' }], { duration: 1, delay: 640, ...hold }));
-    for (const h of [h1, h2]) run.push(h.animate([{ visibility: 'hidden' }, { visibility: 'visible' }], { duration: 1, delay: 640, ...hold }));
-    // 3. They part, and the wordmark is between them, in four frames.
-    const part = { duration: 400, delay: 680, easing: 'steps(4, jump-end)', ...hold };
-    run.push(h1.animate([{ marginRight: '0px' }, { marginRight: `${g}px` }], part));
-    run.push(h2.animate([{ transform: 'scaleX(-1)', marginLeft: '0px' }, { transform: 'scaleX(-1)', marginLeft: `${g}px` }], part));
-    run.push(word.animate([{ width: '0px', opacity: 0 }, { width: `${W}px`, opacity: 1 }], part));
+    const arrive = intro.querySelector('.arrive'), [h1, h2] = arrive.querySelectorAll('.hand'), word = arrive.querySelector('.intro-word');
+    const g = (window.fitHands && fitHands(arrive, word, [h1, h2])) || 24;
+    lockup.style.visibility = 'hidden';
+    // The hands move in code, from the icon (L58): they step in from a hand's width out to their place beside the word, in
+    // four held frames over 400 ms, like stop motion (Ben, 08:31: "they dont have to be crazy smooth"), and stop.
+    const run = [], hold = { fill: 'backwards', easing: 'steps(4, jump-end)', duration: 400, delay: 200 }, out = h1.getBoundingClientRect().width + g;
+    run.push(word.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'steps(2, jump-end)', fill: 'backwards' }));
+    // transform, not translate: hands-fit.js sets each hand on the baseline with translate, and the two add up.
+    run.push(h1.animate([{ transform: `translateX(${-out}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], hold));
+    run.push(h2.animate([{ transform: `translateX(${out}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], hold));
     const inout = 'cubic-bezier(.65,0,.35,1)';
-    // 4. The mark settles into the header, and the page comes up under it.
+    // Then the mark settles into the header, and the page comes up under it.
     const settle = () => {
-      const a = dap.getBoundingClientRect(), b = lockup.getBoundingClientRect(), k = b.height / a.height;
-      const go = dap.animate([{ transform: 'none' }, { transform: `translate(${b.left - a.left}px, ${b.top - a.top}px) scale(${k})` }], { duration: 560, easing: inout, fill: 'forwards' });
+      const a = arrive.getBoundingClientRect(), b = lockup.getBoundingClientRect(), k = b.height / a.height;
+      const go = arrive.animate([{ transform: 'none' }, { transform: `translate(${b.left - a.left}px, ${b.top - a.top}px) scale(${k})` }], { duration: 560, easing: inout, fill: 'forwards' });
       intro.animate([{ backgroundColor: getComputedStyle(intro).backgroundColor }, { backgroundColor: 'transparent' }], { duration: 560, easing: 'ease-out', fill: 'forwards' });
       setTimeout(show, 160);
       go.finished.then(() => { lockup.style.visibility = ''; intro.remove(); });
     };
     let done = false; const finish = () => { if (done) return; done = true; settle(); };
-    setTimeout(finish, 1300);
+    setTimeout(finish, 1100);
     // A click or a key skips the open.
     addEventListener('pointerdown', () => { if (done) return; run.forEach(a => a.finish()); finish(); }, { once: true });
     addEventListener('keydown', () => { if (done) return; run.forEach(a => a.finish()); finish(); }, { once: true });
   }
+
+  // Hover (L57): the field grows from where the pointer comes in and drains toward where it leaves, so each pill is told
+  // the point, and how far the circle must reach to cover it from there.
+  for (const el of document.querySelectorAll('.pill, header nav.pages a, .menu-btn')) for (const type of ['pointerenter', 'pointerleave']) el.addEventListener(type, e => {
+    if (e.pointerType !== 'mouse') return;
+    const r = el.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    el.style.setProperty('--px', `${x}px`); el.style.setProperty('--py', `${y}px`);
+    el.style.setProperty('--reach', `${2 * Math.ceil(Math.hypot(Math.max(x, r.width - x), Math.max(y, r.height - y)))}px`);
+  });
 
   // An automated check (navigator.webdriver) sees the page as it settles, unless it asks for the open with ?intro=1.
   const wantIntro = q.get('intro') === '1' || (q.get('intro') !== '0' && !reduce && !navigator.webdriver && !sessionStorageSeen());
@@ -147,20 +129,21 @@
     const a = xh({ weight: cs.fontWeight, family: cs.fontFamily }), b = xh({ weight: hl.fontWeight, family: hl.fontFamily });
     if (a && b) html.style.setProperty('--hl-fit', (a / b).toFixed(3));
   }
-  // The hands as tall as the wordmark's ink and on its baseline, in the header and on either side of "secondhand" in the
-  // line (hands-fit.js; Ben, 07:34 and 08:31). The line's size follows the width, so they fit again on a resize.
-  // On a narrow screen "secondhand" with its hands can be wider than the column. The hands first close in to the
-  // smallest gap, 4; if it still does not fit, the line drops to the next size on the type scale, 36.
+  // The hands as tall as the wordmark's ink and on its baseline, in the header (hands-fit.js; Ben, 07:34 and 08:31). The line
+  // has no hands since 10:23 ("remove the hands in the hero with the wordmark text").
   const fitLockup = () => {
-    if (!window.fitHands) return;
-    const head = document.querySelector('header .lockup'), lock = document.querySelector('.hl-lock'), h1 = document.querySelector('.hero-t');
-    const line = most => fitHands(lock, lock.querySelector('.hl'), lock.querySelectorAll('.hand'), most);
-    const fits = () => lock.getBoundingClientRect().width <= h1.clientWidth + 1;
-    if (head) fitHands(head, head.querySelector('.wordmark'), head.querySelectorAll('.hand'));
-    h1.style.fontSize = ''; line();
-    if (!fits()) line(4);
-    if (!fits()) { h1.style.fontSize = 'var(--t-36)'; fit(); line(); }
+    const head = document.querySelector('header .lockup'), hl = document.querySelector('.hero-t .hl'), h1 = document.querySelector('.hero-t');
+    if (window.fitHands && head) fitHands(head, head.querySelector('.wordmark'), head.querySelectorAll('.hand'));
+    // No phrase breaks; if one is wider than the column, the line drops to the next size on the type scale, 36.
+    const room = h1.parentElement.clientWidth, fits = () => [...h1.querySelectorAll('.ph')].every(p => p.getBoundingClientRect().width <= room + 1);
+    h1.style.fontSize = '';
+    h1.classList.remove('tight');
+    if (!fits()) { h1.style.fontSize = 'var(--t-36)'; fit(); }
+    if (!fits()) h1.classList.add('tight');
   };
+  // The header's fade comes in once the page has scrolled, and goes at the top (L60; actions.md).
+  const scrolled = () => html.classList.toggle('scrolled', scrollY > 0);
+  addEventListener('scroll', scrolled, { passive: true }); scrolled();
   document.fonts.ready.then(() => { fit(); fitLockup(); });
   addEventListener('resize', () => requestAnimationFrame(fitLockup));
 

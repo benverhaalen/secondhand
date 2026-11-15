@@ -1,0 +1,91 @@
+{
+  "board": "Section 2: what do I do?",
+  "question": "How does a stranger see the three steps, from one photo to sold, in the real app?",
+  "faces": true,
+  "variants": [
+    {
+      "390": {
+        "words": 40,
+        "pill_y": null,
+        "headline_lines": null,
+        "photos": 1,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
+      },
+      "1440": {
+        "words": 51,
+        "pill_y": 12,
+        "headline_lines": null,
+        "photos": 1,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
+      },
+      "id": "a",
+      "label": "A. The scroll: one step per screen, the phone stays and its screen changes",
+      "brand_errors": [],
+      "brand_warnings": 1
+    },
+    {
+      "390": {
+        "words": 43,
+        "pill_y": null,
+        "headline_lines": null,
+        "photos": 1,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
+      },
+      "1440": {
+        "words": 54,
+        "pill_y": 12,
+        "headline_lines": null,
+        "photos": 1,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
+      },
+      "id": "b",
+      "label": "B. One screen: three steps beside one phone",
+      "brand_errors": [],
+      "brand_warnings": 2
+    },
+    {
+      "390": {
+        "words": 27,
+        "pill_y": null,
+        "headline_lines": null,
+        "photos": 3,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
+      },
+      "1440": {
+        "words": 17,
+        "pill_y": 12,
+        "headline_lines": null,
+        "photos": 3,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
+      },
+      "id": "c",
+      "label": "C. Three phones in a row, a step under each",
+      "brand_errors": [],
+      "brand_warnings": 2
+    }
+  ]
+}

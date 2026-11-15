@@ -1,0 +1,32 @@
+{
+  "why": "Section 2 of home (board 04, option C): one step per phone, each shot scrolled to the one moment that sells its step (Ben, 10:24 and 10:32). Drawn by app-shots.mjs from the app's own build on every build (L61). Light, the app's default mode: on the dark page a light screen reads as the product, and the camera is dark in both modes.",
+  "shots": [
+    {
+      "id": "step-1-photo",
+      "path": "/camera",
+      "height": 664,
+      "why": "Step 1: the camera saying what to frame, with the thing in it"
+    },
+    {
+      "id": "step-2-price",
+      "path": "/item/it_tee/plan?world=clearing",
+      "height": 664,
+      "why": "Step 2: the plan as it opens: what you want, what you get on each, and the price set from what the same tee sold for, each tick a sale. The plan sheet is taller than a phone's screen, so it is drawn on a tall page and cut from the sheet's top edge",
+      "moment": "Plan",
+      "viewport": 2400,
+      "dark": false,
+      "keep": "Each tick is a sale like it",
+      "from": "sheet"
+    },
+    {
+      "id": "step-3-sold",
+      "path": "/item/it_tee?world=clearing",
+      "height": 664,
+      "why": "Step 3: what you got after fees, sold on Depop, and eBay's listing taken down",
+      "moment": "$36.21",
+      "top": 48,
+      "dark": false,
+      "keep": "Taken down"
+    }
+  ]
+}

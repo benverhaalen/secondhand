@@ -2,7 +2,8 @@
 import { read, err, lineOf } from './util.mjs';
 
 const UI = /\.(tsx|jsx|ts|js|css|scss|html|vue|svelte)$/;
-const NOT_APP = /^(brand|research|assets|scripts|spec|\.agents|node_modules)\/|(^|\/)\.|\.test\.|\.config\.|\.generated\./;
+// The website pages being built with Ben are held to the scales too (site.mjs says which); the rest of brand/ is not code.
+const NOT_APP = /^(?!brand\/explore\/web-home\/(?:hero\/|boards\/(?!0[1-4]-)|site\.css$))(brand|research|assets|scripts|spec|\.agents|node_modules)\/|(^|\/)\.|\.test\.|\.config\.|\.generated\.|\/(?:out|renders|photos)\//;
 
 export function scales(constitution) {
   const row = id => (constitution.match(new RegExp(`^\\|\\s*${id}\\s*\\|.*$`, 'm')) ?? [''])[0];

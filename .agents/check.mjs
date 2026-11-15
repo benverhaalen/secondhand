@@ -14,6 +14,7 @@ import { research } from './checks/research.mjs';
 import { secrets } from './checks/secrets.mjs';
 import { ui } from './checks/ui.mjs';
 import { brand } from './checks/brand.mjs';
+import { site } from './checks/site.mjs';
 import { vague } from './checks/vague.mjs';
 import { logging } from './checks/logging.mjs';
 import { code } from './checks/code.mjs';
@@ -55,7 +56,7 @@ const results = [
   ...(touched.length ? [{ level: 'warn', where: `${touched.slice(0, 3).join(', ')}${touched.length > 3 ? ` and ${touched.length - 3} more` : ''}`, msg: 'Tier 1 (.agents/thinking.md): full decide, research behind it, owner\'s words for taste, fresh review, dependents updated' }] : []),
   ...t('layout', () => layout(root)).map(msg => ({ level: 'error', where: 'layout', msg })),
   ...t('links', () => links(root, { files, awaited: JSON.parse(read('.agents/awaited.json') || '[]') })), ...t('provenance', () => provenance(root, { wordsBase })), ...t('research', () => research(root, { files })),
-  ...t('secrets', () => secrets(root, { files })), ...t('ui', () => ui(root, { files })), ...t('brand', () => brand(root, { files })), ...t('vague', () => vague(root)), ...t('logging', () => logging(root, { files })),
+  ...t('secrets', () => secrets(root, { files })), ...t('ui', () => ui(root, { files })), ...t('brand', () => brand(root, { files })), ...t('site', () => site(root, { files })), ...t('vague', () => vague(root)), ...t('logging', () => logging(root, { files })),
   ...t('code', () => code(root, { files, changed })), ...t('parts', () => parts(root, { files })), ...t('screens', () => screens(root, { files })), ...t('picks', () => picks(root, { files })), ...t('motion', () => motion(root, { files })), ...t('rules', () => rules(root)),
   ...t('waysout', () => waysOut(root)), ...t('bundle', () => bundle(root, { files })), ...t('hermes', () => hermes(root, { files })), ...t('standards', () => standards(root, { files })), ...t('interactions', () => interactions(root, { files })),
   ...t('rests', () => rests(root, { commits: commitsSince(root, base) })), ...t('states', () => states(root, { commits: commitsSince(root, base) })),

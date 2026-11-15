@@ -5,8 +5,10 @@ name: web section boards
 # recorded. Recordings come only from a manual run with "record" on.
 on:
   push:
-    branches: [claude/project-thread-dbgps7]
-    paths: ['brand/explore/web-home/**', '!brand/explore/web-home/boards/*/out/**', '!brand/explore/web-home/hero/out/**', 'brand/tokens.css', '.github/workflows/web-boards.yml']
+    branches: [claude/project-thread-dbgps7, main]
+    # The app's screens on the site are redrawn whenever the app changes (L61; Ben, 10:24: "rerender on each build because
+    # the app updates a lot").
+    paths: ['brand/explore/web-home/**', '!brand/explore/web-home/boards/*/out/**', '!brand/explore/web-home/hero/out/**', '!brand/explore/web-home/app/**', 'brand/tokens.css', '.github/workflows/web-boards.yml', 'app/src/**', 'app/assets/**', 'app/package-lock.json']
   workflow_dispatch:
     inputs:
       record: { description: 'Also record the motion boards and the hero open (mp4)', type: boolean, default: false }
@@ -16,7 +18,7 @@ concurrency: web-boards
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -32,9 +34,10 @@ jobs:
           boards=""; for d in $W/boards/*/; do
             if [ $all = yes ] || printf '%s\n' "$files" | grep -v '/out/' | grep -Eq "^${d}|^$W/boards/(render|audit)\.mjs$"; then boards="$boards $d"; fi; done
           hands=no; { [ $all = yes ] || printf '%s\n' "$files" | grep -v '/out/' | grep -q "^$W/boards/03-hands/"; } && hands=yes
-          hero=no; { [ $all = yes ] || printf '%s\n' "$files" | grep -v '/out/' | grep -Eq "^$W/(hero|photos/wall)/|^$W/boards/audit\.mjs$"; } && hero=yes
-          echo "boards=$boards" >> "$GITHUB_OUTPUT"; echo "hands=$hands" >> "$GITHUB_OUTPUT"; echo "hero=$hero" >> "$GITHUB_OUTPUT"
-          echo "boards:${boards:- none}; hand sheets: $hands; hero: $hero"
+          shots=no; { [ $all = yes ] || printf '%s\n' "$files" | grep -Eq "^app/(src|assets)/|^app/package-lock\.json$|^$W/app-s(creens\.json|hots\.mjs)$"; } && shots=yes
+          hero=no; { [ $all = yes ] || [ $shots = yes ] || printf '%s\n' "$files" | grep -v '/out/' | grep -Eq "^$W/(hero|photos/wall)/|^$W/boards/audit\.mjs$"; } && hero=yes
+          echo "boards=$boards" >> "$GITHUB_OUTPUT"; echo "hands=$hands" >> "$GITHUB_OUTPUT"; echo "hero=$hero" >> "$GITHUB_OUTPUT"; echo "shots=$shots" >> "$GITHUB_OUTPUT"
+          echo "boards:${boards:- none}; hand sheets: $hands; hero: $hero; app shots: $shots"
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - name: Install Playwright and Chromium
@@ -57,25 +60,46 @@ jobs:
           else
             echo "::warning::BRAND_FONTS is not set, so the boards are drawn in a fallback face"
           fi
+      # The app's own screens, drawn from its web build in the brand faces, for the site (app-shots.mjs). A screen that comes
+      # out blank fails the run; the site never keeps a stale copy.
+      - name: Install the app
+        if: steps.changed.outputs.shots == 'yes'
+        run: npm ci
+        working-directory: app
+      - name: Draw the app screens the site shows
+        id: shots
+        if: steps.changed.outputs.shots == 'yes'
+        continue-on-error: true
+        run: node brand/explore/web-home/app-shots.mjs
       - name: Draw the boards this push touched
+        id: boards
         if: steps.changed.outputs.boards != ''
+        continue-on-error: true
         env: { RECORD: "${{ inputs.record && '1' || '0' }}" }
         run: node brand/explore/web-home/boards/render.mjs ${{ steps.changed.outputs.boards }}
       - name: Draw every hand position in each pack
         if: steps.changed.outputs.hands == 'yes'
         run: node brand/explore/web-home/boards/03-hands/poses.mjs
       - name: Check the hero on every screen
+        id: hero
         if: steps.changed.outputs.hero == 'yes'
+        continue-on-error: true
         env: { RECORD: "${{ inputs.record && '1' || '0' }}" }
         run: |
           node brand/explore/web-home/hero/photos.mjs
-          node brand/explore/web-home/hero/check.mjs || echo "::warning::the hero check found a screen that breaks; see hero/out/audit.json"
+          node brand/explore/web-home/hero/check.mjs
       - name: Commit the renders
         run: |
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
-          git add brand/explore/web-home/boards brand/explore/web-home/hero
+          git add brand/explore/web-home/boards brand/explore/web-home/hero brand/explore/web-home/app
           git commit -m "test(web): section boards drawn in the brand faces" || exit 0
           # Two runs can overlap: the newer run's renders win any clash over the same out/ files, since they are drawn
           # from the newer code.
           git pull --no-rebase -X ours origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"
+      # The renders are committed either way, so the failure can be seen; then the run fails (web.md W14).
+      - name: Fail when a board or the hero broke a brand rule or drew in a fallback face
+        if: steps.boards.outcome == 'failure' || steps.hero.outcome == 'failure' || steps.shots.outcome == 'failure'
+        run: |
+          echo "::error::a board or the hero failed: see its out/audit.json"
+          exit 1

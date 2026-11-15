@@ -4,6 +4,7 @@
 // Each variant (<id>.html, listed in board.json) is drawn at 1440 x 900 and 390 x 844, first screen only, with the
 // faces from BRAND_FONTS (or fonts/) injected, and checked with scripts/brand-check.mjs on the web medium.
 // Writes <board>/out/<id>-1440.png, <id>-390.png, audit.json and board.png (the variants side by side, captioned).
+// Exits 1 when a variant has a brand error or the faces did not load (FALLBACK=1 lets a fallback face through).
 // The board page embeds the licensed faces, so it is drawn from a temp folder and never written into the repo.
 // A board with "motion": true is drawn with its animations running and paused at 30 s, and each variant also gets a
 // motion audit (what animates, how fast, the text contrast at its worst moment, how much of the screen shows clothing,
@@ -12,10 +13,11 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { brandFaces, check, playwright } from '../../../../scripts/brand-check.mjs';
+import { brandFaces, check, facesDrawn, playwright, routeFaces } from '../../../../scripts/brand-check.mjs';
 import { contrastFloor, motionFacts, seek } from './audit.mjs';
+import { HELD } from '../../../../.agents/checks/site.mjs';
 
 const root = resolve(import.meta.dirname, '../../../..');
 const tokens = readFileSync(join(root, 'brand/tokens.css'), 'utf8');
@@ -34,6 +36,8 @@ const firstScreen = () => {
     fonts: [...document.fonts].filter(f => f.status === 'loaded').map(f => `${f.family} ${f.weight}`) };
 };
 
+// A board fails when a variant has a brand error or is drawn in a fallback face (web.md W14); the renders are still written.
+const failed = [];
 for (const dir of process.argv.slice(2).map(d => resolve(d))) {
   const board = JSON.parse(readFileSync(join(dir, 'board.json'), 'utf8')), out = join(dir, 'out'); mkdirSync(out, { recursive: true });
   const audit = { board: board.title, question: board.question, faces: !!faces, variants: [] };
@@ -42,14 +46,15 @@ for (const dir of process.argv.slice(2).map(d => resolve(d))) {
     for (const [w, h] of [[1440, 900], [390, 844]]) {
       const open = async (opts = {}) => {
         const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 2, reducedMotion: board.motion ? 'no-preference' : 'reduce', ...opts });
+        if (faces) await routeFaces(ctx);
         const page = await ctx.newPage();
         if (faces) await page.addInitScript(css => { document.addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = css; document.head.append(s); }); }, faces);
-        await page.goto(pathToFileURL(file).href); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(300);
+        await page.goto(pathToFileURL(file).href); await page.evaluate(() => Promise.all([...document.fonts].map(f => f.load().catch(() => null)))); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(300);
         return { ctx, page };
       };
       const { ctx, page } = await open();
       if (board.motion) await seek(page, 30000);
-      row[w] = await page.evaluate(firstScreen);
+      row[w] = { ...(await page.evaluate(firstScreen)), faces: await facesDrawn(page, tokens) };
       await page.screenshot({ path: join(out, `${v.id}-${w}.png`) });
       if (board.motion) {
         Object.assign(row[w], await page.evaluate(motionFacts), { contrast_floor: await contrastFloor(page) });
@@ -77,6 +82,12 @@ for (const dir of process.argv.slice(2).map(d => resolve(d))) {
     console.log(`${v.id}: ${errors.length} error(s), ${row[1440].words} words on the first screen, pill at ${row[1440].pill_y}px` +
       (board.motion ? `, contrast floor ${row[390].contrast_floor}:1 phone and ${row[1440].contrast_floor}:1 desktop, ${Math.round(row[390].clothing_share * 100)}% clothing on a phone` : ''));
   }
+  audit.faces = audit.variants.every(r => r[1440].faces && r[390].faces);
+  // Only a held board fails the run; a round already picked (01 to 04) is told what to fix until its turn (web.md W14).
+  const held = HELD.test(relative(root, dir).split(sep).join('/') + '/');
+  if (!held) { if (!audit.faces || audit.variants.some(r => r.brand_errors.length)) console.warn(`warn: ${board.title}: an older board with findings; it is told, not held`); }
+  else if (!audit.faces) failed.push(`${board.title}: drawn in a fallback face`);
+  if (held) failed.push(...audit.variants.filter(r => r.brand_errors.length).map(r => `${board.title} ${r.id}: ${r.brand_errors.length} brand error(s)`));
   writeFileSync(join(out, 'audit.json'), JSON.stringify(audit, null, 2) + '\n');
   // The board: desktop renders side by side with the phone render beside each, and the measured lines under them.
   const cell = v => { const a = audit.variants.find(r => r.id === v.id), d = a[1440];
@@ -91,7 +102,7 @@ for (const dir of process.argv.slice(2).map(d => resolve(d))) {
     <h1>${board.title}</h1><p>${board.question} ${board.purpose} ${faces ? 'Drawn in the brand faces.' : 'Drawn in a fallback face: the brand faces were not available.'}</p><div class="grid">${board.variants.map(cell).join('')}</div>`;
   const tmp = mkdtempSync(join(tmpdir(), 'board-')), boardHtml = join(tmp, 'board.html');
   writeFileSync(boardHtml, html.replaceAll('src="', `src="${pathToFileURL(out).href}/`));
-  const page = await browser.newPage({ viewport: { width: 2400 * board.variants.length / 3 + 96, height: 900 }, deviceScaleFactor: 2 });
+  const page = await browser.newPage({ viewport: { width: 2400 * board.variants.length / 3 + 96, height: 900 }, deviceScaleFactor: 2 }); if (faces) await routeFaces(page);
   await page.goto(pathToFileURL(boardHtml).href); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(300);
   await page.screenshot({ path: join(out, 'board.png'), fullPage: true }); await page.close();
   rmSync(tmp, { recursive: true, force: true });
@@ -102,3 +113,5 @@ for (const dir of process.argv.slice(2).map(d => resolve(d))) {
   }
 }
 await browser.close();
+for (const f of failed) console.log(`error: ${f}`);
+process.exit(failed.length && process.env.FALLBACK !== '1' ? 1 : failed.some(f => !/fallback face/.test(f)) ? 1 : 0);
