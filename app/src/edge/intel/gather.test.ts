@@ -156,3 +156,43 @@ test('a price-only arrival cannot make repeated raw comp ids count as new sales'
     kind: 'sold', level: 'variant', condition: 'good', w_match: 1, w_extract: 1, may_model: false, citation: 'source:repeated' };
   assert.equal(measure([arr([...Array.from({ length: 6 }, () => full), row(4000, 0)])], NOW).n_eff, 2);
 });
+
+
+test('learned contribution changes the next source order within a widening step and keeps fallback steps ordered', async () => {
+  const { memoryStore } = await import('../../engines/param/param.ts');
+  const { declareLearning, updateContribution } = await import('./learn.ts');
+  const params = memoryStore(); declareLearning(params);
+  const seen: string[] = [];
+  const source = (target_id: string, n = 1): GatherStep => ({ ...step(n, []), target_id, p95_ms: 100,
+    run: async () => { seen.push(target_id); return { arrivals: [], searched: [], cents: 0 }; } });
+  const steps = [source('a'), source('b'), source('later', 2)];
+  await run([], steps, { learning: params });
+  assert.deepEqual(seen, ['a', 'b', 'later']); seen.length = 0;
+  updateContribution(params, { kind: 'price_now', stage: 'settled', called: ['a', 'b'], used: ['b'] }, daysAgo(0));
+  await run([], steps, { learning: params });
+  assert.deepEqual(seen, ['b', 'a', 'later'], 'a moved source weight must alter real execution order');
+});
+
+test('a thrown gather step retains its cause and reports it to the request logger', async () => {
+  const errors: unknown[] = [];
+  const r = await run([], [{ n: 1, est_cents: 0, run: async () => { throw new Error('page changed'); } }],
+    { onError: (_where: string, error: unknown) => errors.push(error) });
+  assert.equal(errors.length, 1);
+  assert.match(r.records[0].error ?? '', /page changed/);
+});
+
+test('searchStep releases its frame listener on deadline without counting a stalled search as empty', async () => {
+  const { searchStep } = await import('./gather.ts');
+  const { createLog, memorySink } = await import('../../../../log/index.js');
+  let listeners = 0;
+  const search = searchStep({ source: 'poshmark', text: 'jacket',
+    ctx: { body: {}, user_id: 'person_a', visitor_id: null, params: {}, query: new URLSearchParams(), headers: new Headers(), request_id: 'deadline',
+      log: createLog({ src: 'test', build: 'test', sink: memorySink() }) },
+    handler: async ctx => { assert.equal(ctx.user_id, 'person_a'); return { status: 202, body: { id: 'job_stalled' } }; },
+    jobs: { framesAfter: () => [], listen: () => { listeners++; return () => { listeners--; }; } },
+  });
+  const result = await gather({ answer: base([]), plan, arrivals: [], product: 'p', steps: [search], params: { deadline_ms: 10 } });
+  assert.equal(result.stop, 'deadline');
+  assert.equal(listeners, 0, 'deadline must release the search subscription');
+  assert.deepEqual(result.answer.searched.slice(-1).map(s => s.outcome), ['timeout']);
+});
