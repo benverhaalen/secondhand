@@ -1834,6 +1834,12 @@ Ben, same thread, 09:47 UTC.
 
 Used in: [brand/constitution.md Art. 7.11 to 7.16](../brand/constitution.md#article-7-space-and-layout), `scripts/composition.mjs` (U9 to U14), [the audit](../research/cross-cutting/ben/why-the-app-missed-the-mocks.md), [the breaks log](../features/app/breaks.md).
 
+## 2026-11-15 show how deep the project goes, and the novel ways we used the technology
+
+Ben, project chat, 09:57 UTC.
+> add more into it for dig deep how we created a project with absurd depth. also absurd depth in how we used the technologies and used them in a novel way.
+
+Used in: [devpost.md](devpost.md#how-deep-we-dug), [pitch.md](pitch.md#how-deep-we-dug).
 ## 2026-11-15 every page earns its spot, a title on every tab, Today sorted differently, the bar and the plus
 
 Ben, thread "Roll the UI system out everywhere", 2026-11-15 09:56 UTC.
@@ -1862,3 +1868,15 @@ Nate, orchestrator's session, 2026-11-15, about 04:30 Central.
 > get all new leads in replacing old ones with very heavy context windows
 
 Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills).
+
+## 2026-11-15 nate the trial workspace is the one the judges see
+Nate, the Databricks lead's session, 2026-11-15, about 04:00 Central, as that lead relayed it to the orchestrator (not heard first hand).
+> thats what we have, yeah lets do the trial
+
+Used in: [packet 71](../.agents/team/packets/team/71-databricks-handoff.md), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate the dashboard is rebuilt before any deploy
+Nate, orchestrator's session, 2026-11-15, about 05:00 Central, asked whether to force the Databricks deploy before the dashboard is rebuilt.
+> Rebuild first
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 71](../.agents/team/packets/team/71-databricks-handoff.md).

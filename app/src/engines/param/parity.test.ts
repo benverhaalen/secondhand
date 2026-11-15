@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { memoryStore, scopeKey, VersionConflict, type Param, type Declared, type Read, type Scope, type Observation } from './param.ts';
 
@@ -75,7 +75,7 @@ test('B1 TypeScript rows are found by Python and Python rows by TypeScript for a
     s.promote(declaration.name, scope, p.version, 0, '2026-01-01');
     return { key: scopeKey(scope), row: s.rows(declaration.name, scope)[0] };
   });
-  const output = execFileSync('./.venv/bin/python', ['-c', `
+  const output = execFileSync(existsSync('./.venv/bin/python') ? './.venv/bin/python' : 'python', ['-c', `
 import json, sys
 sys.path.insert(0, 'jobs/param')
 from registry import MemoryStore, scope_key
