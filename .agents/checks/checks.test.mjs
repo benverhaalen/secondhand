@@ -307,6 +307,8 @@ test('picks L7: a mono face, Marist or Inter in the brand values or the app fail
 test('picks L38: the text face is PP Neue Montreal, named first', async () => {
   assert.match(await pick('L38', { 'brand/tokens.css': ':root { --font-text: "Neue Montreal", "Noto Sans", sans-serif; }' }), /starts with "Neue Montreal"/);
   assert.equal(await pick('L38', { 'brand/tokens.css': ':root { --font-text: "PP Neue Montreal", "Noto Sans", sans-serif; }' }), '');
+  assert.match(await pick('L38', { 'brand/tokens.css': ':root { --font-text: "PP Neue Montreal", sans-serif; --w-regular: 400; --w-medium: 500; }' }), /--w-regular is 400: the text face has one weight/);
+  assert.equal(await pick('L38', { 'brand/tokens.css': ':root { --font-text: "PP Neue Montreal", sans-serif; --w-regular: 500; --w-medium: 500; }' }), '');
 });
 
 test('picks L44: a dark card too close to the page, pure white text, a yellow field and a glow all fail', async () => {

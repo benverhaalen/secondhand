@@ -43,7 +43,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L35 | The black button's depth is a faint glow | [round 8](../product/words.md#2026-11-15-round-8-picks) |
 | L36 | No emoji, anywhere | [ban all emojis](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
 | L37 | Things of a relatively similar size are one standard width and height, whatever is in them | [standard sizes](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
-| L38 | The text face is PP Neue Montreal 2.6, Book and Medium, tailored to how it sits | [round 10](../product/words.md#2026-11-15-round-10-picks) |
+| L38 | The text face is PP Neue Montreal 2.6 Medium (500), everywhere in the app, tailored to how it sits. Closes R42 | [round 10](../product/words.md#2026-11-15-round-10-picks), [the text weight is 500](../product/words.md#2026-11-15-the-text-weight-is-500) |
 | L39 | Live is blue, sold is mint, and needs you is yellow | [round 10](../product/words.md#2026-11-15-round-10-picks) |
 | L40 | What separates: the six rules in constitution Art. 5. A box that holds content is open again as R29 | [round 10](../product/words.md#2026-11-15-round-10-picks), [the gray box](../product/words.md#2026-11-15-a-constitution-with-little-wiggle-room-the-heavy-black-the-black-outline-and-the-gray-box) |
 | L41 | The sum of what you keep is a receipt | [round 10](../product/words.md#2026-11-15-round-10-picks) |
@@ -91,7 +91,6 @@ Round 10 picks and notes are in [words.md](../product/words.md#2026-11-15-round-
 | R39 | A device beyond the drifting gradient. Ben: "a drifting gradient is a bit standard as a device". Now with the thread "Make gradients and colors carry meaning" | Four on the picks page | Ben picks |
 | R40 | What the app optimizes for. Ben: "what are we optimizing for in the long run" | A: decisions answered. B: time from photo to paid. C: money kept. For Ben and Nate | A (agent) |
 | R41 | Where the wordmark sits in the app. Changes L3 | A: centered at the top, as locked. B: left, with the inbox on the right, as the Today mock Ben liked draws it | A (agent) until Ben says |
-| R42 | The weight of the text. Ben, 2026-11-15 02:46: "the fonts are a bit lighter", "a middle ground would be good". Changes L38 | A: PP Neue Montreal Book, as locked (stroke 65). B: the older Neue Montreal 1.0 Regular (stroke 80) until PP's own Regular is in hand. C: Book, with Medium (98) for titles and money | B (agent) |
 
 Small calls the mocks forced, each one line in [screens.css](explore/round-11/mock/screens.css): a filter chip is 36 tall, which is in no scale; buttons in a box are 44 and the bar at the foot of a sale is 48; the + in the tab bar is a gray circle with no label. The mocks run through the brand checker with `node scripts/brand-check.mjs brand/explore/round-11/mock/check.html --medium app`.
 
