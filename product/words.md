@@ -2172,9 +2172,35 @@ Nate, buying-conversation lead's session, 2026-11-15, about 06:10 Central.
 
 Used in: [packet 78](../.agents/team/packets/team/78-buying-conversation-handoff.md) (the Vercel row).
 
-## 2026-11-15 nate rewrite the history; no mention of reverse engineering; make sure Databricks works and accounts for everything planned
-Nate, orchestrator's session, 2026-11-15, about 07:05 Central. The first line answers the orchestrator's question about three Dupe rows left in git history.
+## 2026-11-15 nate rewrite the history; a phrase to remove from the repo; make sure Databricks works and accounts for everything planned
+Nate, orchestrator's session, 2026-11-15, about 07:05 Central. The first line answers the orchestrator's question about three Dupe rows left in git history. Two words of the second line are left out, marked [...], because the line itself asks that they not appear in the repo.
 > Rewrite it
-> Please also get rid of any mention of reverse engineering from the repo, rewrite history, and focus on ensuring databricks works, that we've accounted for everything fully planned and currently being built that alligns with the product
+> Please also get rid of any mention of [...] from the repo, rewrite history, and focus on ensuring databricks works, that we've accounted for everything fully planned and currently being built that alligns with the product
 
 Used in: [the finalization spec](../spec/plans/finalization.md), the data lead's brief.
+
+## 2026-11-15 nate search is the black bar, the home has a top bar and carousels, and a focused search turns white while the answer builds and each source animates in
+Nate, the app-wiring lead's session, 2026-11-15, about 06:10 Central (machine clock), on seeing the plain `/dev/search` scaffold.
+> This isnt what we want, there is no where we look at the top, there is no for sale in the search box, the black search bar is also the black add button, you click it and then select shop or sell, you can also add a listing in the button inside of the my shopping page. Theres also a small bar at the top of thier home view, which does have like announcments or notifications, followed by carousels of recommended products, maybe insights and findings from research below it. The search box then gets focused when pressed, turning everything in the background white, with the intelligent ui then building out the full response in black font, with the generative widgets coming in and such. During the loading periods for waiting for search, or as stuff searches in in real time, thats when we animate the source in, wiht its listings, like a logo of it. Utilize intelligent ui and ux component building. Align with what bens components are from his design.
+
+Used in: the app-wiring lead's search takeover (packet 81).
+
+## 2026-11-15 nate after the first answer the bar drops to the bottom and it becomes a chat, kept on the device, not on our servers
+Nate, the app-wiring lead's session, 2026-11-15, about 06:15 Central (machine clock), two messages after the one above.
+> after the first output, the bar goes to the bottom, and the view becomes a chat, until cancelled out, then saved on expo local object store
+
+> not saved in our servers, on web we can save messages i guess to persist with browser cookies
+
+Used in: the app-wiring lead's search takeover (packet 81).
+
+## 2026-11-15 nate the + keeps Ben's choices
+Nate, the app-wiring lead's session, 2026-11-15, about 06:20 Central (machine clock), on "you click it and then select shop or sell" two entries above.
+> Dont go by my choice then, he has some select
+
+Used in: the app-wiring lead's search takeover (packet 81): the ＋ keeps New's own choices (app/src/ui/parts/takeover.tsx).
+
+## 2026-11-15 nate the history rewrite runs after judging
+Nate, orchestrator's session, 2026-11-15, about 07:40 Central, answering "Run the history rewrite right after judging with Ben stopped, or now?"
+> After judging
+
+Used in: [the finalization spec](../spec/plans/finalization.md#11-the-history-rewrite-after-judging).
