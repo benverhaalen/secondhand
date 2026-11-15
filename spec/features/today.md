@@ -14,7 +14,7 @@ The hassle: a seller on five sites gets offers, questions, pickups and sale emai
 | 5. Handled line | "Handled 14 things today" opens the auto log: every auto action with why, time and Undo while allowed. |
 | 6. Held replies | A card per `unbacked_claim`: the draft with the unbacked claim marked, the reason, and Send without it, Edit, It's true, Don't send. |
 | 7. Rule expiring | A rule unused for 14 days gets one card: "Still accept $40 or more on the jacket?" with Keep it and Let it lapse. |
-| 8. Alerts | A push only for a card whose deadline is within an hour; everything else waits for the batch. |
+| 8. Alerts | A push only for a card whose deadline is within an hour; everything else waits for the batch. The full proposal, which also pushes a sale and an offer you'd take, is [notifications.md](../notifications.md) (*agent proposal*, open). |
 | 9. Notices | Cards that ask nothing, among them `value_moved` and `demand_rose` on an item the person owns ([market](market.md#one-catalog)); one tap opens the item, one dismisses (*agent proposal*). |
 
 Goal progress is a You number ([insights.md](insights.md)), never a card. Dibs, lost dibs and watch duplicates are not cards.

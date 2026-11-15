@@ -105,7 +105,7 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
     if (!seen) continue;
     // What has been done to the letters: a transform, a filter or a fade anywhere above them, and a shadow, stroke, outline or motion on them.
     const fx = []; for (let a = p; a && a !== document.body && !a.hasAttribute('data-view'); a = a.parentElement) { const s = getComputedStyle(a);
-      if (s.transform !== 'none') fx.push('transformed'); if (s.filter !== 'none') fx.push('filtered'); if (Number(s.opacity) < 1) fx.push('faded'); if (s.animationName !== 'none') fx.push('moving'); }
+      if (s.transform !== 'none' && !/^matrix\(1, 0, 0, 1, 0, 0\)$|^matrix3d\(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1\)$/.test(s.transform)) fx.push('transformed'); if (s.filter !== 'none') fx.push('filtered'); if (Number(s.opacity) < 1) fx.push('faded'); if (s.animationName !== 'none') fx.push('moving'); }
     if (cs.textShadow !== 'none') fx.push('shadowed'); if (parseFloat(cs.webkitTextStrokeWidth) > 0) fx.push('stroked'); if (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0) fx.push('outlined');
     const family = first(cs.fontFamily);
     // An amount is alone when no words sit with it: in its own box, or in the row or block that holds it, up to three boxes out and never the whole view.

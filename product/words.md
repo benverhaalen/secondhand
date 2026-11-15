@@ -1093,3 +1093,6 @@ Ben, project chat, 05:05:
 > try to speed up what logging found slowed things down hiilclimb it using the hillclimbing skills from either poteto or like the claude hillclimb skill or docs type thing
 
 Used in: [log/README.md](../log/README.md#hill-climb), the render and image-gen speedups of 2026-11-15.
+## 2026-11-15 notifications reasoned from business, ux, psychology and personas
+Ben, project chat, 2026-11-15 05:23 UTC.
+> also i hope youve thought about notifications and all that. what info needs to be in them. whats useful. everything from a business entrepreneur ui ux psychology and persona type thing.
