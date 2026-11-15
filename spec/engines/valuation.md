@@ -49,7 +49,7 @@ It makes no outward call to a site. Every read goes through [protocol and adapte
 | Listing quality | photo count, quality and title form ([score](../features/score.md)) | per listing |
 | Outcomes | every sale, end and stale event on our own listings, with the valuation frozen at listing time | per event |
 
-A row with `may_model: false` (eBay API rows and Apify rows, per [data use](../data-use.md)) can be shown, cited and priced from as a comp in a shown range ([Nate](../../product/words.md#2026-11-15-nate-rows-that-may-not-be-modelled-on-may-price-a-shown-range): "they can, they are verified real data"). It is never used to fit a weight, a model or a calibration score.
+A row with `may_model: false` (eBay API rows and Apify rows, per [data use](../data-use.md)) can be shown, cited and priced from as a comp in a shown range ([Nate](../../product/words.md#2026-11-15-nate-rows-that-may-not-be-modelled-on-may-price-a-shown-range): "they can, they are verified real data"). It is never used to fit a weight, a model or a calibration score, except Apify rows, which may fit the nightly models ([Nate](../../product/words.md#2026-11-15-nate-apify-rows-may-fit-the-models-real-time-scores-per-market-on-each-platform-extremely-accurate), "Yes, Apify too"). eBay content, including eBay rows read through an Apify actor, stays out of every fit under eBay's terms.
 
 ## 3. The calculation
 
@@ -239,6 +239,41 @@ Named fixes from this reading, each judged by a rerun of the same command on the
 - **V-AB2, close the last point to last sale.** Measure: paired within-20% difference against last sale with its lower bound above 0. Candidates in order: the anchor's K and its weight `k_anchor` refitted per family, then blending the product-anchored market model as a contestant level.
 
 The fixed set: 100 real items, frozen with their sale prices and dates, spread over the price bands and over eBay, Poshmark, Depop, Mercari and Facebook, kept out of every fit.
+
+Rerun on 2026-11-15 after EN1 landed (5d7f61f1): the same command on the same input reproduced every row above to the digit. It ran 2,404 s and kept the last-sale gap at −1.0 points (−1.4 to −0.7) on 41,452.
+
+### Real-time market scores
+
+Nate asked for this ([words](../../product/words.md#2026-11-15-nate-apify-rows-may-fit-the-models-real-time-scores-per-market-on-each-platform-extremely-accurate)): "realtime score metrics generated and assigned to each market within a specific platfrom", extremely accurate, to show depth and credibility. *Agent proposal* for the design below; it is not built yet.
+
+**A market** is one platform and one kind of item (`site × kind`, for example Depop × jacket). A family or brand cell under it is reported only when it has its own events.
+
+**A scored event** is a sold row the system reads for the first time, on any site. It is scored before it can enter any basis (prequential scoring, so the score never sees its own answer):
+1. Freeze: run `valuate` for that product at `as_of` = the row's sale time minus one second, from observations strictly older than the sale. The row itself, its listing cluster (switch F) and anything read after it are excluded.
+2. Record: the frozen q10, q50 and q90, the sale price, the basis level and the citation. Then compute the absolute percent error |q50 − price| / price, whether the price is within 20% of q50, whether the price falls inside [q10, q90], and the width (q90 − q10) / q50.
+3. Score the two baselines on the same event: the product's last sale before the event, and its 90-day median. The comparison is always paired.
+4. Then add the row to observations as usual.
+Each comp_id is scored once. A row with no sale date (a listing date standing in) is not scored, and the market counts it as `unscored_no_sale_date`. Scoring is not fitting, so every sold row is scored, whatever its `may_model`. eBay and Dupe rows included: eBay's terms bar fitting, not measuring, and a Dupe row's score is kept as an aggregate only.
+
+**Per market** (a `market_score` row in the registry, scope `{site, kind}`), updated on each event in the same transaction:
+- `n` events;
+- the within-20% rate with its Wilson 95% interval;
+- the median absolute percent error over a rolling window, with a bootstrap interval nightly;
+- range coverage (the share inside [q10, q90]) against the 80% stated, with its Wilson interval;
+- median width;
+- the paired gaps against last sale and the 90-day median, each with an interval;
+- the share of events priced;
+- the newest event time.
+A decayed copy (half-life `market_score_half_life_days`, prior 30) shows the market now. The undecayed copy shows it over all time. Every figure carries its `n` and its interval.
+
+**State**: `checked` when n ≥ 30 and both Wilson intervals are known. Below that the score is still shown, with its n, as `not_checked_yet`, because the system always answers. A threshold never hides it.
+
+**Served**: `GET /v1/scores?subject_type=market&site=&kind=` returns each figure with a citation that resolves to the scored events (the event ids, never the raw rows of a source that forbids storing). The dashboard and Genie read the same rows. No figure goes on a public page or the pitch until Nate and Ben have both seen it.
+
+**Proof**:
+- The scorer is the ablation's scorer, so it is defined once: the Python `ablate.py` metrics and the TypeScript scorer share a parity fixture.
+- A replay of the StockX 2019 test window, run event by event through the online scorer, gives the same within-20%, median error and coverage as the ablation's "all on" row, within rounding.
+- A test that an event's own row, its cluster, or a later row never enters its frozen basis.
 
 ## 10. Build tasks
 
