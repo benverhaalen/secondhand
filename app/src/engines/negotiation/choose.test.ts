@@ -99,32 +99,70 @@ function prng(seed: number) {
   };
 }
 
-test('limits property test: 10,000 random states, planted and random pAccept', () => {
+test('limits property test: 10,000 random states, planted pAccept, fee-step keeps, always_accept under the floor', () => {
   const r = prng(20261114);
   const planted: PAccept = (c, s) => (c < s.floor_cents ? 0.98 : 0.02);
-  let outside = 0, accepts = 0, asks = 0;
+  // eBay's fixed fee steps from $0.30 to $0.40 above $10, so keep falls by 9 cents at 935: a planted non-monotone keep.
+  const stepKeep = (a: number, b: number) => (x: number) => Math.round(a * x) - (x <= 1000 ? 30 : 40) - b;
+  let accepts = 0, asks = 0, counters = 0;
   for (let i = 0; i < 10000; i++) {
     const ask = 500 + Math.floor(r() * 30000);
     const floor = Math.floor(ask * (0.3 + r() * 0.8)); // sometimes above ask
-    const always = floor + Math.floor(r() * ask * 0.5);
-    const offer = Math.floor(r() * ask * 1.3);
+    const always = i % 5 === 0 ? Math.floor(floor * r()) : floor + Math.floor(r() * ask * 0.5); // sometimes set under the floor by hand
+    const offer = i % 7 === 0 ? floor - 1 : Math.floor(r() * ask * 1.3);
     const a = 0.5 + r() * 0.45, b = Math.floor(r() * 1500);
     const s: OfferState = {
       site: ['ebay', 'poshmark', 'depop', 'mercari'][i % 4], offer_cents: offer, ask_cents: ask,
-      floor_cents: floor, always_accept_cents: always, keep: (x) => a * x - b,
+      floor_cents: floor, always_accept_cents: always, keep: i % 2 ? (x) => a * x - b : stepKeep(a, b),
       v_wait_cents: r() < 0.2 ? null : Math.floor(r() * ask), trust_block: false,
     };
     const rnd: PAccept = () => r();
     for (const p of [planted, rnd, () => 0.98, () => 0.02]) {
       for (const policy of ['champion', 'challenger'] as const) {
         const d = decide(s, p, policy);
-        const amounts = [d.amount_cents, ...d.candidates.filter((c) => c.amount_cents !== offer).map((c) => c.amount_cents)];
-        for (const x of amounts) if (x !== null && (x < floor || x > ask)) outside++;
-        if (s.keep(offer) >= s.keep(always)) { accepts++; assert.equal(d.kind, 'accept_offer', JSON.stringify(s)); }
-        else if (s.keep(offer) < s.keep(floor)) { asks++; assert.equal(d.kind, 'price_below_floor'); }
+        if (offer < floor) { asks++; assert.equal(d.kind, 'price_below_floor', JSON.stringify(s)); assert.equal(d.ask, true); }
+        if (d.kind === 'accept_offer') { accepts++; assert.ok(offer >= floor, `accepted ${offer} under floor ${floor}`); assert.equal(d.amount_cents, offer); }
+        if (d.kind === 'counter_offer' || d.kind === 'price_below_floor') {
+          if (d.amount_cents !== null) { counters++; assert.ok(d.amount_cents >= floor && d.amount_cents > offer && d.amount_cents < ask, `counter ${d.amount_cents} offer ${offer} floor ${floor} ask ${ask}`); }
+        }
+        if (offer >= Math.max(floor, always)) assert.equal(d.kind, 'accept_offer');
+        for (const c of d.candidates) if (c.amount_cents !== offer) assert.ok(c.amount_cents >= floor && c.amount_cents < ask);
       }
     }
   }
-  assert.equal(outside, 0);
-  assert.ok(accepts > 100 && asks > 100, `coverage ${accepts} ${asks}`);
+  assert.ok(accepts > 100 && asks > 100 && counters > 100, `coverage ${accepts} ${asks} ${counters}`);
+});
+
+test('PLANTED: always_accept set under the floor never auto-accepts an offer under the floor', () => {
+  const d = decide({ ...base, floor_cents: 2000, always_accept_cents: 1000, offer_cents: 1500, ask_cents: 3000 }, () => 0.5);
+  assert.equal(d.kind, 'price_below_floor');
+  assert.equal(d.ask, true);
+});
+
+test('PLANTED: a fee step that makes keep fall does not let an offer under the floor through', () => {
+  const ebay = (x: number) => Math.round(0.864 * x) - (x <= 1000 ? 30 : 40);
+  const d = decide({ ...base, keep: ebay, floor_cents: 935, always_accept_cents: 935, offer_cents: 934, ask_cents: 1500, v_wait_cents: 700 }, () => 0.5);
+  assert.equal(d.kind, 'price_below_floor');
+});
+
+test('an accept records the offer actually taken, even over the ask', () => {
+  const d = decide({ ...base, offer_cents: 8500 }, () => 0.5);
+  assert.equal(d.kind, 'accept_offer');
+  assert.equal(d.amount_cents, 8500);
+});
+
+test('the midpoint never counters at or under the offer, nor at the ask', () => {
+  for (const [offer, ask] of [[2500, 2800], [3500, 3800], [2600, 2700]]) {
+    const d = decide({ ...base, floor_cents: 1000, always_accept_cents: ask, offer_cents: offer, ask_cents: ask, v_wait_cents: 99999 }, () => 0.5);
+    if (d.kind === 'counter_offer') assert.ok(d.amount_cents! > offer && d.amount_cents! < ask, `${offer}/${ask} -> ${d.amount_cents}`);
+    else assert.equal(d.kind, 'accept_offer');
+  }
+});
+
+test('plan_choice check asks on every answer; the hard end proposes no counter under the floor', () => {
+  assert.equal(decide({ ...base, offer_cents: 7500, ask_all: true }, () => 0.5).ask, true);
+  assert.equal(decide({ ...base, offer_cents: 6500, v_wait_cents: 99999, ask_all: true }, () => 0.5).ask, true);
+  const d = decide({ ...base, offer_cents: 5000, counter_under_floor: false }, () => 0.5);
+  assert.equal(d.kind, 'price_below_floor');
+  assert.equal(d.amount_cents, null);
 });

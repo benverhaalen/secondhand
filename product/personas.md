@@ -19,4 +19,5 @@ Eight people, each defined by what they want from one visit, not by age or job. 
 - **The line gives the situation, never the layout.** It says who is looking and what they want, so the model works out the screen.
 - **When two people's wants conflict**, the one clearing out wins, because they are the first person we build for. Better still, turn the conflict into something the person sets once, such as their minimum or "sell it fast".
 - **A want is only as good as what it rests on.** The last column says whether a person's want was seen in what people did, or only named. A design that wins for an unsourced person has not won yet: the judge says so, and the demo is where it gets tested.
+- **Walk each one in trying to leave.** For every screen, ask the nine what-ifs in [Article 6](ui-constitution.md#article-6-complete-not-minimal-every-automatic-step-has-a-way-around-it) as each person; the answers live in [spec/ways-out.md](../spec/ways-out.md).
 - **Add a person only when a real one shows up** in the demo or in research who wants something none of these do.
