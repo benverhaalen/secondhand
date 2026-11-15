@@ -1,4 +1,10 @@
 // Rests-on: spec/product.md §3, §5, §6 Harnesses, §7; spec/examples/{items,sell,you}.json.
+import { createRequire } from 'node:module';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { cdpLauncher, localChrome, type CdpPw } from '../browser/cdp.ts';
+import { createPool, type Launcher } from '../browser/pool.ts';
+import { linkedSearch, readSearchPage, type BrowserPage } from '../harness/sites/mercari/linked.ts';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createLog, consoleSink, type Log } from '../../../../log/index.js';
 import { store } from './store.ts';
@@ -83,6 +89,23 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   const adapters = depopAdapters(client).map(adapter => live || isWrite(adapter.manifest.verb) ? adapter : {
     ...adapter, async run() { return fail('no_route', 'Depop live reads are disabled', { do: 'handoff', url: 'https://www.depop.com/' }); },
   });
+  const liveMercari = (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/).includes('mercari');
+  let mercariPool: ReturnType<typeof createPool<BrowserPage>> | undefined;
+  const mercari = linkedSearch({ accounts, async read(account_id, url, signal) {
+    if (!liveMercari) throw new Error('Mercari live reads are disabled');
+    if (!mercariPool) {
+      const executablePath = process.env.SECONDHAND_CHROME_PATH;
+      if (!executablePath) throw new Error('Mercari needs SECONDHAND_CHROME_PATH for its linked browser');
+      const profileRoot = join(process.env.SECONDHAND_DATA_DIR ?? tmpdir(), 'secondhand-linked-browsers');
+      const pw = createRequire(join(process.cwd(), 'app/package.json'))('playwright-core') as CdpPw;
+      const launcher = cdpLauncher(pw, localChrome({ executablePath, scratch: join(profileRoot, 'anonymous') })) as Launcher<BrowserPage>;
+      mercariPool = createPool({ launcher, profileRoot, accounts, vault, leases: memoryLeases(), log });
+    }
+    const result = await mercariPool.dispatch({ account_id, job_id: crypto.randomUUID(), run: page => readSearchPage(page, url, signal, log) });
+    if (!result.ok) throw new Error(result.message);
+    return result.value;
+  } });
+  adapters.push(mercari);
   const harnessLog: Log = { ...log, call(kind, name, input, fn, describe) { return log.call(kind === 'harness' ? 'tool' : kind, name, input, fn, describe); } };
   const harness = createHarness({ adapters, accounts, log: harnessLog });
   const leases = memoryLeases();

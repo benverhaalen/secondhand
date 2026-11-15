@@ -31,7 +31,7 @@ export async function searchSource(source: Source, query: string, kind: Kind = '
   const account = (await o.accounts.linked(o.person_id)).find(a => a.site === source.site && a.person_id === o.person_id);
   if (!account) return blocked('linked account required');
   if (!o.harness) return blocked('linked harness not available');
-  const run = () => o.harness!.call<(SnapListing & { title?: string; currency: string; url: string })[]>(source.site, 'search', {
+  const run = () => o.harness!.call<(SnapListing & { title?: string; condition?: string; size?: string; listed_at?: string; sold_at?: string; currency: string; url: string })[]>(source.site, 'search', {
     q: query, status: kind === 'sold' ? 'sold' : 'active', account_id: account.account_id, person_id: o.person_id,
   });
   const result = o.log ? await o.log.call('harness', `${source.id}.search`, { account_id: account.account_id }, run) : await run();
@@ -42,7 +42,7 @@ export async function searchSource(source: Source, query: string, kind: Kind = '
     return failure;
   }
   const rows = result.data.map(row => ({ id: row.external_id, title: row.title, price_cents: row.price_cents,
-    currency: row.currency, url: row.url, ...(row.state === 'sold' ? { sold: true as const } : {}) }));
+    currency: row.currency, url: row.url, condition: row.condition, size: row.size, listed_at: row.listed_at, sold_date: row.sold_at, ...(row.state === 'sold' ? { sold: true as const } : {}) }));
   const read = classifyRead({ challenge: false, rows }, { site: source.site, fields });
   if (!read.ok) return { rows: [], searched: { ...blocked(read.error.message).searched, outcome: 'page_changed', ms: result.meta.ms } };
   return { rows: read.data, searched: { site: source.site, kind, url: null, outcome: rows.length ? 'hit' : 'empty', ms: result.meta.ms, count: rows.length } };

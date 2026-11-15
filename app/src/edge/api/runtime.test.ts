@@ -160,3 +160,18 @@ test('all seeded product rows keep example provenance through reseeding', () => 
   createRuntime(r.store, log());
   assert.equal(st.get('account', 'usr_8f2k', 'acc_dp1')?.data, 'example');
 });
+
+test('Mercari sold reads are registered but make no network call with live sites off', async () => {
+  const r = createRuntime(memoryStore(), log());
+  r.store.put('account', { id: 'acc_mc', user_id: 'owner', site: 'mercari', token_ref: 'mercari-test' });
+  await r.vault.put('mercari-test', { cookies: [], origins: [] });
+  const fetchBefore = globalThis.fetch;
+  let fetches = 0;
+  globalThis.fetch = async () => { fetches++; throw new Error('unexpected network'); };
+  try {
+    const result = await r.harness.call('mercari', 'search', { q: 'carhartt hoodie', status: 'sold', account_id: 'acc_mc', person_id: 'owner' });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.error.message, /live reads are disabled/);
+    assert.equal(fetches, 0);
+  } finally { globalThis.fetch = fetchBefore; }
+});
