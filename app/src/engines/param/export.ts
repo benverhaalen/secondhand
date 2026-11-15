@@ -5,7 +5,7 @@ import type { EventLog } from '../demand/velocity.ts';
 type Fit = { fitted_on: unknown; use_scope: string };
 export type CalibrationFit = Fit & { Q_g: number; n: number; hits: number; nominal: .8 };
 export type SaleCurveFit = Fit & { reference: 'median_adjusted_sold'; days: [7, 30, 90];
-  bins: { ratio: number; p: [number, number, number] }[]; t: [number, number, number] | null;
+  bins: { ratio: number; p: [number, number, number] }[]; t: [number | null, number | null, number | null] | null;
   n_events: number; calibration_error: number };
 export type BrandPremiumFit = Fit & { ratio: number; lo: number; hi: number; n_cells: number; as_of: string };
 type Values = { valuation_calibration: CalibrationFit; valuation_sale_curve: SaleCurveFit; brand_premium: BrandPremiumFit };
@@ -80,7 +80,16 @@ function validate(value: unknown): Row {
       previous = bin.ratio;
     }
     if (v.bins.length === 1 && object(v.bins[0]).ratio !== 1) throw new RangeError('price-blind bin must have ratio 1');
-    if (v.t !== null) triple(v.t, 't');
+    if (v.t !== null) {
+      if (!Array.isArray(v.t) || v.t.length !== 3) throw new RangeError('t needs three values');
+      let previous = 0;
+      for (const day of v.t) {
+        if (day === null) continue;
+        number(day, 't', 0);
+        if (day < previous) throw new RangeError('t must be nondecreasing');
+        previous = day;
+      }
+    }
     count(v.n_events, 'n_events'); number(v.calibration_error, 'calibration_error', 0, 1);
   } else {
     if (scope.site !== undefined) throw new TypeError('brand_premium is kind-scoped');

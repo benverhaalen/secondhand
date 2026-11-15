@@ -24,7 +24,7 @@
     },
     {
       "name": "valuation_sale_curve", "family": "model_ref", "scope": { "kind": "sneakers", "site": "mercari" },
-      "value_or_hyperparams": { "reference": "median_adjusted_sold", "days": [7, 30, 90], "bins": [{ "ratio": 1, "p": [0.3, 0.6, 0.85] }], "t": null, "n_events": 200, "calibration_error": 0.02, "fitted_on": "dataset:nber_ebay_bo", "use_scope": "hackathon_demo" },
+      "value_or_hyperparams": { "reference": "median_adjusted_sold", "days": [7, 30, 90], "bins": [{ "ratio": 0.5, "p": [0.25, 0.5, 0.75] }, { "ratio": 1.5, "p": [0.125, 0.25, 0.5] }], "t": null, "n_events": 200, "calibration_error": 0.02, "fitted_on": "dataset:nber_ebay_bo", "use_scope": "hackathon_demo" },
       "prior": null, "version": 1, "fitted_on_ids_hash": "fixture-input-hash", "n_eff": 200,
       "metric": "calibration_error", "held_out_score": 0.02, "guard_lo": null, "guard_hi": null,
       "status": "champion", "frozen": false, "promoted_at": "2026-11-14T23:00:00Z", "origin": "fit",

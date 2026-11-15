@@ -6,6 +6,8 @@ import { join } from 'node:path';
 import { fittedReader } from './export.ts';
 
 const fixture = new URL('./fixtures/export-latest.json', import.meta.url);
+const db4Fixture = new URL('./fixtures/export-db4-shape.json', import.meta.url);
+type DB4Export = { params: { citation?: string; value_or_hyperparams: Record<string, unknown> }[] };
 async function setup(t: TestContext) {
   const dir = await fs.mkdtemp(join(tmpdir(), 'secondhand-export-'));
   t.after(() => fs.rm(dir, { recursive: true, force: true }));
@@ -19,6 +21,55 @@ async function setup(t: TestContext) {
   return { reader, path, errors, notes, load, advance: () => { time += 11; },
     write: async () => fs.writeFile(path, await fs.readFile(fixture)) };
 }
+
+test('all eight DB4-shaped rows load, including calibration holdout fields and unreached sale shares', async t => {
+  const s = await setup(t);
+  await fs.writeFile(s.path, await fs.readFile(db4Fixture)); await s.load();
+  assert.deepEqual(s.errors, []);
+  assert.deepEqual(s.notes.at(-1), ['param.export.loaded', {
+    run_id: 'fixture:db4-shape', exported_at: '2025-06-12T09:00:00Z', count: 8,
+  }]);
+  assert.deepEqual(s.reader.curve({ kind: 'cards_collectibles', site: 'ebay' })?.value_or_hyperparams.t, [30, 107, null]);
+  assert.ok(s.reader.calibration({ kind: 'shoes', site: 'stockx' }));
+});
+
+for (const times of [[0, 107, null], [null, 107, 200], [30, null, 200], [null, null, null]] as const) {
+  test(`sale days ${JSON.stringify(times)} accept null entries and have no 90-day ceiling`, async t => {
+    const s = await setup(t);
+    const data = JSON.parse(await fs.readFile(db4Fixture, 'utf8')) as DB4Export;
+    data.params[1].value_or_hyperparams.t = times;
+    await fs.writeFile(s.path, JSON.stringify(data)); await s.load();
+    assert.deepEqual(s.errors, []);
+    assert.deepEqual(s.reader.curve({ kind: 'cards_collectibles', site: 'ebay' })?.value_or_hyperparams.t, times);
+  });
+}
+
+for (const [cause, times, reason] of [
+  ['decreasing across a null', [107, null, 30], 't must be nondecreasing'],
+  ['negative days', [-1, 107, null], 't outside bounds'],
+  ['nonnumeric days', [30, '107', null], 't outside bounds'],
+  ['wrong length', [30, null], 't needs three values'],
+] as const) test(`sale days reject ${cause}`, async t => {
+  const s = await setup(t);
+  const data = JSON.parse(await fs.readFile(db4Fixture, 'utf8')) as DB4Export;
+  data.params[1].value_or_hyperparams.t = times;
+  await fs.writeFile(s.path, JSON.stringify(data)); await s.load();
+  assert.equal(s.reader.curve({ kind: 'cards_collectibles', site: 'ebay' }), null);
+  assert.deepEqual(s.errors, [{ where: 'param.export.row', error: { index: 1, reason } }]);
+  assert.ok(s.reader.calibration({ kind: 'shoes', site: 'stockx' }));
+});
+
+test('a DB4 row without a citation is dropped while the other seven load', async t => {
+  const s = await setup(t);
+  const data = JSON.parse(await fs.readFile(db4Fixture, 'utf8')) as DB4Export;
+  delete data.params[1].citation;
+  await fs.writeFile(s.path, JSON.stringify(data)); await s.load();
+  assert.equal(s.reader.curve({ kind: 'cards_collectibles', site: 'ebay' }), null);
+  assert.deepEqual(s.errors, [{ where: 'param.export.row', error: { index: 1, reason: 'citation must be a nonempty string' } }]);
+  assert.deepEqual(s.notes.at(-1), ['param.export.loaded', {
+    run_id: 'fixture:db4-shape', exported_at: '2025-06-12T09:00:00Z', count: 7,
+  }]);
+});
 
 test('first use loads asynchronously; exact kind/site beats kind and never reads a sibling', async t => {
   const s = await setup(t); await s.write();
