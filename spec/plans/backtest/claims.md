@@ -4,9 +4,9 @@ Written 2026-11-15 by the benchmark thread, for Ben's 08:49 ask ([words](../../.
 
 ## The strongest honest line today
 
-> On 80,000 StockX sneaker resales across 12 months, our price landed within 20% of the sale 97 to 98% of the time, against 89% for the 90-day sold median of the same shoe, and its 80% range held 78 to 80% of sales. The same code scored the same on eight months it was never looked at during the fix.
+> On 80,000 StockX sneaker resales over 12 months, our price was typically 3% ($10 to $13) from what the shoe sold for. The 90-day sold median of the same shoe was typically 6% ($19 to $26) off, and on the unseen months it sat above what the buyer paid 7 times in 10, because hype prices fall. The same code did as well on eight months nobody looked at while building it.
 
-[verified 2026-11-15: the two runs in the table below] Scope words that must stay: *StockX*, *sneaker resales* (deadstock, not used goods), *90-day sold median of the same shoe*. This line may go on the pitch's proof page as a development result. It may not be called "used goods", "accuracy" without the scope, or "beats eBay": no eBay data was scored [agent-inference].
+[verified 2026-11-15: the runs in the table below; the 7-in-10 from `priced_above_the_sale`, [money-statistic.md](money-statistic.md)] It answers the seller's question (how far off, in dollars, and which way) rather than naming a threshold ([R11](../../../product/pitch-constitution.md#part-vi-rules)). Scope words that must stay: *StockX*, *sneaker resales* (deadstock, not used goods). It may not say "more money": sold rows cannot show it ([money-statistic.md](money-statistic.md)), and no eBay data was scored [agent-inference].
 
 ## Did the fix generalize? The test Ben asked for
 

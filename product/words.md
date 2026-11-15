@@ -1635,3 +1635,9 @@ Nate, build session (orchestrator), 2026-11-15 about 08:00 Central, after the eB
 > Theres some way to browser use cloud you aren't considering
 
 Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
+
+## 2026-11-15 ben every number and decision says why; the StockX statistic is how much more money than the median
+Ben, project timeline, 08:59 UTC, after the 20 and 80 targets were explained.
+> ensure in whatever constitution all the evidence and decisions need to be explained as to why. just saying 70 20 isnt a why. also those numbers arent even helpful. recall how i think about my projects on my resume and how those are described and extrapolate some principles also about how to evaluate and present information. also with stockx the idea is we get a percent where we get more money on average. like whatever percent more money compared to just taking the median. creating a statistic and being able to defend it.
+
+Used in: [pitch constitution R11](pitch-constitution.md#part-vi-rules), [the money statistic](../spec/plans/backtest/money-statistic.md).
