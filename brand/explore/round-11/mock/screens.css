@@ -84,6 +84,9 @@
 .sh .card.field { box-shadow: none; color: var(--on-field); }
 .sh .card.field .i2 { color: var(--on-field-2); }
 .sh .between { justify-content: space-between; }
+/* nothing but a photo sits in a corner's curve: text in a corner starts --card-corner (24) from the two edges, 8 more than the padding */
+.sh .corner-r { margin-right: calc(var(--card-corner) - var(--card-pad)); }
+.sh .corner-x { flex: none; padding: 0 calc(var(--card-corner) - var(--card-pad)); }
 .sh .thumb { position: relative; width: var(--photo-card); height: var(--photo-card); flex: none; display: block; }
 .sh .site { position: absolute; right: -4px; bottom: -4px; width: var(--site-badge); height: var(--site-badge); border-radius: var(--r-pill); border: 2px solid var(--surface); background: var(--surface); display: block; }
 .sh.sep-gray .card:not(.field) .site { border-color: var(--gray); }
@@ -162,6 +165,7 @@
 .sh .tab { height: 46px; border: 0; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-1); cursor: pointer;
   font-size: var(--t-13); line-height: var(--lh-13); color: var(--ink-2); }
 .sh .tab[aria-current] { color: var(--ink); }
+.sh .tab[aria-current] .ic { box-sizing: content-box; padding: var(--s-1) var(--s-4); margin: calc(var(--s-1) * -1) 0; border-radius: var(--r-pill); background: var(--tab-on); }   /* the tab you are on: a pill behind its icon */
 .sh .tab[aria-current] .ic > :first-child { fill: currentColor; }
 .sh .tab[aria-current] .ic > :not(:first-child) { stroke: var(--page); }
 .sh .tab.add { color: var(--ink); }

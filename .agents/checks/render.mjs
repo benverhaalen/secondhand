@@ -251,7 +251,9 @@ function checkView(view, ctx) {
   // B8 color share
   // A view the field fills is the brand's one loud moment (a title slide, an end card, a sale); judge() caps how many an output has.
   view.bleed = fields.some(el => (Math.min(el.rect[2], view.w) - Math.max(el.rect[0], 0)) * (Math.min(el.rect[3], view.h) - Math.max(el.rect[1], 0)) >= .9 * view.w * view.h);
-  if (view.share && view.share.color > 1 / 3 && !view.bleed) E('B8', '', `is ${Math.round(view.share.color * 100)}% color: color covers at most a third of a view, not counting photos, unless the field fills it (Art. 5.2)`);
+  // The wash is not counted: B4 caps it by its own height, and Ben asked for it stronger (03:22, "more intense than shown now"). Its box is taken off the ceiling.
+  const washed = washes.reduce((n, el) => n + Math.max(0, Math.min(el.rect[2], view.w) - Math.max(el.rect[0], 0)) * Math.max(0, Math.min(el.rect[3], view.h) - Math.max(el.rect[1], 0)), 0) / (view.w * view.h);
+  if (view.share && view.share.color > 1 / 3 + washed && !view.bleed) E('B8', '', `is ${Math.round(view.share.color * 100)}% color${washed ? `, with a wash that covers ${Math.round(washed * 100)}%` : ''}: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)`);
   // B37 off the app, a view is one of its medium's layouts and holds what that layout holds (Part III)
   if (sheet.layouts) { const heads = text.filter(t => t.display && !isMark(t)).length, photos = view.els.filter(e => e.photo).length, rows = view.els.filter(e => e.part === 'row').length, nums = text.filter(t => !t.display && t.size >= top - .5).length, rest = text.filter(t => !isMark(t)).length;
     const holds = { title: [fields.length === 1 && view.bleed && heads === 1 && !photos && !rows && !nums, 'the field filling the view, with one heading'], statement: [heads === 1 && !photos && !rows && !nums && !view.bleed, 'one heading, with one line under it at most'],

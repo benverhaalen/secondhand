@@ -4,6 +4,8 @@ Empty facts whose ladder ends in `asked` or `lookup`, condition first, then impo
 is right)). At most 3 ordinary inputs; a field the type's process needs gets its own input past the cap
 (Nate, Open 7). A fact a kept frame settles, or one already asked, is never asked. `function` is never
 preselected: whether an item works is only the person's statement.
+`find` (the person wants one like it) asks no condition or wear: the thing in the frame is not theirs to grade
+(capture.purpose, research/cross-cutting/nate/capture-expert-session.md, agent proposal).
 """
 from __future__ import annotations
 
@@ -12,12 +14,17 @@ from typing import Any
 from capture.next_view import IMPORTANCE
 
 CAP = 3
+PURPOSES = ("sell", "appraise", "find")  # capture.purpose
 
 
 def follow_ups(rows: list[dict], facts: dict[str, dict], asked: set[str] | frozenset = frozenset(),
-               process_fields: set[str] | frozenset = frozenset(), weights: dict = IMPORTANCE) -> list[dict[str, Any]]:
+               process_fields: set[str] | frozenset = frozenset(), weights: dict = IMPORTANCE,
+               purpose: str = "sell") -> list[dict[str, Any]]:
+    if purpose not in PURPOSES:
+        raise ValueError(f"capture purpose {purpose}")
     cand = [r for r in rows
-            if facts.get(r["field"], {}).get("state") == "empty" and r["field"] not in asked
+            if not (purpose == "find" and r.get("role") == "condition")
+            and facts.get(r["field"], {}).get("state") == "empty" and r["field"] not in asked
             and any(rung["rung"] in ("asked", "lookup") for rung in r["fill_ladder"])]
 
     def score(r):

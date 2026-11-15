@@ -936,3 +936,33 @@ Ben, thread "Make gradients and colors carry meaning", 2026-11-15 03:42 UTC, rig
 ## 2026-11-15 image models sketch ideas and mock placeholders for judging, and the build uses the system parts
 Ben, the thread of the plan "Fastest path to a cohesive UI", 2026-11-15 04:01 UTC, on the plan's change after his 03:24 note.
 > the image models can create ideas for them. for mocks they can create placeholders just for my judgement. but i still want it to work relatively the same but for the image to code part it should utilize the components and things from the system
+
+## 2026-11-15 round 11 picks
+Ben, on the round 11 picks page, saved 2026-11-15 03:37 UTC; he wrote "done with round 11" in the thread "Set the secondhand brand identity" at 03:37. He tapped four things: the light fill under the second button, one black button under the black pill, centered under where the wordmark sits, and the line "Your second hand, for everything secondhand." under the idea in one line. The quotes are the notes he typed.
+
+**What the app optimizes for** (no pick).
+> i think different parts of the app should serve different ones of these purposes i dont think things are mutually exclusive
+
+**The hand** (no pick).
+> i think id like a slimmer hand. give different icon versions of the open hand. i want the top secondhand text to have a left and right hand on either side of it carefully sized and placed and could even be dynamic and animated so if i were to refresh a page think about what would be cool then. i want you as fable to do this yourself or use something with higgsfield/openrouter to make smooth animations and svgs and be able to manipulate them super well. but snaps, grabs, handshake/dap would be cool. offers maybe or with the money. i like it as a little charm thing. and we can even have a loading animation where the two hands do something (dont know what yet) but they are right next to eachother or interacting. maybe actually like a dap animation and when the hands separate a really great animation happens with the wordmark. when you like open the app or something.
+
+**The black pill** (one black button).
+> maybe not limited to one but have a rule for when it should be.
+
+**The item page** (no pick).
+> i feel like something with the big gradient box is off i feel like things are either unnecessarily big or small on here. also for the photo if theres multiple photos i should be able to slide. also determining ambiguity on our app is important. like different sites might have different listings written different ways with different images.
+
+**Sell** (no pick).
+> i was thinking you only needed one horizontal y value for the filtering. also maybe merge the ideas of how things should look with how the dark mode agent was doing it thats the best ui. where the icon is on the image. that should be how the design system and branding system is built off of closer to that style
+
+**The sale** (no pick).
+> everything with this one just doesnt feel as thought through and intentional as what a lot of the dark mode thread was making. i need all the ui guys to align on vision and the brand system to actually make every chat create similar things. not sure if thats already being done but it should be and my adjustments should update the system.
+
+**The snap** (no pick).
+> i want you to find actual snap assets possibly from free music packs rather than midi
+
+**The weight of the text** (no pick).
+> the pp one but you mirror the font weights with it.
+
+**Overall.**
+> align on ui. focus on creating the basics and examples of great and bad ui practices and all those ways of really greatly creating ui or design under one brand and defining the brand in a human and agent readable way and interpretable way. also for the ui loop, the image ideation portion should be about screen organization under the design family rules and then the agent uses the brand system to recreate it and it notices if it should or shouldn't create new ones. it thinks very intentionally across what is needed in each thing

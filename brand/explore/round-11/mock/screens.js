@@ -5,7 +5,7 @@
 //   fill  the second button is a light fill, not a black outline (R33)
 //   one   one black pill per view, on the field; every other card's buttons are light fills (R34)
 //   more  the sum is open (the item page only)
-//   wm    'center' draws the wordmark centered, as L3 locks it; otherwise it is left with the inbox right (R41)
+//   wm    the wordmark is centered (L3, kept in round 11); 'left' draws the rejected option
 // Parts and sizes are the ones Ben approved (constitution Art. 7.8), and each carries data-part so the checker can hold one kind to one size.
 // Demo content: the items are the generated demo photos, and the amounts are made up for the mock (the fee uses 13.6% plus $0.40).
 (function () {
@@ -15,7 +15,7 @@
   // state: [icon, word]. The color comes from the class s-<state> in screens.css.
   const ST = { live: ['live', 'Live'], need: ['hand', 'Needs you'], sold: ['sold', 'Sold'], ship: ['ship', 'Shipped'], shipby: ['ship', 'Ship by Tue'], paid: ['paid', 'Paid'], draft: ['draft', 'Draft'], ended: ['ended', 'Ended'], fail: ['fail', 'Failed'] };
   const NOW = { sep: 'gray', fill: false, one: false, more: false };      // round 10, as Ben saw it
-  const NEXT = { sep: 'tint', fill: true, one: true, more: false };      // what the agent recommends
+  const NEXT = { sep: 'white', fill: true, one: true, more: false };     // what the agent recommends: Ben, 03:22, "the whole screen should be white"
 
   const V = n => `<i class="sp v" style="--n:${n}" data-n="${n}"></i>`;
   const H = n => `<i class="sp h" style="--n:${n}" data-n="${n}"></i>`;
@@ -27,7 +27,7 @@
   const logos = ns => `<span class="logos">${ns.map(logo).join('')}</span>`;
   const tag = (s, word, cls = '') => `<span class="tag s-${s} ${cls}" data-part="tag">${ic(ST[s][0])}${lb(word || ST[s][1])}</span>`;
   const line = inner => `<div class="ln">${H(20)}<div class="fx">${inner}</div>${H(20)}</div>`;
-  const phone = (cls, o, inner) => `<div class="sh ${cls} sep-${o.sep}${o.wm === 'center' ? ' wm-center' : ''}"${/strip/.test(cls) ? '' : ' data-view'}>${inner}</div>`;
+  const phone = (cls, o, inner) => `<div class="sh ${cls} sep-${o.sep}${o.wm === 'left' ? '' : ' wm-center'}"${/strip/.test(cls) ? '' : ' data-view'}>${inner}</div>`;
 
   // The buttons of a card. The first is the act (the black pill) on the field, and off it too until "one" is on.
   // Every other button is a light fill, or round 10's black outline until "fill" is on.
@@ -47,7 +47,7 @@
   // The body of a card: a 72 photo with the site's logo on its corner, then three lines in the same 72: what kind of thing this is and
   // how long is left, the item, and the one amount that matters, in ink beside its gray label.
   const body = (pic, name, site, state, word, clock, label, amount) => `<div class="ln h72"><span class="thumb" data-part="photo-thumb">${ph(pic, 'p72', name)}<img class="site" data-part="site-badge" src="${A.logos}${site}.png" alt="${NAMES[site]}"></span>${H(12)}
-      <div class="fx between"><div class="ln mid">${tag(state, word)}<span class="grow"></span>${clock ? `<span class="clock t13">${ic('ended')}${lb(clock)}</span>` : ''}</div>
+      <div class="fx between"><div class="ln mid">${tag(state, word)}<span class="grow"></span>${clock ? `<span class="clock t13 corner-r">${ic('ended')}${lb(clock)}</span>` : ''}</div>
       <div class="t18 one">${name}</div><div class="t15 one i2">${label} <span class="ink">${amount}</span></div></div></div>`;
   const decision = (o, onField, b, a) => `<div class="card dec ${onField ? 'field' : ''}" data-part="card-decision">${body(...b)}${V(12)}${acts(o, onField, ...a)}</div>`;
   const item = b => `<div class="card item" data-part="card-item">${body(...b)}</div>`;
@@ -95,7 +95,7 @@
   const itemPage = (o = NEXT) => phone('', o, `<div class="hero">${ph('carhartt-jacket', '', 'Carhartt Detroit jacket')}${os('float')}
       <div class="over">${ib('back', 'Back', 'white')}<span class="ln">${ib('share', 'Share', 'white')}${H(8)}${ib('more', 'More', 'white')}</span></div></div>${V(16)}
     ${line(`<div class="ln"><div class="fx"><div class="t18">Carhartt Detroit jacket, M</div>${V(4)}<div class="t13 i2">Listed at $45</div></div>${H(8)}${tag('need')}</div>`)}${V(16)}
-    ${line(`<div class="card field"><div class="ln mid"><div class="t18 fx">Offered $38</div>${logo('ebay')}</div>${V(4)}<div class="t13">Ends tomorrow, 6 pm</div>${V(4)}<div class="t13">Similar ones sold for $36 to $52</div>${V(12)}${acts(o, true, lb('Accept $38'), 'Counter')}</div>`)}${V(4)}
+    ${line(`<div class="card field"><div class="fx corner-x"><div class="ln mid"><div class="t18 fx">Offered $38</div>${logo('ebay')}</div>${V(4)}<div class="t13">Ends tomorrow, 6 pm</div>${V(4)}<div class="t13">Similar ones sold for $36 to $52</div></div>${V(12)}${acts(o, true, lb('Accept $38'), 'Counter')}</div>`)}${V(4)}
     ${line(`<button class="open" aria-expanded="${o.more}"><span class="t15 grow">You keep $32.43</span>${ic('down')}</button>`)}
     ${o.more ? `${V(4)}${line(sum('If you accept', [['Offer', '$38.00'], [fee, '−$5.57'], ['Shipping', 'Buyer pays']], ['You keep', '$32.43']))}` : ''}${V(24)}
     ${line(`<div class="t13 i2">Listed</div>${V(8)}<div class="rows">

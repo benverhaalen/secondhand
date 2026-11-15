@@ -1,0 +1,18 @@
+# Secondhand search API
+
+> Search resale marketplaces (eBay, Poshmark, Mercari, Depop, Facebook Marketplace), official brand stores, retailers and Amazon in one call. Every price is delivered to the door, every number carries how many sales stand behind it and its sources, and a number with too little behind it is hidden with the reason.
+
+The same endpoints are MCP tools. Only shareable market data is served: never a person's listings, account or analytics.
+
+## Endpoints and MCP tools
+
+- `search` (`POST /v1/search`): text or a link, with filters for condition, seller kind, ships to and from, the most you would pay delivered, and in stock only. Returns the product and its offers.
+- `product` (`GET /v1/products/:id`): identity, price history across retail and used markets, trend, and offers.
+- `compare` (`POST /v1/compare`): one listing against the product's other offers.
+- `history` (`GET /v1/products/:id/history?range=`): price history.
+- `trends` (`GET /v1/trends?category=&window=7d|30d`): what is rising and falling in a category.
+
+## Limits
+
+- Keys and rate limits are enforced at the edge. Over the limit answers `429` with `Retry-After`.
+- A hidden number says why: `too_few`, `too_wide`, `stale`, `mixed_types`, `source_gap`, `conflict` or `noise`.
