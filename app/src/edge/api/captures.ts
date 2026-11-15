@@ -137,8 +137,8 @@ function ownedCapture(user_id: string, capture_id: string): CaptureRow {
 }
 function effectiveState(row: CaptureRow): State {
   const state=row.state;
-  return state.lookups==='running' && state.lookups_at!==undefined &&
-    deps.now()-Date.parse(state.lookups_at)>=bound(params,'capture_lookup_wait_s')*1000 ? {...state,lookups:'done'} : state;
+  return state.lookups==='running' && (state.lookups_at===undefined ||
+    deps.now()-Date.parse(state.lookups_at)>=bound(params,'capture_lookup_wait_s')*1000) ? {...state,lookups:'done'} : state;
 }
 function view(row: CaptureRow) {
   const next = plan(effectiveState(row), params);
@@ -275,7 +275,9 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
       for (const field of ['brand','model'] as const) {
         state.candidates[field]=[...new Set(result.set.flatMap(member=>member[field]===undefined?[]:[member[field]]))];
       }
-      if (result.action==='confirm' && result.set.length===1 && first.brand!==undefined && state.facts.brand?.source!=='you_said' && !state.facts.brand?.confirmed)
+      const brand=state.facts.brand;
+      if (result.action==='confirm' && result.set.length===1 && first.brand!==undefined && brand?.source!=='you_said' && !brand?.confirmed &&
+        (!brand || brand.unknown_reason==='not_read' || brand.source==='lookup' || brand.confidence<first.c))
         state.facts.brand={value:first.brand,source:'lookup',confidence:first.c};
       const dimensions=result.set.flatMap(member=>member.dimensions?[{label:member.label ?? member.product_id,value:structuredClone(member.dimensions),p:member.c}]:[]);
       state.variants={...state.variants,dimensions:dimensions.length>=2?dimensions:[]};
