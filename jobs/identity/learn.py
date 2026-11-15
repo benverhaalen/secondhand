@@ -16,6 +16,7 @@ import math
 import random
 
 from identity.pair import beta_mean, read_param, score_signals
+from param.registry import complete_row
 
 POSITIVE = {"confirm", "merge_items"}
 NEGATIVE = {"Not it", "Not the same"}
@@ -23,13 +24,13 @@ NEGATIVE = {"Not it", "Not the same"}
 
 def param_row(name, scope, family, value, prior, version, *, status="champion", ids=(), resolved=None):
     v = use(resolved)["values"]
-    return {"name": name, "scope": dict(scope), "family": family,
+    return complete_row({"name": name, "scope": dict(scope), "family": family,
             "value_or_hyperparams": deepcopy(value), "prior": deepcopy(prior),
             "version": version, "fitted_on_ids_hash": sha256(json.dumps(sorted(ids)).encode()).hexdigest(),
             "n_eff": len(ids), "metric": "f1" if family == "model_ref" else "beta_mean",
             "held_out_score": None, "guard_lo": v["identity_beta_lo"] if family == "beta" else None,
             "guard_hi": v["identity_beta_hi"] if family == "beta" else None,
-            "status": status, "frozen": False, "promoted_at": None}
+            "status": status, "frozen": False, "promoted_at": None})
 
 
 def _champion(rows, name, scope):

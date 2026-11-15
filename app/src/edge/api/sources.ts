@@ -5,6 +5,7 @@ import { ApiError } from './http.ts';
 import { createRouter, ROUTE_PARAMS } from '../harness/health.ts';
 import { memoryStore } from '../../engines/param/param.ts';
 import { example } from './examples.ts';
+import { readLedger } from '../harness/read-ledger.ts';
 type HealthRow = { route_id: string; site: 'ebay'; need: string; success: number; checked_at: string };
 const initial = (example('sources.health').response as { routes: HealthRow[] }).routes;
 const params = memoryStore();
@@ -19,7 +20,11 @@ export const handlers: Record<string, Handler> = {
   'GET /v1/sources/health': fromEngine(exampleHandler('GET /v1/sources/health', c => { const site = c.query.get('site'), need = c.query.get('need'); if (site && !sites(site)) throw invalid('unknown site'); if (site && site !== 'ebay' || need && need !== 'sold') throw new ApiError('not_found', 'no example health for this route', 'read'); }, undefined, async (ctx, seed) => {
     const body = seed.body as { routes: HealthRow[] };
     const routes = body.routes.map(row => ({ ...row, success: ports.health(row.site, 'search', row.route_id).success }));
-    return { ...seed, body: { routes } };
+    const reads = readLedger.counts().map(row => {
+      const pause = readLedger.paused(row.site);
+      return { ...row, paused_until: pause ? new Date(pause.until_ms).toISOString() : null };
+    });
+    return { ...seed, body: { routes, reads } };
   })),
 };
 export const manifest = manifestFor(handlers);

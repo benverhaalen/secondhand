@@ -1,0 +1,4 @@
+[
+ {"kill":true}, {"mark":"launch"}, {"launch":true}, {"wait":{"id":"tab-today"},"timeout":30000}, {"mark":"first_screen"},
+ {"sleep":2500}, {"gone":"Opening secondhand","timeout":10000}, {"shot":"d01-reopened"}
+]

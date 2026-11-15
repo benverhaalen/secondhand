@@ -95,3 +95,15 @@ test('F5: completion cannot become successful after expiry during an awaited acc
   assert.equal(s.counts().closes, 1); resolveLink();
   assert.equal((await pending).state, 'failed');
 });
+
+
+test('relink resolves the account only for its owner', async () => {
+  const s = setup();
+  const first = await s.signin.start({ person_id: 'owner', site: 'depop', go: ['depop'] });
+  s.status('ok');
+  assert.equal((await s.signin.complete('owner', first.session_id!)).state, 'ok');
+  const before = s.counts(), stored = s.vault.size(), refreshed = s.refreshed();
+  assert.equal((await s.signin.start({ person_id: 'other', site: 'depop', account_id: first.account_id, go: ['depop'] })).state, 'not_found');
+  assert.deepEqual(s.counts(), before); assert.equal(s.vault.size(), stored); assert.equal(s.refreshed(), refreshed);
+  assert.equal((await s.signin.start({ person_id: 'owner', site: 'depop', account_id: first.account_id })).state, 'dry');
+});

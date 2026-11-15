@@ -6,6 +6,10 @@
 // one at a time: sheet-field, paid, why (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useIsFocused, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
+import { Linking } from 'react-native';
+import { useLiveData } from '@/data/live';
+import { DataStatus } from '@/data/status';
+import { SiteLink } from '@/ui/parts/site-link';
 import {
   Amount, Approve, Blank, DecisionCard, EmptyState, FootButton, Grid, Guess, Icon, IconButton, Line, List, Nav, Photo, Pill, Row, Screen,
   MOTIONS, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, Txt, UndoToast, log, type PhotoSrc, type TagState,
@@ -49,21 +53,64 @@ const back = () => (router.canGoBack() ? router.back() : router.replace('/sell' 
 
 export default function ItemPage() {
   const { id, world } = useLocalSearchParams<{ id: string; world?: string }>();
-  const { state } = useScreen();
+  const { state, demo } = useScreen();
+  if (!demo) return <LiveItemPage key={String(id)} id={String(id)} />;
   const found = state === 'failed' ? null : M.find(String(id), world);
   if (state === 'loading') return <Loading />;
   if (!found) {
     // Didn't load: the one fix is to load it again (frontend-standard §4, Error). Gone: the way back to the list.
     const action = state === 'failed'
-      ? { id: 'retry', label: 'Try again', onPress: () => router.replace(`/item/${id}${world ? `?world=${world}` : ''}` as Href) }
+      ? { id: 'retry', label: 'Retry', onPress: () => router.replace(`/item/${id}${world ? `?world=${world}` : ''}` as Href) }
       : { id: 'failed-sell', label: 'Go to Sell', onPress: () => router.replace('/sell' as Href) };
     return (
       <Screen name="item" state="failed" skip={skipFor('failed')} nav={<Nav back={back} />}>
-        <EmptyState title="Can’t open this item" line="It was deleted, or it didn’t load." action={action} />
+        <EmptyState title="Can’t open this item" line={state === 'failed' ? 'This item didn’t load' : 'This item is no longer available'} action={action} />
       </Screen>
     );
   }
   return <Page w={found.w} item={found.item} offline={state === 'offline'} />;
+}
+
+function LiveItemPage({ id }: { id: string }) {
+  const { w, loading, refreshing, refresh, problems } = useLiveData();
+  const [error, setError] = useState<string | null>(null);
+  const item = w.items.find(row => row.id === id);
+  if (loading) return <Loading />;
+  if (!item) return <Screen name="item" state={problems.items || problems.account ? 'failed' : 'empty'} nav={<Nav back={back} />} refreshing={refreshing} onRefresh={refresh}>
+    <DataStatus resources={['account', 'items']} />
+    {!problems.items && !problems.account ? <EmptyState title="Item not found" line="This item is no longer available." action={{ id: 'item-sell', label: 'Go to Sell', onPress: () => router.replace('/sell' as Href) }} /> : null}
+  </Screen>;
+  const description = item.description;
+  const live = item.listings.some(listing => listing.state === 'live');
+  const sold = ['sold', 'handed_over', 'done'].includes(item.state);
+  const attributes = item.attributes.filter(attribute => attribute.value !== null);
+  const open = async (url: string) => {
+    setError(null);
+    try { await Linking.openURL(url); }
+    catch (failure) { log.error('item.open_site', failure, { item: id }); setError('The listing could not open. Try again.'); }
+  };
+  return <Screen name="item" state="typical" nav={<Nav back={back} />} refreshing={refreshing} onRefresh={refresh}>
+    <DataStatus resources={['account', 'items']} />
+    <Stack gap="cards">
+      <PhotoPager photos={item.photos.map(photo => photo.key)} label={item.title} />
+      <Stack gap="tight">
+        <Line><Tag state={sold ? 'sold' : live ? 'live' : 'need'} word={sold ? 'Sold' : live ? 'Listed' : 'Not listed yet'} /></Line>
+        <Txt role="headline">{item.title}</Txt>
+      </Stack>
+    </Stack>
+    {description ? <Section title="Description"><Txt role="body">{description}</Txt></Section> : null}
+    {attributes.length || item.location.label ? <Section title="Details"><List>
+      {attributes.map(attribute => <Row key={attribute.id}><Txt role="caption">{attribute.name}</Txt><Txt role="body">{String(attribute.value)}</Txt></Row>)}
+      {item.location.label ? <Row><Txt role="caption">Where it is</Txt><Txt role="body">{item.location.label}</Txt></Row> : null}
+    </List></Section> : null}
+    <Section title="Listings">
+      {error ? <Txt role="body">{error}</Txt> : null}
+      {item.listings.length ? <List>{item.listings.map(listing => <Row key={listing.id} lead={<SiteBadge site={listing.site} />}>
+        <Txt role="body">{`${listing.state === 'none' ? 'Price' : 'Listed at'} ${usd(listing.price_cents)}`}</Txt>
+        {listing.url.startsWith('https://') ? <SiteLink id={`item-site-${listing.id}`} site={listing.site} onPress={() => void open(listing.url)} /> : <Txt role="caption">{listing.state === 'none' ? 'Not listed yet' : 'Listing link unavailable'}</Txt>}
+      </Row>)}</List> : <Txt role="body" tone="ink-2">Not listed yet</Txt>}
+    </Section>
+  </Screen>;
 }
 
 // Loading: the page's own shape in gray, so nothing moves when the item arrives (Art. 5, Loading).
@@ -295,7 +342,7 @@ function Top({ w, item, m, head, openSum, openOffers, openWhy, online, onFill }:
 }) {
   if (m === 'researching') {
     return (
-      <Section title="Finding out what it is">
+      <Section>
         <List>
           {M.stages(item).map(s => (
             <Row key={s.id} lead={<Icon name={s.state === 'done' ? 'tick-02' : s.state === 'working' ? 'search-01' : 'clock-01'} tone={s.state === 'waiting' ? 'ink-2' : 'ink'} />}
@@ -346,7 +393,6 @@ function TreeTop({ w, item, onFill }: { w: World; item: Item; onFill: (field: st
   const [at, setAt] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const stop = t.stops[at];
-  const done = t.steps.filter(s => s.state === 'done').length;
   const answer = (value: string, typed: boolean) => {
     if (!stop) return;
     const label = typed ? value : stop.options.find(o => o.id === value)?.label ?? value;
@@ -357,7 +403,7 @@ function TreeTop({ w, item, onFill }: { w: World; item: Item; onFill: (field: st
   };
   return (
     <QuestionCard key={stop?.id ?? 'none'} id={stop ? `ask-${stop.id}` : 'ask'}
-      where={stop ? `Step ${stop.step} of ${t.steps.length}: ${t.steps[stop.step - 1].label}` : at ? 'Every question answered. Ready to plan' : `Steps 1 to ${done} of ${t.steps.length} done. Ready to plan`}
+      where={stop ? `Step ${stop.step} of ${t.steps.length}: ${t.steps[stop.step - 1].label}` : 'Ready to plan'}
       question={stop?.question ?? null} options={stop?.options} pick={picked ?? stop?.pick} typed={stop?.typed} onAnswer={answer} />
   );
 }

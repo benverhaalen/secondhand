@@ -29,6 +29,7 @@
         "state": "framing",
         "mode": "shots",
         "purpose": "sell",
+        "intent": "sell",
         "type": null,
         "suggested_type": "apparel",
         "picker": [
@@ -413,6 +414,7 @@
           "state": "uploading",
           "mode": "shots",
           "purpose": "sell",
+          "intent": "sell",
           "type": null,
           "suggested_type": "apparel",
           "picker": [
@@ -739,6 +741,7 @@
         "state": "shooting",
         "mode": "shots",
         "purpose": "sell",
+        "intent": "sell",
         "type": "apparel",
         "suggested_type": "apparel",
         "picker": [
@@ -985,6 +988,7 @@
           "state": "judged",
           "mode": "shots",
           "purpose": "sell",
+          "intent": "sell",
           "type": "apparel",
           "suggested_type": "apparel",
           "picker": [
@@ -1296,6 +1300,7 @@
         "state": "uploading",
         "mode": "shots",
         "purpose": "sell",
+        "intent": "sell",
         "type": "apparel",
         "suggested_type": "apparel",
         "picker": [
@@ -1621,6 +1626,7 @@
         "state": "uploading",
         "mode": "shots",
         "purpose": "sell",
+        "intent": "sell",
         "type": "apparel",
         "suggested_type": "apparel",
         "picker": [
@@ -1948,6 +1954,7 @@
         "state": "framing",
         "mode": "shots",
         "purpose": "sell",
+        "intent": "sell",
         "type": null,
         "suggested_type": "apparel",
         "picker": [
@@ -2271,6 +2278,7 @@
         "state": "shooting",
         "mode": "shots",
         "purpose": "sell",
+        "intent": "sell",
         "type": "apparel",
         "suggested_type": "apparel",
         "picker": [

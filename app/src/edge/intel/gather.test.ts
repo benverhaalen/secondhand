@@ -83,10 +83,10 @@ test('blocked never counts as found: a blocked step is not low gain and not an e
   assert.equal(measure([arr([])], NOW).n_eff, 0);
 });
 
-test('older sales weigh by w_age: half-life 90 d, cut at 365 d', () => {
-  assert.ok(Math.abs(measure([arr([row(1000, 90)])], NOW).n_eff - 0.5) < 1e-9);
+test('Kish counts one sale as one effective sample, with the same age cut', () => {
+  assert.ok(Math.abs(measure([arr([row(1000, 90)])], NOW).n_eff - 1) < 1e-9);
   assert.equal(measure([arr([row(1000, 400)])], NOW).n_eff, 0);
-  assert.ok(Math.abs(measure([arr([row(1000, 30)])], NOW, { ...{ deadline_ms: 1, basis_n_eff: 6, basis_sold_90d: 2, half_life_d: 30, cut_d: 365, sat_k: 3, sat_share: 0.02, min_gain: 0.1 } }).n_eff - 0.5) < 1e-9);
+  assert.ok(Math.abs(measure([arr([row(1000, 30)])], NOW, { ...{ deadline_ms: 1, basis_n_eff: 6, basis_sold_90d: 2, half_life_d: 30, cut_d: 365, sat_k: 3, sat_share: 0.02, min_gain: 0.1 } }).n_eff - 1) < 1e-9);
 });
 
 test('deadline: a step still running at the deadline ends with a timeout row and the answer keeps hidden with searched[]', async () => {
@@ -120,4 +120,39 @@ test('conflict and mixed_types reconcile first; a fact that then shows never gat
   assert.equal(called, 1);
   assert.equal(r.stop, 'nothing_to_gather');
   const _s: Searched[] = r.answer.searched; assert.ok(_s.length >= 1);
+});
+
+for (const note of ['too_few', 'stale'] as const) test(`shown ${note} facts still start gathering`, async () => {
+  const arrivals = [arr(spread(2))];
+  const answer = base(arrivals);
+  const guarded = { state: 'shown' as const, basis_count: 2, as_of: daysAgo(0), citation_id: 'c', notes: [note] };
+  answer.facts[0]!.guarded = guarded;
+  const r = await gather({ answer, plan, arrivals, steps: [step(1, spread(6))], product: 'p', now: () => NOW });
+  assert.ok(r.request); assert.equal(r.stop, 'basis'); assert.deepEqual(r.answer.gather?.steps_done, [1]);
+});
+
+test('gather and valuation measure the same final comp weights with Kish n_eff', async () => {
+  const { basisOf } = await import('../../engines/valuation/valuate.ts');
+  const { DEFAULTS, comparables } = await import('../../engines/valuation/comps.ts');
+  const rows = Array.from({ length: 8 }, (_, i) => ({ comp_id: `c${i}`, site: 'ebay' as const, sold_at: daysAgo(i * 20),
+    price_cents: 4000 + i * 100, kind: 'sold' as const, level: 'variant' as const, condition: i % 2 ? 'excellent' : 'good',
+    w_match: 1, w_extract: i % 2 ? .7 : 1, may_model: false, citation: `source:${i}` }));
+  const selected = comparables({ condition: 'excellent' }, rows, daysAgo(0), DEFAULTS);
+  assert.equal(measure([arr(selected.comps)], NOW).n_eff, selected.n_eff);
+  assert.equal(measure([arr(rows)], NOW).n_eff, basisOf(rows, daysAgo(0), DEFAULTS).n_eff);
+});
+
+test('a price-only arrival cannot erase extraction weights on complete raw comps', async () => {
+  const { nEff } = await import('../../engines/valuation/comps.ts');
+  const full = [1, .01].map((w_extract, i) => ({ comp_id: `mixed:${i}`, site: 'ebay', sold_at: daysAgo(0),
+    price_cents: 4000, kind: 'sold', level: 'variant', condition: 'good', w_match: 1, w_extract, may_model: false, citation: `source:${i}` }));
+  const result = measure([arr([...full, ...Array.from({ length: 4 }, () => row(4000, 0))])], NOW);
+  assert.equal(result.n_eff, nEff([1, .01, 1, 1, 1, 1]));
+  assert.ok(result.n_eff < 6);
+});
+
+test('a price-only arrival cannot make repeated raw comp ids count as new sales', () => {
+  const full = { comp_id: 'repeated', site: 'ebay', sold_at: daysAgo(0), price_cents: 4000,
+    kind: 'sold', level: 'variant', condition: 'good', w_match: 1, w_extract: 1, may_model: false, citation: 'source:repeated' };
+  assert.equal(measure([arr([...Array.from({ length: 6 }, () => full), row(4000, 0)])], NOW).n_eff, 2);
 });

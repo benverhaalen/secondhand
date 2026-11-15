@@ -27,15 +27,19 @@ export function Photo({ src, label, fit = 'card', faded = false }: {
   src?: PhotoSrc | null;
   // What it shows, for a screen reader: the item's title.
   label: string;
-  // card: 72 square in a card. fill: as wide as its column, square (a grid tile, the top of an item page).
-  fit?: 'card' | 'fill';
+  // card: 72 square in a card. row: 40, a ListRow's lead, the size of its icon button and a site's logo there.
+  // fill: as wide as its column, square (a grid tile, the top of an item page).
+  fit?: 'card' | 'row' | 'fill';
   // An ended item's photo loses its color: color is for what is alive (R30).
   faded?: boolean;
 }) {
   const c = useColors();
-  const box = fit === 'card' ? { width: size.photoCard, height: size.photoCard } : { width: '100%' as const, aspectRatio: 1 };
+  const box = fit === 'card' ? { width: size.photoCard, height: size.photoCard } : fit === 'row' ? { width: size.pillCardH, height: size.pillCardH } : { width: '100%' as const, aspectRatio: 1 };
+  // data-photo says a photo is drawn here: expo-image puts its <img> in a wrapper of no height on the web, so the render
+  // check (brand-check, B9: every item shows its photo) cannot climb from the image to the row that holds it.
+  const part = fit === 'fill' ? 'photo' : `photo-${fit}`, marks = src == null ? { part } : { part, photo: '' };
   return (
-    <View {...({ dataSet: { part: fit === 'card' ? 'photo-card' : 'photo' } } as object)} style={[box, { borderRadius: radius.photo, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: c.gray }]}>
+    <View {...({ dataSet: marks } as object)} style={[box, { borderRadius: radius.photo, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: c.gray }]}>
       {src != null ? (
         <Image source={source(src)} alt={label} accessibilityLabel={label} contentFit="cover" style={{ width: '100%', height: '100%', filter: faded ? 'grayscale(1)' : undefined }} />
       ) : null}

@@ -86,6 +86,24 @@ test('secrets: a secret the shipped app could carry fails; server routes and pub
   }), []);
 });
 
+test('secrets: a type-only import from edge/ ships nothing, and tests and fixtures never ship; a value import in app code still fails', () => {
+  assert.deepEqual(run(secrets, {
+    'app/src/buy/reach.ts': "import type { SseFrame } from '../edge/api/jobs.ts';\nimport { type A, type B } from '../edge/x';\n",
+    'app/src/buy/reach.test.ts': "import { jobs } from '../edge/api/jobs.ts';\n",
+    'app/src/buy/fixtures/record.ts': "import { handlers } from '../../edge/api/search.ts';\n",
+  }), []);
+  const bad = errors(run(secrets, { 'app/src/buy/mixed.ts': "import { type A, emptyFound } from '../edge/intel/answer.ts';\n" }));
+  assert.match(bad, /mixed\.ts.*edge/);
+});
+
+test('secrets: an open font passes only in a fonts-open folder with its licence; ui: a font-face block names a family without using one', () => {
+  assert.deepEqual(run(secrets, { 'app/assets/fonts-open/outfit/Outfit-SemiBold.ttf': 'x', 'app/assets/fonts-open/outfit/OFL.txt': 'licence' }), []);
+  assert.match(errors(run(secrets, { 'app/assets/fonts-open/outfit/Outfit-SemiBold.ttf': 'x' })), /without its licence/);
+  assert.match(errors(run(secrets, { 'app/assets/fonts/Outfit-SemiBold.ttf': 'x', 'app/assets/fonts/OFL.txt': 'licence' })), /a font file is committed/);
+  assert.deepEqual(run(ui, { 'web/app/globals.css': '@font-face { font-family: "Outfit"; src: url(/x.ttf); }\n' }), []);
+  assert.match(errors(run(ui, { 'web/app/globals.css': '@font-face { font-family: "Outfit"; src: url(/x.ttf); }\nh1 { font-family: Outfit; }\n' })), /font Outfit/);
+});
+
 test('ui: raw colors, literal fonts and em dashes in app code fail; tokens pass', () => {
   const bad = run(ui, { 'app/Today.tsx': 'const s = { color: "#E63339", fontFamily: "Inter" };\nexport const T = () => <h1>Sold — nice</h1>;\n' });
   const e = errors(bad);
@@ -96,9 +114,8 @@ test('ui: raw colors, literal fonts and em dashes in app code fail; tokens pass'
     'brand/tokens.css': ':root { --ink: #111; }' });
   assert.equal(errors(good), '');
   assert.equal(errors(run(ui, { 'app/src/ui/text.tsx': 'const s = { fontFamily: `${FACE.text}` };\n' })), '');
-  const warn = run(ui, { 'app/Hero.tsx': 'export const H = () => <p>A seamless way to sell</p>;\n' });
-  assert.equal(errors(warn), '');
-  assert.match(warn.map(o => o.msg).join(), /empty adjective/);
+  // Every copy hit is an error since Ben's 10:11 ruling (ui.mjs); it was a warning when this case was written.
+  assert.match(errors(run(ui, { 'app/Hero.tsx': 'export const H = () => <p>A seamless way to sell</p>;\n' })), /empty adjective/);
 });
 
 import { brand } from './brand.mjs';
@@ -124,6 +141,32 @@ test('provenance: a decision only an agent agreed to, and a Decided line without
     'product/vision.md': '# V\n\n## Decided\n\n- Anything. Ben ([decisions](decisions.md)).\n' }));
   assert.match(e, /nobody who can decide/);
   assert.match(e, /#anchor/);
+});
+
+test('a copied tokens.css holds raw colours, and the line-gap-override of a font-face block is not spacing', () => {
+  assert.deepEqual(run(ui, { 'web/app/tokens.css': ':root { --ink: #0A0A0A; --veil: rgb(0 0 0 / 8%); }' }), []);
+  assert.match(errors(run(ui, { 'web/app/page.css': '.a { color: #0A0A0A; }' })), /raw color/);
+  const scales = { 'brand/constitution.md': '| B13 | x | {400, 500} | S |\n| B17 | x | {0, 4, 8, 16} | S |\n| B20 | x | {0, 8, 999} | S |\n' };
+  assert.equal(errors(run(brand, { ...scales, 'web/app/globals.css': '@font-face { font-family: "Outfit"; line-gap-override: 9.7%; }\n.a { gap: 8px; }' })), '');
+  assert.match(errors(run(brand, { ...scales, 'web/app/globals.css': '.a { gap: 9.7%; }' })), /B17/);
+});
+
+test('links: a vendored skill keeps a link to a file its author did not ship', () => {
+  assert.deepEqual(run(links, { '.agents/vendor/emil/prototype/SKILL.md': '[picker](PICKER.md)\n' }), []);
+  assert.match(errors(run(links, { '.agents/skills/build/SKILL.md': '[picker](PICKER.md)\n' })), /does not exist/);
+});
+
+test('server code is not a screen and hand-run probes are tooling: no logo, spacing or print rule there', async () => {
+  const scales = { 'brand/constitution.md': '| B13 | x | {400, 500} | S |\n| B17 | x | {0, 4, 8, 16} | S |\n| B20 | x | {0, 8, 999} | S |\n' };
+  assert.equal(await pick('L6', { 'app/src/edge/harness/sites/ebay/adapter.ts': "export const why = 'Listed on eBay';" }), '');
+  assert.equal(errors(run(brand, { ...scales, 'app/src/engines/negotiation/learn.ts': 'export const o = { margin: 0.5 };' })), '');
+  assert.match(errors(run(brand, { ...scales, 'app/src/ui/a.tsx': 'export const o = { margin: 0.5 };' })), /B17/);
+  // A font's line-gap-override is a metric, written in a string outside any font-face block in fonts.ts.
+  assert.equal(errors(run(brand, { ...scales, 'app/src/ui/fonts.ts': "export const css = 'line-gap-override:9.7%';" })), '');
+  assert.match(errors(run(brand, { ...scales, 'app/src/ui/b.css': '.a { row-gap: 9.7%; }' })), /B17/);
+  const print = 'cons' + 'ole.log("rows");\n';
+  assert.equal(errors(run(logging, { 'app/src/edge/harness/sites/depop/live.ts': print, 'bench/run.mjs': print })), '');
+  assert.match(errors(run(logging, { 'app/src/edge/harness/sites/depop/adapter.ts': print })), /no one can replay/);
 });
 
 test('brand: a reworded scale row fails closed, and rem, em or % spacing is checked', () => {

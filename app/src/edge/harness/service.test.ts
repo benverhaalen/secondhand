@@ -1,14 +1,58 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fail, fakeManifest, type Adapter, type AdapterResult, type CallArgs, type Verb } from './protocol.ts';
+import { fail, fakeManifest, VERBS, isWrite, type Adapter, type AdapterResult, type CallArgs, type Verb } from './protocol.ts';
 import { createSiteService } from './service.ts';
 import { memoryStore } from '../events/ports.ts';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { createHash } from 'node:crypto';
+import { createReadLedger } from './read-ledger.ts';
+import { memoryStore as paramStore } from '../../engines/param/param.ts';
 
-const options = () => ({ store: memoryStore(), data: 'synthetic' as const, log: createLog({ src: 'service.test', build: 'test', sink: memorySink() }) });
+const options = () => {
+  const log = createLog({ src: 'service.test', build: 'test', sink: memorySink() });
+  return { store: memoryStore(), data: 'synthetic' as const, log, ledger: createReadLedger({ now: Date.now, log, params: paramStore() }) };
+};
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+test('an aborted queued read answers immediately, leaves the active read alone and never enters an adapter', async () => {
+  const o = options(), hold = Promise.withResolvers<AdapterResult>(), began = Promise.withResolvers<void>();
+  let runs = 0;
+  const adapter: Adapter = { route_id: 'held', manifest: fakeManifest('depop', 'search'), run() {
+    runs++; began.resolve(); return hold.promise;
+  } };
+  const service = createSiteService('depop', [adapter], { ...o, concurrency: 1, timeoutMs: 100 });
+  const active = service.call('search'); await began.promise;
+  const ctl = new AbortController();
+  const queued = service.call('search', {}, { signal: ctl.signal });
+  await sleep(1); assert.equal(service.queued(), 1);
+  const start = performance.now(); ctl.abort();
+  try {
+    const result = await queued;
+    assert.ok(performance.now() - start < 30);
+    assert.ok(!result.ok && result.error.code === 'rate_limited');
+    assert.equal(service.running(), 1); assert.equal(service.queued(), 0); assert.equal(runs, 1);
+    assert.equal(o.ledger.counts('depop')[0]!.classes.timed_out, 1);
+    assert.equal(o.ledger.paused('depop'), undefined);
+  } finally { hold.resolve({ ok: true, data: [] }); await active; }
+});
+
+test('an aborted read does not wait for startup or warm an adapter on its own', async () => {
+  const o = options(), warmed = Promise.withResolvers<void>();
+  let runs = 0;
+  const adapter: Adapter = { route_id: 'cold', manifest: fakeManifest('depop', 'search'), async run() {
+    runs++; return { ok: true, data: [] };
+  } };
+  const service = createSiteService('depop', [adapter], { ...o, concurrency: 1, warm: () => warmed.promise });
+  const ctl = new AbortController(), pending = service.call('search', {}, { signal: ctl.signal });
+  ctl.abort();
+  try {
+    const result = await Promise.race([pending, sleep(30).then(() => undefined)]);
+    assert.ok(result && !result.ok && result.error.code === 'rate_limited');
+    assert.equal(runs, 0); assert.equal(service.running(), 0);
+    assert.equal(o.ledger.counts('depop')[0]!.classes.timed_out, 1);
+  } finally { warmed.resolve(); await pending; }
+});
 const p95 = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.ceil(xs.length * 0.95) - 1];
 
 // §5 budgets scaled by 1/20: endpoint read 1.5 s -> 75 ms, page read 8 s -> 400 ms, write 20 s -> 1000 ms. Real latency is 30% of the budget.
@@ -182,4 +226,106 @@ test('a ledger write without user_id fails before an adapter runs', async () => 
   const svc = createSiteService('depop', [slow('post', 'page', 1, st)], { ...options(), concurrency: 1 });
   await assert.rejects(svc.call('post', { operation_id: 'missing-user' }), /user_id/);
   assert.equal(st.runs, 0);
+});
+
+function readRig(concurrency = 1) {
+  let time = 0, calls = 0;
+  let response: AdapterResult = fail('blocked', 'a bot check', { do: 'pause_session', site: 'depop' });
+  const sink = memorySink();
+  const log = createLog({ src: 'service.reads.test', build: 'test', sink });
+  const ledger = createReadLedger({ now: () => time, log, params: paramStore() });
+  const adapters = VERBS.map(verb => ({ route_id: `read-test.${verb}`, manifest: fakeManifest('depop', verb),
+    async run() { calls++; return response; } }));
+  const service = createSiteService('depop', adapters, { ...options(), log, ledger, now: () => time, concurrency });
+  return { service, ledger, sink, calls: () => calls, set: (t: number) => { time = t; }, answer: (r: AdapterResult) => { response = r; } };
+}
+
+test('a challenge fails to pause the next read, leaks query text, or falls through to another adapter', async () => {
+  const r = readRig();
+  const query = 'planted-query-do-not-log?private=fixture';
+  const first = await r.service.call('search', { query, url: `https://fixture.test/?q=${query}` });
+  assert.ok(!first.ok && first.error.code === 'blocked');
+  r.set(1001);
+  const next = await r.service.call('search', { query });
+  assert.ok(!next.ok);
+  assert.equal(next.error.code, 'rate_limited');
+  assert.equal(next.error.message, 'the site asked us to slow down');
+  assert.deepEqual(next.error.hint, { do: 'retry_after', after_s: 899 });
+  assert.equal(r.calls(), 1);
+  assert.equal(r.ledger.counts('depop')[0].classes.challenged, 1);
+  assert.equal(r.ledger.counts('depop')[0].classes.refused, 0);
+  assert.ok(r.sink.lines.every(line => !line.includes(query) && !line.includes('fixture.test')));
+});
+
+test('a read already queued before the challenge is sent during the pause', async () => {
+  const r = readRig();
+  const result = await Promise.all([r.service.call('search'), r.service.call('search'), r.service.call('read_listings')]);
+  assert.equal(r.calls(), 1);
+  for (const e of result.slice(1)) assert.ok(!e.ok && e.error.code === 'rate_limited');
+  assert.equal(r.service.running(), 0);
+  assert.equal(r.service.queued(), 0);
+});
+
+test('a write during a read pause is withheld or counted as a read', async () => {
+  const r = readRig();
+  await r.service.call('search');
+  r.answer({ ok: true, data: { id: 'posted' } });
+  assert.equal((await r.service.call('post', { user_id: 'u1', operation_id: 'write-in-pause' })).ok, true);
+  assert.equal(r.calls(), 2);
+  assert.equal(r.ledger.counts('depop')[0].classes.answered, 0);
+  assert.ok(r.ledger.paused('depop'));
+});
+
+test('reads other than search are omitted from the ledger', async () => {
+  const r = readRig();
+  r.answer({ ok: true, data: [] });
+  const reads = VERBS.filter(v => !isWrite(v));
+  for (const verb of reads) await r.service.call(verb);
+  assert.equal(r.ledger.counts('depop')[0].classes.empty, reads.length);
+});
+
+test('an expired pause fails to send a clean read and reset back-off', async () => {
+  const r = readRig();
+  await r.service.call('search');
+  r.set(900_000);
+  r.answer({ ok: true, data: [] });
+  assert.equal((await r.service.call('search')).ok, true);
+  r.answer(fail('blocked', 'HTTP 403', { do: 'pause_session', site: 'depop' }));
+  await r.service.call('search');
+  assert.equal(r.ledger.paused('depop')?.until_ms, 1_800_000);
+});
+
+test('a harness deadline is counted as a refusal and incorrectly pauses reads', async () => {
+  const o = options();
+  const adapter: Adapter = { route_id: 'timeout', manifest: fakeManifest('depop', 'search'),
+    run: (_args, signal) => new Promise((_, reject) => signal.addEventListener('abort', () => reject(new Error('aborted by deadline')))) };
+  const service = createSiteService('depop', [adapter], { ...o, concurrency: 1, timeoutMs: 2 });
+  await service.call('search');
+  assert.equal(o.ledger.counts('depop')[0].classes.timed_out, 1);
+  assert.equal(o.ledger.paused('depop'), undefined);
+});
+
+test('a paused read waits for startup instead of answering immediately', async () => {
+  const o = options();
+  o.ledger.record('depop', 'search', 'challenged', 1);
+  const service = createSiteService('depop', [slow('search', 'page', 1, state())], {
+    ...o, concurrency: 1, warm: () => new Promise<void>(() => {}),
+  });
+  const result = await Promise.race([service.call('search'), sleep(20).then(() => undefined)]);
+  assert.ok(result && !result.ok && result.error.code === 'rate_limited');
+});
+
+for (const kind of ['HTTP 403', 'bot check']) test(`${kind} falls through to a second route or retries the first`, async () => {
+  const o = options(); let first = 0, fallback = 0;
+  const adapters: Adapter[] = [
+    { route_id: 'first', manifest: fakeManifest('depop', 'search'), async run() {
+      first++; return fail('blocked', kind, { do: 'pause_session', site: 'depop' });
+    } },
+    { route_id: 'fallback', manifest: fakeManifest('depop', 'search'), async run() {
+      fallback++; return { ok: true, data: [] };
+    } },
+  ];
+  const service = createSiteService('depop', adapters, { ...o, concurrency: 1 });
+  await service.call('search'); await service.call('search');
+  assert.deepEqual([first, fallback], [1, 0]);
 });

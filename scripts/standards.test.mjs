@@ -23,6 +23,8 @@ test('standards U16: two parts closer than 8 or overlapping fail; a row of one s
 // Messages, 11-15: the conversation rows of a List touch with a hairline between them, as in iOS Mail, and U16 called them crowded.
 test('standards U16: rows of one kind in a list touch and pass; cards of one kind at 0 still fail', () => {
   assert.equal(ids({ stacks: [{ in: 'screen', row: false, kinds: ['thread-row', 'thread-row', 'thread-row'], gaps: [0, 0], at: 184 }] }), '');
+  // Buy's Recent, 11-15: a ListRow with a detail line is [list-row-two], and its rows touch in their List as one-line rows do.
+  assert.equal(ids({ stacks: [{ in: 'screen', row: false, kinds: ['list-row-two', 'list-row-two'], gaps: [0], at: 275 }] }), '');
   assert.match(ids({ stacks: [{ in: 'screen', row: false, kinds: ['card', 'card'], gaps: [0], at: 184 }] }), /U16 \[card\] and \[card\] are 0 apart/);
 });
 

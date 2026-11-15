@@ -35,9 +35,14 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
   if (e.response === null) assert.equal(await r.text(), '');
   else assert.deepEqual(await r.json(), e.response);
 });
-for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
+for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor' && e.name !== 'follows.list')) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
+});
+// A list is the asker's own: another person gets their own empty list, never the example person's rows and never a 404.
+test('follows.list: another person reads an empty list of their own', async () => {
+  const r = await call(examples.find(e => e.name === 'follows.list')!, { token: 'other' });
+  assert.equal(r.status, 200); assert.deepEqual(await r.json(), { data: [], next_cursor: null });
 });
 for (const e of examples.filter(e => e.status < 400 && e.endpoint.includes(':id'))) test(e.name + ': unknown resource is 404', async () => {
   const pattern = e.endpoint.split(' ')[1].split('/'), parts = e.path.split('?')[0].split('/');

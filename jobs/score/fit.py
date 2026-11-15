@@ -11,6 +11,7 @@ import math
 
 import numpy as np
 from .params import resolve
+from param.registry import complete_row
 
 
 def validate(rows):
@@ -95,9 +96,9 @@ def nightly(training, held_out, prior, store, scope, at, min_band=None, seed=0, 
     fitted_hash = hashlib.sha256('\n'.join(sorted(r['outcome_id'] for r in training)).encode()).hexdigest()
     def publish(name, family, value, initial):
         history = store.history(name, scope)
-        row = store.propose({'name': name, 'scope': scope, 'family': family, 'value_or_hyperparams': value,
+        row = store.propose(complete_row({'name': name, 'scope': scope, 'family': family, 'value_or_hyperparams': value,
                              'prior': initial, 'n_eff': len(training), 'metric': 'negative_brier',
-                             'held_out_score': score, 'fitted_on_ids_hash': fitted_hash},
+                             'held_out_score': score, 'fitted_on_ids_hash': fitted_hash}),
                             max((r['version'] for r in history), default=0))
         return store.promote(name, scope, row['version'], 0, at)
     # Registry scores must compare the same held-out cohort, rather than last night's easier or harder cohort.

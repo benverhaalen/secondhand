@@ -1,0 +1,13 @@
+{
+ "recorded": "Written by hand in the shape of app/src/edge/assist/types.ts AssistEvent (2026-11-15), because POST /v1/assist does not yet stream to a visitor. Numbers are made up; no real row is stored.",
+ "start": { "id": "job_assist01", "kind": "assist", "state": "running", "stages": [], "stream": "/v1/jobs/job_assist01/events" },
+ "frames": [
+  { "id": 1, "event": "job.state", "data": { "job_id": "job_assist01", "kind": "assist", "state": "running" } },
+  { "id": 2, "event": "assist.tool", "data": { "id": "r1", "tool": "value_item", "input": { "query": "levi 501" }, "ok": true, "counts": {}, "ms": 0, "phase": "start" } },
+  { "id": 3, "event": "assist.tool", "data": { "id": "r1", "tool": "value_item", "input": { "query": "levi 501" }, "ok": true, "counts": { "sold": 11 }, "ms": 840, "phase": "end" } },
+  { "id": 4, "event": "assist.text", "data": { "delta": "Used 501s sold " } },
+  { "id": 5, "event": "assist.text", "data": { "delta": "for about the middle of that band." } },
+  { "id": 6, "event": "assist.settled", "data": { "state": "answered", "blocks": [ { "type": "text", "text": "Used 501s sold for about the middle of that band. " }, { "type": "widget", "widget": "price_range", "result_id": "r1" } ], "results": { "r1": { "tool": "value_item", "ok": true, "rows": [ { "q10": "$22", "q50": "$35", "q90": "$58" } ], "counts": { "sold": 11 }, "as_of": "2026-11-15", "citation_ids": [], "basis": "11 sold on Poshmark and Mercari", "not_built": [], "widgets": ["price_range"], "ms": 840 } }, "sources": [], "calls": [], "gate": { "checked": 0, "cut": 0, "cut_sentences": [], "tags_removed": 0 }, "model": "fixture", "effort": "low", "usage": { "input_tokens": 0, "output_tokens": 0, "cache_read_input_tokens": 0, "web_searches": 0, "cost_usd": 0, "cost_source": "price_table" }, "ms": { "first_text": 900, "done": 1400 } } },
+  { "id": 7, "event": "job.state", "data": { "job_id": "job_assist01", "kind": "assist", "state": "done" } }
+ ]
+}

@@ -209,7 +209,7 @@ export function Draft({ id, who, spans, facts = [], status = 'ready', lead = tru
         </View>
       ) : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 }}>
-        <Pill id={`${id}-send`} label={status === 'failed' ? 'Try again' : 'Send'} icon={status === 'failed' ? 'refresh' : undefined} kind={lead ? 'primary' : 'second'}
+        <Pill id={`${id}-send`} label={status === 'failed' ? 'Retry' : 'Send'} icon={status === 'failed' ? 'refresh' : undefined} kind={lead ? 'primary' : 'second'}
           state={sending ? 'working' : hold || (editing && !text.trim()) ? 'disabled' : 'idle'} step="Sending" onPress={() => { if (editing) done(); onSend?.(); }} />
         {editing
           ? <Pill id={`${id}-done`} kind="second" label="Done" onPress={done} />

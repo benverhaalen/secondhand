@@ -37,16 +37,6 @@ export function titleOn(site: Site, title: string): string {
   return (space > 0 ? cut.slice(0, space) : title.slice(0, max)).replace(/[\s,]+$/, '');
 }
 
-// Who buys on each site and what the listing does for them, in one caption line (spec/edge-cases.md §5, agent proposal:
-// "each site gets the listing its own buyers want, not one listing copied five times").
-export const AUDIENCE: Record<Site, string> = {
-  ebay: 'Searched by model: specs in the title',
-  depop: 'Young, shops a look: size up front',
-  poshmark: 'Shops brand and size: both first',
-  mercari: 'Wants a deal, shipped: a sharp price',
-  facebook: 'Nearby, picks up today: pickup price',
-};
-
 // The title written for one site's buyers from the item's title and its known fields: the brand first when the title
 // lacks it, "size L" where the site labels size, the model and specs where the title is shorter than the site's buyers
 // read (eBay), then cut at a whole word to the length they read best.

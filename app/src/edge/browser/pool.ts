@@ -103,7 +103,7 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
         const profile = registry && task.user_id ? await registry.get(task.user_id, task.account_id) : undefined;
         const acct = registry ? (profile?.state === 'linked' && profile.site === task.site ?
           { account_id: profile.account_id, person_id: profile.user_id, site: profile.site, token_ref: '' } : undefined) :
-          linked ? await linked.byId(task.account_id) : undefined;
+          linked ? await linked.byId(task.account_id, task.user_id) : undefined;
         if (!acct) return { ok: false, status: 'not_linked', message: 'this account is not linked', ms: now() - t0 };
         const leased = await leases.withLease<Dispatched<T>>(acct.account_id, task.job_id, leaseTtlMs, async () => {
           const before = accounts.get(acct.account_id);
@@ -168,13 +168,13 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
   return {
     // Launch the person's linked profiles (and the public contexts) ahead of any call, so the first dispatch is warm.
     // Registry profiles need an owner: these legacy warm methods skip them; scoped dispatch launches them.
-    async warm(account_ids: string[], publicSlotsWanted = Math.min(2, publicConcurrency)) {
-      for (const id of registry ? [] : account_ids) { const a = linked && await linked.byId(id); if (a) slotFor(id, a.site); }
+    async warm(account_ids: string[], publicSlotsWanted = Math.min(2, publicConcurrency), person_id?: string) {
+      for (const id of registry ? [] : account_ids) { const a = linked && await linked.byId(id, person_id); if (a) slotFor(id, a.site); }
       while (publicSlots.length < publicSlotsWanted) launchPublic();
       await Promise.allSettled([...[...accounts.values()].map(s => s.ctx), ...publicSlots.map(s => s.ctx)]);
     },
     async warmLinked(person_id?: string, publicSlotsWanted?: number) {
-      return this.warm(!registry && linked ? (await linked.linked(person_id)).map(a => a.account_id) : [], publicSlotsWanted);
+      return this.warm(!registry && linked && person_id ? (await linked.linked(person_id)).map(a => a.account_id) : [], publicSlotsWanted, person_id);
     },
     async invalidate(account_id: string) {
       const slot = accounts.get(account_id);

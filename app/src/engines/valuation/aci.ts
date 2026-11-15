@@ -1,12 +1,12 @@
 import { lineage, memoryStore, scopeKey, type Declared, type ParamStore, type Scope } from '../param/param.ts';
 import { timestamp, positive, recorded, type EventLog } from '../demand/velocity.ts';
+import { resolve as resolveValuation } from './params.ts';
 
 type Entry = Declared & { scopes: (keyof Scope)[]; source: string };
 type Score = { score: number; at: string; err: 0 | 1 };
 type Scores = { scores: Score[] };
 export type Issued = { q10: number; q90: number };
 const source = 'spec/determinations/money.md#d6-range-calibration-and-display-state';
-// The brief limits new files; these declarations cannot go in the existing valuation params module.
 export const DECLARED: Entry[] = [
   { name: 'valuation_aci_alpha', family: 'scalar', prior: .2, guard_lo: .05, guard_hi: .5, scopes: ['kind', 'site', 'segment'], source },
   { name: 'valuation_aci_step', family: 'scalar', prior: .005, guard_lo: 0, scopes: ['kind', 'site', 'segment'], source },
@@ -68,7 +68,6 @@ function sale(store: ParamStore, group: Scope, issued: Issued, sold_cents: numbe
   const old = row ? scores(row.value_or_hyperparams) : { scores: [] };
   if (old.scores.some(s => timestamp(s.at) > time)) throw new RangeError('out-of-order sale observation');
   const err = sold_cents < issued.q10 || sold_cents > issued.q90 ? 1 : 0;
-  // Lead decision: ACI scores are log ratios, log(q10/y) and log(y/q90), so Q_g is scale-free; D6's additive form awaits a spec amendment.
   const score = Math.max(Math.log(issued.q10 / sold_cents), Math.log(sold_cents / issued.q90));
   const step = scalar(params.values, 'valuation_aci_step'), target = scalar(params.values, 'valuation_aci_target');
   const lo = scalar(params.values, 'valuation_aci_alpha_min'), hi = scalar(params.values, 'valuation_aci_alpha_max');
@@ -92,7 +91,7 @@ export function qg(store: ParamStore, group: Scope): number {
   const minimum = scalar(params.values, 'valuation_conformal_parent_min');
   // D6's cell minimum: below it the parent supplies only the missing mass, as n/(n+k) shrinkage.
   const weighted = data.map(s => ({ ...s, weight: 1 }));
-  let mass = data.length;
+  const mass = data.length;
   if (mass < minimum) for (const parent of lineage(group).slice(1)) {
     const parentRow = store.rows('valuation_conformal_scores', parent).find(r => r.status === 'champion');
     if (!parentRow) continue;
@@ -100,7 +99,6 @@ export function qg(store: ParamStore, group: Scope): number {
     if (!parentScores.length) continue;
     const weight = (minimum - mass) / parentScores.length;
     for (const row of parentScores) weighted.push({ ...row, weight });
-    mass = minimum;
     break;
   }
   if (!weighted.length) return 0;
@@ -108,27 +106,33 @@ export function qg(store: ParamStore, group: Scope): number {
   const halfLife = positive(params.values.valuation_conformal_half_life_days, 'valuation_conformal_half_life_days');
   let now = -Infinity;
   for (const row of weighted) now = Math.max(now, timestamp(row.at));
-  let total = 0;
+  // Compensated sums keep fractional parent weights on the intended quantile boundary.
+  let total = 0, totalCorrection = 0;
   for (const row of weighted) {
     row.weight *= .5 ** ((now - timestamp(row.at)) / 86_400_000 / halfLife);
-    total += row.weight;
+    const weight = row.weight - totalCorrection, next = total + weight;
+    totalCorrection = (next - total) - weight; total = next;
   }
   weighted.sort((a, b) => a.score - b.score);
-  const quantile = Math.min(1, Math.ceil((mass + 1) * (1 - alpha)) / mass);
-  let cumulative = 0;
+  const quantile = Math.min(1, Math.ceil((total + 1) * (1 - alpha)) / total);
+  let cumulative = 0, cumulativeCorrection = 0;
   for (const row of weighted) {
-    cumulative += row.weight;
+    const weight = row.weight - cumulativeCorrection, next = cumulative + weight;
+    cumulativeCorrection = (next - cumulative) - weight; cumulative = next;
     if (cumulative >= quantile * total) return Math.max(0, row.score);
   }
   return Math.max(0, weighted[weighted.length - 1].score);
 }
 
-// check.ts currently accepts symmetric additive cents. Translate the larger log-price
-// displacement at that boundary, rounding half up; qg remains a log ratio.
 export function calibrationForCheck(store: ParamStore, group: Scope, issued: Issued) {
   range(issued);
-  const Q = qg(store, group);
-  const cents = Math.round(Math.max(issued.q10 * -Math.expm1(-Q), issued.q90 * Math.expm1(Q)));
-  money(cents, 'Q_g_cents');
-  return { Q_g: cents, group: scopeKey(group), coverage: 0, passes: false, param_versions: resolve(store, group).versions };
+  const Q = qg(store, group), params = resolveValuation(store, group);
+  const row = store.rows('valuation_conformal_scores', group).find(r => r.status === 'champion');
+  const history = row ? scores(row.value_or_hyperparams).scores : [];
+  // Conservatively keep n and hits local and undecayed; Q_g decays scores including parent fill.
+  // onOurSale must receive the range actually shown, after widening.
+  const n = history.length, hits = history.filter(s => s.err === 0).length;
+  return { Q_g: Q, group: scopeKey(group), n, hits, coverage: n ? hits / n : 0,
+    passes: n >= params.values.valuation_checked_min_n,
+    param_versions: { ...resolve(store, group).versions, ...params.versions } };
 }

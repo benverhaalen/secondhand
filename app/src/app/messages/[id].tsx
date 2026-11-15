@@ -52,7 +52,7 @@ export default function MessageThread() {
     return (
       <Screen name="message" state="failed" skip={SKIP} nav={<Nav back={back} />}>
         <EmptyState title={`Messages with ${conv.buyer} didn’t load`}
-          action={{ id: 'thread-retry', label: 'Try again', onPress: () => router.replace(`/messages/${conv.id}${q}` as Href) }} />
+          action={{ id: 'thread-retry', label: 'Retry', onPress: () => router.replace(`/messages/${conv.id}${q}` as Href) }} />
       </Screen>
     );
   }
@@ -139,7 +139,7 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
   const why = open?.kind === 'why' ? explain(w, conv, open.msg) : null;
   const foot = blocked ? null : spans ? null : (
     <Stack gap="tight">
-      {taken ? <Meta text="You answer here. Offers still follow your Plan" icon="information-circle" /> : null}
+      {taken ? <Meta text="Offers still follow your Plan" icon="information-circle" /> : null}
       <Composer id="composer" to={conv.buyer} value={text} onChange={setText} onSend={sendMine} sending={sending} />
     </Stack>
   );

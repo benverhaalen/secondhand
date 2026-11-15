@@ -12,7 +12,10 @@
       "ios": {
         "simulator": true
       },
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_ORIGIN": "http://localhost:8081"
+      }
     },
     "production": {
       "autoIncrement": true

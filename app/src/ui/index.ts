@@ -41,3 +41,7 @@ export { Feed } from './parts/feed';
 export { QueueView, type QueueEntry } from './parts/queue';
 export { MoneyNews, type SoldThing } from './parts/money-news';
 export { Pile } from './parts/pile';
+// A takeover that becomes a chat, and where a search is looking while it looks (Nate, words.md 2026-11-15).
+export { ChatFrame } from './parts/chat-frame';
+export { Rail } from './parts/rail';
+export { Burst, SourceFloat, type Point } from './parts/source-float';

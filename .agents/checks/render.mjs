@@ -222,8 +222,9 @@ function checkView(view, ctx) {
     if (n && !['ink', 'on-color', 'page', 'white'].includes(n)) E('B32', '', `the wordmark is --${n}: it is black or white (C1)`);
     if (g.kind === 'tag' || g.kind === 'fill' && g.name !== 'page' && !(g.name === 'ink' && n !== 'ink')) E('B32', '', `the wordmark sits on ${g.name ? `--${g.name}` : 'a color'}: it goes on the page or the field (C1)`);
     const unit = t.size / 2, zone = [t.rect[0] - unit, t.rect[1] - unit, t.rect[2] + unit, t.rect[3] + unit], up = new Set(); for (let i = t.el; i >= 0; i = view.els[i].parent) up.add(i);
+    const brandPart = i => { for (; i >= 0; i = view.els[i].parent) if (view.els[i].part === 'brand-mark') return true; return false; };
     const near = [...text.filter(o => o !== t && hits(o.rect, zone)).map(o => short(o.text)),
-      ...view.els.filter((el, i) => !up.has(i) && el.part !== 'hand' && (el.paints || el.bg || el.borders.length) && hits(el.rect, zone) && !(el.rect[0] <= t.rect[0] && el.rect[1] <= t.rect[1] && el.rect[2] >= t.rect[2] && el.rect[3] >= t.rect[3])).map(el => el.part ? `[${el.part}]` : `<${el.tag}>`)];
+      ...view.els.filter((el, i) => !up.has(i) && !brandPart(i) && (el.paints || el.bg || el.borders.length) && hits(el.rect, zone) && !(el.rect[0] <= t.rect[0] && el.rect[1] <= t.rect[1] && el.rect[2] >= t.rect[2] && el.rect[3] >= t.rect[3])).map(el => el.part ? `[${el.part}]` : `<${el.tag}>`)];
     if (near.length) E('B32', '', `${[...new Set(near)].slice(0, 3).join(', ')} sits within ${unit} px of the wordmark: nothing but its ground comes within half its type size (C1)`);
   }
   // B33 logos in a row (C5): one height, one gap, none taller than the wordmark's type
@@ -409,7 +410,7 @@ export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
   // Every output carries the wordmark. An app screen may be a sheet, which has no navigation bar, so there it is a warning.
   if (!marks.some(m => m.length)) out.push((medium === 'app' ? warn : err)('B3', medium, medium === 'app' ? 'has no wordmark: a main screen carries "secondhand" in its navigation bar, and a sheet does not (C1)' : 'has no wordmark: every output carries "secondhand" in the display face (C1, Art. 14.2)'));
   // B31 things of one kind are one size, on every view of the output at one width
-  const kinds = new Map(); for (const v of facts.views) for (const el of v.els) if (el.part && el.part !== 'hand') { const k = `${v.canvas?.[0]} ${el.part}`; kinds.set(k, [...(kinds.get(k) ?? []), { el, view: v.index + 1 }]); }
+  const kinds = new Map(); for (const v of facts.views) for (const el of v.els) if (el.part && el.part !== 'brand-mark') { const k = `${v.canvas?.[0]} ${el.part}`; kinds.set(k, [...(kinds.get(k) ?? []), { el, view: v.index + 1 }]); }
   for (const [k, all] of kinds) { const part = k.split(' ')[1], set = (xs, i) => [...new Set(xs.map(x => Math.round(size(x.el)[i])))].sort((a, b) => a - b), spread = xs => Math.max(...xs) - Math.min(...xs) > 1;
     const hs = set(all, 1), ws = set(all.filter(x => x.el.fit !== 'content' && !x.el.logo), 0), at = `${new Set(all.map(x => x.view)).size > 1 ? 'views' : 'view'} ${[...new Set(all.map(x => x.view))].join(', ')}`;
     if (spread(hs)) out.push(err('B31', `${at} [${part}]`, `is ${hs.join(', ')} px tall in different places: things of one kind are one size, whatever is in them`));

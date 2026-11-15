@@ -19,6 +19,18 @@ function logger() {
 }
 const input: IdentifyInput = {capture_id: 'cap_unknown', family: 'apparel', photos: [{key: 'front', role: 'front'}, {key: 'tag', role: 'tag', text: [{line: 'Size XL MADE IN MEXICO', confidence: 0}]}]};
 
+test('M5: Nike FY23 cannot confirm an invented model through the tag rung', async () => {
+  const out = await identify({...input, photos: [{key: 'tag', role: 'tag', text: [{line: 'Nike FY23\nM\nMade in Vietnam', confidence: 0.9}]}]}, {}, memoryStore(), logger().log);
+  assert.equal(out.set[0]?.brand, 'Nike');
+  assert.ok([...out.set, ...out.others].every(candidate => candidate.model === undefined && !candidate.product_id.includes('/model:')));
+  assert.deepEqual(out.facts.filter(fact => fact.field === 'style_code'), []);
+});
+
+test('M4: fabric origin cannot reach the confirmed garment facts', async () => {
+  const out = await identify({...input, photos: [{key: 'tag', role: 'tag', text: [{line: 'Nike\nFabric made in Italy\nMade in China', confidence: 0.9}]}]}, {}, memoryStore(), logger().log);
+  assert.deepEqual(out.facts.filter(fact => fact.field === 'origin').map(fact => fact.value), ['China']);
+});
+
 for (const row of record.items) test(`${row.item}: the real tag confirms its brand without visual or model calls`, async () => {
   const {read} = json(row.manifest) as {read: {tag_text: string}};
   assert.equal(tagLines.items[row.item].join(' '), read.tag_text);
@@ -31,10 +43,10 @@ for (const row of record.items) test(`${row.item}: the real tag confirms its bra
   assert.equal(out.set[0]?.brand, {'carhartt-pants': 'Carhartt', 'chico-hoodie': 'Russell Athletic', 'marquette-tee': 'Fruit of the Loom'}[row.item]);
   assert.ok(out.set[0].rests_on.some(line => line.includes('on the tag')));
   assert.ok(out.facts.every(fact => fact.confidence === 0 && capture.photos.some(photo => photo.key === fact.ref)));
-  const expected = {'carhartt-pants': [null, 'Mexico'], 'chico-hoodie': ['XXL', 'Mexico'], 'marquette-tee': ['XL', 'Honduras']}[row.item];
+  const expected = {'carhartt-pants': [null, null], 'chico-hoodie': ['XXL', 'Mexico'], 'marquette-tee': ['XL', 'Honduras']}[row.item];
   assert.ok(expected);
   assert.deepEqual(out.facts.filter(fact => fact.field === 'size_label').map(fact => fact.value), expected[0] ? [expected[0]] : []);
-  assert.deepEqual(out.facts.filter(fact => fact.field === 'origin').map(fact => fact.value), [expected[1]]);
+  assert.deepEqual(out.facts.filter(fact => fact.field === 'origin').map(fact => fact.value), expected[1] ? [expected[1]] : []);
   if (row.item === 'carhartt-pants') assert.equal(out.set[0].model, undefined);
   assert.deepEqual(calls, []);
 });
@@ -343,4 +355,45 @@ test('a generic tag brand does not turn a catalogue model confirmation into a re
   }, memoryStore(), log);
   assert.equal(out.action, 'confirm');
   assert.equal(out.set[0]?.product_id, 'brand:carhartt/model:b324');
+});
+
+for (const line of [
+  "Fits like Levi's 501\nW32 L32\n100% cotton\nMade in China",
+  'Merino wool sourced from Patagonia, Argentina\n100% wool\nMade in Peru\nM',
+  'Wool from Patagonia\n100% wool\nMade in Uruguay',
+  'Compare to Nike\n100% Polyester\nMade in China\nM',
+  'NIKE-INSPIRED TRAINING TEE\nL\n100% polyester', 'Do not use with Sony devices\nL',
+  'COLOUR\nAPPLE\nM', 'COLOR:\nAMAZON\nL',
+  'Inspired by Nike', 'R unrelated NIKE',
+]) test(`R5: a prose or colour brand cannot reach identify candidates: ${line}`, async () => {
+  const {log, sink} = logger();
+  const out = await identify({...input, photos: [{key: 'tag', role: 'tag', text: [{line, confidence: 1}]}]}, {}, memoryStore(), log);
+  assert.equal(out.action, 'ask');
+  assert.deepEqual(out.set, []);
+  assert.deepEqual(out.others, []);
+  log.end();
+  assert.deepEqual(checkLog(sink.text()).problems, []);
+});
+for (const [line, expected] of [['R NIKE', 'Nike'], ['CHAMPION AB1234', 'Champion']])
+  test(`R6: leading brand confirms without inventing a model: ${line}`, async () => {
+    const out = await identify({...input, photos: [{key: 'tag', role: 'tag', text: [{line, confidence: 1}]}]}, {}, memoryStore(), logger().log);
+    assert.equal(out.action, 'confirm');
+    assert.deepEqual(out.set.map(candidate => candidate.brand), [expected]);
+    assert.ok(out.set.every(candidate => candidate.model === undefined));
+  });
+test('R5: the whole-line maker confirms without offering its licensor', async () => {
+  const line = 'Officially Licensed NINTENDO\nGILDAN\nULTRA COTTON\nXL\nMade in Nicaragua';
+  const out = await identify({...input, photos: [{key: 'tag', role: 'tag', text: [{line, confidence: 1}]}]}, {}, memoryStore(), logger().log);
+  assert.equal(out.action, 'confirm');
+  assert.deepEqual(out.set.map(candidate => candidate.brand), ['Gildan']);
+  assert.deepEqual(out.others, []);
+});
+for (const [line, excluded] of [
+  ['SKECHERS\n9\nM\nMADE IN VIETNAM', 'size_label'],
+  ['ITEM 1234567\nPO 4500123456\nMADE IN CHINA', 'style_code'],
+  ['Item: 1068827\nKIRKLAND SIGNATURE\nM\nMade in Vietnam', 'style_code'],
+]) test(`R5: a width or inventory number cannot reach identify facts: ${line}`, async () => {
+  const out = await identify({...input, photos: [{key: 'tag', role: 'tag', text: [{line, confidence: 1}]}]}, {}, memoryStore(), logger().log);
+  assert.deepEqual(out.facts.filter(fact => fact.field === excluded), []);
+  assert.ok([...out.set, ...out.others].every(candidate => candidate.model === undefined));
 });

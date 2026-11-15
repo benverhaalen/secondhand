@@ -378,11 +378,10 @@ export type Why = {
 export function why(w: World, it: Item): Why | null {
   const v = it.valuation?.state === 'shown' ? it.valuation : null;
   if (!v) return null;
-  const n = v.basis_count, sites = v.per_site.length;
   const ls = it.listings.filter(l => l.state === 'live' || l.state === 'none');
   return {
     title: `Why ${usd(v.range.low)} to ${usd(v.range.high)}`,
-    says: `${n} like it sold lately on ${sites} ${sites === 1 ? 'site' : 'sites'}, most between ${usd(v.range.low)} and ${usd(v.range.high)}. Each site takes a fee from the price, so you get a little less.`,
+    says: `Similar ones sold for ${usd(v.range.low)} to ${usd(v.range.high)} lately`,
     sales: v.per_site.filter(p => p.low !== null && p.high !== null).map(p => ({ site: p.site, low: p.low!, high: p.high!, count: p.basis_count })),
     fees: ls.map(l => ({ site: l.site, ...feeLine(l.site, l.price_cents) })),
     basis: `Checked ${day(v.as_of, w.now).toLowerCase()}`,
@@ -391,7 +390,7 @@ export function why(w: World, it: Item): Why | null {
 }
 
 // The verdict a posting site was picked on, as the plan says it (platform-fit.json, verdicts).
-const PICKED: Record<Verdict, string> = { best: 'Best for this', good: 'Sells well', ok: 'Reach', avoid: 'Added by you', blocked: '' };
+const PICKED: Record<Verdict, string> = { best: 'Best for this', good: 'Sells well', ok: 'More buyers', avoid: 'Added by you', blocked: '' };
 const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 // The price drops the plan will make (money.md D15, its age table): the next rung at the plan's median days, the one

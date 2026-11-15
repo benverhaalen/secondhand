@@ -91,6 +91,11 @@ def main() -> None:
             return log.call('db', 'migrate_data', {'sql': statement}, lambda: spark.sql(statement, args=parameters).collect(),
                             describe=lambda rows: {'rows': len(rows)})
 
+        grant_columns = execute("SELECT column_name FROM secondhand.information_schema.columns "
+                                "WHERE table_schema = 'governance' AND table_name = 'principal_map' AND column_name = 'grant_id'", {})
+        if not grant_columns:
+            execute("ALTER TABLE secondhand.governance.principal_map ADD COLUMNS "
+                    "(grant_id STRING COMMENT 'The break_glass.id this wildcard row belongs to.')", {})
         run_plan(statements, execute)
         log.job('migrate_data', 'migrate_data', 'done', statements=len(statements))
         log.end()

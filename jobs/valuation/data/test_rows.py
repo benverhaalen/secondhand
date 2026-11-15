@@ -295,3 +295,13 @@ def test_freeze_refuses_unrecognized_input_names_when_pinned(tmp_path):
     with pytest.raises(ValueError, match='not pinned'):
         freeze('nber_ebay_bo', [p], tmp_path / 'out', expect={'anon_bo_lists.csv.gz': '0' * 64})
     assert not (tmp_path / 'out').exists()
+
+
+def test_columns_are_each_written_once_in_the_order_the_bronze_schema_reads():
+    # FIELDS already holds retail_cents and released_at; a re-freeze once wrote them twice (mercari_kaggle, 2026-11-15)
+    import json
+    from pathlib import Path
+    from valuation.data.rows import COLUMNS
+    assert len(COLUMNS) == len(set(COLUMNS))
+    stockx = json.loads((Path(__file__).parent / "manifests" / "stockx_2019.json").read_text(encoding="utf-8"))
+    assert list(COLUMNS) == stockx["output"]["columns"]

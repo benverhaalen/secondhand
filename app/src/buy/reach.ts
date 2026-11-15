@@ -2,9 +2,10 @@
 import type { SseFrame } from '../edge/api/jobs.ts';
 import type { OfferView, SearchAnswer, SearchStage } from '../edge/api/search.ts';
 import type { Found } from '../edge/intel/answer.ts';
-import { emptyFound } from '../edge/intel/answer.ts';
 import type { SiteOutcome } from '../edge/intel/public/search.ts';
 import type { Pace } from '../edge/intel/run.ts';
+
+const emptyFound = (): Found => ({ sources_searched: 0, results_found: 0, results_used: 0, dropped_by_reason: {}, sites: {} });
 
 export interface SourceReach {
   id: string;
@@ -16,6 +17,7 @@ export interface SourceReach {
   cached: 'refreshing' | 'kept' | null;
   error: { code: string; reason: string } | null;
   at: string | null;
+  url: string | null;                        // the site's own results for the query, from the settled frame
 }
 
 export interface Reach {
@@ -36,7 +38,7 @@ type Answer = Pick<SearchAnswer, 'slots' | 'found' | 'ms'> & { searched: Searche
 type Stage = Pick<SearchStage, 'state' | 'found' | 'error'> & { stage: string; at: string };
 type Partial = { site: string; results: OfferView[]; sites_pending: string[]; answer: Answer };
 type Settled = Omit<Partial, 'site'> & { found: Found; searched: Searched[] };
-type Event = { event: 'job.stage'; data: Stage } | { event: 'answer.partial'; data: Partial }
+type Event = { event: 'job.stage'; data: Stage } | { event: 'answer.partial'; data: Partial } | { event: 'answer.late'; data: Partial }
   | { event: 'answer.settled'; data: Settled }
   | { event: 'job.state'; data: { state: Reach['state']; error?: NonNullable<Reach['error']> } };
 
@@ -68,20 +70,22 @@ function answer(v: unknown): v is Answer {
 }
 
 const money = (v: unknown) => v === null || object(v) && count(v.amount_cents) && typeof v.currency === 'string';
+// Names the server may add to (a new Apify actor, a new kind of seller) are checked as strings, so one new value never
+// drops a whole frame and freezes the screen.
 function offer(v: unknown): v is OfferView {
   if (!object(v)) return false;
   const required = ['id', 'listing_id', 'external_id', 'title', 'url', 'site', 'route_id', 'condition'];
   const optional = ['host', 'image_url', 'source_site', 'keep_until'];
   return required.every(key => typeof v[key] === 'string') && v.data === `live:${v.site}`
     && ['exact', 'likely_same_model', 'same_family_other_variant', 'comparable', 'unresolved'].some(relation => relation === v.relation)
-    && ['marketplace', 'brand_store', 'retailer', 'amazon', 'refurb', 'brand_resale'].some(kind => kind === v.source_kind)
+    && typeof v.source_kind === 'string'
     && money(v.price_cents) && v.shipping_cents === null && money(v.delivered_cents)
     && typeof v.shipping_estimated === 'boolean' && strings(v.also_on)
     && optional.every(key => v[key] === undefined || typeof v[key] === 'string')
     && (v.converted === undefined || v.converted === true) && (v.may_model === undefined || v.may_model === false)
     && (v.via === undefined || v.via === 'apify')
-    && (v.actor === undefined || v.actor === 'automation-lab~ebay-scraper' || v.actor === 'apify~facebook-marketplace-scraper')
-    && (v.use_scope === undefined || v.use_scope === 'hackathon_demo')
+    && (v.actor === undefined || typeof v.actor === 'string')
+    && (v.use_scope === undefined || typeof v.use_scope === 'string')
     && (v.commercial_link === undefined || v.commercial_link === true)
     && (v.attribution === undefined || v.attribution === 'Dupe.com')
     && (v.secondhand === undefined || typeof v.secondhand === 'boolean');
@@ -102,12 +106,13 @@ function parse(raw: unknown, asked: Set<string> | null): Event | null {
     if (d.state === 'failed' && !error(d.error)) return null;
     return { event: 'job.state', data: { state: d.state, ...(d.state === 'failed' ? { error: d.error as NonNullable<Reach['error']> } : {}) } };
   }
-  if (frame.event !== 'answer.partial' && frame.event !== 'answer.settled') return null;
+  if (frame.event !== 'answer.partial' && frame.event !== 'answer.late' && frame.event !== 'answer.settled') return null;
   if (!answer(d.answer) || !d.answer.searched.every(s => known(s.site))
     || !Array.isArray(d.results) || !Array.from(d.results).every(offer) || !strings(d.sites_pending) || !d.sites_pending.every(known)) return null;
-  if (frame.event === 'answer.partial') {
+  // answer.late: a person's Facebook rows after answer.settled, in a partial's shape (search lead, 2026-11-15).
+  if (frame.event === 'answer.partial' || frame.event === 'answer.late') {
     if (typeof d.site !== 'string' || !known(d.site)) return null;
-    return { event: 'answer.partial', data: d as Partial };
+    return frame.event === 'answer.late' ? { event: 'answer.late', data: d as Partial } : { event: 'answer.partial', data: d as Partial };
   }
   // Cache retention is on result.searched, not answer.searched (search.ts result()/answer()).
   if (!found(d.found) || !Array.isArray(d.searched) || !Array.from(d.searched).every(searched) || !d.searched.every(s => known(s.site))) return null;
@@ -115,7 +120,7 @@ function parse(raw: unknown, asked: Set<string> | null): Event | null {
 }
 
 const source = (id: string): SourceReach => ({ id, state: 'running', outcome: null, read: 0, kept: 0, dropped: [],
-  ms: null, pace: null, cost_usd_est: null, fallback: null, cached: null, error: null, at: null });
+  ms: null, pace: null, cost_usd_est: null, fallback: null, cached: null, error: null, at: null, url: null });
 const copyOffers = (rows: OfferView[]): OfferView[] => rows.map(o => ({ ...o, also_on: [...o.also_on],
   price_cents: o.price_cents ? { amount_cents: o.price_cents.amount_cents, currency: o.price_cents.currency } : null,
   delivered_cents: o.delivered_cents ? { amount_cents: o.delivered_cents.amount_cents, currency: o.delivered_cents.currency } : null }));
@@ -123,7 +128,7 @@ const copyOffers = (rows: OfferView[]): OfferView[] => rows.map(o => ({ ...o, al
 export function reach(start: unknown, frames: unknown[]): Reach {
   const sources = new Map<string, SourceReach>(), stages = new Map<string, Found>();
   const stageErrors = new Map<string, SourceReach['error']>(), partials = new Map<string, OfferView[]>();
-  const searchedErrors = new Map<string, SourceReach['error']>();
+  const searchedErrors = new Map<string, SourceReach['error']>(), late = new Map<string, OfferView[]>();
   const asked = object(start) && Array.isArray(start.stages) ? new Set<string>() : null;
   if (asked && object(start) && Array.isArray(start.stages)) {
     for (const s of start.stages) {
@@ -173,20 +178,27 @@ export function reach(start: unknown, frames: unknown[]): Reach {
       const e = entry.error_code !== undefined && entry.reason !== undefined ? { code: entry.error_code, reason: entry.reason } : null;
       searchedErrors.set(s.id, e); s.error = stageErrors.get(s.id) ?? e;
     }
-    if (frame.event === 'answer.partial') {
+    if (frame.event === 'answer.late') {
+      land(get(frame.data.site).id);
+      late.set(frame.data.site, frame.data.results);
+    } else if (frame.event === 'answer.partial') {
       const s = get(frame.data.site);
       land(s.id);
       partials.set(s.id, frame.data.results);
       s.cached = pending.includes(s.id) ? 'refreshing' : null;
     } else {
       final = frame.data;
-      for (const s of sources.values()) s.cached = frame.data.searched.find(entry => entry.site === s.id)?.cached ? 'kept' : null;
+      for (const s of sources.values()) {
+        const entry = frame.data.searched.find(e => e.site === s.id) as (Searched & { url?: unknown }) | undefined;
+        s.cached = entry?.cached ? 'kept' : null;
+        s.url = typeof entry?.url === 'string' && entry.url.startsWith('https://') ? entry.url : null;
+      }
     }
   }
   if (final) {
     out.found = { sources_searched: final.found.sources_searched, results_found: final.found.results_found,
       results_used: final.found.results_used, sites: { ...final.found.sites }, dropped_by_reason: { ...final.found.dropped_by_reason } };
-    out.results = copyOffers(final.results);
+    out.results = copyOffers([...final.results, ...[...late.values()].flat()]);
   }
   else {
     for (const f of stages.values()) {

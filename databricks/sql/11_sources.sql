@@ -2,7 +2,7 @@
 -- Rights decisions follow the frozen manifests, sold-datasets.md and Ben's 09:09 call.
 -- SQL file tasks split at every statement separator, even inside strings: chr(59) preserves licence punctuation.
 CREATE TABLE IF NOT EXISTS secondhand.governance.source_rights (
-  source STRING NOT NULL COMMENT 'Frozen dataset or request source name, one rights row per source.',
+  source STRING NOT NULL COMMENT 'Frozen dataset or live site[:via] id from product.md and the landed line, one row per source.',
   may_store BOOLEAN NOT NULL COMMENT 'Whether this build may retain source rows, within ttl_hours.',
   may_model BOOLEAN NOT NULL COMMENT 'Whether this build may fit on the source, within may_model_scope.',
   may_model_scope STRING NOT NULL COMMENT 'none, hackathon_demo, product. A demo decision never clears a shipped model.',
@@ -27,17 +27,30 @@ USING (
     ('mercari_apify_ccby', true, false, 'none', true, false, NULL, concat('CC BY 4.0, attribution malekoweis/resale-market-data', chr(59), ' collected from Mercari by a scraping actor'), 'https://github.com/malekoweis/resale-market-data', 'Agent proposal, research/price/ben/sold-datasets.md', '2026-11-15T00:00:00Z', concat('Attribution: malekoweis/resale-market-data, CC BY 4.0. Publisher licence does not establish Mercari permission. Store/show follow the demo pipeline', chr(59), ' no model clearance.')),
     ('nber_ebay_bo', true, true, 'hackathon_demo', true, false, NULL, concat('Available for research purposes', chr(59), ' public release cleared by eBay. Cite Backus, Blake, Larsen and Tadelis (2020), QJE. Research use only.'), 'https://back.nber.org/appendix/w24306/bargaining/README.pdf', 'Agent proposal, research/price/ben/sold-datasets.md', '2026-11-15T00:00:00Z', concat('Research backtest only', chr(59), ' no clearance to fit a shipped model.')),
     ('ebay_api', true, false, 'none', true, false, 6, 'Restricted Activities: "Use eBay Content, either alone or in combination with third-party information, to suggest or model prices for items listed on eBay Site."', 'https://developer.ebay.com/develop/apis/api-license-agreement', 'Agent proposal, research/data/nate/data-services-on-marketplace-apis.md', '2026-11-15T00:00:00Z', concat('Six-hour TTL is our expiry policy', chr(59), ' the licence states a display freshness limit. Display separately from non-eBay content. Pricing consent is not recorded. Licence copy URL also recorded in research/cross-cutting/nate/privacy-and-data.md.')),
+    ('ebay', true, false, 'none', true, false, 6, 'eBay content never trains a model and never leaves in a share, by any route.', NULL, 'Nate, corrected DB11 brief 2026-11-15 13:41 UTC and spec/data-use.md', '2026-11-15T13:41:00Z', 'Public page and treg reads store and show only. Six-hour expiry follows ebay_api.'),
+    ('ebay:treg', true, false, 'none', true, false, 6, 'eBay content never trains a model and never leaves in a share, by any route.', NULL, 'Nate, corrected DB11 brief 2026-11-15 13:41 UTC and spec/data-use.md', '2026-11-15T13:41:00Z', 'Public page and treg reads store and show only. Six-hour expiry follows ebay_api.'),
+    ('mercari', true, false, 'none', true, false, NULL, 'Public active comps are stored and shown as counts and ranges with source links, per spec/data-use.md.', NULL, 'Agent proposal', '2026-11-15T13:41:00Z', 'Missing: Nate ruling clearing mercari direct page content for modelling or sharing. Strictest model and share rights until then.'),
+    ('poshmark', true, false, 'none', true, false, NULL, 'Public active comps are stored and shown as counts and ranges with source links, per spec/data-use.md.', NULL, 'Agent proposal', '2026-11-15T13:41:00Z', 'Missing: Nate ruling clearing poshmark direct page content for modelling or sharing. Strictest model and share rights until then.'),
+    ('depop', true, false, 'none', true, false, NULL, 'Public active comps are stored and shown as counts and ranges with source links, per spec/data-use.md.', NULL, 'Agent proposal', '2026-11-15T13:41:00Z', 'Missing: Nate ruling clearing depop direct page content for modelling or sharing. Strictest model and share rights until then.'),
+    ('brand', true, false, 'none', true, false, NULL, 'Official retail reads are stored and shown with source links, per spec/product.md.', NULL, 'Agent proposal', '2026-11-15T13:41:00Z', 'Missing: no ruling on official-retail modelling or sharing exists. Strictest model and share rights until then.'),
+    ('facebook:apify', true, true, 'hackathon_demo', true, false, NULL, concat('Nate: Yes, Apify too', chr(59), ' apify for fb marketpalce only. Facebook Marketplace through Apify may fit demo models. Product scope is not granted.'), NULL, 'Nate, product/words.md 2026-11-15 about 07:05 Central and corrected DB11 brief 13:41 UTC', '2026-11-15T13:41:00Z', 'Facebook is the only live Apify source. No clearance for a shipped model or redistribution.'),
     ('dupe', false, false, 'none', true, false, 0, concat('Request-only lookup', chr(59), ' no storage or model rights recorded.'), NULL, 'Agent proposal, request-only source policy', '2026-11-15T00:00:00Z', 'not stored past the request')
   AS rights(source, may_store, may_model, may_model_scope, may_show, may_share, ttl_hours, clause, clause_url, decided_by, decided_at, note)
 ) AS s
 ON target.source = s.source
 WHEN MATCHED THEN UPDATE SET
-  target.may_store = s.may_store,
-  target.may_model = s.may_model,
-  target.may_model_scope = s.may_model_scope,
-  target.may_show = s.may_show,
-  target.may_share = s.may_share,
-  target.ttl_hours = s.ttl_hours,
+  target.may_store = target.may_store AND s.may_store,
+  target.may_model = target.may_model AND s.may_model,
+  target.may_model_scope = CASE
+    WHEN target.may_model_scope IS NULL OR s.may_model_scope IS NULL
+      OR target.may_model_scope NOT IN ('hackathon_demo', 'product')
+      OR s.may_model_scope NOT IN ('hackathon_demo', 'product') THEN 'none'
+    WHEN target.may_model_scope = 'hackathon_demo' OR s.may_model_scope = 'hackathon_demo' THEN 'hackathon_demo'
+    ELSE 'product' END,
+  target.may_show = target.may_show AND s.may_show,
+  target.may_share = target.may_share AND s.may_share,
+  target.ttl_hours = CASE WHEN target.ttl_hours IS NULL THEN s.ttl_hours
+    WHEN s.ttl_hours IS NULL OR target.ttl_hours < s.ttl_hours THEN target.ttl_hours ELSE s.ttl_hours END,
   target.clause = s.clause,
   target.clause_url = s.clause_url,
   target.decided_by = s.decided_by,
@@ -47,12 +60,12 @@ WHEN NOT MATCHED THEN INSERT (source, may_store, may_model, may_model_scope, may
 VALUES (s.source, s.may_store, s.may_model, s.may_model_scope, s.may_show, s.may_share, s.ttl_hours, s.clause, s.clause_url, s.decided_by, CAST(s.decided_at AS TIMESTAMP), s.note);
 
 CREATE OR REPLACE VIEW secondhand.market.comp_for_product
-COMMENT 'The only table a model the product ships may read. Today no source is cleared for product use.'
+COMMENT 'Rows cleared by both row and source rights for a shipped model. Today no source is cleared for product use.'
 AS
 SELECT c.*
 FROM secondhand.market.comp c
 JOIN secondhand.governance.source_rights r ON c.source = r.source
-WHERE r.may_model AND r.may_model_scope = 'product';
+WHERE c.may_model = true AND r.may_model AND r.may_model_scope = 'product';
 
 CREATE OR REPLACE VIEW secondhand.measures.model_clearance
 COMMENT 'Per-source row counts and separate clearance for the demo backtest and a shipped model, with the clause to inspect.'

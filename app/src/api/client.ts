@@ -4,12 +4,15 @@ import type { ApiJobRow, SseFrame } from '../edge/api/jobs.ts';
 import type { SearchStage } from '../edge/api/search.ts';
 import { fetch as platformFetch } from './fetch';
 import { origin as platformOrigin } from './origin';
+import { vault as platformVault, tokensOk, type Tokens, type Vault } from './vault';
 import { createSseParser } from './sse.ts';
+import { utf8Decoder } from './utf8.ts';
 
-export type Session = { token: string | null; visitor: string | null };
+export type Session = { token: string | null; refresh: string | null; visitor: string | null };
 export type SearchStart = Pick<ApiJobRow, 'id' | 'kind' | 'state'> & { stages: SearchStage[]; stream: string };
 export type Fetch = (url: string, init?: RequestInit) => Promise<Response>;
-type Options = { origin: string | null; fetch: Fetch; now?: () => number; log?: Log };
+// graceMs: how long the stream is read after job.state done, for a late fill (the server's job_fill_grace_s prior, 60 s).
+type Options = { origin: string | null; fetch: Fetch; now?: () => number; log?: Log; vault?: Vault; graceMs?: number };
 type CallOptions = { body?: unknown; signal?: AbortSignal };
 
 export class ApiFailure extends Error {
@@ -17,13 +20,19 @@ export class ApiFailure extends Error {
   code: string;
   retry: Retry | undefined;
   failed_step: string | undefined;
-  constructor(status: number, code: string, message: string, options: { retry?: Retry; failed_step?: string; cause?: unknown } = {}) {
+  // Which limit a 429 hit, when the server names one: 'daily' is the visitor demo's spend cap (assist).
+  cap: string | undefined;
+  // The answer's body as parsed, for a route whose failure still says something (/v1/health's 503 names its state).
+  body: unknown;
+  constructor(status: number, code: string, message: string, options: { retry?: Retry; failed_step?: string; cap?: string; body?: unknown; cause?: unknown } = {}) {
     super(message, { cause: options.cause });
     this.name = 'ApiFailure';
     this.status = status;
     this.code = code;
     this.retry = options.retry;
     this.failed_step = options.failed_step;
+    this.cap = options.cap;
+    this.body = options.body;
   }
 }
 
@@ -47,7 +56,7 @@ async function failure(response: Response): Promise<ApiFailure> {
   const error = body && typeof body === 'object' ? body as Record<string, unknown> : {};
   return new ApiFailure(response.status, typeof error.code === 'string' ? error.code : 'http_error',
     typeof error.message === 'string' ? error.message : response.statusText || `HTTP ${response.status}`,
-    { retry: retryOf(error.retry), failed_step: typeof error.failed_step === 'string' ? error.failed_step : undefined });
+    { retry: retryOf(error.retry), failed_step: typeof error.failed_step === 'string' ? error.failed_step : undefined, cap: typeof error.cap === 'string' ? error.cap : undefined, body });
 }
 
 class StreamInterrupted extends Error {
@@ -68,15 +77,39 @@ function abortable<T>(run: () => Promise<T>, signal?: AbortSignal): Promise<T> {
 
 export function createClient(options: Options) {
   const logger = options.log ?? log, now = options.now ?? Date.now;
-  // shortcut: session is memory only; an app restart loses the visitor and sign-in has no token issuer yet.
-  const session: Session = { token: null, visitor: null };
+  // shortcut: the visitor id is memory only, so an app restart is a new visitor; the tokens persist in the vault.
+  const session: Session = { token: null, refresh: null, visitor: null };
+  const listeners = new Set<() => void>();
+  const subscribe = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
+  const store = options.vault ?? platformVault;
+  const keep = async (t: Tokens | null) => { session.token = t?.access_token ?? null; session.refresh = t?.refresh_token ?? null; await store.set(t); listeners.forEach(listener => listener()); };
+  const ready = store.get().then(t => { if (t) { session.token = t.access_token; session.refresh = t.refresh_token; } },
+    e => { logger.error('api.vault.read', e); });
 
-  async function request(endpoint: string, init: RequestInit = {}): Promise<Response> {
+  // A refresh token works once (the server rotates the pair), so every 401 that arrives while one refresh runs waits
+  // for that refresh instead of sending its own; a second refresh with the same token would end the session.
+  let refreshing: Promise<boolean> | null = null;
+  const refreshed = () => refreshing ??= (async () => {
+    const origin = options.origin;
+    if (!session.refresh || origin === null) return false;
+    try {
+      const r = await options.fetch(origin.replace(/\/+$/, '') + '/v1/auth/refresh', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: session.refresh }) });
+      const t: unknown = r.ok ? await r.json() : null;
+      if (!tokensOk(t)) { await keep(null); logger.event('state.change', { entity: 'api.session', id: 'session', to: 'signed_out', status: r.status }); return false; }
+      await keep(t);
+      logger.event('state.change', { entity: 'api.session', id: 'session', to: 'refreshed' });
+      return true;
+    } catch (e) { logger.error('api.refresh', e); return false; }
+    finally { refreshing = null; }
+  })();
+
+  async function request(endpoint: string, init: RequestInit = {}, again = false): Promise<Response> {
     const match = /^([A-Z]+) (\/v1\/\S*)$/.exec(endpoint);
     if (!match) throw new TypeError(`expected METHOD /v1/path: ${endpoint}`);
     const [, method, path] = match;
     const origin = options.origin;
     if (origin === null) throw new ApiFailure(0, 'unreachable', 'API origin is not configured');
+    await ready;
     const headers = new Headers(init.headers);
     if (session.token) headers.set('Authorization', `Bearer ${session.token}`);
     if (session.visitor) headers.set('X-Visitor-Id', session.visitor);
@@ -91,6 +124,7 @@ export function createClient(options: Options) {
         session.visitor = visitor;
         logger.event('state.change', { entity: 'api.session', id: 'session', to: 'visitor_assigned' });
       }
+      if (response.status === 401 && !again && !path.startsWith('/v1/auth/') && session.refresh && await refreshed()) return request(endpoint, init, true);
       if (!response.ok) throw await failure(response);
       return response;
     }, response => ({ status: response.status, ms: now() - started }));
@@ -114,16 +148,18 @@ export function createClient(options: Options) {
     let lastId: number | null = null;
     async function consume(response: Response): Promise<boolean> {
       const parser = createSseParser();
-      let terminal = false;
+      let terminal = false, late = false;
+      let grace: Promise<'grace'> | null = null;
       const deliver = (text: string) => {
         const skipped = parser.skipped;
         for (const frame of parser.push(text)) {
-          if (signal?.aborted || terminal) break;
+          if (signal?.aborted) break;
           if (lastId !== null && frame.id <= lastId) continue;
           lastId = frame.id;
           logger.note('job frame', { job: jobId, frame_id: frame.id, event: frame.event });
           onFrame(frame);
-          terminal = frame.event === 'job.state' && (frame.data.state === 'done' || frame.data.state === 'failed');
+          terminal ||= frame.event === 'job.state' && (frame.data.state === 'done' || frame.data.state === 'failed');
+          late ||= frame.event === 'answer.late';
         }
         if (parser.skipped > skipped) logger.note('invalid SSE blocks skipped', { job: jobId, count: parser.skipped - skipped });
       };
@@ -134,16 +170,21 @@ export function createClient(options: Options) {
         deliver(text);
         return terminal;
       }
-      const reader = response.body.getReader(), decoder = new TextDecoder();
+      const reader = response.body.getReader(), decoder = utf8Decoder();
       let ended = false;
       try {
         while (!signal?.aborted) {
-          let chunk: ReadableStreamReadResult<Uint8Array>;
-          try { chunk = await abortable(() => reader.read(), signal); }
+          let chunk: ReadableStreamReadResult<Uint8Array> | 'grace';
+          // Once done has arrived, wait no longer than the grace for a late fill, whatever the server does.
+          if (terminal) grace ??= new Promise(r => setTimeout(() => r('grace'), options.graceMs ?? 60_000));
+          try { const read = abortable(() => reader.read(), signal); chunk = grace ? await Promise.race([read, grace]) : await read; }
           catch (cause) { throw new StreamInterrupted(cause); }
+          if (chunk === 'grace') return true;
           if (chunk.done) { ended = true; deliver(decoder.decode()); return terminal; }
-          deliver(decoder.decode(chunk.value, { stream: true }));
-          if (terminal) return true;
+          // After job.state done the server keeps the stream open only while a late fill is pending (answer.late,
+          // capped by job_fill_grace_s), then closes it; so read to the end rather than stop at done.
+          deliver(decoder.decode(chunk.value));
+          if (terminal && late) return true;
         }
         return false;
       } finally {
@@ -178,7 +219,11 @@ export function createClient(options: Options) {
     }
   }
 
-  return { call, search, jobFrames, session };
+  // The pair an auth route issued is kept until sign-out; signing out forgets it here and on the device.
+  const signIn = (t: Tokens) => keep(t);
+  const signOut = () => keep(null);
+
+  return { call, search, jobFrames, session, signIn, signOut, ready, subscribe };
 }
 
 export const api = createClient({ origin: platformOrigin, fetch: platformFetch });

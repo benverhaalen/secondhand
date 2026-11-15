@@ -6,7 +6,7 @@ Precedence: Ben's direct decisions, then the constitution, then the approved ima
 
 1. **Every element has a reason** (Article 1). Before a screen counts as done, write the reason ledger: each element and the end, code or rule it serves. No reason means delete it.
 2. **Tokens only.** Read [tokens.css](tokens.css) first and write `var(--name)`, never raw values.
-3. **Wordmark** "secondhand", lowercase, at the left of the nav bar, messages at the right, and the page name below at 18 (C1).
+3. **Wordmark** "secondhand", lowercase, at the left of the nav bar, paired tags to its left with an 8 pt gap, messages at the right, and the page name below at 18 (C1).
 4. **Photos lead.** Every item shows its photo, as the largest image in its group (C3). Demo photos are in `assets/demo-items/`.
 5. **One field per view** (C2): `background: var(--field)` (never rebuild it), behind the one thing that needs the person. Black text on it; state pills on it are white.
 6. **Color is a ground, never ink.** No colored text, lines or icons on white, except platform logos and the brick alert. Every state and interaction color is in constitution Art. 5, States: use those tokens, never invent a state. Every state pill has a word or an icon.

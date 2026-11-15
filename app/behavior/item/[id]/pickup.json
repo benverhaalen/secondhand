@@ -93,7 +93,7 @@
       "state": "didnt-load",
       "route": "/item/it_chair/pickup?state=failed",
       "shows": "This pickup didn’t load",
-      "why": "the pickup did not load; Try again asks again"
+      "why": "the pickup did not load; Retry asks again"
     },
     {
       "state": "offline",

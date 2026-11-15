@@ -14,7 +14,7 @@ import { radius, size, space, type, weight } from '../tokens.generated';
 import { IconButton } from './buttons';
 import { mark } from './mark';
 
-export function SearchField({ id, value = '', placeholder, working = false, onSubmit, onCamera }: {
+export function SearchField({ id, value = '', placeholder, working = false, onSubmit, onCamera, focused = false, onOpen }: {
   id: string;
   // What was searched, when the page shows a search already run.
   value?: string;
@@ -24,11 +24,16 @@ export function SearchField({ id, value = '', placeholder, working = false, onSu
   onSubmit?: (text: string) => void;
   // The camera finds the thing from a photo; without it the field has no camera.
   onCamera?: () => void;
+  // Opens already typing, with the keyboard up: the shop takeover, where the person pressed the field to get here.
+  focused?: boolean;
+  // A press opens somewhere else instead of typing here: Buy's field opens the shop takeover (Nate, words.md 2026-11-15).
+  onOpen?: () => void;
 }) {
   const c = useColors();
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(focused);
   const [draft, setDraft] = useState(value);
-  const submit = () => { setEditing(false); const t = draft.trim(); if (t) onSubmit?.(t); };
+  // A focused field is a chat's bar: it clears and stays ready for the next ask.
+  const submit = () => { const t = draft.trim(); if (focused) setDraft(''); else setEditing(false); if (t) onSubmit?.(t); };
   const box = { height: size.buttonH, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray, flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingLeft: space.s4, paddingRight: space.s1 } as const;
   const trail = (
     <View style={{ width: size.pillCardH, height: size.pillCardH, alignItems: 'center', justifyContent: 'center' }}>
@@ -49,13 +54,13 @@ export function SearchField({ id, value = '', placeholder, working = false, onSu
             placeholderTextColor={c.ink2}
             onChangeText={setDraft}
             onSubmitEditing={submit}
-            onBlur={() => setEditing(false)}
+            onBlur={() => { if (!focused) setEditing(false); }}
             returnKeyType="search"
             autoCorrect={false}
             style={{ fontSize: Math.max(16, type.t18.fontSize), lineHeight: type.t18.lineHeight, fontFamily: `${FACE.text}`, fontWeight: weight.text, color: c.ink, padding: 0, outlineStyle: 'none' } as object}
           />
         ) : (
-          <Press id={id} label={value ? `Search: ${value}` : placeholder} onPress={() => { setDraft(value); setEditing(true); }} round={false} hit={{ top: 4, bottom: 4 }}>
+          <Press id={id} label={value ? `Search: ${value}` : placeholder} onPress={() => { if (onOpen) { onOpen(); return; } setDraft(value); setEditing(true); }} round={false} hit={{ top: 4, bottom: 4 }}>
             <View style={{ height: size.buttonH, justifyContent: 'center', backgroundColor: c.gray }}>
               <Txt role="headline" tone={value ? 'ink' : 'ink-2'} lines={1}>{value || placeholder}</Txt>
             </View>

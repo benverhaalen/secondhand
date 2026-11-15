@@ -20,7 +20,7 @@ export interface PlanTarget { target_id: string; query: string; deadline_ms: num
 export interface Arrival { target_id: string; route_id: string; rows: unknown[]; site?: string; ms: number }
 export interface Plan {
   kind: QuestionKind; slots: Record<string, unknown>; protocol_version: number;
-  targets: PlanTarget[]; first_ms: number; settled_ms: number; priority?: Priority;
+  signal?: AbortSignal; targets: PlanTarget[]; first_ms: number; settled_ms: number; priority?: Priority;
   index?: Fact[]; // facts the standing index already answers fresh (step 3); their targets are left out of the plan by the caller
   calculate(arrivals: Arrival[]): { facts: Fact[]; found?: Partial<Answer['found']> };
 }
@@ -31,21 +31,36 @@ export const normalize = (q: string) => q.toLowerCase().normalize('NFKC').replac
 export const searchParams = memoryStore();
 searchParams.declare({ name: 'search_cache_max', family: 'scalar', prior: 500, guard_lo: 0 });
 searchParams.declare({ name: 'search_frame_ttl_s', family: 'scalar', prior: 3600, guard_lo: 0 });
+searchParams.declare({ name: 'job_fill_grace_s', family: 'scalar', prior: 60, guard_lo: 0 });
 
 // A cloud launch includes CDP's 30 s connection bound (browser/cdp.ts); this prior is tunable.
 searchParams.declare({ name: 'search_browser_start_ms', family: 'scalar', prior: 30000, guard_lo: 0 });
 
 // --- single flight and cache ---
-const inflight = new Map<string, { result: Promise<RouteOut>; started: Promise<void> }>();
+interface SharedCall { result: Promise<RouteOut>; started: Promise<void>; controller: AbortController; callers: number; ended: boolean }
+const inflight = new Map<string, SharedCall>();
 const cache = new Map<string, { at: number; out: RouteOut }>();
 const lanes = new Map<string, { tail: Promise<void>; last?: number }>();
 export const _reset = () => { inflight.clear(); cache.clear(); lanes.clear(); outsideCalls = 0; };
 let outsideCalls = 0;
 export const outsideCallCount = () => outsideCalls;
 
-// Plans and direct source reads share one lane clock. MCP releases after the read, before judgement.
-export async function atPace<T>(site: string, lane: string, pace: Pace | undefined, run: (readEnded: () => void) => Promise<T>): Promise<T> {
-  if (!pace) return run(() => {});
+function until<T>(work: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return work;
+  if (signal.aborted) return Promise.reject(signal.reason);
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => reject(signal.reason);
+    signal.addEventListener('abort', abort, { once: true });
+    work.then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
+  });
+}
+
+// Release after the page read, before judgement. MCP retains its existing start-to-start gap.
+export async function atPace<T>(site: string, lane: string, pace: Pace | undefined, run: (readEnded: () => void) => Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!pace) {
+    signal?.throwIfAborted();
+    return run(() => {});
+  }
   const key = `${site}|${lane}`;
   let state = lanes.get(key);
   if (!state) { state = { tail: Promise.resolve() }; lanes.set(key, state); }
@@ -53,13 +68,27 @@ export async function atPace<T>(site: string, lane: string, pace: Pace | undefin
   let release!: () => void;
   let released = false;
   state.tail = new Promise<void>(resolve => { release = () => { if (!released) { released = true; resolve(); } }; });
-  await prior;
-  const gap = Math.max(pace.min_gap_ms, pace.per_minute > 0 ? 60_000 / pace.per_minute : 0);
-  const wait = state.last === undefined ? 0 : state.last + gap - Date.now();
-  if (wait > 0) await new Promise<void>(resolve => setTimeout(resolve, wait));
-  state.last = Date.now();
-  if (lane !== 'mcp') release();
-  try { return await run(release); } finally { release(); }
+  try { await until(prior, signal); }
+  catch (e) { void prior.then(release); throw e; }
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const readEnded = () => {
+    if (released) return;
+    if (lane !== 'mcp') state.last = Date.now();
+    release();
+  };
+  try {
+    const gap = Math.max(pace.min_gap_ms, pace.per_minute > 0 ? 60_000 / pace.per_minute : 0);
+    const wait = state.last === undefined ? 0 : state.last + gap - Date.now();
+    if (wait > 0) await until(new Promise<void>(resolve => { timer = setTimeout(resolve, wait); }), signal);
+    signal?.throwIfAborted();
+    if (lane === 'mcp') state.last = Date.now();
+    signal?.addEventListener('abort', readEnded, { once: true });
+    try { return await run(readEnded); } finally { readEnded(); }
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', readEnded);
+    release();
+  }
 }
 
 const freshClass = (s: number) => (s <= 900 ? 'fast' : s <= 86400 ? 'day' : 'slow');
@@ -67,82 +96,93 @@ const freshClass = (s: number) => (s <= 900 ? 'fast' : s <= 86400 ? 'day' : 'slo
 function callRoute(r: Route, t: PlanTarget, priority: Priority, now: () => number) {
   const key = `${r.route_id}|${normalize(t.query)}|${freshClass(t.freshness_s)}`;
   const hit = cache.get(key);
-  if (r.cache !== false && hit && now() - hit.at < t.freshness_s * 1000) return { result: Promise.resolve(hit.out), started: Promise.resolve() };
-  const joined = inflight.get(key);
-  if (joined) return joined;
-  let start!: () => void;
-  const started = new Promise<void>(resolve => { start = resolve; });
-  // A shared call survives an individual caller's deadline.
-  const shared = new AbortController();
-  const result = atPace(r.site ?? r.host, r.lane ?? r.route_id, r.pace, async readEnded => {
-    outsideCalls++;
-    start();
-    return r.run(t.query, { signal: shared.signal, priority, readEnded });
-  }).then(out => {
-    if (r.cache !== false && (out.outcome === 'hit' || out.outcome === 'empty')) {
-      cache.delete(key);
-      cache.set(key, { at: now(), out });
-      const max = searchParams.read('search_cache_max', {}).value as number;
-      while (cache.size > max) cache.delete(cache.keys().next().value!);
+  if (r.cache !== false && hit && now() - hit.at < t.freshness_s * 1000)
+    return { result: Promise.resolve(hit.out), started: Promise.resolve(), release() {} };
+  let call = inflight.get(key);
+  if (!call) {
+    let start!: () => void;
+    const started = new Promise<void>(resolve => { start = resolve; });
+    const controller = new AbortController();
+    const result = atPace(r.site ?? r.host, r.lane ?? r.route_id, r.pace, async readEnded => {
+      outsideCalls++;
+      start();
+      return r.run(t.query, { signal: controller.signal, priority, readEnded });
+    }, controller.signal).then(out => {
+      if (!controller.signal.aborted && r.cache !== false && (out.outcome === 'hit' || out.outcome === 'empty')) {
+        cache.delete(key);
+        cache.set(key, { at: now(), out });
+        const max = searchParams.read('search_cache_max', {}).value as number;
+        while (cache.size > max) cache.delete(cache.keys().next().value!);
+      }
+      return out;
+    }).finally(() => {
+      created.ended = true;
+      if (inflight.get(key) === created) inflight.delete(key);
+    });
+    const created: SharedCall = { result, started, controller, callers: 0, ended: false };
+    call = created;
+    inflight.set(key, call);
+  }
+  const shared = call;
+  shared.callers++;
+  let released = false;
+  return { result: shared.result, started: shared.started, release() {
+    if (released) return;
+    released = true;
+    if (--shared.callers === 0 && !shared.ended) {
+      if (inflight.get(key) === shared) inflight.delete(key);
+      shared.controller.abort();
     }
-    return out;
-  }).finally(() => inflight.delete(key));
-  const call = { result, started };
-  inflight.set(key, call);
-  return call;
+  } };
 }
 
-// Each read's deadline and hedge begin at its slot, never while it is queued.
-async function runTarget(t: PlanTarget, priority: Priority, t0: number, now: () => number, onStart: () => void): Promise<{ win: Arrival | null; searched: PacedSearched[] }> {
+// The target deadline includes admission and queue time from the plan's entry.
+function runTarget(t: PlanTarget, priority: Priority, t0: number, now: () => number, settledSignal: AbortSignal): Promise<{ win: Arrival | null; searched: PacedSearched[] }> {
   const searched: PacedSearched[] = [];
   return new Promise(resolve => {
-    let settled = false, running = 0, next = 0, began = false;
+    let settled = false, running = 0, next = 0;
     const timers = new Set<ReturnType<typeof setTimeout>>();
-    const active = new Map<number, () => void>();
-    let remaining = t.deadline_ms, activeSince = 0, deadline: ReturnType<typeof setTimeout> | undefined;
+    const active = new Map<number, { release: () => void; timeout: () => void }>();
+    const release = () => { for (const call of active.values()) call.release(); };
+    settledSignal.addEventListener('abort', release, { once: true });
+    let deadline: ReturnType<typeof setTimeout>;
     const done = (win: Arrival | null) => {
       if (settled) return;
       settled = true;
       clearTimeout(deadline);
       for (const timer of timers) clearTimeout(timer);
+      release();
+      settledSignal.removeEventListener('abort', release);
       resolve({ win, searched });
     };
+    deadline = setTimeout(() => { for (const call of active.values()) call.timeout(); done(null); }, Math.max(0, t.deadline_ms - (now() - t0)));
     const start = () => {
       if (settled || next >= t.routes.length) { if (running === 0) done(null); return; }
       const index = next++, r = t.routes[index]!;
-      let at = now(), ended = false;
+      const at = now();
+      let ended = false;
       running++;
       const record = (outcome: Outcome, detail?: unknown) => {
         searched.push({ route_id: r.route_id, query: t.query, outcome, ms: now() - at, ...(detail === undefined ? {} : { detail }), ...(r.pace ? { pace: r.pace } : {}) });
       };
-      const stopRead = () => {
-        active.delete(index);
-        if (!active.size) { remaining = Math.max(0, remaining - (now() - activeSince)); clearTimeout(deadline); }
-      };
+      if (now() - t0 >= t.deadline_ms || settledSignal.aborted) { record('timeout'); return done(null); }
       const call = callRoute(r, t, priority, now);
+      active.set(index, { release: call.release, timeout: () => record('timeout') });
       void call.started.then(() => {
         if (settled || ended) return;
-        at = now();
-        if (!began) { began = true; onStart(); }
-        if (!active.size) {
-          activeSince = now();
-          deadline = setTimeout(() => { for (const timeout of active.values()) timeout(); done(null); }, remaining);
-        }
-        active.set(index, () => record('timeout'));
         timers.add(setTimeout(() => { const n = t.routes[next]; if (!settled && !ended && n && n.host !== r.host) start(); }, r.p95_ms));
       });
       call.result.then(out => {
         if (settled || ended) return;
-        ended = true; running--; stopRead();
+        ended = true; running--; active.delete(index); call.release();
         record(out.outcome, out.detail);
         if (out.outcome === 'hit') return done({ target_id: t.target_id, route_id: r.route_id, rows: out.rows, site: out.site, ms: now() - t0 });
         start();
       }, () => {
         if (settled || ended) return;
-        ended = true; running--; stopRead(); record('blocked'); start();
+        ended = true; running--; active.delete(index); call.release(); record('blocked'); start();
       });
     };
-    if (!t.routes.length) { onStart(); return done(null); }
     start();
   });
 }
@@ -166,18 +206,23 @@ export async function runPlan(plan: Plan, onEvent?: OnAnswer, now: () => number 
   if (plan.index?.length) { first = now() - t0; emit('answer.partial'); }
   let settle!: () => void;
   const settledP = new Promise<void>(r => (settle = r));
-  let settleTimer: ReturnType<typeof setTimeout> | undefined;
-  let waiting = plan.targets.length;
-  const started = () => { if (--waiting === 0) settleTimer = setTimeout(settle, plan.settled_ms); };
-  const all = Promise.all(plan.targets.map(t => runTarget(t, plan.priority ?? 'person', t0, now, started).then(({ win, searched: s }) => {
+  const settledController = new AbortController();
+  const stop = () => { settledController.abort(); settle(); };
+  plan.signal?.addEventListener('abort', stop, { once: true });
+  if (plan.signal?.aborted) stop();
+  const all = Promise.all(plan.targets.map(t => runTarget(t, plan.priority ?? 'person', t0, now, settledController.signal).then(({ win, searched: s }) => {
     searched.push(...s);
+    first ??= now() - t0;
     if (win) arrivals.push(win);
     if (stage === 'settled') return emit('answer.late');
-    if (win) { first ??= now() - t0; emit('answer.partial'); }
+    if (win) emit('answer.partial');
   }))).then(() => settle());
+  const settleTimer = setTimeout(settle, Math.max(0, plan.settled_ms - (now() - t0)));
   await settledP;
+  plan.signal?.removeEventListener('abort', stop);
   clearTimeout(settleTimer);
-  stage = 'settled'; settledAt = now() - t0;
+  settledController.abort();
+  stage = 'settled'; settledAt = now() - t0; first ??= settledAt;
   const answer = build();
   onEvent?.('answer.settled', answer);
   ended = all;

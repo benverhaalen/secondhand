@@ -6,7 +6,7 @@ Rebuild the six smaller sources from pinned public copies and check their input 
 
 Check: `./.venv/bin/python -m pytest jobs/valuation/data/test_rows.py -q`. The six-source rebuild takes about 90 seconds and writes 170 MB on a laptop (earlier source-thread observation). The rows are not in git, because the repo is public and most of these licences don't allow redistribution (plan §6). The manifests are in git: `manifests/<source>.json` holds each input's sha256, the output's sha256, row counts by price type and kind, the date range and what was dropped and why. A built copy sits in project files under `secondhand-data/sold/<source>/rows.csv.gz`.
 
-What each source is, its licence, its bias and what it can prove: [research/price/ben/sold-datasets.md](../../../../research/price/ben/sold-datasets.md).
+What each source is, its licence, its bias and what it can prove: [research/price/ben/sold-datasets.md](../../../research/price/ben/sold-datasets.md).
 
 | File | Role |
 |---|---|
@@ -32,7 +32,7 @@ The working download URL is https://data.nber.org/bargaining/anon_bo_lists.csv.g
 
     cd jobs && PYTHONPATH=../log ../.venv/bin/python -m valuation.data.freeze --share=0.05 nber_ebay_bo <out_dir> ~/secondhand-data/raw/nber/anon_bo_lists.csv.gz
 
-`--share` selects products by `sha256(product_id)`, keeping all valid sold and unsold listings of a selected product in input order. An empty product ID uses the row ID as its sampling key. There is no sale-count threshold or per-kind cap. Thickness, price and kind strata belong in the runner; [datasets.md §3](../../../../spec/plans/backtest/datasets.md#3-how-to-sample) gives the sampling design and the reason for 5%. No backtest runs until the backend is set up, per Ben's instruction there.
+`--share` selects products by `sha256(product_id)`, keeping all valid sold and unsold listings of a selected product in input order. An empty product ID uses the row ID as its sampling key. There is no sale-count threshold or per-kind cap. Thickness, price and kind strata belong in the runner; [datasets.md §3](../../../spec/plans/backtest/datasets.md#3-how-to-sample) gives the sampling design and the reason for 5%. No backtest runs until the backend is set up, per Ben's instruction there.
 
 `rows.csv.gz` contains the runner's `FIELDS` plus the four extras listed above. Gzip has mtime 0 and no embedded filename. `manifest.json` records input hashes and bytes, the compressed output file hash, columns, row counts by price type and kind, end-date range, drop reasons and the sampling rule. Runtime events use `log/`. Older manifests for the six smaller sources hash the uncompressed CSV; newly built manifests hash the gzip file itself. The old 30-sale NBER manifest has been deleted; a replacement awaits the lead's freeze.
 
@@ -81,9 +81,9 @@ Reproduce the aggregate audit without normalizing, freezing, or running a backte
 
 ### Every raw meta category
 
-*Observed*: counts below cover every raw row, before date exclusions or product sampling; they sum to 98,307,281. Names come from the pinned [codebook transcription](../../../../research/price/ben/sources/sold-followup-2026-11-15/codebook.txt), `bo_lists` D56:D93; cells are listed per row. All 35 observed IDs have a name there. Duplicate names for one ID are preserved.
+*Observed*: counts below cover every raw row, before date exclusions or product sampling; they sum to 98,307,281. Names come from the pinned [codebook transcription](../../../research/price/ben/sources/sold-followup-2026-11-15/codebook.txt), `bo_lists` D56:D93; cells are listed per row. All 35 observed IDs have a name there. Duplicate names for one ID are preserved.
 
-*Agent mapping*: kinds use [plan decision 30](../../../../spec/plans/backtest/plan.md)'s six kinds, as enumerated in [the collection note §6](../../../../research/price/ben/what-predicts-price-and-speed.md#6-what-to-collect), or `other`. The broad Home, Art and Antiques meta categories cannot establish that an item is one-off furniture or unbranded, so none is assigned to the hard bucket solely from its meta ID. Shoes and bags cannot be separated from apparel here. These coarse assignments do not certify that each row has clear product identity.
+*Agent mapping*: kinds use [plan decision 30](../../../spec/plans/backtest/plan.md)'s six kinds, as enumerated in [the collection note §6](../../../research/price/ben/what-predicts-price-and-speed.md#6-what-to-collect), or `other`. The broad Home, Art and Antiques meta categories cannot establish that an item is one-off furniture or unbranded, so none is assigned to the hard bucket solely from its meta ID. Shoes and bags cannot be separated from apparel here. These coarse assignments do not certify that each row has clear product identity.
 
 | `meta_categ_id` | Raw rows | Codebook name | Codebook cells | `kind` |
 |---|---:|---|---|---|
