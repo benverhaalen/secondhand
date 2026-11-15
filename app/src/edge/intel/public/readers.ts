@@ -56,7 +56,7 @@ const SPECS: Record<Exclude<Site, 'offerup'>, Spec> = {
     card: c => { const r: Row = {}; const href = grab(c, /href="(\/products\/[^"]+)"/);
       put(r, 'url', href); put(r, 'id', grab(href ?? '', /\/products\/([^/]+)/));
       put(r, 'title', decode(grab(c, /<a[^>]+aria-label="([^"]*)"/) ?? ''));
-      Object.assign(r, price(strip(grab(c, /aria-description="Price"[^>]*>([\s\S]*?)<\/p>/) ?? '')));
+      Object.assign(r, price(strip(grab(c, /aria-description="(?:Discounted price|Price)"[^>]*>([\s\S]*?)<\/p>/) ?? ''))); // a marked-down card shows "Full price" then "Discounted price"; the buyer pays the second
       put(r, 'image_url', image(c)); return r; },
   },
   // *agent proposal*: no recorded Grailed page exists (the live fetch is blocked), so this shape is the listing-link convention, unverified.
