@@ -10,7 +10,7 @@ import type { Store, Leases } from '../events/ports.ts';
 export type SigninResult = { state: 'dry' | 'waiting' | 'paused' | 'ok' | 'failed' | 'not_found' | 'busy';
   account_id?: string; session_id?: string; signin_session_url?: string; decision_id?: string; steps?: readonly string[] };
 type Session<P extends PoolPage> = { account: LinkedAccount; ctx: PoolContext<P>; page: P; live_url: string; expires: number;
-  result: SigninResult; closed: boolean; job: string; release(): void; assertLease(): void };
+  result: SigninResult; expiry?: ReturnType<typeof setTimeout>; closed: boolean; job: string; release(): void; assertLease(): void };
 export function createSignin<P extends PoolPage & { goto(url: string): Promise<unknown> }>(o: {
   launcher: Launcher<P>; vault: AuthVault; accounts: Accounts; profileRoot: string; store: Store; log: Log; leases: Leases;
   invalidatePool(account_id: string): Promise<void>;
@@ -28,6 +28,7 @@ export function createSignin<P extends PoolPage & { goto(url: string): Promise<u
   async function close(s: Session<P>) {
     if (s.closed) return;
     s.closed = true;
+    clearTimeout(s.expiry);
     s.live_url = '';
     try { await call('signin.close', s.account, () => s.ctx.close()); }
     finally { s.release(); }
@@ -52,18 +53,26 @@ export function createSignin<P extends PoolPage & { goto(url: string): Promise<u
       if (status === 'signed_out') return s.result;
       if (status !== 'ok') {
         if (s.result.decision_id) return s.result;
-        const d = o.store.tx(t => t.raiseDecision({ user_id: person, kind: 'site_warning', subject: s.job,
-          why: 'The site needs you to finish signing in', options: [{ id: 'continue', label: 'Continue' }], suggested: 'continue' }));
+        const d = o.store.tx(t => {
+          const prior = t.decisions({ user_id: person, kind: 'site_warning', subject: s.job, state: 'open' })[0];
+          if (prior) return { row: prior, duplicate: true };
+          return t.raiseDecision({ user_id: person, kind: 'site_warning', subject: s.job,
+            why: 'The site needs you to finish signing in', options: [{ id: 'continue', label: 'Continue' }], suggested: 'continue' });
+        });
         if (!d.duplicate) o.log.event('decision.open', { decision: d.row.id, kind: 'site_warning', tier: 'ask' });
         return s.result = { ...s.result, state: 'paused', decision_id: d.row.id };
       }
-      const state = await call('signin.export', s.account, () => s.ctx.exportState!());
+      const exportState = s.ctx.exportState?.bind(s.ctx);
+      if (!exportState) throw new Error('hosted context has no storage export');
+      const state = await call('signin.export', s.account, exportState);
       s.assertLease();
       await call('signin.invalidate_pool', s.account, () => o.invalidatePool(s.account.account_id));
       s.assertLease();
       await call('signin.store', s.account, () => o.vault.put(s.account.token_ref, state));
       s.assertLease();
       await call('signin.link', s.account, () => o.link(s.account));
+      if (s.closed) return s.result;
+      s.assertLease();
       o.store.tx(t => {
         for (const d of t.decisions({ user_id: person, kind: 'site_warning', subject: s.job }))
           if (d.state === 'open') t.updateDecision(d.id, { state: 'answered' });
@@ -83,6 +92,7 @@ export function createSignin<P extends PoolPage & { goto(url: string): Promise<u
       if (account_id && (!prior || prior.person_id !== person_id || prior.site !== site)) return { state: 'not_found' };
       if (!go.includes(site)) return { state: 'dry', steps: ['launch hosted browser', `open ${PROFILES[site].login ?? PROFILES[site].home}`, 'person signs in through live view', 'probe session',
         'pause for person if challenged', 'export storage', 'invalidate old pool context', 'store in AuthVault', 'link account', 'close browser'] };
+      if (o.ttlMs <= 0 || o.ttlMs > 240 * 60_000) throw new Error('sign-in ttl must be within 240 minutes');
       const id = randomUUID(), account: LinkedAccount = prior ?? { account_id: `acc_${randomUUID()}`, person_id, site, token_ref: `session/${randomUUID()}` };
       const job = `signin:${id}`;
       if (!o.leases.take(account.account_id, job, o.ttlMs).ok) return { state: 'busy' };
@@ -99,13 +109,20 @@ export function createSignin<P extends PoolPage & { goto(url: string): Promise<u
       };
       let ctx: PoolContext<P> | undefined;
       try {
-        ctx = await call('signin.launch', account, () => o.launcher.persistent(profileDirFor(o.profileRoot, account.account_id), { headless: !PROFILES[site].headed }));
+        ctx = await call('signin.launch', account, () => o.launcher.persistent(profileDirFor(o.profileRoot, account.account_id), { headless: !PROFILES[site].headed, timeoutMin: Math.ceil(o.ttlMs / 60_000) }));
         const live_url = (ctx as PoolContext<P> & { live_url?: string }).live_url;
         if (!live_url || !ctx.exportState) throw new Error('cloud browser needs live view and storage export');
         const page = await call('signin.page', account, () => ctx!.newPage());
         await call('signin.open', account, () => page.goto(PROFILES[site].login ?? PROFILES[site].home));
         const result: SigninResult = { state: 'waiting', account_id: account.account_id, session_id: id, signin_session_url: `/v1/accounts/signin/${id}` };
-        sessions.set(id, { account, ctx, page, live_url, expires, result, job, closed: false, release, assertLease });
+        const session: Session<P> = { account, ctx, page, live_url, expires, result, job, closed: false, release, assertLease };
+        sessions.set(id, session);
+        session.expiry = setTimeout(() => {
+          if (session.closed) return;
+          failed(session);
+          void close(session).catch(() => o.log.error('signin', new Error('expired browser close failed'), { account_id: account.account_id }));
+        }, Math.max(0, expires - now()));
+        session.expiry.unref();
         o.log.event('job.state', { job, kind: 'relink', state: 'running' });
         return result;
       } catch {
