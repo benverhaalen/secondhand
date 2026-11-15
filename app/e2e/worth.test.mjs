@@ -30,6 +30,36 @@ test('worth: the value is a range, and its source is one tap away', async () => 
   await screen.page.locator('[data-part="sheet"]', { hasText: /sold/i }).waitFor({ state: 'visible' });
 });
 
+// Ben, 06:19: "for buying what it's worth, you should be able to obviously investigate. Like human in the loop is very
+// important." The person leaves out a site's sales and the value is worked out again from the rest.
+test('worth: the person can leave out sales that aren’t the same, and the range follows', async () => {
+  const screen = await app.open('/worth?world=clearing&product=pr_dunk');
+  const range = () => screen.page.locator('[data-part="range"]').first().innerText();
+  const before = await range();
+  await screen.tap('worth-sources');
+  await screen.page.locator('[data-part="sheet"]').waitFor({ state: 'visible' });
+  await screen.tap('worth-sale-mercari');
+  await screen.page.locator('[data-part="sale-row"][data-site="mercari"][data-counted="false"]').waitFor({ state: 'visible' });
+  await screen.page.locator('[data-part="sheet"]').getByText('From the sales you kept').waitFor({ state: 'visible' });
+  await screen.tap('worth-sale-mercari');
+  await screen.page.locator('[data-part="sale-row"][data-site="mercari"][data-counted="true"]').waitFor({ state: 'visible' });
+  for (const site of ['ebay', 'depop', 'mercari']) await screen.tap(`worth-sale-${site}`);
+  await screen.page.locator('[data-part="sheet"]').getByText('No sales left to go by.').waitFor({ state: 'visible' });
+  for (const site of ['ebay', 'depop']) await screen.tap(`worth-sale-${site}`);
+  assert.notEqual(await range(), '', 'a range is back');
+  assert.ok(before, 'there was a range before');
+});
+
+test('worth: a left-out site keeps nothing in You keep', async () => {
+  const screen = await app.open('/worth?world=clearing&product=pr_dunk');
+  await screen.tap('worth-sources');
+  await screen.tap('worth-sale-ebay');
+  await screen.page.keyboard.press('Escape');
+  const row = screen.page.locator('[data-part="keep-row"][data-site="ebay"]');
+  assert.match(await row.innerText(), /Left out/);
+  assert.doesNotMatch(await row.innerText(), /\$/);
+});
+
 test('worth: a site with too few sales shows no number', async () => {
   // The Dunk Low has no sold range on Poshmark or Facebook in the market data.
   const screen = await app.open('/worth?world=new&product=pr_dunk');

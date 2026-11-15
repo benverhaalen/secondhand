@@ -59,10 +59,10 @@
       "at": "/worth"
     },
     {
-      "control": "What sold",
-      "on_tap": "opens what similar ones sold for, per site",
+      "control": "Check the sales",
+      "on_tap": "opens the sales the value goes by, a tick per site",
       "id": "worth-sources",
-      "does": "opens what similar ones sold for, per site",
+      "does": "opens the sales the value goes by, a tick per site",
       "at": "/worth"
     },
     {
@@ -121,6 +121,13 @@
       "id": "worth-retry",
       "does": "checks the sales again",
       "at": "/worth?state=failed"
+    },
+    {
+      "control": "A site’s sales, in the sheet",
+      "on_tap": "leaves that site’s sales out, or puts them back; the range is worked out again",
+      "id": "worth-sale-mercari",
+      "does": "leaves that site’s sales out, or puts them back",
+      "at": "/worth?world=clearing&product=pr_dunk"
     }
   ],
   "flows": [
@@ -146,7 +153,7 @@
       "steps": [
         "worth-sources"
       ],
-      "then": "a sheet lists each site's sold range, and a site with too few sales says so"
+      "then": "a sheet lists each site's sold range with a tick, and a site with too few sales says so"
     },
     {
       "flow": "a price far from the sales",
@@ -163,6 +170,14 @@
         "worth-unknown"
       ],
       "then": "No number yet, with Sell this and Type a model"
+    },
+    {
+      "flow": "leave out sales",
+      "steps": [
+        "worth-sources",
+        "worth-sale-mercari"
+      ],
+      "then": "Mercari reads Left out, and the range says From the sales you kept"
     }
   ],
   "back": "Back returns to the camera or the page that opened it; the value is kept only if Keep it was tapped.",
@@ -176,8 +191,8 @@
       "why": "appraise: every number guarded and from sold comparables; copy.md: \"Similar ones sold for $36 to $52 lately\", never a sample size. Cents on an estimate claim a precision the sales do not have."
     },
     {
-      "decision": "The sales are one tap away in a sheet, per site, with when they were checked",
-      "why": "copy.md progressive disclosure; Art. 7.10 one number first, the sum behind one line."
+      "decision": "Check the sales opens the sales the value goes by, one row per site with a tick the person can take off",
+      "why": "Ben, 06:19: \"you should be able to obviously investigate. Like human in the loop is very important\" (product/words.md#2026-11-15-notes-on-the-first-gallery-today-must-explain-itself-you-is-a-dashboard-the-camera-frames-the-listing-photo). The person knows their thing better than a match does; a site whose sales are not the same thing is left out and the range follows."
     },
     {
       "decision": "You keep: one row per site, best first, logo, how long it takes there, and the keep range at the right edge",
@@ -222,6 +237,18 @@
     {
       "decision": "Empty, one and dense are skipped on Worth",
       "why": "Worth is always one thing on one page, so it has no list to be empty, single or crowded (Screen skip)."
+    },
+    {
+      "decision": "With sales left out, the range is the lowest to the highest of the sales kept, and says \"From the sales you kept\"; a left-out site keeps nothing in You keep",
+      "why": "appraise: every number from sold comparables. A number the person set aside never feeds the value."
+    },
+    {
+      "decision": "Look deeper also sits at the end of the sales sheet",
+      "why": "The agent's next step belongs where the person found the sales thin; it lands on Today when done."
+    },
+    {
+      "decision": "No link to each site's sold search yet",
+      "why": "The demo has no sale URLs, and eBay's sold search went behind a login in July 2026 (research/price/ben/comps-sources-live.md). A link the person can't open is worse than none; it waits for real sale rows."
     }
   ]
 }
