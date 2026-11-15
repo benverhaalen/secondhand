@@ -26,7 +26,7 @@ Updated: 2026-11-15, about 13:35 UTC, at the wrap-up Nate called. Owner: Nate. A
 
 ## Left, in order
 
-0. Before 19:00 if there is time, else first after: DB9's three views. Additive only, a new schema `secondhand.retail`, no deploy, nothing existing changed (the orchestrator's bound). Load `databricks:databricks-dbsql` and `databricks:databricks-ai-functions`, run each statement of `databricks/sql/16_retail.sql` alone with `node databricks/run-sql.mjs`, check the forecast is positive and inside the observed range, stop the warehouse, record the spend, and turn RETAIL.md's first row to live.
+0. Done (fifth lead, 13:23 to 13:29 UTC): DB9's three views in `secondhand.retail` run and read back; RETAIL.md's ORDM and forecasting rows set live. The forecast trained on all 531 days fell below the data's lowest day with a negative band, so it trains from 2018-08-01 with `global_floor` 0 (the SQL comment says why and that the window was picked after that run). Each read of the forecast view refits, about 17 s: materialise it before a dashboard or Genie reads it.
 1. After 19:00 UTC: Cherry-pick 3f76e334 onto main, then `node deploy/deploy.mjs validate --target dev --profile Nate`, then `databricks bundle plan` (or deploy's diff) read in full, then `node deploy/deploy.mjs deploy --target dev --profile Nate` without force. Read back `databricks alerts-v2 list-alerts --profile Nate`: `0 0 4 * * ?`, America/Chicago (DB0's proof).
 2. Schema on the live tables, in one warehouse session with `node databricks/run-sql.mjs`, before any break-glass job runs: `ALTER TABLE secondhand.governance.principal_map ADD COLUMNS (grant_id STRING ...)` (or run the setup job's `data` task, which does it first), then `11_sources.sql` (the two-field `comp_for_product`), `14_engine.sql`, `15_market.sql`, `15_market_check.sql` (must print nothing and drop its scratch schema). The `core.param`, observation and evidence columns are added by their jobs on first write.
 3. Rerun `node databricks/genie/ask.mjs` and read all eight answers (question 2 should give four contestant rows and name the market model).
@@ -43,6 +43,7 @@ Updated: 2026-11-15, about 13:35 UTC, at the wrap-up Nate called. Owner: Nate. A
 ## Spent
 
 - 12:47 to 12:52 UTC: one warehouse session for the read-only proof (12 dashboard datasets, guard status, recompute check, eight Genie questions), stopped by hand. Estimated $0.60 to $1.54 (0.9 to 2.2 DBU at $0.70, the 11:00 UTC measurement); billed figure to read after judging.
+- 13:23 to 13:29 UTC: one warehouse session for DB9 (dry runs, four statements, the read-back, three forecast fits of about 17 s), stopped by hand at 13:29. About 6 minutes, est. $0.70 to $1.85 at the same rate; billed figure after judging.
 - The hourly guard alert keeps running until the DB0 deploy (Nate's ruling).
 
 ## Decided, one line each
