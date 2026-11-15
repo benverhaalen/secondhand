@@ -38,7 +38,7 @@ The data loop is the product: every listing we see and every sale we make prices
 
 ## 3. The full demo, start to end, both sides
 
-For finalists, about 4 minutes. To run without a break: one item the whole way, nothing waits more than two seconds on screen, and every step is either live or a recording that we say is one. Use Ben's real Depop shop as the demo account only once it is linked and read back in the app (milestone M6); until then, use the demo data and say so.
+For finalists, about 4 minutes. To run without a break: one item the whole way, nothing waits more than two seconds on screen, and every step is either live or a recording that we say is one. Every step runs on a demo account and demo data, and we say so. Ben's personal Depop is not used, in the demo or anywhere ([Ben, 05:54](words.md#2026-11-15-stop-using-my-personal-depop)).
 
 **Before going on:** warm the cloud browser (61 ms warm against 1.6 s after a reboot, observed); pre-seed the later steps (a buyer's question, an offer, a sale) on the demo account so they arrive on cue; queue the recordings of anything not yet run live; phone on a hotspot.
 
@@ -91,9 +91,9 @@ For finalists, about 4 minutes. To run without a break: one item the whole way, 
 | Best price | there's room: hold, or raise on the sites where it's hottest |
 | Reselling | similar items move fast; list more like it |
 
-## 6. Ben's real Depop shop, and bringing existing listings over
+## 6. Bringing existing Depop listings over
 
-Ben: "i use it on my actual depop account. another feature to create, i can use my existing depop listings and automated cross list them on all these platforms." Another thread is building the import and cross-listing. Say it on stage only once Ben's shop is linked and its listings show in the app; then it is the strongest proof we have, because it's a real seller's real shop.
+Ben asked for a feature: take the listings a seller already has on Depop and cross-list them on the other sites. Another thread is building the import. Ben's personal Depop is off limits ([05:54](words.md#2026-11-15-stop-using-my-personal-depop)), so show it only on a demo account, and say "designed" until it runs there.
 
 ## 7. Settings defaults
 

@@ -1127,3 +1127,9 @@ Ben, project chat (relayed), 2026-11-15 05:47 UTC.
 > another point that can really help is how sophisticated we used databricks. think of software engineers and data scientists and product managers and solutions architects and recruiters who are looking at our product. what do each one of those audiences love to see we think like. how do we pitch this product live to be able to show the medium off super well. both the buying and selling features. from start to end. the most impressive thing is a seamless thing that works flawlessly. how as it scales we can effectively price literally any product along the market and heres how we propose using quant techniques to do so. we could possibly even implement this too. also the ai running its own business thing. like it can track and understand all the levers that increase how a post is doing. if its hot. what does that mean. its all in context. it means different things to different people. i use it on my actual depop account. another feature to create, i can use my existing depop listings and automated cross list them on all these platforms automated to them. also the settings should have app defaults and permission defaults too
 
 Used in: [showcase.md](showcase.md).
+
+## 2026-11-15 stop using my personal depop
+Ben, project chat (relayed), 2026-11-15 05:54 UTC.
+> hey stop using my personal dpop
+
+Used in: [showcase.md](showcase.md#6-bringing-existing-depop-listings-over).
