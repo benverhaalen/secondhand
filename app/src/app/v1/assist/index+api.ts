@@ -1,4 +1,5 @@
 import '@/edge/auth';
+import '@/edge/api/runtime';
 import { route } from '@/edge/api/http';
 import { handlers as h } from '@/edge/api/assist';
 

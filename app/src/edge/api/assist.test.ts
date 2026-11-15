@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
+import { DatabaseSync } from 'node:sqlite';
 import type { Message, MessageCreateParamsBase } from '@anthropic-ai/sdk/resources/messages';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route, ApiError, type Ctx, type Handler } from './http.ts';
 import { example } from './examples.ts';
 import { handlers, manifest, createAssistHandler, visitorBudget } from './assist.ts';
-import { memoryJobs, getJob, jobEvents } from './jobs.ts';
+import { memoryJobs, jobsOn, getJob, jobEvents } from './jobs.ts';
+import { sqliteStore } from '../events/sqlite-store.ts';
 import { assistParams } from '../../engines/param/param.ts';
 import type { StreamClient } from '../assist/converse.ts';
 import type { ToolResult } from '../assist/types.ts';
@@ -15,6 +17,71 @@ const NOW = Date.parse('2026-11-15T23:59:00Z');
 const message = () => (JSON.parse(readFileSync(new URL('../assist/fixtures/converse/numbers.json', import.meta.url), 'utf8')) as Message[])[1];
 const noNetwork: typeof fetch = async () => { throw new Error('network forbidden'); };
 const tools = { defs: [], async run(): Promise<ToolResult> { throw new Error('unexpected tool'); } };
+
+test('the standalone assist route loads runtime clients before serving requests', () => {
+  const source = readFileSync(new URL('../../app/v1/assist/index+api.ts', import.meta.url), 'utf8');
+  assert.match(source, /import ['"]@\/edge\/api\/runtime['"]/);
+});
+
+test('a throwing visitor turn settles its reservation before the next successful ask', async () => {
+  const t = setup(), tasks: (() => Promise<void>)[] = [], settled: number[] = [];
+  const pool = visitorBudget();
+  let throwing = true;
+  const handler = createAssistHandler({ env: {}, jobs: t.jobs, now: () => NOW,
+    params: { read(name, scope) {
+      if (name === 'assist_turn_deadline_ms' && throwing) { throwing = false; throw new Error('turn setup failed'); }
+      return assistParams.read(name, scope);
+    } },
+    client: { model: 'stand-in', client: { messages: { stream() { return { on() {}, finalMessage: async () => message() }; } } } },
+    tools, schedule: task => tasks.push(task), budget: { reserve(...args) {
+      const settle = pool.reserve(...args);
+      return cost => { settled.push(cost); settle(cost); };
+    } },
+  });
+  await handler(t.ctx('vis_first'), new Request('http://test'));
+  await assert.rejects(tasks[0](), /turn setup failed/);
+  assert.deepEqual(settled, [0.25], 'a throw charges the reserved amount and clears the reservation');
+  const next = await handler(t.ctx('vis_next'), new Request('http://test'));
+  assert.ok(!(next instanceof Response));
+  assert.equal(next.status, 202);
+  await tasks[1]();
+  assert.equal(settled.length, 2);
+  assert.ok(settled[1] < 0.25);
+});
+
+test('non-storable tool rows survive only in the live job and expire with it', async () => {
+  const t = setup(), database = new DatabaseSync(':memory:');
+  const store = sqliteStore(database), jobs = jobsOn(store, database, {}), tasks: (() => Promise<void>)[] = [];
+  const hidden = { ...offer('no-store', 'dupe', 4500), title: 'TRANSIENT_DUPE_ROW', may_store: false, may_model: false, use_scope: 'hackathon_demo' };
+  const search = jobs.put({ kind: 'search', state: 'running' }, 'person-a');
+  jobs.append(search.id, 'answer.settled', { results: [hidden], sites_pending: [] });
+  jobs.append(search.id, 'job.state', { state: 'done' });
+  const requests: MessageCreateParamsBase[] = [];
+  const handler = createAssistHandler({ env: {}, jobs, params: assistParams, now: () => NOW, tools,
+    client: { model: 'stand-in', client: { messages: { stream(p) {
+      requests.push(structuredClone(p));
+      return { on() {}, finalMessage: async () => message() };
+    } } } }, schedule: task => tasks.push(task) });
+  const response = await handler(t.ctx('person-a', { surface: 'buy', text: 'analyse', search_job_id: search.id }), new Request('http://test'));
+  assert.ok(!(response instanceof Response));
+  await tasks[0]();
+  const id = (response.body as { id: string }).id;
+  const answer = jobs.get(id, 'person-a')?.result as { results: Record<string, ToolResult> };
+  assert.equal(answer.results.r1.rows[0].may_store, false);
+  const content = requests[0].messages.at(-1)?.content;
+  assert.ok(Array.isArray(content));
+  assert.ok(content.some(block => block.type === 'text' && block.text.includes('"may_store":false')));
+  assert.ok(!t.sink.text().includes('TRANSIENT_DUPE_ROW'));
+  for (const table of ['frames', 'kv']) {
+    const durable = database.prepare(`SELECT * FROM ${table}`).all();
+    assert.ok(!JSON.stringify(durable).includes('TRANSIENT_DUPE_ROW'), `${table} must not hold a non-storable row`);
+  }
+  assert.equal(store.getJob(id), undefined, 'assist jobs never enter the durable job history');
+  jobs.prune(Date.now() + 86400000);
+  assert.equal(jobs.get(id, 'person-a'), undefined);
+  assert.deepEqual(jobs.framesAfter(id, 0), []);
+  database.close();
+});
 function setup() {
   const jobs = memoryJobs(), sink = memorySink(), tasks: (() => Promise<void>)[] = [], requests: MessageCreateParamsBase[] = [];
   let now = NOW;
