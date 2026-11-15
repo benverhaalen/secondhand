@@ -1,0 +1,9 @@
+/*
+!/web
+!/log
+!/brand
+/web/node_modules
+/web/.next
+/web/.env*
+/web/.vercel
+/brand/explore
