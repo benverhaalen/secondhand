@@ -46,19 +46,18 @@ const URLS = [
 async function main(): Promise<void> {
   const logFile = process.argv[2];
   if (!logFile) throw new Error('usage: extract-live.ts <log file>');
-  console.log(`openrouter key: ${process.env.OPENROUTER_API_KEY ? 'present' : 'absent'}`);
   const log = createLog({ src: 'in-3-live', build: 'in-3', sink: fileSink(logFile) });
   const fetcher = createFetcher({ params: { base_delay_ms: [2000, 2200] } });
   const cache = memoryCache();
   const llm = openRouterLlm();
-  console.log(['url', 'status', 'rung', 'rows', 'fill', 'ms', 'llm_calls', 'dropped'].join('\t'));
+  log.note(['url', 'status', 'rung', 'rows', 'fill', 'ms', 'llm_calls', 'dropped'].join('\t'));
   for (const url of URLS) {
     const t0 = Date.now();
     const got = await log.call('tool', 'fetch_page', { url }, () => fetcher.fetchPage(url, { deadline_ms: 15_000, priority: 'gather' }), r => (r.ok ? { ok: true, status: r.status, bytes: r.html.length } : { ok: false, kind: r.kind }));
-    if (!got.ok) { console.log([url, got.kind === 'blocked' ? 'blocked' : got.kind, '-', 0, '-', Date.now() - t0, 0, ''].join('\t')); continue; }
+    if (!got.ok) { log.note([url, got.kind === 'blocked' ? 'blocked' : got.kind, '-', 0, '-', Date.now() - t0, 0, ''].join('\t')); continue; }
     const r = await extract({ url: got.final_url, html: got.html }, FACTS, { cache, llm, log });
     const fill = Object.entries(r.fill).map(([k, v]) => `${k}=${v.toFixed(2)}`).join(' ');
-    console.log([url, got.status, r.rung, r.rows.length, fill, Date.now() - t0, r.llm_calls, JSON.stringify(r.dropped_by_reason)].join('\t'));
+    log.note([url, got.status, r.rung, r.rows.length, fill, Date.now() - t0, r.llm_calls, JSON.stringify(r.dropped_by_reason)].join('\t'));
   }
 }
 if (import.meta.url === `file:///${process.argv[1]?.replaceAll('\\', '/')}`) await main();

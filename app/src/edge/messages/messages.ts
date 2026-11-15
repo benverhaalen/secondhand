@@ -118,7 +118,7 @@ export async function handleMessages(account: Account, ports: MessagePorts, stor
       const pass = checked.verdict === 'pass' && canonical && !draftHard.draftBlocked;
       store.check(key, pass ? 'pass' : 'hold', checked.claims.flatMap(c => c.attribute_id ? [c.attribute_id] : []));
       log.event('state.change', { entity: 'claim_check', id: key, to: pass ? 'pass' : 'hold', claims_count: checked.claims.length });
-      const promotion = cls.kind === 'answer_fact' ? `answer_fact:${[...new Set(cls.attribute_names)].sort().join(',')}` : cls.kind;
+      const promotion = cls.kind === 'answer_fact' ? `answer_fact:${Array.from(new Set(cls.attribute_names)).sort().join(',')}` : cls.kind;
       if (!pass || account.auto_reply === 'drafts' || account.ask_every_time || !account.promoted.has(promotion)) {
         const draft_ref = await log.call('db', 'messages.save_draft', { message_id: message.id }, () => ports.save_draft(account, message.id, draft.text), () => ({ saved: true }));
         results.push(decision(pass ? cls.kind : 'unbacked_claim', { draft_ref })); continue;

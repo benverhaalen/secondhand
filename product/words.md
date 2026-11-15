@@ -1384,3 +1384,23 @@ Ben, project chat, 07:46 UTC.
 > another thing - i feel like demoing the buy feature live would be so cool. like notify me when someone posts whatever product for whatever price and make it super low, etc but like nate does it live on his phone and it then notifies me right then and there
 
 Used in: [live-buy-demo.md](live-buy-demo.md), [scripts/demo/stage-watch.mjs](../scripts/demo/stage-watch.mjs).
+
+## 2026-11-15 nate official APIs where they exist, the browser design as specced, ranking systems accounted for, Databricks perfected
+Nate, build session (orchestrator), 2026-11-15 between about 03:00 and 04:00 Central. Separate messages.
+> Lets focus on everything but the harnesses right now. What else is there thats being built.
+
+> Lets do this, continue with the way everything is built, not the private api endpoints, but at least take into account the ranking systems found
+
+> I dont want to violate tos or introduce problems to the users, send out subagents after updating each feature spec, to fix everything already built, to add more, to optimize and finish developing out all engines and harnesses
+
+> Ensure databricks is perfected, ensure we expemplify and really impress the databricks judges and employees. We already hope to position our safety and governance against the built in databricks, but ideally we extend and improve on everything they introduced, show our new features and such
+
+> The way you were speccing the browser automation was perfect before, utilize official apis as well for certain platforms, but dont limit us. we find everyhting and already approved how its not automation as the user opts in and is technically driving each intent
+
+> Send out and utilize the macs when you can ensure things are pushed and pulled so everything syncs
+## 2026-11-15 every AI feature, how we did it and how to prove it
+
+Ben, project chat, 07:53 UTC.
+> where else can we prove such things across the numerous ai features we have. can you list out each feature we have for me that is ai or is a feature you think we should show off. this could include data etc. we need to also tell how we did it and be able to effectively explain it
+
+Used in: [features-proof.md](features-proof.md).

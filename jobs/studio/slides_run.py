@@ -13,6 +13,10 @@ import io
 import json
 import os
 import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "log"))
+from secondhand_log import create_log, stdout_sink
+log = create_log('jobs.studio.slides_run', 'dev', stdout_sink)
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -285,7 +289,7 @@ def main(items_dir: str, out_dir: str, *names: str) -> None:
     rows = []
     for n in names:
         r = run_item(os.path.join(items_dir, n), os.path.join(out_dir, n))
-        print(json.dumps(r, default=str), flush=True)
+        log.note('studio.slides', result=r)
         rows.append(r)
     with open(os.path.join(out_dir, "summary.json"), "w") as f:
         json.dump(rows, f, indent=1, default=str)

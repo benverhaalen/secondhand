@@ -1,3 +1,5 @@
+import { createLog, consoleSink } from '../../../../log/index.js';
+const log = createLog({ src: 'app.src.edge.browser.playwright', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 // The pool's real launcher: Playwright Chromium on this host. Server only.
 // Playwright is found at SECONDHAND_PLAYWRIGHT (a path to the package) or from the app's own node_modules;
 // shortcut: no package.json entry yet (not this stream's file), add playwright to app devDependencies when the host image is built.
@@ -11,7 +13,7 @@ type Pw = { chromium: { launch(o: object): Promise<PwBrowser>; launchPersistentC
 
 export function loadPlaywright(): Pw | null {
   const from = process.env.SECONDHAND_PLAYWRIGHT;
-  try { return (from ? createRequire(import.meta.url)(from) : createRequire(import.meta.url)('playwright')) as Pw; } catch { return null; }
+  try { return (from ? createRequire(import.meta.url)(from) : createRequire(import.meta.url)('playwright')) as Pw; } catch (e) { log.error('playwright.load', e); return null; }
 }
 
 const wrap = (c: PwContext): PoolContext<PwPage> => ({ newPage: () => c.newPage(), close: () => c.close(), onClose: fn => c.on('close', fn) });

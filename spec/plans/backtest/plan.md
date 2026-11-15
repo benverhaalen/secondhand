@@ -148,6 +148,8 @@ Rows follow `FIELDS` in the runner (the schema sent to the sold-data thread). Co
 
 Not built yet: the family median and seasonal naive baselines, leave-one-kind-out, ablation switches, Holm and Benjamini-Hochberg, speed odds in the duel, and a loader for the Kaggle text-only test.
 
+A fresh review of the runner (2026-11-15) found it trained on rows whose terms bar modelling, skipped the relist and our-ask leakage routes, miscounted duel states, printed numbers for cells under 30, ignored hidden Best Offer sales, had no locked-window freeze, did not check the duel's hash, and had six behaviours its tests would not catch. All fixed: `may_model` filters every fit and history, `cluster_id` keeps relists out of an item's comps, sales at our ask and hidden Best Offers are left out and counted, `--test-to` and the clamp to `--test-from` give the tuning runs and the locked month, the duel stores each listing's inputs and refuses a changed file, and each of the six was broken on purpose and now fails a test. Still guesses: `MIN_PEERS` 3, 1,000 bootstrap draws, 5 random comps.
+
 ## 6. Fresh review, 2026-11-15
 
 A reviewer that had not written the plan checked it against D6, D10, D11, M12, backtest.py and the notes. Fixed from its findings: the locked window's freeze date (4), censored live listings and the follow-up for speed (14), by-product intervals and products per kind (16, 29), D11's all-listings share (14), the four D6 conflicts (2, 7, 10, 17), the oracle cases (23), season refit per frozen date and M12's sources (27), retuning for leave-one-kind-out (22), the null and Holm (17), the ceiling's definition and its gap rule (8, 11), the Kaggle wording (31), D10's AUC and 90-day horizon (14), and the new-goods series no longer called a prior.

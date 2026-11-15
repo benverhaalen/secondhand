@@ -17,7 +17,7 @@ export interface WebhookDeps {
   store: Store; log: LogLike;
   getKey(kid: string): string | Promise<string>;
   verificationToken: string; endpoint: string;
-  resolve(notification: Record<string, any>): { user_id: string; account_id?: string } | undefined;
+  resolve(notification: Record<string, unknown>): { user_id: string; account_id?: string } | undefined;
   now?: () => string;
 }
 export type Req = { method: string; headers: Record<string, string | undefined>; body: string; query: Record<string, string | undefined> };
@@ -48,7 +48,7 @@ async function signatureOk(req: Req, deps: WebhookDeps): Promise<boolean> {
     if (!key) { key = await deps.getKey(h.kid); cache.set(h.kid, key); }
     const pem = key.includes('BEGIN') ? key : `-----BEGIN PUBLIC KEY-----\n${key.match(/.{1,64}/g)?.join('\n')}\n-----END PUBLIC KEY-----\n`;
     return verify(digest, Buffer.from(req.body), pem, Buffer.from(h.signature, 'base64'));
-  } catch { return false; }
+  } catch (e) { deps.log.event('note', { msg: 'ebay signature verification failed', error: e instanceof Error ? e.message : String(e) }, 'warn'); return false; }
 }
 
 export async function handleEbayWebhook(req: Req, deps: WebhookDeps): Promise<Res> {
@@ -60,20 +60,22 @@ export async function handleEbayWebhook(req: Req, deps: WebhookDeps): Promise<Re
   }
   if (req.method !== 'POST') return { status: 405, body: {} };
   if (!(await signatureOk(req, deps))) { log.event('note', { msg: 'ebay webhook refused: bad or missing signature', source: 'site_push' }, 'warn'); return { status: 401, body: {} }; }
-  let msg: any;
-  try { msg = JSON.parse(req.body); } catch { return { status: 400, body: {} }; }
-  const topic = String(msg?.metadata?.topic ?? ''), n = msg?.notification ?? {};
+  const object = (v: unknown): Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v) ? v as Record<string, unknown> : {};
+  let parsed: unknown;
+  try { parsed = JSON.parse(req.body); } catch { return { status: 400, body: {} }; }
+  const msg = object(parsed);
+  const topic = String(object(msg.metadata).topic ?? ''), n = object(msg.notification);
   const action = actionFor(topic);
   if (!action || !n.notificationId) { log.event('note', { msg: 'ebay webhook ignored: unmapped topic', topic, source: 'site_push' }); return { status: 202, body: {} }; }
   const who = deps.resolve(n);
   if (!who) { log.event('note', { msg: 'ebay webhook ignored: no linked account', topic, source: 'site_push' }); return { status: 202, body: {} }; }
   const at = deps.now?.() ?? new Date().toISOString();
-  const listing = n.data?.listingId ?? n.data?.itemId;
+  const listing = object(n.data).listingId ?? object(n.data).itemId;
   const r = ingest(store, log, {
     user_id: who.user_id, source: 'site_push', site: 'ebay', account_id: who.account_id, action,
     listing_id: typeof listing === 'string' ? listing : undefined,
     payload_ref: `ebay:notification:${n.notificationId}`, payload: { topic, notification_id: String(n.notificationId) },
-    dedupe_key: `ebay:push:${n.notificationId}`, actor: 'site', observed_at: n.eventDate ?? at, effective_at: n.eventDate ?? at,
+    dedupe_key: `ebay:push:${n.notificationId}`, actor: 'site', observed_at: typeof n.eventDate === 'string' ? n.eventDate : at, effective_at: typeof n.eventDate === 'string' ? n.eventDate : at,
     trace_id: `ebay-${n.notificationId}`,
   }, deps.now);
   return 'refused' in r ? { status: 202, body: {} } : { status: 200, body: {} };

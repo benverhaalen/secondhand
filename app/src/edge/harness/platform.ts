@@ -50,9 +50,9 @@ const BASE: Record<Site, Pick<SiteProfile, 'verbs' | 'storefront'>> = {
     mark: 'inferred', src: `${P}poshmark.md#15-adapter-rules-agent-proposal` } },
   mercari: { verbs: ALL(), storefront: { shows: ['followers', 'rating', 'review_count', 'active_count', 'sold_count', 'views', 'likes', 'offers', 'orders', 'gross_cents'],
     mark: 'inferred', src: `${P}mercari.md` } },
-  offerup: { verbs: SEARCH_ONLY('OfferUp is search and price only for now (spec/product.md route table: n/a)'),
+  offerup: { verbs: SEARCH_ONLY('This site is search and price only for now (spec/product.md route table: n/a)'),
     storefront: { shows: ['rating', 'review_count', 'active_count', 'sold_count'], mark: 'inferred', src: `${P}offerup.md` } },
-  grailed: { verbs: SEARCH_ONLY('Grailed is search and price only for now (spec/product.md route table: n/a)'),
+  grailed: { verbs: SEARCH_ONLY('This site is search and price only for now (spec/product.md route table: n/a)'),
     storefront: { shows: ['followers', 'rating', 'review_count', 'active_count', 'sold_count', 'likes'], mark: 'inferred', src: `${P}grailed.md` } },
 };
 

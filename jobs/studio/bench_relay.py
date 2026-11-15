@@ -16,6 +16,10 @@ import json
 import os
 import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "log"))
+from secondhand_log import create_log, stdout_sink
+log = create_log('jobs.studio.bench_relay', 'dev', stdout_sink)
+
 import cv2
 import numpy as np
 
@@ -117,13 +121,13 @@ def main(run_dir, out=None):
                     rows.append({"item": item, "slide": s["type"], "case": name, "truth": t, "dropped": not r["ok"], "reasons": r["reasons"],
                                  "shape_checked": bool(tape) or laid,
                                  "set_to_tape": any(x.startswith("width set") and "x1.00" not in x for x in r.get("repairs", []))})
-                    print(json.dumps(rows[-1]), flush=True)
+                    log.note('studio.bench.case', result=rows[-1])
     honest = [r for r in rows if r["truth"] == "honest"]; lies = [r for r in rows if r["truth"] == "lie"]
     blind = [r for r in lies if not r["shape_checked"] and r["case"] in ("12% wider", "12% taller")]
     summary = {"shape_lies_with_no_truth": len(blind), "invisible_color_changes": sum(r["truth"] == "invisible" for r in rows), "honest_kept": sum(not r["dropped"] for r in honest), "honest": len(honest),
                "lies_dropped": sum(r["dropped"] for r in lies),
                "shape_lies_set_to_tape": sum((not r["dropped"]) and r["set_to_tape"] and r["case"] in ("12% wider", "12% taller") for r in lies), "lies": len(lies), "rows": rows}
-    print(json.dumps({k: v for k, v in summary.items() if k != "rows"}))
+    log.note('studio.bench.summary', result={k: v for k, v in summary.items() if k != 'rows'})
     if out:
         json.dump(summary, open(out, "w"), indent=1)
 
