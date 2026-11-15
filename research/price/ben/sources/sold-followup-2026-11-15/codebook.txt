@@ -1,0 +1,124 @@
+xl/worksheets/sheet2.xml
+A1=bo_threads
+
+A3=Name | B3=Variable Type | C3=Explanation | D3=Interpretation of Values
+A4=anon_item_id | B4=long | C4=Anonymized item ID.
+A5=anon_thread_id | B5=long | C5=Anonymized thread ID (identifier for a given bargaining thread)
+A6=anon_byr_id | B6=long | C6=Anonymized ID for the buyer who bargained with the seller (this differs from anon_buyer_id in the bo_lists file, which represents the ID of the buyer who actually purchased the item, which can happen through bargaining or through the Buy-It-Now price)
+A7=anon_slr_id | B7=long | C7=Anonymized seller ID.
+A8=offr_type_id | B8=byte | C8=Indicator for whether this observations represents the buyer's initial offer, a seller counteroffer, or a buyer counteroffer | D8=0 = Initial buyer offer
+D9=1 = Buyer counteroffer
+D10=2 = Seller counteroffer
+A11=status_id | B11=byte | C11=Indicator for how the opposing party responding to the bargaining offer/counteroffer | D11=0 = offer expired (response took longer than 48 hours)
+D12=1 = accepted
+D13=2 = declined
+D14=6 = auto declined
+D15=7 = countered
+D16=8 = declined because some other buyer's offer on this same item was accepted by the seller
+D17=9 = auto accepted
+A18=offr_price | B18=double | C18=Price of the offer.
+A19=src_cre_date | B19=str18 | C19=Time stamp for when the offer was made
+A20=response_time | B20=str18 | C20=Length of time between offer and response (i.e. between this offer and the action taken by the opposing party in the bargaining)
+A21=byr_cntry_id | B21=int | C21=Buyer's country ID.
+A22=slr_hist | B22=long | C22=Number of previous best offer threads seller has participated in
+A23=byr_hist | B23=long | C23=Number of previous best offer threads buyer has participated in
+A24=any_mssg | B24=byte | C24=Indicator for whether the offer included a message. | D24=0 = No
+D25=1 = Yes
+A26=fdbk_pstv_src | B26=double | C26=seller's percent feedback score at the time of the offer
+A27=fdbk_score_src | B27=long | C27=seller's number of previous feedbacks received at the time of the offer
+A28=buyer_us | B28=int | C28=Indicator for whether the buyer in this bargaining thread is located in US or not | D28=0 = No
+D29=1 = Yes
+xl/worksheets/sheet1.xml
+A1=bo_lists
+A2=Name | B2=Variable Type | C2=Explanation | D2=Interpretation of Values
+A3=anon_item_id | B3=long | C3=Anonymized listing ID.
+A4=anon_title_code | B4=long | C4=Anonymized ID that represents a given auction title string
+A5=anon_product_id | B5=long | C5=Anonymized product ID, only available for items that can be linked to specific cataloged products
+A6=anon_leaf_categ_id | B6=int | C6=Anonymized leaf category ID, a finer categorization than meta category
+A7=anon_slr_id | B7=long | C7=Anonymized seller ID.
+A8=anon_buyer_id | B8=long | C8=Anonymized buyer ID (for the buyer who actually purchases the item).
+A9=auct_start_dt | B9=str9 | C9=Listing start date.
+A10=auct_end_dt | B10=str9 | C10=Listing end date chosen by seller. If listing sells, this date instead represents the date of sale.
+A11=slr_us | B11=int | C11=Indicator for whether seller is located in US or not | D11=0 = No
+D12=1 = Yes
+A13=buyer_us | B13=int | C13=Indicator for whether buyer is located in US or not | D13=0 = No
+D14=1 = Yes
+A15=start_price_usd | B15=double | C15=Buy-It-Now price
+A16=photo_count | B16=byte | C16=Number of photos in listing.
+A17=to_lst_cnt | B17=long | C17=Number of listings created by the seller dating back to 2008.
+A18=bo_lst_cnt | B18=long | C18=Number of BO-listings created by the seller dating back to 2008.
+A19=item_cndtn_id | B19=int | C19=Indicator for the new/used status of the item. | D19=1000 = New
+D20=1500 = New other
+D21=1750 = New with defects
+D22=2000 = Manufacturer refurbished
+D23=2500 = Seller refurbished
+D24=2750 = Like New
+D25=3000 = Used
+D26=4000 = Very Good
+D27=5000 = Good
+D28=6000 = Acceptable
+D29=7000 = For parts / not working
+A30=view_item_count | B30=long | C30=Number of times the item page was viewed
+A31=wtchr_count | B31=int | C31=Number of users who selected the "add to watch list" option for this listing
+A32=item_price | B32=double | C32=Final price (Buy-It-Now price if the item sold through Buy-It-Now option, or the final negotiated price if the item sold through Best Offer. This variable is missing if the item never sold)
+A33=bo_ck_yn | B33=byte | C33=Indicator for whether item sold through best offer. | D33=0 = No
+D34=1 = Yes
+A35=decline_price | B35=double | C35=Price chosen by seller, if the seller chooses to report one, below which any offer will be automatically rejected
+A36=accept_price | B36=double | C36=Price chosen by seller, if the seller chooses to report one, above which any offer will be automatically accepted
+A37=bin_rev | B37=byte | C37=Indicator for whether the Buy-It-Now price was ever modified by the seller during the time the item was listed | D37=0 = No
+D38=1 = Yes
+A39=store | B39=byte | C39=Indicator for whether the listing is part of an eBay store | D39=0 = No
+D40=1 = Yes
+A41=count1 | B41=int | C41=Number of listings used in creating ref_price1 for this observation
+A42=ref_price1 | B42=double | C42=Average price for sold fixed price listings with the same listing title as this item, sold during the time frame of the data
+A43=count2 | B43=int | C43=Number of listings used in creating ref_price3 for this observation
+A44=ref_price2 | B44=double | C44=Average price for sold fixed price listings (not sold through Best Offer) with the same listing title as this item, sold during the time frame of the data
+A45=count3 | B45=int | C45=Number of listings used in creating ref_price3 for this observation
+A46=ref_price3 | B46=double | C46=Average price for sold fixed price listings (that did not have Best Offer enabled) with the listing title as this item, sold during the time frame of the data
+A47=count4 | B47=int | C47=Number of listings used in creating ref_price4 for this observation
+A48=ref_price4 | B48=double | C48=Average price for sold fixed price listings (that did not have Best Offer enabled) with the same product_id and same used/new status as this item, sold C81uring the time frame of the data
+A49=ship_time_slowest | B49=byte | C49=The max shipping time (in hours) for the slowest shipping option offered on this listing
+A50=ship_time_fastest | B50=byte | C50=The max shipping time (in hours) for the fastest shipping option offered on this listing
+A51=ship_time_chosen | B51=byte | C51=The max shipping time (in hours) for the shipping option chosen by the buyer on this listing
+A52=lstg_gen_type_id | B52=byte | C52=Indicator for whether the item is a re-listing (i.e. an item that failed to sell before and was then re-listed by the seller) | D52=0 = No
+D53=1 = Yes
+A54=fdbk_pstv_start | B54=double | C54=seller's percent feedback score at the time of the listing
+A55=fdbk_score_start | B55=long | C55=seller's number of previous feedbacks received at the time of the listing
+A56=meta_categ_id | B56=long | C56=Meta category ID, not anonymized.  | D56=	1	= "	Collectibles	"
+D57=	99	="	Everything Else	"
+D58=	220	="	Toys & Hobbies	"
+D59=	237	="	Dolls & Bears	"
+D60=	260	="	Stamps	"
+D61=	267	="	Books	"
+D62=	281	="	Jewelry & Watches	"
+D63=	293	="	Computers & Electronics	"
+D64=	293	="	Consumer Electronics	"
+D65=	316	="	Specialty Services	"
+D66=	550	="	Art	"
+D67=	619	="	Musical Instruments & Gear	"
+D68=	625	="	Cameras & Photo	"
+D69=	870	="	Pottery & Glass	"
+D70=	888	="	Sporting Goods	"
+D71=	1249	="	Video Games & Consoles	"
+D72=	1281	="	Pet Supplies	"
+D73=	1305	="	Tickets & Experiences	"
+D74=	2984	="	Baby	"
+D75=	3252	="	Travel	"
+D76=	6000	="	eBay Motors	"
+D77=	10542	="	Real Estate	"
+D78=	11116	="	Coins	"
+D79=	11116	="	Coins & Paper Money	"
+D80=	11232	="	DVDs & Movies	"
+D81=	11233	="	Music	"
+D82=	11450	="	Clothing Shoes & Accessories	"
+D83=	11700	="	Home	"
+D84=	11700	="	Home & Garden	"
+D85=	12576	="	Business & Industrial	"
+D86=	14339	="	Crafts	"
+D87=	15032	="	Cell Phones & Accessories	"
+D88=	20081	="	Antiques	"
+D89=	26395	="	Health & Beauty	"
+D90=	45100	="	Entertainment Memorabilia	"
+D91=	58058	="	Computers/Tablets & Networking	"
+D92=	64482	="	Sports Mem Cards & Fan Shop	"
+D93=	172008	="	Gift Cards & Coupons	"
