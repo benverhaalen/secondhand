@@ -1,0 +1,127 @@
+{
+ "objects": [
+  {
+   "date": "2026-11-14T19:55:46.527641Z",
+   "rating": 5,
+   "product": {
+    "id": 983336075
+   },
+   "author": {
+    "id": 0,
+    "username": "haa276831",
+    "verified": false
+   }
+  },
+  {
+   "date": "2026-11-14T19:38:29.050504Z",
+   "rating": 5,
+   "product": {
+    "id": 983336075
+   },
+   "author": {
+    "id": 0,
+    "username": "hb27279c8",
+    "verified": false
+   }
+  },
+  {
+   "date": "2026-11-14T19:38:17.20014Z",
+   "rating": 5,
+   "product": {
+    "id": 983506845
+   },
+   "author": {
+    "id": 0,
+    "username": "hb27279c8",
+    "verified": false
+   }
+  },
+  {
+   "date": "2026-11-14T02:15:31.183521Z",
+   "rating": 5,
+   "product": {
+    "id": 983336075
+   },
+   "author": {
+    "id": 0,
+    "username": "hb5df3899",
+    "verified": false
+   }
+  },
+  {
+   "date": "2026-11-14T00:26:23.76169Z",
+   "rating": 5,
+   "product": {
+    "id": 983505687
+   },
+   "author": {
+    "id": 0,
+    "username": "h61f3caff",
+    "verified": false
+   }
+  },
+  {
+   "date": "2026-11-12T23:21:59.201983Z",
+   "rating": 5,
+   "product": {
+    "id": 983336075
+   },
+   "author": {
+    "id": 0,
+    "username": "h47a8e166",
+    "verified": false
+   }
+  },
+  {
+   "date": "2026-11-10T20:51:59.953534Z",
+   "rating": 5,
+   "product": {
+    "id": 983506845
+   },
+   "author": {
+    "id": 0,
+    "username": "hc3a73620",
+    "verified": false
+   }
+  },
+  {
+   "date": "2026-11-06T00:18:45.123356Z",
+   "rating": 5,
+   "product": {
+    "id": 929431486
+   },
+   "author": {
+    "id": 0,
+    "username": "hdf01e0e4",
+    "verified": false
+   }
+  },
+  {
+   "date": "2026-11-04T23:58:47.409429Z",
+   "rating": 1,
+   "product": {
+    "id": 916524321
+   },
+   "author": {
+    "id": 0,
+    "username": "h482f362c",
+    "verified": false
+   }
+  },
+  {
+   "date": "2026-10-29T15:07:14.948894Z",
+   "rating": 5,
+   "product": {
+    "id": 929429090
+   },
+   "author": {
+    "id": 0,
+    "username": "he8d4cf27",
+    "verified": false
+   }
+  }
+ ],
+ "page_info": {
+  "has_more": true
+ }
+}

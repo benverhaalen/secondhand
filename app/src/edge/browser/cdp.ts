@@ -28,10 +28,13 @@ export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage>
     let browser: CdpBrowser;
     try { browser = await pw.chromium.connectOverCDP(ep.cdpUrl, { timeout: 30_000 }); }
     catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/(wss?|https?):\/\/\S+/g, '[cdp]')}`); }
-    const ctx = browser.contexts()[0] ?? await browser.newContext();
+    let ctx: CdpContext;
+    try { ctx = browser.contexts()[0] ?? await browser.newContext(); }
+    catch (e) { await browser.close().catch(() => undefined); await ep.stop(); throw e; }
     let closed = false;
     const closers: (() => void)[] = [];
-    browser.on('disconnected', () => { if (!closed) { closed = true; closers.forEach(f => f()); } });
+    // A dropped connection must stop the browser too: closing CDP does not end a cloud browser or its billing.
+    browser.on('disconnected', () => { if (!closed) { closed = true; void ep.stop(); closers.forEach(f => f()); } });
     return {
       newPage: () => ctx.newPage(),
       onClose: fn => { closers.push(fn); },
@@ -96,8 +99,9 @@ export function localChrome({ executablePath, scratch, headless, spawnFn = spawn
 // A Browser Use Cloud browser. The key is read by presence from the caller and sent only in the X-Browser-Use-API-Key header,
 // never in a URL; profileFor maps a profile directory to a cloud profile id when one was made (cloud_profile_id in browser-use 1.0).
 export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.browser-use.com/api/v4', country = 'us', timeoutMin = 5,
-  profileFor = () => undefined }: {
+  profileFor = () => undefined, onStopFailed = () => undefined }: {
   apiKey: string; fetchFn?: typeof fetch; base?: string; country?: string; timeoutMin?: number; profileFor?: (dir: string) => string | undefined;
+  onStopFailed?: (browser_id: string) => void;
 }): BrowserSource {
   const headers = { 'X-Browser-Use-API-Key': apiKey, 'content-type': 'application/json' };
   return {
@@ -113,7 +117,13 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
       const id = o.id, cdpUrl = o.cdpUrl ?? o.cdp_url;
       if (typeof id !== 'string' || typeof cdpUrl !== 'string') throw new Error('browser-use cloud create returned no id or cdpUrl');
       const live_url = typeof (o.liveUrl ?? o.live_url) === 'string' ? String(o.liveUrl ?? o.live_url) : undefined;
-      return { cdpUrl, live_url, stop: async () => { await fetchFn(`${base}/browsers/${encodeURIComponent(id)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).catch(() => undefined); } };
+      const stopOnce = () => fetchFn(`${base}/browsers/${encodeURIComponent(id)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).then(r => r.ok, () => false);
+      let stopped = false;
+      return { cdpUrl, live_url, stop: async () => {
+        if (stopped) return;
+        stopped = await stopOnce() || await stopOnce();
+        if (!stopped) onStopFailed(id); // it may still be billing: the caller's sweep has to stop it
+      } };
     },
   };
 }

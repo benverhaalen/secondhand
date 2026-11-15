@@ -1,0 +1,97 @@
+{
+ "objects": [
+  {
+   "id": 983505687,
+   "brand_id": 1667,
+   "brand_name": "Other",
+   "active_status": "active",
+   "status": "STATUS_MARKED_AS_SOLD",
+   "category_name": "Hats",
+   "listed_quantity": 29,
+   "created_at": "2026-11-03T19:47:36.292040Z",
+   "updated_at": "2026-11-11T22:55:50.251308Z",
+   "user_id": 1000001,
+   "slug": "h4cf75552-heather-grey-knit-beanie-with-29ab",
+   "pricing": {
+    "currency": "USD",
+    "current_price": {
+     "total_price": "27.50",
+     "price_breakdown": {
+      "price": {
+       "amount": "27.50"
+      }
+     }
+    },
+    "original_price": {
+     "total_price": "57.90",
+     "price_breakdown": {
+      "price": {
+       "amount": "57.90"
+      },
+      "buyer_fee": {
+       "amount": "0.00"
+      },
+      "tax": {
+       "amount": "0.00",
+       "tax_type": "n/a"
+      },
+      "shipping": {
+       "amount": "1.99",
+       "shipping_boundary": "NATIONAL",
+       "shipping_id": "USPS"
+      }
+     }
+    },
+    "is_reduced": true
+   }
+  },
+  {
+   "id": 983336075,
+   "brand_id": 1667,
+   "brand_name": "Other",
+   "active_status": "active",
+   "status": "STATUS_MARKED_AS_SOLD",
+   "category_name": "Hats",
+   "listed_quantity": 34,
+   "created_at": "2026-11-03T17:54:22.500481Z",
+   "updated_at": "2026-11-11T22:55:50.049638Z",
+   "user_id": 1000001,
+   "slug": "h6c6defd1-black-knit-beanie-with-oversized-1085",
+   "pricing": {
+    "currency": "USD",
+    "current_price": {
+     "total_price": "27.05",
+     "price_breakdown": {
+      "price": {
+       "amount": "27.05"
+      }
+     }
+    },
+    "original_price": {
+     "total_price": "57.99",
+     "price_breakdown": {
+      "price": {
+       "amount": "57.99"
+      },
+      "buyer_fee": {
+       "amount": "0.00"
+      },
+      "tax": {
+       "amount": "0.00",
+       "tax_type": "n/a"
+      },
+      "shipping": {
+       "amount": "1.99",
+       "shipping_boundary": "NATIONAL",
+       "shipping_id": "USPS"
+      }
+     }
+    },
+    "is_reduced": true
+   }
+  }
+ ],
+ "page_info": {
+  "has_more": false
+ }
+}
