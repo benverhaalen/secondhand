@@ -644,3 +644,7 @@ Ben, project chat, 01:11 UTC, in full.
 ## 2026-11-15 the code understands each app
 Ben, project chat, 01:11 UTC, inside a longer message.
 > also with the brand specific things ensure somewhere in the instruction we end up being able to have the code understand each app. like if depop offers only last 24 hours, whatever depends on that fact should actually depend on that. deeply thought through software intention. finding where things could go wrong and why.
+
+## 2026-11-15 standard sizes, darker dark colors, deslop skills, and ban all emojis
+Ben, thread "Critique the design system and plan dark mode", 01:16 UTC, on the dark mode render he was sent.
+> these dont use the fonts at all. also shouldn't the colors change to darker ones so we stay in a comfortable color range. also there is not really a standard width and height of the thing. everything should be standardized size wise no matter whats in it if there is a relatively similar size. use rdd and iae to find repos designed to 'deslop ui' mainly skills i think. but knowing how to create a cohesive system and actually using those rules. they arent used well enough right now as the offered $38 vs Nike dunks things dont have a standard size. think of everything deeply from a ux. what implicitly looks good to the human eye that a person doesn't notice at all. also ban all emojis. whenever the apple and hex type research lands about branding and enforcing strict rules and what rules to even enforce is something im not sure is known yet
