@@ -19,9 +19,9 @@ test('identifiers and the score ends settle without Jev; the band goes to Jev in
   assert.deepEqual(calls.sort((x, y) => x - y), [5, 20]);
   assert.equal(out.find(j => j.id === 'a')!.by, 'ids');
   assert.equal(out.find(j => j.id === 'w')!.keep, 'wrong_item');
-  assert.equal(out.find(j => j.id === 'hi')!.match, 'exact');
+  assert.equal(out.find(j => j.id === 'hi')!.match, 'likely_same_model', 'a score alone is never exact (identity.md B5)');
   assert.equal(out.find(j => j.id === 'lo')!.in_basis, false);
-  assert.ok(out.filter(j => j.by === 'jev').every(j => j.in_basis));
+  assert.equal(out.filter(j => j.by === 'jev' && j.in_basis).length, 25);
 });
 
 test('an invalid Jev answer leaves the result unresolved and out of the basis', async () => {
@@ -37,7 +37,7 @@ test('one item crosslisted on two sites merges into one row', () => {
   const c = dedupe([
     r({ id: 'e1', site: 'ebay', phash: 'f0f0f0f0f0f0f0f0', price_cents: 4000, listed_at: '2026-11-01T00:00:00Z', seller_hash: 's1' }),
     r({ id: 'p1', site: 'poshmark', phash: 'f0f0f0f0f0f0f0f1', price_cents: 4200, listed_at: '2026-11-03T00:00:00Z', seller_hash: 's9' }),
-    r({ id: 'm1', site: 'mercari', phash: '0123456789abcdef', price_cents: 3900 }),
+    r({ id: 'm1', site: 'mercari', phash: '0123456789abcdef', price_cents: 3900, listed_at: '2026-11-03T00:00:00Z' }),
   ]);
   assert.equal(c.length, 2);
   assert.deepEqual(c.find(x => x.members.length === 2)!.members.map(m => m.id).sort(), ['e1', 'p1']);
@@ -70,4 +70,33 @@ test('a text conflict returns one of its inputs or conflict, never a new value',
   assert.equal((await reconcileText('material', claims, async () => { throw new Error('down'); })).state, 'conflict');
   const agree = await reconcileText('material', [claims[0]!, claims[0]!], async () => { throw new Error('not called'); });
   assert.equal(agree.state === 'settled' && agree.by, 'code');
+});
+
+const at = '2026-11-02T00:00:00Z';
+test('the stock guard checks both photos of a pair, in either order', () => {
+  const R = '0000000000000000', b = r({ id: 'b', site: 'mercari', phash: '00000000000000ff', listed_at: at }), a = r({ id: 'a', phash: '000000000000ffff', listed_at: at });
+  assert.equal(dedupe([a, b], { retailPhashes: [R] }).length, 2);
+  assert.equal(dedupe([b, a], { retailPhashes: [R] }).length, 2);
+});
+
+test('five sellers of one stock image on a site are caught even when their hashes are near but not equal', () => {
+  const hs = ['0000000000000000', '00000000000001ff', '0000000000000001', '0000000000000003', '0000000000000007'];
+  const items = hs.map((h, i) => r({ id: `s${i}`, listing_id: `s${i}`, phash: h, seller_hash: `x${i}`, listed_at: at }));
+  assert.equal(dedupe(items).length, 5);
+});
+
+test('one person crossposting to all five sites collapses to one row', () => {
+  const sites = ['ebay', 'poshmark', 'mercari', 'depop', 'facebook'];
+  const items = sites.map((site, i) => r({ id: site, site, phash: 'f0f0f0f0f0f0f0f0', seller_hash: `h${i}`, listed_at: at }));
+  assert.equal(dedupe(items).length, 1);
+});
+
+test('a missing listing date or a malformed hash never merges by photo, and never throws', () => {
+  assert.equal(dedupe([r({ id: 'a', phash: 'f0f0f0f0f0f0f0f0' }), r({ id: 'b', site: 'mercari', phash: 'f0f0f0f0f0f0f0f0', listed_at: at })]).length, 2);
+  assert.equal(dedupe([r({ id: 'a', phash: 'zz', listed_at: at }), r({ id: 'b', site: 'mercari', phash: 'zz', listed_at: at })]).length, 2);
+});
+
+test('right_90d decides the median: the trusted route wins against a majority of weak ones', () => {
+  const vals = [{ value: 100, route_id: 'weak', source_url: 'a' }, { value: 105, route_id: 'weak', source_url: 'b' }, { value: 300, route_id: 'strong', source_url: 'c' }];
+  assert.equal(reconcileNumber(vals, { weak: 0.1, strong: 0.95 }).value, 300);
 });

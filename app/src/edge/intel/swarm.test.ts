@@ -33,14 +33,14 @@ const o = (x: Partial<Offer> & { id: string }): Offer => ({ site: 'ebay', listin
   condition: 'used_good', relation: 'same_product', shipping_cents: 800, tax_rate: 0.08, ...x });
 
 test('a listing sold between reads is dropped, never shown as available', () => {
-  const rows = availableNow([o({ id: 'a' }), o({ id: 'b', listing_id: 'b', sold: true }), o({ id: 'c', listing_id: 'c' })], { soldIds: new Set(['c']), medianShipping: 900 });
+  const rows = availableNow([o({ id: 'a' }), o({ id: 'b', listing_id: 'b', sold: true }), o({ id: 'c', listing_id: 'c' })], { soldIds: new Set(['ebay:c']), medianShipping: 900 });
   assert.deepEqual(rows.map(r => r.id), ['a']);
 });
 
 test('a duplicate across sites merges into one offer, the cheaper delivered copy first', () => {
   const rows = availableNow([
-    o({ id: 'e', site: 'ebay', phash: 'f0f0f0f0f0f0f0f0', price_cents: 4000, shipping_cents: 1200 }),
-    o({ id: 'p', site: 'poshmark', listing_id: 'p', phash: 'f0f0f0f0f0f0f0f0', price_cents: 4100, shipping_cents: 0 }),
+    o({ id: 'e', site: 'ebay', phash: 'f0f0f0f0f0f0f0f0', price_cents: 4000, shipping_cents: 1200, listed_at: '2026-11-01T00:00:00Z' }),
+    o({ id: 'p', site: 'poshmark', listing_id: 'p', phash: 'f0f0f0f0f0f0f0f0', price_cents: 4100, shipping_cents: 0, listed_at: '2026-11-02T00:00:00Z' }),
   ], { medianShipping: 900 });
   assert.equal(rows.length, 1);
   assert.equal(rows[0]!.id, 'p');
@@ -52,4 +52,19 @@ test('unknown shipping is priced at the median and marked; one offer per relatio
   const rows = availableNow([o({ id: 'u', shipping_cents: null }), o({ id: 'n', listing_id: 'n', relation: 'same_product', condition: 'new', price_cents: 9000 }), o({ id: 'v', listing_id: 'v', price_cents: 5000 })], { medianShipping: 900 });
   assert.equal(rows.find(r => r.id === 'u')!.shipping_estimated, true);
   assert.deepEqual(bestByRelation(rows).map(r => r.id), ['u', 'n']);
+});
+
+test('a stale index copy of a listing that the fresh read shows sold is dropped too', () => {
+  const rows = availableNow([o({ id: 'idx', listing_id: '123' }), o({ id: 'new', listing_id: '123', sold: true }), o({ id: 'oos', listing_id: '9', stock: 'out_of_stock' })], { medianShipping: 900 });
+  assert.deepEqual(rows, []);
+});
+
+test('nothing is plannable before the risk specialist answers', () => {
+  assert.deepEqual(plannable(mergeSwarm(SITES, { identity: { product_id: 'p' } })), []);
+});
+
+test('a specialist that throws synchronously loses only its own result', async () => {
+  const r = await listingSwarm({}, SITES, { identity: () => { throw new Error('boom'); }, risk: async () => ({ blocks: {}, flags: [] }) });
+  assert.equal(r.identity, null);
+  assert.deepEqual(plannable(r), [...SITES]);
 });

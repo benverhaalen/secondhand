@@ -1,6 +1,7 @@
 // listing_swarm and available_now (spec/engines/intelligence-api.md §1 "Three protocols in full").
 // The swarm's eight specialists start at once; the merge is a join by site in code, never a model.
 import { dedupe, type Result } from './reconcile.ts';
+import type { Log } from '../../../../log/index.js';
 
 export const SWARM_SPECIALISTS = ['identity', 'comps', 'winners', 'terms', 'photo_rules', 'rules_fees', 'demand', 'risk'] as const;
 export type Specialist = typeof SWARM_SPECIALISTS[number];
@@ -35,21 +36,24 @@ export function mergeSwarm(sites: readonly string[], parts: SwarmParts, pending:
     demand: parts.demand ?? null, risk: parts.risk ?? null, per_site, pending };
 }
 
-// The sites the marketing engine may plan: every planned site that is not blocked.
-export const plannable = (r: SwarmResult) => Object.entries(r.per_site).filter(([, p]) => !p.blocked).map(([s]) => s);
+// The sites the marketing engine may plan: none until the risk specialist has answered (a block must land first),
+// then every planned site that is not blocked. A risk that never answered plans nothing.
+export const plannable = (r: SwarmResult) => (r.risk ? Object.entries(r.per_site).filter(([, p]) => !p.blocked).map(([s]) => s) : []);
 
 export type Runner = (item: unknown, signal: AbortSignal) => Promise<unknown>;
 
 // Starts every specialist at once, each with its own deadline; re-merges and calls onPartial on each arrival.
 export async function listingSwarm(item: unknown, sites: readonly string[], run: Partial<Record<Specialist, Runner>>,
-  onPartial?: (r: SwarmResult) => void, deadlines = SWARM_DEADLINE_MS): Promise<SwarmResult> {
+  onPartial?: (r: SwarmResult) => void, deadlines = SWARM_DEADLINE_MS, log?: Log): Promise<SwarmResult> {
   const parts: SwarmParts = { per_site: {} };
   const pending = new Set<Specialist>(SWARM_SPECIALISTS.filter(s => run[s]));
   await Promise.all([...pending].map(async spec => {
     const ac = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
     const late = new Promise<undefined>(res => { timer = setTimeout(() => { ac.abort(); res(undefined); }, deadlines[spec]); });
-    const v = await Promise.race([run[spec]!(item, ac.signal).catch(() => undefined), late]);
+    const call = async () => run[spec]!(item, ac.signal); // async wrapper: a runner that throws synchronously is a rejection too
+    const go = log ? () => log.call('task', `swarm.${spec}`, { spec }, call) : call;
+    const v = await Promise.race([go().catch(e => { log?.error(`swarm.${spec}`, e); return undefined; }), late]);
     clearTimeout(timer);
     pending.delete(spec);
     if (v !== undefined) {
@@ -68,7 +72,10 @@ export async function listingSwarm(item: unknown, sites: readonly string[], run:
 
 export interface Offer extends Result {
   condition: string; relation: 'same_product' | 'successor' | 'functional_equivalent';
-  shipping_cents: number | null; tax_rate: number; ships_to?: string[]; sold?: boolean; stock?: number | null;
+  shipping_cents: number | null; tax_rate: number; ships_to?: string[]; sold?: boolean;
+  // offer_view fields (spec/product.md); stock uses M26's values
+  stock?: 'in_stock' | 'out_of_stock' | 'preorder' | 'backorder' | 'collect_in_store' | 'unknown';
+  seller_kind?: string; delivery_min_days?: number; delivery_max_days?: number; ships_from?: string; variant?: string;
 }
 export interface OfferRow extends Offer { delivered_cents: number; shipping_estimated: boolean; also_on: string[] }
 
@@ -78,14 +85,18 @@ export function delivered(o: Offer, medianShipping: number): { cents: number; es
   return { cents: Math.round((o.price_cents + ship) * (1 + o.tax_rate)), estimated: o.shipping_cents === null };
 }
 
+// soldIds are `site:listing_id` keys (from watch, a webhook or a re-read).
 export function availableNow(offers: Offer[], opts: { shipTo?: string; soldIds?: Set<string>; medianShipping: number; retailPhashes?: string[] }): OfferRow[] {
-  // A listing sold or out of stock between reads is dropped: a sold listing never shows as available.
-  const live = offers.filter(o => !o.sold && o.stock !== 0 && !opts.soldIds?.has(o.id) && (!opts.shipTo || !o.ships_to || o.ships_to.includes(opts.shipTo)));
+  // A listing sold or out of stock between reads is dropped, every copy of it: the index copy and the fresh read share
+  // site:listing_id, and one sold copy drops them all. A sold listing never shows as available.
+  const key = (o: Offer) => `${o.site}:${o.listing_id}`;
+  const dead = new Set(offers.filter(o => o.sold || o.stock === 'out_of_stock' || opts.soldIds?.has(key(o))).map(key));
+  const live = offers.filter(o => !dead.has(key(o)) && (!opts.shipTo || !o.ships_to || o.ships_to.includes(opts.shipTo)));
   const rows: OfferRow[] = dedupe(live, { retailPhashes: opts.retailPhashes }).map(c => {
     const ms = c.members as Offer[];
     const priced = ms.map(o => ({ o, d: delivered(o, opts.medianShipping) })).sort((a, b) => a.d.cents - b.d.cents);
     const best = priced[0]!;
-    return { ...best.o, delivered_cents: best.d.cents, shipping_estimated: best.d.estimated, also_on: ms.filter(o => o !== best.o).map(o => o.site) };
+    return { ...best.o, delivered_cents: best.d.cents, shipping_estimated: best.d.estimated, also_on: [...new Set(ms.map(o => o.site))].filter(x => x !== best.o.site) };
   });
   return rows.sort((a, b) => a.delivered_cents - b.delivered_cents);
 }
