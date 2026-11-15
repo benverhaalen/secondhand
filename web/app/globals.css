@@ -23,7 +23,7 @@ button, .secondary { min-height: var(--control-min); padding: var(--s-3) var(--s
 .primary { background: var(--ink); color: var(--page); box-shadow: var(--pill-glow); min-width: var(--photo-card); }
 .secondary { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); background: var(--gray); color: var(--ink); text-decoration: none; }
 h1, h2, h3, p, figure { margin: 0; }
-h1, h2 { font-family: var(--font-display); font-weight: var(--w-display); text-wrap: balance; }
+h1, h2 { font-family: var(--font-text); font-weight: var(--w-text); text-wrap: balance; }
 h1 { font-size: var(--t-36); line-height: var(--lh-36); letter-spacing: var(--tr-36); }
 h2 { font-size: var(--t-36); line-height: var(--lh-36); letter-spacing: var(--tr-36); }
 h3 { font-size: var(--t-18); line-height: var(--lh-18); font-weight: var(--w-text); }

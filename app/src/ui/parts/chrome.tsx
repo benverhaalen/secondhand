@@ -54,7 +54,7 @@ function Wordmark() {
   return (
     <View {...mark('wordmark', { fit: 'content' })} accessibilityRole="header" style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2, height: type.t21.lineHeight + 2 * room }}>
       <BrandMark />
-      <Txt role="title">secondhand</Txt>
+      <Txt role="wordmark">secondhand</Txt>
     </View>
   );
 }
