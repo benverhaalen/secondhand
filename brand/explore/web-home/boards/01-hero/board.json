@@ -1,0 +1,10 @@
+{
+  "title": "Section 1, the hero",
+  "question": "What does the first screen show besides the line?",
+  "purpose": "In three seconds a visitor knows what it is, that it is real, and what to do next.",
+  "variants": [
+    { "id": "a", "label": "A. The line alone on the field" },
+    { "id": "b", "label": "B. The line beside the product working" },
+    { "id": "c", "label": "C. The line above the scene" }
+  ]
+}

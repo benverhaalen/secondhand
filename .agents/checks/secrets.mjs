@@ -38,9 +38,12 @@ export function secrets(root, { files }) {
   const out = [];
   for (const f of files) {
     if (/(^|\/)\.env(\.|$)/.test(f) && !f.endsWith('.example')) out.push(err(f, '.env files are never committed; add an .env.example with names only'));
-    if (/\.(png|jpe?g|gif|webp|svg|ico|pdf|woff2?|ttf|otf|m4a|mp4|zip)$/i.test(f)) continue;
+    // The brand faces are licensed and this repo is public: they live in the BRAND_FONTS secret and fonts/ (ignored) only.
+    if (/\.(woff2?|ttf|otf)$/i.test(f)) { out.push(err(f, 'a font file is committed: the brand faces are licensed, so keep them in fonts/ (ignored) or the BRAND_FONTS secret')); continue; }
+    if (/\.(png|jpe?g|gif|webp|ico|pdf|m4a|mp4|zip)$/i.test(f)) continue;
     const text = read(root, f) ?? '';
     for (const [name, re] of KEYS) if (re.test(text)) out.push(err(f, `looks like a ${name}; remove it and rotate it`));
+    if (/data:(?:font\/|application\/(?:x-)?font)[^;,]*;base64,/i.test(text)) out.push(err(f, 'embeds a font as data: the brand faces are licensed, so draw pages that inject them from a temp folder, never into the repo'));
     if (f.startsWith('app/')) out.push(...shipped(f, text));
     if (f.startsWith('.agents/vendor/')) continue; // third-party text kept unchanged: keys above still fail, sample emails don't
     for (const m of text.matchAll(/[\w.+-]+@[A-Za-z][\w-]*(?:\.[\w-]+)*\.[A-Za-z]{2,}\b/g))

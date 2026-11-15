@@ -17,6 +17,7 @@ __pycache__/
 
 # local state of the Databricks skills installer
 .databricks/
+brand/explore/web-home/boards/*/out/*.html
 
 # local Python env, local browser profiles, a build worker's own report
 .venv/

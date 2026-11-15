@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>secondhand</title>
+<!-- The signed-out Home, round 2 of the website proposal: seven sections, Cleo's spatial layout, our field for its sky.
+     A mock built from brand tokens to judge the structure, not the build (the build is the Expo web app).
+     The scene is a generated mock photo (research/cross-cutting/ben/website/photos, Seedream, Art. 8.4), never a real customer or listing.
+     Every amount is from spec/examples or research/cross-cutting/ben/pitch-evidence.md; the proof numbers are empty
+     slots until the benchmark thread measures them (Art. 12.6).
+     Check: node scripts/brand-check.mjs brand/explore/web-home/home.html --medium web -->
+<link rel="stylesheet" href="../../tokens.css">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<main>
+  <!-- 1. Hero: what it is in three seconds. The switch changes the promise and the button, nothing else. -->
+  <section class="hero">
+    <header>
+      <div class="wrap">
+        <a class="wordmark" href="#">secondhand</a>
+        <nav aria-label="Pages">
+          <a href="#how">How it works</a><a href="#fees">Sites and fees</a><a href="#data">The data</a><a href="#faq">FAQ</a>
+        </nav>
+        <a class="signin" href="#">Sign in</a>
+      </div>
+    </header>
+    <div>
+      <div class="field center" data-field>
+        <div class="switch" role="group" aria-label="I am">
+          <button type="button" aria-pressed="true" data-mode="sell">Selling</button>
+          <button type="button" aria-pressed="false" data-mode="buy">Buying</button>
+        </div>
+        <h1 class="hero-t">Your second hand, for everything secondhand.</h1>
+        <p class="lead" id="promise">Take one photo. It's priced, posted on five sites and sold for you.</p>
+        <div class="act">
+          <a class="pill glow" id="try" href="#">Try it</a>
+          <div class="logos" aria-label="Posts to">
+            <img src="../../../assets/platforms/square/ebay.png" alt="eBay">
+            <img src="../../../assets/platforms/square/depop.png" alt="Depop">
+            <img src="../../../assets/platforms/square/poshmark.png" alt="Poshmark">
+            <img src="../../../assets/platforms/square/mercari.png" alt="Mercari">
+            <img src="../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. The scene: one wide photo of a move, the product's cards inside it, one per state color. -->
+  <section class="scene" aria-label="What it looks like">
+    <div class="wrap">
+      <figure class="panel scene-photo reveal" data-item>
+        <img src="../../../research/cross-cutting/ben/website/photos/move__empty.jpg" alt="A hallway mid-move with a brass lamp, a brown work jacket and a wooden chair set out to sell" width="2000" height="1333">
+        <div class="stack">
+          <div class="card" data-part="scene-card">
+            <div class="row"><span class="tag live">Live</span><span class="logos"><img src="../../../assets/platforms/square/ebay.png" alt="eBay"><img src="../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace"><img src="../../../assets/platforms/square/mercari.png" alt="Mercari"></span></div>
+            <p class="why" data-fill="text">Brass desk lamp, posted on 3 sites</p>
+          </div>
+          <div class="card need" data-part="scene-card">
+            <div class="row"><span class="tag need">Offer</span><img src="../../../assets/platforms/square/depop.png" alt="Depop" width="20" height="20"><span class="keep" data-fill="amount">You keep $77.35</span></div>
+            <p class="why" data-fill="text">A buyer offered $85. Your lowest is $70.</p>
+            <div class="acts"><button class="pill small" type="button">Accept $85</button><button class="ghost" type="button">Counter $92</button></div>
+          </div>
+          <div class="card" data-part="scene-card">
+            <div class="row"><span class="tag sold">Sold</span><img src="../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace" width="20" height="20"></div>
+            <p class="why" data-fill="text">Wood chair. Pickup today at 6.</p>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 3. Why: the problem in one case. Source: research/cross-cutting/ben/pitch-evidence.md -->
+  <section class="center" aria-labelledby="why-t">
+    <div class="wrap reveal">
+      <h2 class="section-t" id="why-t">A $20 shirt pays you $3.</h2>
+      <div class="versus">
+        <div class="side">
+          <p>Send it to a consignment bag</p>
+          <p class="amount">$3</p>
+          <p class="src">ThredUp pays 15% of a $20 sale. <a href="https://www.thredup.com/cleanout/guide#earnings">Their table</a></p>
+        </div>
+        <div class="side">
+          <p>Sell it yourself on eBay</p>
+          <p class="amount">$16.88</p>
+          <p class="src">After fees, if you shoot, write, price, post, answer and ship it. <a href="https://www.ebay.com/help/selling/fees-credits-invoices/selling-fees?id=4822">Their fees</a></p>
+        </div>
+      </div>
+      <p class="after">secondhand does the second column's work for you.</p>
+    </div>
+  </section>
+
+  <!-- 4. How: the simplest version of the product. Each step opens How it works. -->
+  <section class="center" id="how" aria-labelledby="how-t">
+    <div class="wrap">
+      <h2 class="section-t reveal" id="how-t">One photo in. Money out.</h2>
+      <div class="steps" style="text-align:left">
+        <div class="step reveal">
+          <div class="shot" data-item><img src="../../../assets/demo-items/real/marquette-tee/01_cover.jpg" alt="Gold Marquette 74 tee flat on concrete"></div>
+          <p class="n">1</p><p class="feature-t">Take a photo. It reads the tag and the flaws.</p>
+        </div>
+        <div class="step reveal">
+          <div class="shot" data-item><img src="../../../assets/demo-items/real/chico-hoodie/01_cover.jpg" alt="Faded crimson Chico State hoodie flat on concrete">
+            <div class="chips">
+              <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../assets/platforms/square/ebay.png" alt="eBay"><span>eBay</span><span class="tag live">Live</span></div>
+              <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../assets/platforms/square/depop.png" alt="Depop"><span>Depop</span><span class="tag live">Live</span></div>
+              <div class="chip" data-part="site-chip" data-fit="content"><img src="../../../assets/platforms/square/poshmark.png" alt="Poshmark"><span>Poshmark</span><span class="tag live">Live</span></div>
+            </div>
+          </div>
+          <p class="n">2</p><p class="feature-t">It's priced from what sold and posted everywhere.</p>
+        </div>
+        <div class="step reveal">
+          <div class="shot" data-item><img src="../../../assets/demo-items/real/carhartt-pants/01_cover.jpg" alt="Faded black Carhartt work pants flat on concrete">
+            <div class="chips"><div class="chip" data-part="site-chip" data-fit="content"><span class="tag need">Needs you</span><span>Ship by Monday</span></div></div>
+          </div>
+          <p class="n">3</p><p class="feature-t">Buyers are handled. You decide the few things that matter.</p>
+        </div>
+      </div>
+      <p style="margin-top:var(--s-7)"><a class="more" href="#">How it decides on its own, and when it asks you</a></p>
+    </div>
+  </section>
+
+  <!-- 5. Proof: measured on our own runs. Empty until the benchmark lands; never a made-up number (Art. 12.6). -->
+  <section class="center" id="data" aria-labelledby="proof-t">
+    <div class="wrap reveal">
+      <h2 class="section-t" id="proof-t">Measured, not promised.</h2>
+      <div class="proof" style="text-align:left">
+        <div class="num" data-part="proof"><p class="v" data-fill="amount" aria-label="Not measured yet"><span class="slot"></span></p><p>From photo to live</p></div>
+        <div class="num" data-part="proof"><p class="v" data-fill="amount" aria-label="Not measured yet"><span class="slot"></span></p><p>Taken down everywhere after a sale</p></div>
+        <div class="num" data-part="proof"><p class="v" data-fill="amount" aria-label="Not measured yet"><span class="slot"></span></p><p>Sold prices checked for each price</p></div>
+        <div class="num" data-part="proof"><p class="v" data-fill="amount" aria-label="Not measured yet"><span class="slot"></span></p><p>Buyer messages answered for you</p></div>
+      </div>
+      <p style="margin-top:var(--s-7)"><a class="more" href="#">How we measure, and the data behind it</a></p>
+    </div>
+  </section>
+
+  <!-- 6. Buying: use it now. The example is spec/examples/buy.json (want_3ss, match mt_77). -->
+  <section class="center" aria-labelledby="buy-t">
+    <div class="wrap reveal">
+      <h2 class="section-t" id="buy-t">Know what it's worth before you pay.</h2>
+      <div class="worth" style="text-align:left">
+        <form class="ask" onsubmit="return false"><input aria-label="A link or what it is" placeholder="Paste a link or say what it is"><button class="pill small" type="submit">Check</button></form>
+        <div class="card" data-item data-part="match" data-fit="content" style="height:80px">
+          <div class="row"><img class="thumb" src="../../../assets/demo-items/carhartt-jacket.jpg" alt="Brown Carhartt Detroit jacket"><div style="min-width:0;flex:1"><p class="name" data-fill="title">Carhartt Detroit Jacket J97, XL</p><p class="keep" data-fill="amount">$72 on Mercari, $81.50 delivered</p></div><span class="tag fair">Fair</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Close: the doubt that's left. Answers follow spec/features/sold.md and the photo levels. -->
+  <section class="center" id="faq" aria-labelledby="faq-t">
+    <div class="wrap reveal">
+      <h2 class="section-t" id="faq-t">Questions</h2>
+      <div class="faq" style="text-align:left">
+        <details><summary>What if it sells on two sites at once?</summary><p>It comes down everywhere else as soon as one sells. If two buyers pay in the same minute, you pick which sale to keep, and we show what cancelling the other costs on that site.</p></details>
+        <details><summary>Will my photos be changed?</summary><p>Only if you choose it. True color uses no AI at all. Touch-ups are labeled, tags and flaws are never touched, and your original is always kept.</p></details>
+        <details><summary>Do I need an account on every site?</summary><p>No. Connect the ones you have. It posts where you're connected and tells you what you'd keep on each.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <nav class="pages" aria-label="More">
+      <a href="#how">How it works</a><a href="#fees">Sites and fees</a><a href="#data">The data</a><a href="#faq">FAQ</a>
+      <a href="#">Accounts and privacy</a><a href="#">Pricing</a><a href="#">Status</a><a href="#">About and what's next</a>
+    </nav>
+    <p class="big">secondhand</p>
+  </div>
+</footer>
+
+<script>
+  // The hero switch: one promise and one button per mode. Nothing else on the page changes.
+  const copy = {
+    sell: ['Take one photo. It’s priced, posted on five sites and sold for you.', 'Try it'],
+    buy: ['Paste any listing. See what it’s worth and what to pay.', 'Check a price'],
+  };
+  const promise = document.getElementById('promise'), tryIt = document.getElementById('try');
+  document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.switch button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    promise.style.opacity = 0;
+    setTimeout(() => { [promise.textContent, tryIt.textContent] = copy[b.dataset.mode]; promise.style.opacity = 1; }, 120);
+  }));
+</script>
+</body>
+</html>
