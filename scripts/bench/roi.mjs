@@ -81,7 +81,8 @@ export function perMau(s) {
   const plan = s.plan_share * v('plan_price');
   const listing = s.items_per_mau * (v('identify') + v('post_and_delist'));
   const studioCost = s.items_per_mau * s.studio_attach * studioCostPerItem();
-  const watching = s.depop_partner_api ? 0 : s.depop_account_days_per_mau * v('depop_live_day');
+  // depop_live_day is priced at a 15-minute sweep; cost scales with sweeps a day (product/cadence.md proposes 120 min while live).
+  const watching = s.depop_partner_api ? 0 : s.depop_account_days_per_mau * v('depop_live_day') * 15 / (s.depop_live_min ?? 15);
   const search = s.searches_per_mau * v('search');
   const platform = v('platform_per_mau');
   const revenue = buy + studio + plan, cost = listing + studioCost + watching + search + platform;

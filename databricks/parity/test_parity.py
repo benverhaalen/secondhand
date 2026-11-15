@@ -58,3 +58,42 @@ def test_workspace_job_reads_committed_fixtures_and_serializes_table_values():
     assert all(r['checked_at'] == checked_at and r['code_sha'] == 'fixture_build' for r in rows)
     assert json.loads(rows[0]['ts_value']) == results[0]['ts_value']
     assert json.loads(rows[0]['py_value']) == results[0]['py_value']
+
+
+def test_identity_variants_share_basis_but_have_distinct_citation_ids():
+    fixtures, _ = inputs()
+    cases = {c['case']: c for c in fixtures}
+    values = [proof_case(cases[name]) for name in ['ordinary', 'citation_metric', 'citation_filters', 'citation_param_version']]
+    assert len({v['hash'] for v in values}) == 1
+    assert len({v['answer']['citation']['id'] for v in values}) == 4
+
+
+def test_refusals_are_compared_as_errors_and_old_cases_remain():
+    fixtures, ts = inputs()
+    original = {'ordinary', 'unsorted_ids', 'missing_price', 'weights', 'astral_utf16', 'bad_date', 'empty',
+                'too_few', 'stale', 'too_wide', 'shown', 'guard_precedence', 'zero_weights', 'iso_offsets',
+                'missing_source', 'empty_id', 'guard_boundary', 'submillisecond_truncation',
+                'end_of_day_iso', 'short_month_normalization'}
+    assert original <= {c['case'] for c in fixtures}
+    results = {r['case']: r['value'] for r in ts}
+    assert results['duplicate_ids_basisHash']['error'] == {'name': 'RangeError', 'message': 'duplicate basis id obs_0'}
+    assert results['bad_now_answer'] == {'ok': False, 'refused': 'no_basis'}
+    assert results['future_date_answer'] == {'ok': False, 'refused': 'no_basis'}
+
+
+def test_binary64_numbers_can_be_printed_as_integers_without_losing_parity():
+    assert compare([{'case': 'binary64'}], [{'case': 'binary64', 'value': 1000000000000000100}],
+                   lambda _: 1.0000000000000001e18)[0]['equal']
+    assert not compare([{'case': 'cents'}], [{'case': 'cents', 'value': 9007199254740991}],
+                       lambda _: 9007199254740990)[0]['equal']
+
+
+def test_declared_fixture_errors_match_typescript_and_python():
+    fixtures, ts = inputs()
+    expected = {row['case']: row['value'] for row in ts}
+    for case in fixtures:
+        if 'expect_error' in case:
+            error = {'error': {'name': 'RangeError', 'message': case['expect_error']}}
+            assert expected[case['case']] == error, case['case']
+            assert proof_case(case) == error, case['case']
+    assert expected['undefined_dropped'] == expected['undefined_absent']
