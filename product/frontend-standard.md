@@ -50,7 +50,7 @@ A beautiful screen with a dead control fails. So does a working screen that drif
 
 ### Levers for the steered designs
 
-Ben: two designs "not specifically prompted to look a certain way", and the others told "to maximize different levers" ([words](words.md#2026-11-15-bold-with-a-purpose-alive-and-levers-for-ideation)). The list is an *agent proposal* from [bold-and-alive.md](../research/cross-cutting/ben/bold-and-alive.md). One lever per design, never two. Each names a change in structure, because a model answers an adjective with decoration.
+Ben: two designs "not specifically prompted to look a certain way", and the others told "to maximize different levers" ([words](words.md#2026-11-15-a-brand-system-for-anything-alive-and-bold-with-purpose-code-that-knows-each-app-and-knowing-when-things-sell)). The list is an *agent proposal* from [bold-and-alive.md](../research/cross-cutting/ben/bold-and-alive.md). One lever per design, never two. Each names a change in structure, because a model answers an adjective with decoration.
 
 | Lever | The line the call gets | It must keep | Use on |
 |---|---|---|---|

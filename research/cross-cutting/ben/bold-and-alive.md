@@ -1,7 +1,7 @@
 # What makes a design bold on purpose, and a signed-out site alive?
 Researched 2026-11-15 by Ben (Claude Code agents, UI thread; a nine-agent workflow: four questions, each rechecked by a second agent that reopened every source, then one synthesis). Feature: cross-cutting.
 
-Ben, 01:11: "making bold decisions with a purpose to create something that feels unique. rather than creating a generic ui. i think this is something else missing ... but bold moves need purpose too", and "on the website i want it to be moving. feel alive" ([words](../../../product/words.md#2026-11-15-bold-with-a-purpose-alive-and-levers-for-ideation)).
+Ben, 01:11: "making bold decisions with a purpose to create something that feels unique. rather than creating a generic ui. i think this is something else missing ... but bold moves need purpose too", and "on the website i want it to be moving. feel alive" ([words](../../../product/words.md#2026-11-15-a-brand-system-for-anything-alive-and-bold-with-purpose-code-that-knows-each-app-and-knowing-when-things-sell)).
 
 Every design line here is an *agent proposal*. What it changed is in [frontend-standard §2 and §3](../../../product/frontend-standard.md#2-build-the-loop).
 

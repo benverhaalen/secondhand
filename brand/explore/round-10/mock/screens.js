@@ -77,7 +77,7 @@
 
   // The sale: the one time the field fills the screen (L26). One Clofie headline, and the amount at 50 in the text face.
   const sold = () => phone('fixed sold', `<i class="fieldbg field"></i>${os()}${nav('', ib('close', 'Close'))}${V(32)}
-    ${line(`${ph('brass-lamp', 'p160', 'Brass desk lamp')}${V(24)}<h1 class="h36">Sold</h1>${V(8)}<div class="ln mid">${logo('ebay')}${H(8)}<span class="t15 one">Brass desk lamp</span></div>${V(32)}
+    ${line(`${ph('brass-lamp', 'p240', 'Brass desk lamp')}${V(24)}<h1 class="h36">Sold</h1>${V(8)}<div class="ln mid">${logo('ebay')}${H(8)}<span class="t15 one">Brass desk lamp</span></div>${V(32)}
       <div class="not-receipt"><div class="t15">You keep</div>${V(4)}<div class="a50">$31.40</div></div>
       <div class="only-receipt">${sum('', [['Sold for', '$36.81'], [fee, '−$5.41']], ['You keep', '$31.40'], true)}</div>`)}
     <div class="grow"></div>
@@ -86,6 +86,7 @@
 
   window.SH = {
     screens: { today, sell, item: itemPage, sold },
+    parts: { tabs: cur => phone('strip', tabs(cur)) },
     titles: { today: 'Today', sell: 'Sell', item: 'An item', sold: 'A sale' },
     // key, name, what it is, and the screens it shows on
     touches: [

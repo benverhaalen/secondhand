@@ -61,6 +61,23 @@ test('secrets: keys, tokens and tracked .env files fail', () => {
   assert.match(run(secrets, { 'b.md': 'mail ' + 'someone' + '@gmail.com' }).map(o => o.msg).join(), /personal data/);
 });
 
+test('secrets: a secret the shipped app could carry fails; server routes and public names pass', () => {
+  const bad = errors(run(secrets, {
+    'app/src/sell/price.ts': 'const k = process.env.EXPO_PUBLIC_OPENROUTER_API_KEY;\n',
+    'app/src/app/index.tsx': "import { health } from '../edge/databricks';\n",
+    'app/app.json': '{"expo":{"extra":{"tregToken":"x"}}}',
+  }));
+  assert.match(bad, /price\.ts.*EXPO_PUBLIC_OPENROUTER_API_KEY/);
+  assert.match(bad, /index\.tsx.*edge/);
+  assert.match(bad, /app\.json.*tregToken/);
+  assert.deepEqual(run(secrets, {
+    'app/src/app/v1/health+api.ts': "import { health } from '../../edge/databricks';\n",
+    'app/src/edge/databricks.ts': 'const t = process.env.DATABRICKS_TOKEN;\n',
+    'app/src/app/index.tsx': 'const u = process.env.EXPO_PUBLIC_API_URL, p = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;\n',
+    'app/app.json': '{"expo":{"extra":{"eas":{"projectId":"e9"},"router":{}}}}',
+  }), []);
+});
+
 test('ui: raw colors, literal fonts and em dashes in app code fail; tokens pass', () => {
   const bad = run(ui, { 'app/Today.tsx': 'const s = { color: "#E63339", fontFamily: "Inter" };\nexport const T = () => <h1>Sold — nice</h1>;\n' });
   const e = errors(bad);
