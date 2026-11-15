@@ -17,7 +17,7 @@ test('standards U15: one size set two ways on a screen fails, and across two scr
 test('standards U16: two parts closer than 8 or overlapping fail; a row of one small part at 4 passes', () => {
   assert.match(ids({ stacks: [{ in: 'card', row: false, kinds: ['tag', 'amount'], gaps: [4], at: 100 }] }), /U16 \[tag\] and \[amount\] are 4 apart/);
   assert.match(ids({ stacks: [{ in: 'card', row: false, kinds: ['tag', 'amount'], gaps: [-3], at: 100 }] }), /U16 .*overlap by 3/);
-  assert.equal(ids({ stacks: [{ in: 'tile', row: true, kinds: ['site-badge', 'site-badge'], gaps: [4], at: 100 }, { in: 'card', row: false, kinds: ['tag', null], gaps: [2], at: 1 }] }), '');
+  assert.equal(ids({ stacks: [{ in: 'tile', row: true, kinds: ['site-badge', 'site-badge'], gaps: [4], at: 100 }, { in: 'card', row: false, kinds: ['tag', null], gaps: [2], at: 1 }, { in: 'screen', row: false, kinds: ['keep-row', 'keep-row'], gaps: [0], at: 464 }] }), '');
 });
 
 test('standards U17: a gap off the 4 grid fails, and one pair of parts at two distances in one stack fails', () => {

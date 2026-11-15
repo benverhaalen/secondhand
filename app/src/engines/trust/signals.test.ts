@@ -9,7 +9,7 @@ const store = memoryStore();
 declareTrust(store);
 const p = (n: string) => store.read(n, {}).value as number;
 const ctx = (over: Partial<Ctx> = {}): Ctx => ({
-  buyer: { age_days: 400, ratings: 20, good_purchases: 2 }, banner: false, urgent: false, price_usd: 100,
+  buyer: { age_days: 400, ratings: 20, good_purchases: 2 }, banner: false, urgent: false, price_cents: 10000,
   printHits: { sellers: 0, buyers: 0 }, sameTextListings10m: 0, p, ...over,
 });
 const msg = (text: string, n = 1, site: Msg['site'] = 'facebook'): Msg => ({ id: 'm', thread_id: 't', site, n, text, at: '2026-11-14T10:00:00Z' });
@@ -52,7 +52,7 @@ test('link_early fires on message 1 or 2 only; claims-to-be-payment is its own c
 });
 
 test('account signals: new account, good history, banner, urgency, burst', () => {
-  const r = codeSignals(msg('hi', 1), ctx({ buyer: { age_days: 9, ratings: 0, good_purchases: 0 }, banner: true, urgent: true, price_usd: 300, sameTextListings10m: 5 }));
+  const r = codeSignals(msg('hi', 1), ctx({ buyer: { age_days: 9, ratings: 0, good_purchases: 0 }, banner: true, urgent: true, price_cents: 30000, sameTextListings10m: 5 }));
   const on = (s: string) => r.find((x) => x.signal === s)?.present;
   assert.deepEqual([on('new_account'), on('site_banner'), on('urgency_no_question'), on('burst_same_text'), on('good_history')], [true, true, true, true, false]);
   assert.equal(codeSignals(msg('hi'), ctx({ buyer: { age_days: 900, ratings: 50, good_purchases: 10 } })).find((x) => x.signal === 'good_history')?.present, true);

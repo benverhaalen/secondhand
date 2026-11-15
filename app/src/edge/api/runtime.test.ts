@@ -117,7 +117,7 @@ test('runtime writes use the durable site ledger, dedupe across restart, and kee
   const r = createRuntime(fileStore(path), log(), { adapters: [adapter] });
   const a = r.store.get('account', 'usr_8f2k', 'acc_dp1')!;
   r.store.put('account', { ...a, token_ref: 'fixture/session' });
-  const args = { account_id: a.id, operation_id: 'op-once', slug: 'fixture-listing' };
+  const args = { account_id: a.id, person_id: 'usr_8f2k', operation_id: 'op-once', slug: 'fixture-listing' };
   assert.equal((await r.harness.call('depop', 'end', args)).ok, false);
   assert.equal(r.store.systemRows('operation').length, 0);
   await r.vault.put('fixture/session', { cookies: [], origins: [] });
@@ -149,7 +149,7 @@ test('site services label writes live only for the enabled site', async t => {
     const a = r.store.get('account', 'usr_8f2k', id)!;
     r.store.put('account', { ...a, token_ref: `fixture/${site}` });
     await r.vault.put(`fixture/${site}`, { cookies: [], origins: [] });
-    await r.harness.call(site, 'end', { account_id: id, operation_id: `op-${site}` });
+    await r.harness.call(site, 'end', { account_id: id, person_id: 'usr_8f2k', operation_id: `op-${site}` });
     assert.equal(r.store.get('operation', a.user_id, `op-${site}`)?.data, site === 'depop' ? 'live:depop' : 'synthetic');
   }
 });
@@ -173,7 +173,7 @@ for (const liveSites of [undefined, '', 'depop']) test(`write guard enforces the
     r.store.put('account', { id: account_id, user_id: 'usr_guard', site, token_ref: `fixture/${site}` });
     await r.vault.put(`fixture/${site}`, { cookies: [], origins: [] });
     for (const verb of WRITE_VERBS) for (const dry of [false, true, undefined]) {
-      const args = Object.freeze({ account_id, operation_id: `guard-${site}-${verb}-${dry}`, ...(dry !== undefined && { dry }) });
+      const args = Object.freeze({ account_id, person_id: 'usr_guard', operation_id: `guard-${site}-${verb}-${dry}`, ...(dry !== undefined && { dry }) });
       const result = await r.harness.call(site, verb, args);
       assert.ok(result.ok, JSON.stringify(result));
       const received = seen.get(`${site}:${verb}:${args.operation_id}`)!;
@@ -304,6 +304,52 @@ test('composed watcher confirms a sale and ends the other stored listing through
 process.env.SECONDHAND_LIVE_SITES = '';
 
 const log = () => createLog({ src: 'test', build: 'test', sink: memorySink() });
+test('composed watcher relinks an expired account and resumes it', async () => {
+  const now = Date.parse('2026-11-15T12:00:00Z');
+  let expired = true;
+  const adapters: Adapter[] = (['read_listings', 'read_offers', 'read_inbox', 'read_orders'] as const).map(verb => ({
+    ...fakeAdapter('depop', verb), async run() {
+      return expired ? fail('auth_expired', 'fixture expiry', { do: 'relink', site: 'depop' }) : { ok: true as const, data: [] };
+    },
+  }));
+  const r = createRuntime(memoryStore(), log(), { adapters, now: () => now });
+  r.store.put('account', { id: 'acc_watch', user_id: 'usr_watch', site: 'depop', token_ref: 'fixture/watch', next_check_at: new Date(now).toISOString() });
+  await r.vault.put('fixture/watch', { cookies: [], origins: [] });
+  await r.watcher.tick();
+  assert.equal(r.store.decisions({ user_id: 'usr_watch', subject: 'acc_watch', kind: 'relink', state: 'open' }).length, 1, 'expired sign-in raises one relink decision');
+  assert.equal(r.store.get('account', 'usr_watch', 'acc_watch')?.paused, 'auth_expired');
+  expired = false;
+  await r.watcher.relinked('acc_watch');
+  assert.equal(r.store.decisions({ user_id: 'usr_watch', subject: 'acc_watch', kind: 'relink', state: 'open' }).length, 0, 'relink clears the decision');
+  assert.equal(r.store.get('account', 'usr_watch', 'acc_watch')?.paused, null, 'relink resumes the account');
+  assert.deepEqual((await r.watcher.tick()).ran, ['acc_watch']);
+  await r.watcher.cleared('acc_watch');
+  assert.deepEqual((await r.watcher.tick()).ran, ['acc_watch'], 'cleared resolves the account and schedules an immediate sweep');
+});
+
+test('system accounts are supplied only to the watcher', () => {
+  const source = readFileSync(new URL('./runtime.ts', import.meta.url), 'utf8');
+  const uses = source.split('\n').filter(line => /\bsystemAccounts\b/.test(line)).map(line => line.trim());
+  assert.equal(uses.length, 2, 'system accounts must occur only at their declaration and watcher injection');
+  assert.match(uses[0], /^const systemAccounts\b/);
+  assert.match(uses[1], /^const watcher = createWatcher\(\{.*\baccounts: systemAccounts\b/);
+});
+
+test('account lookup and harness gate enforce the asking person', async () => {
+  const adapter = fakeAdapter('depop', 'search');
+  const r = createRuntime(memoryStore(), log(), { adapters: [adapter] });
+  r.store.put('account', { id: 'acc_owner', user_id: 'owner', site: 'depop', token_ref: 'fixture/owner' });
+  await r.vault.put('fixture/owner', { cookies: [], origins: [] });
+  assert.equal(await r.accounts.byId('acc_owner', 'other'), undefined, 'another person cannot look up the account');
+  assert.equal(await r.accounts.byId('acc_owner'), undefined, 'lookup requires a person');
+  assert.equal((await r.accounts.byId('acc_owner', 'owner'))?.person_id, 'owner');
+  for (const args of [{ account_id: 'acc_owner', person_id: 'other' }, { account_id: 'acc_owner' }]) {
+    const result = await r.harness.call('depop', 'search', args);
+    assert.ok(!result.ok && result.error.code === 'policy_refused', 'gate refuses another person or a missing person');
+  }
+  assert.equal((await r.harness.call('depop', 'search', { account_id: 'acc_owner', person_id: 'owner' })).ok, true);
+});
+
 test('runtime shares the route Store and never links a row without vault state', async () => {
   const { store } = await import('./store.ts');
   assert.equal(runtime.store, store);
@@ -311,11 +357,11 @@ test('runtime shares the route Store and never links a row without vault state',
   assert.equal(await r.accounts.byId('acc_dp1'), undefined);
   const a = r.store.get('account', 'usr_8f2k', 'acc_dp1')!;
   r.store.put('account', { ...a, token_ref: 'test/session' });
-  assert.equal(await r.accounts.byId(a.id), undefined);
+  assert.equal(await r.accounts.byId(a.id, 'usr_8f2k'), undefined);
   await r.vault.put('test/session', { cookies: [], origins: [] });
-  assert.equal((await r.accounts.byId(a.id))?.account_id, a.id);
+  assert.equal((await r.accounts.byId(a.id, 'usr_8f2k'))?.account_id, a.id);
   await r.vault.delete('test/session');
-  assert.equal(await r.accounts.byId(a.id), undefined);
+  assert.equal(await r.accounts.byId(a.id, 'usr_8f2k'), undefined);
 });
 
 test('unlinked account is policy_refused before any adapter runs; offline reads are no_route', async () => {
