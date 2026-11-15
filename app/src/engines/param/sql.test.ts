@@ -4,7 +4,6 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { VersionConflict } from './param.ts';
 import { sqlStore, type Tx } from './sql.ts';
-// @ts-expect-error plain .mjs
 import { migrate } from '../../../../db/migrate.mjs';
 
 const { PGlite } = createRequire(fileURLToPath(new URL('../../../../db/package.json', import.meta.url)))('@electric-sql/pglite');

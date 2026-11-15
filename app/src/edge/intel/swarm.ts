@@ -102,7 +102,7 @@ export function availableNow(offers: Offer[], opts: { shipTo?: string; soldIds?:
 }
 
 // One offer per relation and condition, best first (market-insight.md M26 step 4); the rest sit behind "other stores".
-export function bestByRelation(rows: OfferRow[]): OfferRow[] {
+export function bestByRelation<T extends OfferRow>(rows: T[]): T[] {
   const seen = new Set<string>();
   return rows.filter(r => { const k = `${r.relation}|${r.condition}`; if (seen.has(k)) return false; seen.add(k); return true; });
 }

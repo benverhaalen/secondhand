@@ -142,7 +142,7 @@ test('labelled set: the rules path on 60+ questions across all kinds, accuracy r
 test('fuzz: 1000 random invalid Jev answers never yield a non-general kind', async () => {
   let s = 12345;
   const rnd = () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296;
-  const pick = <T>(xs: T[]) => xs[Math.floor(rnd() * xs.length)]!;
+  const pick = <T>(xs: readonly T[]) => xs[Math.floor(rnd() * xs.length)]!;
   const bogus = () => pick<unknown>([null, 7, 'trend', [], ['trend'], true, {}, { choice: 7 }, { choice: 'nope' }, { choice: null }, { choice: ['trend'] }]);
   const mk = (): unknown => {
     const kind = pick(QUESTION_KINDS);

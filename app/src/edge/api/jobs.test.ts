@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test, beforeEach } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
+import type { JobRow } from '../events/ports.ts';
 import { deps, route } from './http.ts';
 import { EXAMPLES, STREAMS, example } from './examples.ts';
 import { getJob, jobEvents, memoryJobs, seedExamples, streamOpts, userStream, type JobStore } from './jobs.ts';
@@ -32,7 +33,7 @@ const readAll = async (res: Response) => {
   for (;;) { const c = await r.read(); if (c.done) return text; text += dec.decode(c.value); }
 };
 const ids = (text: string) => [...text.matchAll(/^id: (\d+)$/gm)].map((m) => Number(m[1]));
-const job = (id: string, extra = {}) => ({ id, kind: 'identify', state: 'running', stages: [], ...extra });
+const job = (id: string, extra: Partial<JobRow> = {}): Pick<JobRow, 'id' | 'kind' | 'state' | 'stages'> => ({ id, kind: 'identify', state: 'running', stages: [], ...extra });
 
 test('seeded example jobs answer their examples, and the stream formats frames as id/event/data', async () => {
   const h = handlers(seeded());

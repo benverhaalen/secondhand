@@ -6,7 +6,8 @@ import type { EventKind, EventRow, Site } from './event.ts';
 // ---- names (product.md §4 job kinds, §5 decision kinds; NEW ones are asked of the orchestrator) ----
 export type JobKind =
   | 'post' | 'delist' | 'send_message' | 'poll_inbox' | 'poll_orders' | 'reconcile' | 'score' | 'check_due'
-  | 'answer_offer' | 'make_offer' | 'sweep' | 'relink'; // last four NEW
+  | 'answer_offer' | 'make_offer' | 'sweep' | 'relink' // these four NEW
+  | 'identify' | 'valuate' | 'search';
 export type JobState = 'queued' | 'running' | 'done' | 'failed';
 export type Mode = 'auto' | 'ask' | 'locked';
 
@@ -80,7 +81,7 @@ export interface Store {
   // FOR UPDATE SKIP LOCKED: queued, not paused, not claimed; claimed rows are invisible to other claimers
   claimJobs(limit: number, worker: string): JobRow[];
   release(id: string): void; // a worker died or gave up its claim
-  jobs(filter?: Partial<Pick<JobRow, 'state' | 'account_id' | 'kind' | 'user_id' | 'item_id'>>): JobRow[];
+  jobs(filter?: Partial<Pick<JobRow, 'state' | 'account_id' | 'kind' | 'user_id' | 'item_id' | 'site'>>): JobRow[];
   events(filter?: Partial<Pick<EventRow, 'user_id' | 'item_id' | 'account_id'>>): EventRow[];
   // one open decision per (user_id, kind, subject); a repeat returns the open one with duplicate true
   raiseDecision(d: Omit<DecisionRow, 'id' | 'state'>): { row: DecisionRow; duplicate: boolean };
