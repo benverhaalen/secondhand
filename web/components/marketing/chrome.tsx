@@ -9,6 +9,7 @@ const repository = 'https://github.com/benverhaalen/secondhand';
 const pages = [
   ['/how-it-works', 'How It Works'],
   ['/features', 'Features'],
+  ['/engine', 'Engine'],
   ['/data-use', 'Data Use'],
   ['/faq', 'FAQ'],
   ['/whats-next', 'What’s Next'],
@@ -103,5 +104,5 @@ export function MarketingFooter() {
 }
 
 export function isMarketingRoute(path: string) {
-  return ['/', '/how-it-works', '/features', '/data-use', '/faq', '/whats-next', '/signin', '/signup', '/account', '/buy'].includes(path);
+  return ['/', '/how-it-works', '/features', '/engine', '/data-use', '/faq', '/whats-next', '/signin', '/signup', '/account', '/buy'].includes(path);
 }
