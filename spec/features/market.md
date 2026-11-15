@@ -190,7 +190,7 @@ Visitors and users as in the first table. Jobs write observations, snapshots and
 | StockX terms (2026-07-02, s. 27) bar commercial use and public display without consent | *observed* | needs consent, or its rows leave shown numbers |
 | PriceCharting: no history in the API, no third-party access, purge when the subscription ends | *observed* | its series cannot be shown or kept |
 | WatchCharts licence: no public index, 1 year of history at most, attribution | *observed* | index excludes it; capped and attributed |
-| eBay API data kept 6 hours at most, no price modelling | *observed* | eBay API rows expire; harness reads stand |
+| eBay's API licence sets how fresh displayed data must be (listing information at most 6 hours older than eBay's site, other content 24 hours, with its age shown) and bars price modelling, AI training and mixing with other sources; it is a display rule, not a storage cap ([claims validated](../../research/cross-cutting/nate/claims-validated-specs.md)) | *observed* | recorded as a fact; our own protocol is the primary route, so this binds only data read through eBay's API |
 | Amazon Creators API cache: offers 1 hour, other fields 1 day | *observed* | refetch on those windows |
 | KicksDB carries release_date and retail_price, refreshed every 24 hours at most | *observed* | per its licence |
 | Sites' own terms (Meta, Poshmark) ban automated collection ([spec/product.md](../product.md)) | *observed* | each source's `rights` enforced per row |
