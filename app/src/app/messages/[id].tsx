@@ -139,7 +139,7 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
   const why = open?.kind === 'why' ? explain(w, conv, open.msg) : null;
   const foot = blocked ? null : spans ? null : (
     <Stack gap="tight">
-      {taken ? <Meta text="You answer here. Offers still follow your Plan" icon="information-circle" /> : null}
+      {taken ? <Meta text="Offers still follow your Plan" icon="information-circle" /> : null}
       <Composer id="composer" to={conv.buyer} value={text} onChange={setText} onSend={sendMine} sending={sending} />
     </Stack>
   );
