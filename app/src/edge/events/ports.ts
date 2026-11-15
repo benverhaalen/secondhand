@@ -13,7 +13,7 @@ export type JobKind =
 export type JobState = 'queued' | 'running' | 'done' | 'failed';
 export type Mode = 'auto' | 'ask' | 'locked';
 
-export interface Stage { name: string; state: 'started' | 'running' | 'arrived' | 'planned' | 'failed'; result?: unknown; started_at?: string; ended_at?: string | null; found?: object }
+export interface Stage { name: string; state: 'started' | 'running' | 'arrived' | 'planned' | 'late' | 'failed'; result?: unknown; started_at?: string; ended_at?: string | null; found?: object }
 export interface JobRow {
   id: string;
   kind: JobKind;
@@ -38,6 +38,7 @@ export interface JobRow {
 
 export interface DecisionRow {
   id: string;
+  version?: number;
   data?: 'synthetic' | 'example' | `dataset:${string}` | `live:${string}` | 'captured';
   user_id: string;
   kind: string; // product.md §5 decision kinds
@@ -75,7 +76,7 @@ export const JOB_FOR: Record<EventKind, JobKind> = {
 };
 
 // ---- the store: db-1's event, job, outbox and decision tables ----
-export const TABLES = ['item', 'listing', 'account', 'limits', 'rule', 'want', 'match', 'order', 'conversation', 'offer', 'operation'] as const;
+export const TABLES = ['item', 'listing', 'account', 'limits', 'rule', 'want', 'match', 'order', 'conversation', 'offer', 'operation', 'observation'] as const;
 export type Table = (typeof TABLES)[number];
 export type Row = { id: string; user_id: string; version?: number } & Record<string, unknown>;
 export interface StoreState {

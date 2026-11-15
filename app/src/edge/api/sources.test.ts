@@ -102,6 +102,11 @@ test('source health reads the router engine rather than freezing its success rat
   } finally { ports.health = health; }
 });
 
+test('source health always includes reads before a read is recorded', async () => {
+  const response = await call(examples.find(e => e.name === 'sources.health')!);
+  assert.deepEqual((await response.json()).reads, [], 'empty ledger omitted reads');
+});
+
 test('source health omits shared service read counts or the active pause and changes the routes contract', async () => {
   readLedger.record('ebay', 'search', 'empty', 1);
   const adapter: Adapter = { route_id: 'health.challenge', manifest: fakeManifest('depop', 'search'),

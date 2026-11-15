@@ -24,7 +24,7 @@ export function crashReceiver(path = 'logs/phone/uploaded-crashes.jsonl') {
   };
 }
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  if (process.env.NODE_ENV === 'production') throw new Error('Crash receiver is for local development only');
+  if (process.env.NODE_ENV !== 'development') throw new Error('Crash receiver runs only with NODE_ENV=development');
   const receive = crashReceiver();
   createServer(async (req, res) => {
     let body = '';

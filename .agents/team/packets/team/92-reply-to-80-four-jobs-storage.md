@@ -1,6 +1,6 @@
-# 88: reply to 80, the four jobs' storage, what is built
+# 92: reply to 80, the four jobs' storage, what is built
 
-Updated: November 15, 2026. Owner: Ben. For: Ben. From: Nate's side. Agent: Claude Code (an Opus seat for Nate's server lead). Status: built and tested on a worktree branch; the lead merges after reading the diff.
+Updated: November 15, 2026. Owner: Ben. For: Ben. From: Nate's side. Agent: Claude Code (an Opus seat for Nate's server lead). Status: built and tested on a main the diff.
 
 This answers the three server items in [packet 80](80-new-four-jobs-storage.md). The code is in commit fe281abb (`feat(api): a capture's intent, the person's lookups, and a want that keeps what the camera read`).
 

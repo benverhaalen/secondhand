@@ -1,3 +1,5 @@
+import { required, resolve } from './params.ts';
+
 // What the seller keeps per site, in integer cents (money.md D9). The formula sets the price (J10 default);
 // Ben's fixed multipliers are only the check on it (D9 step 7).
 // Operation: base = price + shipping and tax where the site charges on them; fee = max(min, pct x base) + fixed,
@@ -35,10 +37,10 @@ export type Sale = {
   buyer_shipping_cents?: number; // paid by the buyer, in the fee base on some sites, never in the keep
   seller_shipping_cents?: number; // D8: what the seller pays to ship
   boost_cents?: number;
-  tax_rate?: number; // shortcut: D9's 7% is an unsourced placeholder, replace with the sales-weighted destination rate from our orders
+  tax_rate?: number;
   as_of?: string;
 };
-export const TAX_RATE = 0.07;
+export const TAX_RATE = required(resolve(undefined), 'sales_tax_rate');
 const STALE_DAYS = 30;
 const DAY = 86400e3;
 

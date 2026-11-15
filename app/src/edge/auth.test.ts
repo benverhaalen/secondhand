@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { execFileSync } from 'node:child_process';
 import { ApiError } from './api/http.ts';
+import { createLog, memorySink } from '../../../log/index.js';
 import { appleVerifier, createAuth, googleVerifier, memoryStore, type Claims } from './auth.ts';
 
 const enc = new TextEncoder();
@@ -250,8 +251,10 @@ test('resend requests inside and after the window spend no verify attempts', asy
   await rejects(w.auth.verifyEmail({ email, code: w.code() }), 'rate_limited', 429);
 });
 
-function composedAuth(script: string, devCode?: string, environment: NodeJS.ProcessEnv['NODE_ENV'] = 'test') {
-  const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: environment, NODE_TEST_CONTEXT: 'child-v8' };
+function composedAuth(script: string, devCode?: string, environment: string | null = 'test') {
+  const env: NodeJS.ProcessEnv = { ...process.env, NODE_TEST_CONTEXT: 'child-v8' };
+  if (environment === null) Reflect.deleteProperty(env, 'NODE_ENV');
+  else Reflect.set(env, 'NODE_ENV', environment);
   delete env.SECONDHAND_DEV_CODE;
   delete env.SECONDHAND_DATA_DIR;
   if (devCode !== undefined) env.SECONDHAND_DEV_CODE = devCode;
@@ -274,7 +277,7 @@ test('explicit development code signs in without leaking its value or the addres
     const events = sink.lines.map(line => JSON.parse(line)).filter(line => line.event === 'note' && line.msg === 'auth.dev_code');
     assert.equal(events.length, 1);
     assert.match(events[0].email_hash, /^[a-f0-9]{8,12}$/);
-  `, '123456');
+  `, '123456', 'development');
 });
 
 test('development code in production refuses import and names the variable', () => {
@@ -288,21 +291,78 @@ test('malformed development code refuses import', () => {
   composedAuth(`
     import assert from 'node:assert/strict';
     await assert.rejects(import('./app/src/edge/auth.ts'), /SECONDHAND_DEV_CODE/);
-  `, '12345');
+  `, '12345', 'development');
 });
 
 test('no sender fails before writing a code; configureSender later enables the port', () => {
   composedAuth(`
     import assert from 'node:assert/strict';
-    const { auth, store, sha, configureSender } = await import('./app/src/edge/auth.ts');
+    const { auth, store, sha, configureSender, senderReady } = await import('./app/src/edge/auth.ts');
+    assert.equal(senderReady(), false);
     const email = 'sender@example.com', h = await sha('email:' + email);
     await assert.rejects(auth.startEmail({ email }), e => e.code === 'unavailable' && e.failed_step === 'send_code' && e.retry.by === 'none');
     assert.equal(await store.peekCode(h), null);
     for (let i = 0; i < 6; i++) await assert.rejects(auth.verifyEmail({ email, code: '000000' }), e => e.code === 'unauthenticated');
     let sent;
     configureSender((address, code) => { assert.equal(address, email); sent = code; });
+    assert.equal(senderReady(), true);
     await auth.startEmail({ email });
     assert.match(sent, /^[0-9]{6}$/);
     assert.equal((await auth.verifyEmail({ email, code: sent })).created, true);
   `);
+});
+
+for (const environment of [null, 'test', 'staging', '']) {
+  test(`development code is ignored with a safe note when NODE_ENV is ${JSON.stringify(environment)}`, () => {
+    composedAuth(`
+      import assert from 'node:assert/strict';
+      const { createLog, memorySink } = await import('./log/index.js');
+      const { deps } = await import('./app/src/edge/api/http.ts');
+      const sink = memorySink();
+      deps.log = createLog({ src: 'test', build: 'test', sink });
+      const { auth } = await import('./app/src/edge/auth.ts');
+      await assert.rejects(auth.startEmail({ email: 'ignored@example.invalid' }), e => e.code === 'unavailable');
+      assert.ok(sink.lines.some(line => JSON.parse(line).msg === 'auth.dev_code_ignored'));
+      assert.ok(!sink.text().includes('123456'));
+    `, '123456', environment);
+  });
+}
+
+test('a malformed development code is also ignored outside development', () => {
+  composedAuth(`
+    import assert from 'node:assert/strict';
+    const { auth } = await import('./app/src/edge/auth.ts');
+    await assert.rejects(auth.startEmail({ email: 'ignored@example.invalid' }), e => e.code === 'unavailable');
+  `, 'not-a-code', null);
+});
+
+test('configureSender replaces the development code on the next start', () => {
+  composedAuth(`
+    import assert from 'node:assert/strict';
+    const { auth, configureSender } = await import('./app/src/edge/auth.ts');
+    await auth.startEmail({ email: 'development@example.invalid' });
+    let sent;
+    configureSender((_email, code) => { sent = code; });
+    crypto.getRandomValues = array => { array.fill(0); return array; };
+    await auth.startEmail({ email: 'real-sender@example.invalid' });
+    assert.equal(sent, '000000', 'the next code must come from the random generator');
+    await assert.rejects(auth.verifyEmail({ email: 'real-sender@example.invalid', code: '123456' }), e => e.code === 'unauthenticated');
+    assert.equal((await auth.verifyEmail({ email: 'real-sender@example.invalid', code: sent })).created, true);
+  `, '123456', 'development');
+});
+
+test('a sender failure logs its type and a fixed message without vendor text', async () => {
+  const sink = memorySink(), log = createLog({ src: 'test', build: 'test', sink });
+  const auth = createAuth({
+    store: memoryStore(), now: () => NOW, verifyApple: async () => null, verifyGoogle: async () => null,
+    sendCode: () => { throw new TypeError('vendor-detail: rejected private-recipient@example.invalid'); },
+    log: () => log,
+  });
+  await assert.rejects(auth.startEmail({ email: 'private-recipient@example.invalid' }),
+    e => e instanceof Error && e.name === 'TypeError' && e.message === 'email code delivery failed');
+  const failure = sink.lines.map(line => JSON.parse(line)).find(line => line.event === 'call.end' && !line.ok);
+  assert.equal(failure.error.type, 'TypeError');
+  assert.equal(failure.error.msg, 'email code delivery failed');
+  assert.ok(!sink.text().includes('vendor-detail'));
+  assert.ok(!sink.text().includes('private-recipient'));
 });

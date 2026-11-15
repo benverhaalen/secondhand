@@ -27,11 +27,13 @@ test('transactions emit no timing lines and log a synchronous failure once', t =
   assert.equal(entries[0].where, 'sqlite.tx');
 });
 
-test('dataPath chooses the explicit folder, test memory, development temp, and refuses unset production', () => {
+test('dataPath chooses the explicit folder, test memory, stated development temp, and refuses everything else', () => {
   assert.equal(dataPath({ SECONDHAND_DATA_DIR: '/data', NODE_TEST_CONTEXT: 'child-v8', NODE_ENV: 'production' }), join('/data', 'secondhand.db'));
   assert.equal(dataPath({ NODE_TEST_CONTEXT: 'child-v8', NODE_ENV: 'production' }), ':memory:');
-  assert.equal(dataPath({}), join(tmpdir(), 'secondhand-dev', 'secondhand.db'));
-  assert.throws(() => dataPath({ NODE_ENV: 'production' }), /^Error: SECONDHAND_DATA_DIR is required in production$/);
+  assert.equal(dataPath({ NODE_ENV: 'development' }), join(tmpdir(), 'secondhand-dev', 'secondhand.db'));
+  for (const env of [{}, { NODE_ENV: 'production' }, { NODE_ENV: 'staging' }, { NODE_ENV: '' }]) {
+    assert.throws(() => dataPath(env), /^Error: SECONDHAND_DATA_DIR is required unless NODE_ENV=development$/, JSON.stringify(env));
+  }
   assert.equal(db(), openDb(dataPath()));
 });
 

@@ -81,3 +81,10 @@ test('fallback reads the settled Answer from job.result and stops; terminal job 
     else { assert.equal(errors.length, 1); assert.ok(errors[0] instanceof JobFailure); }
   }
 });
+test('ask hands back the visitor id the server returns', async () => {
+  let adopted = '';
+  const reply = { id: 'job_1', kind: 'assist', state: 'running', stages: [] };
+  const fetcher = async () => new Response(JSON.stringify(reply), { status: 202, headers: { 'X-Visitor-Id': 'vis_issuedbyserver01' } });
+  assert.equal(await ask('jacket', undefined, 'vis_pagemade01', 'k1', fetcher as typeof fetch, undefined, id => { adopted = id; }), 'job_1');
+  assert.equal(adopted, 'vis_issuedbyserver01');
+});
