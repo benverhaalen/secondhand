@@ -72,7 +72,7 @@ An estimate built from observed prices. Nothing here was billed yet. Posting is 
 | Step | Route | Cost |
 |---|---|---|
 | Identify | Google Lens through Serper ($0.003), one web search ($0.01), the Decisions check on `gpt-6-luna` ($0.10 per million input tokens) | about $0.015 to $0.06 |
-| Photos | the no-model fix | $0 (seconds of one CPU core per photo) |
+| Photos | the no-model fix | $0 (about 15 s of one CPU core per photo, one earlier run; not timed cleanly here) |
 | Photos, if the person asks for studio light | 3 Seedream relights at $0.035 plus 6 reference images at $0.008 | about $0.25 |
 | Post to 4 sites | eBay through its API ($0); 3 sites in a cloud browser at $0.06 an hour, billed by the minute, 1 to 4 minutes each | about $0.003 to $0.012 |
 | Take it down elsewhere after the sale | 3 browser runs of 1 to 4 minutes | about $0.003 to $0.012 |
