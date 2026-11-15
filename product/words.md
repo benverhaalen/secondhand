@@ -2265,3 +2265,9 @@ Nate, search lead's session, 2026-11-15, about 06:40 Central, answering "On a bu
 To the second: "Keep row credit" (the recommended option). Dupe sits under "open source intelligence" in the sources dropdown, and each Dupe row keeps "via Dupe.com".
 
 Used in: [finalization §3](../spec/plans/finalization.md#3-search-and-the-sources-lead-search).
+
+## 2026-11-15 nate the easiest store for the simple state
+Nate, server-core lead's session, 2026-11-15, about 07:00 Central, after the lead reported the Store moving to one SQLite file and asked nothing; said beside a search lead's message proposing a new table for Apify run caps.
+> use whatever is easiest for the simple store like chats and such.
+
+Read by the server-core lead as: simple state (conversations, follows, run counters, last-open times) goes into the generic SQLite rows table or the key-value table already on main, with no new schema per feature. Used in: [server-store.md](../spec/plans/server-store.md).
