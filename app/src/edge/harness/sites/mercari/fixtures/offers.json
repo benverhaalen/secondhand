@@ -1,0 +1,41 @@
+{
+ "recorded_at": "2026-11-15",
+ "observed": false,
+ "note": "synthetic: no linked account; url and op name are unobserved guesses, the shape follows the public item and user objects",
+ "url": "https://www.mercari.com/mypage/offers/",
+ "status": 200,
+ "html": "",
+ "api": [
+  {
+   "op": "offersQuery",
+   "body": {
+    "data": {
+     "offers": {
+      "offersList": [
+       {
+        "id": "o900000401",
+        "itemId": "m900000201",
+        "price": 1800,
+        "status": "pending",
+        "created": 1794700000,
+        "buyer": {
+         "id": 900000501
+        }
+       },
+       {
+        "id": "o900000402",
+        "itemId": "m900000202",
+        "price": 900,
+        "status": "declined",
+        "created": 1794610000,
+        "buyer": {
+         "id": 900000502
+        }
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,157 @@
+{
+ "url": "https://www.mercari.com/search/?keyword=carhartt%20hoodie&itemStatuses=2",
+ "recorded_at": "2026-11-15",
+ "status": 200,
+ "html": "",
+ "api": [
+  {
+   "op": "searchFacetQuery",
+   "body": {
+    "data": {
+     "search": {
+      "count": 7204,
+      "nextKey": "CGQoAjAB",
+      "page": {
+       "offset": 100,
+       "soldItemsOffset": 0,
+       "promotedItemsOffset": 0,
+       "__typename": "SearchPage"
+      },
+      "itemsList": [
+       {
+        "id": "m23851589493",
+        "name": "Carhartt Sweatshirt",
+        "status": "trading",
+        "price": 1200,
+        "originalPrice": 1200,
+        "seller": {
+         "id": 900000005,
+         "sellerId": 900000005
+        },
+        "brand": {
+         "id": 1128,
+         "name": "Carhartt"
+        },
+        "itemSize": {
+         "name": "S (34-36)"
+        },
+        "itemCondition": {
+         "id": 3,
+         "name": "Good"
+        },
+        "categoryId": 306,
+        "created": 1794698842,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       },
+       {
+        "id": "m61595318131",
+        "name": "Carhartt Sweatshirt",
+        "status": "trading",
+        "price": 1200,
+        "originalPrice": 1200,
+        "seller": {
+         "id": 900000005,
+         "sellerId": 900000005
+        },
+        "brand": {
+         "id": 1128,
+         "name": "Carhartt"
+        },
+        "itemSize": {
+         "name": "S (4-6)"
+        },
+        "itemCondition": {
+         "id": 3,
+         "name": "Good"
+        },
+        "categoryId": 172,
+        "created": 1794698553,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       },
+       {
+        "id": "m51418191998",
+        "name": "Men’s large loose fit blue Carhartt hoodie",
+        "status": "trading",
+        "price": 1300,
+        "originalPrice": 1700,
+        "seller": {
+         "id": 900000006,
+         "sellerId": 900000006
+        },
+        "brand": {
+         "id": 1128,
+         "name": "Carhartt"
+        },
+        "itemSize": {
+         "name": "L (42-44)"
+        },
+        "itemCondition": {
+         "id": 2,
+         "name": "Like new"
+        },
+        "categoryId": 306,
+        "created": 1794701780,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       },
+       {
+        "id": "m10079961865",
+        "name": "Blue Carhartt Work Hoodie, Men’s XL, NWT",
+        "status": "sold_out",
+        "price": 2959,
+        "originalPrice": 3699,
+        "seller": {
+         "id": 900000007,
+         "sellerId": 900000007
+        },
+        "brand": {
+         "id": 1128,
+         "name": "Carhartt"
+        },
+        "itemSize": {
+         "name": "XL (46-48)"
+        },
+        "itemCondition": {
+         "id": 1,
+         "name": "New"
+        },
+        "categoryId": 306,
+        "created": 1793979301,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       },
+       {
+        "id": "m86058593730",
+        "name": "Carhartt Hoodie Mens 2XLT Gray Loose Fit Pullover Workwear Hooded Sweatshirt",
+        "status": "sold_out",
+        "price": 3495,
+        "originalPrice": 3495,
+        "seller": {
+         "id": 900000008,
+         "sellerId": 900000008
+        },
+        "brand": {
+         "id": 1128,
+         "name": "Carhartt"
+        },
+        "itemSize": {
+         "name": "Big 2X"
+        },
+        "itemCondition": {
+         "id": 3,
+         "name": "Good"
+        },
+        "categoryId": 307,
+        "created": 1783190716,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

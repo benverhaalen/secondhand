@@ -9,7 +9,7 @@ resources:
       channel: CURRENT
       libraries:
         - glob:
-            include: ../../databricks/pipelines/market/*.sql
+            include: ../../databricks/pipelines/market/**
   jobs:
     market_refresh:
       name: secondhand-market-refresh

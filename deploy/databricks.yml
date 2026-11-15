@@ -8,6 +8,7 @@ sync:
     - .
     - ../jobs
     - ../databricks
+    - ../log
 
 variables:
   catalog:

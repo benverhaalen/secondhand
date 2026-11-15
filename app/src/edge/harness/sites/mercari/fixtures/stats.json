@@ -1,0 +1,31 @@
+{
+ "recorded_at": "2026-11-15",
+ "observed": false,
+ "note": "synthetic: no linked account; url and op name are unobserved guesses, the shape follows the public item and user objects",
+ "url": "https://www.mercari.com/mypage/listings/active/",
+ "status": 200,
+ "html": "",
+ "api": [
+  {
+   "op": "sellerItemsQuery",
+   "body": {
+    "data": {
+     "search": {
+      "itemsList": [
+       {
+        "id": "m900000201",
+        "numViews": 412,
+        "numLikes": 9
+       },
+       {
+        "id": "m900000202",
+        "numViews": 57,
+        "numLikes": 1
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}
