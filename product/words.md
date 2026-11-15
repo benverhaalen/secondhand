@@ -1610,3 +1610,9 @@ Nate, build session (orchestrator), 2026-11-15 about 06:30 Central, after the or
 > So bens request wasn't to require that we rely on tape measurement, it was misinterpreted so please don't change that. Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify
 
 Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 67](../.agents/team/packets/team/67-nates-rulings-and-where-they-meet-bens-plans.md).
+
+## 2026-11-15 nate the system always prices with fallbacks, and its power is what it weighs in real time
+Nate, build session (orchestrator), 2026-11-15 about 07:00 Central, after the leads confirmed stronger forms of Ben's asks, among them a bar on automatic pricing that needed thirty sales in a cell.
+> Ok, while bens asks are confirmed, and you see autopricing as fair, of course the system must price and have established fallbacks, but the power of the system relies on things being realtime determined and weighed by how the system was designed
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
