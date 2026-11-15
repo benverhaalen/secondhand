@@ -2,7 +2,8 @@
 // Ben (words.md 2026-11-15): "i want it around a price. i can adjust my range etc. i can say shipped or pickup or both etc.
 // color." So every value that changes which listings match is a control, not a typed field: the price is a two-thumb range
 // over the sales, ship or pickup is a three-way toggle with a radius, colour is swatches, size is a size picker, how worn
-// and which sites are chips. Only the chips that matter for the thing appear (a Grey Fog Dunk has no colour chip).
+// and which sites are chips. Only the chips that matter for the thing appear (a Grey Fog Dunk has no colour chip). Clothes
+// also get who they're cut for, because a women's or youth L is a different garment (research/watch/ben/brewers-alert-trial.md).
 // A new want comes guessed from the words that started it, and the person starts it with one tap, because it sets a price
 // (the hand-off rule). A saved want saves each change at once with Undo and looks again at once. While it looks, the page
 // says so per site ("Looking on 5 sites", "4m ago", "Behind", "Found 6 so far"), and the person can leave at any time.
@@ -12,12 +13,12 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
 import {
-  ALL_SITES, CONDITIONS, conditionId, coloursFor, draftOf, firstPass, kindOf, priceBounds, RADII, sizesFor, soldDots, wantFromWords, type How, type WantDraft,
+  ALL_SITES, CONDITIONS, conditionId, CUTS, coloursFor, draftOf, firstPass, kindOf, priceBounds, RADII, sizesFor, soldDots, wantFromWords, type How, type WantDraft,
 } from '@/buy/read';
 import { afterListing, parseStage, SAMPLE, type StageAlert } from '@/buy/stage';
 import { Failed, Loading, OfflineLine } from '@/buy/states';
 import { href, usePage } from '@/buy/world';
-import { ago, product, usd, type Site } from '@/demo';
+import { ago, product, usd, type Cut, type Site } from '@/demo';
 import {
   Approve, Blank, ChoiceChips, ColourSwatches, EmptyState, Guess, Line, MatchCard, Nav, Pill, RangeSlider, Row, Screen, Section, SiteStrip, SizePicker, Stack, Txt,
   UndoToast, log, type SiteSlot,
@@ -170,6 +171,13 @@ export default function Want() {
         <Section title="Colour">
           <ColourSwatches id="want-colour" swatches={colours} value={x.colours}
             onChange={c => edit({ ...x, colours: c === 'any' ? [] : x.colours.includes(c) ? x.colours.filter(k => k !== c) : [...x.colours, c] })} />
+        </Section>
+      ) : null}
+
+      {kind === 'apparel' ? (
+        <Section title="Cut">
+          <ChoiceChips id="want-cut" label="Cut" value={x.fit.cut ?? 'any'} options={CUTS}
+            onChange={v => edit({ ...x, fit: { ...x.fit, cut: v === 'any' ? undefined : v as Cut } })} />
         </Section>
       ) : null}
 

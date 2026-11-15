@@ -25,6 +25,8 @@ The orchestrator (the session that started the leads) holds the harnesses in `ap
 
 Every calculation is deterministic: same inputs, same answer, integer cents for money, every tunable number a `param` row, every shown number guarded with a citation. A model fills a gap only where the spec says a model does, and its output is checked before use.
 
+The system always answers, and what it weighs in real time is its strength ([Nate](../../../../product/words.md#2026-11-15-nate-the-system-always-prices-with-fallbacks-and-its-power-is-what-it-weighs-in-real-time)). Every number has an established fallback order and says which step it used; a threshold decides only whether the system acts without asking, never whether it answers; and a threshold is read against the evidence as it stands now, pooled from the parent scope where a scope is thin, not against a table that must fill up first. A design that makes the system wait on a fixed count is the wrong design here.
+
 ## Mac workers
 
 The Mac is `ngarelik@glados` over Tailscale. Always `ssh -n -o BatchMode=yes ngarelik@glados '<command>'`.
@@ -43,6 +45,7 @@ The Mac is `ngarelik@glados` over Tailscale. Always `ssh -n -o BatchMode=yes nga
 - Claude Code on the Mac is not signed in, so Claude seats run from the Windows sessions (below); only Codex and plain commands run on the Mac.
 - The Mac cannot push to GitHub. Work reaches `origin` only through a Windows merge and push.
 - No key goes to the Mac in a brief, a file or a command line. A task that needs a key on the Mac goes to the orchestrator.
+- Codex's workspace-write sandbox keeps `.agents/` read-only, so a worker cannot create a file under `.agents/checks/` (found by the integration lead, 2026-11-15). A brief that needs one has the worker write it under `scripts/<piece>-staging/`; the lead moves it into `.agents/checks/` and adds its line to `check.mjs`.
 - End every brief with the worker rules below, unchanged.
 
 ```

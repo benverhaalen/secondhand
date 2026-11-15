@@ -16,11 +16,10 @@ import urllib.request
 API = "https://openrouter.ai/api/v1"
 
 # Preference order when picking a model by what it can do; the first slug that the live list carries wins.
-# Seedream 5.5 first: Ben's pick for relights (product/words.md, 2026-11-14 and 2026-11-15). Its model page is live
-# (openrouter.ai/bytedance-seed/seedream-5-5, observed 2026-11-15) but the slug was not on the live list that morning
-# (research/studio/ben/slides/runs/*/models.json), so pick() falls through to the next model when it is missing.
-IMAGE_PREFS = ("bytedance-seed/seedream-5-5", "google/gemini-nano-banana-2.1", "google/gemini-3-pro-image",
-               "openai/gpt-5.4-image-2", "google/gemini-3.1-flash-image")
+# Nano Banana 2.1 first (Ben, 2026-11-15 08:33: "stay on nanobanana"). Seedream 5.5 has a live model page but was not on
+# the live list on 2026-11-15 (research/studio/ben/slides/runs/*/models.json), so pick() skips it when it is missing.
+IMAGE_PREFS = ("google/gemini-nano-banana-2.1", "google/gemini-3-pro-image", "openai/gpt-5.4-image-2",
+               "bytedance-seed/seedream-5-5", "google/gemini-3.1-flash-image")
 VISION_PREFS = ("google/gemini-4-carbon", "google/gemini-4-hydrogen", "google/gemini-3-pro", "google/gemini-3-flash",
                 "google/gemini-2.5-pro", "google/gemini-2.5-flash", "anthropic/claude", "openai/gpt-5")
 

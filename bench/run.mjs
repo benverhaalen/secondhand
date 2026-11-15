@@ -1,0 +1,100 @@
+import { readFile, mkdir, writeFile, appendFile } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
+import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { createLog } from '../log/index.js';
+import { fileSink } from '../log/node.js';
+
+const kinds = ['sold_prices','live_listings','official_price','discounts','product_reviews','seller_reviews','demand_trend','time_to_sell','fees_per_site','you_keep','same_item_elsewhere','price_history'];
+const amount = x => Number.isInteger(x?.amount_cents) ? x.amount_cents : Number.isInteger(x) ? x : null;
+const number = (name, value, citation_id = null, evidence = []) => ({name,value_cents:amount(value),citation_id,evidence});
+function mapped(counts = {}, sites = [], numbers = [], range = null) {
+  return {sites:[...new Set(sites.filter(x => typeof x === 'string'))],facts:kinds.map(kind=>({kind,count:counts[kind] ?? 0})),numbers,range};
+}
+const evidence = row => [row.url, ...(Array.isArray(row.evidence) ? row.evidence.filter(x=>typeof x==='string') : [])].filter(Boolean);
+function offersMap(body, key) {
+  const offers = Array.isArray(body[key]) ? body[key] : [];
+  const official = Array.isArray(body.official) ? body.official : [];
+  return {offers,official, sites:offers.map(x=>x.site), numbers:offers.filter(x=>amount(x.delivered_cents ?? x.price_cents)!==null).map(x=>number('delivered_cents',x.delivered_cents ?? x.price_cents,x.citation_id ?? null,evidence(x)))};
+}
+export function mapSearch(body) {
+  const {offers,official,sites,numbers}=offersMap(body,'results');
+  return mapped({live_listings:offers.length,official_price:official.length},sites,numbers);
+}
+export function mapProduct(body) {
+  const {offers,sites,numbers}=offersMap(body,'offers'); const used=body.used_price; const retail=body.retail_price;
+  if (amount(retail?.value)!==null) numbers.push(number('retail_price',retail.value,retail.citation_id ?? null,evidence(retail)));
+  const low=amount(used?.range?.low), high=amount(used?.range?.high);
+  const range=low!==null && high!==null && typeof used.as_of==='string' ? {low_cents:low,high_cents:high,as_of:used.as_of} : null;
+  if(range) {numbers.push(number('range_low',low,used.citation_id ?? null,evidence(used)),number('range_high',high,used.citation_id ?? null,evidence(used)));}
+  return mapped({sold_prices:Number.isInteger(used?.basis_count)?used.basis_count:0,live_listings:offers.length,official_price:amount(retail?.value)!==null?1:0},sites,numbers,range);
+}
+export function mapValue(body) {
+  const r=body.range; const low=amount(r?.low), high=amount(r?.high); const range=low!==null && high!==null && typeof r.as_of==='string'?{low_cents:low,high_cents:high,as_of:r.as_of}:null;
+  return mapped({},[],range?[number('range_low',low,r.citation_id ?? null,evidence(r)),number('range_high',high,r.citation_id ?? null,evidence(r))]:[],range);
+}
+export function makeAsk({base,dispatch} = {}) {
+  let visitor = `vis_${randomUUID().replaceAll('-','').slice(0,16)}`;
+  return async (endpoint,init={}) => {
+    const headers=new Headers(init.headers); headers.set('X-Visitor-Id',visitor); headers.set('X-Request-Id',`rq_${randomUUID().replaceAll('-','').slice(0,16)}`); if(init.body) headers.set('Content-Type','application/json');
+    const req=new Request(new URL(endpoint,base ?? 'http://localhost'),{...init,headers});
+    const response=dispatch ? await dispatch(req) : await fetch(req); visitor=response.headers.get('X-Visitor-Id') ?? visitor; return response;
+  };
+}
+async function inProcess() {
+  const [{route,paramsOf},search,market,valuations,jobs]=await Promise.all([import('../app/src/edge/api/http.ts'),import('../app/src/edge/api/search.ts'),import('../app/src/edge/api/market.ts'),import('../app/src/edge/api/valuations.ts'),import('../app/src/edge/api/jobs.ts')]);
+  const handlers={...search.handlers,...market.handlers,...valuations.handlers,...jobs.routeHandlers};
+  const manifest=[...search.manifest,...market.manifest,...valuations.manifest,...jobs.manifest].map(row=>({...row,method:row.endpoint.split(' ')[0]}));
+  const wrapped=new Map();
+  return makeAsk({dispatch: req=>{const pathname=new URL(req.url).pathname; const row=manifest.find(x=>x.method===req.method && paramsOf(x.endpoint.split(' ')[1],pathname)!==null); if(!row) return Promise.resolve(Response.json({code:'not_found'},{status:404})); if(!wrapped.has(row.endpoint)) wrapped.set(row.endpoint,route(row.endpoint,handlers[row.endpoint],{auth:row.auth})); return wrapped.get(row.endpoint)(req);}});
+}
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+export async function run({manifestPath='spec/items/manifest.json',outRoot='bench/out',set='market',ask,timeoutS=20,sleep=delay}={}) {
+  if (!['market','owned'].includes(set)) throw new Error('invalid set: '+set);
+  const bytes=await readFile(manifestPath); const manifest=JSON.parse(bytes); const hash=createHash('sha256').update(bytes).digest('hex');
+  const started=new Date(); const runId=started.toISOString().replace(/[:.]/g,'-')+'-ours'; const dir=join(outRoot,runId); await mkdir(join(dir,'raw'),{recursive:true}); const records=[]; let missing=0; const log=createLog({src:'bench.run',build:'dev',sink:fileSink(join(dir,'run.jsonl'))});
+  ask ??= await inProcess();
+  async function question(item,question,endpoint,init,mapper,errorBefore) {
+    const asked=new Date(); let first=null, full=null, error=errorBefore ?? null, responseBody=null; const raw=[];
+    async function request(path, options) {
+      let res=await log.call('http',path,{method:options?.method ?? 'GET'},()=>ask(path,options),r=>({result:{status:r.status}})); let body=await res.json(); raw.push({endpoint:path,status:res.status,body});
+      if(res.status===429) { await sleep(Math.max(0,Number(body.retry?.after_s ?? 0))*1000); res=await log.call('http',path,{method:options?.method ?? 'GET'},()=>ask(path,options),r=>({result:{status:r.status}})); body=await res.json(); raw.push({endpoint:path,status:res.status,body}); }
+      return {res,body};
+    }
+    if(!error) {
+      try {
+        let {res,body}=await request(endpoint,init); responseBody=body;
+        if(!res.ok) error=question==='value' && res.status===401?'needs_user':body.code ?? `http_${res.status}`;
+        else if(body.kind && body.id && body.state) {
+          const deadline=asked.getTime()+timeoutS*1000;
+          while(true) {
+            if(!first && ((body.result && Object.keys(body.result).length) || body.stages?.some(s=>s.found?.results_found>0 || s.found?.results_used>0))) first=new Date().toISOString();
+            if(body.state==='done') {full=new Date().toISOString(); responseBody=body.result ?? {}; break;}
+            if(['failed','cancelled'].includes(body.state)) {error=body.error?.code ?? body.state; break;}
+            const remaining=deadline-Date.now(); if(remaining<=0) {error='timeout'; break;}
+            await sleep(Math.min(2000,remaining)); if(Date.now()>=deadline) {error='timeout'; break;}
+            ({res,body}=await request(`/v1/jobs/${encodeURIComponent(body.id)}`,{})); responseBody=body;
+            if(!res.ok) {error=body.code ?? `http_${res.status}`; break;}
+          }
+        } else {first=full=new Date().toISOString();}
+      } catch(e) {log.error('bench.request',e); error=`request_failed: ${e.message}`; raw.push({error:String(e)});}
+    }
+    const rawRef=`raw/${item.id}-${question}.json`; await writeFile(join(dir,rawRef),JSON.stringify(raw,null,2)+'\n');
+    const record={run_id:runId,tool:'secondhand',item_id:item.id,manifest_sha256:hash,question,asked_at:asked.toISOString(),first_at:first,full_at:full,ok:!error,error, ...mapper(error ? {} : responseBody ?? {}),delist:null,raw_ref:rawRef};
+    log.change('benchmark_answer',`${item.id}:${question}`,error ?? 'done'); records.push(record); await appendFile(join(dir,'records.jsonl'),JSON.stringify(record)+'\n'); return {record,body:responseBody};
+  }
+  for(const item of manifest[set === 'market' ? 'market_items' : 'items']) {
+    if(!item.query) {missing++; await question(item,'search',null,null,mapSearch,'no_query'); continue;}
+    const search=await question(item,'search','/v1/search',{method:'POST',body:JSON.stringify({text:item.query})},mapSearch);
+    const id=search.record.ok && (search.body?.product_id ?? search.body?.product?.id);
+    if(id) await question(item,'product',`/v1/products/${encodeURIComponent(id)}`,{},mapProduct);
+    await question(item,'value','/v1/valuations',{method:'POST',body:JSON.stringify({item_id:item.id})},mapValue);
+  }
+  log.end(); process.stdout.write(`${missing} items had no query\n`); return records;
+}
+if(process.argv[1] && import.meta.url===pathToFileURL(resolve(process.argv[1])).href) {
+  const args=process.argv.slice(2); let base,timeoutS=20,set='market';
+  for(let i=0;i<args.length;i++) {if(args[i]==='--base') base=args[++i]; else if(args[i]==='--set') { if(!args[i+1] || args[i+1].startsWith('--')) throw new Error('missing set'); set=args[++i]; } else if(args[i]==='--timeout-s') timeoutS=Number(args[++i]); else if(args[i]!=='--in-process') throw new Error(`unknown argument: ${args[i]}`);}
+  if(!Number.isFinite(timeoutS) || timeoutS<0) throw new Error('invalid timeout');
+  await run({timeoutS,set,ask:base?makeAsk({base}):undefined});
+}

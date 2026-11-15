@@ -1,0 +1,143 @@
+{
+ "url": "https://www.mercari.com/u/user900000005/reviews/",
+ "recorded_at": "2026-11-15",
+ "status": 200,
+ "html": "",
+ "api": [
+  {
+   "op": "resolveUsername",
+   "body": {
+    "data": {
+     "resolveUsername": 900000005
+    }
+   }
+  },
+  {
+   "op": "initReviewsQuery",
+   "body": {
+    "data": {
+     "user": {
+      "id": 900000005,
+      "username": "user900000005",
+      "ratings": {
+       "count": 466,
+       "average": 5,
+       "__typename": "Ratings"
+      },
+      "reviewsWithStats": {
+       "meta": {
+        "feedback": {
+         "positive": [
+          {
+           "id": 2,
+           "message": "item description",
+           "numReviews": 186
+          },
+          {
+           "id": 1,
+           "message": "quick shipper",
+           "numReviews": 174
+          },
+          {
+           "id": 5,
+           "message": "great packaging",
+           "numReviews": 167
+          },
+          {
+           "id": 3,
+           "message": "friendly",
+           "numReviews": 160
+          },
+          {
+           "id": 4,
+           "message": "communication",
+           "numReviews": 154
+          }
+         ]
+        }
+       },
+       "reviewsList": [
+        {
+         "message": "",
+         "fame": "good",
+         "created": 1794613865,
+         "subject": "buyer",
+         "byAdmin": 0,
+         "feedback": [],
+         "user": {
+          "id": 900000009
+         }
+        },
+        {
+         "message": "",
+         "fame": "good",
+         "created": 1794265448,
+         "subject": "buyer",
+         "byAdmin": 0,
+         "feedback": [
+          {
+           "message": "communication",
+           "__typename": "ReviewFeedback"
+          },
+          {
+           "message": "friendly",
+           "__typename": "ReviewFeedback"
+          },
+          {
+           "message": "great packaging",
+           "__typename": "ReviewFeedback"
+          },
+          {
+           "message": "item description",
+           "__typename": "ReviewFeedback"
+          },
+          {
+           "message": "quick shipper",
+           "__typename": "ReviewFeedback"
+          }
+         ],
+         "user": {
+          "id": 900000010
+         }
+        },
+        {
+         "message": "",
+         "fame": "cancel",
+         "created": 1790564515,
+         "subject": "buyer",
+         "byAdmin": 0,
+         "feedback": [],
+         "user": {
+          "id": 900000011
+         }
+        },
+        {
+         "message": "",
+         "fame": "good",
+         "created": 1758068360,
+         "subject": "buyer",
+         "byAdmin": 0,
+         "feedback": [],
+         "user": {
+          "id": 900000012
+         }
+        },
+        {
+         "message": "",
+         "fame": "good",
+         "created": 1757368180,
+         "subject": "buyer",
+         "byAdmin": 0,
+         "feedback": [],
+         "user": {
+          "id": 900000013
+         }
+        }
+       ]
+      }
+     }
+    }
+   }
+  }
+ ]
+}

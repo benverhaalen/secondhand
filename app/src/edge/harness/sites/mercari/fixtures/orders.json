@@ -1,0 +1,28 @@
+{
+ "recorded_at": "2026-11-15",
+ "observed": false,
+ "note": "synthetic: no linked account; url and op name are unobserved guesses, the shape follows the public item and user objects",
+ "url": "https://www.mercari.com/mypage/listings/sold/",
+ "status": 200,
+ "html": "",
+ "api": [
+  {
+   "op": "sellerOrdersQuery",
+   "body": {
+    "data": {
+     "orders": {
+      "ordersList": [
+       {
+        "id": "t900000601",
+        "itemId": "m900000203",
+        "status": "wait_shipping",
+        "price": 2500,
+        "created": 1794700000
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

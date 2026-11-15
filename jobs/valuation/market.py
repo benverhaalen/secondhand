@@ -3,6 +3,10 @@
 Agent proposal (research/price/ben/pricing-in-context.md, spec/features/price.md "Range", money D1, D3, D5).
 Treats a used item like an illiquid asset priced off its market:
 
+0. The product's own recent sales come first (money D1, plan.md section 9). The middle is the attribute model's price
+   moved by the median of the product's last ANCHOR_K residuals in ANCHOR_DAYS, shrunk toward zero by how far products
+   sit from the attribute model against how noisy one sale is (empirical Bayes: w = tau2 / (tau2 + sigma2 / n)). With no
+   product id or no recent sale it is the attribute model alone. Anchored and unanchored estimates keep separate bands.
 1. Hedonic regression on SOLD rows only (money D5: "Live asks enter only as a cap"). log(price) = b0 + one effect per
    attribute level (brand, category, condition, size, era, site) + a time trend, by ridge least squares.
    exp(effect) - 1 is what that attribute is worth against the feature's most common level, with a 90% interval.
@@ -23,6 +27,7 @@ give the same answer on the same rows. Money is integer cents at the edges; the 
 """
 from __future__ import annotations
 
+import bisect
 import math
 import re
 from dataclasses import dataclass, field
@@ -40,6 +45,8 @@ RIDGE = 1.0            # guess: shrinks rare levels toward the baseline
 ALPHA = 0.20           # an 80% range (money D5)
 EXACT_L1 = 5           # guess
 SIMILAR = 2            # guess: a comp differing in at most this many of brand, category, condition, size, era is similar
+ANCHOR_K = EXACT_L1       # the product's own last five sales, D1's k
+ANCHOR_DAYS = 90          # money D6's 90-day window
 MIN_12M, MIN_90D = 6, 2   # spec/databricks.md §4.5: abstain under 6 sales in 12 months, or 2 in 90 days
 DAY = 86400.0
 
@@ -144,6 +151,49 @@ def _similar(a: dict, b: dict) -> int:
     return sum(_level(a, f) != _level(b, f) for f in ("brand", "category", "condition", "size", "era"))
 
 
+def _pid(r: dict):
+    return r.get("product_id") or None
+
+
+def _index(sold: list[dict], resid) -> dict[str, tuple[list[float], list[float]]]:
+    """product_id -> (sale times, attribute-model residuals), oldest first."""
+    by: dict[str, list] = {}
+    for r, e in zip(sold, resid):
+        if _pid(r):
+            by.setdefault(_pid(r), []).append((_t(r["at"]), float(e)))
+    return {p: ([t for t, _ in v], [e for _, e in v]) for p, v in ((p, sorted(v)) for p, v in by.items())}
+
+
+def _offset(es: list[float], shrink: tuple[float, float]) -> float:
+    tau2, sigma2 = shrink
+    return tau2 / (tau2 + sigma2 / len(es)) * float(np.median(es)) if tau2 > 0 else 0.0
+
+
+def _anchor_fit(by: dict, alpha: float) -> dict | None:
+    """How far products sit from the attribute model (tau2) and how noisy one sale is (sigma2), then the band of the
+    anchored middle's own errors, each sale predicted from the product's sales before it."""
+    means, noise = [], []
+    for _, es in by.values():
+        if len(es) >= 2:
+            means.append(float(np.mean(es)))
+            noise.append((float(np.var(es, ddof=1)), len(es)))
+    if len(means) < MIN_GROUP:
+        return None
+    sigma2 = float(np.mean([v for v, _ in noise]))
+    tau2 = max(0.0, float(np.var(means, ddof=1)) - float(np.mean([v / n for v, n in noise])))
+    errs: list[float] = []
+    for ts, es in by.values():
+        for i, t in enumerate(ts):
+            lo = bisect.bisect_left(ts, t - ANCHOR_DAYS * DAY, 0, i)
+            j = bisect.bisect_left(ts, t, lo, i + 1)
+            prior = es[max(lo, j - ANCHOR_K):j]
+            if prior:
+                errs.append(es[i] - _offset(prior, (tau2, sigma2)))
+    if len(errs) < MIN_GROUP:
+        return None
+    return {"tau2": tau2, "sigma2": sigma2, "band": {"*": (_q(errs, alpha / 2), _q(errs, 0.5), _q(errs, 1 - alpha / 2))}}
+
+
 @dataclass
 class Model:
     hedonic: Hedonic
@@ -151,13 +201,39 @@ class Model:
     widen: dict[str, float]
     sold: list[dict]
     asks: list[dict]
+    anchor: dict | None = None          # _anchor_fit's shrinkage and band; None prices from the attributes alone
+    by_product: dict = field(default_factory=dict, repr=False)
 
-    def interval(self, item: dict, at: str) -> tuple[float, float, float]:
-        """(q10, q50, q90) in cents for a sale of `item` on `at`."""
+    def __post_init__(self):
+        if not self.by_product and len(self.hedonic.resid) == len(self.sold):
+            self.by_product = _index(self.sold, self.hedonic.resid)
+
+    def _recent(self, item: dict, at: str, recent: list[dict] | None) -> list[float]:
+        """Residuals of the product's last ANCHOR_K sales in the ANCHOR_DAYS before `at`. `recent` hands in the
+        product's sold rows directly (the backtest's frozen history); otherwise the fitted rows are used."""
+        t = _t(at)
+        if recent is not None:
+            rs = sorted((r for r in recent if r.get("price_cents", 0) > 0 and 0 < t - _t(r["at"]) <= ANCHOR_DAYS * DAY),
+                        key=lambda r: _t(r["at"]))[-ANCHOR_K:]
+            return [math.log(r["price_cents"] / 100.0) - self.hedonic.log_point(r, r["at"]) for r in rs]
+        ts, es = self.by_product.get(_pid(item), ([], []))
+        lo, j = bisect.bisect_left(ts, t - ANCHOR_DAYS * DAY), bisect.bisect_left(ts, t)
+        return es[max(lo, j - ANCHOR_K):j]
+
+    def point(self, item: dict, at: str, recent: list[dict] | None = None) -> tuple[float, bool]:
+        """log dollars of the middle, and whether the product's own sales anchored it."""
         mu = self.hedonic.log_point(item, at)
+        es = self._recent(item, at, recent) if self.anchor and (recent is not None or _pid(item)) else []
+        return (mu + _offset(es, (self.anchor["tau2"], self.anchor["sigma2"])), True) if es else (mu, False)
+
+    def interval(self, item: dict, at: str, recent: list[dict] | None = None) -> tuple[float, float, float]:
+        """(q10, q50, q90) in cents for a sale of `item` on `at`."""
+        mu, anchored = self.point(item, at, recent)
         g = _level(item, "category")
-        lo, mid, hi = self.band.get(g, self.band["*"])
-        w = self.widen.get(g, self.widen["*"])
+        band = self.anchor["band"] if anchored else self.band
+        lo, mid, hi = band.get(g, band["*"])
+        key = "|anchored" if anchored else ""
+        w = self.widen.get(g + key, self.widen.get("*" + key, self.widen["*"]))
         return math.exp(mu + lo - w) * 100, math.exp(mu + mid) * 100, math.exp(mu + hi + w) * 100
 
     def estimate(self, item: dict, *, today: str, k: int = 5) -> dict:
@@ -227,18 +303,27 @@ def fit(rows: list[dict], alpha: float = ALPHA, calib: float = CALIB) -> Model:
     if cal:
         h = Hedonic.fit(train)
         probe = Model(h, _bands(h, alpha), {"*": 0.0}, train, asks)
+        probe.anchor = _anchor_fit(probe.by_product, alpha)
+        # A held-out sale is anchored on every earlier sale of its product, held-out ones included, as the served
+        # model would be on its date; only the attribute model and the anchored band stay fitted on `train` alone.
+        probe.by_product = _index(sold, [math.log(r["price_cents"] / 100.0) - h.log_point(r, r["at"]) for r in sold])
         scores: dict[str, list[float]] = {}
         for r in cal:
             lo, _, hi = probe.interval(r, r["at"])
+            key = "|anchored" if probe.point(r, r["at"])[1] else ""
             y = r["price_cents"]
             s = max(math.log(lo / y), math.log(y / hi))
-            scores.setdefault(_level(r, "category"), []).append(s)
+            scores.setdefault(_level(r, "category") + key, []).append(s)
+            if key:
+                scores.setdefault("*" + key, []).append(s)
             scores.setdefault("*", []).append(s)
         for g, s in scores.items():
             if g == "*" or len(s) >= MIN_GROUP:
                 widen[g] = max(0.0, conformal_q(s, np.ones(len(s)), alpha))
     full = Hedonic.fit(sold)
-    return Model(full, _bands(full, alpha), widen, sold, asks)
+    m = Model(full, _bands(full, alpha), widen, sold, asks)
+    m.anchor = _anchor_fit(m.by_product, alpha)
+    return m
 
 
 def backtest(rows: list[dict], test_share: float = 0.2, alpha: float = ALPHA) -> dict:

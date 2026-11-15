@@ -34,6 +34,22 @@ test('reload preserves events, jobs, decisions, product rows and uniqueness', t 
   assert.equal(existsSync(path + '.tmp'), false, 'atomic rename leaves no temporary file');
 });
 
+test('product rows with the same id retain independent tenants and versions after reload', t => {
+  const path = fixture(t), s = fileStore(path);
+  const first = s.put('item', { id: 'it_1', user_id: 'u1', state: 'review' });
+  const second = s.put('item', { id: 'it_1', user_id: 'u2', state: 'live' });
+  const loaded = fileStore(path);
+  assert.deepEqual(loaded.get('item', 'u1', 'it_1'), first, 'first tenant survives the second insert');
+  assert.deepEqual(loaded.get('item', 'u2', 'it_1'), second, 'second tenant survives reload');
+  const updatedFirst = loaded.put('item', { ...first, state: 'live' });
+  const updatedSecond = loaded.put('item', { ...second, state: 'review' });
+  const restarted = fileStore(path);
+  assert.equal(updatedFirst.version, 2);
+  assert.equal(updatedSecond.version, 2);
+  assert.deepEqual(restarted.get('item', 'u1', 'it_1'), updatedFirst, 'second update does not move the first version');
+  assert.deepEqual(restarted.get('item', 'u2', 'it_1'), updatedSecond, 'first update does not move the second version');
+});
+
 test('transactions persist together; throwing transactions leave file and memory unchanged', t => {
   const path = fixture(t), s = fileStore(path);
   s.put('item', { id: 'it_1', user_id: 'u1' });
@@ -117,4 +133,38 @@ test('corrupt JSON and invalid state shapes throw with the path and preserve dat
     assert.throws(() => fileStore(path), error => error instanceof Error && error.message.includes(path), 'invalid state must name its path');
     assert.equal(readFileSync(path, 'utf8'), data, 'invalid state is never replaced with empty data');
   }
+});
+
+const operation = { id: 'op_1', user_id: 'u1', site: 'ebay', verb: 'post', data: 'synthetic', at: '2026-11-15T00:00:00Z' } as const;
+
+test('operation ledger: restart preserves started claims and done results without a second claim', t => {
+  const path = fixture(t), s = fileStore(path);
+  const { row } = s.beginOperation(operation);
+  const loaded = fileStore(path);
+  assert.deepEqual(loaded.get('operation', 'u1', operation.id), row);
+  assert.deepEqual(loaded.rows('operation', { user_id: 'u1', state: 'started' }), [row]);
+  assert.deepEqual(loaded.beginOperation(operation), { row, duplicate: true });
+  const unknown = loaded.settleOperation('u1', operation.id, { state: 'unknown', at: 'read-back' });
+  assert.deepEqual(fileStore(path).get('operation', 'u1', operation.id), unknown);
+  const done = loaded.settleOperation('u1', operation.id, { state: 'done', envelope: { ok: true, data: { id: 'listing_1' } }, at: 'settled' });
+  const restarted = fileStore(path);
+  assert.deepEqual(restarted.settleOperation('u1', operation.id, { state: 'done', envelope: { ok: false }, at: 'later' }), done);
+  assert.deepEqual(fileStore(path).get('operation', 'u1', operation.id), done);
+});
+
+test('operation ledger: rollback and refused envelopes leave memory and disk unchanged', t => {
+  const path = fixture(t), s = fileStore(path);
+  s.beginOperation(operation);
+  const before = readFileSync(path, 'utf8');
+  assert.throws(() => s.tx(tx => { tx.beginOperation({ ...operation, id: 'op_2' }); throw new Error('abort claim'); }), /abort claim/);
+  assert.equal(s.get('operation', 'u1', 'op_2'), undefined);
+  assert.throws(() => s.settleOperation('u1', operation.id, { state: 'done', envelope: { data: [{ cookie: 'synthetic' }] }, at: 'later' }), /envelope/);
+  assert.equal(readFileSync(path, 'utf8'), before);
+  assert.deepEqual(s.get('operation', 'u1', operation.id), fileStore(path).get('operation', 'u1', operation.id));
+  mkdirSync(path + '.tmp');
+  assert.throws(() => s.beginOperation({ ...operation, id: 'op_2' }));
+  assert.equal(s.get('operation', 'u1', 'op_2'), undefined);
+  assert.throws(() => s.settleOperation('u1', operation.id, { state: 'unknown', at: 'later' }));
+  assert.equal(readFileSync(path, 'utf8'), before);
+  assert.equal(s.get('operation', 'u1', operation.id)?.state, 'started');
 });

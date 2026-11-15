@@ -274,6 +274,25 @@ Speed odds calibrated within 5 points need about 385 resolved listings per proba
 4. **Declining works (claim 3):** on the 2,281 sales the model declined, the 90-day median was within 20% only 63% of the time against 89% overall.
 5. **StockX is easy mode:** the last sale is within 20% 97% of the time and the ceiling is 99.7%, so a deadstock market says almost nothing about used goods. Its use is as a floor: any engine that cannot match "last sale" here is missing product identity.
 
-What follows (*agent proposal*): the engine's middle price should start from the product's own recent sales (the adjusted comps of money D1, which `estimate` returns but does not use for the middle) and fall back to the hedonic model only when the product has too few. That is a change to the price engine, so it goes to whoever owns `market.py`; the backtest will score it the day it lands, tuned on the rolling origins before November 2018 and never on this test window again.
+### The fix, and the same run after it
+
+Built the same day, on the coordinator's instruction under Ben's standing rule to build the better way ([06:40](../../../product/words.md#2026-11-15-a-sale-and-a-match-ping-at-once-replies-start-as-drafts-and-agents-build-the-better-way)). [market.py](../../../jobs/valuation/market.py) now starts the middle from the product's own last 5 sales in 90 days (money D1's comps, D6's window): the attribute model's price moved by the median of those sales' residuals, shrunk by empirical Bayes (w = tau2 / (tau2 + sigma2 / n), both fitted from the training rows, nothing set by hand). With no product id or no recent sale it is the attribute model alone. Anchored estimates get their own band and their own conformal widening, and a held-out calibration sale is anchored on every earlier sale of its product, as the served model would be.
+
+| Our model on the same 41,988 sales | Before | After | Last sale | 90-day median |
+|---|---|---|---|---|
+| Within 20% | 67.9% | **98.5%** | 97.4% | 89.1% |
+| Within 10% | 45.6% | 89.0% | 87.5% | 68.9% |
+| Median off | 11.5% ($34) | 3.3% ($10) | 3.3% ($10) | 5.8% ($19) |
+| Off by over 30% | 21.7% | 0.5% | 1.3% | 4.7% |
+| Range held (target 75 to 85%) | 80% | 78.3% (Wilson 77.9 to 78.7) | | 59% |
+| Range width | 77% | 14% | 0 | 17% |
+| Paired lift over the 90-day median, within 20% | -22 points (-28 to -18) | **+8.3 points (6.5 to 9.9)** | | |
+
+*Observed* from [backtest-stockx.json](../../../scripts/bench/out/backtest-stockx.json). What it means, *inferred*:
+
+1. On a liquid market the model now matches the best simple rule (last sale) on the middle and beats the 90-day median by 8 points, and it adds what neither baseline has: a range 14% wide that holds 78% of the time.
+2. The range misses in two cells: February 2019 (70.5%) and over $500 (61%). Those are where prices moved fastest; a range that widens with the product's own recent spread is the next change to test.
+3. **This is not a claim we may make.** The bug was found by looking at this test window, so StockX is now a tuned set. The claim needs the locked month of a dataset nobody has looked at, which is what the ledger in the next build step enforces.
+4. The pre-written sentence the runner printed, "within 20% of the sale price 98% of the time, against 90% for the 90-day sold median", is shown here only as the format; it must not leave this page.
 
 The other sources cannot be scored by this runner yet: Grailed, Mercari (Kaggle and Apify) have no sale dates; the eBay and Goodwill CC0 rows are dated but marked `may_model: false` and have no product ids. Mercari Kaggle needs the text-only loader (section 2, the public benchmark).

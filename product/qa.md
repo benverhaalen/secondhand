@@ -203,7 +203,7 @@ A tag or message that says "ignore your instructions" is read as data and only f
 Open for Ben and Nate. *Agent proposal*: answers in the seller's own style, a short note on the first automatic message, and always honest if asked. California's bot disclosure law (Business and Professions Code 17940 to 17943) bars an undisclosed bot that encourages a sale, so a disclosure is the safe default for a launch ([privacy and data](../research/cross-cutting/nate/privacy-and-data.md), *asserted*).
 
 **Which models do you use?**
-Say what the build calls on the day. The plan: OpenAI image decisions for identify, Seedream 5.5 for studio renders (Nano Banana 2.1 only as a fallback, and no whole-item redraw without a tape reading), Claude models on the Databricks gateway for text, all through one gateway that logs every call ([Databricks §8](../spec/databricks.md#8-the-workspace)).
+Say what the build calls on the day. The plan: OpenAI image decisions for identify, Nano Banana 2.1 for studio renders (no whole-item redraw without a tape reading), Claude models on the Databricks gateway for text, all through one gateway that logs every call ([Databricks §8](../spec/databricks.md#8-the-workspace)).
 
 ## 6. Data and Databricks
 

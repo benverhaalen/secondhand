@@ -391,5 +391,328 @@
     "recorded_on": null
    }
   }
+ ],
+ "market_note": "Agent proposal, 2026-11-15, for Nate and Ben to change before the first benchmark run and never after it. The first 20 items of the open benchmark (spec/benchmark.md): products named exactly enough to be the same item on every site, four in each of five families. They are not owned items: no photo, no measurement. `query` is what a person would type; `identity` is what an exact match must agree with. Each identity is asserted from the maker's own naming and is checked against the maker's page on the day of the run. `sold_later` is filled only from a sale dated after the answers.",
+ "market_items": [
+  {
+   "id": "m-clothes-1",
+   "kind": "clothes",
+   "query": "levi's 501 original fit jeans 32x32 medium wash",
+   "identity": {
+    "brand": "Levi's",
+    "model": "501 Original Fit",
+    "variant": "men's, W32 L32, medium stonewash"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-clothes-2",
+   "kind": "clothes",
+   "query": "carhartt detroit jacket j97 brown large",
+   "identity": {
+    "brand": "Carhartt",
+    "model": "Detroit Jacket J97",
+    "variant": "men's, L, Carhartt brown, blanket lined"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-clothes-3",
+   "kind": "clothes",
+   "query": "patagonia better sweater quarter zip mens medium grey",
+   "identity": {
+    "brand": "Patagonia",
+    "model": "Better Sweater 1/4-Zip",
+    "variant": "men's, M, Stonewash grey"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-clothes-4",
+   "kind": "clothes",
+   "query": "lululemon align high rise pant 25 black size 6",
+   "identity": {
+    "brand": "lululemon",
+    "model": "Align High-Rise Pant 25 inch",
+    "variant": "women's, size 6, black"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-shoes-1",
+   "kind": "shoes",
+   "query": "nike air force 1 '07 white mens 10",
+   "identity": {
+    "brand": "Nike",
+    "model": "Air Force 1 '07 (CW2288-111)",
+    "variant": "men's US 10, white/white"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-shoes-2",
+   "kind": "shoes",
+   "query": "dr martens 1460 smooth black mens 9",
+   "identity": {
+    "brand": "Dr. Martens",
+    "model": "1460 Smooth Leather 8-eye boot",
+    "variant": "US M9 / UK 8, black"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-shoes-3",
+   "kind": "shoes",
+   "query": "new balance 990v5 grey mens 10",
+   "identity": {
+    "brand": "New Balance",
+    "model": "990v5 (M990GL5)",
+    "variant": "men's US 10 D, grey"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-shoes-4",
+   "kind": "shoes",
+   "query": "birkenstock boston suede taupe 42",
+   "identity": {
+    "brand": "Birkenstock",
+    "model": "Boston Soft Footbed, suede",
+    "variant": "EU 42 regular, taupe"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-electronics-1",
+   "kind": "electronics",
+   "query": "iphone 13 128gb midnight unlocked",
+   "identity": {
+    "brand": "Apple",
+    "model": "iPhone 13",
+    "variant": "128 GB, Midnight, unlocked"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-electronics-2",
+   "kind": "electronics",
+   "query": "nintendo switch oled white console",
+   "identity": {
+    "brand": "Nintendo",
+    "model": "Switch OLED Model (HEG-001)",
+    "variant": "white Joy-Con, console with dock"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-electronics-3",
+   "kind": "electronics",
+   "query": "sony wh-1000xm4 headphones black",
+   "identity": {
+    "brand": "Sony",
+    "model": "WH-1000XM4",
+    "variant": "black, with case"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-electronics-4",
+   "kind": "electronics",
+   "query": "kindle paperwhite 11th generation 8gb",
+   "identity": {
+    "brand": "Amazon",
+    "model": "Kindle Paperwhite (11th generation, 2021)",
+    "variant": "8 GB, black"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-furniture-1",
+   "kind": "furniture",
+   "query": "herman miller aeron size b graphite",
+   "identity": {
+    "brand": "Herman Miller",
+    "model": "Aeron chair",
+    "variant": "size B, graphite, fully adjustable arms"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-furniture-2",
+   "kind": "furniture",
+   "query": "steelcase leap v2 office chair black",
+   "identity": {
+    "brand": "Steelcase",
+    "model": "Leap V2",
+    "variant": "black fabric, adjustable arms"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-furniture-3",
+   "kind": "furniture",
+   "query": "ikea poang armchair birch",
+   "identity": {
+    "brand": "IKEA",
+    "model": "POÄNG armchair",
+    "variant": "birch veneer frame, with cushion"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-furniture-4",
+   "kind": "furniture",
+   "query": "ikea kallax 2x4 shelf white",
+   "identity": {
+    "brand": "IKEA",
+    "model": "KALLAX shelf unit",
+    "variant": "2x4 (77x147 cm), white"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-small_goods-1",
+   "kind": "small_goods",
+   "query": "kitchenaid artisan 5 quart stand mixer empire red",
+   "identity": {
+    "brand": "KitchenAid",
+    "model": "Artisan 5-Quart Tilt-Head (KSM150PS)",
+    "variant": "Empire Red, with bowl and three attachments"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-small_goods-2",
+   "kind": "small_goods",
+   "query": "le creuset dutch oven 5.5 qt flame",
+   "identity": {
+    "brand": "Le Creuset",
+    "model": "Signature Round Dutch Oven",
+    "variant": "5.5 qt, Flame, with lid"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-small_goods-3",
+   "kind": "small_goods",
+   "query": "lego star wars millennium falcon 75257",
+   "identity": {
+    "brand": "LEGO",
+    "model": "Star Wars Millennium Falcon 75257",
+    "variant": "complete with minifigures"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  },
+  {
+   "id": "m-small_goods-4",
+   "kind": "small_goods",
+   "query": "dyson v8 absolute cordless vacuum",
+   "identity": {
+    "brand": "Dyson",
+    "model": "V8 Absolute",
+    "variant": "with charger and standard heads"
+   },
+   "sold_later": {
+    "price_cents": null,
+    "sold_on": null,
+    "site": null,
+    "recorded_by": null
+   }
+  }
  ]
 }

@@ -1546,3 +1546,84 @@ Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages
 > or let everything go its cool if they can benchmark at the same time
 
 Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/waiting.md).
+
+## 2026-11-15 nano banana stays, app store coming soon, the voice waits
+Ben, project chat, 08:33 UTC, answering the image model, App Store and capture voice questions.
+> stay on nanobanana for 1. 2. coming soon. 3. wait on the voice, plan for later.
+
+Used in: [intent ledger](../spec/intent-ledger.md), [photo F7](constitutions/photo.md), [demo D7](constitutions/demo.md).
+## 2026-11-15 stop hot items and seasons; stay on Nano Banana; Depop's API is a proposal, not a claim
+
+Ben, project chat, 08:31 to 08:34 UTC (excerpts that concern product scope; the rest of the 08:31 message is about the website).
+> also, the 5.5 model i wanted is right. i dont care about hot items and seasons anymore. stop that.
+
+> propose in roi propostion being in the depop api thing but right now dont claim that we are
+
+> stay on nanobanana for 1. 2. coming soon. 3. wait on the voice, plan for later.
+
+> ensure to instruct research flows to not use opus subagents
+
+Used in: [decisions.md](decisions.md), [roi.md](roi.md), [feature-breakdown.md](feature-breakdown.md#10-hot-and-seasons-dropped), [jobs/studio/slides_run.py](../jobs/studio/slides_run.py). Note: the event-effect estimator listed under the 08:09 entry is parked since 08:31, run by nothing.
+## 2026-11-15 nate poshmark share, like and repost are suggested and the person taps
+Nate, build session (orchestrator), 2026-11-15 about 04:40 Central, after the Poshmark harness build reported that Poshmark's terms name automated liking, sharing and reposting. Two messages.
+> well lets have suggestions for liking sharing, reposting and such, or the things we can't automate we link directly, or even pull up an in app browser ideally for them to do it
+
+> just the poshmark one
+
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/waiting.md).
+
+## 2026-11-15 nate mercari under the person's approval, broad search through sites that already show it, ebay on the harness until the api is approved
+Nate, build session (orchestrator), 2026-11-15 about 05:15 Central, after the Mercari harness build quoted Mercari's rule against automated access.
+> Pull all packets from ben to see recent benchmarking and changes, ensure too you are focused on everything. Also we do read mercari, but we do it cognizently under user approval, I believe for more broad searches like the buying system that searches across all marketplaces, we are less through with mercari, and instead lean on websites that already display information from those platforms, or others as well, like we could harness dupe. Also ebay is pending api approval, so fall on the optimized harness for now
+
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
+
+## 2026-11-15 nate registers the api keys, the giannis jersey counts, the want asks what i want
+Ben, project thread "Prove the Brewers jersey buy alert", 08:36 UTC.
+> nate will register. the giannis one can count. ensure the flow asks and helps me specify what i want considering dynamic ui. color, size, etc. if not done already
+
+Used in: [scripts/demo/wants/brewers-jersey.json](../scripts/demo/wants/brewers-jersey.json), [spec/features/watch.md](../spec/features/watch.md), [app/src/app/want.tsx](../app/src/app/want.tsx), [brewers-alert-trial.md](../research/watch/ben/brewers-alert-trial.md).
+
+## 2026-11-15 the demo runs on nates harness and the cadence is a lever
+Ben, project chat, 08:42 and 08:43 UTC. Two messages.
+> plan to use however nate builds the harness to end up doing the demo. im hearing ebay api takes like a day for approval so im just going to end up using whatever he engineers up. try and see the drawbacks or benefits to levers in our design about how often we do things. so like what is the drawback of making it an hour? we can design a demo mode that never says demo mode for the backend so that we can increase the rate at which it polls or have some mechanism to make it instant. but carefully choosing how often we probe to improve our roi. also from the ways we could make money including proposed ways we need to assess the whole market for such a thing too. ask codex to conduct all this research to save my precious claude usage though just ensure ot prompt it right
+
+> switch research over to codex when you get the chance without setting the research back at all
+
+Used in: [live-buy-demo.md](live-buy-demo.md), [research/watch/ben/codex-briefs/cadence-and-market.md](../research/watch/ben/codex-briefs/cadence-and-market.md).
+## 2026-11-15 research moves to codex
+Ben, project chat, 08:43 UTC.
+> switch research over to codex when you get the chance without setting the research back at all
+
+Used in: [intent ledger](../spec/intent-ledger.md#how-the-work-runs).
+
+## 2026-11-15 the hero from the reference, four-finger hands, stop-motion sprites and a lean site workflow
+Ben, project chat, 08:31 UTC, relayed to the website thread.
+> ensure to update the workflow too for the website making too but apply it to that scenario then. for the hugeicons the hands i want you to use are hugeicons but for the default static hand i want the four finger03. for creating animations, they dont have to be crazy smooth. like stop motion like. let codex through cli handle all the generation. it should be making sprites essentially or like short animations. pick only a couple that should be done. the dap is one. the wave. pulling on something maybe. ensure the icons are aligned. the website should look super close to that one website reference i was talking about as far as the hero goes in the pills and the layout. think of a way to make the wordmark text use color or some way to improve it. ensure all written text aheres to the anti slop claudish skill or rules i have. i dont like how the top bar is black. it should really really try to use the brand guidelines and constitution well. add more of the gradient type look. the 'secondhand' text in the hero area should have the hands on either side too. and the hands should be on each side of it. another note, it looks like there is a shadow behind just the text. i want like a semi transparent overlay with a moving gradient that slowly changes color. also, the 5.5 model i wanted is right. i dont care about hot items and seasons anymore. stop that.
+
+Used in: [the website's workflow](../brand/explore/web-home/README.md), [the hero](../brand/explore/web-home/hero/index.html), [the sprites](../brand/explore/web-home/sprites/).
+
+## 2026-11-15 the depop partner api is a proposal, never a claim
+Ben, project chat, 08:32 UTC.
+> propose in roi propostion being in the depop api thing but right now dont claim that we are
+
+Used in: [intent ledger](../spec/intent-ledger.md).
+## 2026-11-15 nate take ben's asks as ideas, keep what we do better, and read ebay pages anyway
+Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages. The first came after the orchestrator listed what Ben's rulings change, one of them a reply being sent without asking after three unedited sends. The second answered the orchestrator's question after the eBay page lane's builder stopped on eBay's robots.txt and User Agreement.
+> not just three, dont just do stuff that might be thinking in a way we can understand is less than the potential and value already brought, identify which ideas are needed, what we do better, change what we can do better
+
+> read ebay pages anyway
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
+
+## 2026-11-15 nate dimensions come from the published ones first, not from a required tape
+Nate, build session (orchestrator), 2026-11-15 about 06:30 Central, after the orchestrator relayed Ben's studio rule as "no AI redraw without a tape measurement".
+> So bens request wasn't to require that we rely on tape measurement, it was misinterpreted so please don't change that. Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 67](../.agents/team/packets/team/67-nates-rulings-and-where-they-meet-bens-plans.md).
+
+## 2026-11-15 nate the system always prices with fallbacks, and its power is what it weighs in real time
+Nate, build session (orchestrator), 2026-11-15 about 07:00 Central, after the leads confirmed stronger forms of Ben's asks, among them a bar on automatic pricing that needed thirty sales in a cell.
+> Ok, while bens asks are confirmed, and you see autopricing as fair, of course the system must price and have established fallbacks, but the power of the system relies on things being realtime determined and weighed by how the system was designed
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).

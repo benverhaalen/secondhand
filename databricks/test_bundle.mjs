@@ -1,10 +1,12 @@
 // Local contracts only; the lead validates and runs the bundle on the workspace.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { DatabaseSync } from 'node:sqlite';
 import { statements } from './run-sql.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -13,6 +15,41 @@ const bundle = () => read('deploy/databricks.yml');
 const market = (name) => read(`databricks/pipelines/market/${name}.sql`);
 const resourceFiles = () => ['deploy/databricks.yml', ...readdirSync(join(root, 'deploy/resources')).filter(f => f.endsWith('.yml')).map(f => `deploy/resources/${f}`)];
 const block = (text, key, indent) => text.match(new RegExp(`^${' '.repeat(indent)}${key}:\\n([\\s\\S]*?)(?=^ {0,${indent}}\\S|$(?![\\s\\S]))`, 'm'))?.[1] ?? '';
+
+const validatePaths = (text, file, base = root) => {
+  const pipelines = block(text, 'pipelines', 2);
+  for (const match of pipelines.matchAll(/\b(?:path|include):\s*\[?["']?([^\s,"'\[\]}]+)/g)) {
+    assert.doesNotMatch(match[1], /(^|[^*])\*(?!\*)/, `${file}: pipeline libraries require a double asterisk '**'`);
+  }
+  let paths = 0;
+  // Minimal fallback when yaml is absent: inspect all supported path keys, including flow mappings.
+  for (const match of text.matchAll(/\b(python_file|path|include):\s*\[?["']?([^\s,"'\[\]}]+)/g)) {
+    const value = match[2];
+    if (match[1] === 'include' && !value.includes('*')) continue;
+    const target = resolve(base, dirname(file), value);
+    if (value.includes('*')) {
+      const folder = target.slice(0, target.indexOf('*')).replace(/[\\/]$/, '');
+      assert.ok(existsSync(folder), `${file}: glob folder missing: ${value}`);
+      const suffix = value.endsWith('/**') ? '.sql' : target.slice(target.lastIndexOf('*') + 1);
+      assert.ok(readdirSync(folder, { withFileTypes: true }).some(f => f.isFile() && f.name.endsWith(suffix)), `${file}: empty glob: ${value}`);
+    } else assert.ok(existsSync(target), `${file}: missing path: ${value}`);
+    paths++;
+  }
+  return paths;
+};
+
+test('pipeline glob validation rejects single stars in every library and requires SQL', (t) => {
+  const base = mkdtempSync(join(tmpdir(), 'pipeline-glob-'));
+  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const pipeline = (value) => `resources:\n  pipelines:\n    first:\n      libraries:\n        - glob: { include: "./**" }\n    second:\n      libraries:\n        - glob: { include: "${value}" }\n`;
+  writeFileSync(join(base, 'readme.txt'), 'no SQL');
+  assert.throws(() => validatePaths(pipeline('./**'), 'pipeline.yml', base), /empty glob/);
+  writeFileSync(join(base, 'source.sql'), 'SELECT 1;');
+  assert.equal(validatePaths(pipeline('./**'), 'pipeline.yml', base), 2);
+  for (const value of ['./*.sql', './**/*.sql', './*/**']) {
+    assert.throws(() => validatePaths(pipeline(value), 'pipeline.yml', base), /double asterisk/);
+  }
+});
 
 test('bundle uses secondhand and includes market resources and synced SQL', () => {
   assert.match(block(block(bundle(), 'variables', 0), 'catalog', 2), /default: secondhand\b/);
@@ -30,19 +67,7 @@ test('all bundle task files and pipeline globs resolve relative to their declari
   for (const file of resourceFiles()) {
     const text = read(file);
     if (yaml) assert.ok(yaml.parse(text), `${file}: invalid YAML`);
-    // Minimal fallback when yaml is absent: inspect all supported path keys, including flow mappings.
-    for (const match of text.matchAll(/\b(python_file|path|include):\s*\[?["']?([^\s,"'\[\]}]+)/g)) {
-      const value = match[2];
-      if (match[1] === 'include' && !value.includes('*')) continue;
-      const target = resolve(root, dirname(file), value);
-      if (value.includes('*')) {
-        const folder = target.slice(0, target.indexOf('*')).replace(/[\\/]$/, '');
-        assert.ok(existsSync(folder), `${file}: glob folder missing: ${value}`);
-        const suffix = target.slice(target.lastIndexOf('*') + 1);
-        assert.ok(readdirSync(folder).some(f => f.endsWith(suffix)), `${file}: empty glob: ${value}`);
-      } else assert.ok(existsSync(target), `${file}: missing path: ${value}`);
-      paths++;
-    }
+    paths += validatePaths(text, file);
   }
   assert.ok(paths >= 14, 'expected nine folds, purge, three SQL tasks and a pipeline glob');
 });
@@ -58,17 +83,26 @@ test('nightly task DAG has no missing dependencies or cycles and is at most four
     assert.ok(ready.length <= 4, `nightly_fits: ${ready.length} tasks ready together`);
     ready.forEach(t => done.add(t.key));
   }
-  for (const t of tasks) assert.ok(t.text.includes(`parameters: [${t.key}, "--catalog", "\${var.catalog}", "--schema", "\${var.market_schema}"]`), `${t.key}: missing table location parameters`);
+  for (const t of tasks) assert.ok(t.text.includes(`parameters: [${t.key}, "--catalog", "\${var.catalog}", "--schema", "\${var.market_schema}", "--root", "\${workspace.file_path}"]`), `${t.key}: missing table location parameters`);
 });
 
-test('setup runs layout, tables, then governance on the existing warehouse', () => {
+test('setup runs layout, tables, provenance migration, then governance', () => {
   const setup = read('deploy/resources/setup.yml');
   const tasks = [...setup.matchAll(/- task_key: (\w+)([\s\S]*?)(?=\n        - task_key:|$)/g)];
-  assert.equal(tasks.length, 3);
+  assert.equal(tasks.length, 4);
+  assert.match(setup, /environment_key: migration\s+spec:\s+environment_version: "3"/);
+  assert.ok(!existsSync(join(root, 'databricks/sql/01b_data.sql')));
   tasks.forEach((t, i) => {
-    assert.ok(t[2].includes(['00_layout.sql', '01_tables.sql', '02_governance.sql'][i]));
-    assert.match(t[2], /warehouse_id: \$\{var.warehouse_id\}/);
-    assert.match(t[2], /source: WORKSPACE/);
+    assert.ok(t[2].includes(['00_layout.sql', '01_tables.sql', 'migrate_data.py', '02_governance.sql'][i]));
+    if (i === 2) {
+      assert.match(t[2], /spark_python_task:/);
+      assert.match(t[2], /environment_key: migration/);
+      assert.ok(t[2].includes('parameters: ["--root", "${workspace.file_path}"]'));
+      assert.doesNotMatch(t[2], /sql_task:|warehouse_id:/);
+    } else {
+      assert.match(t[2], /warehouse_id: \$\{var.warehouse_id\}/);
+      assert.match(t[2], /source: WORKSPACE/);
+    }
     if (i) assert.ok(t[2].includes(`task_key: ${tasks[i - 1][1]}`));
   });
 });
@@ -85,6 +119,10 @@ test('layout is idempotent, commented and split into exactly six complete statem
   }
   for (const name of ['raw', 'market', 'measures']) assert.ok(parts.some(p => p.startsWith(`CREATE SCHEMA IF NOT EXISTS secondhand.${name} `)), name);
   for (const name of ['landing', 'captures', 'snapshots']) assert.ok(parts.some(p => p.startsWith(`CREATE VOLUME IF NOT EXISTS secondhand.raw.${name} `)), name);
+});
+
+test('pipeline libraries use a recursive glob', () => {
+  assert.match(read('deploy/resources/market.yml'), /include: \.\.\/\.\.\/databricks\/pipelines\/market\/\*\*\s*$/m);
 });
 
 test('pipeline uses only modern declarations and has one file per dataset', () => {
@@ -143,4 +181,102 @@ test('product and daily summaries keep undated rows and the valuation product sh
   const daily = market('comp_daily');
   for (const value of ['date(at) AS day', 'count(*) AS n', 'percentile_approx(price_cents, 0.5) AS median_cents', 'min(price_cents)', 'max(price_cents)', 'GROUP BY source, site, kind, price_type, date(at)']) assert.ok(daily.includes(value), value);
   assert.doesNotMatch(daily, /WHERE/i, 'undated rows must remain under day NULL');
+});
+
+
+test('every proof Python task gets the synced repository root', () => {
+  const proof = read('deploy/resources/proof.yml');
+  for (const name of ['recompute', 'load_logs', 'parity']) {
+    const task = block(block(block(proof, 'resources', 0), 'jobs', 2), name, 4);
+    assert.ok(task.includes('parameters: ["--root", "${workspace.file_path}"]'), name);
+  }
+});
+
+const provenanceTables = ['observation', 'evidence', 'citation', 'guarded_number', 'claim_check', 'decision', 'event', 'job', 'storefront_snapshot', 'log_event'];
+
+test('fresh core tables and the migration cover the same provenance tables', () => {
+  const fresh = read('databricks/sql/01_tables.sql');
+  const migration = read('databricks/tasks/migrate_data.py');
+  const tables = migration.match(/TABLES = \(([\s\S]*?)\)/)?.[1];
+  assert.deepEqual([...tables.matchAll(/'([^']+)'/g)].map(m => m[1]), provenanceTables);
+  for (const table of provenanceTables) {
+    const ddl = fresh.split(`CREATE TABLE IF NOT EXISTS secondhand.core.${table} (`)[1]?.split(') COMMENT')[0];
+    assert.match(ddl ?? '', /data STRING NOT NULL COMMENT '[^']+'/i, table);
+  }
+  assert.match(migration, /FROM secondhand\.information_schema\.columns/);
+  assert.match(migration, /table_schema = 'core' AND column_name = 'data'/);
+  assert.match(migration, /SELECT table_name, is_nullable/);
+});
+
+test('market comps fail the update if dataset provenance is missing', () => {
+  const sql = market('comp');
+  assert.match(sql, /data STRING COMMENT '[^']+'/);
+  assert.match(sql, /concat\('dataset:', r\.source\) AS data/i);
+  assert.match(sql, /EXPECT \(data IS NOT NULL\) ON VIOLATION FAIL UPDATE/);
+});
+
+test('all proof count views expose provenance and group counts by it', () => {
+  const sql = read('databricks/sql/03_measures.sql');
+  for (const view of ['citation_coverage', 'hidden_numbers', 'decisions_by_policy', 'never_automated']) {
+    const statement = statements(sql).find(s => s.startsWith(`CREATE OR REPLACE VIEW secondhand.measures.${view}`));
+    assert.ok(statement, view);
+    assert.match(statement, /SELECT[^;]*\bdata\b[^;]*FROM/s, view);
+    if (view !== 'never_automated') assert.match(statement, /GROUP BY[^;]*\bdata\b/, view);
+  }
+});
+
+test('governance uses measured metadata names and includes ABAC tags alongside direct coverage', () => {
+  const sql = statements(read('databricks/sql/03_measures.sql')).find(s => s.startsWith('CREATE OR REPLACE VIEW secondhand.measures.governance_coverage'));
+  for (const view of ['row_filters', 'column_masks']) {
+    const selection = sql.slice(sql.lastIndexOf('SELECT', sql.indexOf(`FROM secondhand.information_schema.${view}`)), sql.indexOf(`FROM secondhand.information_schema.${view}`));
+    assert.match(selection, /table_catalog AS catalog_name, table_schema AS schema_name, table_name/);
+  }
+  assert.match(sql, /column_name = 'user_id' AND tag_name = 'sh_owner' AND tag_value = 'user_id'/);
+  assert.match(sql, /tag_name = 'sh_personal' AND tag_value = 'handle'/);
+  assert.match(sql, /UNION[\s\S]*FROM secondhand\.information_schema\.column_tags/);
+  assert.match(sql, /count\(DISTINCT column_name\) AS masked_columns/);
+  assert.match(sql, /AS direct_filter_count/);
+  assert.match(sql, /AS direct_masked_columns/);
+  assert.match(sql, /coalesce\(f\.filter_count, 0\) > 0 OR coalesce\(o\.owner_tags, 0\) > 0 AS has_row_filter/);
+});
+
+test('governance query covers direct, tagged and overlapping columns without double counting', () => {
+  const db = new DatabaseSync(':memory:');
+  try {
+    db.exec(`
+      CREATE TABLE tables (table_catalog TEXT, table_schema TEXT, table_name TEXT, table_type TEXT);
+      CREATE TABLE row_filters (table_catalog TEXT, table_schema TEXT, table_name TEXT, filter_name TEXT, target_columns TEXT);
+      CREATE TABLE column_masks (table_catalog TEXT, table_schema TEXT, table_name TEXT, column_name TEXT, mask_name TEXT, using_columns TEXT);
+      CREATE TABLE table_tags (catalog_name TEXT, schema_name TEXT, table_name TEXT, tag_name TEXT, tag_value TEXT);
+      CREATE TABLE column_tags (catalog_name TEXT, schema_name TEXT, table_name TEXT, column_name TEXT, tag_name TEXT, tag_value TEXT);
+      INSERT INTO tables VALUES
+        ('secondhand', 'core', 'direct', 'MANAGED'), ('secondhand', 'core', 'tagged', 'MANAGED'),
+        ('secondhand', 'core', 'overlap', 'MANAGED'), ('secondhand', 'core', 'bare', 'MANAGED');
+      INSERT INTO row_filters VALUES
+        ('secondhand', 'core', 'direct', 'owner_only', 'user_id'), ('secondhand', 'core', 'overlap', 'owner_only', 'user_id');
+      INSERT INTO column_masks VALUES
+        ('secondhand', 'core', 'direct', 'handle', 'mask_handle', ''), ('secondhand', 'core', 'overlap', 'handle', 'mask_handle', '');
+      INSERT INTO column_tags VALUES
+        ('secondhand', 'core', 'tagged', 'user_id', 'sh_owner', 'user_id'),
+        ('secondhand', 'core', 'tagged', 'handle', 'sh_personal', 'handle'),
+        ('secondhand', 'core', 'overlap', 'user_id', 'sh_owner', 'user_id'),
+        ('secondhand', 'core', 'overlap', 'handle', 'sh_personal', 'handle'),
+        ('secondhand', 'core', 'overlap', 'other_handle', 'sh_personal', 'handle'),
+        ('secondhand', 'core', 'bare', 'other_column', 'sh_owner', 'user_id'),
+        ('secondhand', 'core', 'bare', 'handle', 'sh_personal', 'other_value'),
+        ('secondhand', 'market', 'bare', 'user_id', 'sh_owner', 'user_id');
+    `);
+    const sql = statements(read('databricks/sql/03_measures.sql')).find(s => s.startsWith('CREATE OR REPLACE VIEW secondhand.measures.governance_coverage'));
+    // Only adapt tag-array display and catalog qualification; execute the coverage joins and counts as written.
+    const query = sql.slice(sql.indexOf('WITH filters AS ('))
+      .replaceAll('secondhand.information_schema.', '')
+      .replace('sort_array(collect_set(tag))', 'json_group_array(tag)')
+      .replace('cast(array() AS ARRAY<STRING>)', "'[]'");
+    const rows = db.prepare(query).all();
+    const coverage = Object.fromEntries(rows.map(r => [r.table_name,
+      [r.has_row_filter, r.masked_columns, r.direct_filter_count, r.direct_masked_columns, r.has_owner_tag]]));
+    assert.deepEqual(coverage, { direct: [1, 1, 1, 1, 0], tagged: [1, 1, 0, 0, 1], overlap: [1, 2, 1, 1, 1], bare: [0, 0, 0, 0, 0] });
+  } finally {
+    db.close();
+  }
 });

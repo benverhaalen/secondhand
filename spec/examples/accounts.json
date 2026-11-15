@@ -1,0 +1,29 @@
+{
+  "examples": [
+    {
+      "name": "accounts.import.queued",
+      "endpoint": "POST /v1/accounts/:id/import",
+      "path": "/v1/accounts/acc_dp1/import",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_imp_01"
+        },
+        "body": {
+          "listings": true,
+          "purchases": true,
+          "external_ids": [
+            "dp-1001",
+            "dp-1002"
+          ]
+        }
+      },
+      "status": 202,
+      "response": {
+        "id": "job_im1",
+        "kind": "import",
+        "state": "queued",
+        "stages": []
+      }
+    }
+  ]
+}

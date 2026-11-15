@@ -157,7 +157,7 @@ The Swift module's runner of `process[]`, the tutorial flag and the on-device cl
 **Selection** is `select(state)`, in this order:
 1. **The family.** `capture.type` when the person picked it or `capture_judge` swapped it. Otherwise the phone's suggestion, used for the process only, when it passes card 7's margin (top at least 0.5, lead at least 0.2). Otherwise the fallback: family `other`, `fallback: type_unsure`, and the type is the first question.
 2. **The class.** The family's default, then size: a rigid item whose longest side is 120 cm or more is `large_bulky`; a `medium_hard` item under 10 cm is `small_hard`. `other` takes its class from size: rigid and 120 cm or more `large_bulky`, rigid and 10 cm or more `medium_hard`, rigid and smaller `small_hard`, not rigid `soft_goods`. Two or more pieces wrap the result in `set_bundle`.
-3. **The process.** The family's (or kind's) shot list as section 3 step 2 builds it today, with the no-LiDAR ring and capture-shots card 1 step 3 (soft, under 10 cm: stills, not a scan). A bundle starts with one `group` still of every piece together, then the family's list once per piece, piece by piece, each step keyed `tag.1`, `tag.2`.
+3. **The process.** The family's (or kind's) shot list as section 3 step 2 builds it today, with the no-LiDAR ring and capture-shots card 1 step 3 (soft, under 10 cm: stills, not a scan). The phone sends two flags, because LiDAR is not the same as a working scan ([capture tech docs](../../research/capture/nate/capture-tech-docs-2026-11.md)): `has_lidar` (scene depth, so `measured` ways run) and `object_capture` (`ObjectCaptureSession.isSupported` and no session failure in this capture, so `scan` steps are offered; iPhone 17 Pro sessions fail on iOS 26.4 and 26.5). A LiDAR phone without a working scan gets the ring and still measures from depth. A size from the scan's bounds is sent below `min_conf`, so the person confirms it, until a known-size box check on the fixed set passes (Apple's bounds page states no unit). A bundle starts with one `group` still of every piece together, then the family's list once per piece, piece by piece, each step keyed `tag.1`, `tag.2`.
 4. **The fields.** `root`, then the family's rows, then the class's, with a family row replacing a root row of the same name. In a bundle every row marked `per_piece` becomes one field per piece (`size_label.1`, `size_label.2`, the way `flaw.<n>` is named), and `lot_count` is added.
 
 Every bound here (0.5, 0.2, 10 cm, 120 cm), the 0.95 auto-accept and the cap below are `param` rows with those priors.
@@ -194,7 +194,7 @@ A question is data the UI renders with no logic of its own:
 - `answer` is the call that answers it: `PATCH /v1/captures/:id` with `{version, type}`, `{version, answer: {field, value}}` or `{version, refuse: field}`, which writes the attribute as `you_said` with owner evidence and returns the next plan; `POST /v1/captures/:id/photos` for a shot. A later correction on the item card stays `PATCH /v1/items/:id/attributes/:name`.
 - `words` come from the row's `ask` text, fixed per field and checked by `scripts/copy-lint.mjs` in the table's test. An eBay aspect with no row ([aspects.ts](../../app/src/engines/listing/aspects.ts)) gets `"<Aspect name>?"`. No model writes a question; if one ever rewrites `words`, the field, kind and options stay as planned and the result passes the same lint.
 
-**Which questions, in which order.** A field gets a question when it is `proposed`, or `missing` with `asked` among its ways, or when its next way is a view: a kept view that failed to read it gets a `shot` retake (at most 2, card 17), and a view outside the process gets a `shot` only when a linked site requires the field. Never asked: a `known` or `waiting` field, a `refused` one, condition when the purpose is `find`. The order is a total sort:
+**Which questions, in which order.** A field gets a question when it is `proposed`, or `missing` with `asked` among its ways, or when its next way is a view: a kept view that failed to read it gets a `shot` retake (at most 2, card 17), and a view outside the process gets a `shot` only when a linked site requires the field. Never asked: a `known` or `waiting` field, a `refused` one, condition when the purpose is `find`, and a field no linked site requires or recommends. While shots are still pending, only the type, the piece count and a retake of a kept shot are asked; the rest waits, because a later frame can still settle or change it. A known value that a linked site's form rejects (`formValue` says `invalid`) is asked again with no proposal. A field with fixed `values` is a pick over them; free text is only for a field with neither values nor candidates. The order is a total sort:
 1. `type`, then `lot_count`: their answers change which fields exist;
 2. `unlocks.required`, most first;
 3. `ready_after`, most sites first;
@@ -202,9 +202,32 @@ A question is data the UI renders with no logic of its own:
 5. effort, least first: `yes_no` and `pick_one` 1, `pick_many` 2, `number_with_unit` and `text` 3, `shot` 4;
 6. the field name.
 
-**The cap.** A field a linked site requires is always asked until it is known or refused (Nate: every needed field gets its own select, [words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). Questions for fields no linked site requires stop at 3 per item, counting those already answered; `capture_question_cap` is a `param` row with prior 3.
+**The cap.** A field a linked site requires is always asked until it is known or refused (Nate: every needed field gets its own select, [words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). Questions for fields no linked site requires stop at 3 per item, counting those of this plan already answered or refused; `capture_question_cap` is a `param` row with prior 3.
 
 **The stop.** `status` is `shooting` while a process step is not kept, `asking` while a question remains, and `done` when none does. At `done` every field not known keeps its state as the reason the item card shows.
+
+**Where a fact came from.** Every `evidence` row the plan's facts rest on carries `data` ([product §3](../product.md#3-the-data-model)): `captured` for the person's own camera, the phone's reads of those frames and what they said in this capture; `live:<site>` only for a value read from a marketplace; `dataset:<name>` for a catalogue or released set behind a `lookup`; `example` for the seeded walks. A `captured` fact is real and is never counted as a site observation.
+
+### Dimensions, and close variants
+
+A dimension is a field like any other on the ladder, tried in this order (Nate, 2026-11-15: "Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify"):
+1. `lookup`: the published dimensions of the identified product, with the identity's own confidence; known at `min_conf` 0.9.
+2. `measured`: depth or the scan (a scan's size only once calibrated, above).
+3. `derived` from the type or class, where a rule exists (none does yet; a guess is not a rule).
+4. `asked`.
+
+Identity can return two or more close variants of one product whose published dimensions differ slightly (two tables of one line in two sizes): `state.variants.dimensions = [{label, value, p}]`. The plan weighs each:
+- one variant with `p` at or past `min_conf`: its dimensions are known, nothing is asked;
+- otherwise a depth reading settles it silently when exactly one variant matches it on every part, within `max(capture_dims_match_cm, capture_dims_match_pct x value)` (priors 2 cm and 3%, `param` rows); the variant's published values are kept, with the reading as evidence;
+- otherwise exactly one question: `pick_one` between the variants, each option labelled with the variant and carrying its dimensions, none proposed, and "Something else" opening a typed or taped measurement (`parts`, `units`). A measurement is one way to answer, never demanded.
+
+### Studio asks
+
+The studio's plan ([jobs/studio/plan.py](../../jobs/studio/plan.py) `plan()`, stored by `slides_run.py:run_item` in `manifest.json` under `plan.asks`, each ask with its type and fields) says what it still needs: asks of type `cover`, `back`, `tag`, `graphic` (with a zone), `flaw` (with its kind and zone) and `measure` (with the measurement's name). They are one more source of questions in the one plan, with the same contract and order, so the person is asked once ([studio/55](../../.agents/team/packets/studio/55-slides-backend-for-nate.md)):
+- They count only after the person taps Generate (`state.studio.requested`); retouch is off unless they ask ([Nate](../../product/words.md#2026-11-14-nate-the-best-way-to-take-every-photo-tags-delayed-retouch-chosen-by-the-person)).
+- Then `studio` is one more target after the linked sites, in `completeness` and in `unlocks`. It needs `dimensions` known by the same ladder as any site, so a dimension capture already holds is never asked again. The studio's kind may name parts the class lacks (`slides.json` `kinds.<kind>.measurements`: pants waist, inseam, rise, leg opening); with Generate on, the dimensions question asks the class's parts and then those. A `measure` ask is that question.
+- Every other ask is a `shot` question with `reason: add`, `for: studio`, its `words` the ask's own text, and the zone or flaw kind carried in `shot`. The person asked for Generate, so these count as required for the studio target and are never capped.
+- The studio's own check reads each dimension with its source and confidence from the capture record; how it uses them is Ben's code. `ai_marked` from the manifest goes onto the item's photo rows (integration's join).
 
 ### Ready per site
 

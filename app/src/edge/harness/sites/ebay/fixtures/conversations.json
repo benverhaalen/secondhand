@@ -1,0 +1,6 @@
+{"href":"https://api.ebay.com/commerce/message/v1/conversation?conversation_type=FROM_MEMBERS&limit=25&offset=0","total":2,"limit":25,"offset":0,
+ "conversations":[
+  {"conversationId":"c-1001","conversationType":"FROM_MEMBERS","conversationStatus":"ACTIVE","referenceId":"110551234567","referenceType":"LISTING","unreadCount":1,
+   "latestMessage":{"messageId":"m-2001","senderUsername":"fixture_buyer_1","recipientUsername":"fixture_seller_us","createdDate":"2026-11-15T05:10:00.000Z","messageBody":"(fixture text, never kept)"}},
+  {"conversationId":"c-1002","conversationType":"FROM_MEMBERS","conversationStatus":"ACTIVE","referenceId":"110552222222","referenceType":"LISTING","unreadCount":0,
+   "latestMessage":{"messageId":"m-2002","senderUsername":"fixture_seller_us","recipientUsername":"fixture_buyer_2","createdDate":"2026-11-14T22:00:00.000Z","messageBody":"(fixture text, never kept)"}}]}
