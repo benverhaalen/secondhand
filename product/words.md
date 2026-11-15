@@ -2323,3 +2323,9 @@ Nate, orchestrator's session, 2026-11-15, about 08:35 Central.
 > check packets too for any ben incoming messages, then launch a subagent to address it, prepare rest for a wrapup and fresh new sessions
 
 Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate yes to Google Lens through treg, as designed
+Nate, orchestrator's session, 2026-11-15, about 08:40 Central, answering "May a seller's photo go to Google Lens through treg, as designed?" (the design: only when the tag, label and barcode reads abstain, one crop of the item, pixels only, through a single-use address that expires in 120 s, capped at $0.003 a capture and $0.10 a day, nothing of the answer kept but our own candidate line).
+> yes
+
+Used in: [the capture design](../spec/engines/capture.md), [the finalization spec](../spec/plans/finalization.md).
