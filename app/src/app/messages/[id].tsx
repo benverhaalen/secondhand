@@ -52,7 +52,7 @@ export default function MessageThread() {
     return (
       <Screen name="message" state="failed" skip={SKIP} nav={<Nav back={back} />}>
         <EmptyState title={`Messages with ${conv.buyer} didn’t load`}
-          action={{ id: 'thread-retry', label: 'Try again', onPress: () => router.replace(`/messages/${conv.id}${q}` as Href) }} />
+          action={{ id: 'thread-retry', label: 'Retry', onPress: () => router.replace(`/messages/${conv.id}${q}` as Href) }} />
       </Screen>
     );
   }

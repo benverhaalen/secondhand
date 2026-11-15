@@ -59,7 +59,7 @@ export default function Pickup() {
   if (asked === 'failed') {
     return (
       <Screen name="pickup" state="failed" skip={SKIP} nav={nav}>
-        <EmptyState title="This pickup didn’t load" action={{ id: 'pickup-retry', label: 'Try again', onPress: () => router.replace(`/item/${p.id}/pickup` as Href) }} />
+        <EmptyState title="This pickup didn’t load" action={{ id: 'pickup-retry', label: 'Retry', onPress: () => router.replace(`/item/${p.id}/pickup` as Href) }} />
       </Screen>
     );
   }

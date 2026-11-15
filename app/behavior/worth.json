@@ -116,7 +116,7 @@
       "at": "/worth"
     },
     {
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "checks the sales again",
       "id": "worth-retry",
       "does": "checks the sales again",

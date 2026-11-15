@@ -114,7 +114,7 @@ env:
 - extendedWaitUntil:
     visible: "Couldn’t load this search"
     timeout: 15000
-- assertVisible: "Try again"
+- assertVisible: "Retry"
 # search-retry: loads the page afresh
 - openLink: ${URL}/search?state=failed
 - extendedWaitUntil:

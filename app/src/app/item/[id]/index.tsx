@@ -55,7 +55,7 @@ export default function ItemPage() {
   if (!found) {
     // Didn't load: the one fix is to load it again (frontend-standard §4, Error). Gone: the way back to the list.
     const action = state === 'failed'
-      ? { id: 'retry', label: 'Try again', onPress: () => router.replace(`/item/${id}${world ? `?world=${world}` : ''}` as Href) }
+      ? { id: 'retry', label: 'Retry', onPress: () => router.replace(`/item/${id}${world ? `?world=${world}` : ''}` as Href) }
       : { id: 'failed-sell', label: 'Go to Sell', onPress: () => router.replace('/sell' as Href) };
     return (
       <Screen name="item" state="failed" skip={skipFor('failed')} nav={<Nav back={back} />}>

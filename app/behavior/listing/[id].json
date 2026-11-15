@@ -22,7 +22,7 @@
     "A visitor sees everything; Offer and Watch take them to sign in at that moment.",
     "A listing that is gone shows the gone page, with nothing that would act on it (break-ui: a gone match still offered Offer).",
     "An offer over the asking price can't be sent: the disabled button says 'Over their price of $64' (break-ui: Something else took $1,000,000).",
-    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
+    "Loading is the page's skeleton, failed says what did not load with Retry, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
   ],
   "states": [
     {
@@ -75,7 +75,7 @@
       "route": "/listing/mt_d1?state=failed",
       "shows": "Couldn’t load this listing",
       "also": [
-        "Try again"
+        "Retry"
       ]
     },
     {

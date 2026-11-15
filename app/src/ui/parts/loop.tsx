@@ -119,7 +119,7 @@ export function Approve({ id, does, status = 'ready', step, done, failed, onAppr
   }
   return (
     <View style={{ gap: space.s2 }}>
-      <FootButton id={id} label={status === 'failed' ? 'Try again' : does} icon={status === 'failed' ? 'refresh' : undefined}
+      <FootButton id={id} label={status === 'failed' ? 'Retry' : does} icon={status === 'failed' ? 'refresh' : undefined}
         state={status === 'working' ? 'working' : 'idle'} step={step} onPress={onApprove} />
       {status === 'failed' && failed ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1 }}>

@@ -67,7 +67,7 @@ export default function Ship() {
   if (asked === 'failed') {
     return (
       <Screen name="ship" state="failed" skip={SKIP} nav={nav}>
-        <EmptyState title="This sale didn’t load" action={{ id: 'ship-retry', label: 'Try again', onPress: () => router.replace(`/item/${p.id}/ship` as Href) }} />
+        <EmptyState title="This sale didn’t load" action={{ id: 'ship-retry', label: 'Retry', onPress: () => router.replace(`/item/${p.id}/ship` as Href) }} />
       </Screen>
     );
   }

@@ -7,7 +7,7 @@
     "how_often": "Rarely, each one: a page is opened to change one thing or check one number, then left.",
     "came_to": "Change one setting or limit, link a site, undo one automatic step, or download the year's sales.",
     "costly_mistake": "A price set without the person's tap (limits end in Approve); a rule turned on before the person approved it three times without a change (its switch is disabled and says why); deleting an account while a sale is open (refused, and says so). Accepting an offer from the lock screen without the owner's face: Accept, Approve and Counter always need Face ID, and that row has no switch.",
-    "ways_out": "spec/ways-out.md: Pause selling (away mode where a site has one, end and bring back elsewhere, never relisting on Poshmark), never suggest photo edits, units and currency, delete (refused while a sale is open), a site's 2FA or captcha (Try again or leave it), unlink a site (Undo for a few seconds). Notifications: every kind can be switched off, quiet hours (a deadline inside them is sent before they start), Group by item.",
+    "ways_out": "spec/ways-out.md: Pause selling (away mode where a site has one, end and bring back elsewhere, never relisting on Poshmark), never suggest photo edits, units and currency, delete (refused while a sale is open), a site's 2FA or captcha (Retry or leave it), unlink a site (Undo for a few seconds). Notifications: every kind can be switched off, quiet hours (a deadline inside them is sent before they start), Group by item.",
     "in_the_loop": "Rules and limits is where the hand-off line is drawn and moved: what runs alone with a switch, what always asks without one, and each item's lowest price, saved only on Approve. Activity shows every automatic step with Undo while it can be undone where it happened. Your sites puts every place a site and our record disagree first, each with Open on the site, so the person can check the site itself. Permissions lists every kind of step as On its own (with Undo), Asks first, Always asks or Never; a person can make any kind more careful there, and a kind runs on its own only after 3 unedited approvals, under Rules and limits."
   },
   "states": [
@@ -44,7 +44,7 @@
     {
       "state": "connections typical",
       "path": "/you/connections",
-      "shows": "Your sites; five rows by logo: three Linked with when they were checked (each opens that site's page), one Needs you with the time it signed out and Try again, one Not linked with Link; the line that the password goes to the site; nothing doesn't match, so no Doesn’t match section"
+      "shows": "Your sites; five rows by logo: three Linked with when they were checked (each opens that site's page), one Needs you with the time it signed out and Retry, one Not linked with Link; the line that the password goes to the site; nothing doesn't match, so no Doesn’t match section"
     },
     {
       "state": "connections mismatch",
@@ -54,12 +54,12 @@
     {
       "state": "connections loading",
       "path": "/you/connections",
-      "shows": "after Link or Try again: that row says Signing in, its pill spins, the other rows stay as they were and can still be tapped"
+      "shows": "after Link or Retry: that row says Signing in, its pill spins, the other rows stay as they were and can still be tapped"
     },
     {
       "state": "connections failed",
       "path": "/you/connections",
-      "shows": "after Link on Mercari the first time: Didn’t link, The code from your phone timed out, and Try again; a second try links"
+      "shows": "after Link on Mercari the first time: Didn’t link, The code from your phone timed out, and Retry; a second try links"
     },
     {
       "state": "rules typical",
@@ -114,7 +114,7 @@
     {
       "state": "failed (any page)",
       "path": "/you/payouts?state=failed",
-      "shows": "Couldn’t load your payouts, that the site didn’t answer and nothing changed, and Try again"
+      "shows": "Couldn’t load your payouts, that the site didn’t answer and nothing changed, and Retry"
     },
     {
       "state": "offline (any page)",
@@ -204,7 +204,7 @@
     {
       "id": "link-mercari",
       "control": "Link",
-      "on_tap": "starts that site's sign-in: Signing in, then Linked, or Didn’t link with Try again",
+      "on_tap": "starts that site's sign-in: Signing in, then Linked, or Didn’t link with Retry",
       "does": "links the site",
       "path": "/you/connections",
       "logs": {
@@ -216,7 +216,7 @@
     },
     {
       "id": "link-poshmark",
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "signs in again: Signing in, then Linked",
       "does": "relinks the site",
       "path": "/you/connections",
@@ -548,7 +548,7 @@
     },
     {
       "id": "page-retry",
-      "control": "Try again (a page that failed)",
+      "control": "Retry (a page that failed)",
       "on_tap": "loads the page again",
       "does": "tries again",
       "path": "/you/payouts?state=failed"
@@ -708,7 +708,7 @@
     "One route for every page under You, so a push or a link opens any directly (spec/pages.md §1, rule 2); each page is its own file in app/src/you/.",
     "By site, worth and the goal share one page: three short subjects that fit in under three screens (spec/pages.md §1, rule 4).",
     "Sites are their logos with their state in words, never their names in words (C5); every row runs on its own, so one sign-in never blocks the rest (Ben, 03:22).",
-    "The demo's first Link on Mercari stops at the site's code step and times out, so the error and Try again can be seen and tested; the second try links.",
+    "The demo's first Link on Mercari stops at the site's code step and times out, so the error and Retry can be seen and tested; the second try links.",
     "A rule can be switched on only once it has 3 unedited approvals; below that its switch is disabled and its line says the count (decisions: tiers that learn; only unedited approvals count).",
     "The floor and the always-accept line are the agent's guesses until the person changes them, so they show as Guess fields (dotted), and they save only on Approve: a price is never set without a tap.",
     "The ceiling here is the always-accept line: above it an offer is taken at once, below the floor it always asks. The buyer's ceiling (most you'd pay) belongs to Want and Buy.",
@@ -733,7 +733,7 @@
     "Locked kinds (a price under your lowest, sharing your address, refunds and payment, claims that it is genuine) show as Always asks with no control; taking a deal off the site shows as Never (spec/product.md §5).",
     "Taking a listing down after it sells stays On its own with no control, and its row says why: so it can't sell twice.",
     "App defaults start from spec: Sell it, the lowest price suggested from sold prices and set by the person, Clean up on and Enhance with AI off, replies in the person's voice, ship or pickup from their limits, the saved pickup spot, and only linked sites as default sites.",
-    "Every page draws loading, failed and offline from ?state= (app/src/demo/screen.ts) the same way, through app/src/you/page-status.tsx: gray shapes, Couldn’t load with Try again, or the last copy under Waiting for signal. Your sites draws loading and failed on a site's row instead, since one site signing in never blocks the page.",
+    "Every page draws loading, failed and offline from ?state= (app/src/demo/screen.ts) the same way, through app/src/you/page-status.tsx: gray shapes, Couldn’t load with Retry, or the last copy under Waiting for signal. Your sites draws loading and failed on a site's row instead, since one site signing in never blocks the page.",
     "A page that lists every setting from the start (Settings, Notifications, App defaults, Permissions) skips empty and one, with why.",
     "App defaults holds the account's cross-listing price rule, Same take-home unless the person switches it (decisions.md, 2026-11-15: cross-listing starts on same take-home). Each rule is its name and its one plain reason from SPREADS; the numbers for one jacket sit a tap under them (Ben 06:53: \"in plain language ... then see numbers if need be\"), priced by the engine's own sitePrice. One item's own rule is set on its Plan, not here.",
     "Insights holds the analytics that left You (Ben, 10:27: \"profile shouldnt have analytics\"): the week chart, Your things and How they're doing come first, then By site, worth and the goal. Activity opens from Rules and limits, and Records from Settings, so nothing that was on You is more than one row away."

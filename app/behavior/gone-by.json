@@ -48,13 +48,13 @@
       "reach": "Tap approve (\"Post 2 and lower 1\") on plan; it lasts until the site answers.",
       "shows": "Posting",
       "expected": true,
-      "then": "The foot button is busy and takes no second tap, then becomes \"Posted 2, lowered 1\" with Undo, or \"Try again\" if the site did not answer."
+      "then": "The foot button is busy and takes no second tap, then becomes \"Posted 2, lowered 1\" with Undo, or \"Retry\" if the site did not answer."
     },
     {
       "state": "failed",
       "open": "/gone-by?at=failed",
       "shows": "The site didn’t answer, so nothing went up.",
-      "then": "Tapping \"Try again\" posts again, and when it works the error line goes and the foot reads \"Posted 2, lowered 1\"."
+      "then": "Tapping \"Retry\" posts again, and when it works the error line goes and the foot reads \"Posted 2, lowered 1\"."
     },
     {
       "state": "offline",

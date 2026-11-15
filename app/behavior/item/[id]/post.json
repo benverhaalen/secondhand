@@ -132,9 +132,9 @@
       "state": "didnt-load",
       "route": "/item/it_switch/post?state=failed",
       "shows": "Can’t open this item",
-      "why": "what failed, and Try again",
+      "why": "what failed, and Retry",
       "also": [
-        "Try again"
+        "Retry"
       ]
     },
     {
@@ -378,7 +378,7 @@
     },
     {
       "id": "post-retry",
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "loads the preview again (frontend-standard §4 Error)",
       "route": "/item/it_switch/post?state=failed",
       "goes": "/item/it_switch/post"

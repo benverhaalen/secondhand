@@ -74,7 +74,7 @@ export default function Worth() {
   const named = (v: string) => { setModel(v); setTyping(false); if (v.trim()) setStage('check'); };
 
   if (waiting === 'loading' || waiting === 'failed' || waiting === 'offline') {
-    // The sales have not answered yet. Loading holds the range's place; failed says so with Try again; offline waits for
+    // The sales have not answered yet. Loading holds the range's place; failed says so with Retry; offline waits for
     // the signal (ways-out, Everywhere). No number is shown that the sales did not give.
     return (
       <Screen name="worth" state={waiting} skip={SKIP} nav={nav}>
@@ -85,7 +85,7 @@ export default function Worth() {
           <Stack>
             <Txt role="body">{waiting === 'failed' ? 'The sales didn’t load.' : 'Waiting for signal'}</Txt>
             {waiting === 'failed'
-              ? <Line gap="tight"><Pill id="worth-retry" label="Try again" onPress={() => setRetried(true)} /></Line>
+              ? <Line gap="tight"><Pill id="worth-retry" label="Retry" onPress={() => setRetried(true)} /></Line>
               : <Txt role="body" tone="ink-2">It checks the sales when you’re back online.</Txt>}
           </Stack>
         )}

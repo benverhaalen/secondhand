@@ -53,7 +53,7 @@ export default function ItemPost() {
     return (
       <RouteSheet name="item-post" state="failed" skip={skip('failed')} title="Preview" onClosed={() => router.back()}>
         <EmptyState title="Can’t open this item" line="It was deleted, or it didn’t load."
-          action={state === 'failed' ? { id: 'post-retry', label: 'Try again', onPress: () => router.replace(`/item/${id}/post` as Href) } : undefined} />
+          action={state === 'failed' ? { id: 'post-retry', label: 'Retry', onPress: () => router.replace(`/item/${id}/post` as Href) } : undefined} />
       </RouteSheet>
     );
   }

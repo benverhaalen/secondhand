@@ -7,7 +7,7 @@
     "how_often": "Rarely: when something looks wrong, or before trusting a site with more.",
     "came_to": "See what the agent did on one site and whether the site agrees, and open the site itself where it doesn't.",
     "costly_mistake": "Trusting our copy when the site shows something else: a listing still up after it sold, or a post the site refused. Those rows come first, each with Open on the site.",
-    "ways_out": "spec/ways-out.md: unlink a site (Undo for a few seconds; the listings stay up), a site's sign-in that ended (Try again), and Open on the site to fix a thing on the site itself.",
+    "ways_out": "spec/ways-out.md: unlink a site (Undo for a few seconds; the listings stay up), a site's sign-in that ended (Retry), and Open on the site to fix a thing on the site itself.",
     "in_the_loop": "Every step the agent took on this site is listed with what the check after found, and every change the site or a buyer made is listed apart, so the person sees what was ours and what wasn't."
   },
   "states": [
@@ -24,7 +24,7 @@
     {
       "state": "failed",
       "path": "/you/connections/poshmark",
-      "shows": "the logo with Needs you, the time it signed out and Try again; What we read says Nothing until you sign in again, and that its listings stay up, unchecked; no Unlink"
+      "shows": "the logo with Needs you, the time it signed out and Retry; What we read says Nothing until you sign in again, and that its listings stay up, unchecked; no Unlink"
     },
     {
       "state": "new",
@@ -79,7 +79,7 @@
     },
     {
       "id": "link-poshmark",
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "signs in again: Signing in, then Linked",
       "does": "relinks the site",
       "path": "/you/connections/poshmark",

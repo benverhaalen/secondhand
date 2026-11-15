@@ -206,7 +206,7 @@ env:
 - extendedWaitUntil:
     visible: "Couldn’t load this listing"
     timeout: 15000
-- assertVisible: "Try again"
+- assertVisible: "Retry"
 # listing-retry: loads the page afresh
 - openLink: ${URL}/listing/mt_d1?state=failed
 - extendedWaitUntil:

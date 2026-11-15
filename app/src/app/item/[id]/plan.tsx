@@ -60,7 +60,7 @@ export default function ItemPlan() {
     return (
       <RouteSheet name="item-plan" state="failed" skip={skip('failed')} title="Plan" onClosed={onClosed}>
         <EmptyState title="Can’t open this item" line="It was deleted, or it didn’t load."
-          action={state === 'failed' ? { id: 'plan-retry', label: 'Try again', onPress: () => router.replace(`/item/${id}/plan${world ? `?world=${world}` : ''}` as Href) } : undefined} />
+          action={state === 'failed' ? { id: 'plan-retry', label: 'Retry', onPress: () => router.replace(`/item/${id}/plan${world ? `?world=${world}` : ''}` as Href) } : undefined} />
       </RouteSheet>
     );
   }

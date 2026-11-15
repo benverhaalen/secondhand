@@ -1,5 +1,5 @@
 // The states every buy page draws the same way (.agents/ui-states.json "screen"; app/src/demo/screen.ts): loading is the
-// page's own skeleton, failed says what did not load and offers Try again, and offline shows the last copy under one line
+// page's own skeleton, failed says what did not load and offers Retry, and offline shows the last copy under one line
 // that says so (ways-out, Everywhere: "Waiting for signal"). Built from the kit's parts only, so a page reads as itself.
 import { router, type Href } from 'expo-router';
 import type { ReactNode } from 'react';
@@ -17,11 +17,11 @@ export function Loading({ name, nav, rows = 'card-item', skip }: { name: string;
   );
 }
 
-// "Couldn’t load your list": what did not load, that nothing changed, and Try again, which loads the page afresh.
+// "Couldn’t load your list": what did not load, that nothing changed, and Retry, which loads the page afresh.
 export function Failed({ name, nav, what, again, skip }: { name: string; nav: ReactNode; what: string; again: Href; skip?: string }) {
   return (
     <Screen name={name} state="failed" skip={skip} nav={nav}>
-      <EmptyState title={`Couldn’t load ${what}`} line="Nothing changed. Try again in a moment." action={{ id: `${name}-retry`, label: 'Try again', onPress: () => router.replace(again) }} />
+      <EmptyState title={`Couldn’t load ${what}`} line="Nothing changed. Try again in a moment." action={{ id: `${name}-retry`, label: 'Retry', onPress: () => router.replace(again) }} />
     </Screen>
   );
 }

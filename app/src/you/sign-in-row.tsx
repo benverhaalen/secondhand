@@ -14,6 +14,6 @@ export function SignInRow({ site, link, onSignIn }: { site: Site; link: LinkStat
   const detail = s === 'connected' ? 'Selling there again' : s === 'loading' ? `Finish on ${name}’s own page` : link.tried ? link.note ?? undefined : 'Nothing sells there until you sign in';
   const trail = s === 'connected'
     ? <Icon name="checkmark-circle-02" label="Linked" />
-    : <Pill id={`you-signin-${site}`} kind="second" label={link.tried ? 'Try again' : 'Sign in'} state={s === 'loading' ? 'working' : 'idle'} onPress={onSignIn} />;
+    : <Pill id={`you-signin-${site}`} kind="second" label={link.tried ? 'Retry' : 'Sign in'} state={s === 'loading' ? 'working' : 'idle'} onPress={onSignIn} />;
   return <ListRow id={`you-signed-out-${site}`} site={site} label={label} detail={detail} trail={trail} tone={s === 'error' ? 'brick' : 'ink'} />;
 }

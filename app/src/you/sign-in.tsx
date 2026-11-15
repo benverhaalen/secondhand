@@ -1,6 +1,6 @@
 // Step 1 of first launch (spec/pages.md §6.1; spec/features/connect.md, "Signing in to secondhand"): Apple, Google or an
 // email code, and it cannot be skipped. The app has no client for /v1/auth yet, so the demo drives it: Apple and Google
-// succeed after a short wait, and the email code takes any 6 digits except 000000, which fails so Try again can be seen.
+// succeed after a short wait, and the email code takes any 6 digits except 000000, which fails so Retry can be seen.
 // Every tap, state change and error goes through the app's log (src/ui/log.ts).
 import { useEffect, useRef, useState } from 'react';
 import { Blank, EmptyState, FootButton, Line, Nav, Pill, Screen, Stack, Txt } from '@/ui';
@@ -39,11 +39,11 @@ export function SignIn({ asked, onDone }: { asked: ScreenState | null; onDone: (
   const state = failed ? 'failed' : busy ? 'loading' : offline ? 'offline' : 'new';
 
   if (failed) {
-    // Try again runs the same way again: Apple or Google from the choices, the code from the code step.
+    // Retry runs the same way again: Apple or Google from the choices, the code from the code step.
     const retry = () => { setFailed(false); if (last.current === 'email') setMode('code'); else if (last.current) run(last.current); };
     return (
       <Screen name="onboarding" state="failed" nav={<Nav back={back} />} skip={SKIP}>
-        <EmptyState title="Couldn’t sign in" line="Check your connection, then try again." action={{ id: 'signin-retry', label: 'Try again', onPress: retry }} />
+        <EmptyState title="Couldn’t sign in" line="Check your connection, then try again." action={{ id: 'signin-retry', label: 'Retry', onPress: retry }} />
       </Screen>
     );
   }

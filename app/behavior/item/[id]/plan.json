@@ -96,9 +96,9 @@
       "shows": "Can’t open this item",
       "also": [
         "It was deleted, or it didn’t load.",
-        "Try again"
+        "Retry"
       ],
-      "why": "what failed; Try again is in the controls, missing"
+      "why": "what failed; Retry is in the controls, missing"
     },
     {
       "state": "not-found",
@@ -365,7 +365,7 @@
     },
     {
       "id": "plan-retry",
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "loads the plan again (frontend-standard §4 Error)",
       "route": "/item/it_jacket/plan?state=failed",
       "goes": "/item/it_jacket/plan"

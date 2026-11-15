@@ -79,7 +79,7 @@
       "state": "failed",
       "route": "/messages?state=failed",
       "shows": "Messages didn’t load",
-      "why": "the list did not load; Try again asks again"
+      "why": "the list did not load; Retry asks again"
     },
     {
       "state": "offline",
@@ -136,7 +136,7 @@
       "goes": "/messages/cv_lf"
     },
     {
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "loads the list again",
       "id": "messages-retry",
       "does": "loads the list again",

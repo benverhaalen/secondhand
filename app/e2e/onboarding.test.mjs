@@ -13,14 +13,14 @@ const SIGNED = '/onboarding?signed=1';
 const STATES = {
   new: { shows: ['secondhand', 'Continue with Apple', 'Continue with Google', 'Continue with email'], state: 'new' },
   loading: { path: '/onboarding?state=loading', shows: ['Signing in'], state: 'loading' },
-  failed: { path: '/onboarding?state=failed', shows: ['Couldn’t sign in', 'Try again'], state: 'failed' },
+  failed: { path: '/onboarding?state=failed', shows: ['Couldn’t sign in', 'Retry'], state: 'failed' },
   offline: { path: '/onboarding?state=offline', shows: ['Waiting for signal', 'Continue with Apple'], state: 'offline' },
   email: { taps: ['signin-email'], shows: ['Send code'] },
   code: { taps: ['signin-email', 'signin-email-send'], fill: true, shows: ['Sent to sam@example.com', 'Continue'] },
   sites: { path: SIGNED, shows: ['1 of 3', 'Your sites', 'Link the ones you sell on. Each one is optional.', 'Not linked', 'Skip for now'], state: 'new' },
   'sites-loading': { path: SIGNED, taps: ['link-ebay'], shows: ['Signing in'], state: 'loading' },
   'sites-typical': { path: SIGNED, taps: ['link-ebay'], wait: 1600, shows: ['Linked', '1 site linked. Add the rest now or later.', 'Continue'], state: 'typical' },
-  'sites-failed': { path: SIGNED, taps: ['link-mercari'], wait: 1600, shows: ['Didn’t link', 'The code from your phone timed out', 'Try again'], state: 'failed' },
+  'sites-failed': { path: SIGNED, taps: ['link-mercari'], wait: 1600, shows: ['Didn’t link', 'The code from your phone timed out', 'Retry'], state: 'failed' },
   'sites-offline': { path: '/onboarding?state=offline&signed=1', shows: ['Waiting for signal', 'Your sites', 'Skip for now'], state: 'offline' },
   pickup: { path: SIGNED, taps: ['onboarding-next'], shows: ['2 of 3', 'Pickup spot', 'A public place', 'Skip'] },
   photo: { path: SIGNED, taps: ['onboarding-next', 'onboarding-pickup-next'], shows: ['3 of 3', 'First photo', 'Not now', 'Take a photo'] },
@@ -109,7 +109,7 @@ test('onboarding: email asks for an address, then a 6-digit code, then continues
   await s.shows('Your sites');
 });
 
-test('onboarding: a wrong email code says Couldn’t sign in, and Try again returns to the code', async () => {
+test('onboarding: a wrong email code says Couldn’t sign in, and Retry returns to the code', async () => {
   const s = await app.open('/onboarding');
   await s.tap('signin-email');
   await s.tap('signin-email-address');

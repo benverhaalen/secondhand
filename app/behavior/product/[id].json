@@ -16,7 +16,7 @@
     "Every offer in one list is the Search page, one Notice away, with the real count.",
     "Cheaper equivalents are left out: the data has no photo for them, and every thing shown has its photo.",
     "Follow is the nav's one action (a bell); a visitor goes to sign in.",
-    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
+    "Loading is the page's skeleton, failed says what did not load with Retry, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
   ],
   "states": [
     {
@@ -47,7 +47,7 @@
       "route": "/product/pr_dunk?state=failed",
       "shows": "Couldn’t load this product",
       "also": [
-        "Try again"
+        "Retry"
       ]
     },
     {

@@ -465,7 +465,7 @@ env:
 - extendedWaitUntil:
     visible: "Couldn’t load this want"
     timeout: 15000
-- assertVisible: "Try again"
+- assertVisible: "Retry"
 # want-retry: loads the page afresh
 - openLink: ${URL}/want?state=failed
 - extendedWaitUntil:
