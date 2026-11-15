@@ -9,16 +9,16 @@ import { log } from '../../lib/log';
 import { wallPhotos } from './wall-photos';
 
 const repository = 'https://github.com/benverhaalen/secondhand';
-const docs = `${repository}/blob/main/product`;
 export { AccountAccess } from './chrome';
 
 function ExternalArrow() {
   return <svg className="external-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>;
 }
 
-function Platforms({ labeled = false }: { labeled?: boolean }) {
+function Platforms({ preview = false }: { preview?: boolean }) {
   const platforms = [['ebay', 'eBay'], ['depop', 'Depop'], ['poshmark', 'Poshmark'], ['mercari', 'Mercari'], ['facebook', 'Facebook Marketplace']];
-  return <ul className={`marketing-platforms${labeled ? ' platforms-labeled' : ''}`} aria-label="Marketplace sources">{platforms.map(([file, name]) => <li key={file}><img src={`/marketing/platforms/${file}.png`} width="32" height="32" alt={name} />{labeled && <span>{name}</span>}</li>)}</ul>;
+  const shown = preview ? platforms.slice(0, 2) : platforms;
+  return <ul className="marketing-platforms" aria-label={preview ? "Marketplaces shown" : "Marketplace sources"}>{shown.map(([file, name]) => <li key={file}><img src={`/marketing/platforms/${file}.png`} width="32" height="32" alt={name} /></li>)}</ul>;
 }
 
 function Hero() {
@@ -33,27 +33,27 @@ function Hero() {
   </section>;
 }
 
-function Phone({ screen, alt, priority = false }: { screen: string; alt: string; priority?: boolean }) {
-  return <div className="marketing-phone"><img src={`/marketing/app/${screen}.png`} alt={alt} width="880" height="1840" loading={priority ? 'eager' : 'lazy'} /></div>;
+function Phone({ screen, alt }: { screen: string; alt: string }) {
+  return <div className="marketing-phone"><img src={`/marketing/app/${screen}.png`} alt={alt} width="880" height="1840" loading="lazy" decoding="async" /></div>;
 }
 
 function HowItWorks() {
-  return <section className="marketing-scene how-scene" id="how-it-works" aria-labelledby="how-title" data-field>
+  return <section className="marketing-scene how-scene marketing-atmosphere" data-tone="process" id="how-it-works" aria-labelledby="how-title" data-field>
     <div className="marketing-wrap marketing-split how-split">
       <div className="marketing-copy"><p className="section-label">How It Works</p><h2 id="how-title">Get your clothes ready to resell from as little as one photo</h2><p className="section-body">See what similar pieces sold for, compare what you’d keep, and review your listings before you post.</p><Link className="marketing-text-link" href="/how-it-works">See the selling steps <span aria-hidden="true">→</span></Link></div>
       <figure className="selling-journey">
-        <div className="phone-pair"><div><Phone screen="capture" alt="Sample app screen. Photographing the real Marquette tee." /><p className="phone-caption">Start with your photo</p></div><span className="journey-arrow" aria-hidden="true">→</span><div><Phone screen="preview" alt="Sample app screen. Review the same Marquette tee before posting." /><p className="phone-caption">Review what goes live</p></div></div>
-        <figcaption><Platforms /><span>One item. Marketplace previews.<br /><span className="sample-note">App screens with sample data.</span></span></figcaption>
+        <div className="phone-pair"><div><Phone screen="capture" alt="App camera framing the sample Carhartt jacket." /><p className="phone-caption">Start with your photo</p></div><span className="journey-arrow" aria-hidden="true">→</span><div><Phone screen="preview" alt="Listing review for the same sample jacket." /><p className="phone-caption">Review the listings</p></div></div>
+        <figcaption><Platforms preview /><span>Sample listing previews for eBay and Depop.</span></figcaption>
       </figure>
     </div>
   </section>;
 }
 
 const features = [
-  { screen: 'plan', title: 'Compare what you’d keep.', body: 'Check sold prices and compare what is left after each site’s fees before choosing a price.', alt: 'Sample app plan for the Marquette tee, showing a price and marketplace payouts.' },
-  { screen: 'preview', title: 'Review a listing for each site.', body: 'Check the photos, title and price together. The next step stays yours to approve.', alt: 'Sample app listing preview for the Marquette tee across two marketplaces.' },
+  { screen: 'plan', title: 'Compare what you’d keep.', body: 'Check sold prices and compare what is left after each site’s fees before choosing a price.', alt: 'Sample app plan for a Carhartt jacket, showing a price and marketplace payouts.' },
+  { screen: 'preview', title: 'Review a listing for each site.', body: 'Check the photos, title and price together. The next step stays yours to approve.', alt: 'Sample app listing preview for a Carhartt jacket across two marketplaces.' },
   { screen: 'watch', title: 'Find a match within your limits.', body: 'Set your size and budget, then compare the matches with shipping included when it is known.', alt: 'Sample app Watch screen showing a search request and its limits.' },
-  { screen: 'ship', title: 'Know what needs you next.', body: 'Keep the next action beside the item, from reviewing a buyer’s offer to preparing a shipment.', alt: 'Sample app shipping screen showing the item and its next action.' },
+  { screen: 'ship', title: 'See what needs shipping.', body: 'Keep the next action beside the item, from reviewing a buyer’s offer to preparing a shipment.', alt: 'Sample app shipping screen showing the item and its next action.' },
 ];
 
 function Features() {
@@ -61,7 +61,7 @@ function Features() {
   const feature = features[page - 1];
   return <section className="marketing-scene features-scene" id="features" aria-labelledby="features-title">
     <Carousel className="marketing-wrap feature-carousel" aria-label="What you can do with secondhand" defaultPlaying onPageChange={next => { setPage(next); log.input('home', 'feature-page', { value: next }); }}>
-      <CarouselViewport className="feature-viewport"><CarouselContent className="feature-track">{features.map(item => <CarouselItem className="feature-slide" key={item.screen} aria-label={item.title}><div className="feature-phone-ground" data-field><Phone screen={item.screen} alt={item.alt} /></div></CarouselItem>)}</CarouselContent></CarouselViewport>
+      <CarouselViewport className="feature-viewport"><CarouselContent className="feature-track">{features.map(item => <CarouselItem className="feature-slide" key={item.screen} aria-label={item.title}><div className="feature-phone-ground marketing-atmosphere" data-tone="features"><Phone screen={item.screen} alt={item.alt} /></div></CarouselItem>)}</CarouselContent></CarouselViewport>
       <div className="marketing-copy feature-copy"><p className="section-label">Features</p><h2 id="features-title">AI does the prep. You decide what goes live.</h2><p className="section-body feature-summary">It reads item details from photos, drafts listings for different sites, and helps buyers find what fits.</p><div className="feature-explanation"><h3>{feature.title}</h3><p className="section-body">{feature.body}</p></div><Link className="marketing-text-link" href="/features">Explore features <span aria-hidden="true">→</span></Link></div>
       <div className="carousel-controls"><CarouselPrevious className="carousel-arrow" aria-label="Previous feature">←</CarouselPrevious><CarouselIndicatorGroup className="carousel-dots" aria-label="Choose a feature">{features.map((item, index) => <CarouselIndicator key={item.screen} page={index + 1} aria-label={item.title} />)}</CarouselIndicatorGroup><CarouselNext className="carousel-arrow" aria-label="Next feature">→</CarouselNext><CarouselPlayToggle className="carousel-play">{state => state.playing ? 'Pause' : 'Play'}</CarouselPlayToggle></div>
       <p className="feature-sample-note">App screens with sample data.</p>
@@ -75,11 +75,11 @@ function DataPipeline() {
     <div className="pipeline-flow">
       <div className="pipeline-step"><h3>Incoming records</h3><p>Listings<br />Completed sales</p></div>
       <span className="pipeline-arrow" aria-hidden="true">→</span>
-      <div className="pipeline-step"><h3>Checked in Databricks</h3><p>Lakeflow checks incoming records.<br />Unity Catalog tracks usage rules.</p><a href={`${repository}/tree/main/jobs`}>Inspect the pipeline <ExternalArrow /></a></div>
+      <div className="pipeline-step"><h3>Checked in Databricks</h3><p>Lakeflow checks incoming records.<br />Unity Catalog tracks usage rules.</p><Link href="/data-use#pipeline">Inspect the pipeline <span aria-hidden="true">→</span></Link></div>
       <span className="pipeline-arrow" aria-hidden="true">→</span>
       <div className="pipeline-step"><h3>Price evidence</h3><p>Eligible sales<br />Traceable sources</p></div>
     </div>
-    <div className="pipeline-branches"><span>Duplicates removed</span><span>Display-only records kept out of pricing</span></div>
+    <div className="pipeline-branches"><span>Invalid prices excluded</span><span>Display-only records kept out of pricing</span></div>
   </figure>;
 }
 
@@ -98,10 +98,10 @@ function DataUse() {
 
 function FAQ() {
   const questions = [
-    { id: 'approval', question: 'Who can post from my account?', answer: 'You review the listing before approving it. The app prepares the photos, title and price for each site so you can check what will be sent.', source: `${docs}/pitch-constitution.md` },
-    { id: 'two-sales', question: 'What if the same item sells on two sites?', answer: 'A second buyer can pay before the other listings are removed. The workflow is designed to flag a second payment so you can review both orders.', source: `${repository}/blob/main/scripts/bench/out/bench-sites-4.json` },
+    { id: 'approval', question: 'Who can post from my account?', answer: 'You review the listing before approving it. The app prepares the photos, title and price for each site so you can check what will be sent.', href: '/faq#who-can-post', link: 'Read the approval rules' },
+    { id: 'two-sales', question: 'What if the same item sells on two sites?', answer: 'A second buyer can pay before the other listings are removed. The workflow is designed to flag a second payment so you can review both orders.', href: '/faq#two-sites', link: 'Read about duplicate sales' },
   ];
-  return <section className="marketing-scene faq-scene" id="faq" aria-labelledby="faq-title"><div className="marketing-wrap marketing-split"><div className="marketing-copy"><p className="section-label">FAQ</p><h2 id="faq-title">What should you know before you start?</h2></div><div className="faq-content"><Accordion className="marketing-faq">{questions.map(item => <AccordionItem key={item.id} value={item.id} className="faq-item"><AccordionHeader><AccordionTrigger className="faq-trigger">{item.question}<span aria-hidden="true">+</span></AccordionTrigger></AccordionHeader><AccordionPanel className="faq-panel"><p>{item.answer}</p><a href={item.source}>See how it works <ExternalArrow /></a></AccordionPanel></AccordionItem>)}</Accordion><Link className="marketing-text-link" href="/faq">All questions <span aria-hidden="true">→</span></Link></div></div></section>;
+  return <section className="marketing-scene faq-scene" id="faq" aria-labelledby="faq-title"><div className="marketing-wrap marketing-split"><div className="marketing-copy"><p className="section-label">FAQ</p><h2 id="faq-title">What should you know before you start?</h2></div><div className="faq-content"><Accordion className="marketing-faq">{questions.map(item => <AccordionItem key={item.id} value={item.id} className="faq-item"><AccordionHeader><AccordionTrigger className="faq-trigger">{item.question}<span aria-hidden="true">+</span></AccordionTrigger></AccordionHeader><AccordionPanel className="faq-panel"><p>{item.answer}</p><Link href={item.href}>{item.link} <span aria-hidden="true">→</span></Link></AccordionPanel></AccordionItem>)}</Accordion><Link className="marketing-text-link" href="/faq">All questions <span aria-hidden="true">→</span></Link></div></div></section>;
 }
 
 export function MarketingHome() {

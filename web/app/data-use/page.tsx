@@ -9,11 +9,12 @@ export const metadata: Metadata = {
 
 const repo = 'https://github.com/benverhaalen/secondhand/blob/main/';
 const platform = [
-  { name: 'Lakeflow', title: 'Check records as they arrive.', text: 'Six public sold datasets pass through a bronze-to-silver pipeline. Expectations stop or drop bad rows, and the source’s usage rights travel with each record.', path: 'databricks/pipelines/market/comp.sql', link: 'Inspect the pipeline' },
-  { name: 'Unity Catalog', title: 'Keep access and rights with the data.', text: 'Row filters separate personal records. Column masks hide buyer and seller handles. The model reads a dedicated view containing only records marked for model use.', path: 'databricks/pipelines/market/comp_for_model.sql', link: 'Inspect the model view' },
-  { name: 'Delta', title: 'Keep the history of a decision.', text: 'Change data feed records each move in a pricing weight. Loaders merge new records, skip erased people, and use a separate deletion workflow to remove retained data.', path: 'databricks/sql/12_erasure.sql', link: 'Inspect the deletion workflow' },
-  { name: 'SQL basis check', title: 'Connect one number to its source rows.', text: 'Our SQL function opens a recorded price to its exact cited sales and rebuilds the evidence hash. A matching hash checks that the recorded basis agrees with those rows.', path: 'databricks/sql/07_why.sql', link: 'Inspect the SQL' },
-  { name: 'MLflow', title: 'Test a change before replacing a model.', text: 'Backtests and monthly weight experiments record their parameters, results, and underlying Delta table version. A challenger has to beat the current weight by more than the measured noise.', path: 'databricks/DEMO.md#4-a-weight-that-moved-only-on-evidence', link: 'Inspect the experiment' },
+  { name: 'Lakeflow', title: 'Check records as they arrive.', text: 'The pipeline turns raw CSV values into typed records. It drops invalid prices and stops an update when source identity or model-use permission is missing. Each row keeps its source and recorded permissions.', path: 'databricks/pipelines/market/comp.sql', link: 'Inspect the pipeline' },
+  { name: 'Unity Catalog', title: 'Control who can read each record.', text: 'Row filters restrict personal records to mapped accounts. Column masks obscure buyer and seller handles for readers outside the support group. Catalog policies apply these rules to tagged tables.', path: 'databricks/sql/02_governance.sql', link: 'Inspect the access policies' },
+  { name: 'Delta', title: 'Keep the history of a pricing change.', text: 'Change data feed records changes to pricing parameters. Loaders merge updates and refuse data from erased accounts. A separate job removes current records and schedules deletion of retained files.', path: 'databricks/DEMO.md#6-deletion', link: 'Inspect the deletion workflow' },
+  { name: 'Databricks SQL', title: 'Check the records behind an estimate.', text: 'Our SQL function returns the cited rows for a saved estimate. It checks their fingerprint against the one stored with the estimate, so we can detect missing or changed evidence.', path: 'databricks/sql/07_why.sql', link: 'Inspect the SQL function' },
+  { name: 'MLflow', title: 'Keep model comparisons reproducible.', text: 'Historical tests record their settings, results and the Delta table version they used. In our monthly experiment, a proposed pricing weight replaces the current one only when the improvement exceeds measured noise.', path: 'databricks/tasks/param_walk.py', link: 'Inspect the experiment' },
+  { name: 'AI/BI and Genie', title: 'Make the results easy to question.', text: 'The dashboard and Genie share the same metric definitions. We provide example SQL for the questions, and keep rates blank when they cover fewer than 30 shown prices.', path: 'databricks/genie-answers.md', link: 'Read the questions, answers and SQL' },
 ];
 
 function Arrow() { return <span aria-hidden="true">↗</span>; }
@@ -32,7 +33,7 @@ function DataIcon({ kind }: { kind: 'records' | 'check' | 'database' | 'price' }
 
 export default function DataUsePage() {
   return <main id="main" className={styles.page}>
-    <header className={styles.hero}>
+    <header className={`${styles.hero} marketing-atmosphere`} data-tone="evidence">
       <div className={styles.wrap}>
         <p className={styles.eyebrow}>Data Use</p>
         <h1>The data architecture driving intelligence</h1>
@@ -41,27 +42,27 @@ export default function DataUsePage() {
           <div className={styles.flow}>
             <div className={styles.node}><DataIcon kind="records" /><h2>Source records</h2><p>Sold prices, asking prices, dates and item details.</p></div>
             <span className={styles.connector} aria-hidden="true">→</span>
-            <div className={styles.node}><DataIcon kind="check" /><h2>Quality and rights checks</h2><p>Is it usable? What does the source allow?</p></div>
+            <div className={styles.node}><DataIcon kind="check" /><h2>Quality and usage checks</h2><p>Is the record valid? Is this use permitted?</p></div>
             <span className={styles.connector} aria-hidden="true">→</span>
             <div className={styles.node}><DataIcon kind="database" /><h2>Usable evidence</h2><p>Comparable records with their source and date.</p></div>
             <span className={styles.connector} aria-hidden="true">→</span>
             <div className={styles.node}><DataIcon kind="price" /><h2>A price you can inspect</h2><p>The estimate and the sales it rests on.</p></div>
           </div>
-          <figcaption className={styles.branch}><span aria-hidden="true">↳</span> Excluded or display only <span className={styles.branchReason}>Rights and quality determine where a row can go.</span></figcaption>
+          <figcaption className={styles.branch}><span aria-hidden="true">↳</span> Excluded or display only <span className={styles.branchReason}>Invalid records are rejected. Model-use permission is checked separately.</span></figcaption>
         </figure>
         <nav className={styles.jumpLinks} aria-label="On this page"><a className={styles.primary} href="#pipeline">Follow the pipeline <span aria-hidden="true">↓</span></a><a className={styles.secondary} href="#pricing-result">See the pricing result <span aria-hidden="true">↓</span></a><a className={styles.quiet} href="#your-data">Your account data <span aria-hidden="true">↓</span></a></nav>
       </div>
     </header>
 
     <section id="pipeline" className={`${styles.wrap} ${styles.section}`} aria-labelledby="pipeline-title">
-      <div className={styles.sectionIntro}><div><p className={styles.eyebrow}>The data pipeline</p><h2 id="pipeline-title">Messy records.<br />Clear reasons.</h2></div><p>Two prices can look alike and mean different things. We keep the source, date and usage rights so each record can be used for the right job.</p></div>
+      <div className={styles.sectionIntro}><div><p className={styles.eyebrow}>The data pipeline</p><h2 id="pipeline-title">A sold price is different<br />from an asking price.</h2></div><p>We preserve that distinction alongside the source, date and recorded permissions. A separate view admits only rows marked for model use.</p></div>
       <div className={styles.recordTable} role="table" aria-label="Illustrative data decisions">
         <div className={styles.tableHead} role="row"><span role="columnheader">Record</span><span role="columnheader">What it tells us</span><span role="columnheader">In this example</span></div>
-        <div className={`${styles.record} ${styles.used}`} role="row"><span role="cell"><span className={styles.recordIcon} aria-hidden="true">✓</span>Sold price</span><span role="cell">A comparable item sold, with permitted use.</span><span role="cell">Used as evidence</span></div>
+        <div className={`${styles.record} ${styles.used}`} role="row"><span role="cell"><span className={styles.recordIcon} aria-hidden="true">✓</span>Sold price</span><span role="cell">A comparable item sold, with permitted use.</span><span role="cell">Eligible as evidence</span></div>
         <div className={styles.record} role="row"><span role="cell"><span className={styles.recordIcon} aria-hidden="true">○</span>Asking price</span><span role="cell">What a seller wants. No completed sale.</span><span role="cell">Market context</span></div>
-        <div className={styles.record} role="row"><span role="cell"><span className={styles.recordIcon} aria-hidden="true">×</span>Duplicate</span><span role="cell">The same sale has already been recorded.</span><span role="cell">Excluded</span></div>
+        <div className={styles.record} role="row"><span role="cell"><span className={styles.recordIcon} aria-hidden="true">×</span>Invalid price</span><span role="cell">The price is zero or below.</span><span role="cell">Excluded</span></div>
       </div>
-      <p className={styles.caption}>Illustrative records, not a live estimate. Source permissions determine which records may be stored, shown or used in a model.</p>
+      <p className={styles.caption}>Illustrative records. Price validation and the model-use filter are separate checks in the pipeline.</p>
       <SourceLink path="databricks/pipelines/market/comp_for_model.sql">See which rows can enter a model</SourceLink>
     </section>
 
@@ -71,12 +72,12 @@ export default function DataUsePage() {
         <ol className={styles.platformList}>{platform.map((item, index) => <li key={item.name} className={index === 3 ? styles.basis : ''}>
           <span className={styles.number}>{index + 1}</span><div><p className={styles.toolName}>{item.name}</p><h3>{item.title}</h3><p className={styles.toolText}>{item.text}</p><SourceLink path={item.path}>{item.link}</SourceLink></div>
         </li>)}</ol>
-        <aside className={styles.engineeringNote}><p className={styles.eyebrow}>Why we built the extra step</p><p className={styles.statement}>Table lineage tells us where data came from. Our SQL check connects an individual price to its exact source rows.</p><p>That makes a number inspectable. It still needs separate evidence that its sources are current and its estimate is accurate.</p><details><summary>What happens when a check cannot pass?</summary><p>Missing rows and mismatched hashes return a failure reason. Weighted citations return “weights not stored” when the saved basis cannot support a reconstruction. We keep that uncertainty visible.</p><p>Row filters also prevented a table constraint. We added checks before publication, a guard job and a SQL alert.</p><SourceLink path="databricks/sql/07_why.sql">Read the checks and failure reasons</SourceLink></details><SourceLink path="databricks/DEMO.md">Walk through the Databricks build</SourceLink></aside>
+        <aside className={styles.engineeringNote}><p className={styles.eyebrow}>What we added</p><p className={styles.statement}>Databricks tracks where tables and columns came from. We added a check for the records behind each saved estimate.</p><p>A match confirms that the saved evidence is consistent. Source reliability and pricing accuracy need their own checks.</p><details><summary>What can this check verify?</summary><p>The function rebuilds a hash, a fingerprint of the cited records, and compares it with the saved hash. Missing rows or mismatches return a reason. Weighted citations return “weights not stored” because their saved evidence is not enough to reconstruct the weights.</p><p>A separate Databricks limitation prevented a table constraint on filtered records. We check for missing citations before publication and monitor them with a guard job and SQL alert.</p><SourceLink path="databricks/sql/07_why.sql">Read the checks and failure reasons</SourceLink></details><SourceLink path="databricks/DEMO.md">Walk through the Databricks build</SourceLink></aside>
       </div>
     </section>
 
-    <section id="pricing-result" className={styles.resultSection} aria-labelledby="result-title"><div className={styles.wrap}>
-      <p className={styles.eyebrow}>Testing on past sales</p><h2 id="result-title">84% fewer big pricing misses</h2><p className={styles.resultLead}>The research model was far less likely to price an item more than 20% away from what it actually sold for.</p>
+    <section id="pricing-result" className={`${styles.resultSection} marketing-atmosphere`} data-tone="evidence" aria-labelledby="result-title"><div className={styles.wrap}>
+      <p className={styles.eyebrow}>Testing on past sales</p><h2 id="result-title">84% fewer big pricing misses</h2><p className={styles.resultLead}>We compared estimates for the same historical sales. A big miss means a price more than 20% above or below the actual sale price.</p>
       <figure className={styles.chart} aria-label="Big pricing misses in paired historical StockX sales: 90-day median 9.8 percent, research model 1.5 percent. Lower is better.">
         <figcaption>Share of estimates more than 20% from the sale price <span>Lower is better</span></figcaption>
         <div className={styles.chartRow}><span>90-day median</span><div className={styles.track}><div className={styles.baselineBar} /></div><span className={styles.value}>9.8%</span></div>
@@ -89,8 +90,8 @@ export default function DataUsePage() {
 
     <section className={`${styles.wrap} ${styles.section}`} aria-labelledby="limits-title"><p className={styles.eyebrow}>Where the evidence runs thin</p><h2 id="limits-title">A price needs context.</h2><div className={styles.limitGrid}><div><h3>An asking price is a different signal.</h3><p>A listing tells us what a seller wants. A completed sale tells us what a buyer paid. Sparse sales, different conditions and old records all affect how much an estimate can tell you.</p></div><div><h3>Small samples need a visible limit.</h3><p>In the Databricks report, rates over fewer than 30 shown prices stay blank. The app has separate rules for its price ranges and fallback evidence. A historical sneaker result cannot stand in for every item in your closet.</p><SourceLink path="databricks/DEMO.md">Inspect the reporting rules</SourceLink></div></div></section>
 
-    <section id="your-data" className={`${styles.wrap} ${styles.section} ${styles.accountSection}`} aria-labelledby="account-title"><p className={styles.eyebrow}>Your account data</p><h2 id="account-title">What each input is for.</h2><p className={styles.accountLead}>The product’s data-use plan connects each input to a purpose and a control. These are the intended rules, with implementation details available in the repository.</p>
-      <dl className={styles.accountData}><div><dt>Photos and item details</dt><dd>Identify the item, record its condition and prepare its listing. You review the facts and photos before approving the listing.</dd></div><div><dt>Searches and preferences</dt><dd>Find items that fit what you asked for, including size, budget and condition. The plan keeps personal corrections scoped to your own results unless you opt in to shared training.</dd></div><div><dt>Marketplace connections</dt><dd>Read the listings, messages and orders needed for the actions you authorize. The plan separates connection credentials from model prompts and logs.</dd></div></dl>
+    <section id="your-data" className={`${styles.wrap} ${styles.section} ${styles.accountSection}`} aria-labelledby="account-title"><p className={styles.eyebrow}>Your account data</p><h2 id="account-title">What each input is for.</h2><p className={styles.accountLead}>This is the product’s data-use plan: what each input is for and the control a person should have. These are intended rules, not a claim that every control is live.</p>
+      <dl className={styles.accountData}><div><dt>Photos and item details</dt><dd>Identify the item, record the condition you provide and prepare its listing. The plan gives you a review of the facts and photos before approval.</dd></div><div><dt>Searches and preferences</dt><dd>Find items that fit your size, budget and condition preferences. Personal corrections are intended to affect your own results; shared training requires opt-in.</dd></div><div><dt>Marketplace connections</dt><dd>Read the listings, messages and orders needed for authorized actions. The plan keeps connection credentials out of model prompts and logs.</dd></div></dl>
       <div className={styles.nextLinks}><SourceLink path="spec/data-use.md">Read the data-use plan</SourceLink><Link className={styles.link} href="/faq">Questions about permissions <span aria-hidden="true">→</span></Link><Link className={styles.link} href="/features">See what this makes possible <span aria-hidden="true">→</span></Link></div>
     </section>
   </main>;

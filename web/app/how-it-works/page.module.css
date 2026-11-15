@@ -11,7 +11,7 @@
 .page h1, .page h2 { font-family: var(--font-text); font-weight: var(--w-text); letter-spacing: -.025em; }
 .page h1 { font-size: clamp(40px, 4.2vw, 60px); line-height: 1.08; max-width: 16ch; }
 .page h2 { font-size: clamp(32px, 3.33vw, 48px); line-height: 1.12; max-width: 16ch; }
-.intro { padding-block: 176px 96px; display: grid; grid-template-columns: 1.25fr .85fr; gap: 112px; align-items: end; }
+.intro { min-height: 680px; padding-block: 160px 96px; display: grid; grid-template-columns: 1.25fr .85fr; gap: 112px; align-items: center; }
 .label { display: flex; align-items: center; gap: var(--s-6); font-size: var(--t-15); line-height: 1.4; margin-bottom: var(--s-5); }
 .lead { margin-top: var(--s-6); max-width: 36ch; font-size: var(--t-21); line-height: 1.45; color: var(--ink-2); }
 .paths { display: grid; border-top: 1px solid var(--rule); }
@@ -21,8 +21,8 @@
 .paths a:hover > span:last-child { transform: translateY(3px); }
 .paths a:active { opacity: .8; }
 .step { scroll-margin-top: var(--s-8); }
-.step:first-child { background: var(--wash); }
 .stepGrid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 112px; min-height: 760px; padding-block: 80px; }
+.step:first-child .stepGrid { min-height: 810px; }
 .reverse .copy { grid-column: 2; grid-row: 1; }
 .reverse .phone { grid-column: 1; grid-row: 1; }
 .stepNumber { color: var(--ink-2); font-variant-numeric: tabular-nums; }
@@ -30,9 +30,17 @@
 .phone { width: var(--phone-width); max-width: 100%; margin-inline: auto; }
 .phone img { display: block; width: 100%; height: auto; aspect-ratio: 880 / 1840; }
 .phone figcaption { margin-top: var(--s-4); text-align: center; color: var(--ink-2); font-size: var(--t-13); line-height: 1.5; }
+.phonePair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-6); align-items: start; }
+.phonePair .phone { width: 100%; }
+.phonePair .phone figcaption { font-size: var(--t-15); color: var(--ink); }
+.sampleNote { grid-column: 1 / -1; color: var(--ink-2); text-align: center; font-size: var(--t-13); line-height: 1.5; }
+.progression { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-5); margin-top: var(--s-8); }
+.progression a { display: inline-flex; align-items: center; min-height: var(--control-min); font-size: var(--t-18); }
+.progression a:hover { color: var(--ink-2); }
+.progression > span { color: var(--ink-2); }
 .textLink { display: inline-flex; align-items: center; gap: var(--s-2); min-height: var(--control-min); font-size: var(--t-18); line-height: 1.4; margin-top: var(--s-6); text-decoration: underline; text-underline-offset: var(--s-1); }
 .textLink:hover { color: var(--ink-2); }
-.buying { background: var(--wash); scroll-margin-top: var(--s-8); }
+.buying { scroll-margin-top: var(--s-8); }
 .buyingGrid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 112px; min-height: 810px; padding-block: 96px; }
 .buyingDetails { margin: var(--s-8) 0 0; }
 .buyingDetails > div { display: grid; grid-template-columns: 138px 1fr; gap: var(--s-6); padding-block: var(--s-5); border-top: 1px solid var(--rule); }
@@ -54,15 +62,19 @@
 }
 @media (max-width: 760px) {
   .page { --gutter: 24px; --phone-width: 280px; }
-  .intro { grid-template-columns: 1fr; gap: var(--s-8); padding-block: 136px 64px; }
+  .intro { grid-template-columns: 1fr; gap: var(--s-8); min-height: 0; padding-block: 136px 64px; }
   .page h1 { font-size: 40px; }
   .lead { font-size: var(--t-18); }
   .paths a { padding-block: var(--s-5); }
   .stepGrid, .buyingGrid { grid-template-columns: 1fr; gap: var(--s-8); min-height: 0; padding-block: var(--s-9); }
+  .step:first-child .stepGrid { min-height: 0; }
   .reverse .copy, .reverse .phone { grid-column: auto; grid-row: auto; }
   .page h2 { font-size: var(--t-36); max-width: 18ch; }
   .body { margin-top: var(--s-5); }
   .phone { width: min(var(--phone-width), 90%); }
+  .phonePair { grid-template-columns: 1fr; gap: var(--s-4); }
+  .phonePair .phone { width: min(var(--phone-width), 90%); }
+  .pairedPreview { display: none; }
   .buyingDetails { margin-top: var(--s-7); }
   .buyingDetails > div { grid-template-columns: 112px 1fr; }
   .deeper { grid-template-columns: 1fr; gap: var(--s-6); }
