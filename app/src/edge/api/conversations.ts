@@ -1,24 +1,25 @@
 // Rests-on: spec/product.md §7 Resources; spec/examples/.
 import { createHash } from 'node:crypto';
 import { ApiError, type Handler } from './http.ts';
-import { manifestFor, fromEngine, fields, text } from './captures.ts';
+import { manifestFor, fromEngine, fields, text, object } from './captures.ts';
 
 import { type Account, type MessagePorts } from '../messages/messages.ts';
 import { offer } from '../../engines/negotiation/policy.ts';
 import { keep } from '../../engines/valuation/keep.ts';
-import { example } from './examples.ts';
+import { example, examplesServed } from './examples.ts';
 import { store as sharedStore } from './store.ts';
 import { gate } from '../gate/gate.ts';
 import { ingest } from '../events/intake.ts';
 import type { Store } from '../events/ports.ts';
 import { pagination } from './captures.ts';
-import { engine, list } from './runtime.ts';
+import { engine, list, readable, EXAMPLE_USER } from './runtime.ts';
 
 type MessageView = { id: string; actor: string; text: string; sent_at: string; intent: string; facets: string[]; offer?: { amount_cents: number } };
 const initial = (example('conversations.messages').response as { data: MessageView[] }).data;
 const thread = (example('conversations.list').response as { data: { id: string; site: 'depop'; item_id: string; last_read_at: string }[] }).data[0];
 export function seedConversations(st: Store) {
-  if (!st.get('conversation', 'usr_8f2k', thread.id)) st.put('conversation', { ...thread, user_id: 'usr_8f2k', account_id: 'acc_depop' });
+  if (!examplesServed()) return;
+  if (!st.get('conversation', 'usr_8f2k', thread.id)) st.put('conversation', { ...thread, user_id: EXAMPLE_USER, data: 'example', account_id: 'acc_depop', messages: structuredClone(initial) });
 }
 seedConversations(sharedStore);
 export const replyPorts = {
@@ -28,7 +29,7 @@ export const replyPorts = {
 const reply: Handler = async ctx => {
   const st = replyPorts.store;
   const row = st.get('conversation', ctx.user_id!, ctx.params.id);
-  if (!row) throw new ApiError('not_found', 'conversation not found', 'read');
+  if (!row || !readable(row, ctx.user_id!)) throw new ApiError('not_found', 'conversation not found', 'read');
   pagination(ctx);
   ctx.log.input('api', 'reply', { conversation_id: row.id, fields: Object.keys(ctx.body) });
   fields(ctx.body, { text });
@@ -90,18 +91,18 @@ export const ports: MessagePorts = {
 };
 export const handlers: Record<string, Handler> = {
   'GET /v1/conversations': engine(ctx => {
-    const keys = ['id', 'site', 'item_id', 'listing_id', 'role', 'state', 'counterpart', 'unread', 'last_read_at', 'intent_last', 'last', 'handling', 'version'];
-    const rows = replyPorts.store.rows('conversation', { user_id: ctx.user_id! }).filter(row => !row.deleted);
+    const keys = ['id', 'site', 'item_id', 'listing_id', 'role', 'state', 'counterpart', 'unread', 'last_read_at', 'intent_last', 'last', 'handling'];
+    const rows = replyPorts.store.rows('conversation', { user_id: ctx.user_id! }).filter(row => readable(row, ctx.user_id!));
     const data = rows.map(row => Object.fromEntries(keys.filter(key => row[key] !== undefined).map(key => [key, row[key]])));
     return { status: 200, body: list(ctx, data) };
   }),
   'GET /v1/conversations/:id/messages': engine(ctx => {
     const conversation = replyPorts.store.get('conversation', ctx.user_id!, ctx.params.id);
-    if (!conversation || conversation.deleted) throw new ApiError('not_found', 'conversation not found', 'read');
+    if (!conversation || !readable(conversation, ctx.user_id!)) throw new ApiError('not_found', 'conversation not found', 'read');
     if (!Array.isArray(conversation.messages)) throw new ApiError('unavailable', 'Message history has not been imported for this conversation', 'read', { by: 'user' });
+    if (!conversation.messages.every(row => object(row) && text(row.id) && text(row.actor) && typeof row.text === 'string' && typeof row.sent_at === 'string' && Number.isFinite(Date.parse(row.sent_at)))) throw new ApiError('unavailable', 'Message history is not valid', 'read', { by: 'user' });
     const keys = ['id', 'actor', 'text', 'sent_at', 'intent', 'facets', 'offer'];
-    const data = conversation.messages.filter((row): row is Record<string, unknown> => !!row && typeof row === 'object' && typeof row.id === 'string')
-      .map(row => Object.fromEntries(keys.filter(key => row[key] !== undefined).map(key => [key, row[key]])))
+    const data = conversation.messages.map(row => Object.fromEntries(keys.filter(key => row[key] !== undefined).map(key => [key, row[key]])))
       .sort((a, b) => String(b.sent_at ?? '').localeCompare(String(a.sent_at ?? '')));
     return { status: 200, body: list(ctx, data) };
   }),
