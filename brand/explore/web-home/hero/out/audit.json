@@ -51,10 +51,10 @@
       "hl_fit": "1.000",
       "logos_round": true,
       "problems": [],
-      "contrast_floor": 4.55,
+      "contrast_floor": 4.95,
       "photos_in_a_minute": {
-        "shown": 103,
-        "pool": 381,
+        "shown": 97,
+        "pool": 360,
         "kinds": 7
       }
     },
@@ -176,7 +176,7 @@
       "hl_fit": "1.000",
       "logos_round": true,
       "problems": [],
-      "contrast_floor": 4.19
+      "contrast_floor": 5.21
     },
     {
       "w": 1920,
@@ -199,11 +199,7 @@
   "brand_errors": [
     "B32 view 1 <svg>, <div>, <img> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
     "B32 view 1 \"Your second hand, for everything\", \"Take one photo. It's priced, posted o...\", <div> sits within 43.25 px of the wordmark: nothing but its ground comes within half its type size (C1)",
-    "B17 view 1 <svg> margin-bottom is 4.09375 px: gaps on a web are 4, 8, 12, 16, 20, 24, 32, 48, 64 (Art. 7.1)",
-    "B17 view 1 <svg> margin-bottom is 4.09375 px: gaps on a web are 4, 8, 12, 16, 20, 24, 32, 48, 64 (Art. 7.1)",
     "B32 view 3 <svg>, <div>, <img> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
-    "B32 view 3 \"Your second hand, for everything\", <div>, <img> sits within 25 px of the wordmark: nothing but its ground comes within half its type size (C1)",
-    "B17 view 3 <svg> margin-bottom is 4.09375 px: gaps on a web are 4, 8, 12, 16, 20, 24, 32, 48, 64 (Art. 7.1)",
-    "B17 view 3 <svg> margin-bottom is 4.09375 px: gaps on a web are 4, 8, 12, 16, 20, 24, 32, 48, 64 (Art. 7.1)"
+    "B32 view 3 \"Your second hand, for everything\", <div>, <img> sits within 25 px of the wordmark: nothing but its ground comes within half its type size (C1)"
   ]
 }
