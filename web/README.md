@@ -10,13 +10,13 @@ Recordings work without an API:
 - `/buy?replay=photo-fixture-prices-counts`
 - `/buy?replay=trends-fixture-prices-counts`
 
-Every recording says “Recorded answer” and labels prices and counts as fixtures. All listing links and source reports use `example.invalid`. The real garment photo was copied from the path named by `spec/items/capture-real/2026-11-15.json`: `assets/demo-items/real/carhartt-pants/01_cover.jpg`. It illustrates a recording, not a live listing.
+Every recording says “Recorded answer” and labels prices and counts as example results. All listing links and source reports use `example.invalid`. The real garment photo was copied from the path named by `spec/items/capture-real/2026-11-15.json`: `assets/demo-items/real/carhartt-pants/01_cover.jpg`. It illustrates a recording, not a live listing.
 
-Run `node web/scripts/tokens.mjs` after a brand token change. `package.json` already calls this as `prebuild`; `next build` alone does not run npm lifecycle scripts. `app/tokens.css` is the copied output, never an independent palette. The site uses the token font stacks and system fallbacks without fetching a font.
+Run `node web/scripts/tokens.mjs` after a brand token change. `package.json` already calls this as `prebuild`; `next build` alone does not run npm lifecycle scripts. `app/tokens.css` is the copied output, never an independent palette. The site serves the configured brand fonts and bundled open fallback fonts from its own origin. See Brand fonts below.
 
-Set `SECONDHAND_API_ORIGIN` before building to rewrite same-origin `/v1/*` to the API. Without it, the pages and recordings work, and live asks show the request failure. There is no key or model call in the site. The only outside calls from application code are the ask, the job read, and its event stream; listing photos may load from returned URLs.
+Set `SECONDHAND_API_ORIGIN` before building to rewrite same-origin `/v1/*` to the API. Without it, the pages and recordings work, and live asks show the request failure. There is no key or model call in the site. Public search calls the ask and job APIs. The signed-in workspace uses the same authenticated item, watch, account, message and stream endpoints as mobile. Listing photos may load from returned URLs.
 
-The event and answer types in `lib/types.ts` are copied from `app/src/edge/assist/types.ts`. Widgets read flat result rows, including `q10_cents/q50_cents/q90_cents` (or raw numeric `q10/q50/q90`), `p50_recent_cents/p50_prior_cents/change`, `keep_cents/p_sale_30/days_to_sell`, listing `image_url/price_cents/site/condition/url`, and source `site/title/url/date`. Tables use all returned columns except `sql`, which is disclosed below. The backend's tool row producers are not present in this checkout, so live row compatibility still needs an integration check.
+The event and answer types in `lib/types.ts` are copied from `app/src/edge/assist/types.ts`. Widgets read flat result rows, including `q10_cents/q50_cents/q90_cents` (or raw numeric `q10/q50/q90`), `p50_recent_cents/p50_prior_cents/change`, `keep_cents/p_sale_30/days_to_sell`, listing `image_url/price_cents/site/condition/url`, and source `site/title/url/date`. Tables use all returned columns except `sql`, which is disclosed below. The backend tool row producers live under `app/src/edge/assist/`. The deployed web and API must use compatible event and answer contracts.
 
 Native EventSource cannot send `X-Visitor-Id`; the API currently reads visitor identity only from that header. The stream is attempted as requested. A stream error or ten seconds without a frame closes it and starts authenticated job polling every two seconds. A completed poll reads the answer from `job.result`. Stream frame ids suppress repeats. Leaving a page closes streams, aborts fetches, and cancels timers. Continue saves turns and recording position through sessionStorage; a storage failure stays visible and does not navigate away.
 
@@ -67,7 +67,15 @@ The usual search results page is the strongest rival to an inline conversation. 
 
 Pre-code failure tests cover event ordering, stale provisional text, refusal, wrong widget result, missing results, unsafe outbound protocols, storage denial, resize dimensions, request headers, stream fallback and timer cancellation. Later regression tests cover terminal retries, invalid saved tools, and unavailable price bands.
 
-Verification limits: no server, browser, network, deployment or git writes were run. Phone overflow, zoom, rendered contrast, fonts and motion were reasoned about from the CSS, not measured in a browser. Visual review remains unfinished. No image generation was needed; the brief supplied a real photo. API integration awaits the backend and origin.
+## Verification and deployment boundaries
+
+Public pages have been rendered at 320, 390 and 1440 CSS pixels, with checks for navigation, image decoding, fonts, overflow and reduced motion. Desktop flows have separate browser checks using isolated account responses. Those fixtures verify UI behavior, not a production account or a real marketplace write.
+
+An isolated backend run verified upload, capture finish, item photo persistence, and authenticated photo ownership. Another run verified a per-user change reaching a second worker in about one second when both workers shared the same SQLite database. Separate database files do not provide that synchronization.
+
+Automatic marketplace publication remains unconnected: `POST /v1/items/:id/listings` is an example-only handler. The desktop instead lets a person copy a reviewed listing and finish on the marketplace. Google and email require the deployment settings below. A physical Windows browser and live cross-device session remain unverified.
+
+See `components/desktop/README.md` for the workspace and server boundaries.
 
 ## Account access
 
