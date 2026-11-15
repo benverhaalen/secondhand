@@ -43,7 +43,7 @@
       {
         "value": {
           "alpha": 9.0,
-          "beta": 3.0
+          "beta": 3
         },
         "version": 2,
         "n_eff": 2.0,
@@ -95,8 +95,8 @@
       },
       {
         "value": {
-          "alpha": 6.3639610306789285,
-          "beta": 2.414213562373095
+          "alpha": 8.707106781186548,
+          "beta": 3
         },
         "version": 2,
         "n_eff": 1.7071067811865475,
@@ -148,8 +148,8 @@
       },
       {
         "value": {
-          "alpha": 4.5,
-          "beta": 2.0
+          "alpha": 8.5,
+          "beta": 3
         },
         "version": 2,
         "n_eff": 1.5,
@@ -201,8 +201,8 @@
       },
       {
         "value": {
-          "alpha": 1.125,
-          "beta": 1.25
+          "alpha": 8.125,
+          "beta": 3
         },
         "version": 2,
         "n_eff": 1.125,
@@ -387,7 +387,7 @@
     ]
   },
   {
-    "name": "guard refusal leaves prior",
+    "name": "guard clamps the read and retains the observation",
     "declare": [
       {
         "name": "assist_span_open",
@@ -407,18 +407,19 @@
           "success": 1,
           "weight": 1000
         },
-        "reason": "guard"
+        "reason": "clamped",
+        "anomaly": true
       }
     ],
     "expect": [
       {
         "value": {
-          "alpha": 8,
-          "beta": 2
+          "alpha": 858.5,
+          "beta": 151.5
         },
-        "version": 0,
-        "n_eff": 0,
-        "from": "prior",
+        "version": 1,
+        "n_eff": 1000,
+        "from": "row",
         "scope": {}
       }
     ]
@@ -483,8 +484,8 @@
       },
       {
         "value": {
-          "shape": 3,
-          "rate": 4
+          "shape": 4,
+          "rate": 6
         },
         "version": 3,
         "n_eff": 2,
@@ -1487,6 +1488,344 @@
         },
         "version": 3,
         "n_eff": 3,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "rollback skips event rows keep_evidence=False",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 1,
+          "weight": 2
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 0,
+          "weight": 3
+        }
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": false
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 42,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 5
+        },
+        "version": 3,
+        "n_eff": 24,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "rollback skips event rows keep_evidence=True",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 1,
+          "weight": 2
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 0,
+          "weight": 3
+        }
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": true
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 42,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 5
+        },
+        "version": 3,
+        "n_eff": 24,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 5
+        },
+        "version": 4,
+        "n_eff": 44,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "read decays only evidence after 90 idle days",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "outcome": {
+          "success": 1,
+          "weight": 8
+        },
+        "at": "2026-01-01"
+      },
+      {
+        "op": "read",
+        "as_of": "2026-04-01"
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 16,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 8,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "rollback retained evidence uses explicit event clock not calendar time",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 1,
+          "weight": 1,
+          "days_since_last": 0
+        }
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": true
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 19,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 41,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 19,
+          "beta": 2
+        },
+        "version": 3,
+        "n_eff": 41,
         "from": "row",
         "scope": {}
       }

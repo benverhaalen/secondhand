@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { regressions } from './regressions.ts';
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { memoryStore, VersionConflict } from './param.ts';
@@ -11,6 +13,7 @@ const AT = '2026-11-14T22:00:00-06:00';
 
 const db = new PGlite();
 await migrate(db);
+await migrate(db, fileURLToPath(new URL('./', import.meta.url)));
 // The PGlite superuser bypasses row security, so every store runs as a plain role.
 await db.exec('create role app_api nologin; grant all on all tables in schema public to app_api; grant all on all sequences in schema public to app_api;');
 
@@ -128,7 +131,7 @@ test('observe moves a beta mean, weighted, with forgetting, and writes a new cha
   const r2 = await run(null, (s) => s.observe('assist_span_open', D, { success: 1, weight: 2, days_since_last: 30 }, AT));
   const k = 0.5;
   const v = r2.read.value as { alpha: number; beta: number };
-  assert.ok(Math.abs(v.alpha - (8 * k + 2)) < 1e-9 && Math.abs(v.beta - 3 * k) < 1e-9);
+  assert.ok(Math.abs(v.alpha - (8 + 2)) < 1e-9 && Math.abs(v.beta - (2 + k)) < 1e-9);
   assert.equal(r2.read.version, 2);
   assert.deepEqual((await db.query("select status from param order by version")).rows.map((x: { status: string }) => x.status), ['retired', 'champion']);
 });
@@ -144,7 +147,7 @@ test('the outcome-transaction rule: observe in a rolled-back transaction leaves 
   assert.deepEqual([r.value, r.version], [{ alpha: 8, beta: 3 }, 1]);
 });
 
-test('frozen scope does not move; a guard breach is not applied', async () => {
+test('frozen scope does not move; a guard breach keeps counts', async () => {
   await reset();
   await run(null, (s) => s.observe('assist_span_open', D, { success: 0, weight: 1 }, AT));
   await run(null, (s) => s.freeze('assist_span_open', D, true));
@@ -152,8 +155,8 @@ test('frozen scope does not move; a guard breach is not applied', async () => {
   assert.deepEqual([f.applied, f.reason, f.read.version], [false, 'frozen', 1]);
   await run(null, (s) => s.freeze('assist_span_open', D, false));
   const g = await run(null, (s) => s.observe('assist_span_open', {}, { success: 1, weight: 1000 }, AT));
-  assert.deepEqual([g.applied, g.reason], [false, 'guard']);
-  assert.equal((await db.query("select count(*)::int n from param where scope = '{}'")).rows[0].n, 0);
+  assert.deepEqual([g.applied, g.reason], [true, 'clamped']);
+  assert.equal((await db.query("select count(*)::int n from param where scope = '{}'")).rows[0].n, 1);
 });
 
 test('an undeclared param is Unknown, and observe refuses a non-beta family', async () => {
@@ -180,13 +183,13 @@ test('SQL gamma observe, model apply, freeze and guard preserve transactional sc
   await run('usr_1', async (s) => {
     s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 }, guard_hi: 10 });
     for (let i = 0; i < 3; i++) await s.observe('velocity', D, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, AT);
-    assert.deepEqual((await s.read('velocity', D)).value, { shape: 2, rate: 0.5 });
+    assert.deepEqual((await s.read('velocity', D)).value, { shape: 3.75, rate: 4 });
     const person = { ...D, person: 'usr_1' };
     await s.apply('velocity', person, (v) => ({ value: v, weight: 3 }), AT);
     assert.equal((await s.read('velocity', D)).n_eff, 1.75);
     await s.freeze('velocity', person, true);
     assert.equal((await s.observe('velocity', person, { count: 1, exposure: 1, weight: 1 }, AT)).reason, 'frozen');
-    assert.equal((await s.observe('velocity', D, { count: 100, exposure: 0, weight: 1 }, AT)).reason, 'guard');
+    assert.equal((await s.observe('velocity', D, { count: 100, exposure: 0, weight: 1 }, AT)).reason, 'clamped');
     s.declare({ name: 'P_accept', family: 'model_ref', prior: { term: 0 }, guard_hi: 0 });
     await s.apply('P_accept', person, () => ({ value: { term: 2 }, weight: 1 }), '2026-01-01');
     await s.apply('P_accept', person, (v, keep) => ({ value: { term: (v as { term: number }).term * keep + 1 }, weight: 1 }), '2026-01-31');
@@ -257,4 +260,23 @@ test('SQL pooling recurses through shared ancestors and excludes another person 
     assert.ok('mean' in person && Math.abs(person.mean - (3 * 0.9 + 20 * 0.2) / 23) < 1e-12);
     assert.ok('versions' in person && person.versions.length === 1);
   });
+});
+
+for (const [name, check] of Object.entries(regressions)) test(name, async () => {
+  await reset();
+  await run(null, check);
+});
+
+
+test('B5 migration refuses ambiguous preexisting post-fit event history', async () => {
+  await db.exec(`begin;
+    create temporary table param (name text, scope jsonb, version integer, status text, fitted_on_ids_hash text, held_out_score numeric, promoted_at timestamptz);
+    insert into param values ('assist_span_open', '{}', 1, 'retired', 'fit_hash', 0.5, '2026-01-01'),
+      ('assist_span_open', '{}', 2, 'retired', null, 0.5, '2026-01-02'),
+      ('assist_span_open', '{}', 3, 'champion', null, 0.5, '2026-01-03');`);
+  try {
+    await assert.rejects(db.exec(readFileSync(new URL('./0001_param_origin.sql', import.meta.url), 'utf8')), /ambiguous param history/);
+  } finally {
+    await db.exec('rollback');
+  }
 });

@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from dataclasses import dataclass, field
 
 FIELDS = ("name", "scope", "family", "value_or_hyperparams", "prior", "version", "fitted_on_ids_hash", "n_eff", "metric",
-          "held_out_score", "guard_lo", "guard_hi", "status", "frozen", "promoted_at")
+          "held_out_score", "guard_lo", "guard_hi", "status", "frozen", "promoted_at", "origin", "previous_version", "keep")
 FAMILIES = {"scalar", "beta", "normal", "gamma", "model_ref"}
 SCOPE_KEYS = ("kind", "site", "segment", "state", "person")
 FORGET_DAYS = 30
@@ -29,6 +29,7 @@ def forget(days: float) -> float:
 
 
 def lineage(scope: dict) -> list[dict]:
+    scope_key(scope)
     if "person" in scope:
         return [dict(scope), {k: v for k, v in scope.items() if k != "person"}]
     result, current = [dict(scope)], dict(scope)
@@ -67,7 +68,45 @@ def scope_key(scope: dict) -> str:
     bad = set(scope) - set(SCOPE_KEYS)
     if bad:
         raise ValueError(f"unknown scope keys {sorted(bad)}")
-    return json.dumps({k: scope[k] for k in SCOPE_KEYS if scope.get(k) is not None}, sort_keys=True)
+    return json.dumps({k: scope[k] for k in SCOPE_KEYS if scope.get(k) is not None}, separators=(",", ":"), ensure_ascii=False)
+
+
+def _evidence(family, value, prior):
+    if family not in {"beta", "gamma"}:
+        return value
+    return {k: value[k] - prior[k] for k in prior}
+
+
+def _with_prior(family, value, prior):
+    if family not in {"beta", "gamma"}:
+        return value
+    return {k: prior[k] + value[k] for k in prior}
+
+
+def _decay(row, as_of=None):
+    if row is None or as_of is None:
+        return row
+    keep = forget(_elapsed(row, as_of, None))
+    value = row["value_or_hyperparams"]
+    if row["family"] in {"beta", "gamma"}:
+        old = _evidence(row["family"], value, row["prior"])
+        value = _with_prior(row["family"], {k: v * keep for k, v in old.items()}, row["prior"])
+    return {**row, "value_or_hyperparams": value, "n_eff": row["n_eff"] * keep}
+
+
+def _clamped(row):
+    value = row["value_or_hyperparams"]
+    mean = _summary(row["family"], value)
+    if mean is None:
+        return value
+    lo, hi = row.get("guard_lo"), row.get("guard_hi")
+    bounded = max(lo if lo is not None else -math.inf, min(hi if hi is not None else math.inf, mean))
+    if bounded == mean:
+        return value
+    if row["family"] == "beta":
+        total = value["alpha"] + value["beta"]
+        return {"alpha": bounded * total, "beta": (1 - bounded) * total}
+    return {"shape": bounded * value["rate"], "rate": value["rate"]}
 
 
 @dataclass
@@ -84,25 +123,25 @@ class MemoryStore:
             raise Unknown(f"param {name} is not declared")
         return self._declared[name]
 
-    def read(self, name: str, scope: dict) -> dict:
+    def read(self, name: str, scope: dict, as_of: str | None = None) -> dict:
         d = self._decl(name)
         for i, parent in enumerate(lineage(scope)):
-            c = self.champion(name, parent)
+            c = _decay(self.champion(name, parent), as_of)
             if c:
-                return {"value": copy.deepcopy(c["value_or_hyperparams"]), "version": c["version"], "n_eff": c["n_eff"],
+                return {"value": copy.deepcopy(_clamped(c)), "version": c["version"], "n_eff": c["n_eff"],
                         "from": "row" if i == 0 else "parent", "scope": parent}
         return {"value": copy.deepcopy(d["prior"]), "version": 0, "n_eff": 0, "from": "prior", "scope": {}}
 
-    def readPooled(self, name: str, scope: dict) -> dict:
+    def readPooled(self, name: str, scope: dict, as_of: str | None = None) -> dict:
         d = self._decl(name)
         if d["family"] not in {"beta", "gamma"}:
-            return self.read(name, scope)
-        kappa = self.read(POOL_KAPPA["name"], {})["value"]
-        rows = [self.champion(name, parent) for parent in lineage(scope)]
+            return self.read(name, scope, as_of)
+        kappa = self.read(POOL_KAPPA["name"], {}, as_of)["value"]
+        rows = [_decay(self.champion(name, parent), as_of) for parent in lineage(scope)]
         mean = _summary(d["family"], d["prior"])
         for row in reversed(rows):
             if row:
-                mean = (row["n_eff"] * _summary(d["family"], row["value_or_hyperparams"]) + kappa * mean) / (row["n_eff"] + kappa)
+                mean = (row["n_eff"] * _summary(d["family"], _clamped(row)) + kappa * mean) / (row["n_eff"] + kappa)
         return {"mean": mean, "n_eff": next((row["n_eff"] for row in rows if row), 0),
                 "versions": [row["version"] for row in rows if row]}
 
@@ -130,26 +169,28 @@ class MemoryStore:
         base = self.champion(name, scope)
         if base and base["frozen"]:
             return {"applied": False, "reason": "frozen", "read": self.read(name, scope)}
-        start = base["value_or_hyperparams"] if base else self.read(name, scope)["value"]
+        inherited = next((self.champion(name, parent) for parent in lineage(scope)[1:] if self.champion(name, parent)), None)
+        start = base["value_or_hyperparams"] if base else inherited["value_or_hyperparams"] if inherited else d["prior"]
+        prior = base["prior"] if base else start
         keep = forget(_elapsed(base, at, days_since_last))
-        next_value = step(copy.deepcopy(start), keep)
+        next_value = step(copy.deepcopy(_evidence(d["family"], start, prior)), keep)
+        next_value["value"] = _with_prior(d["family"], next_value["value"], prior)
         mean = _summary(d["family"], next_value["value"])
         lo = base.get("guard_lo") if base else None
         hi = base.get("guard_hi") if base else None
         lo = lo if lo is not None else d.get("guard_lo")
         hi = hi if hi is not None else d.get("guard_hi")
-        if mean is not None and ((lo is not None and mean < lo) or (hi is not None and mean > hi)):
-            return {"applied": False, "reason": "guard", "read": self.read(name, scope)}
+        anomaly = mean is not None and ((lo is not None and mean < lo) or (hi is not None and mean > hi))
         rows = self._rows(name, scope)
         if base:
             base["status"] = "retired"
         row = {"name": name, "scope": dict(scope), "family": d["family"], "value_or_hyperparams": copy.deepcopy(next_value["value"]),
-               "prior": copy.deepcopy(d["prior"]), "version": max((r["version"] for r in rows), default=0) + 1,
+               "prior": copy.deepcopy(prior), "origin": "event", "previous_version": base["version"] if base else None, "keep": keep, "version": max((r["version"] for r in rows), default=0) + 1,
                "fitted_on_ids_hash": None, "n_eff": (base["n_eff"] if base else 0) * keep + next_value["weight"],
                "metric": d.get("metric"), "held_out_score": base["held_out_score"] if base else None,
                "guard_lo": lo, "guard_hi": hi, "status": "champion", "frozen": False, "promoted_at": at}
         rows.append(row)
-        return {"applied": True, "reason": "updated", "read": self.read(name, scope)}
+        return {"applied": True, "reason": "clamped" if anomaly else "updated", **({"anomaly": True} if anomaly else {}), "read": self.read(name, scope)}
 
     def _rows(self, name: str, scope: dict) -> list:
         return self.rows.setdefault((name, scope_key(scope)), [])
@@ -169,7 +210,7 @@ class MemoryStore:
         latest = max((r["version"] for r in rows), default=0)
         if latest != expect_version:
             raise VersionConflict(f"{row['name']} is at v{latest}, fit expected v{expect_version}")
-        new = {**{k: row.get(k) for k in FIELDS}, "version": latest + 1, "status": "challenger", "frozen": False, "promoted_at": None}
+        new = {**{k: row.get(k) for k in FIELDS}, "version": latest + 1, "status": "challenger", "origin": "fit", "previous_version": None, "keep": None, "frozen": False, "promoted_at": None}
         rows.append(new)
         return copy.deepcopy(new)
 
@@ -188,17 +229,45 @@ class MemoryStore:
             cur["status"] = "retired"
             if champion_score is not None:
                 cur["held_out_score"] = champion_score
+        ch["previous_version"] = cur["version"] if cur else None
         ch["status"], ch["promoted_at"] = "champion", at
         return True, f"beat v{cur['version']}" if cur else "first champion"
 
-    def rollback(self, name: str, scope: dict, at: str) -> dict:
+    def rollback(self, name: str, scope: dict, at: str, keep_evidence: bool = False) -> dict:
         rows = self._rows(name, scope)
         cur = self.champion(name, scope)
         if cur is None:
             raise ValueError(f"{name} has no champion to roll back")
-        prev = max((r for r in rows if r["version"] < cur["version"] and r["promoted_at"]), key=lambda r: r["version"], default=None)
+        by_version = {r["version"]: r for r in rows}
+        events, prev = [], cur
+        while prev:
+            if prev is not cur and prev["origin"] == "fit":
+                break
+            if prev["origin"] == "event":
+                events.append(prev)
+            prev = by_version.get(prev["previous_version"])
         if prev is None:
-            raise ValueError(f"{name} has no earlier promoted version")
+            raise ValueError(f"{name} has no earlier promoted fitted version")
+        if not keep_evidence:
+            cur["status"] = "retired"
+            prev["status"], prev["promoted_at"] = "champion", at
+            return copy.deepcopy(prev)
+        if cur["family"] not in {"beta", "gamma"}:
+            raise ValueError("keep_evidence supports beta or gamma")
+        value = copy.deepcopy(prev["value_or_hyperparams"])
+        n_eff = prev["n_eff"]
+        factor = forget(_elapsed(events[0], at, None)) if events else 1
+        for row in events:
+            if row["keep"] is None:
+                raise ValueError("event history lacks decay metadata for keep_evidence")
+            base = by_version.get(row["previous_version"])
+            old = _evidence(row["family"], base["value_or_hyperparams"] if base else row["prior"], row["prior"])
+            next_value = _evidence(row["family"], row["value_or_hyperparams"], row["prior"])
+            value = {k: v + (next_value[k] - old[k] * row["keep"]) * factor for k, v in value.items()}
+            n_eff += (row["n_eff"] - (base["n_eff"] if base else 0) * row["keep"]) * factor
+            factor *= row["keep"]
+        restored = {**copy.deepcopy(prev), "version": max(r["version"] for r in rows) + 1, "origin": "event", "status": "champion",
+                    "previous_version": prev["version"], "keep": 1, "value_or_hyperparams": value, "n_eff": n_eff, "promoted_at": at}
         cur["status"] = "retired"
-        prev["status"], prev["promoted_at"] = "champion", at
-        return copy.deepcopy(prev)
+        rows.append(restored)
+        return copy.deepcopy(restored)

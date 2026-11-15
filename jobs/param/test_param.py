@@ -5,7 +5,7 @@ import sys
 import pytest
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from registry import FIELDS, MemoryStore, VersionConflict  # noqa: E402
+from registry import FIELDS, MemoryStore, VersionConflict, scope_key  # noqa: E402
 
 ROW = json.loads((pathlib.Path(__file__).parents[2] / "app/src/engines/param/row.json").read_text())
 AT = "2026-11-14T22:00:00-06:00"
@@ -89,10 +89,10 @@ def test_parity(case):
                 if kind == 'promote':
                     return s.promote(name, scope, op['version'], op.get('noise', 0), at, op.get('champion_score'))
                 if kind == 'rollback':
-                    return s.rollback(name, scope, at)
+                    return s.rollback(name, scope, at, op.get("keep_evidence", False))
                 if kind == 'freeze':
                     return s.freeze(name, scope, op['on'])
-                return s.read(name, scope)
+                return s.read(name, scope, op.get("as_of"))
             if op.get('error'):
                 with pytest.raises(VersionConflict):
                     execute()
@@ -100,7 +100,9 @@ def test_parity(case):
                 result = execute()
                 if op.get('reason'):
                     assert (result[1] if isinstance(result, tuple) else result['reason']) == op['reason'], label
-            actual = s.read(name, scope)
+                if op.get('anomaly'):
+                    assert result['anomaly'] is True
+            actual = s.read(name, scope, op.get("as_of"))
             assert {k: actual[k] for k in ('version', 'from', 'scope')} == {k: expected[k] for k in ('version', 'from', 'scope')}, label
             assert actual['n_eff'] == pytest.approx(expected['n_eff'], abs=1e-9, rel=0), label
             assert actual['value'] == pytest.approx(expected['value'], abs=1e-9, rel=0), label
@@ -127,12 +129,12 @@ def test_gamma_freeze_guards_and_three_sold_comps():
     s.declare({'name': 'velocity', 'family': 'gamma', 'prior': {'shape': 2, 'rate': 4}, 'guard_hi': 10})
     for _ in range(3):
         s.observe('velocity', {}, {'count': 1, 'exposure': 0, 'weight': 1, 'days_since_last': 30}, AT)
-    assert s.read('velocity', {})['value'] == {'shape': 2, 'rate': 0.5}
+    assert s.read('velocity', {})['value'] == {'shape': 3.75, 'rate': 4}
     s.freeze('velocity', {}, True)
     assert s.observe('velocity', {}, {'count': 1, 'exposure': 1, 'weight': 1}, AT)['reason'] == 'frozen'
     s.freeze('velocity', {}, False)
-    assert s.observe('velocity', {}, {'count': 100, 'exposure': 0, 'weight': 1}, AT)['reason'] == 'guard'
-    assert s.read('velocity', {})['version'] == 3
+    assert s.observe('velocity', {}, {'count': 100, 'exposure': 0, 'weight': 1}, AT)['reason'] == 'clamped'
+    assert s.read('velocity', {})['version'] == 4
 
 
 def test_promotion_only_writes_same_set_score_on_win():
@@ -182,3 +184,63 @@ def test_pooling_recurses_shared_ancestors_but_person_stops_at_shared_scope():
     person = s.readPooled('sale_rate', {**shared, 'person': 'usr_1'})
     assert person['mean'] == pytest.approx((3 * 0.9 + 20 * 0.2) / 23)
     assert person['versions'] == [1]
+
+
+SCOPE_CASES = json.loads((pathlib.Path(__file__).parents[2] / 'app/src/engines/param/scope-keys.json').read_text())
+
+@pytest.mark.parametrize('case', SCOPE_CASES)
+def test_canonical_scope_key(case):
+    assert scope_key(case['scope']) == case['key']
+
+
+def test_idle_evidence_keeps_prior_and_read_decay():
+    s = MemoryStore()
+    s.declare({'name': 'assist_span_open', 'family': 'beta', 'prior': {'alpha': 8, 'beta': 2}})
+    s.observe('assist_span_open', SCOPE, {'success': 1, 'weight': 50}, '2026-01-01')
+    aged = s.read('assist_span_open', SCOPE, as_of='2026-05-01')
+    assert aged['value'] == {'alpha': 11.125, 'beta': 2}
+    assert aged['n_eff'] == 3.125
+    result = s.observe('assist_span_open', SCOPE, {'success': 0, 'weight': 0}, '2026-05-01')
+    assert result['read']['value'] == aged['value']
+    assert result['read']['n_eff'] == aged['n_eff']
+
+
+def test_guard_keeps_all_counts_and_recovers():
+    s = MemoryStore()
+    s.declare({'name': 'assist_span_open', 'family': 'beta', 'prior': {'alpha': 8, 'beta': 2}, 'guard_hi': 0.9})
+    for _ in range(60):
+        result = s.observe('assist_span_open', SCOPE, {'success': 1, 'weight': 1}, '2026-01-01')
+    assert result['applied'] and result['reason'] == 'clamped' and result['anomaly']
+    assert s.champion('assist_span_open', SCOPE)['value_or_hyperparams'] == {'alpha': 68, 'beta': 2}
+    assert s.champion('assist_span_open', SCOPE)['n_eff'] == 60
+    v = s.read('assist_span_open', SCOPE)['value']
+    assert v['alpha'] / (v['alpha'] + v['beta']) == 0.9
+    for _ in range(60):
+        s.observe('assist_span_open', SCOPE, {'success': 0, 'weight': 1}, '2026-01-01')
+    assert s.read('assist_span_open', SCOPE)['value'] == {'alpha': 68, 'beta': 62}
+
+
+def test_rollback_restores_fit_not_event_and_keeps_only_active_evidence():
+    s = MemoryStore()
+    s.declare({'name': 'assist_span_open', 'family': 'beta', 'prior': {'alpha': 8, 'beta': 2}})
+    s.propose(fit(name='assist_span_open', family='beta', prior={'alpha': 8, 'beta': 2}, value_or_hyperparams={'alpha': 8, 'beta': 2}, n_eff=20), 0)
+    s.promote('assist_span_open', SCOPE, 1, 0, AT)
+    for success in [1, 0]:
+        s.observe('assist_span_open', SCOPE, {'success': success, 'weight': 2}, AT)
+    restored = s.rollback('assist_span_open', SCOPE, AT)
+    assert restored['version'] == 1 and restored['origin'] == 'fit'
+    s.observe('assist_span_open', SCOPE, {'success': 1, 'weight': 4}, AT)
+    kept = s.rollback('assist_span_open', SCOPE, AT, keep_evidence=True)
+    assert kept['value_or_hyperparams'] == {'alpha': 12, 'beta': 2}
+    assert kept['n_eff'] == 24
+
+
+def test_rollback_keeps_exact_evidence_with_explicit_clock_override():
+    s = MemoryStore()
+    s.declare({'name': 'assist_span_open', 'family': 'beta', 'prior': {'alpha': 8, 'beta': 2}})
+    s.propose(fit(name='assist_span_open', family='beta', prior={'alpha': 8, 'beta': 2}, value_or_hyperparams={'alpha': 18, 'beta': 2}, n_eff=20), 0)
+    s.promote('assist_span_open', SCOPE, 1, 0, '2026-01-01')
+    s.observe('assist_span_open', SCOPE, {'success': 1, 'weight': 1, 'days_since_last': 0}, '2026-01-31')
+    kept = s.rollback('assist_span_open', SCOPE, '2026-01-31', keep_evidence=True)
+    assert kept['value_or_hyperparams'] == {'alpha': 19, 'beta': 2}
+    assert kept['n_eff'] == 21
