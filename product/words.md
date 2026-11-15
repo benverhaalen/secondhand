@@ -1359,3 +1359,12 @@ Ben, website thread, 07:29 UTC:
 > also the two glyphs should have either different gradient colors or two colors of the same gradient without the gradient. i want to see the icon pack with all the different positions of the hand. like recall huge icons how you showed me an array of positions the hand could be in. show me that for each.
 
 Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs).
+
+Ben, website thread, 07:32 and 07:33 UTC:
+> use the actual font for secondhand for me
+
+> theres brand font on my computer though
+
+> also show me the full array of poses for tabler now
+
+Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs), drawn in CI where the brand faces load from the BRAND_FONTS secret.
