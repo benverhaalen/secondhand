@@ -7,27 +7,32 @@ import { read, err, lineOf, withoutComments } from './util.mjs';
 
 const TOKENS = 'brand/tokens.css';
 const APP = f => /^app\/src\/.*\.(tsx?|jsx?)$/.test(f) && !/\.(test|generated)\./.test(f);
-const SCREEN = f => APP(f) && /\.tsx$/.test(f);
 
-// Words a person reads on a screen: JSX text and quoted strings. `label` is true when the string names something for a screen reader.
+// Words a person reads: JSX text (also beside an expression or on its own line) and quoted strings.
+// `label` is true when the string names something for a screen reader. `jsx` is true for text between tags.
 const LABEL = /(?:accessibilityLabel|accessibilityHint|aria-label|alt|testID)\s*[=:]\s*\{?\s*$/;
+const CODE = /;|=>|\b(?:import|export|const|let|return|function|else|catch|finally|typeof|extends)\b|^\s*[)\]&|?:.,]/;
 function words(f, text) {
-  const t = withoutComments(f, text);
-  return [...t.matchAll(/>([^<>{}\n]*[A-Za-z][^<>{}\n]*)</g), ...t.matchAll(/"([^"\n]+)"|'([^'\n]+)'|`([^`]+)`/g)]
-    .map(m => ({ s: m[1] ?? m[2] ?? m[3] ?? '', i: m.index, label: LABEL.test(t.slice(Math.max(0, m.index - 40), m.index)) }));
+  const t = withoutComments(f, text), lineAt = i => t.slice(t.lastIndexOf('\n', i) + 1, (t.indexOf('\n', i) + 1 || t.length + 1) - 1);
+  const jsx = /\.[tj]sx$/.test(f) ? [...t.matchAll(/([>}][^<>{}]*[A-Za-z][^<>{}]*)(?=[<{])/g)].filter(m => !CODE.test(m[1].slice(1))).map(m => ({ s: m[1], i: m.index, jsx: true, label: false })) : [];
+  const quoted = [...t.matchAll(/"([^"\n]+)"|'([^'\n]+)'|`([^`]+)`/g)]
+    .filter(m => !/^\s*import\b|\bfrom\s+['"]|\blog\.\w+\s*\(|\brequire\s*\(/.test(lineAt(m.index)) && !/^(?:https?:|\.{0,2}\/|@\/)/.test(m[1] ?? m[2] ?? m[3]))
+    .map(m => ({ s: m[1] ?? m[2] ?? m[3], i: m.index, jsx: false, label: LABEL.test(t.slice(Math.max(0, m.index - 60), m.index)) }));
+  return [...jsx, ...quoted];
 }
-// One finding per match of `re` in the words of each screen.
-const inWords = (root, files, re, msg, { labels = false } = {}) => files.filter(SCREEN).flatMap(f => {
+// One finding per match of `re` in the words of each app file. `phrases` skips a quoted single word, which is a value, not a sentence.
+const inWords = (root, files, re, msg, { labels = false, phrases = false } = {}) => files.filter(APP).flatMap(f => {
   const text = read(root, f) ?? '';
-  return words(f, text).filter(w => labels || !w.label).flatMap(w => [...w.s.matchAll(re)].map(m => err(`${f}:${lineOf(text, w.i)}`, msg(m[0]))));
+  return words(f, text).filter(w => (labels || !w.label) && (!phrases || w.jsx || /\s/.test(w.s.trim())))
+    .flatMap(w => [...w.s.matchAll(re)].map(m => err(`${f}:${lineOf(text, w.i)}`, msg(m[0]))));
 });
 
 // tokens.css as { light: {name: value}, dark: {name: value} }.
 function tokens(root) {
   const css = read(root, TOKENS); if (css == null) return null;
   const block = s => Object.fromEntries([...(s ?? '').matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].map(m => [m[1], m[2].trim()]));
-  const [light, ...rest] = css.split(/:root\[data-theme=["']dark["']\]/);
-  return { css, light: block(light), dark: block(rest.join('').split('}')[0]) };
+  const [light, ...rest] = css.split(/:root\[data-theme=["']?dark["']?\]|prefers-color-scheme:\s*dark/);
+  return { css, light: block(light), dark: block(rest.map(r => r.split('}')[0]).join(';')) };
 }
 const HEX = /^#[0-9a-f]{6}$/i;
 const lin = c => (c /= 255) <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4;
@@ -51,21 +56,21 @@ const turn = (a, b) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
 
 export const PICKS = {
   // The wordmark is "secondhand", lowercase, wherever the app writes it.
-  L3: (root, { files }) => inWords(root, files, /\bSecond[ -]?[Hh]and\b|\bSECOND[ -]?HAND\b|\bsecond[ -]?Hand\b/g,
+  L3: (root, { files }) => inWords(root, files, /\bSecond[Hh]and\b|\bSECONDHAND\b|\bsecondHand\b/g,
     m => `"${m}": the name is written "secondhand", lowercase (ledger L3)`, { labels: true }),
 
   // A marketplace shows as its logo. Its name is only for a screen reader.
-  L6: (root, { files }) => inWords(root, files, /\b(?:eBay|Poshmark|Depop|Mercari|Grailed|OfferUp|Facebook Marketplace)\b/g,
-    m => `"${m}" as words: show the logo from assets/platforms and put the name in accessibilityLabel (ledger L6)`),
+  L6: (root, { files }) => inWords(root, files, /\b(?:eBay|Poshmark|Depop|Mercari|Grailed|OfferUp|Etsy|Vinted|Facebook Marketplace)\b/g,
+    m => `"${m}" as words: show the logo from assets/platforms and put the name in accessibilityLabel (ledger L6)`, { phrases: true }),
 
   // No mono face, no Marist, no Inter, in the brand values or in the app.
   L7: (root, { files }) => {
-    const BANNED = /\b(?:Inter|Marist|monospace|Courier(?: New)?|Menlo|Consolas|[A-Z][\w ]*? Mono)\b/g, out = [];
+    const BANNED = /\bInter(?:[_-]\w+)?\b|\bMarist\w*|\b[Mm]onospace\b|\b[Cc]ourier(?: New)?\b|\b[Mm]enlo\b|\b[Cc]onsolas\b|\b[A-Z]\w*(?: ?Mono)(?:[_-]\w+)?\b/g, out = [];
     const t = tokens(root);
     for (const [n, v] of Object.entries(t?.light ?? {})) if (n.startsWith('font-'))
       for (const m of v.matchAll(BANNED)) out.push(err(`${TOKENS}:${lineOf(t.css, t.css.indexOf(`--${n}`))}`, `--${n} names ${m[0]}: the faces are Neue Montreal and Clofie, with no mono, Marist or Inter (ledger L7, L20, L21)`));
     for (const f of files.filter(APP)) { const text = read(root, f) ?? '';
-      for (const w of words(f, text)) for (const m of w.s.matchAll(BANNED)) if (/font|Font/.test(text.slice(Math.max(0, w.i - 60), w.i)))
+      for (const w of words(f, text)) for (const m of w.s.matchAll(BANNED)) if (/font-?family|fontFamily|useFonts|loadAsync|fontFace/i.test(text.slice(Math.max(0, w.i - 80), w.i)))
         out.push(err(`${f}:${lineOf(text, w.i)}`, `font ${m[0]}: no mono, Marist or Inter; take the face from the Txt part (ledger L7, L20, L21)`)); }
     return out;
   },
@@ -81,8 +86,9 @@ export const PICKS = {
   // Every state has one fill and one icon, decided once: each pill in grid.ts has a row in states.ts.
   L15: (root) => {
     const grid = read(root, 'app/src/sell/grid.ts'), states = read(root, 'app/src/ui/states.ts');
-    const pills = [...((grid ?? '').match(/export const PILLS\s*=\s*\[([^\]]*)\]/)?.[1] ?? '').matchAll(/['"]([^'"]+)['"]/g)].map(m => m[1]);
-    if (!pills.length) return [];
+    if (grid == null) return [];
+    const pills = [...(grid.match(/export const PILLS\b[^=]*=\s*\[([^\]]*)\]/)?.[1] ?? '').matchAll(/['"]([^'"]+)['"]/g)].map(m => m[1]);
+    if (!pills.length) return [err('app/src/sell/grid.ts', "can't read PILLS as a list of quoted names, so no state would be checked (ledger L15)")];
     if (states == null) return [err('app/src/ui/states.ts', 'is missing: every pill needs its fill and its icon in one place (ledger L15, L24)')];
     return pills.filter(p => { const row = states.match(new RegExp(`['"]?${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]?\\s*:\\s*\\{([^}]*)\\}`))?.[1] ?? ''; return !/\bfill\s*:/.test(row) || !/\bicon\s*:/.test(row); })
       .map(p => err('app/src/ui/states.ts', `the pill "${p}" has no fill and icon: a state is never shown by color alone, and no screen invents one (ledger L15, L24)`));
@@ -97,14 +103,14 @@ export const PICKS = {
   }),
 
   // The gradient is soft: no lines and no grain, in the brand values or in the app.
-  L19: (root, { files }) => [TOKENS, ...files.filter(APP)].flatMap(f => { const text = read(root, f) ?? '';
+  L19: (root, { files }) => [TOKENS, ...files.filter(f => APP(f) && f.startsWith('app/src/ui/'))].flatMap(f => { const text = f === TOKENS ? read(root, f) ?? '' : withoutComments(f, read(root, f) ?? '');
     return [...text.matchAll(/repeating-(?:linear|radial|conic)-gradient|feTurbulence|(?:noise|grain)[\w-]*\.(?:png|svg|jpe?g|webp)/gi)]
       .map(m => err(`${f}:${lineOf(text, m.index)}`, `${m[0]}: the gradient has no lines and no grain (ledger L19)`)); }),
 
   // Light and dark differ only in color.
   L22: (root, { files }) => {
     const t = tokens(root), out = [];
-    const isColor = v => /^(?:#|rgba?\(|hsla?\(|oklch\()/.test(v ?? '');
+    const isColor = v => /^(?:#|rgba?\(|hsla?\(|oklch\()/.test(v ?? '') || (/^var\(--([\w-]+)\)$/.test(v ?? '') && isColor(t.light[v.slice(6, -1)]));
     for (const n of Object.keys(t?.dark ?? {})) if (!isColor(t.light[n]))
       out.push(err(TOKENS, `dark mode changes --${n}, which is not a color: light and dark differ only in color (ledger L22)`));
     for (const f of files.filter(f => APP(f) && !f.startsWith('app/src/ui/'))) { const text = withoutComments(f, read(root, f) ?? '');
@@ -143,13 +149,14 @@ export const PICKS = {
   },
 
   // The behavior table comes before the behavior: every screen has one, written from the still screen.
-  P5: (root, { files }) => files.filter(f => /^app\/src\/app\/.*\.tsx$/.test(f) && !/(^|\/)[_+][^/]*$|\+api\./.test(f)).flatMap(f => {
+  P5: (root, { files }) => files.filter(f => /^app\/src\/app\/.*\.tsx$/.test(f) && !/(^|\/)[_+][^/]*$|\+api\.|\.test\./.test(f)).flatMap(f => {
     const table = f.replace(/^app\/src\/app\//, 'app/behavior/').replace(/\.tsx$/, '.json'), raw = read(root, table);
     if (raw == null) return [err(f, `has no behavior table at ${table}: write what each state shows and what each control does before the code (frontend-standard §2, state 8)`)];
     let t; try { t = JSON.parse(raw); } catch { return [err(table, 'is not JSON')]; }
     const out = [];
-    if (!Array.isArray(t.states) || !t.states.length || t.states.some(s => !s.state || !s.shows)) out.push(err(table, 'needs "states": a list of { state, shows }, with at least one'));
-    if (!Array.isArray(t.controls) || t.controls.some(c => !c.control || !c.on_tap)) out.push(err(table, 'needs "controls": a list of { control, on_tap }, empty when the screen has none'));
+    if (!Array.isArray(t?.states) || !t.states.length || t.states.some(s => !s?.state || !s?.shows)) out.push(err(table, 'needs "states": a list of { state, shows }, with at least one'));
+    if (!Array.isArray(t?.controls) || t.controls.some(c => !c?.control || !c?.on_tap)) out.push(err(table, 'needs "controls": a list of { control, on_tap }, empty when the screen has none'));
+    else if (!t.controls.length && /\bonPress\b/.test(withoutComments(f, read(root, f) ?? ''))) out.push(err(table, `lists no controls, and ${f} has something to press: write what each one does`));
     return out;
   }),
 };

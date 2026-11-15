@@ -359,7 +359,7 @@ test('rules: a locked pick with no row fails, a check with no test fails, and a 
   assert.equal(at(good), '');
   assert.match(at(good.slice(0, 1)), /ledger\.md L9 is locked and has no row/);
   assert.match(at([{ id: 'L3', kind: 'check', by: 'picks:L6' }, good[1]]), /no test named "picks L6:"/);
-  assert.match(at([{ id: 'L3', kind: 'check', by: 'picks:nope' }, good[1]]), /doesn't exist/);
+  assert.match(at([{ id: 'L3', kind: 'check', by: 'picks:nope' }, good[1]]), /not a check that exists/);
   assert.match(at([good[0], { id: 'L9', kind: 'judge', fail: 'Use actions well.' }]), /starts "Fail if"/);
   const list = [...good];
   seen(list, 'An arrow sits mid-row', 'round 9 critique');
@@ -367,4 +367,33 @@ test('rules: a locked pick with no row fails, a check with no test fails, and a 
   seen(list, 'an arrow sits mid-row', 'Today audit');
   assert.match(at(list), /has come up 2 times \(round 9 critique; Today audit\)/);
   assert.equal(judgeBrief(good), 'L9: Fail if a decision offers two actions or fewer.');
+});
+
+test('picks: words beside an expression, on their own line or in a .ts file are read; ordinary code is not', async () => {
+  assert.match(await pick('L13', screen('<Txt>{n} need you, {m} handled</Txt>')), /no count/);
+  assert.match(await pick('L3', screen('<Txt>\n  Secondhand\n</Txt>')), /lowercase/);
+  assert.match(await pick('L6', screen('<Txt>{n} on eBay</Txt>')), /"eBay" as words/);
+  assert.match(await pick('L6', { 'app/src/copy.ts': "export const listed = 'Listed on eBay';" }), /"eBay" as words/);
+  const fine = "import { Logo } from '@/platforms/eBay';\ntype Site = 'eBay' | 'Depop';\nlet n = 3; const y: Map<string, number> = new Map();\nlog.event(`error ${code} handled`);\nexport default () => <Screen><Logo site=\"eBay\" accessibilityLabel=\"Listed on eBay\" /></Screen>;\n";
+  for (const id of ['L3', 'L6', 'L8', 'L13']) assert.equal(await pick(id, { 'app/src/app/sell.tsx': fine }), '', id);
+  assert.equal(await pick('L7', { 'app/src/app/sell.tsx': "import * as Font from 'expo-font';\nconst title = 'Marist College sweatshirt';" }), '');
+  assert.match(await pick('L7', { 'app/src/ui/text.tsx': "useFonts({ 'JetBrainsMono-Regular': a });" }), /font JetBrainsMono-Regular/);
+});
+
+test('rules: a missing list fails, a malformed row does not crash, any file is not a holder, and writing the list keeps every string', async () => {
+  const { rules } = await import('./rules.mjs');
+  const { seen, write } = await import('../../scripts/ui-rules.mjs');
+  const ledger = '## Locked\n| L3 | Wordmark |\n';
+  assert.match(errors(run(rules, { 'brand/ledger.md': ledger })), /ui-rules\.json is missing/);
+  const at = list => errors(run(rules, { 'brand/ledger.md': ledger, 'README.md': 'x', '.agents/checks/checks.test.mjs': '', '.agents/ui-rules.json': JSON.stringify(list) }));
+  assert.match(at([null, { id: 'L3', kind: 'check', by: 5 }]), /a row is not an object[\s\S]*not a check that exists/);
+  assert.match(at([{ id: 'L3', kind: 'check', by: 'README.md' }]), /not a check that exists/);
+  assert.match(at([{ id: 'L3', kind: 'lesson', finding: 'x', seen: ['a'] }]), /not a lesson/);
+  const list = [{ id: 'L3', kind: 'judge', fail: 'Fail if "a": b.' }];
+  seen(list, 'The label says "price": twice', 'round 9');
+  const again = JSON.parse(write(JSON.parse(write(list))));
+  assert.deepEqual(again, list);
+  seen(again, 'The label says "price": twice', 'Today audit');
+  assert.equal(again.length, 2);
+  assert.equal(again[1].seen.length, 2);
 });
