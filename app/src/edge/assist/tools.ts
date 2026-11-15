@@ -36,7 +36,8 @@ export interface ToolDeps {
 const DEADLINE_MS = PROTOCOLS.listings_matching.budget.settled_ms;
 const SOLD_SITES: readonly SoldSite[] = ['mercari', 'poshmark'];
 const conditions = Object.keys(DEFAULTS.condition_ratios);
-const onSites = SOURCES.filter(s => s.on).map(s => s.site);
+// Apify never sits in the path an answer waits on (product/words.md, 2026-11-15 nate apify stays out of the latency path).
+const onSites = SOURCES.filter(s => s.on && s.lane !== 'apify').map(s => s.site);
 const stringSchema = { type: 'string' };
 const querySchema = { type: 'string', minLength: 1, maxLength: 200 };
 const conditionSchema = { type: 'string', enum: conditions };
