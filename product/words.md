@@ -2037,3 +2037,9 @@ Nate, buying-conversation lead's session, 2026-11-15, about 05:10 Central.
 > With this, we shouid practice the intelligent dynamic ui, dropping widgets and populating fields with text, generated graphs, obviously working on a framework we design like graphs just require the model in its output to out put like "the pricing was [price graph:iphone16-678l iphone17-999] etc
 
 Used in: `features/assist/README.md` (the widget tags, when specced), `web/` (the renderer, when built).
+
+## 2026-11-15 nate build the lidar module before a testflight build
+Nate, capture lead's session, 2026-11-15, evening Central. Asked "can you push to testflight, ill test the lidar"; told the app has no LiDAR code yet, he chose:
+> Build the module first
+
+Used in: `spec/engines/capture.md` §7 (the Swift capture module), `.agents/team/packets/team/72-capture-handoff.md` (queue item 5).

@@ -42,6 +42,25 @@ The adaptation slice's 32 queries (16 items, a branded and an off-brand query ea
 
 No challenge and no refusal on either site in 64 reads. eBay averaged 204 rows an answered read; Depop 15 (its search page gives a slug, a price, a brand and likes, and no title or condition). The rows are in a git-ignored file for the brand measure and are not in the repo.
 
+## Where an eBay read's seconds go, about 11:20 UTC
+
+Nate: "That slice is still too high." Four reads on one warm cloud browser, each phase timed from the start of navigation, nobody signed in, nothing intercepted. Observed; milliseconds.
+
+| Page size | Query | First byte | First card in the page | Cards present then | DOM ready | Rows built in the page | Rows, bytes | HTML out of the browser | HTML, bytes |
+|---|---|---|---|---|---|---|---|---|---|
+| 60 | carhartt detroit jacket | 416 | 1,909 | 62 | 2,101 | 77 | 11,817 | 584 | 1,970,061 |
+| 240 | carhartt detroit jacket | 446 | 2,537 | 242 | 2,697 | 438 | 46,938 | 1,098 | 4,549,519 |
+| 60 | levis 501 jeans | 595 | 2,077 | 62 | 2,820 | 112 | 12,451 | 417 | 2,395,344 |
+| 240 | levis 501 jeans | 451 | 2,579 | 242 | 2,928 | 88 | 49,933 | 538 | 4,294,432 |
+
+Opening the browser took 529 ms and closing it 162 ms.
+
+What it says:
+- Every card is in the page the moment the first one is: eBay sends the result list in one piece, about 1.9 to 2.1 s after navigation for 60 and 2.5 to 2.6 s for 240. That is eBay's own time and the floor for this lane.
+- The module on main waits for DOM ready (2.1 to 2.9 s), then a fixed 1.5 s, then pulls 2 to 4.5 MB of HTML out (0.4 to 1.1 s), then parses (13 ms): about 4 to 5.5 s, which matches the 5.03 s median of the 32 reads above. Roughly half of it is waiting we chose.
+- Building the rows inside the page at the first card and returning them takes 0.1 to 0.4 s and moves 12 to 50 KB, about a hundredth of the HTML. A read then costs about 2.0 to 3.0 s (*computed* from the columns: first card plus rows built in the page), against 5.0 s today.
+- 240 a page costs about half a second more than 60 at the first card.
+
 ## Not shown
 
 No distribution (20 reads a site at the product's pace is the benchmark's job), no cost per read (browser minutes were not read back from the vendor), no sold search, no Facebook, no Mercari.

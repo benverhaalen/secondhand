@@ -30,3 +30,9 @@ test('standards U19: a fact shown twice on the first screen fails (Sell said "Ne
   assert.match(ids({ texts: [text('Needs you 8', 15, { part: 'chip' }), text('Needs you 8', 18, { part: 'shelf-head', lh: '24px' })] }), /U19 "Needs you 8" is shown twice/);
   assert.equal(ids({ texts: [text('Offer', 13, { part: 'tag' }), text('Offer', 13, { part: 'tag' }), text('Carhartt jacket', 18, { lh: '24px' })] }), '');
 });
+
+test('standards U20 and U21: a collapsed camera and a sheet run off the top fail (10:41); a full screen and a sheet in view pass', () => {
+  const bad = ids({ layout: { vw: 390, screen: 51, thin: [{ part: 'instruction', w: 0, s: 'Show the whole front' }], sheets: [{ top: -900, s: 'Plan' }] } });
+  for (const want of [/U20 the screen is 51 wide in a 390 window/, /U20 \[instruction\] holding "Show the whole front" is 0 wide/, /U21 the sheet \("Plan"\) starts at -900/]) assert.match(bad, want);
+  assert.equal(ids({ layout: { vw: 390, screen: 390, thin: [], sheets: [{ top: 120, s: 'Plan' }] } }), '');
+});
