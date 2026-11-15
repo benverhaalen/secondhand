@@ -120,7 +120,7 @@ For the whole storefront, the same score is averaged by expected keep per site a
 | Age against typical days to sell: "listed 6 days; these usually take 11" | tells the person whether to wait | [M7](../determinations/market-insight.md#m7-days-to-sell) |
 | Photos and missing fields, only as a fix: "add a photo of the tag" | the score's best next change | the success score's on-tap line |
 
-Not shown: a bare 0 to 100, percentiles, the band name alone, other sellers' names or ratings (the person cannot change them this week), rank across sites (different buyers), promoted listings as competition, retail beside the suggestion (P10), a standalone "lower your price" nudge (P4), and any comparison while comps are too few (it says "still learning").
+Not shown: a bare 0 to 100, percentiles, the band name alone, other sellers' names or ratings (the person cannot change them this week), rank across sites (different buyers), promoted listings as competition, retail beside the suggestion (P10), a standalone "lower your price" nudge (P4; a price fix always carries its consequence and never goes below `floor_cents`), and any comparison while comps are too few (it says "still learning").
 
 **One line, in this order: place, outlook, the fix.** "Cheapest of 9 like it. Should sell this week." / "Priced above 11 of 14. Likely 3 or more weeks at $60." / "Fewer views than similar listings. A clearer first photo would help." Place is always a count, never a percentile.
 
@@ -136,7 +136,7 @@ Not shown: a bare 0 to 100, percentiles, the band name alone, other sellers' nam
 
 So `U_best` in the success score is the best plan *under the chosen intent*, and a reserve or checking listing never takes the needs attention or at risk band. The standing words shown on tiles (Hot, On pace, Slow, Stuck, Still learning) and how they map to the bands are in [pages §3](../pages.md#3-what-every-card-and-tile-tells).
 
-Contract (*agent proposal*, asked of Nate in [packet 47](../../.agents/team/packets/team/47-what-the-pages-need-from-the-backend.md)): each listing carries `standing {word, place {rank, of, basis: price|interest}, outlook {days_lo, days_hi}, fix? {change, points, action_id}, citation_id, state, hide_reason?}`, recomputed with the score and sent on `score.change`.
+Contract (*agent proposal*, asked of Nate in [packet 47](../../.agents/team/packets/team/47-what-the-pages-need-from-the-backend.md)): each listing carries `market_standing {word, place {rank, of, basis: price|interest}, outlook {days_lo, days_hi}, fix? {change, points, action_id}, citation_id, state, hide_reason?}`, recomputed with the score and sent on `score.change`.
 
 ## Axes
 
@@ -274,4 +274,4 @@ For Ben and Nate to mark.
 - Endpoints: `GET /v1/scores`, `GET /v1/scores/:id/basis`, `GET /v1/sites/:site/ranker`, `POST /v1/experiments/consent`.
 - Stream event `score.change`; a field `user.experiments_consent`.
 - `hide_reason` values as listed in States.
-- `listing.standing` as in [Standing against the market](#standing-against-the-market), and `U_best` read under `strategy.intent`.
+- `listing.market_standing` (`strategy.standing` is already the standing levers) as in [Standing against the market](#standing-against-the-market), and `U_best` read under the per-item `limits.plan_choice`.

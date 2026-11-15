@@ -57,13 +57,13 @@ Website (signed out): Home · Search · Product page · Sign in. Signed in: ever
 
 ## 3. What every card and tile tells
 
-Ben wants the color and the gradient to carry meaning that people learn without being told ([words](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)), and Nate wants each listing's success score shown by color ([words](../product/words.md#2026-11-14-nate-the-system-runs-the-storefront-learns-the-person-and-scores-every-listing-with-one-success-score)). This section names *what* a card has to say. *How* it is encoded is the colors thread's and the brand's call. The brand has four state fills, and [Article 5](../brand/constitution.md) bars a fifth because it fails Ben's color vision. At 02:59 Ben said "dont weight to colorblindness too much" ([words](../product/words.md#2026-11-15-do-not-weight-color-blindness-too-much)), so the colors thread's current proposal adds one hue for standing only: ember, meaning Hot and nothing else. Which way it goes is Ben's pick on that board; the facets below hold either way.
+Ben wants the color and the gradient to carry meaning that people learn without being told ([words](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)), and Nate wants each listing's success score shown by color ([words](../product/words.md#2026-11-14-nate-the-system-runs-the-storefront-learns-the-person-and-scores-every-listing-with-one-success-score)). This section names *what* a card has to say. *How* it is encoded is the colors thread's and the brand's call. The brand has four state fills, and [Article 5](../brand/constitution.md) warns against a fifth (a warning, not a wall) because it can fail Ben's color vision. At 02:59 Ben said "dont weight to colorblindness too much" ([words](../product/words.md#2026-11-15-do-not-weight-color-blindness-too-much)), so the colors thread's current proposal adds one hue for standing only: ember, meaning Hot and nothing else. Which way it goes is Ben's pick on that board; the facets below hold either way.
 
 **The five things a card can say, in the order a person needs them:**
 
 | Facet | The question it answers | Values | Comes from | Encoding constraint (for the colors thread) |
 |---|---|---|---|---|
-| **Stage** | where is this thing in its life? | draft (researching, review), live, needs you, sold (to ship, shipped), done, ended, failed | `item.state`, the Sell pill derivation ([spec/README](README.md#one-name-for-each-state)) | the four decided fills plus brick and gray; always with a word and icon |
+| **Stage** | where is this thing in its life? | the canon `item.state` names: researching, review, live, stale, sold, handed_over, done, unsold, kept, returned, disputed, failed; "needs you" is derived (an open decision on the item), not a state | `item.state`, the Sell pill derivation ([spec/README](README.md#one-name-for-each-state)) | the four decided fills (sky live, mint sold, marigold needs you, lime paid) plus brick and gray; always with a word and icon |
 | **Standing** | how is it doing against the market and against what I asked for? | hot, on pace, slow, stuck, still learning (names are a proposal) | the success score band judged against the person's intent ([score](features/score.md), [price §selling intents](features/price.md#selling-intents)) | never reuses a stage fill. Colors thread proposal: Hot is an ember tag with a fire icon and the only glow; On pace shows nothing; Slow and Still learning are words in the caption; Stuck is a gray tag with a moon and the fact ("No views in 9 days"); Waiting for price is a plain Live tag with its word, never gray, because it is a choice and not a failure |
 | **Urgency** | do I have to do something, by when? | none, a deadline with time left | `decision.deadline`, `appointment.window`, the site's clock in [sites.mjs](sites.mjs) | a countdown in words ("3h 40m"), never color, never pulsing ([today research §4](../research/today/ben/today-wants-alerts-and-clickability.md#4-countdowns)) |
 | **Money** | what do I get? | you keep $X; earned; could earn $A to $B | `offer.you_keep_cents`, `order`, `valuation` | ink weight and size, never a color |
@@ -84,7 +84,7 @@ Ben wants the color and the gradient to carry meaning that people learn without 
 |---|---|---|---|
 | Hot | strong, and interest rising faster than similar listings (`demand_rose`, offers or likes above peers of the same age) | the listing is ahead of plan | "3 offers in 2 days. Similar ones take 9." |
 | On pace | on track | inside the plan's expected days | nothing extra; silence is the signal |
-| Slow | needs attention, `item.state` stale | past the plan's patience with interest below plan | the one change worth the most ("Lower to $44: sells about 6 days sooner") |
+| Slow | needs attention, `item.state` stale | past the plan's patience with interest below plan | the one change worth the most, always with its consequence ("Lower to $44: sells about 6 days sooner"). A suggested price never goes below `floor_cents`; under the floor the move is `price_below_floor`, which always asks |
 | Stuck | at risk | slow and the plan has run out of moves above the floor, or a site problem | the choices at the end of the plan (relist, lower past the floor, donate, keep) |
 | Still learning | hidden score | too few comparable sales | what is being gathered |
 
@@ -107,6 +107,8 @@ Ben: "the money also might be a little too blank ... you could say earned this w
 
 Row 1 falls back to "Earned this month" when this week had no release but the month did. The "Roll the UI system out everywhere" thread drew the same slot from the UI side ([buttons-taps-corners-new-camera §5 and §6](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md)); the order of rows is Ben's to settle.
 
+**A narrower alternative** from that thread ([top of Today and stacking](../research/today/ben/top-of-today-and-stacking.md), *agent proposal* on Ben's card): the top shows only money kept since the person last looked, and only when there is some; a new person sees the next setup step; the totals and a weekly chart live on You. It is rows 1 and 7 of the ladder above with "since you last looked" as the window, and the rest moved to You. Whichever Ben picks, the server still chooses, so the contract adds `user.last_open_at` and a headline kind `kept_since_last_open`.
+
 The server picks the row so web and phone agree: `GET /v1/today` returns `headline {kind, value, label, sub, citation_id}` (§8).
 
 ## 5. Today: a list, with stacks only for same-kind groups
@@ -119,7 +121,7 @@ Ben asked to debate stacking cards as a queue you tap to fan out ([words](../pro
 | B. One deck, one card at a time (a queue you swipe) | focus; fast triage | hides how many are waiting and which is due first; a missed deadline sits under the top card |
 | C. A list where same-kind cards for one item, or many low-stakes cards of one kind, collapse into a stack that fans out on tap (iOS grouped notifications) | the count stays visible, nothing urgent hides, five offers become one stack "5 offers on the Carhartt jacket" | one more interaction to learn, but it is the iOS one |
 
-**Recommendation: C.** A stack forms only for the same item and kind, or for three or more notices of one kind. A stack never hides a card due within an hour: that card always sits on top and shows its countdown. The stack's top card carries the best option (the highest offer). This is a structure call for the UI loop to draw; the backend sends `group_key` on each decision so web and phone stack the same way (§8).
+**Recommendation: C.** A stack forms only for the same item and kind, or for three or more notices of one kind. A same-kind group takes one of two forms ([top of Today and stacking](../research/today/ben/top-of-today-and-stacking.md), *agent proposal* on Ben's card): a **batch card** when one action covers all of them ("3 to ship", Print 3 labels), or a **queue card**, drawn as a stack with "1 of 40", when each needs its own look; it opens them one at a time, full screen. Anything due within a day never stacks. The stack's top card carries the best option (the highest offer). This is a structure call for the UI loop to draw; the backend sends `group_key`, `group_rank` and `group_form` (`batch` or `queue`) on each decision so web and phone stack the same way (§8).
 
 ## 6. The pages
 
@@ -207,13 +209,13 @@ The item page is one page whose top half changes with the stage. It is the page 
 | **Review** | identity line (Confirmed once settled), the four facts to confirm (what it is, condition, price, ship or pickup) | Plan it | every field with where it came from (measured, from the tag, looked up, you said, not checked); tap to fix in place |
 | **Live** | per-site row (logo, state pill, price, views, likes, offers where shown) and the standing line ("Cheapest of 9 like it. Should sell this week.") | the one change worth the most, if standing is Slow; otherwise none | the plan's next step ("drops to $42 on day 10"); Market block (similar sold, for sale now) |
 | **Sold** | which site sold, you keep, proof the others came down (a logo per site with a tick, red if one failed) | Ship it, or Handed over for a pickup | the order's clocks (ship by, money arrives) |
-| **Done, ended or kept** | what it sold for and how long it took, or "kept, worth $A to $B" | Sell again (for kept or ended) | the why timeline |
+| **Done, unsold or kept** | what it sold for and how long it took, or "kept, worth $A to $B" | Sell again (for kept or unsold) | the why timeline |
 
 | | |
 |---|---|
 | Actions on any moment | edit a field (pushes to every live listing), Why? on any field or number, pause, end everywhere, mark where it is, set what you paid (optional, never asked) |
 | Splits off | Plan (sheet), Post preview (sheet), Ship (sheet), Pickup (sheet), Why (sheet: the item's events with undo), the product page, a thread |
-| Feeds | specced: `GET /v1/items/:id`, `PATCH /v1/items/:id/attributes/:name`, `GET /v1/scores?subject_type=listing`, `GET /v1/scores/:id/basis`, `GET /v1/events?item_id=`, `POST /v1/events/:id/undo`, `POST /v1/orders/:id/ship`, `POST /v1/orders/:id/handed-over`; new: `standing` on each listing (§8) |
+| Feeds | specced: `GET /v1/items/:id`, `PATCH /v1/items/:id/attributes/:name`, `GET /v1/scores?subject_type=listing`, `GET /v1/scores/:id/basis`, `GET /v1/events?item_id=`, `POST /v1/events/:id/undo`, `POST /v1/orders/:id/ship`, `POST /v1/orders/:id/handed-over`; new: `market_standing` on each listing (§8) |
 | Features | item-card, identify, measure, studio, price, list, score, sold, market, data |
 
 ### 6.7 Plan (sheet, from the item)
@@ -225,11 +227,11 @@ The selling plan and the seller's intent in one sheet. Full model in [price §se
 | 1 | **What do you want?** five choices, each filled from sold data with its consequence: Sell it (default), Gone fast, Best price, Only at my price, Just checking | one tap |
 | 2 | under the pick: "about 9 days, you keep $41" per site, and the sold prices as ticks on the price track | drag the price (the posture slider) |
 | 3 | lowest you'd take (prefilled from sold prices, shown after them), and "Always accept $X or more" | edit either |
-| 4 | the date for Gone fast; what happens if it doesn't sell (donate, keep, ask me) | set once |
+| 4 | the date for Gone fast; what happens if it doesn't sell (ask me, donate, keep, trade in, relist; relist is never offered on Poshmark). The end still arrives as a one-tap card with this answer already picked | set once |
 | 5 | sites: the picked ones with one reason each; a skipped site greyed with its reason | add or skip a site |
 | 6 | ship or pickup | pick |
 
-Pill: Preview listings. Feeds: specced `POST /v1/items/:id/strategy`; new `intent`, `gone_by`, `fallback`, `accept_mode` fields (§8). Features: price, list, score, data (limits).
+Pill: Preview listings. Feeds: specced `POST /v1/items/:id/strategy`; new per-item `limits` fields `plan_choice`, `gone_by`, `fallback`, `accept_mode` (§8). Features: price, list, score, data (limits).
 
 ### 6.8 Post preview (sheet)
 
@@ -244,7 +246,7 @@ One stack of previews, one per site, each as that site shows it (title in its fo
 
 ### 6.10 Sell (tab)
 
-Shelves by state, each scrolling sideways with a count and "see all": Needs you, In progress (researching, review), Live, Sold (to ship first), then Ended and Kept folded at the bottom. Each tile is the photo with its stage tag, its standing where it is live, and site badges. Sort and filter by site and kind in the shelf header (Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "live vs needs you vs sold are all the same primitive. then things like type or marketplace"). Feeds: specced `GET /v1/items`; stream `state.change`, `score.change`. Empty: the ＋ is the only thing to point to. Features: item-card, list, score, sold.
+Shelves by state, each scrolling sideways with a count and "see all": Needs you, In progress (researching, review), Live, Sold (to ship first), then Unsold and Kept folded at the bottom. Needs you is derived from open decisions; the other shelves are `item.state` names. Each tile is the photo with its stage tag, its standing where it is live, and site badges. Sort and filter by site and kind in the shelf header (Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "live vs needs you vs sold are all the same primitive. then things like type or marketplace"). Feeds: specced `GET /v1/items`; stream `state.change`, `score.change`. Empty: the ＋ is the only thing to point to. Features: item-card, list, score, sold.
 
 ### 6.11 What's it worth (the appraisal result)
 
@@ -274,7 +276,7 @@ One per product, for visitors and users: what it is, used price per site (sold a
 
 | Page | Shows | Feeds (specced unless marked) |
 |---|---|---|
-| **You** | kept, on its way, could earn; sold count; goal bar if set; By site card; then the settings list | `GET /v1/insights` |
+| **You** | worth of what you kept (the `kept` items), on its way, could earn; sold count; goal bar if set; By site card; then the settings list | `GET /v1/insights` |
 | **By site** | each site as a storefront: days to sell, share of asking, funnel where the site shows it, what sells best there | `GET /v1/insights` (`funnel[]`, `reliability[]`) |
 | **What your things are worth** | every owned, kept and live item with its range and how it moved this week | `GET /v1/insights` |
 | **Goals** | money and count this month, progress | `PUT /v1/goals/:month` |
@@ -283,7 +285,7 @@ One per product, for visitors and users: what it is, used price per site (sold a
 | **Pickups** | windows, saved spot, Ask me every time | `GET`, `PUT /v1/limits` |
 | **Notifications** | per kind: push now, batch, off | new: `PATCH /v1/me {notification_pref}` |
 | **Your style** | what it learned from what you sell, keep, save and buy, each with its reason; edit or remove | new: `GET`, `PATCH /v1/me/style` (`style_profile` exists in the canon, its endpoint does not) |
-| **Records and tax** | the year's sales, fees, costs, a CSV and PDF | `GET /v1/records` |
+| **Records and tax** | the year's sales, fees, costs, a CSV (a PDF is not specced yet; asked in §8) | `GET /v1/records` |
 | **Account** | sign-in method, sign out, export, delete | `POST /v1/me/export`, `DELETE /v1/me`; new: `POST /v1/auth/signout` |
 | **Ask** | questions over your sales in words (Genie) | `POST /v1/genie` |
 
@@ -322,14 +324,24 @@ Sent to Nate as [packet 47](../.agents/team/packets/team/47-what-the-pages-need-
 | Need | For | Shape |
 |---|---|---|
 | App sign-in: Apple, Google, email code; session and refresh | onboarding, every call | `POST /v1/auth/{apple,google}`, `POST /v1/auth/email/start`, `/email/verify`, `POST /v1/auth/refresh`, `POST /v1/auth/signout` |
-| Onboarding progress | resume onboarding | `user.onboarding {done_steps[], finished_at?}` in `GET /v1/me` |
-| Push token and notification prefs | Notifications | `PATCH /v1/me {notification_pref[], push_token}` |
-| The top slot | Today, You | `headline {kind, value, label, sub, citation_id}` on `GET /v1/today` |
-| Stacks | Today | `group_key` and `group_rank` on each decision |
+| Onboarding progress | resume onboarding | `GET /v1/me` (a new route) with `user.onboarding {done_steps[], finished_at?}` and `auth_methods[]`; `PATCH /v1/me {onboarding_step}` adds a step ([connect](features/connect.md#signing-in-to-secondhand)) |
+| Push token and notification prefs | Notifications | `PATCH /v1/me {notification_pref[], push_token}`; `notification_pref[]` already exists on `user`, only the write is new |
+| A second sign-in method | You > Account | `POST /v1/auth/link/{apple,google,email}` |
+| Web sessions | the website | cookie or token storage on the web, CORS for the site's origin, Apple and Google web client ids (the edge's call) |
+| Push deep links | every push | `{kind, decision_id?, item_id?, path}` in the push payload, so a tap opens the right page |
+| The top slot | Today, You | `headline {kind, value, label, sub, citation_id}` on `GET /v1/today`; `user.last_open_at`, set when Today opens, for the `kept_since_last_open` kind |
+| Stacks | Today | `group_key`, `group_rank` and `group_form` (`batch`, `queue`) on each decision; nothing due within a day is grouped |
 | Facts one at a time, and the comp count, while the camera is open | Camera | a `fact.found` frame per attribute (name, value or blank, source) and `found.comps` on the identify and valuate job streams |
-| Seller intent | Plan, standing, every automatic move | `strategy.intent`, `gone_by?`, `fallback`, `markdown_on`, `limits.accept_mode`, `review_at?` ([price](features/price.md#selling-intents)) |
-| Standing | tiles, item, Today | `listing.standing {word, place {rank, of}, outlook, fix?, citation_id}`, judged against the intent ([score](features/score.md#standing-against-the-market)) |
+| Seller intent | Plan, standing, every automatic move | on `limits` per item: `plan_choice`, `gone_by?`, `fallback`, `markdown_on`, `accept_mode`, `review_at?` ([price](features/price.md#selling-intents)) |
+| Standing | tiles, item, Today | `listing.market_standing {word, place {rank, of}, outlook, fix?, citation_id}` (not `standing`, which the canon's `strategy` already uses for its standing levers), judged against the intent ([score](features/score.md#standing-against-the-market)) |
 | Style profile endpoint | Your style | `GET`, `PATCH /v1/me/style` |
+| The five choices with their consequences | Plan sheet | a read of each choice's days and you-keep from sold data before one is picked, e.g. `GET /v1/items/:id/plan-choices`, and per-site sold prices for the ticks |
+| Why the camera opened | Camera | a purpose on the capture (`sell`, `appraise`, `find`) beside the canon's `capture.mode` (shots, scan, talk) |
+| Talk mode | Camera | a realtime session for talk mode (token and transport) |
+| "We found these" | onboarding import | a preview of a site's listings before import, e.g. `GET /v1/accounts/:id/import-preview` |
+| A visitor's search | signed-out Search | job events for a visitor (`/v1/stream` is signed-in only) |
+| Needs you per item | Sell shelf | the open-decision count and top kind on each item in `GET /v1/items` |
+| Records as a PDF | Records and tax | `format=pdf` on `GET /v1/records`, or drop it |
 | One name for the relink card | Today, Accounts | the canon says `relink`; packet 3.6 of the protocol engine says `account_stale`; pick one |
 
 ## 9. Everything you asked for that the pages must carry

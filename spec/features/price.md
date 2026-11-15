@@ -192,11 +192,11 @@ Personas from [today research §1](../../research/today/ben/today-wants-alerts-a
 | "Sell it, but not under $X" | everyone | a normal sale with one protected line | `balanced`, floor, the markdown path | nothing: this is the default |
 | "Only if I get $X, otherwise I keep it" | attached owners, young fashion sellers | keeping is a fine outcome (P10, loss aversion) | `max_return` with floor X | three breaks: if X is above the top sold price the path has no rung; [D15](../determinations/money.md) walks it to stale and `end_unsold`; the success score calls it at risk. Needs a reserve mode: fixed ask, no markdowns, no stale, ends only when the person says |
 | "See what it would fetch" | everyone, flippers most | information, not a sale | appraise, with no listing | a live listing where every offer asks and nothing is accepted for you, with a review date. Not on a site where a buy-now binds the seller and cancelling costs a defect (eBay, Mercari, Poshmark; [money](../determinations/money.md)), so on those it lists with offers only, or stays an appraisal |
-| "Donate it if it doesn't sell" | clearing out | an ending chosen up front, so nothing lingers (P1: donate "looks finished, not failed") | `end_unsold`, asked at the end | `fallback` chosen at listing (donate, keep, trade in, relist, ask me), so the end is automatic |
+| "Donate it if it doesn't sell" | clearing out | an ending chosen up front, so nothing lingers (P1: donate "looks finished, not failed") | `end_unsold`, asked at the end | `fallback` chosen at listing (ask, donate, keep, trade in, relist; relist never on Poshmark), so the end card arrives already answered and takes one tap |
 | "Clear the lot" | clearing out, flippers | the pile gone; the total matters, not each price | `bundle_offer`, per-item floors | a batch with one total floor that lets items cross-subsidise; conflicts with "never below any item's floor" in bundles. Open for Ben and Nate |
 | "Hold it for the season" | young fashion, flippers | list the coat in October | `list_at` | a visible scheduled state ("lists Oct 1") and the engine's note when waiting pays |
 | "At least what I paid, plus a margin" | flippers | profit over cost | `item.cost`, `user.target_profit_cents` | a floor derived from cost. Cost is never asked of someone clearing out (P10); it is offered once a person behaves like a flipper (*second model's point*) |
-| "Don't bother me" | clearing out | set once, hear only when it sells (P3) | rules, Always accept | the stale and end steps still ask; fixed by `fallback` and the intents above being answered up front |
+| "Don't bother me" | clearing out | set once, hear only when it sells (P3) | rules, Always accept | the stale and end steps still ask. `fallback` chosen up front makes the end one tap; whether a fallback chosen at listing may run with no card at all is open below |
 | "Not on Facebook" | anyone | friends shouldn't see it | a skipped site in the plan | a person-set skip reason (`skip_reason` holds system reasons only) |
 
 ### Five choices, one tap
@@ -206,9 +206,9 @@ The Plan sheet opens on these, each showing its consequence from sold data befor
 | Choice | Says underneath | Sets | Standing judges it by |
 |---|---|---|---|
 | **Sell it** (default) | a fair price, soon | `balanced`, posture 0.5, horizon 30, floor suggested from sold prices, Always accept offered, `fallback` ask | on pace against the plan's median days |
-| **Gone fast** | by a date, or as soon as possible | `quick`, posture 0.15, optional `gone_by`, the path compressed to reach the floor by the date, Always accept at the floor, pickup sites first, `fallback` chosen now. A fire sale is this with a low floor | will it clear before `gone_by`; a predicted miss is the one alarm worth a push ("won't sell by Friday at $40; $28 would") |
+| **Gone fast** | by a date, or as soon as possible | `quick`, posture 0.15, optional `gone_by`, the path compressed to reach the floor by the date, Always accept offered with the floor suggested (the person sets it, [decision](../../product/decisions.md)), pickup sites first, `fallback` chosen now. A fire sale is this with a low floor | will it clear before `gone_by`; a predicted miss is the one alarm worth a push ("won't sell by Friday at $40; $28 would"). A suggested price is never below `floor_cents`; when only a price under the floor would make the date, the line says so and the move is `price_below_floor`, which always asks |
 | **Best price** | no rush | `max_return`, posture 0.85, horizon 90, offers on, slow counters, `fallback` ask | interest arriving at this ask |
-| **Only at my price** | I'd keep it otherwise | `intent` reserve: ask fixed at their number, `markdown_on` false, no stale, offers below it decline quietly or ask (their pick), `fallback` keep, `review_at` 30 days | distance from the market only: "sold ones top out at $70; yours is $95". Never Slow or Stuck |
+| **Only at my price** | I'd keep it otherwise | `plan_choice` reserve: `objective` max_return, ask and floor both at their number, `markdown_on` false, no stale, offers below it go to `decline_offer` (auto, a counter at the floor, which is their number) or ask (their pick), `fallback` keep, `review_at` 30 days | distance from the market only: "sold ones top out at $70; yours is $95". Never Slow or Stuck |
 | **Just checking** | what would it fetch? | an appraisal by default; or a listing with `accept_mode` ask_all, nothing automatic, `review_at` 14 days, only on sites where an offer does not bind | the answer itself: interest and offers received; no fixes pushed |
 
 Everything else is an adjustment inside a choice, not a sixth choice: the floor, Always accept, the date, the fallback, ship or pickup, sites to skip, sell as a set, cost (flippers only), list later. The default is Sell it, not the middle of a slider, because for the primary person "gone" beats money (P1); the slider still opens at the middle inside Sell it, as Nate asked ([words](../../product/words.md#2026-11-14-nate-the-price-slider-defaults-to-the-middle)). The second model argued the default should lean faster for the primary persona; that is Ben's and Nate's call.
@@ -217,17 +217,17 @@ Everything else is an adjustment inside a choice, not a sixth choice: the floor,
 
 | Part | Change |
 |---|---|
-| `strategy` | add `intent` (`sell`, `fast`, `best`, `reserve`, `check`), `gone_by?` (date), `fallback` (`ask`, `donate`, `keep`, `trade_in`, `relist`), `markdown_on` (bool), `review_at?` |
-| `limits` | add `accept_mode` (`auto`, `ask_all`) per item |
+| `limits` (per item) | add `plan_choice` (`sell`, `fast`, `best`, `reserve`, `check`), `gone_by?` (date), `fallback` (`ask`, `donate`, `keep`, `trade_in`, `relist`; `relist` never on Poshmark), `markdown_on` (bool), `review_at?`, `accept_mode` (`auto`, `ask_all`). These are per item, not per site, so they sit on `limits`, not on `strategy`. The name is `plan_choice` because the canon already has an `intent` entity (assist) and `message.intent` |
+| `strategy.objective` | unchanged names; a choice maps onto it: sell → `balanced`, fast → `quick`, best → `max_return`, reserve → `max_return` with no path, check → no strategy row (an appraisal) or `balanced` with `accept_mode` ask_all |
 | the marketing engine | for `fast` with `gone_by`, the holding cost is a step at the date, not a rate; for `reserve`, no path is built and the item never enters `stale` |
-| [money D15](../determinations/money.md) | skips `reserve` and `check`; for the rest, `fallback` answers `end_unsold` without a card unless it is `ask` |
+| [money D15](../determinations/money.md) | skips `reserve` and `check`; for the rest, `end_unsold` is raised as today with the `fallback` option preselected |
 | the success score | `U_best` is the best plan under the chosen intent, not only the posture ([score](score.md#standing-against-the-market)) |
-| decision kinds | none new; `end_unsold` is raised only when `fallback` is `ask` |
+| decision kinds | none new. `end_unsold` stays ask and not promotable, as the canon has it; `fallback` only preselects its answer |
 | the floor rule | unchanged: a price below the floor always asks. Intents set the floor up front; they never cross it |
 
 ## Open for Ben and Nate
 
-- Selling intents: may a batch carry one total floor that overrides each item's floor? May "Just checking" create a live listing at all? Is cost ever asked, or only offered to flippers? Should the default lean faster than Sell it for someone clearing out?
+- Selling intents: may a batch carry one total floor that overrides each item's floor? May "Just checking" create a live listing at all? Is cost ever asked, or only offered to flippers? Should the default lean faster than Sell it for someone clearing out? May a `fallback` chosen at listing run with no card (making `end_unsold` promotable for that item), which is what "don't bother me" asks for?
 - Is the 30-day horizon the right default "best", or should the best plan follow this month's goal when one is set?
 - Should visitors see the financial axis on product pages when its range is "not checked yet"?
 
@@ -237,4 +237,4 @@ Everything else is an adjustment inside a choice, not a sixth choice: the floor,
 - `GET /v1/citations/:id` in the endpoint list.
 - `unbacked_claim` in the decision kinds.
 - `comp.days_listed`, `comp.search_position`, `comp.state` (sold, live, ended).
-- Selling intents: `strategy.intent`, `strategy.gone_by`, `strategy.fallback`, `strategy.markdown_on`, `strategy.review_at`, `limits.accept_mode`, and a person-set `skip_reason` value `you_skipped` ([selling intents](#selling-intents)).
+- Selling intents: on `limits` per item, `plan_choice`, `gone_by`, `fallback`, `markdown_on`, `review_at`, `accept_mode`; and a person-set `skip_reason` value `you_skipped` ([selling intents](#selling-intents)).

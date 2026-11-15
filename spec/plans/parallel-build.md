@@ -18,7 +18,7 @@ Three lanes run at once and meet only at the API contract:
 ```
 
 - **The examples are the seam.** `T0-2` in [plans/README §7](README.md#7-first-tasks) already defines them. This plan adds the endpoints the pages need that the canon lacks ([pages §8](../pages.md#8-what-the-pages-need-that-the-canon-does-not-have-yet), sent to Nate as [packet 47](../../.agents/team/packets/team/47-what-the-pages-need-from-the-backend.md)).
-- **The mock lives in the app's API client, not on the edge.** Nate's stream 15 owns `app/src/app/v1/` and `spec/examples/` ([workstreams](workstreams.md)), so the screens' side never writes there. The app calls the API through one client in `app/src/api/`. For an endpoint whose route does not exist yet (the edge answers 404 for the route itself), the client answers from `spec/examples/`; `MOCK=today,items` forces the example for named endpoints in a demo or while a handler is broken (*agent proposal*). When stream 15 adds a real route, the screen gets the real answer with no change on either side.
+- **The mock lives in the app's API client, not on the edge.** Nate's stream 15 owns `app/src/app/v1/` and `spec/examples/` ([workstreams](workstreams.md)), so the screens' side never writes there. The app calls the API through one client in `app/src/api/`. For an endpoint whose route is not in the edge's route manifest yet, the client answers from `spec/examples/`. It reads the manifest, not the status code, because the canon also answers `404 not_found` for "not this user's, or gone"; `MOCK=today,items` forces the example for named endpoints in a demo or while a handler is broken (*agent proposal*). When stream 15 adds a real route, the screen gets the real answer with no change on either side.
 - **The stream is mocked too.** `GET /v1/stream` and `GET /v1/jobs/:id/events` replay recorded frames from the examples, so the researching state, the analysis moment and live counts are built against real-shaped events from day one.
 - **Real data over made-up data** (Ben, [words](../../product/words.md#2026-11-15-real-data-over-made-up-data-and-what-the-voice-pairs-mean)): the examples use real items from `T0-3` and real sold prices, not lorem.
 
@@ -58,17 +58,17 @@ Each page task runs the loop as it stands in [frontend-standard §2](../../produ
 5. Behaviour tests before the handlers: a Maestro flow per page ([decision](../../product/decisions.md#2026-11-14-app-end-to-end-tests-are-maestro-files-explored-with-agent-device)).
 6. Judge and check: `node .agents/check.mjs`, the render checks, a fresh reviewer.
 
-Pages are released in waves by what they depend on. Nate's side runs on a clock: everything finished by 03:00 Central on November 15, leeway to 07:00 ([packet 45](../../.agents/team/packets/team/45-handoff-to-the-build-session.md#the-clock)). The page waves line up with his so both sides meet at each checkpoint:
+Pages are released in waves by what they depend on. Nate's side runs on its own clock: everything finished by 03:00 Central on November 15, leeway to 07:00 ([packet 45](../../.agents/team/packets/team/45-handoff-to-the-build-session.md#the-clock)). The pages do not wait on it, because every page runs on the examples until its routes land. The two sides only meet at his checkpoints, where finished routes replace mocks.
 
-| Wave, by (Central) | Pages ([pages §6](../pages.md#6-the-pages)) | Backend in the same wave (his packet 45) |
+| Page wave | Pages ([pages §6](../pages.md#6-the-pages)) | Nate's checkpoint it meets (packet 45, Central) |
 |---|---|---|
-| 0, 21:45 | parts kit; examples and mock edge | `T0-1` workspace checks, `T0-2` examples, auth on the edge |
-| 1, 23:30: the thin path | Welcome and sign-in, Camera, Item (researching, review), Plan, Post preview, Today | capture upload, identify, valuate, one eBay post, decisions and the stream |
-| 2, 02:00 | Item (live, sold), Messages, Thread, Ship and Pickup sheets, Sell, the rest of onboarding | harness read-backs, offers and messages, delist, orders |
-| 3, 02:00 | Buy, Search results, Listing, Want, What's it worth, Product page | search fan-out, watch, appraise, market |
-| 4, 03:00 | You and its pages, signed-out Home, website polish | insights, goals, records, Genie |
+| 0 | parts kit; the API client and its mocks (`W0-1`, `W0-2`) | 21:45, wave 0: workspace checks, scaffolds, fixtures; `T0-2` examples land here or soon after |
+| 1, the thin path | Welcome and sign-in, Camera, Item (researching, review), Plan, Post preview, Today | 23:30, wave 1: his protocol and the end-to-end walk on fixtures. The screens still read mocks |
+| 2 | Item (live, sold), Messages, Thread, Ship and Pickup sheets, Sell, the rest of onboarding | 02:00, wave 2: every engine built and proved. Most routes can flip to real here |
+| 3 | Buy, Search results, Listing, Want, What's it worth, Product page | 03:00, wave 3: sites wired behind dry runs, deployed, one full rehearsal |
+| 4 | You and its pages, signed-out Home, website polish | the 03:00 to 07:00 leeway |
 
-A wave's pages can all run at once: each owns its own route folder. From 03:00 to 07:00 both sides join screens to the real API endpoint by endpoint, which under §1 is deleting nothing: the real route file simply exists.
+Page waves 1 to 4 can overlap: each page owns its own route folder. From 03:00 to 07:00 both sides join screens to the real API endpoint by endpoint, which under §1 is deleting nothing: the route appears in the manifest and the client stops mocking.
 
 ## 5. Generated images: allowed, and rate limited
 
@@ -105,7 +105,8 @@ W0-1 The app's API client, answering from the examples until a route exists
 
 W0-2 One codebase for phone and web
   lane: frontend   owner: Ben   seat: implementer   model: sonnet   effort: medium
-  owns: [app/app.json, app/src/app/_layout.tsx, app/src/app/+html.tsx, app/src/platform/]
+  owns: [app/src/app/+html.tsx, app/src/platform/]
+  shares: [app/src/app/_layout.tsx (scaffolded in Nate's wave 0; edits agreed in a packet)]  # app/app.json stays with the edge deployer, per app/README
   dependsOn: []
   rests: [spec/plans/parallel-build.md#2-the-website-in-tandem-one-codebase, product/decisions.md#2026-11-14-the-phone-app-comes-first-a-website-follows]
   check: { argv: ["npx", "--prefix", "app", "expo", "export", "--platform", "web"], expectExit: 0 }
@@ -115,7 +116,7 @@ W0-2 One codebase for phone and web
     - not: a screen that imports the camera module builds for the web
   done: every later screen ships to the phone and the site from one file.
 
-AU-1 Sign in with Apple, Google and an email code on the edge (inside stream 15)
+AU-1 Sign in with Apple, Google and an email code on the edge (stream to be placed by Nate; asked in packet 47)
   lane: backend   owner: Nate   seat: implementer   model: sonnet   effort: high
   owns: [app/src/app/v1/auth/, app/src/edge/auth.ts, app/src/edge/auth.test.ts]
   dependsOn: [T0-2]

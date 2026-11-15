@@ -1,0 +1,88 @@
+{
+  "images": [
+    {
+      "file": "/Users/benverhaalen/secondhand-runs/camera-buy-r1/cam-clearing/image.png",
+      "person": "Wants their own things gone this week, with less work than answering messages.",
+      "verdict": "pass",
+      "failures": [],
+      "serves": [
+        {"element": "Hold the back still / Auto-captures when sharp", "want": "Four words give the next action. Automatic capture removes a tap while their other hand holds the hanger."},
+        {"element": "Front checked, Back selected, Tag pending", "want": "Shows a finite job and preserves progress, useful when repeating capture across a pile."},
+        {"element": "Read: Carhartt · Work jacket / Need tag: Size + fabric", "want": "Separates what the app knows from what it needs and identifies the source of the missing facts without asking for typing."},
+        {"element": "One gradient instruction card and a large unobstructed jacket", "want": "Spends the strongest visual emphasis on finishing the photograph. No price decision interrupts capture."}
+      ],
+      "costs": [
+        {"person": "Knows the item's worth and will wait", "issue": "No visible minimum confirms that their price is protected."},
+        {"person": "Would keep it unless the price is right", "issue": "Must keep photographing before seeing whether the effort might pay. This person's motivation is a founder hypothesis, not observed behavior."}
+      ]
+    },
+    {
+      "file": "/Users/benverhaalen/secondhand-runs/camera-buy-r1/cam-minimum/image.png",
+      "person": "Knows the worth of one item, will wait, and wants immediate confirmation of their minimum.",
+      "verdict": "pass",
+      "failures": [],
+      "serves": [
+        {"element": "Lock icon, Your minimum · $80, After fees. Never below.", "want": "Makes the seller's floor visible immediately and specifies the amount they keep. The lock and wording carry the meaning without relying on the gradient."},
+        {"element": "Hold still / Back · Auto-capture on", "want": "Two words explain the next action without requiring them to read the price or the lower panel."},
+        {"element": "Read and Still needed rows in the bottom panel", "want": "Distinguishes recognized identity from missing size, fabric and flaws. The checked thumbnail confirms a captured front."}
+      ],
+      "costs": [
+        {"person": "Wants things gone with the least work", "issue": "The minimum banner and separate instruction capsule occupy much of the upper view, while the bottom panel repeats the automatic-capture status. Price protection gets space this person would use to frame the next item. The screen does not itself require setting a minimum, so that extra step cannot be assumed."},
+        {"person": "Would keep it unless the price is right", "issue": "An $80 floor says what the seller wants, not what someone might pay. It does not answer the value question. That question is still a founder hypothesis."}
+      ]
+    },
+    {
+      "file": "/Users/benverhaalen/secondhand-runs/camera-buy-r1/cam-testing/image.png",
+      "person": "Might keep the item unless its likely proceeds justify selling; named by the founder, not yet observed in behavior.",
+      "verdict": "pass",
+      "failures": [],
+      "serves": [
+        {"element": "Estimated you keep $45–65 / After fees · Early estimate", "want": "Answers the hypothetical seller's value question before capture is complete. The range and qualification distinguish an estimate from a promise. Giving it the largest type rests on the founder's untested account of this person's motivation."},
+        {"element": "Turn to the back while the front remains visible", "want": "Four words explain the transition correctly: Front is complete and Back is the requested next shot, not a claim that the visible front is a back."},
+        {"element": "Read: Carhartt jacket, Faded cuffs / Still needed: Size · Material", "want": "Shows that the app has noticed condition as well as identity, which makes the basis of its estimate more understandable. Missing facts remain explicitly separate."}
+      ],
+      "costs": [
+        {"person": "Wants things gone with the least work", "issue": "The dominant price range invites a keep-or-sell decision in the middle of a simple capture task. The large bottom panel also leaves less camera space than Design 1."},
+        {"person": "Knows the item's worth and will wait", "issue": "A market estimate is not a protected minimum. Nothing here confirms that the app will respect the seller's floor."}
+      ]
+    }
+  ],
+  "merge": {
+    "keep": [
+      {"from": "Design 1", "what": "The capture-first composition: progress at the top, one grounded instruction card below the item, shutter and completed thumbnail at the bottom.", "why": "This gives the least-work person the clearest route through a pile while both other people still get usable photographs."},
+      {"from": "Designs 1 and 3", "what": "Use Turn to the back before the item turns, then Hold the back still once the back is visible. Keep automatic capture and the manual shutter.", "why": "These are different moments, not competing instructions. Automatic capture saves effort; the shutter provides a direct fallback."},
+      {"from": "Design 1", "what": "Keep the explicit Read and Need tag distinction and the checked front thumbnail.", "why": "Everyone benefits from knowing what is already done and what evidence is still needed."},
+      {"from": "Design 3", "what": "Include a detected condition fact in the existing Read summary when supported by the captured image.", "why": "Condition matters to identification and value without needing another capture step or another card. Do not assume every flaw has been found."},
+      {"from": "Design 2", "what": "Keep a compact lock and Minimum you keep amount whenever the seller has already set a floor.", "why": "A persistent confirmation serves the firm-price seller without forcing everyone to choose a price during capture."},
+      {"from": "Design 3", "what": "Offer the net estimate, range and Early estimate qualifier through one optional Show early estimate setting.", "why": "This preserves the hypothesized value-checking use without making an unobserved need dominate everyone's camera."},
+      {"from": "Image 4, app reference", "what": "Use black primary controls, quiet white surfaces, thin neutral borders, regular supporting type and one cyan-to-mint-to-yellow gradient surface.", "why": "The camera should share the app's visual language. The single gradient should identify the current work, as the highlighted offer does on Today."}
+    ],
+    "conflicts": [
+      {"between": "Finishing capture quickly versus evaluating price before committing more effort", "resolved": "Default to Design 1's capture hierarchy. Show early estimate is off by default and reveals one compact grounded estimate row when enabled. No choice is required to start capturing. Treat demand for this setting as a founder hypothesis to test, not established evidence."},
+      {"between": "A firm seller's minimum versus a likely market estimate", "resolved": "Never replace or lower the minimum with the estimate. Keep a saved minimum visible; if the estimate is enabled, label it separately. Minimum you keep $80 and Estimated you keep $45–65 can coexist because they describe different things."},
+      {"between": "Clearing things quickly versus waiting for a minimum price", "resolved": "A saved minimum remains binding until the person changes it. With no minimum set, do not add a price-setting step. The least-work default does not authorize giving away or selling an item without the person's agreement."},
+      {"between": "Showing everything the app learned versus preserving space to frame the item", "resolved": "Keep identity and at most one relevant condition detail in the existing summary. Expand additional facts on request. Ask for a tag only when tag information remains missing; request a flaw photo only when necessary, rather than making every item complete a permanent Flaws stage."}
+    ]
+  },
+  "exact_fixes": [
+    "These are merge specifications, not measurements of defects: at a 390-point iPhone width, use 16-point outer margins and 12-point gaps between separate controls or surfaces.",
+    "Use one gradient instruction card with a 32-point corner radius and 20-point inner padding. Use 24-point semibold instruction text, 16-point supporting text and no functional label below 14 points. Allow text to wrap at larger accessibility sizes.",
+    "Set camera copy to Turn to the back before rotation and Hold the back still afterward. Put Auto-captures when sharp directly below it. Remove Design 2's extra Auto on badge.",
+    "Use Read and Need tag consistently. Show Carhartt · Work jacket and Size · Fabric as their values. Add Faded cuffs only when detected; do not copy that finding onto every item.",
+    "Keep Front, Back and Tag in one grounded progress control. Use a check for completed, black fill with white text for current, and an outlined pending step. Each state must retain its text or symbol independently of color.",
+    "For a saved floor, show a lock plus Minimum you keep · $80 on a compact white surface. Keep the amount visible throughout capture. Use Never below only if the product actually enforces that promise.",
+    "When Show early estimate is enabled, show Estimated you keep · $45–65 with After fees · Early estimate beneath it, in 16-point and 14-point type. Do not use a second gradient or Design 3's oversized amount. Reserve separate rows when a minimum and estimate are both present.",
+    "Use #0A0A0A for primary text and controls, #595959 for secondary text on white, and #FFFFFF for grounded camera surfaces. Keep text off the bare live image. Use the reference's cyan, mint and pale-yellow treatment only on the active instruction card.",
+    "Use a 72-point shutter, a 56-point completed-photo thumbnail with a visible check, and at least 44-by-44-point hit areas for close, progress and thumbnail controls. Position the bottom controls above the device safe area. These are proposed sizes to verify in the built screen."
+  ],
+  "feel_notes": [
+    "Design 1 is the best starting point because its strongest emphasis explains what to do now. Its gradient has a job; it is not merely decorative.",
+    "All three pass the supplied failure rules. Each has a photographic daylight depiction of a worn garment, a short next action, explicit known-versus-needed labels, readable grounded interface text and no marketplace named in words. Image appearance alone cannot establish photographic provenance.",
+    "Each design has one main expressive move: Design 1 highlights capture guidance; Designs 2 and 3 highlight money. Large headings, ordinary rounded surfaces and functional contrast are not automatically additional bold moves. Design 2 feels busier, but busyness alone is not one of the allowed failure rules.",
+    "Let the jacket remain the largest continuous area. The merged screen should feel like a camera that does the paperwork while the person holds an item, not a form placed over a camera.",
+    "Image 4 is quieter than these camera directions: fewer heavy headings and less pill-shaped framing. Match its restraint while retaining the opaque grounds that make camera text readable.",
+    "Do not treat the third person's stated motivation as research. The price-first design and optional estimate setting both lean on a founder hypothesis. Observe whether people actually use an early estimate to decide whether to continue before promoting it into the default hierarchy.",
+    "This review checks the supplied pixels and stated wants. It does not establish recognition accuracy, automatic-capture reliability, minimum enforcement, estimate accuracy or behavior on a physical phone."
+  ],
+  "best": "Design 1: the strongest base for the least-work priority. Keep its capture hierarchy, add a compact saved-minimum confirmation, and make early estimates optional."
+}
