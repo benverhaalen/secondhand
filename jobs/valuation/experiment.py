@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import bisect
 import csv
+import gzip
 import hashlib
 import json
 import os
@@ -47,7 +48,7 @@ MIN_PEERS = 3                    # guess: a median of 1 or 2 peers is itself noi
 MIN_CELL = 30                    # money D6 step 2 and plan decision 16: a smaller cell says "too few"
 PRIMARY = "product_90d_median"   # plan decision 10: the headline is paired against the 90-day sold median
 DAY = timedelta(days=1)
-SEEDS = {"random_comps": 3, "bootstrap": 7}   # logged in config, so a run can be replayed
+SEEDS = {"random_comps": 3, "bootstrap": 7, "sample": 5}   # logged in config, so a run can be replayed
 DRAWS = 1000                     # guess: bootstrap draws for the lift interval
 
 
@@ -65,8 +66,9 @@ def _flag(v, default):
 
 def load(path: str) -> list[dict]:
     """CSV or JSONL in the FIELDS schema. Empty cells become None; flags take FLAGS' defaults."""
-    with open(path, newline="") as f:
-        raw = [json.loads(line) for line in f if line.strip()] if path.endswith(".jsonl") else list(csv.DictReader(f))
+    opener = gzip.open if path.endswith(".gz") else open
+    with opener(path, "rt", newline="") as f:
+        raw = [json.loads(line) for line in f if line.strip()] if ".jsonl" in path else list(csv.DictReader(f))
     rows = []
     for r in raw:
         row = {k: (r.get(k) if r.get(k) not in ("", None) else None) for k in FIELDS}
@@ -100,6 +102,42 @@ def freeze_of(row: dict) -> tuple[str, str]:
     return _iso(ts(row["at"]) - DAY.total_seconds()), "sale_date_proxy"
 
 
+# History: what a contestant may see -------------------------------------------------------------------------------
+
+class History:
+    """Usable sales strictly before one freeze date, minus the item's own cluster. Lookups by product are a bisect on
+    an index built once, so a run over 100,000 sales does not rescan every sale for every item."""
+
+    def __init__(self, index, cut, cluster=None):
+        self.index, self.cut, self.cluster = index, cut, cluster
+
+    def _ok(self, rs):
+        return [r for r in rs if not self.cluster or r.get("cluster_id") != self.cluster]
+
+    def product(self, pid):
+        rows, times = self.index["by_product"].get(pid, ([], []))
+        return self._ok(rows[: bisect.bisect_left(times, self.cut)])
+
+    def __len__(self):
+        return bisect.bisect_left(self.index["times"], self.cut)
+
+    def sample(self, rng, k):
+        return self._ok([self.index["sold"][i] for i in rng.choice(len(self), k, replace=False)])
+
+    def latest_at(self):
+        return self.index["times"][len(self) - 1] if len(self) else 0.0
+
+
+def index_of(rows):
+    sold = sorted(_sold(rows), key=lambda r: ts(r["at"]))
+    by = {}
+    for r in sold:
+        rs, tt = by.setdefault(r["product_id"], ([], []))
+        rs.append(r)
+        tt.append(ts(r["at"]))
+    return {"sold": sold, "times": [ts(r["at"]) for r in sold], "by_product": by}
+
+
 # Contestants ---------------------------------------------------------------------------------------------------------
 
 def _range(prices, ids):
@@ -120,7 +158,7 @@ class ProductMedian:
 
     def predict(self, item, as_of, history):
         lo = ts(as_of) - WINDOW.total_seconds()
-        rs = [r for r in history if r["product_id"] == item["product_id"] and ts(r["at"]) >= lo]
+        rs = [r for r in history.product(item["product_id"]) if ts(r["at"]) >= lo]
         return _range([r["price_cents"] for r in rs], [r["row_id"] for r in rs]) if rs else dict(NOT_SHOWN)
 
 
@@ -131,15 +169,18 @@ class LastSale:
         pass
 
     def predict(self, item, as_of, history):
-        rs = [r for r in history if r["product_id"] == item["product_id"]]
+        rs = history.product(item["product_id"])
         if not rs:
             return dict(NOT_SHOWN)
-        r = max(rs, key=lambda r: ts(r["at"]))
+        r = rs[-1]
         return {"q10": r["price_cents"], "q50": r["price_cents"], "q90": r["price_cents"], "shown": True, "comp_ids": [r["row_id"]]}
 
 
 class Model:
-    """The Python market model (market.py), fitted once per test month on rows before the month minus the gap."""
+    """The Python market model (market.py), fitted once per test month on rows before the month minus the gap.
+    Its range is market's calibrated interval; it abstains on market's own counts (fewer than MIN_12M sales of the
+    product in 12 months or MIN_90D in 90 days), read from the product index rather than market.estimate's full scan,
+    which is too slow for 100,000 test sales."""
     name = "model"
 
     def fit(self, train):
@@ -148,8 +189,12 @@ class Model:
     def predict(self, item, as_of, history):
         if self.m is None:
             return dict(NOT_SHOWN)
-        e = self.m.estimate(item, today=as_of)
-        return {"q10": e["low_cents"], "q50": e["median_cents"], "q90": e["high_cents"], "shown": e["shown"], "comp_ids": []}
+        q10, q50, q90 = self.m.interval(item, as_of)
+        now, rs = ts(as_of), history.product(item["product_id"])
+        n12 = sum(now - ts(r["at"]) <= 365 * 86400 for r in rs)
+        n90 = sum(now - ts(r["at"]) <= 90 * 86400 for r in rs)
+        shown = n12 >= market.MIN_12M and n90 >= market.MIN_90D and q90 - q10 <= q50
+        return {"q10": q10, "q50": q50, "q90": q90, "shown": shown, "comp_ids": []}
 
 
 class Oracle:
@@ -177,7 +222,7 @@ class RandomComps:
     def predict(self, item, as_of, history):
         if len(history) < 5:
             return dict(NOT_SHOWN)
-        picks = [history[i] for i in self.rng.choice(len(history), 5, replace=False)]
+        picks = history.sample(self.rng, 5)
         return _range([r["price_cents"] for r in picks], [r["row_id"] for r in picks])
 
 
@@ -203,12 +248,15 @@ def _tests(rows, test_from, test_to):
     return sorted(out, key=lambda x: ts(x[0])), {k: len(v) for k, v in left_out.items()}
 
 
-def run(rows: list[dict], contestants: list, *, test_from: str, test_to: str | None = None, log=None) -> list[dict]:
+def run(rows: list[dict], contestants: list, *, test_from: str, test_to: str | None = None, sample: int | None = None,
+        log=None) -> list[dict]:
     """One frozen estimate per (test sale, contestant). Each contestant is fitted per freeze month on usable rows
     before the month minus the gap, and predicts from usable sales strictly before the freeze date."""
-    sold = sorted(_sold(rows), key=lambda r: ts(r["at"]))
-    times = [ts(r["at"]) for r in sold]
+    index = index_of(rows)
     tests, left_out = _tests(rows, test_from, test_to)
+    if sample and len(tests) > sample:
+        keep = set(np.random.default_rng(SEEDS["sample"]).choice(len(tests), sample, replace=False).tolist())
+        tests = [t for i, t in enumerate(tests) if i in keep]
     if log:
         log.stage("experiment", "tests", n=len(tests), left_out=left_out)
     out, month = [], None
@@ -221,9 +269,7 @@ def run(rows: list[dict], contestants: list, *, test_from: str, test_to: str | N
                 c.fit(train)
             if log:
                 log.stage("experiment", "fit", month=month, train_rows=len(train))
-        history = sold[: bisect.bisect_left(times, ts(as_of))]
-        if item.get("cluster_id"):   # an earlier sale of the same physical item is not a comp (decision 5)
-            history = [r for r in history if r.get("cluster_id") != item["cluster_id"]]
+        history = History(index, ts(as_of), item.get("cluster_id"))   # an item's own relists are never its comps (decision 5)
         for c in contestants:
             out.append({"contestant": c.name, "item_id": item["row_id"], "as_of": as_of, "freeze_basis": basis,
                         **c.predict(item, as_of, history)})
@@ -378,7 +424,7 @@ def record_duel(live: list[dict], history: list[dict], contestants: list, *, rec
     """Freeze every contestant's answer for live listings now, with each listing's inputs, so a later engine can be
     scored on the same listings (plan.md §8). The hash is the pre-registration."""
     usable = [r for r in _usable(history) if ts(r["at"]) < ts(recorded_at)]
-    past = sorted(_sold(usable), key=lambda r: ts(r["at"]))
+    past = History(index_of(usable), ts(recorded_at))
     for c in contestants:
         c.fit(usable)
     entries = [{"row_id": r["row_id"], "item": {k: r.get(k) for k in FIELDS if k != "price_type"},
@@ -445,6 +491,7 @@ def main(argv=None):
     ap.add_argument("cmd", choices=["self-test", "backtest", "duel-record", "duel-score"])
     for k in ("--rows", "--live", "--duel", "--outcomes", "--test-from", "--test-to", "--out"):
         ap.add_argument(k)
+    ap.add_argument("--sample", type=int, help="score a seeded random sample of this many test sales")
     ap.add_argument("--recorded-at", default=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"))
     a = ap.parse_args(argv)
     log = _log(a.cmd, {k: v for k, v in vars(a).items() if k != "cmd" and v})
@@ -455,7 +502,7 @@ def main(argv=None):
             out = self_test(log)
         elif a.cmd == "backtest":
             rows = load(a.rows)
-            out = score(run(rows, standard, test_from=a.test_from, test_to=a.test_to, log=log), rows)
+            out = score(run(rows, standard, test_from=a.test_from, test_to=a.test_to, sample=a.sample, log=log), rows)
         elif a.cmd == "duel-record":
             out = record_duel(load(a.live), load(a.rows), standard, recorded_at=a.recorded_at)
         else:
