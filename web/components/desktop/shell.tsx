@@ -21,7 +21,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
   const active = pathname.startsWith('/app/sell') ? 'sell' : pathname.startsWith('/app/buy') ? 'buy' : pathname.startsWith('/app/you') ? 'you' : pathname.startsWith('/app/messages') ? 'messages' : 'today';
   return <WorkspaceState><div className="desk-workspace">
     <aside className="desk-rail"><Link className="desk-back" href="/"><Icon name="arrow-left-01" /><span>Back to website</span></Link>
-      <Link href="/app" className="desk-wordmark"><img src="/brand/mark-light.svg" width="24" height="28" alt="" /><span>secondhand</span></Link>
+      <Link href="/app" className="desk-wordmark"><img src="/brand/mark.svg" width="24" height="28" alt="" /><span>secondhand</span></Link>
       <nav className="desk-nav" aria-label="Workspace">{tabs.map(([label, href, icon]) => <Link key={href} href={href} aria-current={active === label.toLowerCase() ? 'page' : undefined}><Icon name={icon} /><span>{label}</span></Link>)}<button className="desk-new" onClick={() => setModal('upload')}><Icon name="add-01" /><span>Add an item</span></button></nav>
       <div className="desk-account"><Link href="/app/you" className="desk-person">{webLink(session.profile.photo) ? <img src={session.profile.photo} alt="" /> : <span className="desk-avatar"><Icon name="user" /></span>}<span>{session.profile.name || 'Your account'}</span></Link><div className="desk-account-actions"><button onClick={() => setModal('settings')}><Icon name="settings-01" /><span>Settings</span></button><button disabled={signingOut} onClick={logout}>{signingOut ? 'Signing out…' : 'Log out'}</button></div></div>
     </aside>
