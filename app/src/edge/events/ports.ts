@@ -73,7 +73,7 @@ export const JOB_FOR: Record<EventKind, JobKind> = {
 };
 
 // ---- the store: db-1's event, job, outbox and decision tables ----
-export const TABLES = ['item', 'listing', 'account', 'limits', 'rule', 'want', 'match', 'order', 'conversation', 'offer'] as const;
+export const TABLES = ['item', 'listing', 'account', 'limits', 'rule', 'want', 'match', 'order', 'conversation', 'offer', 'operation'] as const;
 export type Table = (typeof TABLES)[number];
 export type Row = { id: string; user_id: string; version?: number } & Record<string, unknown>;
 export interface StoreState {
@@ -87,6 +87,8 @@ export interface Store {
   put<T extends Row>(table: Table, row: T): T;
   get<T extends Row>(table: Table, user_id: string, id: string): T | undefined;
   rows<T extends Row>(table: Table, filter: { user_id: string } & Record<string, unknown>): T[];
+  beginOperation(op: { id: string; user_id: string; site: string; verb: string; sku_hash?: string; data: 'synthetic' | 'example' | `dataset:${string}` | `live:${string}`; at: string }): { row: Row; duplicate: boolean };
+  settleOperation(user_id: string, id: string, patch: { state: 'done' | 'unknown'; envelope?: unknown; attempts?: number; at: string }): Row;
   // unique (user_id, dedupe_key); a repeat returns the first row with duplicate true
   insertEvent(e: Omit<EventRow, 'id'>): { row: EventRow; duplicate: boolean };
   // unique (user_id, idempotency_key)
@@ -109,6 +111,17 @@ export interface Store {
 let n = 0;
 const uid = (p: string) => `${p}_${(++n).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
+function checkOperationEnvelope(value: unknown, seen = new Set<object>()): void {
+  if (typeof value !== 'object' || value === null || seen.has(value)) return;
+  seen.add(value);
+  for (const [key, nested] of Object.entries(value)) {
+    if (/cookie|token|authorization|password|set-cookie|buyer_name|address/i.test(key)) {
+      throw new Error('operation envelope contains a forbidden key');
+    }
+    checkOperationEnvelope(nested, seen);
+  }
+}
+
 export function memoryStore(initial?: StoreState): Store & { claims: Map<string, string>; dump(): StoreState } {
   let { events, jobs, decisions, rows } = structuredClone<StoreState>(initial ?? { events: [], jobs: [], decisions: [], rows: {} });
   const claims = new Map<string, string>();
@@ -119,7 +132,7 @@ export function memoryStore(initial?: StoreState): Store & { claims: Map<string,
     dump: () => structuredClone({ events, jobs, decisions, rows }),
     put(table, row) {
       const tableRows = rows[table] ?? [];
-      const i = tableRows.findIndex(r => r.id === row.id);
+      const i = tableRows.findIndex(r => r.id === row.id && r.user_id === row.user_id);
       const old = tableRows[i];
       if (row.version !== undefined && row.version !== old?.version) {
         throw Object.assign(new Error(`stale ${table} ${row.id}`), { code: 'stale' });
@@ -133,6 +146,24 @@ export function memoryStore(initial?: StoreState): Store & { claims: Map<string,
       rows[table]?.find(r => r.id === id && r.user_id === user_id) as T | undefined,
     rows: <T extends Row>(table: Table, filter: { user_id: string } & Record<string, unknown>) =>
       (rows[table] ?? []).filter(r => Object.entries(filter).every(([key, value]) => r[key] === value)) as T[],
+    beginOperation(op) {
+      const old = s.get('operation', op.user_id, op.id);
+      if (old) return { row: old, duplicate: true };
+      const row = { ...op, state: 'started', attempts: 1, version: 1 };
+      (rows.operation ??= []).push(row);
+      return { row, duplicate: false };
+    },
+    settleOperation(user_id, id, patch) {
+      const tableRows = rows.operation ?? [];
+      const i = tableRows.findIndex(row => row.user_id === user_id && row.id === id);
+      if (i < 0) throw new Error(`no operation ${id}`);
+      checkOperationEnvelope(patch.envelope);
+      const old = tableRows[i];
+      if (old.state === 'done') return old;
+      const row = { ...old, ...patch, version: (old.version ?? 0) + 1 };
+      tableRows[i] = row;
+      return row;
+    },
     insertEvent(e) {
       const old = events.find(x => x.user_id === e.user_id && x.dedupe_key === e.dedupe_key);
       if (old) return { row: old, duplicate: true };

@@ -150,23 +150,15 @@
           "Idempotency-Key": "idk_msg_01"
         },
         "body": {
-          "text": "Yes, blanket lined. Ships tomorrow."
+          "text": "Thanks!"
         }
       },
       "status": 202,
       "response": {
         "id": "job_sm4",
         "kind": "send_message",
-        "state": "running",
-        "stages": [
-          {
-            "name": "claim_check",
-            "state": "running",
-            "started_at": "2026-11-15T04:25:00Z",
-            "ended_at": null,
-            "found": {}
-          }
-        ]
+        "state": "queued",
+        "stages": []
       }
     },
     {
@@ -692,6 +684,28 @@
         "failed_step": "undo",
         "retry": {
           "by": "none"
+        }
+      }
+    },
+    {
+      "name": "conversations.reply.unbacked",
+      "endpoint": "POST /v1/conversations/:id/messages",
+      "path": "/v1/conversations/cv_6t1/messages",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_msg_01"
+        },
+        "body": {
+          "text": "Yes, blanket lined. Ships tomorrow."
+        }
+      },
+      "status": 422,
+      "response": {
+        "code": "outside_limits",
+        "message": "reply has unbacked claims",
+        "failed_step": "claim_check",
+        "retry": {
+          "by": "user"
         }
       }
     }

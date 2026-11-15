@@ -1,12 +1,18 @@
 """Recheck citation basis hashes against the currently stored market comps."""
 from __future__ import annotations
 
+import argparse
 import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+# Serverless executes the entrypoint without __file__; imported modules still have it.
+ROOT = Path(__file__).resolve().parents[2] if '__file__' in globals() else None
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--root', type=Path, default=ROOT, required=ROOT is None)
+    ROOT = parser.parse_args().root.resolve()
 sys.path.insert(0, str(ROOT / 'databricks'))
 sys.path.insert(0, str(ROOT / 'log'))
 

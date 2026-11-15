@@ -1,9 +1,45 @@
 import hashlib
 import json
 
+import pytest
+
 from tasks.load_logs import parse
 
 BASE = {'ts': '2026-11-15T08:09:07.685Z', 'session': 's_x', 'seq': 1, 'src': 'walk', 'level': 'info'}
+
+
+def test_serverless_load_logs_resolves_explicit_root(serverless_entrypoint, tmp_path):
+    module = serverless_entrypoint('databricks/tasks/load_logs.py', ['--root', str(tmp_path)])
+    assert module['ROOT'] == tmp_path
+    assert str(tmp_path / 'log') in module['sys'].path
+
+
+@pytest.mark.parametrize('fields, expected', [
+    ({'src': 'policy_sweep', 'site': 'ebay'}, 'synthetic'),
+    ({'src': 'policy_sweep', 'fixture': True, 'site': 'ebay'}, 'synthetic'),
+    ({'src': 'walk', 'site': 'ebay'}, 'example'),
+    ({'src': 'edge', 'fixture': True, 'site': 'ebay'}, 'example'),
+    ({'src': 'edge', 'fixture': False, 'site': 'ebay'}, 'live:ebay'),
+    ({'src': 'edge', 'site': 'depop'}, 'live:depop'),
+    ({'src': 'edge'}, 'example'),
+    ({'src': 'edge', 'site': ''}, 'example'),
+    ({'src': 'edge', 'site': '   '}, 'example'),
+])
+def test_log_and_decision_provenance(fields, expected):
+    row = {**BASE, 'event': 'decision.answer', 'kind': 'first_post', **fields}
+    result = parse([json.dumps(row)], 'fixture.jsonl')
+    assert not result.rejects
+    assert result.log_events[0]['data'] == expected
+    assert result.decisions[0]['data'] == expected
+
+
+def test_non_decision_log_provenance_and_spark_schemas():
+    from tasks.load_logs import LOG_SCHEMA, DECISION_SCHEMA
+
+    result = parse([json.dumps({**BASE, 'src': 'edge', 'event': 'note', 'site': 'ebay'})], 'x')
+    assert result.log_events[0]['data'] == 'live:ebay'
+    assert 'data STRING' in LOG_SCHEMA
+    assert 'data STRING' in DECISION_SCHEMA
 
 
 def test_walk_and_policy_lines_load_with_counted_rejects():

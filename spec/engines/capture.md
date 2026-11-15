@@ -208,6 +208,27 @@ A question is data the UI renders with no logic of its own:
 
 **Where a fact came from.** Every `evidence` row the plan's facts rest on carries `data` ([product §3](../product.md#3-the-data-model)): `captured` for the person's own camera, the phone's reads of those frames and what they said in this capture; `live:<site>` only for a value read from a marketplace; `dataset:<name>` for a catalogue or released set behind a `lookup`; `example` for the seeded walks. A `captured` fact is real and is never counted as a site observation.
 
+### Dimensions, and close variants
+
+A dimension is a field like any other on the ladder, tried in this order (Nate, 2026-11-15: "Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify"):
+1. `lookup`: the published dimensions of the identified product, with the identity's own confidence; known at `min_conf` 0.9.
+2. `measured`: depth or the scan (a scan's size only once calibrated, above).
+3. `derived` from the type or class, where a rule exists (none does yet; a guess is not a rule).
+4. `asked`.
+
+Identity can return two or more close variants of one product whose published dimensions differ slightly (two tables of one line in two sizes): `state.variants.dimensions = [{label, value, p}]`. The plan weighs each:
+- one variant with `p` at or past `min_conf`: its dimensions are known, nothing is asked;
+- otherwise a depth reading settles it silently when exactly one variant matches it on every part, within `max(capture_dims_match_cm, capture_dims_match_pct x value)` (priors 2 cm and 3%, `param` rows); the variant's published values are kept, with the reading as evidence;
+- otherwise exactly one question: `pick_one` between the variants, each option labelled with the variant and carrying its dimensions, none proposed, and "Something else" opening a typed or taped measurement (`parts`, `units`). A measurement is one way to answer, never demanded.
+
+### Studio asks
+
+The studio's plan ([jobs/studio/plan.py](../../jobs/studio/plan.py) `plan()`, stored by `slides_run.py:run_item` in `manifest.json` under `plan.asks`, each ask with its type and fields) says what it still needs: asks of type `cover`, `back`, `tag`, `graphic` (with a zone), `flaw` (with its kind and zone) and `measure` (with the measurement's name). They are one more source of questions in the one plan, with the same contract and order, so the person is asked once ([studio/55](../../.agents/team/packets/studio/55-slides-backend-for-nate.md)):
+- They count only after the person taps Generate (`state.studio.requested`); retouch is off unless they ask ([Nate](../../product/words.md#2026-11-14-nate-the-best-way-to-take-every-photo-tags-delayed-retouch-chosen-by-the-person)).
+- Then `studio` is one more target after the linked sites, in `completeness` and in `unlocks`. It needs `dimensions` known by the same ladder as any site, so a dimension capture already holds is never asked again. The studio's kind may name parts the class lacks (`slides.json` `kinds.<kind>.measurements`: pants waist, inseam, rise, leg opening); with Generate on, the dimensions question asks the class's parts and then those. A `measure` ask is that question.
+- Every other ask is a `shot` question with `reason: add`, `for: studio`, its `words` the ask's own text, and the zone or flaw kind carried in `shot`. The person asked for Generate, so these count as required for the studio target and are never capped.
+- The studio's own check reads each dimension with its source and confidence from the capture record; how it uses them is Ben's code. `ai_marked` from the manifest goes onto the item's photo rows (integration's join).
+
 ### Ready per site
 
 `completeness(rows, facts, sites, confirm_mode)` returns, for each linked site, `{ready, missing: [{field, state}]}` over the fields that site requires, using `known` and `formValue`. The planner computes `unlocks` with it, and the listing step must use the same function in place of its own check in `buildListing`, so capture and listing cannot disagree. A recalled item is never ready, whatever its fields.

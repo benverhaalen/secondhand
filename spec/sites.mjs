@@ -82,3 +82,12 @@ export function exposedUntil(site, sentOffers) {
   if (!sentOffers.length || !fact('offer.seller.binds', site)) return null;
   return new Date(Math.max(...sentOffers.map(o => +offerExpiresAt(site, 'seller', o.sent_at))));
 }
+
+// Default condition mapping; eBay's category-specific subset is checked at listing time.
+export const CONDITION = {
+  ebay: {mark:'asserted', src:'research/list/nate/listing-fields-by-platform.md#1-ebay', v:{new_with_tags:'NEW',new_without_tags:'NEW_OTHER',like_new:'LIKE_NEW',excellent:'USED_EXCELLENT',good:'USED_GOOD',fair:'USED_ACCEPTABLE',poor:'USED_ACCEPTABLE'}},
+  depop: {mark:'observed', src:'research/list/nate/listing-fields-by-platform.md#3-depop', v:{new_with_tags:'brand_new',new_without_tags:'brand_new',like_new:'used_like_new',excellent:'used_excellent',good:'used_good',fair:'used_fair',poor:'used_fair'}},
+  poshmark: {mark:'asserted', src:'research/list/nate/listing-fields-by-platform.md#4-poshmark', v:{new_with_tags:'nwt',new_without_tags:'like_new',like_new:'like_new',excellent:'good',good:'good',fair:'fair',poor:'fair'}},
+  mercari: {mark:'observed', src:'research/list/nate/listing-fields-by-platform.md#5-mercari', v:{new_with_tags:'new',new_without_tags:'new',like_new:'like_new',excellent:'good',good:'good',fair:'fair',poor:'poor'}},
+  facebook: {mark:'asserted', src:'research/list/nate/listing-fields-by-platform.md#2-facebook-marketplace', v:{new_with_tags:'new',new_without_tags:'new',like_new:'used_like_new',excellent:'used_good',good:'used_good',fair:'used_fair',poor:'used_fair'}},
+};

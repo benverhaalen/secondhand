@@ -2,6 +2,7 @@ import math
 from datetime import datetime
 
 import numpy as np
+import pytest
 
 from valuation import market
 from valuation import synthetic
@@ -85,3 +86,44 @@ def test_a_range_wider_than_its_median_is_hidden_as_too_wide():
     e = market.fit(rows).estimate(ITEM, today=TODAY)
     assert e["high_cents"] - e["low_cents"] > e["median_cents"]
     assert (e["shown"], e["hidden"]) == (False, "too_wide")
+
+
+def _with_products(rows, n_products=40, spread=0.5, seed=3):
+    """Each row becomes one of n products whose own premium the attributes cannot see, like two shoes of one brand."""
+    rng = np.random.default_rng(seed)
+    effect = rng.normal(0, spread, n_products)
+    out = []
+    for r in rows:
+        p = int(rng.integers(n_products))
+        out.append({**r, "product_id": f"p{p}", "price_cents": int(r["price_cents"] * math.exp(effect[p]))})
+    return out
+
+
+def test_the_middle_starts_from_the_products_own_recent_sales_when_the_attributes_miss_it():
+    rows = _with_products(synthetic.market(n=3000, seed=11))
+    anchored = market.backtest(rows)
+    blind = market.backtest([{k: v for k, v in r.items() if k != "product_id"} for r in rows])
+    # Sale noise here is ~0.3 in logs, so the best anchored middle is off by about 0.67 x 0.3 x sqrt(1 + 1/5) = 0.22;
+    # blind to a 0.5 product spread it is off by about 0.67 x sqrt(0.3^2 + 0.5^2) = 0.39 at best.
+    assert anchored["median_ape"] < 0.25 and anchored["median_ape"] < 0.7 * blind["median_ape"], (anchored, blind)
+    assert 0.75 <= anchored["coverage"] <= 0.85, anchored        # the anchored range is calibrated on its own errors
+
+
+def test_an_anchor_uses_only_the_products_sales_before_the_date_and_the_caller_can_hand_them_in():
+    rows = _with_products(synthetic.market(n=3000, seed=11))
+    m = market.fit(rows)
+    item = next(r for r in reversed(m.sold) if r.get("product_id") == "p0")
+    later = {**item, "at": "2030-01-01T00:00:00Z", "price_cents": item["price_cents"] * 50}
+    own = m.interval(item, item["at"])
+    assert own != m.interval({**item, "product_id": None}, item["at"])
+    assert own == pytest.approx(m.interval(item, item["at"], recent=[r for r in m.sold if r.get("product_id") == "p0"] + [later]))
+    assert m.interval(item, item["at"], recent=[]) == m.interval({**item, "product_id": None}, item["at"])
+
+
+def test_the_anchored_band_scores_each_sale_only_on_its_products_sales_in_the_90_days_before_it():
+    day = market.DAY
+    # 20 products alike: residual 0 on day 0, 1 on day 1, 3 on day 200. Products sit nowhere apart, so nothing shrinks
+    # and each error is the sale's residual minus the earlier ones' median: only the day-1 sale has a prior in 90 days.
+    by = {f"p{i}": ([0.0, day, 200 * day], [0.0, 1.0, 3.0]) for i in range(20)}
+    a = market._anchor_fit(by, market.ALPHA)
+    assert a["tau2"] == 0.0 and a["band"]["*"] == pytest.approx((1.0, 1.0, 1.0))
