@@ -12,7 +12,9 @@ Recordings work without an API:
 
 Every recording says “Recorded answer” and labels prices and counts as fixtures. All listing links and source reports use `example.invalid`. The real garment photo was copied from the path named by `spec/items/capture-real/2026-11-15.json`: `assets/demo-items/real/carhartt-pants/01_cover.jpg`. It illustrates a recording, not a live listing.
 
-Run `node web/scripts/tokens.mjs` after a brand token change. `package.json` already calls this as `prebuild`; `next build` alone does not run npm lifecycle scripts. `app/tokens.css` is the copied output, never an independent palette. The site uses the token font stacks and system fallbacks without fetching a font.
+Run `node web/scripts/tokens.mjs` after a brand token change. `npm run build` also updates `app/tokens.css` from the brand tokens.
+
+`npm run dev` and `npm run build` copy PP Neue Montreal Medium and Clofie SemiBold from `app/assets/fonts/` to `web/public/fonts/`. Browsers download the faces from the site. For a web-only deploy, supply `ppneuemontreal-medium.otf` and `Clofie-SemiBold.ttf` in `web/public/fonts/` before building. If the files are absent, the site uses its fallback fonts. Keep the font files out of Git.
 
 Set `SECONDHAND_API_ORIGIN` before building to rewrite same-origin `/v1/*` to the API. Without it, the pages and recordings work, and live asks show the request failure. There is no key or model call in the site. The only outside calls from application code are the ask, the job read, and its event stream; listing photos may load from returned URLs.
 

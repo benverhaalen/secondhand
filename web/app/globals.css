@@ -1,3 +1,15 @@
+@font-face {
+  font-family: "PP Neue Montreal";
+  src: url('/fonts/ppneuemontreal-medium.otf') format('opentype');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Clofie";
+  src: url('/fonts/Clofie-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
 * { box-sizing: border-box; }
 html { background: var(--page); color: var(--ink); scroll-padding-top: var(--s-6); }
 body { margin: 0; font-family: var(--font-text); font-size: var(--t-15); font-weight: var(--w-text); line-height: var(--lh-15); overflow-wrap: anywhere; }

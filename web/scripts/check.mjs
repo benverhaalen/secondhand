@@ -11,8 +11,7 @@ function run(command, args, cwd = root) {
 function files(directory) {
   return readdirSync(new URL(directory, new URL('../../', import.meta.url)), { withFileTypes: true }).flatMap(entry => entry.isDirectory() ? files(`${directory}/${entry.name}`) : [`${directory}/${entry.name}`]);
 }
-run('node', ['scripts/tokens.mjs'], web);
-run('npx', ['next', 'build'], web);
+run('npm', ['run', 'build'], web);
 run('node', ['web/scripts/render-check.mjs']);
 for (const entry of readdirSync(new URL('../lib/', import.meta.url)).filter(name => name.endsWith('.test.ts')).sort()) run('node', ['--test', '--test-concurrency=1', `lib/${entry}`], web);
 run('node', ['scripts/copy-lint.mjs', ...files('web/app'), ...files('web/components')]);
