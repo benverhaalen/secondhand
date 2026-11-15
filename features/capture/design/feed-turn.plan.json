@@ -1,0 +1,20 @@
+{
+ "max": 1,
+ "load": 0.7,
+ "ramp": 1,
+ "swap": 10,
+ "timeout": 600,
+ "jobs": [
+  {
+   "id": "feed-turn",
+   "prompt": "Job: one photo to stand in for a live phone camera view in an app mockup. Controls are drawn over it later by someone else, so make the photo only. The moment: a person holds the item up by a hanger with one hand, partway through turning it from its front to its back, about to photograph the back to sell it.\nYou choose the room, the light, the angle and how it is held. Look at your result against the list below, and make it again if it fails.\nIt will be judged on this, and fails if:\n- it does not look like a real phone camera view of a real used thing, held by a real person at home in daylight\n- it shows any text, button, frame, border, logo overlay, watermark or interface of any kind\n- the item is not the same item as in attached image 1\n- the item is cut off, or fills less than half the height, or is not in the middle\n- the top quarter and the bottom quarter of the picture are busy, the hand and the hanger included: controls will be laid over them later, so they should be plain wall, floor or table\n- it looks staged, lit by a studio, or too clean to be a home\nPortrait, 1170 by 2532, full bleed.",
+   "inputs": [
+    {
+     "file": "../../../assets/demo-items/carhartt-jacket.jpg",
+     "take": "The item: this exact jacket, its color, wear, collar and label.",
+     "leave": "Its background, its framing and its light. This is a listing photo; you are making what a phone camera sees before the photo is taken."
+    }
+   ]
+  }
+ ]
+}
