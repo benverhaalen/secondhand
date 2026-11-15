@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { loadInputs, mapRead, inchesToCm, recordItem, root, output } from './capture-real.mjs';
+import { loadInputs, mapRead, inchesToCm, recordItem, root, output, python } from './capture-real.mjs';
 import { plan } from '../app/src/engines/capture/plan.ts';
 import { memoryStore } from '../app/src/engines/param/param.ts';
 
@@ -99,7 +99,7 @@ test('two real CLI runs produce identical records, captured header and one summa
 test('Python entry really calls project score() on every original photo with the recorded role', () => {
   const record=JSON.parse(readFileSync(output,'utf8'));
   const photos=record.items.flatMap(item=>item.photos);
-  const result=spawnSync(`${root}/.venv/bin/python`,['-c',`
+  const result=spawnSync(python,['-c',`
 import json, sys
 import numpy as np
 from PIL import Image

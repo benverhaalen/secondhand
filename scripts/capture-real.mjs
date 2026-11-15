@@ -10,6 +10,8 @@ import { memoryStore } from '../app/src/engines/param/param.ts';
 import { createLog } from '../log/index.js';
 
 export const root = fileURLToPath(new URL('../', import.meta.url));
+// The Mac keeps a .venv; Windows and CI use the python on PATH.
+export const python = existsSync(resolve(root, '.venv/bin/python')) ? resolve(root, '.venv/bin/python') : 'python';
 export const output = resolve(root, 'spec/items/capture-real/2026-11-15.json');
 const real = 'assets/demo-items/real';
 const runs = 'research/studio/ben/slides/runs';
@@ -65,7 +67,7 @@ export function mapRead({item,read,tape}) {
 }
 
 export function scorePhoto(file,role) {
-  const result=spawnSync(resolve(root,'.venv/bin/python'),[resolve(root,'scripts/capture_real_score.py'),resolve(root,file),role],{cwd:root,encoding:'utf8',env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
+  const result=spawnSync(python,[resolve(root,'scripts/capture_real_score.py'),resolve(root,file),role],{cwd:root,encoding:'utf8',env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
   if(result.error) throw result.error;
   if(result.status!==0) throw new Error(`${file}: photo score exited ${result.status}: ${result.stderr}`);
   return JSON.parse(result.stdout);
