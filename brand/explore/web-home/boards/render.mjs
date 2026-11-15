@@ -4,7 +4,9 @@
 // Each variant (<id>.html, listed in board.json) is drawn at 1440 x 900 and 390 x 844, first screen only, with the
 // faces from BRAND_FONTS (or fonts/) injected, and checked with scripts/brand-check.mjs on the web medium.
 // Writes <board>/out/<id>-1440.png, <id>-390.png, audit.json and board.png (the variants side by side, captioned).
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+// The board page embeds the licensed faces, so it is drawn from a temp folder and never written into the repo.
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { brandFaces, check, playwright } from '../../../../scripts/brand-check.mjs';
@@ -59,9 +61,10 @@ for (const dir of process.argv.slice(2).map(d => resolve(d))) {
     .pair{display:grid;grid-template-columns:1440fr 390fr;gap:16px;align-items:start} .pair img{width:100%;border-radius:16px;display:block;box-shadow:0 0 0 1px rgb(10 10 10/.08)}
     figcaption{margin-top:16px;display:grid;gap:4px} figcaption span{color:rgb(10 10 10/.65);font-size:18px}</style>
     <h1>${board.title}</h1><p>${board.question} ${board.purpose} ${faces ? 'Drawn in the brand faces.' : 'Drawn in a fallback face: the brand faces were not available.'}</p><div class="grid">${board.variants.map(cell).join('')}</div>`;
-  writeFileSync(join(out, 'board.html'), html);
+  const tmp = mkdtempSync(join(tmpdir(), 'board-')), boardHtml = join(tmp, 'board.html');
+  writeFileSync(boardHtml, html.replaceAll('src="', `src="${pathToFileURL(out).href}/`));
   const page = await browser.newPage({ viewport: { width: 2400 * board.variants.length / 3 + 96, height: 900 }, deviceScaleFactor: 2 });
-  await page.goto(pathToFileURL(join(out, 'board.html')).href); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(300);
+  await page.goto(pathToFileURL(boardHtml).href); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(300);
   await page.screenshot({ path: join(out, 'board.png'), fullPage: true }); await page.close();
 }
 await browser.close();

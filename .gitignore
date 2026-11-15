@@ -17,3 +17,4 @@ __pycache__/
 
 # local state of the Databricks skills installer
 .databricks/
+brand/explore/web-home/boards/*/out/*.html
