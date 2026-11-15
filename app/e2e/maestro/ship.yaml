@@ -1,0 +1,29 @@
+# Ship (app/behavior/item/[id]/ship.json) on a phone or simulator: the same states as app/e2e/ship.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/ship.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/ship.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+- openLink: ${URL}/--/item/it_kindle/ship
+- extendedWaitUntil:
+    visible: "Buy label \\$6.40"
+    timeout: 30000
+- assertVisible: "In your bank"
+- tapOn: { id: "ship-myself" }
+- tapOn: { id: "self-tracking-without" }
+- assertVisible: "Without tracking, .*"
+# Sold on two sites: no label.
+- openLink: ${URL}/--/item/it_kindle/ship?case=double
+- extendedWaitUntil:
+    visible: "Sold on two sites"
+    timeout: 10000
+- assertNotVisible: { id: "ship-print" }
+# Instant payout: offered with its fee, never picked for them.
+- openLink: ${URL}/--/item/it_f017/ship?world=flipper
+- extendedWaitUntil:
+    visible: "Same day, \\$3"
+    timeout: 10000
+- assertVisible: "About 5 business days after that"

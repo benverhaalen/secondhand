@@ -255,19 +255,19 @@ What differs from D1 for a product-level index, and why: there are no per-item a
 
 **Determines**: the share of retail a typical product in a category (or a brand within it) keeps as it ages.
 
-**Sources and weights**: every sold comp with a product that has launch retail ([M2](#m2-retail-price-and-release-date)), weighted as in [M3](#m3-used-price-per-site-over-time); Keepa used-price history and PriceCharting for categories with years of history (rank 2, marked "from a price tracker").
+**Sources and weights**: every sold comp with a product that has launch retail ([M2](#m2-retail-price-and-release-date)), weighted as in [M3](#m3-used-price-per-site-over-time); Keepa used-price history and PriceCharting for categories with years of history (rank 2, marked "from a price tracker"); insurers' depreciation schedules, which give each kind of item "an annual depreciation rate and expected years of service" and are "utilized by hundreds of insurance companies annually" (Claims Pages, *observed*; the table itself is behind a sign-in and not yet read), as the rank 3 prior for a category with no curve yet, marked "insurer schedule, not market", used only once the table rows have been read, and replaced bin by bin as our sales arrive ([risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md); Ben approved, [words](../../product/words.md#2026-11-15-adjacent-appraisal-risk-and-why-this-price)).
 
 **Method** (arithmetic): a hedonic regression with product fixed effects, `ln(price_ij / retail_i) = a_i + f(age_ij) + c(band_ij) + m(month_ij) + e`, where `f` is a step function over age bins 0-3, 3-6, 6-12, 12-24, 24-48, 48+ months, `c` the condition bands and `m` calendar months. The category curve is `exp(f)` at band `good`, rebased to the youngest bin. Brand curves add a brand-by-age term and are reported only where they differ from the category by more than the noise ([M15](#m15-what-is-trending-and-how-a-trend-is-told-from-noise) method on bootstrap intervals).
 
-**Why this method**: product fixed effects compare each product with itself as it ages, so a category whose young products are luxury and old ones are cheap does not fake a curve (*asserted*, the standard hedonic and repeat-sales logic used in housing and car price indices; not fetched this session). No standard depreciation curve for used consumer goods was found ([market-intelligence](../../research/data/nate/market-intelligence.md#4-measures-and-definitions), *observed*). A simple average of price over retail by age is the alternative and mixes product quality with age.
+**Why this method**: product fixed effects compare each product with itself as it ages, so a category whose young products are luxury and old ones are cheap does not fake a curve (*asserted*, the standard hedonic and repeat-sales logic used in housing and car price indices; not fetched this session). No standard depreciation curve for used consumer goods was found ([market-intelligence](../../research/data/nate/market-intelligence.md#4-measures-and-definitions), *observed*); insurers' schedules exist but are formulas on new retail prices, not market curves (Verisk prices from "Items that retailers are currently selling online", *observed*, [risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md)). A simple average of price over retail by age is the alternative and mixes product quality with age.
 
-**When it is not shown**: fewer than 20 products with retail, or an age bin with under 30 sales (that bin is blank); a brand under 8 products is folded into its category.
+**When it is not shown**: fewer than 20 products with retail, or an age bin with under 30 sales (that bin shows the insurer prior, labelled, where one has been read, and is blank otherwise); a brand under 8 products is folded into its category.
 
 **How it is explained**: "A typical pair of running shoes keeps about 45% of its store price after a year". Tap opens the curve, the bins and the products in it.
 
 **Speed**: kept ready, refit monthly per category.
 
-**Check later**: predict the next quarter's sale prices of products from their age alone. Wrong if the curve does no better than the category median.
+**Check later**: predict the next quarter's sale prices of products from their age alone. Wrong if the curve does no better than the category median. Also report, per category, the gap between the insurer schedule and our curve: California requires depreciation to "reflect a measurable difference in market value attributable to the condition and age" (*observed*, quoted by United Policyholders), and that gap is the number an insurer would want from us (*agent proposal*).
 
 ## M11. Price retention of one product
 

@@ -1,16 +1,168 @@
 {
   "screen": "product/[id]",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "A product page (spec/pages.md §6.15), for visitors and users: what it is, what it sold for used lately and new, used price by month against new, what each site sold it for and how many are for sale, every offer in one list (Search), the official option, and Follow.",
+  "frame": [
+    "Who: the person checking a price, often a visitor from the website; the hunter before setting a most.",
+    "Came to do: know in seconds what this sells for used and whether new is the better buy.",
+    "Where a mistake costs most: a range read as a promise, or a stale month read as today's price.",
+    "Ways out (spec/ways-out.md §6.17): everything works signed out; Follow asks a visitor to sign in at that moment.",
+    "In the loop: nothing here acts; Follow is done at once with Undo."
+  ],
+  "decisions": [
+    "The used range is the peak amount, in the text face, with what it is under it in words ('Sold used lately').",
+    "The trend is said once in plain words from the data ('Used prices are falling'), and shown in the chart.",
+    "The chart is one series (used, by month) as thin bars from zero, with the price new as one dashed line named where it ends; a tap on a month says its amount (dataviz: one series, no legend; the hover layer on a phone).",
+    "By site is a list of rows with the site's logo, sold range, and how many are for sale with how fast they sell: rows of one kind, with hairlines.",
+    "Every offer in one list is the Search page, one Notice away, with the real count.",
+    "Cheaper equivalents are left out: the data has no photo for them, and every thing shown has its photo.",
+    "Follow is the nav's one action (a bell); a visitor goes to sign in.",
+    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
+  ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "typical",
+      "route": "/product/pr_dunk",
+      "shows": "$65 to $95",
+      "also": [
+        "Sold used lately. New, $115. Used prices are falling.",
+        "96 for sale now",
+        "From Nike, $123.05 delivered"
+      ]
+    },
+    {
+      "state": "visitor",
+      "route": "/product/pr_switch?visitor=1",
+      "shows": "$210 to $260",
+      "also": [
+        "Refurbished"
+      ]
+    },
+    {
+      "state": "empty",
+      "route": "/product/pr_none",
+      "shows": "We don’t know this one yet"
+    },
+    {
+      "state": "failed",
+      "route": "/product/pr_dunk?state=failed",
+      "shows": "Couldn’t load this product",
+      "also": [
+        "Try again"
+      ]
+    },
+    {
+      "state": "offline",
+      "route": "/product/pr_dunk?state=offline",
+      "shows": "Waiting for signal. This is the last copy."
     }
   ],
   "controls": [
     {
       "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "on_tap": "goes back",
+      "id": "nav-back",
+      "in": "typical",
+      "does": "goes back"
+    },
+    {
+      "control": "Follow",
+      "on_tap": "follows its price, with Undo",
+      "id": "product-follow",
+      "in": "typical",
+      "does": "follows its price, with Undo",
+      "shows": "Following its price"
+    },
+    {
+      "control": "Undo",
+      "on_tap": "stops following again",
+      "id": "product-undo",
+      "in": "typical",
+      "after": [
+        "product-follow"
+      ],
+      "does": "stops following again",
+      "then": "product-follow"
+    },
+    {
+      "control": "Follow",
+      "on_tap": "asks a visitor to sign in",
+      "id": "product-follow",
+      "in": "visitor",
+      "does": "asks a visitor to sign in",
+      "goes": "/onboarding"
+    },
+    {
+      "control": "Chart 0",
+      "on_tap": "shows June's amount",
+      "id": "product-chart-0",
+      "in": "typical",
+      "does": "shows June's amount",
+      "shows": "Jun $98"
+    },
+    {
+      "control": "Chart 1",
+      "on_tap": "shows Jul's amount",
+      "id": "product-chart-1",
+      "in": "typical",
+      "does": "shows Jul's amount",
+      "shows": "Jul $94"
+    },
+    {
+      "control": "Chart 2",
+      "on_tap": "shows Aug's amount",
+      "id": "product-chart-2",
+      "in": "typical",
+      "does": "shows Aug's amount",
+      "shows": "Aug $90"
+    },
+    {
+      "control": "Chart 3",
+      "on_tap": "shows Sep's amount",
+      "id": "product-chart-3",
+      "in": "typical",
+      "does": "shows Sep's amount",
+      "shows": "Sep $86"
+    },
+    {
+      "control": "Chart 4",
+      "on_tap": "shows Oct's amount",
+      "id": "product-chart-4",
+      "in": "typical",
+      "does": "shows Oct's amount",
+      "shows": "Oct $82"
+    },
+    {
+      "control": "Chart 5",
+      "on_tap": "shows November's amount, the one shown first",
+      "id": "product-chart-5",
+      "in": "typical",
+      "does": "shows November's amount, the one shown first",
+      "shows": "Nov $79"
+    },
+    {
+      "control": "For sale",
+      "on_tap": "opens every listing for sale now",
+      "id": "product-for-sale",
+      "in": "typical",
+      "does": "opens every listing for sale now",
+      "goes": "/search"
+    },
+    {
+      "control": "Search",
+      "on_tap": "goes to Buy to search",
+      "id": "product-search",
+      "in": "empty",
+      "does": "goes to Buy to search",
+      "goes": "/buy"
+    },
+    {
+      "control": "Retry",
+      "on_tap": "loads the page afresh",
+      "id": "product-retry",
+      "in": "failed",
+      "does": "loads the page afresh",
+      "goes": "/product/pr_dunk"
     }
-  ]
+  ],
+  "back": "the screen it came from"
 }

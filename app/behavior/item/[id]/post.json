@@ -1,6 +1,19 @@
 {
   "screen": "item/[id]/post",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "The Post preview sheet: the listing as each site will show it, and one Approve that says exactly what it will post, with Undo after (spec/pages.md §6.8).",
+  "frame": [
+    "Who: Sam posting a draft for the first time (the first public act in their name); Dana posting forty drafts from a folder.",
+    "Came to do: check that each site shows the right thing, then post with one tap.",
+    "Costliest mistake: posting the wrong price or a fact nobody checked, in public, on several sites at once.",
+    "Ways out (ways-out.md §6.8): untick a site; different words per site (each written for its buyers, edge-cases §5); post later; Retry, Skip or Post it myself for a site that failed.",
+    "The person stays in the loop at: Approve, which is the only way anything posts, names the price and the number of sites, and becomes Undo once posted."
+  ],
+  "decisions": [
+    "Each site's preview is written for its buyers: brand first, 'size L' where the site labels size, model and specs where the title is short, cut to the length its buyers read; one line says who buys there (edge-cases §5 (agent proposal); lengths and order from platform-fit.json).",
+    "Approve names the price and the count of sites ('Post at $235 on 2 sites'), steps through 'Posting 1 of 2', then becomes Undo (pages.md §6.8 and the hand-off rule: posting is the first public act in the person's name).",
+    "A failed site says the site's reason and offers Retry, Skip this site and Post it myself, which opens the site (ways-out §6.8 'The post keeps failing'; copying the words needs a clipboard module the app does not have yet).",
+    "Each card is one height (72 row, then 20, 20, 24 lines), its lines inset to the card's corner (B31 one size per part, U5 nothing in a corner's curve)."
+  ],
   "states": [
     {
       "state": "stub",

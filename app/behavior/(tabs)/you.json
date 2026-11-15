@@ -7,28 +7,139 @@
     "how_often": "A few times a week; Today's top slot taps through to it after a sale (spec/pages.md §4).",
     "came_to": "See that it worked (money kept, money coming), then reach a setting, a site or the log in one tap.",
     "costly_mistake": "Reading money that can still be taken back as money in hand: on its way is shown apart from what landed and never added to it (spec/features/insights.md, Kept versus sold). A site that signed the person out going unnoticed: it leads the page.",
-    "ways_out": "Pause selling, quiet hours, never suggest edits, units, delete (Settings); unlink a site (Your sites); undo what the agent did (Activity); turn a rule back to asking (Rules and limits). spec/ways-out.md rows: I'm away, Not at night, Don't edit my photos, Inches not centimetres, Get me out.",
+    "ways_out": "Pause selling, never suggest edits, units, delete (Settings); quiet hours and every kind of alert (Notifications); unlink a site (Your sites); undo what the agent did (Activity); turn a rule back to asking (Rules and limits). spec/ways-out.md rows: I'm away, Not at night, Don't edit my photos, Inches not centimetres, Get me out.",
     "in_the_loop": "The person stays in the loop through Rules and limits (what runs alone, what always asks) and Activity (every automatic step with Undo); this page points to both and says how many rules run on their own."
   },
   "states": [
-    { "state": "typical", "world": "clearing", "shows": "the title You in the nav with the inbox and its count; \"A site signed you out\" leading; the amount earned after fees with how many sales; rows On its way with the soonest word still to come and its date (Ready on the site about Tuesday), live and could earn, kept and worth; the November goal bar; rows By site and Records; rows Your sites (3 of 5), Rules and limits (3 on their own), Activity, Settings" },
-    { "state": "dense", "world": "flipper", "shows": "the same as typical with the flipper's numbers; no signed-out notice; the goal bar far from its target" },
-    { "state": "one", "world": "one", "shows": "Nothing sold yet with its line and no button, then one row: 1 live, could earn; the goal bar at nothing kept; rows Your sites, Rules and limits, Settings" },
-    { "state": "new", "world": "new", "shows": "Nothing sold yet, its line and Sell something; rows Your sites (0 of 5), Rules and limits, Settings; no money rows, no goal" }
+    {
+      "state": "typical",
+      "world": "clearing",
+      "shows": "the title You in the nav with the inbox and its count; \"A site signed you out\" leading; the amount earned after fees with how many sales; rows On its way with the soonest word still to come and its date (Ready on the site about Tuesday), live and could earn, kept and worth; the November goal bar; rows By site and Records; rows Your sites (3 of 5), Rules and limits (3 on their own), Activity, Notifications, Settings"
+    },
+    {
+      "state": "dense",
+      "world": "flipper",
+      "shows": "the same as typical with the flipper's numbers; no signed-out notice; the goal bar far from its target"
+    },
+    {
+      "state": "one",
+      "world": "one",
+      "shows": "Nothing sold yet with its line and no button, then one row: 1 live, could earn; the goal bar at nothing kept; rows Your sites, Rules and limits, Notifications, Settings"
+    },
+    {
+      "state": "new",
+      "world": "new",
+      "shows": "Nothing sold yet, its line and Sell something; rows Your sites (0 of 5), Rules and limits, Notifications, Settings; no money rows, no goal"
+    },
+    {
+      "state": "loading",
+      "path": "/you?state=loading",
+      "shows": "the title You over gray shapes where the numbers will be"
+    },
+    {
+      "state": "failed",
+      "path": "/you?state=failed",
+      "shows": "Couldn’t load your numbers, that nothing changed, and Try again"
+    },
+    {
+      "state": "offline",
+      "path": "/you?state=offline",
+      "shows": "Waiting for signal and that this is the last copy, then You as it was"
+    }
   ],
   "controls": [
-    { "id": "nav-inbox", "control": "Inbox", "on_tap": "opens Messages", "does": "opens Messages", "goes": "/messages" },
-    { "id": "you-signed-out", "control": "A site signed you out", "on_tap": "opens Your sites", "does": "opens Your sites", "goes": "/you/connections" },
-    { "id": "you-on-its-way", "control": "On its way", "on_tap": "opens Payouts", "does": "opens Payouts", "goes": "/you/payouts" },
-    { "id": "you-live", "control": "Live, could earn", "on_tap": "opens the Sell tab", "does": "opens Sell", "goes": "/sell" },
-    { "id": "you-kept", "control": "Kept, worth", "on_tap": "opens By site at what your things are worth", "does": "opens By site", "goes": "/you/insights" },
-    { "id": "you-insights", "control": "By site", "on_tap": "opens By site", "does": "opens By site", "goes": "/you/insights" },
-    { "id": "you-records", "control": "Records", "on_tap": "opens Records", "does": "opens Records", "goes": "/you/records" },
-    { "id": "you-connections", "control": "Your sites", "on_tap": "opens Your sites", "does": "opens Your sites", "goes": "/you/connections" },
-    { "id": "you-rules", "control": "Rules and limits", "on_tap": "opens Rules and limits", "does": "opens Rules and limits", "goes": "/you/rules" },
-    { "id": "you-log", "control": "Activity", "on_tap": "opens Activity", "does": "opens Activity", "goes": "/you/log" },
-    { "id": "you-settings", "control": "Settings", "on_tap": "opens Settings", "does": "opens Settings", "goes": "/you/settings" },
-    { "id": "you-sell", "control": "Sell something", "on_tap": "opens New (new person only)", "does": "opens New", "goes": "/new", "world": "new" }
+    {
+      "id": "nav-inbox",
+      "control": "Inbox",
+      "on_tap": "opens Messages",
+      "does": "opens Messages",
+      "goes": "/messages"
+    },
+    {
+      "id": "you-signed-out",
+      "control": "A site signed you out",
+      "on_tap": "opens Your sites",
+      "does": "opens Your sites",
+      "goes": "/you/connections"
+    },
+    {
+      "id": "you-on-its-way",
+      "control": "On its way",
+      "on_tap": "opens Payouts",
+      "does": "opens Payouts",
+      "goes": "/you/payouts"
+    },
+    {
+      "id": "you-live",
+      "control": "Live, could earn",
+      "on_tap": "opens the Sell tab",
+      "does": "opens Sell",
+      "goes": "/sell"
+    },
+    {
+      "id": "you-kept",
+      "control": "Kept, worth",
+      "on_tap": "opens By site at what your things are worth",
+      "does": "opens By site",
+      "goes": "/you/insights"
+    },
+    {
+      "id": "you-insights",
+      "control": "By site",
+      "on_tap": "opens By site",
+      "does": "opens By site",
+      "goes": "/you/insights"
+    },
+    {
+      "id": "you-records",
+      "control": "Records",
+      "on_tap": "opens Records",
+      "does": "opens Records",
+      "goes": "/you/records"
+    },
+    {
+      "id": "you-connections",
+      "control": "Your sites",
+      "on_tap": "opens Your sites",
+      "does": "opens Your sites",
+      "goes": "/you/connections"
+    },
+    {
+      "id": "you-rules",
+      "control": "Rules and limits",
+      "on_tap": "opens Rules and limits",
+      "does": "opens Rules and limits",
+      "goes": "/you/rules"
+    },
+    {
+      "id": "you-log",
+      "control": "Activity",
+      "on_tap": "opens Activity",
+      "does": "opens Activity",
+      "goes": "/you/log"
+    },
+    {
+      "id": "you-notifications",
+      "control": "Notifications",
+      "on_tap": "opens Notifications",
+      "does": "opens Notifications",
+      "goes": "/you/notifications"
+    },
+    {
+      "id": "you-settings",
+      "control": "Settings",
+      "on_tap": "opens Settings",
+      "does": "opens Settings",
+      "goes": "/you/settings"
+    },
+    {
+      "id": "you-sell",
+      "control": "Sell something",
+      "on_tap": "opens New (new person only)",
+      "does": "opens New",
+      "goes": "/new",
+      "world": "new"
+    }
   ],
   "back": "none: a tab. The tab bar moves between places.",
   "decisions": [

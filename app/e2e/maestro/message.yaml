@@ -1,0 +1,33 @@
+# A thread (app/behavior/messages/[id].json) on a phone or simulator: the same states as app/e2e/message.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/message.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/message.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+# A draft with guessed words: edit it, then answer myself.
+- openLink: ${URL}/--/messages/cv_pd
+- extendedWaitUntil:
+    visible: "Draft to canvasfan"
+    timeout: 30000
+- tapOn: { id: "draft-edit" }
+- tapOn: { id: "draft-done" }
+- tapOn: { id: "draft-take" }
+- assertVisible: "You answer here. Offers still follow your Plan"
+# A possible scam: block, then undo.
+- openLink: ${URL}/--/messages/cv_lf
+- extendedWaitUntil:
+    visible: "Possible scam"
+    timeout: 10000
+- tapOn: { id: "thread-block" }
+- assertVisible: "You blocked Alex"
+- tapOn: { id: "block-undo" }
+# An offer in the thread: the same card as on Today.
+- openLink: ${URL}/--/messages/cv_jd
+- extendedWaitUntil:
+    visible: "Counter"
+    timeout: 10000
+- tapOn: { id: "offer-counter" }
+- assertVisible: { id: "counter-send" }

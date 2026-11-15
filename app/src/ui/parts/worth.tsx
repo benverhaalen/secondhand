@@ -12,7 +12,8 @@
 // sales (no amount), checking (Glance: the site is still being read), and a note under it ("Not linked").
 import { View } from 'react-native';
 import { Txt } from '../text';
-import { size, space } from '../tokens.generated';
+import { useColors } from '../theme';
+import { radius, size, space } from '../tokens.generated';
 import { mark, type Site } from './mark';
 import { SiteBadge } from './small';
 
@@ -21,6 +22,17 @@ export function Range({ low, high, what }: { low: string; high: string; what: st
     <View {...mark('range')} style={{ gap: space.s1 }}>
       <Txt role="amount">{`${low} to ${high}`}</Txt>
       <Txt role="body" tone="ink-2">{what}</Txt>
+    </View>
+  );
+}
+
+// The range while the sales are read: the same 50 line and its label line, in gray, so nothing moves when it lands.
+export function RangeSkeleton() {
+  const c = useColors();
+  return (
+    <View {...mark('range', { skeleton: 'true' })} accessibilityLabel="Loading" style={{ gap: space.s1 }}>
+      <View style={{ height: 60, justifyContent: 'center' }}><View style={{ width: '70%', height: 44, borderRadius: radius.pill, backgroundColor: c.gray }} /></View>
+      <View style={{ height: 20, justifyContent: 'center' }}><View style={{ width: '60%', height: 14, borderRadius: radius.pill, backgroundColor: c.gray }} /></View>
     </View>
   );
 }

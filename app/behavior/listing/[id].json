@@ -1,16 +1,272 @@
 {
   "screen": "listing/[id]",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "A listing on the buy side (spec/pages.md §6.14): its photos, its price delivered against what the same one sold for, the seller and who covers the sale, and the acts: Open on site, Offer (three amounts and Something else), Watch. An offer is a hand-off.",
+  "frame": [
+    "Who: the hunter, from a match alert or a search row, deciding in a minute whether to buy, offer or wait.",
+    "Came to do: judge the photos and the price, then buy on the site or make an offer.",
+    "Where a mistake costs most: an offer sent at the wrong amount (it binds on eBay once accepted), and a pickup with no site cover read as covered.",
+    "Ways out (spec/ways-out.md §6.12): Open on site from any listing; offers ask every time; Not my size teaches the want; Ask the seller; I bought it.",
+    "In the loop: when the agent has an offer ready, its amount is a dotted guess and the foot says exactly what it sends; nothing goes until the tap."
+  ],
+  "decisions": [
+    "Photos first, swiped, with dots, as every marketplace app opens a listing; one photo keeps the dot row so every listing is the same height.",
+    "The price is the peak amount: delivered, because that is what the person pays (M26), with the asking price in the line under it.",
+    "Where the price sits is a bar with the range in words under it (copy.md: show, then say the range the way a friend would).",
+    "The read of the price is words with an icon, not a tag: no state color means fair (round-2 call).",
+    "Open on site is the page's one act at the foot: buying happens on the site, and we never take payment (spec buy.md step 7).",
+    "When the agent has an offer ready, the foot becomes that offer ('Send a $65 offer') and Open on site moves up beside Watch: one black button per view.",
+    "The offer picker is a sheet of three whole-dollar amounts under the asking price, then Something else, with the one money sentence: 'If they accept, you pay on the site.'",
+    "Watch is done at once with Undo: it can be undone where it happened.",
+    "The rest (Ask the seller, Not my size, I bought it) sit under More in the nav, as iOS puts a page's other acts.",
+    "Who covers the sale is said per site from the trust note (research/sold/nate/trust-returns-disputes.md §9); a pickup says plainly that nothing covers it.",
+    "A visitor sees everything; Offer and Watch take them to sign in at that moment.",
+    "A listing that is gone shows the gone page, with nothing that would act on it (break-ui: a gone match still offered Offer).",
+    "An offer over the asking price can't be sent: the disabled button says 'Over their price of $64' (break-ui: Something else took $1,000,000).",
+    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
+  ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "typical",
+      "route": "/listing/mt_d1?world=buyer",
+      "shows": "Delivered, with shipping. They ask $64.",
+      "also": [
+        "Open on site",
+        "Offer",
+        "Watch",
+        "Good price"
+      ]
+    },
+    {
+      "state": "handoff",
+      "route": "/listing/mt_d2?world=buyer",
+      "shows": "Ready to send",
+      "also": [
+        "Send a $65 offer",
+        "Watching"
+      ]
+    },
+    {
+      "state": "pickup",
+      "route": "/listing/mt_d3?world=buyer",
+      "shows": "No site cover on a pickup. Pay when you see it."
+    },
+    {
+      "state": "visitor",
+      "route": "/listing/mt_d1?visitor=1",
+      "shows": "Open on site"
+    },
+    {
+      "state": "gone",
+      "route": "/listing/mt_d4?world=buyer",
+      "shows": "This listing is gone"
+    },
+    {
+      "state": "empty",
+      "route": "/listing/mt_none",
+      "shows": "This listing is gone"
+    },
+    {
+      "state": "new",
+      "route": "/listing/mt_d1?state=new",
+      "shows": "Open on site"
+    },
+    {
+      "state": "failed",
+      "route": "/listing/mt_d1?state=failed",
+      "shows": "Couldn’t load this listing",
+      "also": [
+        "Try again"
+      ]
+    },
+    {
+      "state": "offline",
+      "route": "/listing/mt_d1?state=offline",
+      "shows": "Waiting for signal. This is the last copy."
     }
   ],
   "controls": [
     {
       "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "on_tap": "goes back",
+      "id": "nav-back",
+      "in": "typical",
+      "does": "goes back"
+    },
+    {
+      "control": "Open",
+      "on_tap": "opens the listing on its site, through the referral link",
+      "id": "listing-open",
+      "in": "typical",
+      "does": "opens the listing on its site, through the referral link"
+    },
+    {
+      "control": "Offer",
+      "on_tap": "opens the offer picker",
+      "id": "listing-offer",
+      "in": "typical",
+      "does": "opens the offer picker",
+      "shows": "Something else"
+    },
+    {
+      "control": "Pick amount other",
+      "on_tap": "chooses Something else and shows a blank amount",
+      "id": "listing-pick-amount-other",
+      "in": "typical",
+      "after": [
+        "listing-offer"
+      ],
+      "does": "chooses Something else and shows a blank amount",
+      "then": "listing-pick-other"
+    },
+    {
+      "control": "Pick amount 54",
+      "on_tap": "picks $54",
+      "id": "listing-pick-amount-54",
+      "in": "typical",
+      "after": [
+        "listing-offer"
+      ],
+      "does": "picks $54",
+      "shows": "Send a $54 offer"
+    },
+    {
+      "control": "Pick send",
+      "on_tap": "sends the $54 offer",
+      "id": "listing-pick-send",
+      "in": "typical",
+      "after": [
+        "listing-offer",
+        "listing-pick-amount-54"
+      ],
+      "does": "sends the $54 offer",
+      "shows": "Offer of $54 sent. You pay on the site if they accept."
+    },
+    {
+      "control": "Pick amount other",
+      "on_tap": "Something else starts blank, and the send button says to pick an amount",
+      "id": "listing-pick-amount-other",
+      "in": "typical",
+      "after": [
+        "listing-offer"
+      ],
+      "does": "Something else starts blank, and the send button says to pick an amount",
+      "shows": "Pick an amount"
+    },
+    {
+      "control": "Watch",
+      "on_tap": "saves it to Watching, with Undo",
+      "id": "listing-watch",
+      "in": "typical",
+      "does": "saves it to Watching, with Undo",
+      "shows": "Saved to Watching"
+    },
+    {
+      "control": "Undo watch",
+      "on_tap": "takes the save back",
+      "id": "listing-undo-watch",
+      "in": "typical",
+      "after": [
+        "listing-watch"
+      ],
+      "does": "takes the save back",
+      "shows": "Watch"
+    },
+    {
+      "control": "Product",
+      "on_tap": "opens the product's price history",
+      "id": "listing-product",
+      "in": "typical",
+      "does": "opens the product's price history",
+      "goes": "/product/pr_dunk"
+    },
+    {
+      "control": "More",
+      "on_tap": "opens the rest of the acts",
+      "id": "listing-more",
+      "in": "typical",
+      "does": "opens the rest of the acts",
+      "then": "listing-ask"
+    },
+    {
+      "control": "Ask",
+      "on_tap": "opens the chat with the seller",
+      "id": "listing-ask",
+      "in": "handoff",
+      "after": [
+        "listing-more"
+      ],
+      "does": "opens the chat with the seller",
+      "goes": "/messages/cv_bd"
+    },
+    {
+      "control": "Not size",
+      "on_tap": "hides it and teaches the want, with Undo",
+      "id": "listing-not-size",
+      "in": "typical",
+      "after": [
+        "listing-more"
+      ],
+      "does": "hides it and teaches the want, with Undo",
+      "shows": "Hidden. Your search skips this size now."
+    },
+    {
+      "control": "Bought",
+      "on_tap": "adds it to Bought, with Undo",
+      "id": "listing-bought",
+      "in": "typical",
+      "after": [
+        "listing-more"
+      ],
+      "does": "adds it to Bought, with Undo",
+      "shows": "Added to Bought"
+    },
+    {
+      "control": "Send",
+      "on_tap": "sends the agent's offer",
+      "id": "listing-send",
+      "in": "handoff",
+      "does": "sends the agent's offer",
+      "shows": "Offer of $65 sent. You pay on the site if they accept."
+    },
+    {
+      "control": "Offer amount",
+      "on_tap": "edits the guessed amount in place",
+      "id": "listing-offer-amount",
+      "in": "handoff",
+      "does": "edits the guessed amount in place",
+      "then": "listing-offer-amount-input"
+    },
+    {
+      "control": "Open second",
+      "on_tap": "opens the listing on its site",
+      "id": "listing-open-second",
+      "in": "handoff",
+      "does": "opens the listing on its site"
+    },
+    {
+      "control": "Watch",
+      "on_tap": "asks a visitor to sign in",
+      "id": "listing-watch",
+      "in": "visitor",
+      "does": "asks a visitor to sign in",
+      "goes": "/onboarding"
+    },
+    {
+      "control": "Gone back",
+      "on_tap": "goes to Buy",
+      "id": "listing-gone-back",
+      "in": "empty",
+      "does": "goes to Buy",
+      "goes": "/buy"
+    },
+    {
+      "control": "Retry",
+      "on_tap": "loads the page afresh",
+      "id": "listing-retry",
+      "in": "failed",
+      "does": "loads the page afresh",
+      "goes": "/listing/mt_d1"
     }
-  ]
+  ],
+  "back": "the screen it came from"
 }

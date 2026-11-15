@@ -1,0 +1,30 @@
+{
+  "route": "worth?state=offline",
+  "screen": "worth",
+  "states": [
+    "offline",
+    "check"
+  ],
+  "skip": "empty: Worth is of one thing, so it has no list to be empty; one: it is always one thing; dense: one thing a page, so nothing piles up",
+  "status": "fail",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen \"Nike Dunk Low, Grey Fog, men’s 10\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    },
+    {
+      "level": "error",
+      "id": "B35",
+      "where": "screen \"worth\"",
+      "msg": "is not drawn in the states new, typical, loading, failed, at /worth?state=offline?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"new: why\">"
+    }
+  ]
+}

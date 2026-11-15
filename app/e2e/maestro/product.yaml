@@ -1,0 +1,140 @@
+# The product screen (app/behavior/product/[id].json) on a phone or simulator: the same states and controls as app/e2e/product.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/product.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/product.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081/--
+---
+- launchApp
+# State: typical
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- assertVisible: "Sold used lately\\. New, \\$115\\. Used prices are falling\\."
+- assertVisible: "96 for sale now"
+- assertVisible: "From Nike, \\$123\\.05 delivered"
+# nav-back: goes back
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- tapOn: { id: "nav-back" }
+# product-follow: follows its price, with Undo
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- tapOn: { id: "product-follow" }
+- extendedWaitUntil:
+    visible: "Following its price"
+    timeout: 5000
+# product-undo: stops following again
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- tapOn: { id: "product-follow" }
+- tapOn: { id: "product-undo" }
+- assertVisible: { id: "product-follow" }
+# product-chart-0: shows June's amount
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- tapOn: { id: "product-chart-0" }
+- extendedWaitUntil:
+    visible: "Jun \\$98"
+    timeout: 5000
+# product-chart-1: shows Jul's amount
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- tapOn: { id: "product-chart-1" }
+- extendedWaitUntil:
+    visible: "Jul \\$94"
+    timeout: 5000
+# product-chart-2: shows Aug's amount
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- tapOn: { id: "product-chart-2" }
+- extendedWaitUntil:
+    visible: "Aug \\$90"
+    timeout: 5000
+# product-chart-3: shows Sep's amount
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- tapOn: { id: "product-chart-3" }
+- extendedWaitUntil:
+    visible: "Sep \\$86"
+    timeout: 5000
+# product-chart-4: shows Oct's amount
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- tapOn: { id: "product-chart-4" }
+- extendedWaitUntil:
+    visible: "Oct \\$82"
+    timeout: 5000
+# product-chart-5: shows November's amount, the one shown first
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- tapOn: { id: "product-chart-5" }
+- extendedWaitUntil:
+    visible: "Nov \\$79"
+    timeout: 5000
+# product-for-sale: opens every listing for sale now
+- openLink: ${URL}/product/pr_dunk
+- extendedWaitUntil:
+    visible: "\\$65 to \\$95"
+    timeout: 15000
+- tapOn: { id: "product-for-sale" }
+# State: visitor
+- openLink: ${URL}/product/pr_switch?visitor=1
+- extendedWaitUntil:
+    visible: "\\$210 to \\$260"
+    timeout: 15000
+- assertVisible: "Refurbished"
+# product-follow: asks a visitor to sign in
+- openLink: ${URL}/product/pr_switch?visitor=1
+- extendedWaitUntil:
+    visible: "\\$210 to \\$260"
+    timeout: 15000
+- tapOn: { id: "product-follow" }
+# State: empty
+- openLink: ${URL}/product/pr_none
+- extendedWaitUntil:
+    visible: "We don’t know this one yet"
+    timeout: 15000
+# product-search: goes to Buy to search
+- openLink: ${URL}/product/pr_none
+- extendedWaitUntil:
+    visible: "We don’t know this one yet"
+    timeout: 15000
+- tapOn: { id: "product-search" }
+# State: failed
+- openLink: ${URL}/product/pr_dunk?state=failed
+- extendedWaitUntil:
+    visible: "Couldn’t load this product"
+    timeout: 15000
+- assertVisible: "Try again"
+# product-retry: loads the page afresh
+- openLink: ${URL}/product/pr_dunk?state=failed
+- extendedWaitUntil:
+    visible: "Couldn’t load this product"
+    timeout: 15000
+- tapOn: { id: "product-retry" }
+# State: offline
+- openLink: ${URL}/product/pr_dunk?state=offline
+- extendedWaitUntil:
+    visible: "Waiting for signal\\. This is the last copy\\."
+    timeout: 15000

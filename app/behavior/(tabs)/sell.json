@@ -10,8 +10,13 @@
   },
   "states": [
     {
-      "state": "empty",
+      "state": "new",
       "route": "/sell?world=new",
+      "shows": "Nothing for sale"
+    },
+    {
+      "state": "empty",
+      "route": "/sell?state=empty",
       "shows": "Nothing for sale"
     },
     {
@@ -38,6 +43,21 @@
       "state": "select",
       "route": "/sell?world=clearing",
       "shows": "Select items"
+    },
+    {
+      "state": "loading",
+      "route": "/sell?state=loading",
+      "shows": "Sell"
+    },
+    {
+      "state": "failed",
+      "route": "/sell?state=failed",
+      "shows": "Your things didn’t load"
+    },
+    {
+      "state": "offline",
+      "route": "/sell?state=offline",
+      "shows": "Waiting for signal"
     }
   ],
   "controls": [
@@ -128,6 +148,13 @@
       "does": "opens the camera to sell the first thing",
       "goes": "/camera",
       "at": "/sell?world=new"
+    },
+    {
+      "control": "Try again",
+      "on_tap": "loads the things again",
+      "id": "sell-retry",
+      "does": "loads the things again",
+      "at": "/sell?state=failed"
     }
   ],
   "flows": [
@@ -238,6 +265,14 @@
     {
       "decision": "Empty: one line, \"Nothing for sale\", and Sell something, which opens the camera",
       "why": "copy.md C11 and pages §6.10 (\"the ＋ is the only thing to point to\"); one display heading per view, so the page title gives way to it."
+    },
+    {
+      "decision": "Loading is four gray tiles under the heading, with no filters, counts or Select",
+      "why": "Art. 5, Loading: the skeleton mirrors the grid so nothing moves; a count shown before the things arrive would be a guess."
+    },
+    {
+      "decision": "Failed says the things didn’t load, with Try again; offline keeps the last copy and a change waits, its button saying Waiting for signal",
+      "why": "ways-out, Everywhere: nothing is guessed, and a tap without signal is held, not lost (as Today holds it)."
     }
   ]
 }

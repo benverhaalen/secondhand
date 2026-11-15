@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { DEFAULTS, weigh, nEff, backOff, adjust, trim, weightedQuantile, translate, comparables } from './comps.ts';
+import { DEFAULTS, weigh, nEff, backOff, adjust, adjustDetail, trim, weightedQuantile, translate, comparables } from './comps.ts';
 import type { Comp } from './comps.ts';
 
 const as_of = '2026-11-14T00:00:00Z';
@@ -113,4 +113,57 @@ test('PLANTED: with MAD 0, comps a few percent off the median are kept, a wild o
   const { kept, dropped } = trim(rows);
   assert.deepEqual(kept.map(c => c.price_cents).sort(), [4900, 5000, 5000, 5000, 5000, 5100, 5200]);
   assert.deepEqual(dropped.map(d => d.reason), ['outlier']);
+});
+
+test('D1 reconciliation: gross adjustment caps a comp even when its adjustments cancel', () => {
+  // Condition +35% (new with tags over good) and size -26% net to about 0, but gross is about 0.6 > ln 1.25.
+  const params = { ...DEFAULTS, size_ratios: { S: 1, M: 0.74 } };
+  const offsetting = comp('offsetting', 5000, { size: 'S' });
+  const r = adjustDetail(offsetting, { condition: 'new_with_tags', size: 'M' }, () => 0, params);
+  assert.ok(Math.abs(Math.log(r.adjusted_cents / 5000)) < Math.log(1.25), 'net is inside the old cap');
+  close(r.gross, Math.log(1.35) + Math.abs(Math.log(0.74)));
+  assert.deepEqual(trim([{ ...offsetting, adjusted_cents: r.adjusted_cents, gross: r.gross }], params).dropped, [{ comp_id: 'offsetting', reason: 'adjustment' }]);
+});
+
+test('D1 reconciliation: a comp counts less the more it had to be adjusted', () => {
+  const params = { ...DEFAULTS, size_ratios: { S: 1, M: 1.1 } };
+  const rows = [comp('same', 5000, { size: 'M' }), comp('adjusted', 5000, { size: 'S' })];
+  const out = comparables({ condition: 'good', size: 'M' }, rows, as_of, { ...params, min_n_eff: 1, min_recent: 1 });
+  const w = Object.fromEntries(out.comps.map(c => [c.comp_id, c.w]));
+  close(w.same, 1);
+  close(w.adjusted, 1 / (1 + Math.log(1.1) / Math.log(1.25)));
+  assert.equal(out.extrapolated, null, 'one comp needed no adjustment, so nothing is extrapolated');
+});
+
+test('D1 bracketing: every comp adjusted the same way marks the value as extrapolated', () => {
+  const rows = [4000, 4200, 4400].map((p, i) => comp(`worse${i}`, p, { condition: 'fair' }));
+  const easy = { ...DEFAULTS, min_n_eff: 1, min_recent: 1, condition_ratios: { ...DEFAULTS.condition_ratios, fair: 0.9 } };
+  assert.equal(comparables({ condition: 'good' }, rows, as_of, easy).extrapolated, 'up');
+  const better = rows.map(r => ({ ...r, condition: 'excellent' }));
+  assert.equal(comparables({ condition: 'good' }, better, as_of, easy).extrapolated, 'down');
+  const mixed = [rows[0], better[1]];
+  assert.equal(comparables({ condition: 'good' }, mixed, as_of, easy).extrapolated, null);
+});
+
+test('D1 bracketing: market drift moves every comp alike and is not extrapolation', () => {
+  const rows = [4000, 4200, 4400].map((p, i) => comp(`drift${i}`, p));
+  const params = { ...DEFAULTS, min_n_eff: 1, min_recent: 1, timeIndex: () => 0.05 };
+  const out = comparables({ condition: 'good' }, rows, as_of, params);
+  assert.equal(out.extrapolated, null);
+  assert.ok(out.comps.every(c => c.adjusted_cents > c.price_cents), 'time still adjusts the price');
+});
+
+test('D2: a size known on one side only is not adjusted and costs no weight', () => {
+  const params = { ...DEFAULTS, size_ratios: { S: 1, M: 1.1 } };
+  const r = adjustDetail(comp('sized', 5000, { size: 'M' }), { condition: 'good' }, () => 0, params);
+  assert.equal(r.adjusted_cents, 5000);
+  assert.equal(r.gross, 0);
+});
+
+test('D1 end to end: a comp past the gross cap leaves the set through comparables', () => {
+  const params = { ...DEFAULTS, min_n_eff: 1, min_recent: 1, size_ratios: { S: 1, M: 0.74 } };
+  const rows = [comp('fine', 5000, { condition: 'new_with_tags', size: 'M' }), comp('offsetting', 5000, { size: 'S' })];
+  const out = comparables({ condition: 'new_with_tags', size: 'M' }, rows, as_of, params);
+  assert.deepEqual(out.comps.map(c => c.comp_id), ['fine']);
+  assert.deepEqual(out.dropped, [{ comp_id: 'offsetting', reason: 'adjustment' }]);
 });
