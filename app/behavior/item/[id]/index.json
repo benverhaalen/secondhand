@@ -16,7 +16,9 @@
     "Photos open a sheet with Clean up and Enhance with AI as two switches, at most one on, both off until picked; Use original resets; on a live item the change waits for an Approve naming the listings (edge-cases §6 and ways-out §6.5: the mentor's worry that AI can misstate the item; a change to live listings is public (hand-off rule)).",
     "Lock is a switch in the field's More sheet, and the field's caption says Locked (ways-out §6.6 (attribute.locked); the kit has no lock icon, so one is requested rather than drawn).",
     "Under the Plan or Post sheet the page's foot act is not drawn (C4, one black pill per decision: the act under the scrim cannot be reached and read as a second act).",
-    "Every guess on the page is a Guess at the body size, the title in Review too (B31, parts of one name are one size; the sheets over the page use the same size)."
+    "Every guess on the page is a Guess at the body size, the title in Review too (B31, parts of one name are one size; the sheets over the page use the same size).",
+    "In Review a guess the person opens and leaves as it is counts as checked: its line turns solid and its caption says You checked it, as the Review moment asks every fact the camera filled to be looked at (Ben 06:19; agent proposal: a tap confirms without a separate Confirm button).",
+    "Why? on a field gives the reason in words first and the source a tap under it, in Review only, where the camera’s guesses are being checked (pages §6.6 “Why? on any field”; Ben 06:53; agent proposal: the other moments keep the source as the caption)."
   ],
   "states": [
     {
@@ -38,7 +40,8 @@
         "~$81.55",
         "Accept $85",
         "Counter",
-        "21h 0m"
+        "21h 0m",
+        "Accepting sells it. It can’t be undone."
       ],
       "why": "an offer waiting tops the page with what they keep and the time left, the facts its push names (notifications.md, An offer you’d take)"
     },
@@ -71,7 +74,8 @@
       "shows": "Slow",
       "also": [
         "Lower to $38 on 2 sites",
-        "Never under $30, your lowest"
+        "Never under $30, your lowest",
+        "No messages in 9 days. Lower to $38: sells about 6 days sooner."
       ],
       "why": "Live and Slow: the one change worth the most is the black pill (pages §6.6 and §3 Standing)"
     },
@@ -83,7 +87,8 @@
         "$61.12",
         "~after fees",
         "Taken down",
-        "Ship it"
+        "Ship it",
+        "Money arrives"
       ],
       "why": "Sold: which site sold, what they keep, proof the others came down, Ship it (pages §6.6)"
     },
@@ -119,10 +124,13 @@
     },
     {
       "state": "unsold",
-      "route": null,
-      "missing": true,
+      "route": "/item/it_505",
       "shows": "Sell again",
-      "why": "Done, unsold: pages §6.6 names the moment, and no demo world holds an unsold item to show it"
+      "why": "Done, unsold: what similar ones sell for now, and Sell again (pages §6.6); the edge world holds an unsold pair of jeans",
+      "also": [
+        "$28 to $42",
+        "What similar ones sell for now"
+      ]
     },
     {
       "state": "many-photos",
@@ -149,9 +157,10 @@
       "route": "/item/it_jacket?state=failed",
       "shows": "Can’t open this item",
       "also": [
-        "It was deleted, or it didn’t load."
+        "It was deleted, or it didn’t load.",
+        "Try again"
       ],
-      "why": "frontend-standard §4 Error: what failed and the one fix; Try again is in the controls, missing"
+      "why": "frontend-standard §4 Error: what failed and the one fix, Try again"
     },
     {
       "state": "not-found",
@@ -170,6 +179,19 @@
         "Accept $85"
       ],
       "why": "the last copy; each tap waits for signal (ways-out Everywhere, “I’m on bad signal”)"
+    },
+    {
+      "state": "draft-review",
+      "route": "/item/it_draft",
+      "shows": "Carhartt Detroit Jacket, brown duck, L",
+      "also": [
+        "Description",
+        "Carhartt Detroit Jacket. Brown, Men’s, size L, cotton duck, 1990s. Pit to pit 24 in, length 26 in, sleeve 33 in. Worn cuffs.",
+        "From the tag",
+        "Measured",
+        "Plan it"
+      ],
+      "why": "the review after capture (Ben 06:19): every fact the camera filled is a guess with its source, each with Why?, and Plan it"
     }
   ],
   "controls": [
@@ -260,7 +282,7 @@
     {
       "id": "offer-more",
       "control": "⋯ on the offer",
-      "on_tap": "opens Offers: each offer with what they keep, and Decline both",
+      "on_tap": "opens Offers: each offer with what you get, and Decline both",
       "shows": "Offers",
       "then": "decline-all"
     },
@@ -385,8 +407,27 @@
     {
       "id": "why",
       "control": "Why? on a field or a number",
-      "on_tap": "opens the Why sheet: the item’s events with their sources and Undo (pages §6.6 Actions on any moment)",
-      "missing": true
+      "on_tap": "opens the Why sheet: the reason in words first, See the numbers under it, then the item’s events with their sources and Undo (pages §6.6; Ben 06:53)",
+      "shows": "~like it sold lately on 2 sites",
+      "then": "why-numbers"
+    },
+    {
+      "id": "why-numbers",
+      "control": "See the numbers",
+      "on_tap": "shows the sales the range goes by and each site’s fee, what it is charged on and what you get",
+      "after": [
+        "why"
+      ],
+      "shows": "$95 less $3.80 fee"
+    },
+    {
+      "id": "why-done",
+      "control": "Done",
+      "on_tap": "closes the Why sheet",
+      "after": [
+        "why"
+      ],
+      "gone": "See the numbers"
     },
     {
       "id": "photos",
@@ -569,31 +610,83 @@
       "id": "pause",
       "control": "Pause",
       "on_tap": "pauses every listing of this item (pages §6.6 Actions on any moment: pause)",
-      "missing": true
+      "shows": "Paused 2 listings."
+    },
+    {
+      "id": "pause-undo",
+      "control": "Undo",
+      "on_tap": "takes Pause back",
+      "after": [
+        "pause"
+      ],
+      "gone": "Paused 2 listings."
     },
     {
       "id": "paid",
       "control": "What you paid",
       "on_tap": "sets what the person paid, optional and never asked (pages §6.6 Actions on any moment)",
-      "missing": true
+      "then": "paid-input"
     },
     {
       "id": "copy",
       "control": "Sell one like this",
       "on_tap": "copies the item without its photos (ways-out §6.6 “I have three of these”)",
-      "missing": true
+      "shows": "Made a copy. Add its photos from Sell."
+    },
+    {
+      "id": "copy-undo",
+      "control": "Undo",
+      "on_tap": "takes the copy back",
+      "after": [
+        "copy"
+      ],
+      "gone": "Made a copy. Add its photos from Sell."
     },
     {
       "id": "split",
       "control": "Split",
       "on_tap": "moves photos to a new item (ways-out §6.6 “These are two things”)",
-      "missing": true
+      "route": "/item/it_tee",
+      "shows": "Pick the photos of the other thing"
+    },
+    {
+      "id": "split-photo-2",
+      "control": "a photo, in Split",
+      "on_tap": "picks it to move",
+      "route": "/item/it_tee",
+      "after": [
+        "split"
+      ],
+      "shows": "Move 1 photo to a new item"
+    },
+    {
+      "id": "split-move",
+      "control": "Move 1 photo to a new item",
+      "on_tap": "moves the picked photos to a new item, with Undo",
+      "route": "/item/it_tee",
+      "after": [
+        "split",
+        "split-photo-2"
+      ],
+      "shows": "Moved 1 photo to a new item."
+    },
+    {
+      "id": "split-undo",
+      "control": "Undo",
+      "on_tap": "takes the split back",
+      "route": "/item/it_tee",
+      "after": [
+        "split",
+        "split-photo-2",
+        "split-move"
+      ],
+      "gone": "Moved 1 photo to a new item."
     },
     {
       "id": "market-open",
-      "control": "Market",
+      "control": "See the sales, under Market",
       "on_tap": "opens the product page (pages §6.6 Splits off: the product page)",
-      "missing": true
+      "goes": "/product/pr_j97"
     },
     {
       "id": "title",
@@ -689,7 +782,7 @@
     {
       "id": "lower",
       "control": "Lower to $38 on 2 sites",
-      "on_tap": "lowers the price on both sites, with Undo",
+      "on_tap": "lowers the price on both sites, with Undo; the line above says it sells about 6 days sooner",
       "route": "/item/it_lamp",
       "shows": "Lowered to $38 on 2 sites"
     },
@@ -705,7 +798,7 @@
     },
     {
       "id": "open-sum",
-      "control": "What each site keeps",
+      "control": "What you get on each site",
       "on_tap": "opens the sum: each site’s price less its fee",
       "route": "/item/it_lamp",
       "shows": "$45 less $4.82 fee",
@@ -820,8 +913,7 @@
       "control": "the pickup line",
       "on_tap": "opens the Pickup sheet (pages §6.6 Splits off: Pickup)",
       "route": "/item/it_chair",
-      "goes": "/item/it_chair/pickup",
-      "missing": true
+      "goes": "/item/it_chair/pickup"
     },
     {
       "id": "sell-again",
@@ -842,8 +934,277 @@
       "control": "Try again",
       "on_tap": "loads the item again (frontend-standard §4 Error: what failed and the one fix)",
       "route": "/item/it_jacket?state=failed",
-      "goes": "/item/it_jacket",
-      "missing": true
+      "goes": "/item/it_jacket"
+    },
+    {
+      "id": "why-brand",
+      "control": "Why? beside Brand",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "The photos show Carhartt.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "why-color",
+      "control": "Why? beside Color",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "The photos show Brown.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "why-department",
+      "control": "Why? beside Department",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "The photos show Men’s.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "field-department",
+      "control": "Department: Men’s",
+      "on_tap": "opens Department to type over, in place",
+      "route": "/item/it_draft",
+      "then": "field-department-input"
+    },
+    {
+      "id": "more-department",
+      "control": "⋯ beside Department",
+      "on_tap": "opens Department's More sheet, with Lock it",
+      "route": "/item/it_draft",
+      "then": "lock-field"
+    },
+    {
+      "id": "why-style",
+      "control": "Why? beside Style",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "The photos show Workwear.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "field-style",
+      "control": "Style: Workwear",
+      "on_tap": "opens Style to type over, in place",
+      "route": "/item/it_draft",
+      "then": "field-style-input"
+    },
+    {
+      "id": "more-style",
+      "control": "⋯ beside Style",
+      "on_tap": "opens Style's More sheet, with Lock it",
+      "route": "/item/it_draft",
+      "then": "lock-field"
+    },
+    {
+      "id": "why-model",
+      "control": "Why? beside Model",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "The photos show Detroit Jacket.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "why-size",
+      "control": "Why? beside Size",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "The tag reads L.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "why-material",
+      "control": "Why? beside Material",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "The tag reads Cotton duck.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "why-era",
+      "control": "Why? beside Era",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "The tag’s style dates it to the 1990s.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "field-era",
+      "control": "Era: 1990s",
+      "on_tap": "opens Era to type over, in place",
+      "route": "/item/it_draft",
+      "then": "field-era-input"
+    },
+    {
+      "id": "more-era",
+      "control": "⋯ beside Era",
+      "on_tap": "opens Era's More sheet, with Lock it",
+      "route": "/item/it_draft",
+      "then": "lock-field"
+    },
+    {
+      "id": "why-pit_to_pit",
+      "control": "Why? beside Pit to pit",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "Measured on the photo with it laid flat: 24 in.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "field-pit_to_pit",
+      "control": "Pit to pit: 24 in",
+      "on_tap": "opens Pit to pit to type over, in place",
+      "route": "/item/it_draft",
+      "then": "field-pit_to_pit-input"
+    },
+    {
+      "id": "more-pit_to_pit",
+      "control": "⋯ beside Pit to pit",
+      "on_tap": "opens Pit to pit's More sheet, with Lock it",
+      "route": "/item/it_draft",
+      "then": "lock-field"
+    },
+    {
+      "id": "why-length",
+      "control": "Why? beside Length",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "Measured on the photo with it laid flat: 26 in.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "field-length",
+      "control": "Length: 26 in",
+      "on_tap": "opens Length to type over, in place",
+      "route": "/item/it_draft",
+      "then": "field-length-input"
+    },
+    {
+      "id": "more-length",
+      "control": "⋯ beside Length",
+      "on_tap": "opens Length's More sheet, with Lock it",
+      "route": "/item/it_draft",
+      "then": "lock-field"
+    },
+    {
+      "id": "why-sleeve",
+      "control": "Why? beside Sleeve",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "Measured on the photo with it laid flat: 33 in.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "field-sleeve",
+      "control": "Sleeve: 33 in",
+      "on_tap": "opens Sleeve to type over, in place",
+      "route": "/item/it_draft",
+      "then": "field-sleeve-input"
+    },
+    {
+      "id": "more-sleeve",
+      "control": "⋯ beside Sleeve",
+      "on_tap": "opens Sleeve's More sheet, with Lock it",
+      "route": "/item/it_draft",
+      "then": "lock-field"
+    },
+    {
+      "id": "why-flaw.1",
+      "control": "Why? beside Flaw",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "The photos show Worn cuffs.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "why-model",
+      "control": "Why? beside Model",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_switch",
+      "shows": "The tag reads HEG-001.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "why-storage",
+      "control": "Why? beside Storage",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_switch",
+      "shows": "64 GB is what the maker lists for this model.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "why-joy_con_drift",
+      "control": "Why? beside Joy-Con drift",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_switch",
+      "shows": "Not in the photos, so it’s yours to fill.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "why-box",
+      "control": "Why? beside Box",
+      "on_tap": "opens the reason it reads so, in words, with See the source under it",
+      "route": "/item/it_switch",
+      "shows": "You said No.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "field-why-numbers",
+      "control": "See the source, under the reason",
+      "on_tap": "shows where the field was read: the kind of source and the photo",
+      "route": "/item/it_draft",
+      "after": [
+        "why-brand"
+      ],
+      "shows": "From the photos: the photo of the whole front"
+    },
+    {
+      "id": "field-why-done",
+      "control": "Done",
+      "on_tap": "closes the field’s Why",
+      "route": "/item/it_draft",
+      "after": [
+        "why-brand"
+      ],
+      "gone": "The photos show Carhartt."
+    },
+    {
+      "id": "why-title",
+      "control": "Why? beside the name",
+      "on_tap": "says what the name is written from, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "Written from what the photos and the tag show: the brand, the model, the color and the size.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "description",
+      "control": "the description, a guess written from the fields",
+      "on_tap": "opens the description to type over, in place",
+      "route": "/item/it_draft",
+      "then": "description-input"
+    },
+    {
+      "id": "why-description",
+      "control": "Why? beside the description",
+      "on_tap": "says what the description is written from, with See the source under it",
+      "route": "/item/it_draft",
+      "shows": "Written from the details below, with the flaw named so a buyer isn’t surprised.",
+      "then": "field-why-numbers"
+    },
+    {
+      "id": "why-color",
+      "control": "Why? beside Color, once Color is checked",
+      "on_tap": "says the person checked it",
+      "route": "/item/it_draft",
+      "after": [
+        "field-color",
+        [
+          "field-color-input",
+          "Brown"
+        ]
+      ],
+      "shows": "You checked it",
+      "then": "field-why-numbers"
     }
   ],
   "route": "/item/it_jacket",
