@@ -1,0 +1,98 @@
+Attributes: Application, 0x11259cc80, pid: 71030, label: 'secondhand'
+Element subtree:
+ →Application, 0x11259cc80, pid: 71030, label: 'secondhand'
+    Window (Main), 0x11259c8c0, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x11259c640, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x11259c780, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x11259c3c0, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x11259c500, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x11259c000, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x11259c140, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x10a554000, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x10a554140, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x10a554280, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10a5543c0, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x10a554500, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x10a554640, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x10a554780, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x10a5548c0, {{0.0, 0.0}, {402.0, 790.0}}
+                                  Other, 0x10a554a00, {{0.0, 0.0}, {402.0, 790.0}}
+                                    Other, 0x10a554b40, {{0.0, 0.0}, {402.0, 790.0}}
+                                      Other, 0x10a554c80, {{0.0, 0.0}, {402.0, 790.0}}
+                                        Other, 0x10a554dc0, {{0.0, 0.0}, {402.0, 790.0}}
+                                          Other, 0x10a554f00, {{0.0, 0.0}, {402.0, 790.0}}
+                                            Other, 0x10a555040, {{0.0, 0.0}, {402.0, 790.0}}
+                                              Other, 0x10a555180, {{0.0, 62.0}, {402.0, 728.0}}
+                                                ScrollView, 0x10a5552c0, {{0.0, 62.0}, {402.0, 728.0}}
+                                                  Other, 0x10a555400, {{0.0, 62.0}, {402.0, 1505.3}}
+                                                    Other, 0x10a555540, {{0.0, 62.0}, {402.0, 1505.3}}
+                                                      Other, 0x10a555680, {{0.0, 62.0}, {402.0, 236.0}}
+                                                      Other, 0x10a5557c0, {{20.0, 62.0}, {362.0, 44.0}}
+                                                        Button, 0x10a555900, {{342.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-inbox', label: 'Messages, 4 new'
+                                                        StaticText, 0x10a555a40, {{149.0, 77.0}, {104.3, 20.3}}, label: 'secondhand'
+                                                          StaticText, 0x10a555b80, {{149.0, 77.0}, {104.3, 20.3}}, label: 'secondhand'
+                                                      StaticText, 0x10a555cc0, {{20.0, 132.0}, {262.0, 36.3}}, label: 'Sell'
+                                                        StaticText, 0x10a555e00, {{20.0, 132.0}, {262.0, 36.3}}, label: 'Sell'
+                                                      Button, 0x10a555f40, {{294.0, 126.0}, {88.0, 40.0}}, identifier: 'sell-select', label: 'Select'
+                                                      Other, 0x10a556080, {{0.0, 190.0}, {402.0, 40.0}}
+                                                        ScrollView, 0x10a5561c0, {{0.0, 190.0}, {402.0, 40.0}}
+                                                          Other, 0x10a556300, {{0.0, 190.0}, {798.0, 40.0}}
+                                                            Other, 0x10a556440, {{0.0, 190.0}, {798.0, 40.0}}
+                                                              Button, 0x10a556580, {{20.0, 190.0}, {95.7, 40.0}}, identifier: 'filter-sort', label: 'Latest'
+                                                              Button, 0x10a5566c0, {{123.7, 190.0}, {48.3, 40.0}}, identifier: 'filter-all', label: 'All', Selected
+                                                              Button, 0x10a556800, {{180.0, 190.0}, {115.7, 40.0}}, identifier: 'filter-needs_you', label: 'Needs you, 8'
+                                                              Button, 0x10a556940, {{303.7, 190.0}, {118.0, 40.0}}, identifier: 'filter-in_progress', label: 'In progress, 1'
+                                                              Button, 0x10a556a80, {{429.7, 190.0}, {72.3, 40.0}}, identifier: 'filter-live', label: 'Live, 1'
+                                                              Button, 0x10a556bc0, {{510.0, 190.0}, {76.0, 40.0}}, identifier: 'filter-kept', label: 'Kept, 1'
+                                                              Button, 0x10a556d00, {{594.0, 190.0}, {40.0, 40.0}}, identifier: 'filter-site-ebay', label: 'eBay'
+                                                              Button, 0x10a556e40, {{642.0, 190.0}, {40.0, 40.0}}, identifier: 'filter-site-facebook', label: 'Facebook Marketplace'
+                                                              Button, 0x10a556f80, {{690.0, 190.0}, {40.0, 40.0}}, identifier: 'filter-site-depop', label: 'Depop'
+                                                              Button, 0x10a5570c0, {{738.0, 190.0}, {40.0, 40.0}}, identifier: 'filter-site-poshmark', label: 'Poshmark'
+                                                          Other, 0x10a557200, {{369.0, 190.0}, {30.0, 40.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                                            Other, 0x10a557340, {{396.0, 191.0}, {3.0, 36.0}}
+                                                          Other, 0x10a557480, {{369.0, 190.0}, {30.0, 40.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                                            Other, 0x10a5575c0, {{396.0, 191.0}, {3.0, 36.0}}
+                                                      Other, 0x10a557700, {{20.0, 262.0}, {362.0, 512.7}}
+                                                        Button, 0x10a557840, {{20.0, 262.0}, {125.0, 24.0}}, identifier: 'shelf-needs_you-fold', label: 'Needs you, 8', value: expanded
+                                                        Button, 0x10a557980, {{316.3, 262.0}, {65.7, 24.0}}, identifier: 'shelf-needs_you-all', label: 'See all 8'
+                                                        Other, 0x10a557ac0, {{20.0, 302.0}, {362.0, 472.7}}
+                                                          Button, 0x10a557c00, {{20.0, 302.0}, {173.0, 220.3}}, identifier: 'tile-it_chair', label: 'IKEA Stefan chair, light wood'
+                                                          Button, 0x10a557d40, {{209.0, 302.0}, {173.0, 220.3}}, identifier: 'tile-it_jacket', label: 'Carhartt Detroit Jacket J97, brown duck, L'
+                                                          Button, 0x10a557e80, {{20.0, 538.3}, {173.0, 220.3}}, identifier: 'tile-it_lamp', label: 'Brass desk lamp with cream shade'
+                                                          Button, 0x10a54c000, {{209.0, 538.3}, {173.0, 220.3}}, identifier: 'tile-it_kindle', label: 'Kindle Paperwhite 11th gen, 16 GB, black'
+                                                      Other, 0x10a54c140, {{20.0, 806.7}, {362.0, 276.3}}
+                                                        Button, 0x10a54c280, {{20.0, 806.7}, {127.3, 24.0}}, identifier: 'shelf-in_progress-fold', label: 'In progress, 1', value: expanded
+                                                        Other, 0x10a54c3c0, {{20.0, 846.7}, {362.0, 236.3}}
+                                                          Button, 0x10a54c500, {{20.0, 846.7}, {173.0, 220.3}}, identifier: 'tile-it_hoodie', label: 'Russell Athletic Chico State hoodie, crimson, XXL'
+                                                      Other, 0x10a54c640, {{20.0, 1115.0}, {362.0, 276.3}}
+                                                        Button, 0x10a54c780, {{20.0, 1115.0}, {74.0, 24.0}}, identifier: 'shelf-live-fold', label: 'Live, 1', value: expanded
+                                                        Other, 0x10a54c8c0, {{20.0, 1155.0}, {362.0, 236.3}}
+                                                          Button, 0x10a54ca00, {{20.0, 1155.0}, {173.0, 220.3}}, identifier: 'tile-it_fleece', label: 'Patagonia Retro-X fleece, cream, M'
+                                                      Other, 0x10a54cb40, {{20.0, 1423.3}, {362.0, 24.0}}
+                                                        Button, 0x10a54cc80, {{20.0, 1423.3}, {78.7, 24.0}}, identifier: 'shelf-kept-fold', label: 'Kept, 1'
+                                                      Button, 0x10a54cdc0, {{20.0, 1479.3}, {362.0, 56.0}}, identifier: 'sell-pause', label: 'Pause selling. Away for a while'
+                                                  Other, 0x10a54cf00, {{369.0, 62.0}, {30.0, 728.0}}, label: 'Vertical scroll bar, 3 pages', value: 0%
+                                                    Other, 0x10a54d040, {{396.0, 127.0}, {3.0, 379.0}}
+                                                  Other, 0x10a54d180, {{0.0, 757.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                    Other, 0x10a54d2c0, {{3.0, 784.0}, {393.0, 3.0}}
+                                                  Other, 0x10a54d400, {{369.0, 62.0}, {30.0, 728.0}}, label: 'Vertical scroll bar, 3 pages', value: 0%
+                                                    Other, 0x10a54d540, {{396.0, 127.0}, {3.0, 379.0}}
+                                                  Other, 0x10a54d680, {{0.0, 757.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                    Other, 0x10a54d7c0, {{3.0, 784.0}, {393.0, 3.0}}
+                                    Toolbar, 0x10a54d900, {{0.0, 0.0}, {402.0, 790.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                                      Other, 0x10a54da40, {{0.0, 0.0}, {402.0, 790.0}}
+                                Other, 0x10a54db80, {{0.0, 790.0}, {402.0, 84.0}}
+                                Button, 0x10a54dcc0, {{0.0, 791.0}, {80.3, 84.0}}, identifier: 'tab-today', label: 'Today'
+                                Button, 0x10a54de00, {{80.3, 791.0}, {80.3, 84.0}}, identifier: 'tab-sell', label: 'Sell', Selected
+                                Button, 0x10a54df40, {{173.0, 791.0}, {56.0, 44.0}}, identifier: 'tab-new', label: 'New'
+                                Button, 0x10a54e080, {{241.3, 791.0}, {80.3, 84.0}}, identifier: 'tab-buy', label: 'Buy'
+                                Button, 0x10a54e1c0, {{321.7, 791.0}, {80.3, 84.0}}, identifier: 'tab-you', label: 'You'
+                      Toolbar, 0x10a54e300, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                        Other, 0x10a54e440, {{0.0, 0.0}, {402.0, 874.0}}
+Path to element:
+ →Application, 0x11259cc80, pid: 71030, label: 'secondhand'
+Query chain:
+ →Find: Application 'dev.ben.secondhand'
+  Output: {
+    Application, 0x10a54e580, pid: 71030, label: 'secondhand'
+  }
