@@ -138,3 +138,16 @@ test('GET /v1/stream sends the signed-in user\'s example frames and stays open',
 test('every jobs example endpoint has a handler that answers its status', () => {
   assert.ok(EXAMPLES.filter((e) => e.endpoint.includes('/v1/jobs') || e.endpoint === 'GET /v1/stream').length >= 8);
 });
+
+test('an engine completion finishes both ordinary and assist jobs with a replayable terminal frame', () => {
+  const s = memoryJobs();
+  for (const kind of ['search', 'assist'] as const) {
+    const row = s.put({ kind, state: 'running', stages: [{ name: 'engine', state: 'running' }] }, 'usr_test');
+    s.finish(row.id, { found: 1 });
+    const saved = s.get(row.id, 'usr_test');
+    assert.equal(saved?.state, 'done');
+    assert.deepEqual(saved?.result, { found: 1 });
+    assert.equal(saved?.stages[0].state, 'arrived');
+    assert.equal(s.framesAfter(row.id, 0).at(-1)?.data.state, 'done');
+  }
+});

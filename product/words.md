@@ -1350,6 +1350,34 @@ Note, 07:18 UTC: the market research named in the 07:14 "Used in" line moved to 
 Ben, project chat, 07:18 UTC.
 > whenever i have a decision to make bring it here essentially. also considering a backtest, how would you set this up in a flattering but truthful way. like average price changes over season. we could potentially look up general trends and possible spikes in either buying or sales on the resale market. i feel like it goes in waves. and we can explain super well and intuitively to the user when these things happen. some could be dates too. see if theres any rdd for this. for our market we are trying to predict. things that are predictable as humans are relatively predictable. merge all prs get them onto main why havent you been doing this
 
+## 2026-11-15 the hand glyphs: A, C and F up close, two colors, every position
+
+Ben, website thread, 07:28 UTC:
+> show me the different hand glyphs for A C and F
+
+Ben, website thread, 07:29 UTC:
+> also the two glyphs should have either different gradient colors or two colors of the same gradient without the gradient. i want to see the icon pack with all the different positions of the hand. like recall huge icons how you showed me an array of positions the hand could be in. show me that for each.
+
+Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs).
+
+Ben, website thread, 07:32 and 07:33 UTC:
+> use the actual font for secondhand for me
+
+> theres brand font on my computer though
+
+> also show me the full array of poses for tabler now
+
+Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs), drawn in CI where the brand faces load from the BRAND_FONTS secret.
+
+Ben, website thread, 07:34 UTC:
+> i also want the hands to be tighter to the wordmark. the same height and alignment vertically as the wordmark
+
+Used in: [hands-fit.js](../brand/explore/web-home/hands-fit.js), the hero's header and opening, and the hand pose sheets.
+
+Ben, website thread, 07:51 UTC:
+> recall the original set of icons i denied. show me that again
+
+Read as Hugeicons, the app's set, whose waving hand round 11 showed beside the wordmark and Ben asked to be slimmer ([round 11](#2026-11-15-round-11-picks)). Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs).
 Used in (07:18 entry): [seasons-events-and-a-fair-backtest.md](../research/price/ben/seasons-events-and-a-fair-backtest.md), [money D6](../spec/determinations/money.md#d6-range-calibration-and-display-state) steps 6, 8 and 9, [market-insight M12](../spec/determinations/market-insight.md#m12-seasonality).
 
 ## 2026-11-15 the backtest proves it works now and is where we tune, and trends reach past resale
@@ -1404,3 +1432,22 @@ Ben, project chat, 07:53 UTC.
 > where else can we prove such things across the numerous ai features we have. can you list out each feature we have for me that is ai or is a feature you think we should show off. this could include data etc. we need to also tell how we did it and be able to effectively explain it
 
 Used in: [features-proof.md](features-proof.md).
+
+## 2026-11-15 nate no one leaves our platform, and the system reaches each site in the background
+Nate, build session (orchestrator), 2026-11-15 about 01:30 Central. Separate messages.
+> no one should have to leave our platform, and the system can always access each in the background over the period of days, weeks, thats how it works for the user
+
+> So everything is working the way it should be? In terms of the platform harnesses, the engines, the realtime calculations? is there already an understanding for how everything will work, credibly proven, and presented? How it'll be fast, the information it can find, information it can determine and deliver on top of whats found?
+
+## 2026-11-15 nate opus team leads that send out to codex
+Nate, build session (orchestrator), 2026-11-15 about 02:15 Central.
+> Ensure we have focused opus 5.5 team leads covering sessions that send out to codex, covering the databricks design and development, all engines, they combine with the consideration for every feature working together, every engine, deterministic calculations, the way capture works, deterministically selecting by product type and dimensions, all needed fields and information determined and ascertained, with the intelligent ui generating any needed clarifying questions
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 no applications to marketplaces yet
+
+Ben, thread "Cross-list Depop listings and price with quant", 08:15 UTC, answering whether to apply to eBay for Buyer Demand Data.
+> no dont do any applications i dont think they would get accepted yet.
+
+Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), [packet 61](../.agents/team/packets/list/61-ebay-item-specifics.md).

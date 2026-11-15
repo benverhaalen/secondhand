@@ -10,6 +10,7 @@
   ],
   "skip": "new: a thread exists only once a buyer writes, so a person who has done nothing has none to open; empty: a thread with no messages is never listed; dense: no world holds a thread longer than six messages",
   "catalog": false,
+  "wash": false,
   "status": "clean",
   "findings": [
     {

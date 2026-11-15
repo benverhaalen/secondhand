@@ -26,7 +26,7 @@ const STATES = {
   'log typical': { shows: ['Activity', 'Today', 'Yesterday', 'Answered “blanket lined” from the tag photo', 'Undo'] },
   'log new': { shows: ['Activity', 'Nothing done for you yet'] },
   'notifications typical': { shows: ['Notifications', 'Right away', 'In the next summary', 'It sold', 'An offer you’d take', 'Never sent', 'Group by item', 'Quiet hours', '10 pm', '8 am', 'On the lock screen', 'Accept, Approve and Counter', 'Face ID', 'Show messages and addresses'] },
-  'defaults typical': { shows: ['App defaults', 'How it sells', 'Sell it', 'Sites', 'Ship or pickup', 'Pickup spot', 'Library parking lot, Main St', 'Lowest price', 'Suggested', 'Clean up', 'Enhance with AI', 'Off: photos are never redrawn', 'Never suggest photo edits', 'Replies sound', 'Like you', 'Measurements', 'Inches', 'US dollars'] },
+  'defaults typical': { shows: ['App defaults', 'How it sells', 'Sell it', 'Sites', 'Prices across sites', 'Same take-home', 'Ship or pickup', 'Pickup spot', 'Library parking lot, Main St', 'Lowest price', 'Suggested', 'Clean up', 'Enhance with AI', 'Off: photos are never redrawn', 'Never suggest photo edits', 'Replies sound', 'Like you', 'Measurements', 'Inches', 'US dollars'] },
   'permissions typical': { shows: ['Permissions', 'Counter offers above your lowest', 'On its own', 'Asks first', 'Take a listing down after it sells', 'So it can’t sell twice', 'Always asks you', 'Sharing your address', 'Always asks', 'Never', 'Taking a deal off the site', 'Rules and limits'] },
   'loading (any page)': { shows: ['Payouts'], state: 'loading' },
   'failed (any page)': { shows: ['Couldn’t load your payouts', 'Try again'], state: 'failed' },
@@ -150,6 +150,22 @@ test('you/[page]: limits save on Approve and undo', async () => {
   await s.shows('Saved');
   await s.tap('limit-save-undo');
   await s.saw({ type: 'change', entity: 'limits', id: 'it_lamp', to: 'undone' });
+});
+
+// The account's price rule: words first, the numbers for one jacket a tap under them (Ben 06:53), Same take-home by default.
+test('you/[page]: prices across sites start on Same take-home, and the numbers show what each site pays you', async () => {
+  const s = await app.open('/you/defaults');
+  await s.tap('default-spread');
+  await s.shows('You get the same money wherever it sells. Sites with higher fees show a higher price.');
+  await s.tap('spread-numbers');
+  await s.shows('$95 now');
+  await s.shows('$3.80 in fees');
+  assert.equal(await s.page.getByText('You get $91.20', { exact: true }).count(), 3, 'Depop, eBay and Facebook each pay $91.20');
+  await s.tap('spread-rules');
+  await s.tap('spread-same_price');
+  await s.saw({ type: 'change', entity: 'setting', id: 'crosslist_spread', to: 'same_price' });
+  await s.tap('spread-numbers');
+  assert.equal(await s.page.getByText('Lists at $95', { exact: true }).count(), 2, 'one price on every site');
 });
 
 youControlTests(test, table, () => app, '/you/settings');

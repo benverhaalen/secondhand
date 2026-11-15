@@ -1,0 +1,63 @@
+{
+  "source": "stockx_2019",
+  "licence": "StockX Data Contest 2019, released by StockX for public analysis; no licence stated",
+  "may_model": true,
+  "code_commit": "b40085dc8cbd4e95937435792b156b73c7915d6a",
+  "inputs": [
+    {
+      "file": "StockX-Data-Contest-2019.xlsx",
+      "bytes": 3924271,
+      "sha256": "79195c8e8c062f7440ab16229e4d857337dffea511423f271293e60e7d33037f"
+    }
+  ],
+  "output": {
+    "file": "rows.csv.gz",
+    "sha256": "02fe1413ebb80bfb2e4caed4a79ed9806d3795ee59caadddbfe1274f2b9028cf",
+    "columns": [
+      "row_id",
+      "source",
+      "licence",
+      "site",
+      "url",
+      "kind",
+      "product_id",
+      "family_id",
+      "cluster_id",
+      "brand",
+      "category",
+      "condition",
+      "size",
+      "era",
+      "title",
+      "photo_count",
+      "seller_feedback",
+      "price_type",
+      "price_cents",
+      "buyer_shipping_cents",
+      "listed_at",
+      "at",
+      "best_offer",
+      "views",
+      "watchers",
+      "may_model",
+      "at_ask",
+      "priced_from_our_number",
+      "description",
+      "retail_cents",
+      "released_at",
+      "region"
+    ]
+  },
+  "rows": 99956,
+  "by_price_type": {
+    "sold": 99956
+  },
+  "by_kind": {
+    "shoes": 99956
+  },
+  "at_range": [
+    "2017-09-01",
+    "2019-02-13"
+  ],
+  "dropped": {}
+}

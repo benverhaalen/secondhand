@@ -3,11 +3,14 @@ import { beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
-import { handlers, manifest } from './items.ts';
+import { handlers, manifest, resetItems } from './items.ts';
 
 const prefixes = ["items"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
-beforeEach(() => {
+beforeEach(t => {
+  const fixture = examples.find(e => t.name.startsWith(e.name + ':'));
+  const body = fixture?.request?.body as { version?: number } | undefined;
+  resetItems(fixture?.endpoint === 'PATCH /v1/items/:id/attributes/:name' ? body?.version : undefined);
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
@@ -100,4 +103,58 @@ test('items: owned Expo files bind auth and export the contract method', async (
     assert.ok(source.includes("export const " + method + " = route('" + entry.endpoint + "'"), relative);
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
+});
+
+test('item card rejects attributes without evidence through the engine port', async () => {
+  const { ports } = await import('./items.ts');
+  const read = ports.read;
+  try {
+    ports.read = async (user, id) => {
+      const row = await read(user, id);
+      assert.ok(row);
+      row.attributes[0].evidence = [];
+      return row;
+    };
+    const response = await call(examples.find(e => e.name === 'items.get')!);
+    assert.equal(response.status, 503, 'assembleCard must check the port data');
+  } finally { ports.read = read; }
+});
+
+test('attribute corrections use mergeAttribute and are visible on the next card read', async () => {
+  resetItems(13);
+  const corrected = examples.find(e => e.name === 'items.attribute.correct')!;
+  assert.equal((await call(corrected)).status, 200);
+  const response = await call(examples.find(e => e.name === 'items.get')!);
+  const body = await response.json();
+  const size = body.attributes.find((a: { name: string }) => a.name === 'size');
+  assert.equal(size.value, 'XL'); assert.equal(size.source, 'you_said'); assert.equal(size.confirmed, true);
+});
+
+test('plan choices take their objective from the valuation plan engine', async () => {
+  const { planPorts } = await import('./items.ts');
+  const read = planPorts.read;
+  try {
+    planPorts.read = async id => {
+      const value = await read(id);
+      value.choices[1].objective = 'balanced';
+      return value;
+    };
+    const response = await call(examples.find(e => e.name === 'items.plan_choices')!);
+    assert.equal((await response.json()).choices[1].objective, 'quick');
+  } finally { planPorts.read = read; }
+});
+
+test('an attribute edit refuses a stale item version after a successful edit', async () => {
+  resetItems(13);
+  const e = examples.find(e => e.name === 'items.attribute.correct')!;
+  assert.equal((await call(e)).status, 200);
+  const second = await call(e);
+  assert.equal(second.status, 409);
+});
+
+test('concurrent attribute corrections cannot overwrite the same item version', async () => {
+  resetItems(13);
+  const e = examples.find(e => e.name === 'items.attribute.correct')!;
+  const responses = await Promise.all([call(e), call(e, { body: { version: 13, value: 'M' } })]);
+  assert.deepEqual(responses.map(r => r.status).sort(), [200, 409]);
 });

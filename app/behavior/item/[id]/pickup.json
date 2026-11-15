@@ -48,6 +48,14 @@
     {
       "decision": "The two cases no world holds are reached with ?case=ask and ?case=pick",
       "why": "As Ship asks for case=double."
+    },
+    {
+      "decision": "Open on the site (its logo) and See the site's copy under When and where",
+      "why": "Ben, 06:19: \"you should always have a way to go back to the site. It should use screenshots from the site when you need to verify certain things like scheduling\" (product/words.md, notes on the first gallery)."
+    },
+    {
+      "decision": "On my way shows only when the pickup is within the hour",
+      "why": "spec/notifications.md gives a pickup within the hour the buttons On my way and Running late; earlier it tells the buyer nothing useful."
     }
   ],
   "states": [
@@ -92,6 +100,12 @@
       "route": "/item/it_chair/pickup?state=offline",
       "shows": "Waiting for signal",
       "why": "the last copy; each tap holds on its pill until the signal returns"
+    },
+    {
+      "state": "soon",
+      "route": "/item/it_chair/pickup?case=soon",
+      "shows": "On my way",
+      "why": "the planned pickup is within the hour (spec/notifications.md, \"A pickup within the hour\")"
     }
   ],
   "controls": [
@@ -332,6 +346,26 @@
       "does": "loads the pickup again",
       "route": "/item/it_chair/pickup?state=failed",
       "goes": "/item/it_chair/pickup"
+    },
+    {
+      "id": "pickup-site",
+      "does": "opens the conversation on its site, shown by the site's logo"
+    },
+    {
+      "id": "pickup-snapshot",
+      "does": "opens the site's own picture of the thread where the time was agreed"
+    },
+    {
+      "id": "pickup-copy-site",
+      "does": "opens the conversation on its site",
+      "after": [
+        "pickup-snapshot"
+      ]
+    },
+    {
+      "id": "pickup-on-my-way",
+      "does": "tells the buyer you are on your way",
+      "route": "/item/it_chair/pickup?case=soon"
     }
   ],
   "back": "Back goes to the screen it came from; opened directly, to the item.",

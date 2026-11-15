@@ -1,3 +1,4 @@
+import { object } from './captures.ts';
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
@@ -95,4 +96,40 @@ test('valuations: owned Expo files bind auth and export the contract method', as
     assert.ok(source.includes("export const " + method + " = route('" + entry.endpoint + "'"), relative);
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
+});
+
+test('valuation engine result is persisted on the returned job', async () => {
+  const { jobs } = await import('./jobs.ts');
+  const e = examples.find(e => e.name === 'valuations.create')!;
+  const response = await call(e);
+  const body = await response.json();
+  const job = jobs.get(body.id, 'usr_8f2k');
+  assert.ok(job?.result, 'the route must run Check rather than only return a job example');
+  assert.ok(object(job.result));
+  assert.equal(job.result.product_id, 'pr_4hd1');
+});
+
+test('an outside URL stays queued for identity instead of becoming a product id', async () => {
+  const { jobs } = await import('./jobs.ts');
+  const e = examples.find(e => e.name === 'valuations.appraise_url')!;
+  const body = await (await call(e)).json();
+  const job = jobs.get(body.id, 'usr_8f2k');
+  assert.equal(job?.state, 'queued');
+  assert.equal(job?.result, undefined);
+});
+
+test('a Check error fails its job instead of leaving it running', async () => {
+  const { ports } = await import('./valuations.ts');
+  const { jobs } = await import('./jobs.ts');
+  const read = ports.read;
+  try {
+    ports.read = async ctx => {
+      const input = await read(ctx); assert.ok(input);
+      return { ...input, sources: [async () => { throw new Error('comp source failed'); }] };
+    };
+    const response = await call(examples.find(e => e.name === 'valuations.create')!);
+    assert.equal(response.status, 503);
+    const job = jobs.st.jobs({ user_id: 'usr_8f2k' }).at(-1);
+    assert.equal(job?.state, 'failed');
+  } finally { ports.read = read; }
 });

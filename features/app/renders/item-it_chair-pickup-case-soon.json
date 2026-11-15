@@ -1,0 +1,25 @@
+{
+  "route": "item/it_chair/pickup?case=soon",
+  "screen": "item",
+  "states": [
+    "one"
+  ],
+  "skip": "empty: an item page always has an item, and with nothing known yet it is new; new: an item still being researched, /item/it_hoodie; typical: two sites and one photo, /item/it_jacket; dense: many photos or sites, /item/it_tee; loading: under a sheet the page is its ground, /item/it_chair?state=loading; failed: under a sheet the page is its ground, /item/it_chair?state=failed; offline: under a sheet the page is its ground, /item/it_chair?state=offline",
+  "catalog": false,
+  "wash": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    },
+    {
+      "level": "warn",
+      "id": "L2",
+      "where": "dark screen 2",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
+    }
+  ]
+}

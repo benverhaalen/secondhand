@@ -9,7 +9,7 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Linking } from 'react-native';
 import {
-  Approve, Message, Composer, DecisionCard, Draft, EmptyState, Guess, Icon, ItemCard, Line, Meta, Nav, Notice, Pill, Row, Screen, Sheet, Skeleton, Stack, Txt,
+  Approve, Message, Composer, DecisionCard, Draft, EmptyState, Guess, Icon, ItemCard, Line, Meta, Nav, Notice, Pill, Row, Screen, Sheet, SiteCopy, SiteLink, Skeleton, Stack, Txt,
   UndoToast, type DecisionStatus, type Span, type TagState,
 } from '@/ui';
 import { ago, itemById, ms, thread, usd, when, world, youKeep, type Conversation, type Item, type Message as Msg, type Offer, type World } from '@/demo';
@@ -27,6 +27,8 @@ const dueOf = (w: World, iso: string | null) => (iso ? Date.now() + ms(iso) - ms
 const TAG: Partial<Record<Item['state'], TagState>> = { live: 'live', stale: 'stuck', sold: 'sold', handed_over: 'sold', done: 'sold', unsold: 'ended', kept: 'ended' };
 // A name inside a button is cut to fit the 1 to 3 words a button holds (copy.md).
 const short = (name: string) => (name.length <= 12 ? name : 'them');
+// Opens the thing on its site, in the site's app when it is installed.
+const openSite = (url: string) => { Linking.openURL(url).catch(() => {}); };
 
 type Said = { id: string; kind: 'mine' | 'drafted' | 'note'; text: string };
 type Open = null | { kind: 'more' } | { kind: 'snapshot' } | { kind: 'why'; msg: Msg } | { kind: 'counter'; offer: Offer } | { kind: 'offer-more'; offer: Offer };
@@ -154,6 +156,11 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
             fact={{ label: item.state === 'live' || item.state === 'stale' ? 'Asking' : 'Sold for', amount: usd(order?.price_cents ?? listing?.price_cents ?? 0) }}
             onPress={() => router.push(`/item/${item.id}${q}` as Href)} />
         ) : null}
+        {/* The way back to the site, and its own picture of the thread to check our copy against (Ben, 06:19). */}
+        <Line>
+          {listing ? <SiteLink id="thread-site" site={conv.site} onPress={() => openSite(listing.url)} /> : null}
+          <Pill id="thread-snapshot" kind="second" icon="image-01" label="See the site’s copy" onPress={() => setOpen({ kind: 'snapshot' })} />
+        </Line>
       </Stack>
 
       {scam && !blocked ? (
@@ -182,7 +189,7 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
               </Message>
               {offer && l && item && !blocked ? (
                 <DecisionCard id={`offer-${offer.id}`} kind="need" word="Offer" title={item.title} photo={pic(item.photos[0].key)} site={offer.site}
-                  fact={{ label: 'You keep', amount: usd(offer.you_keep_cents) }} due={dueOf(w, offer.expires_at)} lead={leadOffer === offer.id}
+                  fact={{ label: 'You get', amount: usd(offer.you_keep_cents) }} due={dueOf(w, offer.expires_at)} lead={leadOffer === offer.id}
                   status={offers[offer.id] ?? 'open'} step="Accepting"
                   primary={{ id: 'offer-accept', label: l.accept, onPress: () => accept(offer) }}
                   second={{ id: 'offer-counter', label: 'Counter', onPress: () => { setCounter(l.suggest); setOpen({ kind: 'counter', offer }); } }}
@@ -209,8 +216,6 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
 
       <Sheet open={open?.kind === 'more'} title={conv.buyer} onClose={() => setOpen(null)}>
         <Line>
-          <Pill id="more-snapshot" kind="second" icon="image-01" label="See the site’s copy" onPress={() => setOpen({ kind: 'snapshot' })} />
-          {listing ? <Pill id="more-site" kind="second" icon="link-01" label="Open on the site" onPress={() => { setOpen(null); Linking.openURL(listing.url).catch(() => {}); }} /> : null}
           {taken ? <Pill id="more-handback" kind="second" label="Hand it back" onPress={() => { setOpen(null); setTaken(false); add('note', 'Drafts are back on here'); }} /> : null}
           {item ? <Pill id="more-item" kind="second" label="Open the item" onPress={() => { setOpen(null); router.push(`/item/${item.id}${q}` as Href); }} /> : null}
           {!blocked ? <Pill id="more-block" kind="second" label={`Block ${short(conv.buyer)}`} onPress={block} /> : null}
@@ -219,10 +224,8 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
 
       {/* The site's own picture of the thread, saved when the agent last read or sent on it (evidence.snapshot_ref; spec/
           edge-cases.md §16, "Proof the agent got it right"). The demo holds no screenshots, so it says so rather than drawing one. */}
-      <Sheet open={open?.kind === 'snapshot'} title="As the site shows it" onClose={() => setOpen(null)}>
-        <Txt role="body">The next time the agent reads this thread, it saves the site’s own picture of it here, with the time.</Txt>
-        {listing ? <Line><Pill id="snapshot-site" kind="second" icon="link-01" label="Open on the site" onPress={() => { setOpen(null); Linking.openURL(listing.url).catch(() => {}); }} /></Line> : null}
-      </Sheet>
+      <SiteCopy id="snapshot" open={open?.kind === 'snapshot'} site={conv.site} onClose={() => setOpen(null)}
+        onOpen={() => { setOpen(null); if (listing) openSite(listing.url); }} />
 
       <Sheet open={open?.kind === 'why'} title="Sent for you" onClose={() => setOpen(null)}>
         {why ? (
@@ -246,7 +249,7 @@ function Thread({ w, conv, worldParam, takeOver, asked }: { w: World; conv: Conv
         {open?.kind === 'counter' ? (
           <Stack>
             <Guess id="counter-amount" name="Your counter" value={counter ? `$${counter}` : ''} numeric onChange={v => setCounter(v.replace(/[^0-9.]/g, ''))} />
-            {Number(counter) > 0 ? <Txt role="body" tone="ink-2">{`You’d keep ${usd(youKeep(open.offer.site, Math.round(Number(counter) * 100)))}`}</Txt> : null}
+            {Number(counter) > 0 ? <Txt role="body" tone="ink-2">{`You’d get ${usd(youKeep(open.offer.site, Math.round(Number(counter) * 100)))}`}</Txt> : null}
             <Approve id="counter-send" does={`Send ${counter ? `$${counter}` : 'counter'}`} status={counterStatus === 'working' ? 'working' : 'ready'} step="Sending" onApprove={() => sendCounter(open.offer)} />
           </Stack>
         ) : null}

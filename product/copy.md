@@ -15,7 +15,7 @@ Decided by Ben on 2026-11-14 at 19:45 ([words](words.md#2026-11-14-show-not-say)
 | "Your item is now live on eBay and Depop" | The photo tile with a green Live pill and the eBay and Depop logos |
 | "We're researching your item, this may take a minute" | The draft filling in field by field, with a thin progress line |
 | "This price was estimated from 14 similar sold items" | "Similar ones sold for $36 to $52 lately", with the sales one tap away. Never `n=14` |
-| "You'll keep $36.40 after fees" | `You keep $36.40` under the price |
+| "You'll keep $36.40 after fees" | `You get $36.40` under the price (Ben 06:19 found "you keep this much money" clunky) |
 | "This listing failed to delist. Tap to retry" | A red ✕ on the badge and one button: `Retry` |
 | "Great news! Your item sold!" | The tile moves to Sold, with the amount you keep |
 | "Would you like us to answer this automatically?" | The drafted reply with `Send` and `Always` |
