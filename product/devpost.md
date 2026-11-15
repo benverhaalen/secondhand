@@ -44,7 +44,7 @@ You take three photos of a $40 jacket. It becomes one record: what it is, its si
 
 **It's open source.** The whole project is public on GitHub under the Apache 2.0 licence. [Add the repo link.]
 
-[Say only what runs on the day; cut the rest or mark it "designed".]
+[Say only what runs on the day; cut the rest or mark it "designed".] The full list, with each feature's proof mark, is [features-proof.md](https://github.com/benverhaalen/secondhand/blob/main/product/features-proof.md); pull from it.
 
 - **One record per item.** Every fact on an item (brand, size, a stain) keeps where it came from: a region of a photo, a line of the tag, a measurement, or "you said". Listings for every site are built from that record.
 - **A harness for each marketplace.** eBay through its official API. For the others, your own signed-in session runs in a cloud browser (Browser Use Cloud) and does each action the way the site's own web app does it, then reads the site back to confirm. Nothing counts as done until the site shows it.

@@ -1384,3 +1384,10 @@ Ben, project chat, 07:46 UTC.
 > another thing - i feel like demoing the buy feature live would be so cool. like notify me when someone posts whatever product for whatever price and make it super low, etc but like nate does it live on his phone and it then notifies me right then and there
 
 Used in: [live-buy-demo.md](live-buy-demo.md), [scripts/demo/stage-watch.mjs](../scripts/demo/stage-watch.mjs).
+
+## 2026-11-15 every AI feature, how we did it and how to prove it
+
+Ben, project chat, 07:53 UTC.
+> where else can we prove such things across the numerous ai features we have. can you list out each feature we have for me that is ai or is a feature you think we should show off. this could include data etc. we need to also tell how we did it and be able to effectively explain it
+
+Used in: [features-proof.md](features-proof.md).
