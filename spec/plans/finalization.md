@@ -117,10 +117,10 @@ On the Mac at main: `node .agents/check.mjs` exits 0 with the Python suites in i
 
 Nate ordered it ("Rewrite it", then "After judging": [words](../../product/words.md#2026-11-15-nate-the-history-rewrite-runs-after-judging)). It removes recorded Dupe results and one phrase he asked removed from every commit. Rehearsed on a scratch copy on 2026-11-15: about 10 seconds, and afterwards no commit holds either. It runs once, by the orchestrator, after 19:00 UTC.
 
-**What it changes.** Every commit id (2,348 on main): the commits are signed and a rewrite strips the signatures. Four files ever held Dupe results: `app/src/buy/fixtures/search-live-levi.json`, `app/src/edge/assist/fixtures/tools/search.json`, `app/src/edge/harness/sites/dupe/fixtures/search.sse` and `spec/examples/jobs.json`. The first three are hand-written on main now and are dropped from history and re-added clean; the fourth is cleaned on main first by the server lead, then its old links are blanked in history.
+**What it changes.** Every commit id (2,348 on main): the commits are signed and a rewrite strips the signatures. Four files ever held Dupe results: `app/src/buy/fixtures/search-live-levi.json`, `app/src/edge/assist/fixtures/tools/search.json`, `app/src/edge/harness/sites/dupe/fixtures/search.sse` and `spec/examples/jobs.json`. The three fixture files are dropped from history and re-added clean; in `spec/examples/jobs.json`, whose history is long, the old links are blanked in place.
 
 **What it needs, in order.**
-1. `spec/examples/jobs.json` hand-written on main (the last file still holding three recorded links).
+1. Done 2026-11-15: all four files are hand-written on main (4923d570, 6d34186a, 7c5b7677, 78c8efde); no file on main holds a full Dupe result link.
 2. Ben stopped: his machines, his agents and his 28 remote branches. Any old clone that pulls and then pushes merges the whole old history back, so every clone is thrown away and cloned again, never pulled. [Packet 82](../../.agents/team/packets/team/82-history-rewrite-for-ben.md) has his steps.
 3. A freeze of Nate's side: every lead commits and pushes, then makes no commit; the Mac's workers are stopped or finished.
 4. The rewrite on a fresh mirror clone, checked (no commit holds a full Dupe link or the phrase; the tree at the new main equals the tree at the old main except the dropped fixtures), then a force-push of every branch.

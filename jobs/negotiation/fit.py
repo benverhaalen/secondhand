@@ -9,6 +9,7 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.special import expit
 from .params import resolve, validate as validate_params
+from param.registry import complete_row
 
 
 def keys(row):
@@ -146,10 +147,10 @@ def nightly(training, held_out, champion, store, scope, at, log=None):
         return {'state': 'kept', 'model': champion, 'q_return': q_return}
     def publish(name, model, score):
         history = store.history(name, scope)
-        row = store.propose({'name': name, 'scope': scope, 'family': 'model_ref',
+        row = store.propose(complete_row({'name': name, 'scope': scope, 'family': 'model_ref',
                              'value_or_hyperparams': model.payload(), 'prior': champion.payload(),
                              'held_out_score': -score, 'metric': 'negative_log_loss',
-                             'n_eff': len(training), 'fitted_on_ids_hash': hashlib.sha256('\n'.join(sorted(training_ids)).encode()).hexdigest()},
+                             'n_eff': len(training), 'fitted_on_ids_hash': hashlib.sha256('\n'.join(sorted(training_ids)).encode()).hexdigest()}),
                             max((r['version'] for r in history), default=0))
         return store.promote(name, scope, row['version'], 0, at)
     promoted, reason = publish('P_accept', candidate, loss)
