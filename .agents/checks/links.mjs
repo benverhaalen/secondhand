@@ -6,7 +6,7 @@ import { read, err, warn, stripCode, lineOf } from './util.mjs';
 export function slug(heading) { // GitHub's anchor rule
   return heading.trim().toLowerCase().replace(/[^\p{L}\p{N}\s_-]/gu, '').replace(/ /g, '-');
 }
-function anchors(text) {
+export function anchors(text) {
   const seen = new Map(), out = new Set();
   for (const m of stripCode(text).matchAll(/^#{1,6}\s+(.+?)\s*#*$/gm)) {
     const s = slug(m[1].replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')), n = seen.get(s) ?? 0;
