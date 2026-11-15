@@ -49,7 +49,7 @@ It makes no outward call to a site. Every read goes through [protocol and adapte
 | Listing quality | photo count, quality and title form ([score](../features/score.md)) | per listing |
 | Outcomes | every sale, end and stale event on our own listings, with the valuation frozen at listing time | per event |
 
-A row with `may_model: false` (eBay rows, per [data use](../data-use.md)) can be shown and cited as a comp. It is never used to fit a weight, a model or a calibration score.
+A row with `may_model: false` (eBay API rows and Apify rows, per [data use](../data-use.md)) can be shown, cited and priced from as a comp in a shown range ([Nate](../../product/words.md#2026-11-15-nate-rows-that-may-not-be-modelled-on-may-price-a-shown-range): "they can, they are verified real data"). It is never used to fit a weight, a model or a calibration score.
 
 ## 3. The calculation
 

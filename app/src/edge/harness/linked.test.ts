@@ -1,6 +1,9 @@
 // Linked accounts only, end to end (spec/product.md "Added for the kernel"; Nate, product/words.md 2026-11-14):
 // a planted unlinked site gets zero launches, zero sweeps, zero scheduled jobs and zero adapter runs.
 import { test } from 'node:test';
+import { createRuntime } from '../api/runtime.ts';
+import { memoryStore } from '../events/ports.ts';
+import { createLog, memorySink } from '../../../../log/index.js';
 import assert from 'node:assert/strict';
 import { memoryAccounts, memoryVault } from '../browser/auth.ts';
 import { linkedList } from './linked.ts';
@@ -28,12 +31,12 @@ async function world() {
 
 test('harness: a call on an unlinked account runs no adapter', async () => {
   const { harness, runs } = await world();
-  const e = await harness.call('mercari', 'read_listings', { account_id: 'a-mercari' });
+  const e = await harness.call('mercari', 'read_listings', { account_id: 'a-mercari', person_id: 'p1' });
   assert.ok(!e.ok && e.error.code === 'policy_refused' && e.error.hint.do === 'raise_decision' && e.error.hint.kind === 'link_account');
-  const wrongSite = await harness.call('mercari', 'read_listings', { account_id: 'a-depop' });
+  const wrongSite = await harness.call('mercari', 'read_listings', { account_id: 'a-depop', person_id: 'p1' });
   assert.ok(!wrongSite.ok, 'a linked account cannot be used on another site');
   assert.deepEqual(runs, []);
-  assert.ok((await harness.call('depop', 'read_listings', { account_id: 'a-depop' })).ok);
+  assert.ok((await harness.call('depop', 'read_listings', { account_id: 'a-depop', person_id: 'p1' })).ok);
   const none = await harness.call('depop', 'post', { operation_id: 'op-1' });
   assert.ok(!none.ok && none.error.code === 'policy_refused', 'a signed-in verb with no account is refused too');
   assert.deepEqual(runs, ['depop.read_listings']);
@@ -65,4 +68,22 @@ test('pool, sweep and scheduler: the planted site gets zero launches, zero sweep
   const tick = await scheduler.tick();
   assert.deepEqual(swept, ['depop']);
   assert.deepEqual(tick.ran, ['a-depop']);
+});
+
+
+test('runtime harness gate refuses another person before adapter runs or writes', async () => {
+  let runs = 0;
+  const adapter = fakeAdapter('depop', 'end');
+  const runtime = createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink: memorySink() }), {
+    adapters: [{ ...adapter, async run(args, signal) { runs++; return adapter.run(args, signal); } }],
+  });
+  runtime.store.put('account', { id: 'owned', user_id: 'owner', site: 'depop', token_ref: 'fixture-owner' });
+  await runtime.vault.put('fixture-owner', { cookies: [], origins: [] });
+  const before = runtime.store.get('account', 'owner', 'owned');
+  const result = await runtime.harness.call('depop', 'end', { account_id: 'owned', person_id: 'other', operation_id: 'wrong-owner' });
+  assert.ok(!result.ok);
+  if (!result.ok) { assert.equal(result.error.code, 'policy_refused'); assert.equal(result.error.hint.kind, 'link_account'); }
+  assert.equal(result.meta.route_id, 'none'); assert.equal(runs, 0);
+  assert.deepEqual(runtime.store.get('account', 'owner', 'owned'), before);
+  assert.equal(runtime.store.jobs().length, 0);
 });

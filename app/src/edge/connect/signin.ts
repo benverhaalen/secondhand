@@ -88,7 +88,7 @@ export function createSignin<P extends PoolPage & { goto(url: string): Promise<u
   }
   return {
     async start({ person_id, site, account_id, go = [] }: { person_id: string; site: Site; account_id?: string; go?: readonly Site[] }): Promise<SigninResult> {
-      const prior = account_id ? await o.accounts.byId(account_id) : undefined;
+      const prior = account_id ? await o.accounts.byId(account_id, person_id) : undefined;
       if (account_id && (!prior || prior.person_id !== person_id || prior.site !== site)) return { state: 'not_found' };
       if (!go.includes(site)) return { state: 'dry', steps: ['launch hosted browser', `open ${PROFILES[site].login ?? PROFILES[site].home}`, 'person signs in through live view', 'probe session',
         'pause for person if challenged', 'export storage', 'invalidate old pool context', 'store in AuthVault', 'link account', 'close browser'] };

@@ -6,7 +6,7 @@ import { CHALLENGE, ebayListingSpec, type EbayPage, type ListingRead, type PageC
 import { API, WWW, type Client, type Reply } from './sites/depop/adapter.ts';
 
 export type PublicPage = {
-  goto(url: string, options: { waitUntil: 'domcontentloaded'; timeout: number }): Promise<{ status(): number } | null>;
+  goto(url: string, options: { waitUntil: 'domcontentloaded' | 'commit'; timeout: number }): Promise<{ status(): number } | null>;
   content(): Promise<string>;
   waitForTimeout(ms: number): Promise<void>;
   waitForSelector(selector: string, options: { state: 'attached'; timeout: number }): Promise<unknown>;
@@ -39,7 +39,9 @@ type Slot = {
   detach?(): void;
 };
 type Lane = { slot?: Slot; tail: Promise<void> };
-type ReadMetrics = { bytes_out: number; parsed?: 'page' | 'server'; waited_ms?: number; fallback?: 'evaluation' | 'shape' | 'zero_cards' | 'page_state' };
+export const EBAY_FIRST_CARD_MS = 6000;
+
+type ReadMetrics = { bytes_out: number; nav_ms?: number; parsed?: 'page' | 'server'; waited_ms?: number; fallback?: 'evaluation' | 'shape' | 'zero_cards' | 'page_state' };
 type Outcome<T> = { ok: true; value: T } | { ok: false; error: PublicClientError };
 
 export function publicClients({ launcher, log, now = () => performance.now(), idleMs = 120_000, timeoutMs = 30_000 }: {
@@ -153,49 +155,36 @@ export function publicClients({ launcher, log, now = () => performance.now(), id
     return { status: code, html, challenge: /just a moment|captcha|are you a robot/i.test(html.slice(0, 20_000)) };
   });
   const ebayRead = (url: string, signal: AbortSignal, spec?: ListingSpec, ask: ListingAsk = {}): Promise<EbayPage | ListingRead> => read('ebay', url, signal, async (page, status, _cold, metrics) => {
-    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
+    const navStarted = now();
+    const response = await page.goto(url, { waitUntil: 'commit', timeout: timeoutMs });
+    metrics.nav_ms = Math.round(now() - navStarted);
     const code = response?.status() ?? 0; status(code);
-    const data = spec ?? ebayListingSpec(), started = now();
-    const selector = [data.card_selector, data.empty_selector].filter(Boolean).join(', ');
-    try {
-      await page.waitForSelector(selector, { state: 'attached', timeout: 1500 });
-      metrics.waited_ms = Math.round(now() - started);
-    } catch (error) {
-      if (!(error instanceof Error) || error.name !== 'TimeoutError') throw error;
-      // The readiness cap is normal for item pages, errors and layout changes.
-      metrics.waited_ms = 1500;
-    }
     const server = async (): Promise<EbayPage> => {
       const html = await page.content(); metrics.parsed = 'server'; metrics.bytes_out = Buffer.byteLength(html);
       return { status: code, html };
     };
-    if (!spec) return server();
     if (code >= 400) { metrics.fallback = 'page_state'; return server(); }
+    const data = spec ?? ebayListingSpec();
+    let result: Awaited<ReturnType<typeof ebayListingsInPage>>;
     try {
-      const state = await page.evaluate(({ spec, challenge }: { spec: ListingSpec; challenge: string }) => {
-        const title = document.title;
-        const empty = spec.empty_selector && document.querySelector(spec.empty_selector);
-        const heading = spec.heading_selector && document.querySelector(spec.heading_selector);
-        return {
-          blocked: new RegExp(challenge, 'i').test(title) || new RegExp(challenge, 'i').test(document.documentElement.outerHTML.slice(0, 20_000)),
-          signin: /^sign in or register\b/i.test(title), error: /^error page\b/i.test(title),
-          heading: !spec.heading_selector || !!heading,
-          empty: !!((empty && (!spec.empty_pattern || new RegExp(spec.empty_pattern).test(empty.textContent ?? ''))) || (heading && spec.empty_heading_pattern && new RegExp(spec.empty_heading_pattern).test(heading.textContent?.trim() ?? ''))),
-        };
-      }, { spec, challenge: CHALLENGE.source });
-      if (state.blocked || state.signin || state.error || !state.heading) { metrics.fallback = 'page_state'; return server(); }
-      // Playwright evaluates source directly in the page's realm; there is no captured module scope.
-      const parsed: unknown = await page.evaluate(`(${parseListings.toString()})(document, ${JSON.stringify(spec)}, ${JSON.stringify(ask)})`, undefined);
-      if (!isListingResult(parsed, spec)) { metrics.fallback = 'shape'; return server(); }
-      if (parsed.total === 0 && !state.empty) { metrics.fallback = 'zero_cards'; return server(); }
-      metrics.parsed = 'page'; metrics.bytes_out = Buffer.byteLength(JSON.stringify(parsed.rows));
-      return { status: code, ...parsed };
+      // Playwright evaluates source in the page's realm, with no captured module scope.
+      result = await page.evaluate(`(${ebayListingsInPage.toString()})(${JSON.stringify({ spec: data, ask, challenge: CHALLENGE.source, firstCardMs: EBAY_FIRST_CARD_MS })}, (${parseListings.toString()}))`, undefined);
     } catch {
-      // Browser evaluation errors can hold page text/URLs. The fallback reason is bounded and logged by read().
+      // Browser errors can hold page text/URLs. read() logs only this bounded reason.
       metrics.fallback = 'evaluation';
       if (signal.aborted) throw new PublicClientError('aborted');
       return server();
     }
+    if (!result || !result.state || typeof result.state !== 'object' || !['blocked', 'signin', 'error', 'heading', 'empty'].every(key => typeof Reflect.get(result.state, key) === 'boolean') ||
+        !Number.isFinite(result.waited_ms) || result.waited_ms < 0) { metrics.fallback = 'shape'; return server(); }
+    metrics.waited_ms = result.waited_ms;
+    if (!spec) return server();
+    const { state, parsed } = result;
+    if (state.blocked || state.signin || state.error || !state.heading) { metrics.fallback = 'page_state'; return server(); }
+    if (!isListingResult(parsed, spec)) { metrics.fallback = 'shape'; return server(); }
+    if (parsed.total === 0 && !state.empty) { metrics.fallback = 'zero_cards'; return server(); }
+    metrics.parsed = 'page'; metrics.bytes_out = Buffer.byteLength(JSON.stringify(parsed.rows));
+    return { status: code, ...parsed };
   });
   return {
     ebay: { signed_in: false, page: (url, signal) => ebayRead(url, signal) as Promise<EbayPage>, listings: ebayRead },
@@ -217,6 +206,36 @@ export function publicClients({ launcher, log, now = () => performance.now(), id
       return closing;
     },
   };
+}
+
+// Sent as source alongside parseListings; all runtime dependencies live in the page.
+async function ebayListingsInPage({ spec, ask, challenge, firstCardMs }: {
+  spec: ListingSpec; ask: ListingAsk; challenge: string; firstCardMs: number;
+}, parse: typeof parseListings) {
+  const selector = [spec.card_selector, spec.empty_selector].filter(Boolean).join(', ');
+  let waited_ms = 0;
+  if (!document.querySelector(selector)) {
+    const started = performance.now();
+    await new Promise<void>(resolve => {
+      const observer = new MutationObserver(() => { if (document.querySelector(selector)) finish(); });
+      const finish = () => { observer.disconnect(); clearTimeout(timer); resolve(); };
+      observer.observe(document, { childList: true, subtree: true });
+      const timer = setTimeout(finish, firstCardMs);
+    });
+    waited_ms = performance.now() - started;
+  }
+  const title = document.title;
+  const empty = spec.empty_selector && document.querySelector(spec.empty_selector);
+  const heading = spec.heading_selector && document.querySelector(spec.heading_selector);
+  const state = {
+    blocked: new RegExp(challenge, 'i').test(title) || new RegExp(challenge, 'i').test(document.documentElement.outerHTML.slice(0, 20_000)),
+    signin: /^sign in or register\b/i.test(title), error: /^error page\b/i.test(title),
+    heading: !spec.heading_selector || !!heading,
+    empty: !!((empty && (!spec.empty_pattern || new RegExp(spec.empty_pattern).test(empty.textContent ?? ''))) ||
+      (heading && spec.empty_heading_pattern && new RegExp(spec.empty_heading_pattern).test(heading.textContent?.trim() ?? ''))),
+  };
+  const parsed = state.blocked || state.signin || state.error || !state.heading ? undefined : parse(document, spec, ask);
+  return { state, parsed, waited_ms };
 }
 
 function isListingResult(value: unknown, spec: ListingSpec): value is ListingResult {

@@ -2084,7 +2084,7 @@ Scope: improve Secondhand's existing system. The last excerpt requests an opinio
 Nate, orchestrator's session, 2026-11-15, about 10:20 Central, asked where Ben's site and marketing work lives.
 > If its not in the repo then he hasnt worked on it. Now talk through all questions you have for me
 
-Used in: [packet 78](../.agents/team/packets/team/78-assist-handoff.md) (the site is built from what the repo holds).
+Used in: [packet 78](../.agents/team/packets/team/78-buying-conversation-handoff.md) (the site is built from what the repo holds).
 
 ## 2026-11-15 nate answers at the wrap-up: assess, archive, spec the finalizations, then new leads
 Nate, orchestrator's session, 2026-11-15, about 10:45 Central, answering the orchestrator's numbered questions.
@@ -2206,3 +2206,27 @@ Nate, orchestrator's session, 2026-11-15, about 07:40 Central, answering "Run th
 Used in: [the finalization spec](../spec/plans/finalization.md#11-the-history-rewrite-after-judging).
 
 Note, 2026-11-15, 12:20 UTC, by the orchestrator: the Central times on this session's entries from "address every fix" to "the history rewrite runs after judging" were written late by its own miscount. By the machine clock those messages arrived between about 05:52 and 06:15 Central.
+
+## 2026-11-15 nate set up treg for the tools identification needs; an open font for every system
+Nate, orchestrator's session, 2026-11-15, about 06:55 and 07:05 Central. The first message carried a team token, which is left out here and kept only as a machine variable.
+> set up treg — https://treg.to/llms.txt
+>
+> with team rrenderrdev-s-team token: [left out]
+>
+> For the things it requries the tooling for like google lens and such
+
+> For the mac only font, add a google font found equivalent in style built to support all systems
+
+Used in: the identify lead's brief, [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate re-evaluate and benchmark what is working, against competitors
+Nate, orchestrator's session, 2026-11-15, about 07:15 Central.
+> revaluate and run competitive benchmarks on the areas we are considering done. All product searchs all platform harnesses to search each listing, analyze every ranking, determine every engine. whatever is working
+
+Used in: the cross-source benchmark run of 2026-11-15 under `research/cross-cutting/nate/runs/`.
+
+## 2026-11-15 nate rows that may not be modelled on may price a shown range
+Nate, engines lead's session, 2026-11-15, about 06:30 Central, answering "May a row with may_model false (eBay API rows, Apify rows) enter the comps a shown price range is computed from? (a) keep it out of the basis, as now; (b) allowed in a shown range, as valuation.md:52 says, but never in a fit; or (c) eBay yes, Apify no."
+> they can, they are verified real data
+
+Read by the engines lead as (b): such rows price a shown range and are cited, and never fit a weight, a model or a calibration score. Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals).

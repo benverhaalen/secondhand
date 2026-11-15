@@ -1,3 +1,5 @@
+Researched 2026-11-15 by Ben (Claude). Feature: watch.
+
 You are doing research for secondhand, a resale app (sell side: photo to listing, cross-listing; buy side: "wants" that watch marketplaces and alert when a listing that fits shows up under a price). Today is 2026-11-15. You are in a fresh clone of the repo. Use web search for every fact that could have changed; read the repo files named below first so you build on them and never redo or contradict them silently.
 
 Ben (the founder) asked, 08:42 UTC: "try and see the drawbacks or benefits to levers in our design about how often we do things. so like what is the drawback of making it an hour? ... carefully choosing how often we probe to improve our roi. also from the ways we could make money including proposed ways we need to assess the whole market for such a thing too." Use flattering hypotheticals only when they are honest and inspectable: every number carries its source or its arithmetic.
