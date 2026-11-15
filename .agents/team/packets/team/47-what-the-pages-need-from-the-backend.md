@@ -86,3 +86,34 @@ From [parallel-build.md](../../../../spec/plans/parallel-build.md):
 ## Next action
 
 Nate: have stream 15 land `T0-2` with the rows above in it, pick the sign-in library and the relink name, say which stream owns sign-in (`AU-1` writes `app/src/edge/auth.ts`, which no stream owns yet), and reply here with anything you would shape differently. Ben's agents build the parts kit and the wave 1 pages against the examples meanwhile.
+
+## From Nate's side
+
+November 14, 2026, about 22:30 Central. Written by stream 15 (API and contract), Claude Code, for Ben. Each choice below is an *agent proposal* for Nate. The rows are sent to the orchestrator for [product.md](../../../../spec/product.md), which only it writes.
+
+**What landed.** Everything is in [spec/examples/](../../../../spec/examples/README.md), and `node --test spec/examples.test.mjs` passes on `main`:
+- one request and response for each of the 71 endpoints in §7
+- every row this packet asks for, marked `"proposed": true`
+- the stage frames of an identify-then-valuate job, a visitor's search and the signed-in `/v1/stream`
+- every error code
+
+The test fails on any of these: a dollar float, an id without its prefix, a time that is not UTC, a client-sent `user_id`, a POST without `Idempotency-Key`, or a §7 endpoint with no example. Items 1 to 8 and 7b are all in, with the shapes above.
+
+The edge's contract layer is also on `main` ([http.ts](../../../../app/src/edge/api/http.ts)). Each route serves its example through the same handler until its engine lands. Ids an example does not name get `404 not_found`, which is how the real route answers.
+
+**Choices on the open points:**
+- **Relink name:** the decision kind stays `relink`. `account_stale` is the event that raises it.
+- **Sign-in:** stream 15 owns `app/src/edge/auth.ts` and `/v1/auth/*`. Apple and Google id tokens are checked against their keys on the edge. Email codes are 6 digits and last 10 minutes. Sessions are opaque tokens that are stored hashed: access lasts 1 h, refresh lasts 30 days and rotates.
+- **Where users live:** behind an `AuthStore` interface, in memory tonight. Better Auth on Lakebase replaces the store behind that interface; the library is not added tonight. Web sessions use the same bearer tokens, with CORS for the site's origin.
+- **The edge stays in the Expo Router API routes**, as you proposed.
+
+**Shaped differently:**
+1. `fact.found` and `job.stage` frames are SSE frames `{id, event, data}`, with `job_id` inside `data`, so `Last-Event-ID` resumes them. The comp count rides in `found` as `{comps, kind}` next to the canon's counts.
+2. The visitor search stream is `GET /v1/jobs/:id/events` with no token, for the visitor's own job. There is no second stream.
+3. `GET /v1/items` rows carry `needs_you {count, top_kind}`.
+4. The talk session is `POST /v1/captures/:id/talk`. The client secret is ephemeral and never stored.
+5. Records keep `format=pdf`. The example answers `application/pdf`.
+6. A new route, `GET /v1/routes`, is the manifest your client reads. It says whether each endpoint answers from its engine or from its example. Your client can switch on that instead of guessing from a 404.
+7. Stream 2's decision kind `confirm_trade` and its job kinds `answer_offer`, `make_offer`, `sweep` and `relink` are in the examples. A job waiting on a relink shows `paused: "account_stale"`.
+
+**For Ben:** if a page needs a field the examples lack, ask here and stream 15 adds it to the example first.
