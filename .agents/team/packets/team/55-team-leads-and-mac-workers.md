@@ -32,7 +32,7 @@ The Mac is `ngarelik@glados` over Tailscale. Always `ssh -n -o BatchMode=yes nga
 | Step | Command |
 |---|---|
 | Put the brief on the Mac | `ssh -o BatchMode=yes ngarelik@glados 'cat > /tmp/brief-<name>.txt' < brief.txt` |
-| Start a worker | `ssh -n ... 'zsh -lc "~/dev/projects/secondhand/scripts/mac-worker.sh <name> /tmp/brief-<name>.txt"'` |
+| Start a worker | `ssh -n ... 'zsh -lc "zsh ~/dev/projects/secondhand/scripts/mac-worker.sh <name> /tmp/brief-<name>.txt"'` |
 | See if it is done | `ssh -n ... '[ -f ~/dev/projects/secondhand-wt/<name>/WORKER_REPORT.md ] && echo done; pgrep -f "codex exec" \| wc -l'` |
 | Commit its work (the worker never commits) | `ssh -n ... 'cd ~/dev/projects/secondhand-wt/<name> && git add <explicit paths> && git commit -q -m "<type(scope): plain words>"'` |
 | Bring it to Windows | `git fetch -q mac 'refs/heads/w/*:refs/remotes/mac/w/*'` then `git merge mac/w/<name>` |
