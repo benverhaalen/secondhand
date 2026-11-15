@@ -1,11 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { SITES } from '../../harness/protocol.ts';
+import { createHarness, SITES } from '../../harness/protocol.ts';
+import { memoryAccounts, memoryVault } from '../../browser/auth.ts';
+import { mercariAdapters, type Page as MercariPage } from '../../harness/sites/mercari/adapter.ts';
 import { createFetcher } from '../fetch.ts';
 import type { FetchOpts, PageResult } from '../fetch.ts';
 import { readPage, searchUrl, BASE } from './readers.ts';
-import { searchAll } from './search.ts';
+import { searchAll, searchSite, searchSource } from './search.ts';
+import { SOURCES } from './sources.ts';
 
 const FX = new URL('../../../../../spec/fixtures/pages/', import.meta.url);
 const fx = (n: string) => readFileSync(new URL(n, FX), 'utf8');
@@ -70,41 +73,97 @@ test('sold search has a url only where the site shows sold signed out', () => {
   assert.equal(searchUrl('ebay', 'levi 501', 'search'), 'https://www.ebay.com/sch/i.html?_nkw=levi%20501');
 });
 
-test('searchAll queries every site in parallel (fake timings), and maps outcomes per site', async () => {
+test('searchAll queries approved public sources in parallel and maps outcomes per site', async () => {
   let live = 0, peak = 0;
+  const requested: string[] = [];
   const fetchPage = async (url: string, _o: FetchOpts): Promise<PageResult> => {
+    requested.push(url);
     live++; peak = Math.max(peak, live);
     await new Promise(r => setTimeout(r, 40));
     live--;
     const site = SITES.find(s => url.startsWith(BASE[s]))!;
-    if (site === 'ebay') return { ok: false, kind: 'blocked', reason: '403', status: 403, ms: 1, searched: [] };
-    if (site === 'grailed') return { ok: false, kind: 'timeout', reason: 'slow', ms: 1, searched: [] };
-    if (site === 'offerup') return page(OFFERUP);
     if (site === 'facebook') return page('<html><form action="/login">Log in</form></html>');
     if (site === 'depop') return page(fx('depop.html').replace(/aria-description="Price"/g, 'x="1"'));
     return page(fx(`${site}.html`));
   };
   const t0 = performance.now();
   const r = await searchAll('levi 501', { fetchPage });
-  assert.equal(peak, SITES.length);
+  assert.equal(peak, 3);
   assert.ok(performance.now() - t0 < 40 * 3);
   const by = Object.fromEntries(r.searched.map(s => [s.site, s]));
-  assert.equal(by.ebay!.outcome, 'blocked');
-  assert.equal(by.grailed!.outcome, 'timeout');
+  assert.deepEqual(Object.keys(by).sort(), ['depop', 'facebook', 'poshmark']);
+  assert.deepEqual(requested.map(url => SITES.find(site => url.startsWith(BASE[site]))).sort(), ['depop', 'facebook', 'poshmark']);
   assert.equal(by.facebook!.outcome, 'blocked');
   assert.equal(by.depop!.outcome, 'page_changed');
   assert.deepEqual(by.depop!.missing, ['price_cents']);
-  assert.equal(by.offerup!.outcome, 'hit');
-  assert.equal(by.offerup!.count, 2);
   assert.equal(by.poshmark!.outcome, 'hit');
-  assert.equal(r.results.length, by.offerup!.count + by.poshmark!.count + by.mercari!.count);
+  assert.equal(r.results.length, by.poshmark!.count);
   assert.ok(r.results.every(x => x.row.id && x.row.price_cents !== undefined));
+});
+
+test('individual readers retain blocked, timeout and OfferUp hit outcomes outside source fanout', async () => {
+  const blocked = await searchSite('ebay', 'levi 501', 'search', { fetchPage: async () => ({ ok: false, kind: 'blocked', reason: '403', status: 403, ms: 1, searched: [] }) });
+  assert.equal(blocked.searched.outcome, 'blocked');
+  assert.deepEqual(blocked.rows, []);
+  const timeout = await searchSite('grailed', 'levi 501', 'search', { fetchPage: async () => ({ ok: false, kind: 'timeout', reason: 'slow', ms: 1, searched: [] }) });
+  assert.equal(timeout.searched.outcome, 'timeout');
+  assert.deepEqual(timeout.rows, []);
+  const hit = await searchSite('offerup', 'levi 501', 'search', { fetchPage: async () => page(OFFERUP) });
+  assert.equal(hit.searched.outcome, 'hit');
+  assert.equal(hit.searched.count, 2);
+  assert.equal(hit.rows.length, 2);
+});
+
+test('eBay stays present and off with its reason, even for a person asking directly', async () => {
+  const ebay = SOURCES.find(source => source.id === 'ebay');
+  assert.ok(ebay);
+  assert.equal(ebay.on, false);
+  assert.equal(ebay.reason, 'page lane not built');
+  const fetchPage = async (): Promise<PageResult> => { assert.fail('disabled eBay must not fetch'); };
+  const direct = await searchSource(ebay, 'levi 501', 'search', { caller: 'person', fetchPage });
+  assert.deepEqual(direct.rows, []);
+  assert.equal(direct.searched.outcome, 'blocked');
+  assert.equal(direct.searched.reason, ebay.reason);
+  assert.deepEqual(await searchAll('levi 501', { caller: 'person', sites: ['ebay'], fetchPage }), { results: [], searched: [] });
+});
+
+test('Mercari uses only the asking person’s linked account and never anonymous page fetch', async () => {
+  const vault = memoryVault();
+  await vault.put('test-mercari', { cookies: [], origins: [] });
+  const account = { account_id: 'acc_search', person_id: 'person_search', site: 'mercari' as const, token_ref: 'test-mercari' };
+  const accounts = memoryAccounts([account], vault);
+  const recording = JSON.parse(readFileSync(new URL('../../harness/sites/mercari/fixtures/search.json', import.meta.url), 'utf8')) as MercariPage;
+  let reads = 0;
+  const harness = createHarness({ accounts, adapters: mercariAdapters({ signed_in: true, page: async () => { reads++; return recording; } }) });
+  const opts = { sites: ['mercari'] as const, person_id: account.person_id, accounts, harness,
+    fetchPage: async (): Promise<PageResult> => { assert.fail('Mercari must use the linked harness'); } };
+  assert.deepEqual(await searchAll('carhartt hoodie', opts), { results: [], searched: [] });
+  for (const overrides of [
+    { person_id: undefined },
+    { accounts: undefined },
+    { person_id: 'person_other' },
+    { person_id: 'person_other', accounts: { ...accounts, linked: async () => [account] } },
+  ]) {
+    const denied = await searchAll('carhartt hoodie', { ...opts, ...overrides, caller: 'person' });
+    assert.deepEqual(denied.results, []);
+    assert.equal(denied.searched[0]!.outcome, 'blocked');
+    assert.equal(denied.searched[0]!.reason, 'linked account required');
+  }
+  assert.equal(reads, 0);
+  const allowed = await searchAll('carhartt hoodie', { ...opts, caller: 'person' });
+  assert.equal(reads, 1);
+  assert.equal(allowed.searched[0]!.outcome, 'hit');
+  assert.ok(allowed.results.length > 0);
+  assert.equal(allowed.searched[0]!.count, allowed.results.length);
+  assert.ok(allowed.results.every(result => result.site === 'mercari'));
 });
 
 test('searchAll with kinds search+sold: sites without sold are empty with a reason, not a request', async () => {
   const urls: string[] = [];
-  const r = await searchAll('levi 501', { sites: ['depop', 'ebay'], kinds: ['search', 'sold'], fetchPage: async u => { urls.push(u); return page(fx('ebay.html')); } });
-  assert.equal(urls.length, 3);
+  const r = await searchAll('levi 501', { sites: ['depop', 'poshmark', 'ebay'], kinds: ['search', 'sold'], fetchPage: async u => { urls.push(u); return page(fx('poshmark.html')); } });
+  assert.deepEqual(urls.sort(), [searchUrl('depop', 'levi 501', 'search'), searchUrl('poshmark', 'levi 501', 'search'), searchUrl('poshmark', 'levi 501', 'sold')].sort());
+  assert.ok(r.searched.every(s => s.site !== 'ebay'));
+  assert.equal(r.searched.find(s => s.site === 'poshmark' && s.kind === 'sold')!.outcome, 'hit');
   const d = r.searched.find(s => s.site === 'depop' && s.kind === 'sold')!;
   assert.equal(d.outcome, 'empty');
   assert.match(d.reason!, /sold/);
@@ -127,7 +186,7 @@ test('429 backs off (Retry-After clamped to the ceiling) and then reads the page
 test('429 that never clears gives timeout, not partial rows', async () => {
   const f = createFetcher({ params: { base_delay_ms: [0, 0], backoff_ms: 1, ceiling_ms: 5, max_retries: 2 } });
   const fetchImpl = (async () => new Response('', { status: 429 })) as typeof fetch;
-  const r = await searchAll('x', { sites: ['mercari'], fetchPage: (u, o) => f.fetchPage(u, { ...o, fetchImpl }) });
+  const r = await searchAll('x', { sites: ['poshmark'], fetchPage: (u, o) => f.fetchPage(u, { ...o, fetchImpl }) });
   assert.equal(r.searched[0]!.outcome, 'timeout');
   assert.equal(r.results.length, 0);
 });

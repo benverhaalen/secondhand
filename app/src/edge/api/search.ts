@@ -1,10 +1,11 @@
 // Rests-on: spec/product.md §7 Jobs and the event stream, §8 search budget; int-search-1 brief.
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { manifestFor, fromEngine, fields, text, bool, strings, money, object, url, invalid, pagination } from './captures.ts';
-import { searchSite, type SiteSearched } from '../intel/public/search.ts';
+import { searchSource, type SearchOpts, type SiteSearched } from '../intel/public/search.ts';
 import { BASE, searchUrl, type Row } from '../intel/public/readers.ts';
 import { fetchPage } from '../intel/fetch.ts';
-import { SITES, type Site } from '../harness/protocol.ts';
+import type { Site } from '../harness/protocol.ts';
+import { SOURCES, sourcesFor, routeId, type Caller, type Source } from '../intel/public/sources.ts';
 import { runPlan, normalize } from '../intel/run.ts';
 import { PROTOCOLS } from '../intel/protocols.ts';
 import { emptyFound, type Answer, type Found } from '../intel/answer.ts';
@@ -14,7 +15,9 @@ import { searchAll as rankOffers, type BuyOffer, type BuyRow } from '../buy/buy.
 import { jobs, type ApiJobRow } from './jobs.ts';
 
 const protocol = PROTOCOLS.listings_matching;
-export const ports = { fetchPage, ask: jevAsk, deadline_ms: protocol.budget.settled_ms };
+export const ports: Pick<SearchOpts, 'accounts' | 'harness'> & { fetchPage: typeof fetchPage; ask: typeof jevAsk; deadline_ms: number; sources: readonly Source[] } = {
+  fetchPage, ask: jevAsk, deadline_ms: protocol.budget.settled_ms, sources: SOURCES, accounts: undefined, harness: undefined,
+};
 // The shared job store owns the promises as well as their rows; nothing is detached without a rejection handler.
 export const searchJobs = Object.assign(jobs, { pendingSearches: new Map<string, Promise<void>>() });
 type ActiveRead = { rows?: JudgedRow[]; searched?: SiteSearched; failure?: unknown };
@@ -22,16 +25,18 @@ const reading = new Map<string, ActiveRead>();
 
 type SearchStage = { name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found };
 type JudgedRow = { row: Row; judged: Judged };
-type PublicOffer = BuyOffer & { currency: string; image_url?: string; external_id: string };
+type PublicOffer = BuyOffer & { currency: string; image_url?: string; external_id: string; data: `live:${Site}` };
 type Batch = { searched: SiteSearched; rows: JudgedRow[]; offers: PublicOffer[]; ranked: BuyRow[]; found: Found; cached?: boolean };
 
-function candidates(site: Site, rows: Row[]): Result[] {
+function candidates(source: Source, rows: Row[]): Result[] {
+  const site = source.site;
   // readPage's required-field gate has already validated these fields.
   return rows.map(row => ({ id: `ls_${site}_${row.id}`, listing_id: `ls_${site}_${row.id}`, site,
-    title: row.title!, price_cents: row.price_cents!, url: row.url!, route_id: `public.${site}` }));
+    title: row.title!, price_cents: row.price_cents!, url: row.url!, route_id: routeId(source) }));
 }
 
-function rank(site: Site, rows: JudgedRow[], searched: SiteSearched, filters: Record<string, unknown>): Batch {
+function rank(source: Source, rows: JudgedRow[], searched: SiteSearched, filters: Record<string, unknown>): Batch {
+  const site = source.site;
   const found: Found = { ...emptyFound(), sources_searched: 1, results_found: rows.length, sites: { [site]: 0 } };
   const drop = (reason: string) => { found.dropped_by_reason[reason] = (found.dropped_by_reason[reason] ?? 0) + 1; };
   const offers: PublicOffer[] = [];
@@ -39,7 +44,7 @@ function rank(site: Site, rows: JudgedRow[], searched: SiteSearched, filters: Re
     if (judged.keep !== 'keep') { drop(judged.keep); continue; }
     if (judged.match === 'unresolved') { drop('unresolved'); continue; }
     if (judged.match === 'same_family_other_variant') { drop('other_variant'); continue; }
-    const offer: PublicOffer = { ...candidates(site, [row])[0], external_id: row.id!, currency: row.currency!,
+    const offer: PublicOffer = { ...candidates(source, [row])[0], external_id: row.id!, currency: row.currency!, data: `live:${site}`,
       ...(row.image_url ? { image_url: row.image_url } : {}), condition: row.condition ?? 'unknown',
       relation: judged.match === 'comparable' ? 'functional_equivalent' : 'same_product',
       shipping_cents: null, tax_rate: 0, source_kind: 'marketplace', sold: row.sold };
@@ -66,15 +71,15 @@ function offerView(row: BuyRow) {
   const offer = row as BuyRow & PublicOffer;
   const amount = (n: number) => ({ amount_cents: n, currency: offer.currency });
   return { id: offer.id, listing_id: offer.listing_id, external_id: offer.external_id, title: offer.title, url: offer.url,
-    site: offer.site, route_id: offer.route_id, condition: offer.condition, relation: offer.relation,
+    site: offer.site, route_id: offer.route_id, data: offer.data, condition: offer.condition, relation: offer.relation,
     source_kind: offer.source_kind, price_cents: amount(offer.price_cents), shipping_cents: null,
     delivered_cents: amount(offer.delivered_cents), shipping_estimated: offer.shipping_estimated, also_on: offer.also_on,
     ...(offer.image_url ? { image_url: offer.image_url } : {}) };
 }
 
-async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typeof ports) {
+async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typeof ports, caller: Caller, sources: readonly Source[]) {
   const query = String(ctx.body.text ?? ctx.body.url ?? ''), filters = object(ctx.body.filters) ? ctx.body.filters : {};
-  const t0 = performance.now(), pending = new Set<Site>(SITES), batches = new Map<Site, Batch>();
+  const t0 = performance.now(), pending = new Set(sources.map(s => s.id)), batches = new Map<string, Batch>();
   let first: number | null = null;
   const saveStages = () => jobs.update(job.id, {
     // The brief adds `late` and found{}; the shared Stage type still names the older four states.
@@ -84,7 +89,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     const found = emptyFound();
     for (const batch of batches.values()) {
       for (const key of ['sources_searched', 'results_found', 'results_used'] as const) found[key] += batch.found[key];
-      Object.assign(found.sites, batch.found.sites);
+      for (const [site, count] of Object.entries(batch.found.sites)) found.sites[site] = (found.sites[site] ?? 0) + count;
       for (const [reason, count] of Object.entries(batch.found.dropped_by_reason)) found.dropped_by_reason[reason] = (found.dropped_by_reason[reason] ?? 0) + count;
     }
     const ranked = rankOffers([...batches.values()].flatMap(b => b.offers), { medianShipping: 0 });
@@ -93,7 +98,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
   };
   const answer = (settled: boolean): Answer => ({ id: job.id, kind: 'listings_matching', slots: { text: query },
     protocol_version: protocol.version, facts: [], found: result().found,
-    searched: [...batches.values()].map(b => ({ route_id: `public.${b.searched.site}`, query,
+    searched: [...batches.entries()].map(([id, b]) => ({ route_id: routeId(sources.find(s => s.id === id)!), query,
       outcome: b.searched.outcome === 'page_changed' ? 'blocked' : b.searched.outcome, ms: b.searched.ms })),
     stage: settled ? 'settled' : 'first', ms: { first, settled: settled ? Math.round(performance.now() - t0) : null } });
   const emit = (event: 'answer.partial' | 'answer.settled', data: Record<string, unknown>) => {
@@ -101,11 +106,12 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     ctx.log.event(event, { job: job.id, answer: a });
     jobs.append(job.id, event, { job_id: job.id, ...data, answer: a });
   };
-  const land = (site: Site, batch: Batch, refreshing: boolean) => {
+  const land = (source: Source, batch: Batch, refreshing: boolean) => {
+    const site = source.site;
     if (jobs.st.getJob(job.id)?.state !== 'running') return;
-    batches.set(site, batch);
-    if (!refreshing) pending.delete(site);
-    const stage = stages.find(s => s.name === `site:${site}`)!;
+    batches.set(source.id, batch);
+    if (!refreshing) pending.delete(source.id);
+    const stage = stages.find(s => s.name === `site:${source.id}`)!;
     stage.state = batch.searched.outcome === 'timeout' ? 'late' : 'arrived';
     stage.ended_at = new Date().toISOString(); stage.found = batch.found;
     first ??= Math.round(performance.now() - t0);
@@ -116,21 +122,24 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     jobs.append(job.id, 'job.stage', { job_id: job.id, stage: stage.name, state: stage.state, at: stage.ended_at, found: stage.found });
     emit('answer.partial', { site, product: null, results: batch.ranked.map(offerView), official: [], sites_pending: [...pending] });
   };
-  const sitePlan = async (site: Site, freshness_s: number) => {
-    const key = `${site}|${normalize(query)}`;
+  const sitePlan = async (source: Source, freshness_s: number) => {
+    const site = source.site;
+    const scopedRoute = source.lane === 'harness' ? `${routeId(source)}:${ctx.user_id ?? ctx.visitor_id}` : routeId(source);
+    const key = `${scopedRoute}|${normalize(query)}`;
     let shared = reading.get(key), ran = false, rows: JudgedRow[] = [];
     const remaining = Math.max(0, opts.deadline_ms - (performance.now() - t0));
     // A one-target plan lets empty and blocked sites settle independently too; runPlan only emits partials for hits.
     const a = await runPlan({ kind: 'listings_matching', slots: { text: query }, protocol_version: protocol.version,
       first_ms: protocol.budget.first_ms, settled_ms: remaining,
-      targets: [{ target_id: `site:${site}`, query, deadline_ms: remaining, freshness_s, routes: [{
-        route_id: `public.${site}`, host: new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
+      targets: [{ target_id: `site:${source.id}`, query, deadline_ms: remaining, freshness_s, routes: [{
+        route_id: scopedRoute, host: new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
         async run(q) {
           ran = true; shared = {}; reading.set(key, shared);
           try {
-            const page = await searchSite(site, q, 'search', { fetchPage: opts.fetchPage, deadline_ms: remaining, log: ctx.log });
+            const page = await searchSource(source, q, 'search', { caller, person_id: ctx.user_id ?? undefined,
+              accounts: opts.accounts, harness: opts.harness, fetchPage: opts.fetchPage, deadline_ms: remaining, log: ctx.log });
             shared.searched = page.searched;
-            const judged = await sameProduct({ title: q }, candidates(site, page.rows), (s, questions) => opts.ask(s, questions, { log: ctx.log }));
+            const judged = await sameProduct({ title: q }, candidates(source, page.rows), (s, questions) => opts.ask(s, questions, { log: ctx.log }));
             shared.rows = page.rows.map((row, i) => ({ row, judged: judged[i] }));
             return { outcome: page.searched.outcome === 'page_changed' ? 'blocked' as const : page.searched.outcome, rows: shared.rows, site };
           } catch (e) { shared.failure = e; throw e; }
@@ -144,21 +153,21 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     const searched = sameRead ? shared!.searched : undefined;
     const outcome = a.searched[0]?.outcome ?? 'timeout';
     const observed: SiteSearched = searched && outcome !== 'timeout' ? searched : {
-      site, kind: 'search', url: searchUrl(site, query, 'search'), outcome: outcome === 'over_budget' ? 'timeout' : outcome,
+      site, kind: 'search', url: source.lane === 'public_page' ? searchUrl(site, query, 'search') : null, outcome: outcome === 'over_budget' ? 'timeout' : outcome,
       count: rows.length, ms: a.searched[0]?.ms ?? Math.round(remaining),
     };
     const cached = !ran && !sameRead && (outcome === 'hit' || outcome === 'empty');
-    return { batch: rank(site, rows, observed, filters), cached,
-      live: cached && shared?.rows && shared.searched ? rank(site, shared.rows, shared.searched, filters) : undefined };
+    return { batch: rank(source, rows, observed, filters), cached,
+      live: cached && shared?.rows && shared.searched ? rank(source, shared.rows, shared.searched, filters) : undefined };
   };
   try {
-    await Promise.all(SITES.map(async site => {
-      const initial = await sitePlan(site, protocol.freshness.listings);
-      land(site, initial.batch, initial.cached);
+    await Promise.all(sources.map(async source => {
+      const initial = await sitePlan(source, protocol.freshness.listings);
+      land(source, initial.batch, initial.cached);
       if (initial.cached && jobs.st.getJob(job.id)?.state === 'running') {
-        const live = initial.live ?? (await sitePlan(site, 0)).batch;
+        const live = initial.live ?? (await sitePlan(source, 0)).batch;
         const batch = ['hit', 'empty'].includes(live.searched.outcome) ? live : { ...initial.batch, searched: live.searched, cached: true };
-        land(site, batch, false);
+        land(source, batch, false);
       }
     }));
     if (jobs.st.getJob(job.id)?.state !== 'running') return;
@@ -187,12 +196,13 @@ export const handlers: Record<string, Handler> = {
     // jobsOn exposes this fixture owner to every visitor; it cannot own a real search.
     if (ctx.visitor_id === 'vis_example01') throw invalid('use a new visitor session');
     const started_at = new Date().toISOString();
-    const stages: SearchStage[] = SITES.map(site => ({ name: `site:${site}`, state: 'running', started_at, ended_at: null, found: emptyFound() }));
+    const caller: Caller = 'person', sources = sourcesFor(caller, ports.sources);
+    const stages: SearchStage[] = sources.map(source => ({ name: `site:${source.id}`, state: 'running', started_at, ended_at: null, found: emptyFound() }));
     const job = jobs.put({ kind: 'search', state: 'running', stages: structuredClone(stages) as ApiJobRow['stages'] }, ctx.user_id ?? ctx.visitor_id!);
     ctx.log.job(job.id, 'search', 'running');
     jobs.append(job.id, 'job.state', { job_id: job.id, kind: 'search', state: 'running', at: started_at });
     const opts = { ...ports };
-    const task = Promise.resolve().then(() => search(ctx, job, stages, opts)).finally(() => searchJobs.pendingSearches.delete(job.id));
+    const task = Promise.resolve().then(() => search(ctx, job, stages, opts, caller, sources)).finally(() => searchJobs.pendingSearches.delete(job.id));
     searchJobs.pendingSearches.set(job.id, task);
     return { status: 202, body: { id: job.id, kind: job.kind, state: 'running', stages: structuredClone(stages), stream: `/v1/jobs/${job.id}/events` } };
   }),
