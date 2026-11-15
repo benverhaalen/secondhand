@@ -1,0 +1,13 @@
+{
+  "_note": "Made up in the documented shape of eBay Taxonomy getItemAspectsForCategory (developer.ebay.com/api-docs/commerce/taxonomy). Not a real response: names and values are illustrative, the category id is a placeholder.",
+  "categoryId": "0000",
+  "aspects": [
+    { "localizedAspectName": "Brand", "aspectConstraint": { "aspectRequired": true, "aspectUsage": "RECOMMENDED", "aspectMode": "FREE_TEXT", "aspectDataType": "STRING", "aspectMaxLength": 65, "itemToAspectCardinality": "SINGLE" }, "relevanceIndicator": { "searchCount": 9000 } },
+    { "localizedAspectName": "Size", "aspectConstraint": { "aspectRequired": true, "aspectUsage": "RECOMMENDED", "aspectMode": "SELECTION_ONLY", "aspectDataType": "STRING", "itemToAspectCardinality": "SINGLE" }, "aspectValues": [{ "localizedValue": "S" }, { "localizedValue": "M" }, { "localizedValue": "L" }, { "localizedValue": "XL" }], "relevanceIndicator": { "searchCount": 7000 } },
+    { "localizedAspectName": "Color", "aspectConstraint": { "aspectRequired": false, "aspectUsage": "RECOMMENDED", "aspectMode": "FREE_TEXT", "aspectDataType": "STRING", "aspectMaxLength": 65, "itemToAspectCardinality": "MULTI" }, "relevanceIndicator": { "searchCount": 5000 } },
+    { "localizedAspectName": "Material", "aspectConstraint": { "aspectRequired": false, "aspectUsage": "RECOMMENDED", "aspectMode": "FREE_TEXT", "aspectDataType": "STRING", "aspectMaxLength": 65, "itemToAspectCardinality": "MULTI" } },
+    { "localizedAspectName": "Department", "aspectConstraint": { "aspectRequired": true, "aspectUsage": "RECOMMENDED", "aspectMode": "SELECTION_ONLY", "aspectDataType": "STRING", "itemToAspectCardinality": "SINGLE" }, "aspectValues": [{ "localizedValue": "Men" }, { "localizedValue": "Women" }, { "localizedValue": "Unisex Adults" }] },
+    { "localizedAspectName": "Neckline", "aspectConstraint": { "aspectRequired": false, "aspectUsage": "RECOMMENDED", "aspectMode": "FREE_TEXT", "aspectDataType": "STRING", "aspectMaxLength": 65, "itemToAspectCardinality": "SINGLE" } },
+    { "localizedAspectName": "Theme", "aspectConstraint": { "aspectRequired": false, "aspectUsage": "OPTIONAL", "aspectMode": "FREE_TEXT", "aspectDataType": "STRING", "aspectMaxLength": 65, "itemToAspectCardinality": "MULTI" } }
+  ]
+}
