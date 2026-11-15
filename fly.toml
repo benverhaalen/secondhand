@@ -17,6 +17,7 @@ SECONDHAND_PEER_HEADER = "Fly-Client-IP"
 PORT = "8080"
 SECONDHAND_PUBLIC_ORIGIN = "https://secondhand-api.fly.dev"
 APPLE_CLIENT_IDS = "com.bnvg.secondhand"
+GOOGLE_CLIENT_IDS = "599008877776-7t6d8jiuipqovrpejs5dvvpfnu8ji8lh.apps.googleusercontent.com"
 
 [http_service]
 internal_port = 8080
