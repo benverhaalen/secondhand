@@ -1444,3 +1444,10 @@ Nate, build session (orchestrator), 2026-11-15 about 02:15 Central.
 > Ensure we have focused opus 5.5 team leads covering sessions that send out to codex, covering the databricks design and development, all engines, they combine with the consideration for every feature working together, every engine, deterministic calculations, the way capture works, deterministically selecting by product type and dimensions, all needed fields and information determined and ascertained, with the intelligent ui generating any needed clarifying questions
 
 Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 no applications to marketplaces yet
+
+Ben, thread "Cross-list Depop listings and price with quant", 08:15 UTC, answering whether to apply to eBay for Buyer Demand Data.
+> no dont do any applications i dont think they would get accepted yet.
+
+Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), [packet 61](../.agents/team/packets/list/61-ebay-item-specifics.md).
