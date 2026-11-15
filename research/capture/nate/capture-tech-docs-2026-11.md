@@ -1,7 +1,7 @@
 # What do the current Expo, Apple Object Capture, ARKit and Vision docs say that the capture plan depends on, as of November 2026?
 Researched 2026-11-15 by Nate (Claude Code: capture lead Opus 5.5, retriever seat). Feature: capture.
 
-Decision it feeds: the device inputs and fallbacks of [capture engine §11](../../../spec/engines/capture.md#11-the-deterministic-plan) (when a scan is offered, when a size counts as `measured`, which reads the phone can send). Builds on [adaptive-capture](adaptive-capture.md) and [object-capture](../../measure/ben/object-capture.md), which already hold ARKit depth size and accuracy, the Object Capture basics and the soft and reflective limits; those are not repeated.
+Decision it feeds: the device inputs and fallbacks of [capture engine §11](../../../spec/engines/capture.md#2-the-plan) (when a scan is offered, when a size counts as `measured`, which reads the phone can send). Builds on [adaptive-capture](adaptive-capture.md) and [object-capture](../../measure/ben/object-capture.md), which already hold ARKit depth size and accuracy, the Object Capture basics and the soft and reflective limits; those are not repeated.
 
 All fetches 2026-11-15. Apple `.md` pages carry iOS availability headers and "Copyright 2026" but no page version. *observed*: read at the URL. *asserted*: the source says it without showing it, or memory. *inferred*: our reasoning.
 

@@ -430,6 +430,42 @@ test('device flags default false independently and impossible object capture is 
 async function at(endpoint:string,id:string,body?:unknown,token='good') {
   return call(examples.find(e=>e.endpoint===endpoint)!,{path:endpoint.split(' ')[1].replace(':id',id),body,token,headers:{'Idempotency-Key':`tenant_${++requestNumber}`}});
 }
+test('opening without item_id gives the other user a new item owned by that caller', async () => {
+  const c=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
+  assert.notEqual(c.item_id,'it_7c2m','new capture must not reuse the seeded user item');
+  assert.equal(c.item_id,'it_1');
+  const row=capturesApi.captureRows.get(c.id)!;
+  assert.equal(row.user_id,'usr_other');assert.equal(row.item_id,c.item_id);
+});
+test('PATCH returns the other user capture own item id', async () => {
+  const c=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
+  const response=await at(patchEndpoint,c.id,{version:c.version,type:'apparel'},'other');
+  assert.equal(response.status,200);
+  const changed=await response.json();
+  assert.notEqual(changed.item.id,'it_7c2m','PATCH must not return the seeded user item');
+  assert.equal(changed.item.id,c.item_id);assert.equal(changed.item_id,c.item_id);
+});
+test('finish returns the other user capture own item id', async () => {
+  const c=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
+  const response=await at('POST /v1/captures/:id/finish',c.id,{version:c.version},'other');
+  assert.equal(response.status,202);
+  const finished=await response.json();
+  assert.notEqual(finished.item.id,'it_7c2m','finish must not return the seeded user item');
+  assert.equal(finished.item.id,c.item_id);assert.equal(finished.capture.item_id,c.item_id);
+});
+for(const token of ['good','other']) test(`two opens without item_id give ${token} distinct items`, async () => {
+  const first=await bodyOf(await requestCapture('POST /v1/captures',openInput,token));
+  const second=await bodyOf(await requestCapture('POST /v1/captures',openInput,token));
+  assert.notEqual(first.item_id,second.item_id,'separate captures must not share an allocated item');
+  assert.notEqual(second.item_id,'it_7c2m','only the seeded first open keeps the example item');
+});
+test('seeded user first open keeps the contract example after another user opens', async () => {
+  const other=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
+  const e=examples.find(e=>e.name==='captures.open')!;
+  const response=await call(e);
+  assert.equal(response.status,201);assert.deepEqual(await response.json(),e.response);
+  assert.notEqual(other.item_id,(e.response as {item_id:string}).item_id,'another user must not claim the example item');
+});
 test('two users open distinct captures and only owners read or write every capture route', async () => {
   const first=await bodyOf(await requestCapture('POST /v1/captures',openInput));
   const second=await bodyOf(await requestCapture('POST /v1/captures',openInput));

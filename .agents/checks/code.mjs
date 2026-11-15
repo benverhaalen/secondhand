@@ -15,6 +15,9 @@ const stem = f => f.split('/').at(-1).split('.')[0].toLowerCase();
 
 const anyType = m => `${m} switches the type check off: name the real type, or use unknown and narrow it where the value enters`;
 const SWALLOWED = 'an error is swallowed: handle it, log it with log.error, or let it fail';
+const SILENT = 'an error is handled but not logged: call log.error(where, error) so the failure can be replayed';
+// The text inside the bracket that opens at `at`, or null if it never closes.
+const inside = (t, at) => { const close = { '(': ')', '{': '}' }[t[at]]; let d = 0; for (let i = at; i < t.length; i++) { if (t[i] === t[at]) d++; else if (t[i] === close && --d === 0) return t.slice(at + 1, i); } return null; };
 const OFF = 'a test is switched off: fix it, or skip it on a condition that names the reason';
 const NOTHING_VALUE = String.raw`(?:null|undefined|void 0|false|true|\[\]|\{\s*\}|0)`;
 
@@ -55,6 +58,13 @@ export function code(root, { files, changed = [] }) {
     if (grabBag(f)) add(f, 'name the file for the one idea it owns (listing/price/floor.ts), so a search finds it; utils, helpers and misc say nothing');
     const raw = text(f), views = { code: withoutStrings(f, raw), comments: commentsOnly(f, raw) };
     for (const [ext, view, re, say] of RULES) if (ext.test(f)) for (const m of views[view].matchAll(re)) add(`${f}:${lineOf(views[view], m.index)}`, say(m[0].trim()));
+    // In screens and parts, a catch that does something but never logs or rethrows hides the failure from the log (the empty ones are above).
+    if (TS.test(f) && /^app\/src\/(app|ui)\//.test(f)) {
+      const bare = views.code;
+      const flag = (i, body) => { if (body != null && body.trim() && !/\blog\??\.|\bthrow\b/.test(body) && !new RegExp(`^(?:\\([^)]*\\)|\\w+)\\s*=>\\s*${NOTHING_VALUE}$`).test(body.trim())) add(`${f}:${lineOf(bare, i)}`, SILENT); };
+      for (const m of bare.matchAll(/\bcatch\s*(?:\([^)]*\))?\s*\{/g)) flag(m.index, inside(bare, m.index + m[0].length - 1));
+      for (const m of bare.matchAll(/\.catch\(/g)) flag(m.index, inside(bare, m.index + m[0].length - 1));
+    }
     const lines = raw.split('\n').length - (raw.endsWith('\n') ? 1 : 0);
     if (lines > LONG && changed.includes(f) && !generated(f, raw)) out.push(warn(f, `${lines} lines: does this file own more than one idea? (${LONG} is a guess at where to look, not a limit)`));
   }

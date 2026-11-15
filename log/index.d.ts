@@ -27,3 +27,5 @@ export function createLog(options: { src: string; build: string; sink: Sink; see
 export function mask<T>(value: T, depth?: number): T;
 export const consoleSink: Sink;
 export function memorySink(): Sink & { lines: string[]; text(): string };
+
+export function observeLogs(sink: Sink): () => void;

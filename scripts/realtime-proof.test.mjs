@@ -15,34 +15,59 @@ const gap = (n, state, reason) => {
 };
 
 test('1: the Check loses the thin-basis level and note', () => {
-  gap(1, 'wrong', 'check returns neither basis_level nor the too_few note computed by comparables.');
+  gap(1, 'wrong', 'check drops the level and too_few state computed by comparables; its answer has neither basis_level nor a too_few note.');
   const { before, thin } = report.observed;
   assert.equal(thin.state, 'too_few');
+  assert.equal(thin.level, 'category');
   assert.equal(before.n_eff, 1);
   assert.equal(before.basis_level, undefined);
+  assert.equal(before.notes, undefined);
+  assert.equal(before.range.notes, undefined);
   assert.equal(before.range.hide_reason, undefined);
   assert.equal(before.range.q50, 1900);
   assert.ok(row(1).spec_quote && row(1).code_quote);
 });
 
-test('2: valuation never starts the available gatherer; the direct probe has a deadline', () => {
+test('2: valuation never starts gather; shown thin facts stop, while a no-basis control gets a deadline', () => {
   gap(2, 'built, not called', 'check and runPlan never call gather; the proof invokes it separately on a guarded diagnostic.');
   assert.deepEqual(report.observed.importers.gather, []);
   assert.deepEqual(report.observed.gather_events_from_valuation, []);
-  assert.equal(report.observed.gather.request.product, 'pr_realtime');
-  assert.equal(report.observed.gather.request.claim, 'sold_range');
-  assert.equal(Date.parse(report.observed.gather.request.deadline) - Date.parse(report.as_of), 120000);
+  const g = report.observed.gather;
+  assert.equal(g.answer.facts[0].guarded.state, 'shown');
+  assert.deepEqual(g.answer.facts[0].guarded.notes, ['too_few']);
+  assert.equal(g.stop, 'nothing_to_gather');
+  assert.equal(g.request, null);
+  const hidden = report.observed.no_basis_gather;
+  assert.deepEqual(hidden.answer.facts[0].guarded, { state: 'hidden', hide_reason: 'source_gap', basis_count: 0 });
+  assert.equal(hidden.request.product, 'pr_realtime');
+  assert.equal(hidden.request.claim, 'sold_range');
+  assert.equal(Date.parse(hidden.request.deadline) - Date.parse(report.as_of), 120000);
+  assert.equal(hidden.stop, 'exhausted');
   assert.equal(report.observed.shown_thin_gather.stop, 'nothing_to_gather');
   assert.equal(report.observed.shown_thin_gather.request, null);
 });
 
-test('3: recorded pages reach two real readers only after a separate search request', () => {
+test('3: the configured recorded source reaches the real reader only after a separate search request', () => {
   gap(3, 'built, not called', 'The proof starts POST /v1/search by hand; gather has no product-supplied widening steps.');
   const s = report.observed.search;
-  assert.equal(s.found.results_found, 24);
-  assert.equal(s.found.results_used, 24);
-  assert.deepEqual(s.searched.filter(r => r.outcome === 'hit').map(r => r.site).sort(), ['depop', 'poshmark']);
-  assert.deepEqual(report.observed.gather.records, [{ n: 6, n_eff: 0, ms: 0, added: 0, outcome: 'skipped' }]);
+  assert.equal(s.found.sources_searched, 1);
+  assert.equal(s.found.results_found, 12);
+  assert.equal(s.found.results_used, 12);
+  assert.deepEqual(s.searched.map(r => [r.site, r.outcome]), [['poshmark', 'hit']]);
+  const config = report.observed.search_replay;
+  assert.deepEqual(config.selected, ['poshmark']);
+  assert.deepEqual(config.excluded.map(s => s.id), ['dupe', 'depop', 'mercari', 'facebook', 'ebay']);
+  assert.ok(config.excluded.every(s => s.reason));
+  assert.deepEqual(config.sources.map(s => [s.id, s.lane, s.on, s.needs_ask]), [
+    ['dupe', 'mcp', true, false], ['depop', 'harness', true, false],
+    ['poshmark', 'public_page', true, false], ['mercari', 'harness', true, true],
+    ['facebook', 'harness', false, false], ['ebay', 'harness', false, false],
+  ], 'source rows changed: review the replay coverage before updating this pin');
+  assert.deepEqual(config.reads.map(r => r.fixture), ['poshmark', 'poshmark-empty']);
+  assert.deepEqual(config.unrecorded_requests, []);
+  assert.deepEqual(report.observed.learning.empty_search.searched.map(r => [r.site, r.outcome]), [['poshmark', 'empty']]);
+  assert.deepEqual(report.observed.gather.records, []);
+  assert.deepEqual(report.observed.no_basis_gather.records, [{ n: 6, n_eff: 0, ms: 0, added: 0, outcome: 'skipped' }]);
   for (const fixture of report.fixtures) {
     assert.equal(readFileSync(new URL(`../${fixture.path}`, import.meta.url), 'utf8'),
       readFileSync(new URL(`../${fixture.source}`, import.meta.url), 'utf8'), 'recorded inputs must be unchanged copies');
@@ -53,6 +78,7 @@ test('4: the real reconciler refuses to invent a product relation without identi
   gap(4, 'built, not called', 'Search calls sameProduct, but gathering never reaches search; recorded pages lack identifiers, pair scores and recorded model judgements.');
   assert.ok(report.observed.judgement_requests.length > 0, 'search stopped calling the reconciler');
   assert.ok(report.observed.search.results.every(r => r.relation === 'unresolved'));
+  assert.equal(report.observed.search.results.length, report.observed.search.found.results_found, 'unresolved rows must remain visible');
   assert.deepEqual(report.observed.search.identity, { by: 'default', model_ok: false });
   assert.equal(report.observed.search.product, null);
 });
@@ -97,8 +123,8 @@ test('8: only the explicit learning diagnostic moves a posterior; timestamps hal
   assert.deepEqual(p.second.value, { alpha: 1, beta: 1.5 });
   assert.equal(p.second.version, 2);
   assert.equal(p.second.n_eff, 1.5);
-  assert.equal(p.observe_calls.length, 4);
-  assert.ok(p.observe_calls.slice(2).every(c => c.outcome.days_since_last === 30));
+  assert.equal(p.observe_calls.length, 2);
+  assert.equal(p.observe_calls[1].outcome.days_since_last, 30);
 });
 
 test('9: the next valuation ignores the moved contribution row and retains its supplied version', () => {
@@ -114,10 +140,23 @@ test('9: the next valuation ignores the moved contribution row and retains its s
 
 test('the overridden valuation input port must be reviewed when its real wiring changes', () => {
   assert.equal(report.observed.input_port.source_sha256,
-    'c53ce8e95aae3c9e4a30a6a0c9fac39326cd63b3f1d60e1e1605d6d6305552bb',
+    '41ff876f6c66aee5c2fd9f46490c884633fec01bf3de8d082512d9fa3a07c79d',
     'valuation.ports.read changed: inspect new store/param joins before updating links 1, 2, 6, 7 and 9');
   assert.match(report.observed.input_port.source, /warm_comps: \[\]/);
   assert.match(report.observed.input_port.source, /param_version: 1/);
+  assert.match(report.observed.input_port.source, /soldSources\(soldSearch\(/);
+  assert.match(report.observed.input_port.source, /example\('items.get'\)/);
+  const offline = report.observed.input_port.offline;
+  assert.equal(offline.product_id, 'pr_4hd1');
+  assert.equal(offline.condition, 'good');
+  assert.equal(offline.param_version, 1);
+  assert.deepEqual(offline.warm_comps, []);
+  assert.deepEqual(offline.sites, [{ site: 'mercari' }, { site: 'poshmark' }]);
+  assert.deepEqual(offline.source_rows, [[], []]);
+  assert.deepEqual(offline.sold_search, [
+    { rows: [], outcome: 'blocked', reason: 'live reads are disabled' },
+    { rows: [], outcome: 'blocked', reason: 'live reads are disabled' },
+  ]);
 });
 
 test('10: two fresh stores produce byte-identical observed outputs', () => {

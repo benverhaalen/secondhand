@@ -11,7 +11,7 @@ const run = (...args) => spawnSync(process.execPath, ['scripts/walk.mjs', ...arg
 });
 const lines = result => result.stdout.trim().split('\n').map(line => JSON.parse(line));
 
-test('one fixture item runs all fifteen stages and finishes sold once and ended elsewhere', async t => {
+test('one fixture item runs all fifteen stages and finishes sold once with delists planned elsewhere', async t => {
   const result = run();
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr);
@@ -40,6 +40,7 @@ test('one fixture item runs all fifteen stages and finishes sold once and ended 
   const stage = name => output.find(row => row.stage === name);
   await t.test('post preserves approval, drafted price and photos in the Depop dry plan', () => {
     assert.equal(stage('post').mode, 'real');
+    assert.equal(stage('post').state, 'planned');
     assert.equal(stage('post').plan.dry, true);
     assert.equal(stage('post').plan.request.price_amount * 100, stage('draft').price_cents);
     assert.deepEqual(stage('post').plan.request.pictures, stage('draft').photo_ids);
@@ -49,6 +50,8 @@ test('one fixture item runs all fifteen stages and finishes sold once and ended 
   });
   await t.test('watcher offer above always_accept receives a Depop dry accept plan', () => {
     assert.equal(stage('answer_offer').mode, 'real');
+    assert.equal(stage('answer_offer').state, 'planned');
+    assert.equal(stage('delist').state, 'planned');
     assert.equal(stage('answer_offer').plan.dry, true);
     assert.equal(stage('answer_offer').plan.request.action, 'accept');
     assert.equal(stage('answer_offer').event.action, 'offer.received');
@@ -56,7 +59,7 @@ test('one fixture item runs all fifteen stages and finishes sold once and ended 
     assert.ok(stage('answer_offer').event.payload.price_cents >= stage('answer_offer').event.payload.always_accept_cents);
   });
   await t.test('one-item week preserves all three sweep counts', () => {
-    assert.deepEqual(stage('watch').sweeps, { depop: 3124, poshmark: 2475, ebay: 403 });
+    assert.deepEqual(stage('watch').sweeps, { depop: 3124, poshmark: 2648, ebay: 576 });
     assert.equal(stage('watch').item_count, 1);
     assert.ok(stage('watch').engines.some(e => e.name === 'pAccept' && !e.real), 'fixture acceptance model was hidden');
   });
@@ -83,7 +86,7 @@ test('one fixture item runs all fifteen stages and finishes sold once and ended 
   assert.equal(total.ok, true);
   assert.equal(total.counts.stages, 15);
   assert.equal(total.item.state, 'sold');
-  assert.deepEqual(total.sites, { poshmark: 'scripted_ended', ebay: 'scripted_ended', depop: 'observed_sold' });
+  assert.deepEqual(total.sites, { poshmark: 'scripted_live', ebay: 'scripted_live', depop: 'observed_sold' });
   assert.ok(total.ms >= 0);
 });
 
@@ -148,6 +151,7 @@ test('a watch prefix reports its completed nested sale without claiming the whol
   assert.deepEqual(output.map(row => row.stage), ['watch', 'total']);
   assert.equal(output.at(-1).ok, false);
   assert.equal(output.at(-1).counts.sold, 1);
-  assert.equal(output.at(-1).counts.ended, 2);
+  assert.equal(output.at(-1).counts.ended, 0);
+  assert.equal(output.at(-1).counts.planned, 2);
   assert.equal(output.at(-1).item.state, 'sold');
 });

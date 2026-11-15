@@ -1,4 +1,5 @@
 # Determinations: capture shots
+Spec pass 2026-11-15: cards marked **Built** say where the code is; the capture engine's rules live in [capture engine](../engines/capture.md).
 Status: *agent proposal* for Ben and Nate. Written 2026-11-14.
 
 This file decides which shots capture asks for, per item kind, in what order, and when it stops asking. It answers Nate: "Determine the best way to capture every photo, for ease of process and amount of information ascertained" ([words](../../product/words.md#2026-11-14-nate-the-best-way-to-take-every-photo-tags-delayed-retouch-chosen-by-the-person)), and his steer that followed: "front, back, maybe also the tag, no side photos but just clothing tag for clothing? for furniture and objects we can do lidar, like shoes, whatever would be instant and intuitive for capturing and creating the listings, with the least amount of additional input" ([words](../../product/words.md#2026-11-14-nate-front-back-and-tag-for-clothes-lidar-for-objects-the-least-extra-input)). It feeds [capture](../features/capture.md) and builds on the capture cards in [seeing-the-item](seeing-the-item.md), which it links rather than restates.
@@ -212,6 +213,8 @@ The easiest capture for a garment is the flat lay: front, back, tag. The answer 
 
 ## 1. Which plan an item gets
 
+**Built:** the type's process, the 8-still ring when the phone has no object capture, and stills for small and soft items are built in [capture engine §2](../engines/capture.md#selection-by-type-and-size) (`app/src/engines/capture/select.ts`, `process.ts`, `jobs/capture/process.json`). The small bound is `capture_small_cm`, prior 10 cm, which matches this card. The reflective test (depth confidence low on over 40% of the mask) and the `capture_judge` swap are not built: no code reads reflectivity, and no product path calls `judge_type.py`; only the fixture walk (`scripts/walk.mjs`) does.
+
 **Determines**: the default ordered shot list for this item, and whether it starts with a scan or with stills.
 
 **Sources and weights**
@@ -224,9 +227,8 @@ The easiest capture for a garment is the flat lay: front, back, tag. The answer 
 | outline softness, extent under 10 cm, reflectivity from the first frames | swaps a scan for stills | override | soft, small and reflective items fail the scan ([adaptive-capture §9](../../research/capture/nate/adaptive-capture.md)) |
 
 **Method**
-1. Rule. Take the picked type's process.
-2. If the phone has no LiDAR, replace the scan with the 8-still ring.
-3. If the item is soft, under 10 cm, or reflective over most of its mask (depth confidence low on over 40% of the mask, start), replace the scan with stills and take dimensions by lookup or reference.
+1. Built: the picked type's process, the 8-still ring without object capture, and stills for soft and small items. The rule is in [capture engine §2](../engines/capture.md#selection-by-type-and-size).
+2. Not built: if the item is reflective over most of its mask (depth confidence low on over 40% of the mask, start), replace the scan with stills and take dimensions by lookup or reference.
 
 **Why this method**: the per-class limits are documented, so a rule settles the choice with no model. The alternative is to let a model choose per item; it would add a call before the first shot for a choice the class already makes.
 
@@ -239,6 +241,8 @@ The easiest capture for a garment is the flat lay: front, back, tag. The answer 
 **Check later**: on the 30-item test, the plan's items against the field-change rate. It is wrong if a kind's swapped plan settles fewer fields in the same seconds.
 
 ## 2. What a shot is worth
+
+**Not built.** The plan computes no worth; a view outside the process is asked only when a linked site requires a field that asking cannot settle (`fields.ts`, [capture engine §9](../engines/capture.md#9-what-comes-next-in-order-each-with-its-measure) item 6).
 
 **Determines**: for a candidate shot, how much it would settle, on a 0 to 1 scale per field.
 
@@ -270,6 +274,8 @@ Worked start values: the tag on a tee with no visible logo settles brand (1.0 x 
 **Check later**: on the 30 items, each asked shot's worth against whether it changed a field. It is wrong if shots under the bar changed fields as often as shots over it.
 
 ## 3. Whether an extra shot is asked
+
+**Not built.** The worth-over-effort bar (0.15 per unit) is not computed. Built today: a retake of a kept view, and an added view for a required field with no `asked` way ([capture engine §2](../engines/capture.md#the-questions), `plan.ts`). Required fields are not capped; other questions stop at `capture_question_cap`.
 
 **Determines**: whether a shot outside the default is asked for, in what order, and when asking stops. It applies [card 3 of seeing-the-item](seeing-the-item.md#3-what-must-still-be-captured-and-when-it-is-enough) to shots, with card 17's bar.
 
@@ -325,6 +331,8 @@ So for the tee above: the tag (1.9 / 2) is in the default anyway; the care label
 
 ## 5. When a retake is asked
 
+**Built:** the retake count and the retake itself are built in [capture engine §2](../engines/capture.md#the-questions) (`fields.ts` line 67, `plan.ts`). The worth test (step 1) and the first-failed-lever instruction (step 2) are not built: a kept view whose read came back `not_read` is retaken whenever a way for the field still points at it, and the words are "Retake the <step>" (`plan.ts` line 120). After 2 retakes the row is not marked unobtainable at once, as step 3 said: the next way runs, which may be a question. The code is right, because a tap is cheaper than a lost field.
+
 **Determines**: whether a failed shot is asked again, and with which one instruction.
 
 **Sources and weights**
@@ -338,7 +346,7 @@ So for the tee above: the tag (1.9 / 2) is in the default anyway; the care label
 **Method**
 1. Rule. A shot that fails card 2 of seeing-the-item is retaken only if its worth still passes card 3 here.
 2. The instruction names the first failed lever, for example "Closer on the tag."
-3. After 2 failed attempts the row is unobtainable (card 3 of seeing-the-item).
+3. The count of 2 is `capture_max_retakes`, built in [capture engine §3](../engines/capture.md#3-thresholds). After it the next way for the field runs; the row is unobtainable only when no way is left ([capture engine §2](../engines/capture.md#2-the-plan), "Ways that do not run").
 
 **Why this method**: retakes reuse the frame gate and the shot bar, so nothing new is decided. The alternative, always retaking a failed default shot, spends seconds on a field another shot may already have settled.
 
@@ -351,6 +359,8 @@ So for the tee above: the tag (1.9 / 2) is in the default anyway; the care label
 **Check later**: retakes per item and the share that succeed. It is wrong if under half of second attempts pass.
 
 ## 6. When a scan or a video replaces photos
+
+**Not built** beyond the scan-or-ring-or-stills choice in card 1. The video rule and the label-still rule are not in `select.ts` or `process.ts`; the phone's scan is not built ([capture engine §1](../engines/capture.md#1-what-exists-today)).
 
 **Determines**: whether an item gets a scan, a still ring, stills, or a short video.
 
@@ -409,6 +419,8 @@ So for the tee above: the tag (1.9 / 2) is in the default anyway; the care label
 
 ## 8. The one frame and each site's crop
 
+**Built:** the crop per site is built in `jobs/photo/crop.py` and described in [photo engine §3 step 4](../engines/photo.md#3-the-calculation). It is not yet joined to a per-site plan, and no mask producer exists.
+
 **Determines**: the shape of every listing photo, and how each site's crop is cut from it.
 
 **Sources and weights**
@@ -435,6 +447,8 @@ So for the tee above: the tag (1.9 / 2) is in the default anyway; the care label
 
 ## 9. Which retouch route runs for a photo
 
+**Built:** the route bandit is built in `jobs/photo/route.py` and described in [photo engine §3 step 5](../engines/photo.md#3-the-calculation); its numbers are in [photo engine §4](../engines/photo.md#4-thresholds). No runner calls it.
+
 **Determines**: for a photo the person chose Generate on ([studio](../features/studio.md#retouch-chosen-by-the-person)), which route runs (level 0 true color with no model, level 1 light, level 2 pressed, re-lay) and how many candidates are drawn. Owning feature: studio. Nate: "Studio cost will be calculated optimally." ([words](../../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)).
 
 **Sources and weights**
@@ -443,15 +457,15 @@ So for the tee above: the tag (1.9 / 2) is in the default anyway; the care label
 |---|---|---|---|
 | the level the person picked | the highest level allowed | ceiling | the person chose; never exceed it |
 | photo role | tag, label, serial and flaw photos: no route | gate | studio's rule |
-| expected gain: the photo score lift of the route over level 0, from studio's check numbers on past items of this kind, times the photo's weight in card 21's order (cover 1.0, others 0.3, start) | the gain | numerator | the cover drives the click; photo count beat quality for sale odds (*observed*, [quality-and-value-classifiers §3](../../research/price/nate/quality-and-value-classifiers.md)) |
+| expected gain: the photo score lift of the route over level 0, from studio's check numbers on past items of this kind, times the photo's weight in card 21's order (cover high, others low; numbers in [photo engine §4](../engines/photo.md#4-thresholds)) | the gain | numerator | the cover drives the click; photo count beat quality for sale odds (*observed*, [quality-and-value-classifiers §3](../../research/price/nate/quality-and-value-classifiers.md)) |
 | per-call price of each model, read from the provider at run time | the cost | denominator | prices change; never a fixed number in the spec |
 | past pass rate of the check for this route and kind | candidates needed | sets n | draw enough to expect one pass |
 
 **Method**
 1. Rule, then arithmetic. Level 0 always runs; it has no model cost.
-2. For each allowed paid route, `value = expected gain x item price estimate - expected cost`, where expected cost is the per-call price times n, and n is the smallest count giving at least a 0.8 chance (start) of one candidate passing the check, given the past pass rate.
+2. For each allowed paid route, `value = expected gain x item price estimate - expected cost`, where expected cost is the per-call price times n, and n is the smallest count that gives a set chance of one candidate passing the check, given the past pass rate (the target, the prior and the exploration rule are in [photo engine §3 step 5](../engines/photo.md#3-the-calculation)).
 3. Run the route with the highest positive value; if none is positive, offer level 0 and say the light is already good.
-4. Until 30 items of a kind have check numbers, use the gain start of 0.05 photo-score points per level for the cover and 0.02 for others (start).
+4. Until 30 items of a kind have check numbers, use the gain starts, one for the cover and a smaller one for others ([photo engine §4](../engines/photo.md#4-thresholds)).
 
 **Why this method**: gain against cost per photo spends model calls where they move the cover of a worthwhile item, with no cap. The alternative, a fixed per-item budget, either starves an expensive item's cover or pays for light on a photo that does not need it.
 
