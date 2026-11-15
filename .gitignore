@@ -4,6 +4,8 @@
 *.ttf
 *.woff
 *.woff2
+# a stylesheet that names where the font files are on one machine
+fonts.local.css
 
 # raw logs and agent scratch stay on the machine that made them (log/README.md)
 logs/
