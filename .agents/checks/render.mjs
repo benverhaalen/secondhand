@@ -41,6 +41,12 @@ const size = el => [el.rect[2] - el.rect[0], el.rect[3] - el.rect[1]];
 const pill = el => el.radius.some(r => r === '50%' && Math.abs(size(el)[0] - size(el)[1]) > 1 || parseFloat(r) >= 999 || !r.endsWith('%') && parseFloat(r) >= Math.min(...size(el)) / 2 - .5);
 const act = (el, pal) => ['ink', 'ink-press'].includes(pal.name(el.bg)) && pill(el) && el.hasText;
 const cy = el => (el.rect[1] + el.rect[3]) / 2;
+// How a color looks without red cones or without green cones (Machado, Oliveira and Fernandes 2009, severity 1), as a point in Oklab.
+const CVD = { 'no red cones': [[.152286, 1.052583, -.204868], [.114503, .786281, .099216], [-.003882, -.048116, 1.051998]], 'no green cones': [[.367322, .860646, -.227968], [.280085, .672501, .047413], [-.01182, .04294, .968881]] };
+const lin = v => (v /= 255) <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4;
+const oklab = ([r, g, b]) => { const l = Math.cbrt(.4122214708 * r + .5363325363 * g + .0514459929 * b), m = Math.cbrt(.2119034982 * r + .6806995451 * g + .1073969566 * b), s = Math.cbrt(.0883024619 * r + .2817188376 * g + .6299787005 * b);
+  return [.2104542553 * l + .793617785 * m - .0040720468 * s, 1.9779984951 * l - 2.428592205 * m + .4505937099 * s, .0259040371 * l + .7827717662 * m - .808675766 * s]; };
+export const seenAs = (rgb, kind) => oklab(CVD[kind].map(row => Math.min(1, Math.max(0, row[0] * lin(rgb[0]) + row[1] * lin(rgb[1]) + row[2] * lin(rgb[2])))));
 
 // A gradient is a state tag when it runs from one hue's tint to its fill (ledger L18). Any other gradient is a field (C2).
 function gradientKind(el, pal) {
@@ -230,6 +236,31 @@ function checkView(view, ctx) {
   // A view the field fills is the brand's one loud moment (a title slide, an end card, a sale); judge() caps how many an output has.
   view.bleed = fields.some(el => (Math.min(el.rect[2], view.w) - Math.max(el.rect[0], 0)) * (Math.min(el.rect[3], view.h) - Math.max(el.rect[1], 0)) >= .9 * view.w * view.h);
   if (view.share && view.share.color > 1 / 3 && !view.bleed) E('B8', '', `is ${Math.round(view.share.color * 100)}% color: color covers at most a third of a view, not counting photos, unless the field fills it (Art. 5.2)`);
+  // U4 two colors that mark different things stay apart for an eye with no red or no green cones, a dark ground is never brown, and a tag is never color alone
+  const hues = [...new Set(view.els.filter(e => e.hasText && hueOf(pal.name(e.bg))).map(e => pal.name(e.bg)))];
+  for (const [kind] of Object.entries(CVD)) for (let i = 0; i < hues.length; i++) for (let j = i + 1; j < hues.length; j++) { if (hueOf(hues[i]) === hueOf(hues[j])) continue;
+    const d = Math.hypot(...seenAs(pal.of(hues[i]), kind).map((v, k) => v - seenAs(pal.of(hues[j]), kind)[k]));
+    if (d < .05) E('U4', '', `--${hues[i]} and --${hues[j]} are ${d.toFixed(3)} apart to an eye with ${kind}: two colors that mark different things in one view stay .05 apart in Oklab`); }
+  for (const el of view.els) { const c = rgba(el.bg); if (!c || c[3] < .99) continue; const o = oklch(hex(c));
+    if (o.L < .5 && o.C > .03 && o.H >= 70 && o.H <= 115) E('U4', el.part ? `[${el.part}]` : `<${el.tag}>`, `has a dark ground of ${el.bg} in the yellow to olive band, which reads as brown`);
+    if (/tag/.test(el.part ?? '') && hueOf(pal.name(el.bg)) && !el.hasText && !view.els.some(k => k.parent === view.els.indexOf(el) && (k.tag === 'img' || k.tag === 'svg'))) E('U4', `[${el.part}]`, 'shows its state by color alone: a tag carries a word or an icon'); }
+  // U2 a countdown is calm: no seconds, and past a day it is a day and a time
+  for (const t of text) { const h = /\b(\d{2,3})\s?h\b/.exec(t.text), part = (() => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].part) return view.els[i].part; return ''; })();
+    if (h && Number(h[1]) > 24) E('U2', short(t.text), `counts ${h[1]} hours: past a day, show the day and the time`);
+    if (/\b\d+m \d+s\b|\b\d{1,2}:\d{2}:\d{2}\b/.test(t.text) || /countdown/.test(part) && /\b\d+\s?s\b/.test(t.text)) E('U2', short(t.text), 'counts seconds: a countdown never ticks by the second');
+    // U1 what does nothing never looks pressable
+    if (/tag|badge|count/.test(part) && (t.control || view.els[t.el]?.pointer)) E('U1', short(t.text), `is a [${part}] that looks pressable: a tag, a count or a countdown is not a button`); }
+  // U1 what opens a screen says so: a row that is a link ends in a chevron, and a button is a filled or outlined shape
+  view.els.forEach((el, i) => { const inside = k => { for (let j = k.parent; j >= 0; j = view.els[j].parent) if (j === i) return true; return false; };
+    if (el.link && el.block && size(el)[0] > .6 * view.w && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img' && Math.max(...size(k)) <= 32 * u) && inside(k) && (k.rect[0] + k.rect[2]) / 2 > el.rect[2] - .2 * size(el)[0]))
+      E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a row that opens a screen and ends in no chevron: nothing shows it can be pressed');
+    if (el.button && el.hasText && !el.bg && !el.borders.length && !el.gradient && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img') && inside(k))) E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a button with no fill and no outline: a button is a pill or a filled shape'); });
+  // B36 edges line up or clearly differ: two blocks of text, one above the other, never start 1 to 3 px apart
+  // Words inside a small box of their own (a tag, a pill, a button) start where the box's padding puts them, so they are left out.
+  const boxed = t => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].bg || view.els[i].borders.length) return size(view.els[i])[0] < view.w / 2; return false; };
+  const leads = text.filter(t => t.lead && !t.scroller && !t.control && !boxed(t));
+  for (let i = 0; i < leads.length; i++) for (let j = i + 1; j < leads.length; j++) { const a = leads[i], b = leads[j], d = Math.abs(a.rect[0] - b.rect[0]);
+    if (d >= 1 && d <= 3 && Math.abs(a.rect[2] - b.rect[2]) > 1 && Math.abs(a.rect[0] + a.rect[2] - b.rect[0] - b.rect[2]) > 2 && (a.rect[3] <= b.rect[1] || b.rect[3] <= a.rect[1])) { E('B36', `${short(a.text)} and ${short(b.text)}`, `start ${Math.round(a.rect[0])} and ${Math.round(b.rect[0])} px from the left: edges line up exactly or sit clearly apart, never almost`); i = leads.length; break; } }
   if (view.els.length > 12 && !view.els.some(e => e.part)) W('B31', '', 'marks nothing data-part, so nothing was checked for one size: mark each kind of repeated thing');
   // L2 not only black and white: a view with no color and no photo. A warning, because a closing slide may be the wordmark alone.
   if (view.share && view.share.color < .005 && !view.els.some(e => e.photo)) W('L2', '', 'is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)');
@@ -278,6 +309,8 @@ export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
   for (const [k, all] of kinds) { const part = k.split(' ')[1], set = (xs, i) => [...new Set(xs.map(x => Math.round(size(x.el)[i])))].sort((a, b) => a - b), spread = xs => Math.max(...xs) - Math.min(...xs) > 1;
     const hs = set(all, 1), ws = set(all.filter(x => x.el.fit !== 'content' && !x.el.logo), 0), at = `${new Set(all.map(x => x.view)).size > 1 ? 'views' : 'view'} ${[...new Set(all.map(x => x.view))].join(', ')}`;
     if (spread(hs)) out.push(err('B31', `${at} [${part}]`, `is ${hs.join(', ')} px tall in different places: things of one kind are one size, whatever is in them`));
+    const rs = [...new Set(all.map(x => [...new Set(x.el.radius)].join(' ') || '0'))];
+    if (rs.length > 1) out.push(err('B31', `${at} [${part}]`, `has corners of ${rs.join(' and ')}: things of one kind have one corner`));
     if (ws.length && spread(ws)) out.push(err('B31', `${at} [${part}]`, `is ${ws.join(', ')} px wide in different places: things of one kind are one size, whatever is in them. Where a width should follow its words, mark it data-fit="content"`)); }
   const where = sheet.wordmark?.views;
   marks.forEach((m, i) => { if (m.length && (where === 'last' && i !== n - 1 || where === 'first-last' && i !== 0 && i !== n - 1))

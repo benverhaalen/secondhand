@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { words, allCaps, titleCase, sheetAgrees } from './render.mjs';
+import { words, allCaps, titleCase, sheetAgrees, seenAs } from './render.mjs';
 import { scan } from '../../scripts/copy-lint.mjs';
 import { check, playwright } from '../../scripts/brand-check.mjs';
 import { mediaCss } from '../../scripts/media-css.mjs';
@@ -164,6 +164,22 @@ CASES.push(['B15', 'text that taps pass through, in a face that is not ours', de
   ['B28', 'a page zoomed to one and a half times', `<style>body{zoom:1.5}</style>${app('')}`, /B28 .*zoomed or scaled/, 'app'],
   ['B14', 'two lines at the peak size on an app screen', app('<div style="padding:0 20px"><p style="font-size:50px">Big words</p><p style="font-size:50px">More big words</p></div>'), /B14 .*one peak number/, 'app'],
   ['B3', 'a story wordmark at the top of its end card', STORY('<p class="m" style="font-size:120px;align-self:start;margin-top:250px">secondhand</p>'), /B3 .*goes center/, 'story']);
+// Ben's notes on the dark mode render, 02:18: color blindness, countdowns, and what looks pressable.
+const TAG = (c, w) => `<span data-part="tag-kind" style="display:inline-block;font-size:13px;background:var(--${c});color:var(--on-color);padding:4px 8px;border-radius:var(--r-photo);margin:16px 0 0 20px">${w}</span>`;
+CASES.push(['U4', 'a dark ground that reads as brown', app('<div style="margin:16px 20px;height:64px;background:#432E02"></div>'), /U4 .*reads as brown/, 'app'],
+  ['U4', 'a tag that is color alone', app('<span data-part="tag-kind" style="display:inline-block;width:32px;height:20px;background:var(--mint);margin:16px 20px"></span>'), /U4 .*color alone/, 'app'],
+  ['U2', 'a countdown past a day in hours', app('<p style="font-size:13px;padding:16px 20px">Ends in 26h</p>'), /U2 .*26 hours/, 'app'],
+  ['U2', 'a countdown that ticks by the second', app('<p style="font-size:13px;padding:16px 20px">Ends in 4m 12s</p>'), /U2 .*counts seconds/, 'app'],
+  ['U1', 'a tag that looks pressable', app(TAG('mint', 'Live').replace('style="', 'style="cursor:pointer;')), /U1 .*looks pressable/, 'app'],
+  ['U1', 'a row that opens a screen with no chevron', app('<a href="#x" style="display:block;margin:16px 20px;font-size:15px;color:var(--ink);text-decoration:none">Ship the Nike Dunks by tomorrow</a>'), /U1 .*no chevron/, 'app'],
+  ['U1', 'a button that is bare words', app('<button style="font:500 15px var(--font-text);background:none;border:0;margin:16px 20px;color:var(--ink)">Send a counter</button>'), /U1 .*no fill and no outline/, 'app'],
+  ['B36', 'two lines that start two pixels apart', app('<p style="font-size:15px;margin:16px 0 0 20px">Carhartt jacket</p><p style="font-size:15px;margin:16px 0 0 22px">Nike Dunks</p>'), /B36 .*start 20 and 22 px/, 'app'],
+  ['B31', 'one kind of thing with two corners', deck('<div data-part="tile" style="height:160px;background:var(--gray);border-radius:var(--mr-card)"></div><div data-part="tile" style="height:160px;background:var(--gray);border-radius:var(--mr-photo);margin-top:32px"></div>'), /B31 .*corners of 28px and 16px/]);
+test('render: seen with no red or no green cones, the four state fills stay apart, and two tints of near hues do not', () => {
+  const d = (a, b, k) => Math.hypot(...seenAs(a, k).map((v, i) => v - seenAs(b, k)[i])), sky = [165, 225, 254], mint = [161, 234, 203], lime = [235, 240, 143], marigold = [245, 210, 151];
+  for (const k of ['no red cones', 'no green cones']) for (const [a, b] of [[sky, mint], [sky, lime], [sky, marigold], [mint, lime], [mint, marigold], [lime, marigold]]) assert.ok(d(a, b, k) >= .05, `${a} ${b} ${k} ${d(a, b, k)}`);
+  assert.ok(d([165, 225, 254], [168, 226, 250], 'no red cones') < .05);
+});
 // Edge states. The checker refills every slot marked data-fill with each piece of extreme content in .agents/ui-states.json and checks the view again.
 const SLOT = 'font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
 test('render: a tile of a fixed size that ends long text with an ellipsis and keeps its photo slot passes with every extreme', { skip: !pw }, async () => {
