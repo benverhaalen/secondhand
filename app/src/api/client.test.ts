@@ -211,3 +211,8 @@ test('origin uses EXPO_PUBLIC_API_ORIGIN when set and same-origin when absent', 
     else process.env.EXPO_PUBLIC_API_ORIGIN = before;
   }
 });
+
+test('a 429 that names the daily cap keeps it, so the chat can say the demo is used up for today', async () => {
+  const client = createClient({ origin: '', fetch: async () => new Response(JSON.stringify({ code: 'rate_limited', message: 'cap', retry: { by: 'auto', after_s: 3600 }, cap: 'daily' }), { status: 429 }) });
+  await assert.rejects(client.call('POST /v1/assist', { body: { text: 'x' } }), (e: unknown) => e instanceof ApiFailure && e.status === 429 && e.cap === 'daily' && e.retry?.after_s === 3600);
+});

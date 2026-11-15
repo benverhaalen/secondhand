@@ -32,6 +32,7 @@ const WORDS = {
   view: 'View listing',
   tool: { search_market: 'Listings', value_item: 'Sold prices', price_trend: 'Price trend', where_to_list: 'Where to sell', market_store: 'Our data', web_search: 'The web' } as Record<string, string>,
   answerFailed: 'Couldn’t answer that yet',
+  capDaily: 'The demo has answered all it can today. Try again tomorrow.',
   range: (q10: string, q90: string, q50: string) => `${q10} to ${q90}, most near ${q50}`,
 };
 
@@ -117,7 +118,7 @@ function Answer({ reply }: { reply: Reply }) {
       )) : null}
       {reply.blocks ? reply.blocks.map((b, i) => b.type === 'text' ? <Txt key={i} role="body">{b.text}</Txt> : <Widget key={i} result={reply.results[b.result_id]} widget={b.widget} />)
         : reply.text ? <Txt role="body">{reply.text}</Txt> : null}
-      {reply.state === 'failed' || reply.error ? <Txt role="caption">{WORDS.answerFailed}</Txt> : null}
+      {reply.state === 'failed' || reply.error ? <Txt role="caption">{reply.error === 'cap_daily' ? WORDS.capDaily : WORDS.answerFailed}</Txt> : null}
     </Stack>
   );
 }

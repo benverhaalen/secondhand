@@ -61,15 +61,15 @@ export function useShop() {
     const show = (r: Reply) => setTurns(ts => { const i = ts.length - 1; return ts[i]?.kind === 'answer' ? [...ts.slice(0, i), { kind: 'answer', reply: r }] : [...ts, { kind: 'answer', reply: r }]; });
     show(reply([]));
     (async () => {
-      const start = await api.call<SearchStart>('POST /v1/assist', { body: { surface: 'buy', text, history: history(before) }, signal: ctl.signal });
+      const start = await api.call<SearchStart>('POST /v1/assist', { body: { surface: 'buy', text, history: history(before), ...(search.jobId ? { search_job_id: search.jobId } : {}) }, signal: ctl.signal });
       await api.jobFrames(start.id, { signal: ctl.signal, onFrame: f => { frames.push(f); show(reply(frames)); } });
     })().catch((e: unknown) => {
       if (ctl.signal.aborted) return;
       const f = e instanceof ApiFailure ? e : new ApiFailure(0, 'unreachable', e instanceof Error ? e.message : 'ask failed', { cause: e });
       log.error('shop.ask', f, { code: f.code });
-      show({ ...reply(frames), state: 'failed', error: f.code });
+      show({ ...reply(frames), state: 'failed', error: f.cap === 'daily' ? 'cap_daily' : f.code });
     });
-  }, []);
+  }, [search.jobId]);
 
   const ask = useCallback((raw: string) => {
     const text = raw.trim();
