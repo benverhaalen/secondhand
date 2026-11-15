@@ -1,10 +1,10 @@
 import { numeric, priors, priorVersions, type ParamInput } from './params.ts';
-import { cents, dollarsToCents } from './money.ts';
+import { cents } from './money.ts';
 import { publish, type Proof, type Published } from './publication.ts';
 import { known, fact } from '../../../../spec/sites.mjs';
 export type CfIn = {
   brand?: string; proofPhoto: boolean; site: 'poshmark' | 'ebay' | 'other'; shoes: boolean;
-  price_cents?: number; q50_cents?: number; priceUsd?: number; q50?: number;
+  price_cents?: number; q50_cents?: number;
   stockPhoto: boolean; sellerAgeDays?: number; buy?: boolean; proof?: { price: Proof; q50: Proof };
 };
 export type Cf = { action: 'none' | 'warn' | 'ask'; reasons: string[]; price: Published | null; typical: Published | null };
@@ -12,8 +12,8 @@ export function counterfeit(i: CfIn, input?: ParamInput, versions?: Record<strin
   const values = input ?? priors();
   const paramVersions = versions ?? (input === undefined ? priorVersions() : {});
   const p = numeric(values), read = (name: string) => typeof values === 'function' ? values(name) : values[name];
-  const price_cents = i.price_cents === undefined ? dollarsToCents(i.priceUsd, 'priceUsd') : cents(i.price_cents, 'price_cents');
-  const q50_cents = i.q50_cents === undefined ? dollarsToCents(i.q50, 'q50') : cents(i.q50_cents, 'q50_cents');
+  const price_cents = cents(i.price_cents, 'price_cents');
+  const q50_cents = cents(i.q50_cents, 'q50_cents');
   const brands = read('trust_cf_brands');
   if (!Array.isArray(brands)) throw new RangeError('trust_cf_brands');
   const prone = !!i.brand && brands.includes(i.brand.toLowerCase());

@@ -4,7 +4,7 @@ import { evaluateHard, type LockedKind } from './hard.ts';
 import { codeSignals, readModel, SCORED, SCORED_NAMES, type Ctx, type Group, type Msg, type Reading } from './signals.ts';
 
 import { resolve, numeric, priors, priorVersions, type ParamInput } from './params.ts';
-import { cents, dollarsToCents } from './money.ts';
+import { cents } from './money.ts';
 import { calibrate, type Calib } from './calibration.ts';
 import { publish, type Proof, type Published } from './publication.ts';
 export { calibrate, sigmoid } from './calibration.ts';
@@ -13,7 +13,7 @@ export type { Calib } from './calibration.ts';
 export type RawRead = { signal: string; confidence: number; span: string };
 export type Deps = {
   store?: ParamStore;
-  model: (m: Msg) => Promise<RawRead[]>;
+  model?: (m: Msg) => Promise<unknown>;
   ms?: number;                       // model timeout, default 2000
   version?: string;                  // model version stamped on readings
   logger?: Log;
@@ -23,12 +23,12 @@ export type ThreadIn = {
   msg: Msg; ctx: Ctx; group: Group; person?: string;
   checkout: boolean; orderPaid: boolean; local: boolean;
   keep_q50_cents?: number; refund_asked_cents?: number;
-  keep_q50?: number; refund_asked?: number; draft?: string;
+  draft?: string;
   proof?: Proof;
 };
 export type Action = 'none' | 'warn' | 'ask' | 'block';
 export type Decision = {
-  action: Action; s: number; loss_cents: number; friction_cents: number; line: number;
+  action: Action; checked_by: 'code' | 'code+model'; s: number; loss_cents: number; friction_cents: number; line: number;
   p: number | null; percent: { p: number; checked: number; probability: Published; count: Published } | null;
   locked: LockedKind[]; draft: boolean; draftBlocked: boolean; commitWaits: boolean; reasons: string[]; readings: Reading[];
 };
@@ -76,30 +76,37 @@ export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
 
   const resolved = d.store ? resolve(d.store, scope) : { values: priors(), versions: priorVersions() };
   const p = numeric(resolved.values);
-  const keep_cents = t.keep_q50_cents !== undefined ? cents(t.keep_q50_cents, 'keep_q50_cents') : t.keep_q50 !== undefined ? cents(t.keep_q50, 'keep_q50') : t.ctx.price_cents !== undefined ? cents(t.ctx.price_cents, 'price_cents') : dollarsToCents(t.ctx.price_usd, 'price_usd');
-  const refund_cents = t.refund_asked_cents !== undefined ? cents(t.refund_asked_cents, 'refund_asked_cents') : t.refund_asked === undefined ? 0 : dollarsToCents(t.refund_asked, 'refund_asked');
+  const keep_cents = t.keep_q50_cents !== undefined ? cents(t.keep_q50_cents, 'keep_q50_cents') : cents(t.ctx.price_cents, 'price_cents');
+  const refund_cents = t.refund_asked_cents === undefined ? 0 : cents(t.refund_asked_cents, 'refund_asked_cents');
   const L = loss(keep_cents, refund_cents, p), F = friction(L, p), line = askLine(L, p);
   const calib = resolved.values.trust_calib as Calib;
   calibrate(p('trust_b'), calib);
 
   // The model starts first and runs while code signals are read.
   let modelFailed = false;
-  const runModel = () => withTimeout(() => d.model(t.msg), d.ms ?? p('trust_model_timeout_ms'));
-  const modelP = (d.logger ? d.logger.call('model', 'trust.predicates', { message_id: t.msg.id, version: d.version }, runModel, rows => ({ count: rows.length })) : runModel()).catch(error => {
-    modelFailed = true;
-    d.logger?.error('trust.predicates', error);
-    d.log?.({ kind: 'trust_model_failed', thread_id: t.msg.thread_id, error: error instanceof Error ? error.message : String(error) });
-    return [] as RawRead[];
-  });
+  const model = d.model;
+  const runModel = async () => {
+    const raw = await withTimeout(() => model!(t.msg), d.ms ?? p('trust_model_timeout_ms'));
+    return readModel(raw, n => p(`trust_thr.${n}`), d.version ?? 'unversioned');
+  };
+  const modelP: Promise<Reading[]> = model
+    ? (d.logger ? d.logger.call('model', 'trust.predicates', { message_id: t.msg.id, version: d.version }, runModel, rows => ({ count: rows.length })) : runModel()).catch(error => {
+      modelFailed = true;
+      d.logger?.error('trust.predicates', error);
+      d.log?.({ kind: 'trust_model_failed', thread_id: t.msg.thread_id, error: error instanceof Error ? error.message : String(error) });
+      return [];
+    })
+    : Promise.resolve([]);
   const code = codeSignals(t.msg, { ...t.ctx, p });
-  const raw = await modelP;
-  const modelReads = modelFailed ? [] : readModel(raw, (n) => p(`trust_thr.${n}`), d.version ?? 'unversioned');
+  const modelReads = await modelP;
   const readings = [...code, ...modelReads];
   const present = new Set(readings.filter((r) => r.present).map((r) => r.signal));
 
   const hard = evaluateHard({ site: t.msg.site, checkout: t.checkout, orderPaid: t.orderPaid, local: t.local, present, draft: t.draft });
 
-  const s = SCORED_NAMES.reduce((a, n) => a + (present.has(n) ? weight(resolved.values, n) : 0), 0);
+  const contributions = SCORED_NAMES.filter(n => present.has(n)).map(signal => ({ signal, weight: weight(resolved.values, signal) }));
+  const s = contributions.reduce((sum, r) => sum + r.weight, 0);
+  const strongest = contributions.filter(r => r.weight > 0).sort((a, b) => b.weight - a.weight)[0];
 
   const compatible = (calib.score_model_version ?? 0) === (resolved.versions.trust_weights ?? 0);
   const passed = compatible && gatePassed({ n: calib.n ?? 0, positives: calib.positives ?? 0, ece: calib.ece ?? 1 }, p);
@@ -119,12 +126,12 @@ export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
   else if (s >= line - p('trust_warn_gap')) action = 'warn';
 
   if (action === 'ask' && why.length > 0) reasons.push(`Check before you reply: ${why.join(', ')}.`);
-  if (action === 'warn') reasons.push("Don’t open links from buyers.");
+  if (action === 'warn') reasons.push(strongest && WHY[strongest.signal] ? `Check before you reply: ${WHY[strongest.signal]}.` : "Don’t open links from buyers.");
 
   if (action === 'none') reasons.length = 0;
 
   const out: Decision = {
-    action, s, loss_cents: L, friction_cents: F, line, p: passed ? prob : null, percent, locked: hard.locked, draft: action !== 'block',
+    action, checked_by: model && !modelFailed ? 'code+model' : 'code', s, loss_cents: L, friction_cents: F, line, p: passed ? prob : null, percent, locked: hard.locked, draft: action !== 'block',
     draftBlocked: hard.draftBlocked, commitWaits: action === 'ask' || action === 'block', reasons, readings,
   };
   d.logger?.note('trust decision', { thread_id: t.msg.thread_id, action, s, loss_cents: L, friction_cents: F, modelFailed });

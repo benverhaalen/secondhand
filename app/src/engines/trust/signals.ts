@@ -14,13 +14,20 @@ export { SCORED, SCORED_NAMES, HARD_MODEL, PREDICATES, THRESH0, type Scored } fr
 import { SCORED, SCORED_NAMES, PREDICATES } from './params.ts';
 export { declareTrust, DECLARED as TRUST_PARAMS, R0, STRENGTH } from './params.ts';
 import { numeric, priors, type Values } from './params.ts';
-import { cents, dollarsToCents } from './money.ts';
+import { cents } from './money.ts';
 export type Reading = { signal: string; present: boolean; evidence_span: string; extractor: 'code' | 'model'; model_version: string | null; confidence: number };
 const code = (signal: string, present: boolean, span = ''): Reading => ({ signal, present, evidence_span: span, extractor: 'code', model_version: null, confidence: 1 });
 
 // The extractor's raw output against each predicate's learned threshold: present when confidence reaches it.
-export function readModel(raw: { signal: string; confidence: number; span: string }[], thr: (p: string) => number, version: string): Reading[] {
-  return raw.map(r => {
+export function readModel(raw: unknown, thr: (p: string) => number, version: string): Reading[] {
+  if (!Array.isArray(raw)) throw new TypeError('model reply must be an array');
+  const rows: unknown[] = Array.from(raw);
+  if (!rows.every((r): r is { signal: string; confidence: number; span: string } =>
+    typeof r === 'object' && r !== null && !Array.isArray(r) &&
+    'signal' in r && typeof r.signal === 'string' &&
+    'confidence' in r && typeof r.confidence === 'number' &&
+    'span' in r && typeof r.span === 'string')) throw new TypeError('model reply must contain signal, confidence and span');
+  return rows.map(r => {
     if (!PREDICATES.includes(r.signal)) throw new RangeError('signal');
     if (!Number.isFinite(r.confidence) || r.confidence < 0 || r.confidence > 1) throw new RangeError('confidence');
     if (!r.span.trim()) throw new RangeError('span');
@@ -100,7 +107,7 @@ export function saltsFor(iso: string, values: Values = priors()): string[] {
 export type Buyer = { age_days: number | null; ratings: number; good_purchases: number };
 export type Msg = { id: string; thread_id: string; site: Site; n: number; text: string; at: string };
 export type Ctx = {
-  buyer: Buyer; banner: boolean; urgent: boolean; price_usd?: number; price_cents?: number;
+  buyer: Buyer; banner: boolean; urgent: boolean; price_cents?: number;
   printHits: { sellers: number; buyers: number }; sameTextListings10m: number; // counts the script_print lookup returned
   p: (name: string) => number;                                                  // param reads
 };
@@ -110,7 +117,7 @@ const GIFT = /\b(?:pay|paying|paid|payment|send|sending|use|using|buy)\b[^.?!]{0
 
 // Step 1 of §3: every code and adapter signal for one message. The model reads the rest.
 export function codeSignals(m: Msg, c: Ctx): Reading[] {
-  const price_cents = c.price_cents === undefined ? dollarsToCents(c.price_usd, 'price_usd') : cents(c.price_cents, 'price_cents');
+  const price_cents = cents(c.price_cents, 'price_cents');
   const g = guardLinks(m.text, m.site);
   const young = c.buyer.age_days === null || c.buyer.age_days < c.p('trust_new_days') || c.buyer.ratings === 0;
   const gift = m.text.match(GIFT);
