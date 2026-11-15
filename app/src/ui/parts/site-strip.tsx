@@ -30,7 +30,7 @@ export function SiteStrip({ id, slots, onToggle }: { id: string; slots: SiteSlot
             <Press id={`${id}-${s.site}`} label={`${SITES[s.site].name}, ${s.state === 'off' ? 'off' : 'on'}`} selected={s.state !== 'off'} onPress={() => onToggle(s.site)} round={false}>
               {({ pressed }) => (
                 <View {...mark('site-toggle', { on: s.state === 'off' ? 'false' : 'true' })}
-                  style={{ width: space.s9 + 2, paddingVertical: space.s2, alignItems: 'center', borderRadius: radius.photo,
+                  style={{ width: space.s9 + 2, paddingVertical: space.s2, alignItems: 'center', borderRadius: radius.photo, borderCurve: 'continuous',
                     backgroundColor: s.state === 'off' ? 'transparent' : pressed ? c.grayPress : c.gray, borderWidth: 1, borderColor: s.state === 'off' ? c.rule : 'transparent' }}>
                   <Slot slot={s} centered />
                 </View>

@@ -390,7 +390,7 @@ test('number answers obey lot_count values', async () => {
 });
 test('list answers require values, uniqueness, nonempty and colour maximum two', async () => {
   let c=await questionCapture('apparel');
-  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('front',[{field:'colour',value:['invalid'],source:'seen',confidence:0}])]}));
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('front',[{field:'colour',value:['black'],source:'seen',confidence:0}])]}));
   // Required fields come first; refuse them until colour is inside the optional question cap.
   while(!c.plan.questions.some(q=>q.field==='colour')) {
     const q=c.plan.questions[0]; assert.ok(q);
@@ -894,4 +894,249 @@ test('F15: a repeated state.change', async () => {
   for(const event of sink.lines.map(line=>JSON.parse(line)).filter(e=>e.event==='state.change' && e.entity==='capture')) {
     assert.notEqual(event.to,last.get(event.id),`capture ${event.id} repeated ${event.to}`);last.set(event.id,event.to);
   }
+});
+
+
+test('F10: a colour read of 42 is stored', async () => {
+  await requestCapture('POST /v1/captures',openInput);
+  const c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('front',[{field:'colour',value:42,source:'seen',confidence:1}])]}));
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.facts.colour,undefined);
+  assert.ok(c.plan.process.find(s=>s.key==='front')?.state==='kept','the photo is kept');
+});
+
+test('F10: a read for an unknown field is stored', async () => {
+  await requestCapture('POST /v1/captures',openInput);
+  for(const read of [{field:'unknown_field',value:'unlisted',source:'seen',confidence:1},{field:'unknown_field',value:null,unknown_reason:'not_read'}]) {
+    await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[read])]}));
+    assert.equal(capturesApi.captureRows.get('cap_3n9q')!.state.facts.unknown_field,undefined);
+  }
+});
+
+test('F10: a rejected read changes the plan', async () => {
+  await requestCapture('POST /v1/captures',openInput);
+  await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'size_label',value:null,unknown_reason:'not_read'}])]}));
+  const before=structuredClone(capturesApi.captureRows.get('cap_3n9q')!);
+  const rejected=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[
+    {field:'colour',value:42,source:'seen',confidence:1},
+    {field:'unknown_field',value:null,unknown_reason:'not_read'},
+  ])]}));
+  const rejectedState=structuredClone(capturesApi.captureRows.get(before.id)!.state);
+  capturesApi.captureRows.set(before.id,before);
+  const without=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag')]}));
+  assert.deepEqual(rejected.plan,without.plan);
+  assert.deepEqual(rejectedState,capturesApi.captureRows.get(before.id)!.state,'a dropped not_read cannot spend retakes');
+});
+
+test("F10: a dropped read's value is in the log", async () => {
+  await requestCapture('POST /v1/captures',openInput);
+  const sink=memorySink();deps.log=createLog({src:'test',build:'test',sink});
+  await handlers[photosEndpoint]({user_id:'usr_8f2k',visitor_id:null,request_id:'rq_capture_reads',params:{id:'cap_3n9q'},query:new URLSearchParams(),headers:new Headers(),log:deps.log,body:{photos:[photo('front',[
+    {field:'colour',value:['rejected_read_marker'],source:'seen',confidence:1},
+    {field:'unknown_field',value:'unlisted_read_marker',source:'seen',confidence:1},
+    {field:'unlisted_not_read',value:null,unknown_reason:'not_read'},
+  ])]}},new Request('http://edge.test'));
+  assert.doesNotMatch(sink.text(),/rejected_read_marker|unlisted_read_marker/);
+  const notes=sink.lines.map(line=>JSON.parse(line)).filter(e=>e.event==='note' && e.reason);
+  for(const field of ['colour','unknown_field','unlisted_not_read']) {
+    assert.ok(notes.some(e=>e.field===field && typeof e.reason==='string'),`${field} has a logged reason`);
+  }
+  assert.ok(notes.every(e=>!Object.hasOwn(e,'value')));
+  deps.log.end();
+  const {checkLog}=await import('../../../../spec/log.mjs');
+  const checked=checkLog(sink.text());assert.deepEqual(checked.problems,[]);assert.deepEqual(checked.warnings,[]);
+});
+
+test('F10: reads use the selected row for every value type and per-piece field', async () => {
+  await questionCapture('apparel',{pieces:2});
+  const before=structuredClone(capturesApi.captureRows.get('cap_3n9q')!.state.facts);
+  const reads=[
+    {field:'colour',value:['invalid']},{field:'size_label',value:'M'},
+    {field:'size_label.1',value:42},{field:'dimensions.1',value:{pit_to_pit:52}},
+    {field:'dimensions.2',value:{pit_to_pit:52,length:-1}},{field:'brand.1',value:'   '},
+    {field:'condition',value:'unlisted'},
+  ].map(read=>({...read,source:'seen',confidence:1}));
+  await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('front.1',reads)]}));
+  assert.deepEqual(capturesApi.captureRows.get('cap_3n9q')!.state.facts,before);
+});
+
+test('F12: a third colour is accepted', async () => {
+  await requestCapture('POST /v1/captures',openInput);
+  await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('front',[{field:'colour',value:['black','white','red'],source:'seen',confidence:1}])]}));
+  assert.equal(capturesApi.captureRows.get('cap_3n9q')!.state.facts.colour,undefined);
+});
+
+test('F12: list maximum comes from max, then values, then no limit for reads and answers', async t => {
+  const row=table.fields.root.find(r=>r.field==='colour')!;
+  const original=structuredClone(row);t.after(()=>Object.assign(row,original));
+  for(const maximum of [3,1,undefined]) {
+    row.max=maximum;
+    resetCaptures();let c=await questionCapture('apparel');
+    c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('front',[{field:'colour',value:['black'],source:'seen',confidence:0}])]}));
+    const value=['black','white','red'];
+    c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('front',[{field:'colour',value,source:'seen',confidence:0}])]}));
+    while(!c.plan.questions.some(q=>q.field==='colour')) {
+      const q=c.plan.questions[0];assert.ok(q);
+      c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,refuse:q.field}));
+    }
+    if(maximum===1) {
+      assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.colour.value,['black']);
+      await invalidAnswers(c,'colour',[value]);
+    } else {
+      assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.colour.value,value);
+      assert.equal((await requestCapture(patchEndpoint,{version:c.version,answer:{field:'colour',value}})).status,200);
+    }
+  }
+  row.values=undefined;row.max=undefined;
+  resetCaptures();let c=await questionCapture('apparel');
+  const value=['one','two','three','four'];
+  c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('front',[{field:'colour',value,source:'seen',confidence:0}])]}));
+  assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.colour.value,value);
+  while(!c.plan.questions.some(q=>q.field==='colour')) {
+    const q=c.plan.questions[0];assert.ok(q);
+    c=await bodyOf(await requestCapture(patchEndpoint,{version:c.version,refuse:q.field}));
+  }
+  assert.equal((await requestCapture(patchEndpoint,{version:c.version,answer:{field:'colour',value}})).status,200);
+});
+
+const scanInput={...openInput,mode:'scan',suggestion:{family:'lighting_home',p:.98,second_p:.01},extent_cm:130,rigid:true};
+const scanPhoto=(scan:unknown)=>({...photo('scan'),scan});
+const scanResult={scan_ok:true,extent_cm:{width:30,depth:40,height:130},extent_conf:.95,frames:60};
+
+test("F11: open's size is ignored", async () => {
+  for(const [extent_cm,expected] of [[130,'large_bulky'],[6,'small_hard']] as const) {
+    resetCaptures();const c=await bodyOf(await requestCapture('POST /v1/captures',{...scanInput,extent_cm,extent_conf:0}));
+    assert.equal(c.plan.dimension_class,expected);
+    assert.equal(capturesApi.captureRows.get(c.id)!.state.extent_cm,extent_cm);
+    assert.equal(capturesApi.captureRows.get(c.id)!.state.rigid,true);
+  }
+});
+
+test('F11: invalid open extent and rigid name the field and never write', async () => {
+  for(const [field,values] of [['extent_cm',[0,-1,'130',null]],['extent_conf',[-.1,1.1,'0',null]],['rigid',[0,'true',null]]] as const) {
+    for(const value of values) {
+      const before=structuredClone([...capturesApi.captureRows]);
+      const response=await requestCapture('POST /v1/captures',{...scanInput,[field]:value});
+      assert.equal(response.status,400,`${field}=${value}`);
+      const error=await response.json();assert.equal(error.code,'invalid');assert.deepEqual(error.fields,[field]);
+      assert.deepEqual([...capturesApi.captureRows],before);
+    }
+  }
+});
+
+async function completedScan(confidence:number):Promise<CaptureBody> {
+  const c=await bodyOf(await requestCapture('POST /v1/captures',scanInput));
+  const photos=c.plan.process.map(s=>s.key==='scan'?scanPhoto({...scanResult,extent_conf:confidence}):photo(s.key));
+  await bodyOf(await requestCapture(photosEndpoint,{photos}));
+  return job(identify([],'ask'));
+}
+
+test('F11: a scan at confidence 0 is known', async () => {
+  const c=await completedScan(0);
+  assert.equal(fieldOf(c,'dimensions').state,'proposed');
+  assert.equal(fieldOf(c,'dimensions').source,'measured');
+  assert.deepEqual(fieldOf(c,'dimensions').value,scanResult.extent_cm);
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.facts.dimensions.confidence,0);
+});
+
+test('F11: a calibrated scan is known and keeps only dimensions row parts', async t => {
+  const row=table.classes.large_bulky.dimensions!;
+  const parts=row.ask!.parts;t.after(()=>{row.ask!.parts=parts;});
+  row.ask!.parts=['width','height'];
+  const c=await completedScan(.95);
+  assert.equal(fieldOf(c,'dimensions').state,'known');
+  assert.deepEqual(fieldOf(c,'dimensions').value,{width:30,height:130});
+});
+
+test('F11: a failed scan leaves object_capture true', async () => {
+  const c=await bodyOf(await requestCapture('POST /v1/captures',scanInput));
+  let next=await bodyOf(await requestCapture(photosEndpoint,{photos:[scanPhoto({...scanResult,scan_ok:false})]}));
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.object_capture,false);
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.facts.dimensions,undefined);
+  assert.ok(next.plan.process.some(s=>s.key==='ring' && s.frames===8));
+  next=await bodyOf(await requestCapture(photosEndpoint,{photos:[scanPhoto(scanResult)]}));
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.object_capture,false,'later success never reenables a failed scan');
+  assert.ok(next.plan.process.every(s=>s.kind!=='scan'));
+});
+
+test('F11: a scan follows read precedence and never replaces you_said or lookup', async () => {
+  for(const source of ['seen','label','measured','lookup','you_said'] as const) {
+    resetCaptures();const c=await bodyOf(await requestCapture('POST /v1/captures',scanInput));
+    const state=capturesApi.captureRows.get(c.id)!.state;
+    const old={value:{width:10,depth:20,height:30},source,confidence:1};state.facts.dimensions=structuredClone(old);
+    await bodyOf(await requestCapture(photosEndpoint,{photos:[scanPhoto(scanResult)]}));
+    if(source==='lookup' || source==='you_said') assert.deepEqual(state.facts.dimensions,old);
+    else assert.deepEqual(state.facts.dimensions,{value:scanResult.extent_cm,source:'measured',confidence:.95,step:'scan'});
+  }
+});
+
+test('F11: invalid scan metadata and photo references reject the entire batch', async () => {
+  await requestCapture('POST /v1/captures',scanInput);
+  const before=structuredClone(capturesApi.captureRows.get('cap_3n9q'));
+  for(const scan of [null,{}, {...scanResult,scan_ok:1},{...scanResult,extent_conf:-1},{...scanResult,extent_conf:2},
+    {...scanResult,frames:1.5},{...scanResult,frames:-1},{...scanResult,extent_cm:{width:0,depth:40,height:130}},
+    {...scanResult,extent_cm:{width:30,height:130}},{...scanResult,extent_cm:{width:'30',depth:40,height:130}}]) {
+    assert.equal((await requestCapture(photosEndpoint,{photos:[photo('front'),scanPhoto(scan)]})).status,400);
+    assert.deepEqual(capturesApi.captureRows.get('cap_3n9q'),before);
+  }
+  for(const field of ['depth_ref','pose_ref']) for(const value of [null,42,{}]) {
+    assert.equal((await requestCapture(photosEndpoint,{photos:[photo('front'),{...photo('scan'),[field]:value}]})).status,400);
+    assert.deepEqual(capturesApi.captureRows.get('cap_3n9q'),before);
+  }
+  await bodyOf(await requestCapture(photosEndpoint,{photos:[{...scanPhoto(scanResult),depth_ref:'depth/frame',pose_ref:'pose/frame'}]}));
+});
+
+test("F11: B's photos with a scan never change A's capture", async () => {
+  const a=await bodyOf(await requestCapture('POST /v1/captures',scanInput));
+  const b=await bodyOf(await requestCapture('POST /v1/captures',scanInput,'other'));
+  const before=structuredClone(capturesApi.captureRows.get(a.id));
+  const payload={photos:[scanPhoto(scanResult)]};
+  assert.equal((await at(photosEndpoint,a.id,payload,'other')).status,404);
+  await bodyOf(await at(photosEndpoint,b.id,payload,'other'));
+  assert.deepEqual(capturesApi.captureRows.get(a.id),before);
+  assert.equal(capturesApi.captureRows.get(b.id)!.state.facts.dimensions.source,'measured');
+  await bodyOf(await at(photosEndpoint,b.id,{photos:[scanPhoto({...scanResult,scan_ok:false})]},'other'));
+  assert.deepEqual(capturesApi.captureRows.get(a.id),before);
+});
+
+test('F11: a bundle scan writes only its piece dimensions', async () => {
+  await requestCapture('POST /v1/captures',{...scanInput,pieces:2});
+  await bodyOf(await requestCapture(photosEndpoint,{photos:[{...scanPhoto(scanResult),key:'scan.2'}]}));
+  const facts=capturesApi.captureRows.get('cap_3n9q')!.state.facts;
+  assert.equal(facts.dimensions,undefined);assert.equal(facts['dimensions.1'],undefined);
+  assert.deepEqual(facts['dimensions.2'].value,scanResult.extent_cm);
+});
+
+test('F14: a measure ask without name is accepted', async () => {
+  await askingCapture();
+  assert.throws(()=>job({kind:'studio_plan',plan:{kind:'tee',asks:[{type:'measure',text:'Measure it.'}]}}),/name/);
+});
+
+test('F14: a flaw ask without zone is accepted', async () => {
+  await askingCapture();
+  assert.throws(()=>job({kind:'studio_plan',plan:{kind:'tee',asks:[{type:'flaw',text:'Show it.',kind:'stain'}]}}),/zone/);
+});
+
+test('F14: a half-valid studio result is partly applied', async () => {
+  let c=await askingCapture();c=job(studioResult);
+  await bodyOf(await requestCapture(patchEndpoint,{version:c.version,generate:true}));
+  const before=structuredClone(capturesApi.captureRows.get(c.id));
+  assert.throws(()=>job({kind:'studio_plan',plan:{kind:'pants',asks:[{type:'cover',text:'Front.'},{type:'measure',text:'Measure it.'}]}}),/name/);
+  assert.deepEqual(capturesApi.captureRows.get(c.id),before,'facts, plan, cached asks and version all survive');
+});
+
+test('F14: each studio ask requires its fields and measure names match the known kind', async () => {
+  await askingCapture();
+  const valid=[{type:'cover',text:'Front.'},{type:'back',text:'Back.'},{type:'tag',text:'Tag.'},
+    {type:'graphic',text:'Graphic.',zone:'chest'},{type:'flaw',text:'Mark.',kind:'stain',zone:'hem'},
+    {type:'measure',text:'Measure.',name:'pit_to_pit'}];
+  for(const ask of valid) for(const field of Object.keys(ask)) {
+    const missing:Record<string,unknown>={...ask};delete missing[field];
+    const before=structuredClone(capturesApi.captureRows.get('cap_3n9q'));
+    assert.throws(()=>job({kind:'studio_plan',plan:{kind:'tee',asks:[missing]}}),new RegExp(field));
+    assert.deepEqual(capturesApi.captureRows.get('cap_3n9q'),before);
+  }
+  assert.throws(()=>job({kind:'studio_plan',plan:{kind:'tee',asks:[{type:'measure',text:'Measure.',name:'inseam'}]}}),/name/);
+  assert.throws(()=>job({kind:'studio_plan',plan:{kind:'hat',asks:[{type:'measure',text:'Measure.',name:'length'}]}}),/name/);
+  job({kind:'studio_plan',plan:{kind:'tee',asks:valid}});
+  job({kind:'studio_plan',plan:{kind:'unrecognised',asks:[{type:'measure',text:'Measure.',name:'custom'}]}});
 });

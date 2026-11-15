@@ -1,14 +1,13 @@
 // Profile-backed transports. The runtime supplies ports; this module never reads credentials or opens a browser by itself.
 import { randomUUID } from 'node:crypto';
 import type { Log } from '../../../../log/index.js';
-import { profileRow, type ProfileRegistry, type ProfileRow } from '../browser/auth.ts';
+import { PROFILES, profileRow, type ProfileRegistry, type ProfileRow } from '../browser/auth.ts';
 import { profileDirFor, type Pool, type Launcher, type PoolContext } from '../browser/pool.ts';
 import type { Leases } from '../events/ports.ts';
-import { PROFILES } from './platform.ts';
 import { fail, type AdapterResult, type CallError } from './protocol.ts';
-import { poshmarkAdapters, type Client as PoshmarkClient } from './sites/poshmark/adapter.ts';
-import { mercariAdapters, type Client as MercariClient } from './sites/mercari/adapter.ts';
-import { depopAdapters, API as DEPOP_API, type Client as DepopClient } from './sites/depop/adapter.ts';
+import { type Client as PoshmarkClient } from './sites/poshmark/adapter.ts';
+import { type Client as MercariClient } from './sites/mercari/adapter.ts';
+import { API as DEPOP_API, type Client as DepopClient } from './sites/depop/adapter.ts';
 import { PAGE_HOSTS, CHALLENGE, type PageClient as EbayClient } from './sites/ebay/adapter.ts';
 
 export type SessionSite = 'poshmark' | 'mercari' | 'depop' | 'ebay';
@@ -51,8 +50,13 @@ async function abortable<T>(signal: AbortSignal, run: () => Promise<T>): Promise
   finally { signal.removeEventListener('abort', abort); }
 }
 
-function pageState(url: string, html: string, status: number): 'needs_signin' | 'paused' | undefined {
-  if (CHALLENGE.test(html.slice(0, 50_000))) return 'paused';
+// When evaluated in the page, only the existing state detector's result crosses CDP.
+// HTML is never returned to the link client or included in a log or error.
+function pageState({ url, html, status, challengePattern }: {
+  url: string; html?: string; status: number; challengePattern: string;
+}): 'needs_signin' | 'paused' | undefined {
+  html ??= document.documentElement.outerHTML;
+  if (new RegExp(challengePattern, 'i').test(html.slice(0, 50_000))) return 'paused';
   if (status === 401 || /<title[^>]*>\s*sign in or register\b/i.test(html) || /\/(?:login|signin|sign-in)(?:\/|\?|$)/i.test(url) || /<input\b[^>]*type\s*=\s*["']password["']/i.test(html)) return 'needs_signin';
   if (status === 403) return 'paused';
 }
@@ -100,13 +104,13 @@ export function sessionClient(o: {
         if (u.origin !== new URL(PROFILES[site].home).origin || u.pathname !== '/v1/api') return;
         pending.push((async () => {
           const text = await r.text();
-          const state = pageState(r.url(), text, r.status());
+          const state = pageState({ url: r.url(), html: text, status: r.status(), challengePattern: CHALLENGE.source });
           if (state) { responseState = state; return; }
           let body: unknown;
           try { body = JSON.parse(text); } catch { throw new Error('marketplace response was not JSON'); }
           if (body && typeof body === 'object' && 'errors' in body && Array.isArray(body.errors)) {
             for (const error of body.errors) if (error && typeof error === 'object' && 'status' in error) {
-              const state = pageState('', '', Number(error.status));
+              const state = pageState({ url: '', html: '', status: Number(error.status), challengePattern: CHALLENGE.source });
               if (state) responseState = state;
             }
           }
@@ -122,10 +126,10 @@ export function sessionClient(o: {
       try {
         const response = await page.goto(allowed(url), { waitUntil: 'domcontentloaded', timeout: 30_000 });
         let html = (await response?.text()) || await page.content();
-        let state = pageState(page.url(), html, response?.status() ?? 0);
+        let state = pageState({ url: page.url(), html, status: response?.status() ?? 0, challengePattern: CHALLENGE.source });
         if (!state && site === 'mercari') {
           await page.waitForLoadState('networkidle', { timeout: 30_000 });
-          html = await page.content(); state = pageState(page.url(), html, response?.status() ?? 0);
+          html = await page.content(); state = pageState({ url: page.url(), html, status: response?.status() ?? 0, challengePattern: CHALLENGE.source });
         }
         await Promise.all(pending);
         if (responseFailed) throw new Error('marketplace response could not be read');
@@ -148,7 +152,7 @@ export function sessionClient(o: {
           if (response.headers.get('content-type')?.includes('json')) body = JSON.parse(text);
           return { status: response.status, body, url: response.url, html: body === null ? text : '' };
         }, allowed(path, true));
-        const state = pageState(reply.url, reply.html, reply.status);
+        const state = pageState({ url: reply.url, html: reply.html, status: reply.status, challengePattern: CHALLENGE.source });
         if (state) { checkAbort(signal); await mark(state, signal); return { status: state === 'paused' ? 403 : 401, body: null }; }
         return { status: reply.status, body: reply.body };
       }, state => ({ status: state === 429 ? 429 : state === 'paused' ? 403 : 401, body: null })),
@@ -215,8 +219,6 @@ export function sessionClient(o: {
     async startLink(site: SessionSite, who: Owner): Promise<string> {
       const previous = await owned(site, who);
       if (!previous) throw new Error('account not found');
-      // eBay's signed-in Client requires OAuth. Its PageClient has no signed-in verification read yet.
-      if (site === 'ebay') throw new SessionClientError(fail('no_route', 'eBay needs a signed-in page adapter', { do: 'handoff', url: PROFILES.ebay.home }).error);
       const handle = randomUUID(), job = `link:${handle}`, expires = now() + o.ttlMs;
       if (!o.leases.take(who.account_id, job, o.ttlMs).ok) throw new SessionClientError(fail('rate_limited', 'account busy', { do: 'retry_after', after_s: 60 }).error);
       const assertLease = () => {
@@ -235,7 +237,7 @@ export function sessionClient(o: {
         const viewer = (ctx as PoolContext<SessionPage> & { live_url?: string }).live_url;
         if (!viewer || !ctx.profileSaved || ctx.exportState || ctx.loadState) throw new Error('linking requires a cloud profile context');
         const page = await ctx.newPage();
-        await call('session.signin', site, () => page.goto(PROFILES[site].login!));
+        await call('session.signin', site, () => page.goto(PROFILES[site].login_url));
         assertLease();
         const link: Link = { row, previous, site, ctx, page, viewer, expires, job, closed: false };
         links.set(handle, link);
@@ -262,25 +264,41 @@ export function sessionClient(o: {
     },
     async finishLink(user_id: string, handle: string): Promise<AdapterResult | undefined> {
       const link = await find(user_id, handle); if (!link || !links.delete(handle)) return;
-      let state: ProfileRow['state'] = 'linked';
       try {
-        // This provisional client stays inside verification; it is never handed to a caller as a linked client.
-        const client = transport(link.site, () => state === 'linked', async (signal, run) => {
-          return abortable(signal, () => run(link.page));
-        }, async (next, signal) => {
-          checkAbort(signal);
-          if (link.closed || now() >= link.expires || !o.leases.take(link.row.account_id, link.job, link.expires - now()).ok) throw new Error('link lease expired');
-          state = next;
-        });
-        const adapters = link.site === 'poshmark' ? poshmarkAdapters(client) : link.site === 'mercari' ? mercariAdapters(client) : depopAdapters(client);
-        const result = await call('session.verify', link.site, () => adapters.find(a => a.manifest.verb === 'read_inbox')!.run({}, AbortSignal.timeout(Math.max(1, link.expires - now()))));
+        const result = await call('session.verify', link.site, () => abortable(
+          AbortSignal.timeout(Math.max(1, link.expires - now())), async (): Promise<AdapterResult> => {
+            const profile = PROFILES[link.site];
+            const response = await link.page.goto(profile.account_url, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+            const status = response?.status() ?? 0;
+            const blocked = () => fail('blocked', 'the site showed a check the person must pass', { do: 'pause_session', site: link.site });
+            if (status === 403) return blocked();
+            await link.page.waitForLoadState('networkidle', { timeout: 30_000 });
+            const final = new URL(link.page.url()), account = new URL(profile.account_url);
+            const state = await link.page.evaluate(pageState, {
+              url: final.origin + final.pathname, status, challengePattern: CHALLENGE.source,
+            });
+            if (state === 'paused') return blocked();
+            const signin = profile.sign_in_markers.some(marker => {
+              const login = new URL(marker);
+              return final.origin === login.origin && final.pathname.startsWith(login.pathname);
+            });
+            if (signin) return stale(link.site);
+            const changed = () => fail('page_changed', 'the account page could not be verified', { do: 'author', missing: ['account_page'] });
+            if (final.origin !== account.origin || !final.pathname.startsWith(account.pathname)) return changed();
+            if (state === 'needs_signin') return stale(link.site);
+            if (status < 200 || status >= 300) return changed();
+            return { ok: true, data: {} };
+          }));
         if (link.closed || now() >= link.expires || !o.leases.take(link.row.account_id, link.job, link.expires - now()).ok) return stale(link.site);
         await stop(link); // Keep the lease through verification and browser stop.
         if (!link.ctx.profileSaved?.()) throw new Error('profile was not saved');
         if (now() >= link.expires || !o.leases.take(link.row.account_id, link.job, link.expires - now()).ok) return stale(link.site);
-        // All three read_inbox adapters return message rows only, with no account/owner evidence.
-        // A successful empty (or populated) inbox cannot establish a signed-in session.
-        return result.ok ? fail('no_route', 'the adapter cannot verify the signed-in account', { do: 'handoff', url: PROFILES[link.site].home }) : result;
+        if (!result.ok) return result;
+        const at = iso();
+        const row: ProfileRow = { ...link.row, state: 'linked', linked_at: at, last_ok_at: at };
+        await o.registry.put(user_id, row);
+        o.log.event('state.change', { entity: 'account', id: row.account_id, to: 'linked', was: link.previous.state });
+        return { ok: true, data: row };
       } finally { await close(link); }
     },
     async cancelLink(user_id: string, handle: string) {

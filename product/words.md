@@ -1922,3 +1922,58 @@ Ben, same thread, 10:14 UTC.
 > do the same with this: https://paste.rachel.systems/ukogokijaz.md
 
 Used in: [.agents/vendor/appllama](../.agents/vendor/appllama/SOURCE.md), `scripts/standards.mjs`, `.agents/checks/standards.mjs`.
+
+## 2026-11-15 nate how credibility should be weighed, and the value we bring truly defined
+Nate, adaptation lead's session, 2026-11-15, evening Central.
+> well how do you believe credibility should be weighed. The literature lays out alot and its important you assess that it's proven how we deliver things. That the value our system brings is truly defined
+
+Used in: [spec/engines/credibility.md](../spec/engines/credibility.md#how-credibility-is-weighed).
+
+## 2026-11-15 nate identify the product, find the same thing off brand, and learn whether the brand matters
+Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
+> Its important we develop the feature of the system being able to identify the product and what it is, and find off brand similar types of the same quality, material, but different brand, and developing insights on whether people care more about the specific main brand or not
+
+Used in: `spec/engines/adaptation.md` (the brand measure, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+Ben, same thread, 10:27 UTC.
+
+> each page should have one purpose. not sure if this is defined. for more detailed actions you can go into specific pages. like profile shouldnt have analytics, linking services, tracking things, settings, different types of settings. it should have simple ways to visualize and understand intutitively and go to each thing. also something im noticing is a lot of clutter
+
+Ben, same thread, 10:30 UTC.
+
+> thinking of all possible interaction states. scrolling up. like because you have 4 parts on the bottom where a user can go to and they look relatively similar, they should be layed out relatively similar in similar primitives you know. but i want you to spawn a few codex agents to do work in parallel and faster for each type of page. understanding what it is and what it isnt. using the principles from those skills to assess and redesign it effectively to fit the skills and the primitives and cohesive family as a whole
+
+Ben, same thread, 10:31 UTC.
+
+> ensuring each checks against what is planned feature wise for each and also noting down what is left to be wired up and such
+
+Used in: [features/app/page-jobs.json](../features/app/page-jobs.json), `scripts/page-jobs.mjs` (J1 to J5).
+## 2026-11-15 nate host the server output on the website's vercel deployment
+Nate, orchestrator's session, 2026-11-15, about 06:15 Central, asked whether the device test should run against a dev client on the LAN or a hosted server.
+> Lets host the server output sure, we can host it on the next.js deployment with vercel the website will live on
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md). The deploy itself is still asked each time.
+
+## 2026-11-15 nate parse more from each read instead of reading one by one
+Nate, orchestrator's session, 2026-11-15, about 06:25 Central, after hearing that eBay is held to one read every ten seconds.
+> well instead of reading one by one, can we build the system to parse and even more effectively ascertain info
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate parsing and decisions driven by code, not a model reading each one
+Nate, orchestrator's session, 2026-11-15, about 06:50 Central.
+> we can parse and build things to be deterministicially or code driven no? would that be more optimized?
+
+Used in: `spec/engines/market-index.md` (the attribute extractor, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate we read everything; the Poshmark rule is only about share, like and repost
+Nate, adaptation lead's session, 2026-11-15, morning Central, correcting a reading limited to Poshmark.
+> no not just reading poshmark. I meant we only were to apply that one rule to make the poshmark specific things like sharing and liking user inputs the ai agent tells the user to do for best marketing insights. We read everything
+
+Used in: [spec/engines/market-index.md §1](../spec/engines/market-index.md#1-what-may-be-kept-per-source), [spec/engines/adaptation.md](../spec/engines/adaptation.md).
+
+## 2026-11-15 nate retrieval proven first, then the engines, then a presentation the judges understand, with databricks shown
+Nate, orchestrator's session, 2026-11-15, about 07:05 Central.
+> Ensure it being wired in is efficiently and expertly evaluated. We;ll establish that we have the full outperforming data retreival built and efficient, benchmarked, and proven amazing. Then we move on to the engines for determining and driving how we calculate and adapt in realtime, which ive already asked we reserach and credibly write up to bolster all of the system and its architecture. When we present it needs to be clear, impressive, and understood by the judges, with databricks utilization also exemplified as that is a track we are entering
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `bench/README.md` (the retrieval evaluation).

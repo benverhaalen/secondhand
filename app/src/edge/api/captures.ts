@@ -116,6 +116,8 @@ function initial(body: Record<string, unknown>, id: string, item_id: string): St
     has_lidar, object_capture: device?.object_capture ?? false, sites: [...linkedSites], type: null,
     ...(body.suggestion === undefined ? {} : {suggestion: structuredClone(body.suggestion) as State['suggestion']}),
     ...(body.pieces === undefined ? {} : {pieces: body.pieces as number}),
+    ...(body.extent_cm === undefined ? {} : {extent_cm: body.extent_cm as number}),
+    ...(body.rigid === undefined ? {} : {rigid: body.rigid as boolean}),
     kept: [], retakes: {}, facts: {}, lookups: 'none', refused: [] };
 }
 export function resetCaptures() {
@@ -175,18 +177,33 @@ function validValue(row: FieldRow, value: unknown): boolean {
       return object(value) && Object.keys(value).length===parts.length && parts.every(part=>Object.hasOwn(value,part) && number(value[part]) && value[part]>0);
     }
     case 'list': return Array.isArray(value) && value.length>0 && new Set(value).size===value.length &&
-      value.length<=(row.field.split('.')[0]==='colour'?2:row.values?.length ?? Infinity) &&
+      value.length<=(row.max ?? row.values?.length ?? Infinity) &&
       (row.values ? value.every(v=>row.values!.includes(v)) : value.every(text));
   }
 }
 type PhotoRead = {field: string; value: unknown; source?: 'seen'|'label'|'measured'; confidence?: number; unknown_reason?: 'not_read'};
-type Photo = {role: string; step: string; key?: string; reads?: PhotoRead[]};
+type Scan = {scan_ok: boolean; extent_cm: {width:number;depth:number;height:number}; extent_conf:number; frames:number};
+type Photo = {role: string; step: string; key?: string; reads?: PhotoRead[]; scan?:Scan};
+const positive = (v: unknown): v is number => number(v) && v>0;
+function validScan(v:unknown): boolean {
+  if (!object(v) || !object(v.extent_cm)) return false;
+  const extent=v.extent_cm;
+  return bool(v.scan_ok) && ['width','depth','height'].every(part=>positive(extent[part])) && probability(v.extent_conf) && integer(v.frames);
+}
 function validRead(v: unknown): boolean {
   return object(v) && text(v.field) && Object.hasOwn(v, 'value') && (v.value === null
     ? v.unknown_reason === 'not_read' && v.source === undefined && v.confidence === undefined
     : v.unknown_reason === undefined && oneOf('seen', 'label', 'measured')(v.source) && probability(v.confidence));
 }
 const rank: Record<Fact['source'], number> = {seen: 0, label: 1, measured: 2, derived: 3, lookup: 4, you_said: 5};
+function applyRead(state:State, read:PhotoRead, key:string) {
+  const old=state.facts[read.field];
+  const source=read.source ?? 'label';
+  if (!old || old.source!=='you_said' && read.unknown_reason!=='not_read' && (old.unknown_reason==='not_read' || rank[source]>=rank[old.source])) state.facts[read.field]={
+    value:structuredClone(read.value),source,confidence:read.confidence ?? 0,step:key,
+    ...(read.unknown_reason?{unknown_reason:read.unknown_reason}:{}),
+  };
+}
 
 export type IdentifyResult = {kind:'identify';action:'confirm'|'pick'|'ask';set:{product_id:string;family:Family;brand?:string;model?:string;c:number;label?:string;dimensions?:Record<string,number>}[]};
 export type StudioPlan = {kind:string;asks:StudioAsk[]};
@@ -211,6 +228,14 @@ function validateJobResult(result: unknown): asserts result is JobResult {
     for (const ask of p.asks as unknown[]) {
       if (!object(ask)) throw invalid('asks is not valid',['asks']);
       fields(ask,{type:oneOf('cover','back','tag','graphic','flaw','measure'),text},{zone:text,kind:text,name:text});
+      if (ask.type==='graphic' || ask.type==='flaw') fields(ask,{zone:text});
+      if (ask.type==='flaw') fields(ask,{kind:text});
+      if (ask.type==='measure') {
+        fields(ask,{name:text});
+        const kinds:Record<string,{measurements:string[]}>=slides.kinds;
+        if (Object.hasOwn(kinds,p.kind as string) && !kinds[p.kind as string].measurements.includes(ask.name as string))
+          throw invalid('name is not a measurement for this kind',['name']);
+      }
     }
   } else {
     fields(result,{photos:Array.isArray});
@@ -281,7 +306,7 @@ export const handlers: Record<string, Handler> = {
       {mode:oneOf('shots','scan','talk'),purpose:oneOf('sell','appraise','find')},
       {first_photo_hint:text,item_id:text,device:v=>object(v) && (v.has_lidar===undefined || bool(v.has_lidar)) && (v.object_capture===undefined || bool(v.object_capture)),
         suggestion:v=>object(v) && family(v.family) && probability(v.p) && probability(v.second_p) && v.second_p<=v.p,
-        pieces:v=>integer(v) && v>=1 && v<=12,confirm_mode:oneOf('tap','auto')});
+        pieces:v=>integer(v) && v>=1 && v<=12,confirm_mode:oneOf('tap','auto'),extent_cm:positive,extent_conf:probability,rigid:bool});
     const device=ctx.body.device as {has_lidar?:boolean;object_capture?:boolean}|undefined;
     if (device?.object_capture && !device.has_lidar) throw answerError('device.object_capture');
     if (ctx.body.item_id) {
@@ -302,22 +327,35 @@ export const handlers: Record<string, Handler> = {
     const row=read(ctx); writable(row);
     fields(ctx.body,{photos:v=>Array.isArray(v) && v.length>0 && v.every(p=>object(p) && text(p.role) && text(p.step) &&
       oneOf('image/heic','image/jpeg','image/png')(p.content_type) && version(p.bytes) &&
-      (p.key===undefined || text(p.key)) && (p.reads===undefined || Array.isArray(p.reads) && p.reads.every(validRead)))});
+      (p.key===undefined || text(p.key)) && (p.reads===undefined || Array.isArray(p.reads) && p.reads.every(validRead)) &&
+      (p.scan===undefined || validScan(p.scan)) && (p.depth_ref===undefined || typeof p.depth_ref==='string') && (p.pose_ref===undefined || typeof p.pose_ref==='string'))});
+    // shortcut: depth_ref and pose_ref are validated but not stored, store them when integration adds the photo table (F5).
     const uploads=(example('captures.photos').response as {photos:{upload:{expires_at:string}}[]}).photos;
     const photos=(ctx.body.photos as Photo[]).map(photo=> {
       const key=photo.key ?? photo.step;
+      const selected=select(row.state,params);
+      const reads=(photo.reads ?? []).filter(read=> {
+        const definition=selected.rows.find(field=>field.field===read.field);
+        const reason=!definition?'no field row':read.value!==null && !validValue(definition,read.value)?'value does not fit field row':undefined;
+        if (reason) ctx.log.note('capture read dropped',{field:read.field,reason});
+        return !reason;
+      });
       const kept=row.state.kept.includes(key);
       row.replacements[key]=(row.replacements[key] ?? 0)+(kept?1:0);
-      if (kept && photo.reads?.some(read=>read.unknown_reason==='not_read')) row.state.retakes[key]=row.replacements[key];
+      if (kept && reads.some(read=>read.unknown_reason==='not_read')) row.state.retakes[key]=row.replacements[key];
       if (!kept) row.state.kept.push(key);
       if (row.state.lookups==='none') row.state.lookups='running';
-      for (const read of photo.reads ?? []) {
-        const old=row.state.facts[read.field];
-        const source=read.source ?? 'label';
-        if (!old || old.source!=='you_said' && read.unknown_reason!=='not_read' && (old.unknown_reason==='not_read' || rank[source]>=rank[old.source])) row.state.facts[read.field]={
-          value:read.value,source,confidence:read.confidence ?? 0,step:key,
-          ...(read.unknown_reason?{unknown_reason:read.unknown_reason}:{}),
-        };
+      for (const read of reads) applyRead(row.state,read,key);
+      if (photo.scan && selected.process.some(step=>step.key===key && step.kind==='scan')) {
+        if (!photo.scan.scan_ok) row.state.object_capture=false;
+        else {
+          const field=key.includes('.')?`dimensions.${key.split('.').at(-1)}`:'dimensions';
+          const definition=selected.rows.find(row=>row.field===field);
+          const value=Object.fromEntries(Object.entries(photo.scan.extent_cm).filter(([part])=>definition?.ask?.parts?.includes(part)));
+          if (definition && validValue(definition,value))
+            applyRead(row.state,{field,value,source:'measured',confidence:photo.scan.extent_conf},key);
+          else ctx.log.note('capture read dropped',{field,reason:definition?'scan does not fill field parts':'no field row'});
+        }
       }
       const id=`ph_a${++row.photos}`;
       return {id,role:photo.role,step:photo.step,upload:{url:`https://uploads.example/v/${id}?sig=example`,method:'PUT',expires_at:uploads[0].upload.expires_at}};
