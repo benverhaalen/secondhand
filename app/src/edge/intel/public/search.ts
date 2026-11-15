@@ -10,11 +10,12 @@ import { readPage, REQUIRED, searchUrl } from './readers.ts';
 import type { Kind, Row } from './readers.ts';
 
 import { createLog, consoleSink } from '../../../../../log/index.js';
+import type { createShopping, ShoppingSpend, ShoppingRow } from '../../harness/sites/google_shopping/adapter.ts';
 import { createDupe, type DupeRow } from '../../harness/sites/dupe/adapter.ts';
 import { MAX_ITEMS, ROUTE_IDS, type ApifyRow, type Lane, type createApify } from '../../harness/sites/apify/adapter.ts';
 
 const dupe = createDupe({ log: createLog({ src: 'intel.dupe', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink }) });
-export type SearchRow = Row & { host?: string; converted?: boolean; may_store?: boolean; stock?: 'in_stock' | 'out_of_stock' | 'unknown' } & Partial<Omit<DupeRow, keyof Row>> & Partial<Pick<ApifyRow, 'via' | 'actor' | 'may_model' | 'use_scope'>>;
+export type SearchRow = Row & { host?: string; converted?: boolean; may_store?: boolean; stock?: 'in_stock' | 'out_of_stock' | 'unknown' } & Partial<Omit<DupeRow, keyof Row | 'attribution'>> & { attribution?: DupeRow['attribution'] | ShoppingRow['attribution'] } & Partial<Pick<ApifyRow, 'via' | 'actor' | 'may_model' | 'use_scope'>>;
 
 export type SiteOutcome = 'hit' | 'empty' | 'blocked' | 'timeout' | 'page_changed' | 'needs_account' | 'failed' | 'unknown';
 export interface SiteSearched { site: SourceSite; group: Source['group']; kind: Kind; url: string | null; outcome: SiteOutcome; ms: number; count: number; missing?: string[]; reason?: string; error_code?: string; pace?: Pace; dropped?: number; route_id?: string; fallback?: 'apify'; cost_usd_est?: number }
@@ -22,6 +23,7 @@ export interface Found { site: SourceSite; row: SearchRow }
 export interface SearchOpts {
   paced?: boolean; routed?: (site: SourceSite) => boolean; apify?: Pick<ReturnType<typeof createApify>, 'search'>; visitor_id?: string;
   apifyRuns?: { reserve(person_id: string, day: string): Promise<{ ok: true } | { ok: false; cap: string }> };
+  shopping?: Pick<ReturnType<typeof createShopping>, 'search'>;
   dupe?: Pick<ReturnType<typeof createDupe>, 'search'>; signal?: AbortSignal;
   caller?: Caller; sources?: readonly Source[]; person_id?: string; accounts?: Accounts; harness?: Harness;
   // null pins a public read; undefined selects the person's current linked account.
@@ -29,7 +31,7 @@ export interface SearchOpts {
   sites?: readonly Site[]; kinds?: readonly Kind[]; deadline_ms?: number;
   fetchPage?: (url: string, o: FetchOpts & { signal?: AbortSignal }) => Promise<PageResult>; log?: FetchOpts['log']; now?: () => number;
 }
-export const runtimePorts: Pick<SearchOpts, 'accounts' | 'harness' | 'dupe' | 'apify' | 'apifyRuns'> & { routed: NonNullable<SearchOpts['routed']> } = {
+export const runtimePorts: Pick<SearchOpts, 'accounts' | 'harness' | 'dupe' | 'apify' | 'apifyRuns' | 'shopping'> & { routed: NonNullable<SearchOpts['routed']> } = {
   accounts: undefined, harness: undefined, apify: undefined, apifyRuns: undefined, routed: () => !!runtimePorts.harness,
 };
 export interface SearchResult { results: Found[]; searched: SiteSearched[] }
@@ -48,7 +50,7 @@ const noRoute = (source: Source, kind: Kind): SiteResult => ({ rows: [], searche
 } });
 
 const sourceRouted = (source: Source, o: SearchOpts): boolean =>
-  source.lane === 'apify' ? !!o.apify : source.lane !== 'harness' || !!o.harness && (o.routed?.(source.site) ?? true);
+  source.lane === 'treg' ? !!o.shopping : source.lane === 'apify' ? !!o.apify : source.lane !== 'harness' || !!o.harness && (o.routed?.(source.site) ?? true);
 
 async function sourceAccount(source: Source, o: SearchOpts): Promise<LinkedAccount | undefined> {
   if (o.caller !== 'person' || !o.person_id) return undefined;
@@ -82,6 +84,19 @@ export function memoryApifyRuns(): NonNullable<SearchOpts['apifyRuns']> {
     if (counts.total >= Number(searchParams.read('search_apify_runs_per_day', {}).value))
       return { ok: false, cap: 'search_apify_runs_per_day' };
     counts.total++; counts.people.set(person_id, personRuns + 1); days.set(day, counts);
+    return { ok: true };
+  } };
+}
+
+export function memoryShoppingSpend(): ShoppingSpend {
+  const days = new Map<string, number>();
+  return { async reserve(day, usd) {
+    const spent = days.get(day) ?? 0;
+    const cap = Number(searchParams.read('search_shopping_usd_per_day', {}).value);
+    // Round to treg's millionths of a dollar so repeated reservations do not drift at the cap.
+    const total = Math.round((spent + usd) * 1e6) / 1e6;
+    if (total > cap) return { ok: false, cap: 'search_shopping_usd_per_day' };
+    days.set(day, total);
     return { ok: true };
   } };
 }
@@ -125,6 +140,16 @@ async function readSource(source: Source, query: string, kind: Kind, o: SearchOp
   const blocked = (reason: string): SiteResult => ({ rows: [], searched: {
     site: source.site, group: source.group, kind, url: null, outcome: 'blocked', ms: 0, count: 0, reason,
   } });
+  if (source.site === 'google_shopping') {
+    if (kind !== 'search') return blocked('Google Shopping is a search-only source');
+    const now = o.now ?? (() => performance.now()), t0 = now();
+    const result = await o.shopping!.search({ q: query }, o.signal ?? new AbortController().signal);
+    const searched = { site: source.site, group: source.group, kind, url: null, ms: Math.round(now() - t0) };
+    if (!result.ok) return { rows: [], searched: { ...searched, count: 0,
+      outcome: result.error.code === 'timed_out' ? 'timeout' : result.error.code === 'rate_limited' ? 'blocked' : 'failed',
+      error_code: result.error.code, reason: result.error.message } };
+    return { rows: result.data.rows, searched: { ...searched, outcome: result.data.rows.length ? 'hit' : 'empty', count: result.data.rows.length, dropped: result.data.dropped } };
+  }
   if (source.site === 'dupe') {
     if (kind !== 'search') return blocked('Dupe is a search-only source');
     const now = o.now ?? (() => performance.now()), t0 = now();

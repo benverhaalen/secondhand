@@ -7,6 +7,8 @@ import { browserUseCloud, cdpLauncher, localChrome, type CdpPw } from '../browse
 import type { Launcher, PoolContext, PoolPage } from '../browser/pool.ts';
 import { publicClients, type PublicPage } from './public-client.ts';
 import type { Client } from './sites/depop/adapter.ts';
+import { createShopping, type ShoppingFetch } from './sites/google_shopping/adapter.ts';
+import { memoryShoppingSpend, runtimePorts } from '../intel/public/search.ts';
 import type { PageClient } from './sites/ebay/adapter.ts';
 
 export function searchClients(env: Record<string, string | undefined> = process.env, log: Log, deps: {
@@ -75,9 +77,15 @@ function isPublicPage(page: PoolPage): page is PublicPage {
 
 // The one call the runtime makes (agreed with the server lead): createRuntime's search options, plus close.
 // apifyToken stays undefined until Apify runs only as a background fill after the answer settles (finalization SR3).
-export function composeSources({ env, log }: { env: Record<string, string | undefined>; log: Log; now?: () => number; store?: unknown }): {
-  publicClients?: { ebay: PageClient; depop: Client; close(): Promise<void> }; apifyToken?: string; close(): Promise<void>;
+export function composeSources({ env, log, now, fetch }: { env: Record<string, string | undefined>; log: Log; now?: () => number; store?: unknown; fetch?: ShoppingFetch }): {
+  publicClients?: { ebay: PageClient; depop: Client; close(): Promise<void> }; apifyToken?: string; shopping?: ReturnType<typeof createShopping>; close(): Promise<void>;
 } {
   const clients = searchClients(env, log);
-  return { ...(clients.browser === 'none' ? {} : { publicClients: { ebay: clients.ebay, depop: clients.depop, close: clients.close } }), close: clients.close };
+  // shortcut: the cap resets on a restart; move it to the kv port when the server lead composes apifyRuns there.
+  const spend = memoryShoppingSpend();
+  const token = env.TREG_TOKEN;
+  const shopping = token?.trim() && (fetch || env.NODE_TEST_CONTEXT === undefined && process.env.NODE_TEST_CONTEXT === undefined)
+    ? createShopping({ token, log, now, fetch, spend }) : undefined;
+  runtimePorts.shopping = shopping;
+  return { shopping, ...(clients.browser === 'none' ? {} : { publicClients: { ebay: clients.ebay, depop: clients.depop, close: clients.close } }), close: clients.close };
 }
