@@ -66,7 +66,7 @@ export default function Pickup() {
   if (!item || !order || !appt) {
     return (
       <Screen name="pickup" state="failed" skip={SKIP} nav={nav}>
-        <EmptyState title="No pickup here" line="This item has no buyer coming to collect it." action={{ id: 'pickup-gone', label: 'Open the item', onPress: () => router.replace(`/item/${p.id}` as Href) }} />
+        <EmptyState title="No pickup here" action={{ id: 'pickup-gone', label: 'Open the item', onPress: () => router.replace(`/item/${p.id}` as Href) }} />
       </Screen>
     );
   }
@@ -157,7 +157,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
               </Row>
               <Row lead={<Icon name="location-01" />}>
                 <Txt role="body">{place}</Txt>
-                <Txt role="caption" lines={1}>{place === spot ? 'Your saved spot, out in public' : 'A place you picked'}</Txt>
+                {place === spot ? <Txt role="caption" lines={1}>Your saved spot, out in public</Txt> : null}
               </Row>
             </List>
             {/* Within the hour, the two things a person tells a buyer on the way come first (spec/notifications.md, "A pickup
@@ -232,7 +232,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
       </Sheet>
 
       <Sheet open={open === 'address'} title="Share your address" onClose={() => setOpen(null)}>
-        <Txt role="body" tone="ink-2">{`Only you can send this. ${buyer} gets it in the chat on the site.`}</Txt>
+        <Txt role="body" tone="ink-2">{`${buyer} gets your address in the chat on the site`}</Txt>
         <Blank id="pickup-address" name="Your address" value={address} onChange={setAddress} />
         <Approve id="pickup-send-address" does={`Send my address to ${short(buyer)}`} status={busy ? 'working' : 'ready'} step="Sending"
           onApprove={() => { if (address.trim()) tell(`Sent your address to ${buyer}`, () => setHome('sent')); }} />
@@ -300,7 +300,7 @@ function MeetPicker({ w, buyer, spot, convId, q, onSent, sent }: { w: World; buy
         </List>
       </Section>
 
-      {status === 'sent' ? null : picks.length ? (
+      {status !== 'sent' && picks.length ? (
         <Stack>
           {dark && !darkOk ? (
             <Line>
@@ -313,9 +313,7 @@ function MeetPicker({ w, buyer, spot, convId, q, onSent, sent }: { w: World; buy
             onSend={() => { setStatus('sending'); timer.current = setTimeout(() => { setStatus('sent'); onSent(); }, 700); }}
             onMine={() => router.push((`/messages/${convId ?? ''}` + q + `${q ? '&' : '?'}take=1`) as Href)} />
         </Stack>
-      ) : (
-        <Txt role="body" tone="ink-2">{`Tap the days that work. The agent writes to ${buyer} from them.`}</Txt>
-      )}
+      ) : null}
     </>
   );
 }
