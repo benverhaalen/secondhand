@@ -90,3 +90,24 @@ test('shell: Sell keeps Select and Done usable below the header', async () => {
   await screen.page.getByTestId('sell-select').waitFor({ state: 'visible', timeout: WAIT });
   await screen.page.close();
 });
+
+// Ben, 11:27, on the decision card: "Scrolling down hides the bar and any scroll up brings it back". On every tab the logo
+// row slides away under the status strip as the page scrolls down, and a small scroll up brings it back whole.
+for (const [name, path] of pages) test(`shell: ${name}'s logo row leaves on scroll down and comes back on any scroll up`, async () => {
+  const screen = await openPhone(`${path}?world=flipper`);
+  const page = screen.page;
+  await page.getByTestId('nav-inbox').waitFor({ state: 'visible', timeout: WAIT });
+  const navTop = () => page.evaluate(() => document.querySelector('[data-part="top-bar"] [data-part="nav"]').getBoundingClientRect().top);
+  const room = await page.evaluate(() => { const s = [...document.querySelectorAll('div')].find(d => /(auto|scroll)/.test(getComputedStyle(d).overflowY) && d.scrollHeight > d.clientHeight); return s ? s.scrollHeight - s.clientHeight : 0; });
+  const rest = await navTop();
+  assert.ok(rest >= 59, `at rest the logo row clears the status area: ${rest}`);
+  if (room < 200) { await page.close(); return; } // a page shorter than the screen has nothing to hide the bar for
+  await page.mouse.move(195, 420);
+  for (let i = 0; i < 6; i++) { await page.mouse.wheel(0, 100); await page.waitForTimeout(30); }
+  await page.waitForTimeout(300);
+  assert.ok(await navTop() < 59 - 40, `scrolled down, the logo row is gone: ${await navTop()}`);
+  await page.mouse.wheel(0, -40);
+  await page.waitForTimeout(500);
+  assert.equal(Math.round(await navTop()), Math.round(rest), 'a small scroll up brings the logo row back to its place');
+  await page.close();
+});
