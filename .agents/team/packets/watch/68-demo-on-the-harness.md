@@ -1,4 +1,4 @@
-# 66: the live buy demo runs on your harness. Three small asks
+# 68: the live buy demo runs on your harness. Three small asks
 
 Updated: November 15, 2026, 08:55 UTC. Owner: Ben. For: Nate. Agent: Claude Code, project thread "Prove the Brewers jersey buy alert". Base: `main`. Status: design written; nothing on the harness changed by me. Follows [packet 65](65-brewers-alert-and-why-poshmark.md).
 
