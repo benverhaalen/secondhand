@@ -5,6 +5,7 @@ import { Buy } from '../../../components/desktop/buy';
 import { Sales } from '../../../components/desktop/sales';
 import { You } from '../../../components/desktop/you';
 import { Messages } from '../../../components/desktop/messages';
+import { Insights, Storefront } from '../../../components/desktop/store';
 export default async function Page({ params }: { params: Promise<{ view?: string[] }> }) {
   const { view = [] } = await params;
   if (!view.length) return <Today />;
@@ -13,6 +14,8 @@ export default async function Page({ params }: { params: Promise<{ view?: string
   if (view.length === 2 && view[0] === 'sell') return <ItemDetail id={view[1]} />;
   if (view.length === 2 && view[0] === 'buy' && view[1] === 'shop') return <Shop />;
   if (view.length === 1 && view[0] === 'buy') return <Buy />;
+  if (view.length === 1 && view[0] === 'store') return <Storefront />;
+  if (view.length === 1 && view[0] === 'insights') return <Insights />;
   if (view.length === 1 && view[0] === 'you') return <You />;
   if (view[0] === 'messages' && view.length <= 2) return <Messages id={view[1]} />;
   notFound();

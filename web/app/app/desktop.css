@@ -92,3 +92,25 @@
 .desk-question { padding:var(--s-5); background:var(--gray); border-radius:var(--r-photo); }
 .desk-question [aria-pressed=true] { background:var(--ink); color:var(--page); }
 @media (max-width:1100px) { .desk-shop { grid-template-columns:1fr; }.desk-chat-history { max-width:100%; }.desk-chat-history > div { grid-template-columns:minmax(0, 1fr) auto; } }
+
+/* storefront and insights */
+.desk-store-item { display:grid; gap:var(--s-2); align-content:start; }
+.desk-store-title { font-size:var(--t-15); line-height:var(--lh-15); overflow-wrap:anywhere; }
+.desk-listing-sites { list-style:none; padding:0; margin:var(--s-1) 0 0; display:flex; flex-wrap:wrap; gap:var(--s-2); }
+.desk-listing-sites a, .desk-listing-sites li > span { display:inline-flex; align-items:center; gap:var(--s-2); min-height:var(--control-min); padding-inline:var(--s-2) var(--s-3); border-radius:var(--r-pill); background:var(--gray); font-size:var(--t-13); text-transform:capitalize; }
+.desk-listing-sites .desk-site { width:var(--s-6); height:var(--s-6); }
+.desk-updated { margin-top:var(--s-8); }
+.desk-bars { display:grid; gap:var(--s-2); }
+.desk-bar-head, .desk-bar-row { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,.5fr) minmax(0,2fr) minmax(0,.8fr) minmax(0,1fr); gap:var(--s-5); align-items:center; padding-block:var(--s-3); }
+.desk-bar-head { color:var(--ink-2); font-size:var(--t-13); }
+.desk-bar-row { border-top:var(--card-border); font-variant-numeric:tabular-nums; }
+.desk-stage-row { grid-template-columns:minmax(0,1fr) minmax(0,3fr); }
+.desk-bar-site .desk-site { width:var(--s-7); height:var(--s-7); }
+.desk-bar-cell { position:relative; display:flex; align-items:center; min-height:var(--s-7); }
+.desk-bar { position:absolute; inset-block:var(--s-2); inset-inline-start:0; border-radius:var(--r-pill); background:var(--aqua); opacity:.55; min-width:var(--s-2); }
+.desk-bar-cell { padding-inline:var(--s-3); }
+.desk-research-select { max-width:calc(var(--s-9) * 6); margin-block:var(--s-3) var(--s-4); }
+.desk-field-label { display:block; font-size:var(--t-13); color:var(--ink-2); }
+@media (max-width:760px) { .desk-bar-head { display:none; } .desk-bar-row { grid-template-columns:1fr 1fr; } .desk-stage-row { grid-template-columns:1fr; } }
+.desk-account-summary > [role=listitem] { display:grid; gap:var(--s-2); padding-block:var(--s-4); align-content:start; }
+.desk-store-item .desk-price { font-size:var(--t-18); }
