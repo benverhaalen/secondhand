@@ -2001,3 +2001,9 @@ Nate, orchestrator's session, 2026-11-15, about 07:55 Central.
 > Also for technology, a userful thing when its being captured and identified, is for the system to perhaps determine the value of its individual pieces. like a desktop computer can have the system understand the ram, of course if its a custom build, I imagine that will be a clarifying question, and stuff like that
 
 Used in: [packet 72](../.agents/team/packets/team/72-capture-handoff.md) (the queue's parts row), `spec/engines/capture.md` (when specced).
+
+## 2026-11-15 nate start new leads as needed and work to complete everything
+Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
+> Start all new leads as you see fit, evaluate, fix, address, and efficiently work to complete everything
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md) (the orchestrator starts a replacement lead when one hands off, without asking each time).
