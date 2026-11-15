@@ -966,3 +966,89 @@ Ben, on the round 11 picks page, saved 2026-11-15 03:37 UTC; he wrote "done with
 
 **Overall.**
 > align on ui. focus on creating the basics and examples of great and bad ui practices and all those ways of really greatly creating ui or design under one brand and defining the brand in a human and agent readable way and interpretable way. also for the ui loop, the image ideation portion should be about screen organization under the design family rules and then the agent uses the brand system to recreate it and it notices if it should or shouldn't create new ones. it thinks very intentionally across what is needed in each thing
+
+## 2026-11-14 nate each harness is built from what it understands of the site, as documented endpoints such as /write-listing
+Nate, build session (orchestrator), 2026-11-14 about 22:40 Central, two messages as the five platform teams started.
+> watch out claude, its starting to slow down and get dangerous with how much memory is being used
+
+> Theres not so much one template to follow, but each harness is intelligentlly built from what it understands about web structure, , deterministic accuracy to always assure the best page navigation and understanding, to create well documented endpoints that can even just be slash commands or endpoints whatever's best, like /write-listing with the listing then provided from the app
+
+## 2026-11-14 nate harnesses are not held back by sites limiting automation; use browser-use
+Nate, build session (orchestrator), 2026-11-14 about 22:50 Central.
+> For all harnesses, do not allow them to build even when we are limited and such by automations. That is not what we specced, not what we explained to the judges we could create and are expected to. Like I showed an orchestrator with apify, already people profit from scraping these sites that are supposed not to. Exemplifying that the technology not only is possible, but us delivering it for free is better for everyone. Utilize https://github.com/browser-use/browser-use . for built in jev ultrafast and stealth browsers already documented
+
+## 2026-11-14 nate store auth through browser-use, build fewer things at once, focus on the browser harnesses
+Nate, build session (orchestrator), 2026-11-14 about 22:20 Central, after a second crash.
+> we can store auth, with things built into the browser use protocol. I crashed again, so lets again be careful building, testing evaluating each feature, lets cut down how many we build in parallel, focus on just the browser harnesses. Push back on your subagents who are still not just pushing past the gaps they identify and give up on
+
+> lets focus on the kernel, whats the design of that
+
+## 2026-11-14 nate the kernel covers platform specifics and storefront analytics, and runs only what each person linked
+Nate, build session (orchestrator), 2026-11-14 about 22:35 Central.
+> I think our kernel needs to account for more beyond that. platform specifics, analytics we can retrieve and store about each users store front on each linked platform. Per user, we only run the systems for what they link and store auth for
+## 2026-11-15 human in the loop is a decision, not a line
+Ben, thread "Set the secondhand brand identity", 2026-11-15 04:12 UTC, after the brand thread planned to add "a human always decides" to the brand's idea and voice. Before it, at 04:04 in the project chat: "also we should ensure to design around human in the loop to show it off as central to our product in the end".
+> dont use the quote a human always decides use it as a decision when navigating when to hand off to human vs agent.
+
+## 2026-11-14 nate the harness runs on browser-use with stored auth, not the app's built-in browser
+Nate, build session (orchestrator), 2026-11-14 about 22:50 Central, with a screenshot of the kernel session loading the built-in browser skill.
+> This agent is using the wrong skill, looking at anthropic built in browser, unless it hopefully plans to account for the specced out utilization of browser use. at least inspired by the technology to utilize for ourself. Store authentication, run the stealth browser jev ultrafast sessions, optimize for efficient and accurate operations for every feature
+
+## 2026-11-14 nate browser-use on cloud, tested the way production runs, with milestones that are finalised as they are hit
+Nate, build session (orchestrator), 2026-11-14 about 23:00 Central.
+> Run browser use on cloud, testing everything the way the app will be production built so we can validate as we build. Build everything in a way that establishes and finalizes milestones being hit and our app, system, everything being fully realized
+
+## 2026-11-14 nate we run on browser use cloud, with its docs saved as reference and the seats on it versed for speed and cost
+Nate, build session (orchestrator), 2026-11-14 about 23:10 Central, after asking whether Browser Use Cloud is the best option.
+> great, we'll run with browser use cloud, optimize utilizing the docs as saved reference and having the subagents responsible for that technology brilliantly versed to develop it for speed and cost considering
+
+## 2026-11-14 nate combine signed-in actions with public no-login fetches for the fastest searches
+Nate, build session (orchestrator), 2026-11-14 about 23:25 Central, after the Browser Use Cloud reference was saved.
+> well lets take all this into consideration, understand the docs, the ways its built to optimize around this, to maximize the speed of our searches, combining the actions we need to perform on the authenticated platform with public no login needed firecrawls?
+
+## 2026-11-15 one place makes the ui, every correction becomes a check, emil's skills vet every page, and the system designs any new page
+Ben, project chat and thread "Roll the UI system out everywhere", 2026-11-15, times UTC.
+
+03:49:
+> also, there are some things to unify with the other ui chats. like you have been sometimes using the specific site icons and sometimes not. you should always use the icdons you grabbed. also ensuring things dont move over. like when the gray box is there, things are moving over. effective audits of pages is kinda necessary in a way
+
+03:50:
+> these should be things caught in our ui system or how you write code, effectively update and continue to update when i correct. a rule mught be there but it isnt always super effective
+
+03:50:
+> ensure you continue to consider the prompts i write in other ui related things. also ensure you again use the codewriting principles. ensure you continue to consider effective auditing and really really good ui principles
+
+03:56:
+> i want one managing but i want things done as fast as possible in super parallel
+
+03:57:
+> so i dont have to edit and critique a bunch of different conflicting sources on what the ui actually looks like because somehow they look different across so my taste is fragmented and same with my attention. recall the thing that planned how to get going. that document you gave me. is that still driving everything
+
+04:00:
+> also ensure emil's or my skills are going to vet the pages. like there are a bunch of useful ones. like the break a page thing where you try to make it break and strengthen the ui creation rules around it
+
+04:03:
+> what emil skills are you using
+
+04:04:
+> also we should ensure to design around human in the loop to show it off as central to our product in the end
+
+04:05:
+> how close is the brand system to being done? when should we just stop and start actually making ui's? and then i can correct it as things generate but we generate super quickly and create super quickly to be able to effectively integrate with what nate's doing
+
+04:07:
+> how would you solve ambiguity on decisions? when going through this loop and how are you going to create a system that learns once and doesnt fail again in creating ui that is generalizable. like the website cant look like the app. but the app probably has specific rules too. segmenting off. also ensuring to update the skill over time too
+
+04:09:
+> for ambiguity it should think from a product sense, the personas, the users, how we want it to be used, how an expert would design it. how are the e2e tests run too. and the flow of it all. like the loop i engineered well. or how can you get the emil skills to be deterministic checks. maybe these corrections are good before you start because your explanation doesnt align with how i want things. i set everything up so it should just be able to run and i get a finished, professional, well designed, deep app (or website)
+
+04:10:
+> and then the system i created could be used to design any new page.
+
+04:11:
+> what else would become a check? not just break ai. ensure your process is generalizable
+
+04:12, thread "Build the brand system for everything":
+> dont use the quote a human always decides use it as a decision when navigating when to hand off to human vs agent.
+
+Used in: [.agents/ui-build/README.md](../.agents/ui-build/README.md) (the page contract, the method, the one intake, the hand-off rule), checks U6 and U7 in [.agents/checks/render.mjs](../.agents/checks/render.mjs), [.agents/vendor/](../.agents/vendor/).

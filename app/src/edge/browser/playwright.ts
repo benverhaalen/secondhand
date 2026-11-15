@@ -17,15 +17,15 @@ export function loadPlaywright(): Pw | null {
 const wrap = (c: PwContext): PoolContext<PwPage> => ({ newPage: () => c.newPage(), close: () => c.close(), onClose: fn => c.on('close', fn) });
 
 export function playwrightLauncher(pw: Pw): Launcher<PwPage> & { close(): Promise<void> } {
-  let shared: Promise<PwBrowser> | undefined;
+  const shared = new Map<boolean, Promise<PwBrowser>>(); // one shared browser per mode, headless and headed
   return {
     // Only headless and a proxy are passed: no user agent override, no stealth flag, no challenge solver.
     persistent: async (dir, opts) => wrap(await pw.chromium.launchPersistentContext(dir, { ...opts })),
     async anonymous(opts) {
-      shared ??= pw.chromium.launch({ headless: true }).then(b => { b.on('disconnected', () => { shared = undefined; }); return b; });
-      return wrap(await (await shared).newContext(opts.proxy ? { proxy: opts.proxy } : {}));
+      if (!shared.has(opts.headless)) shared.set(opts.headless, pw.chromium.launch({ headless: opts.headless }).then(b => { b.on('disconnected', () => { shared.delete(opts.headless); }); return b; }));
+      return wrap(await (await shared.get(opts.headless)!).newContext(opts.proxy ? { proxy: opts.proxy } : {}));
     },
-    async close() { if (shared) await (await shared).close(); },
+    async close() { await Promise.allSettled([...shared.values()].map(async b => (await b).close())); },
   };
 }
 

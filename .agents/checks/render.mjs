@@ -282,6 +282,13 @@ function checkView(view, ctx) {
     const bad = b && inCurve([t.rect[0], t.rect[1] + ink, t.rect[2], t.rect[3] - ink], 0, b); if (bad) E('U5', `"${t.text.trim().slice(0, 24)}"`, bad); }
   view.els.forEach((el, id) => { if (!(painted(el) || el.tag === 'img' || el.tag === 'svg')) return; const b = boxOf(id, false);
     const bad = b && inCurve(el.rect, Math.max(0, ...(el.corners ?? [0])), b); if (bad) E('U5', el.part ? `[${el.part}]` : `<${el.tag}>`, bad); });
+  // L29 the tab you are on is marked by a pill behind its icon, 56 by 32 in --tab-on, and no other tab has one
+  const tabs = view.els.map((el, id) => ({ el, id })).filter(o => o.el.part === 'tab'), within = (k, id) => { for (let i = k; i >= 0; i = view.els[i].parent) if (i === id) return true; return false; };
+  if (tabs.length > 1) { const pills = id => view.els.filter((e, k) => e.bg && e.bg === pal.raw('tab-on') && within(k, id)), on = tabs.filter(o => o.el.current);
+    if (on.length !== 1) E('L29', '[tab]', `${on.length} tabs are marked aria-current: the tab you are on is marked, and it is one`);
+    for (const o of tabs) { const p = pills(o.id);
+      if (o.el.current && !p.some(e => Math.abs(size(e)[0] - 56 * u) <= 1 && Math.abs(size(e)[1] - 32 * u) <= 1)) E('L29', '[tab]', `the current tab has ${p.length ? `a pill of ${size(p[0]).map(Math.round).join(' by ')}` : 'no pill behind its icon'}: it is ${56 * u} by ${32 * u} in --tab-on, so the tab you are on is not told by ink alone`);
+      if (!o.el.current && p.length) E('L29', '[tab]', 'a tab you are not on has the pill: only the current tab is marked'); } }
   // U2 a countdown is calm: no seconds, and past a day it is a day and a time
   for (const t of text) { const h = /\b(\d{2,3})\s?h\b/.exec(t.text), part = (() => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].part) return view.els[i].part; return ''; })();
     if (h && Number(h[1]) > 24) E('U2', short(t.text), `counts ${h[1]} hours: past a day, show the day and the time`);
@@ -292,7 +299,7 @@ function checkView(view, ctx) {
   view.els.forEach((el, i) => { const inside = k => { for (let j = k.parent; j >= 0; j = view.els[j].parent) if (j === i) return true; return false; };
     if (el.link && el.block && size(el)[0] > .6 * view.w && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img' && Math.max(...size(k)) <= 32 * u) && inside(k) && (k.rect[0] + k.rect[2]) / 2 > el.rect[2] - .2 * size(el)[0]))
       E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a row that opens a screen and ends in no chevron: nothing shows it can be pressed');
-    if (el.button && el.hasText && !el.bg && !el.borders.length && !el.gradient && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img') && inside(k))) E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a button with no fill and no outline: a button is a pill or a filled shape'); });
+    if (el.button && el.part !== 'tab' && el.hasText && !el.bg && !el.borders.length && !el.gradient && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img') && inside(k))) E('U1', el.part ? `[${el.part}]` : `<${el.tag}>`, 'is a button with no fill and no outline: a button is a pill or a filled shape'); });
   // B36 edges line up or clearly differ: two blocks of text, one above the other, never start 1 to 3 px apart
   // Words inside a small box of their own (a tag, a pill, a button) start where the box's padding puts them, so they are left out.
   const boxed = t => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].bg || view.els[i].borders.length) return size(view.els[i])[0] < view.w / 2; return false; };
@@ -304,7 +311,7 @@ function checkView(view, ctx) {
   if (view.share && view.share.color < .005 && !view.els.some(e => e.photo)) W('L2', '', 'is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)');
   // U6 a site's logo is its saved square icon (ledger L17; Ben, 03:49: "you should always use the icdons you grabbed"). A picture whose file or alt names a marketplace, or that sits where a logo goes, comes from assets/platforms/square/.
   for (const el of view.els) { if (el.src == null) continue; const file = el.src.split(/[?#]/)[0], site = SITE_NAME[(file.match(SITE_FILE) ?? [])[1]?.toLowerCase()] ?? (SITES.test(el.alt ?? '') && (el.alt ?? '').trim().split(/\s+/).length <= 2 ? SITES.exec(el.alt)[0] : null);
-    if ((site || el.logo) && !/assets\/platforms\/square\/[a-z]+\.png$/.test(file)) E('U6', `<${el.tag}${el.alt ? ` "${el.alt}"` : ''}>`, `shows ${file.startsWith('data:') ? 'an inline picture' : file.split('/').slice(-3).join('/')} as ${site ? `the ${site} logo` : 'a logo'}: a site's logo is its saved square icon, assets/platforms/square/${(site ?? 'site').toLowerCase().split(' ')[0]}.png (ledger L17)`); }
+    if ((site || el.logo) && !/assets\/platforms\/square\/[a-z]+(?:\.[0-9a-f]{20,32})?\.png$/.test(file)) E('U6', `<${el.tag}${el.alt ? ` "${el.alt}"` : ''}>`, `shows ${file.startsWith('data:') ? 'an inline picture' : file.split('/').slice(-3).join('/')} as ${site ? `the ${site} logo` : 'a logo'}: a site's logo is its saved square icon, assets/platforms/square/${(site ?? 'site').toLowerCase().split(' ')[0]}.png (ledger L17)`); }
   // U7 a state changes how a thing looks, never where it or its neighbours sit (Ben, 03:49: "when the gray box is there, things are moving over"). scripts/brand-check.mjs moves the current mark to each sibling and measures.
   for (const s of view.shifts ?? []) E('U7', `"${s.who}"`, `moves ${s.by} px when ${s.how}: a state changes how a thing looks, never where it or its neighbours sit. Give every item the same box in every state (fixed slots, the state drawn inside or behind)`);
   view.fields = fields.length;

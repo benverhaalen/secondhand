@@ -23,7 +23,7 @@ Status moves: idea → researching → designing → building → demo-ready. Ch
 | [insights](../features/insights/) | You: earned, could earn, goals and seller analytics | designing | — |
 | [market](../features/market/) | Product pages, price history and trends anyone can open | designing | — |
 | [score](../features/score/) | Scoring engine: financial, quality, visibility and trend, and the best plan per site | designing | — |
-| [app](../features/app/) | The Expo app: its shell, the one parts kit every screen is built from, and the renders that vet it | building | — |
 | [assist](../features/assist/) | The assistant; unclear words in a prompt become the right input under it | designing | — |
+| [app](../features/app/) | Every screen of the app as built: renders in light and dark, the gallery, and their check results | building | — |
 
 Ideas that wait until the product works are on the [ideas board](../ideas/README.md).

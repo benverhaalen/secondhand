@@ -1,0 +1,225 @@
+<title>secondhand brand system</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column, a full-width diagram, then tables. The brand's own palette: white page, black ink, sky, mint, lime, marigold. */
+:root {
+  --page: #FFFFFF; --surface: #F1F3F5; --ink: #0A0A0A; --ink-2: rgb(10 10 10 / .65); --rule: rgb(10 10 10 / .12);
+  --sky: #A5E1FE; --mint: #A1EACB; --lime: #EBF08F; --marigold: #F5D297; --pink: #FEC6D2; --on: #0A0A0A;
+  --font: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --field: radial-gradient(at 30% 100%, var(--mint), transparent 60%), radial-gradient(at 100% 100%, var(--lime), transparent 65%), var(--sky);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --page: #101315; --surface: #1A1D20; --ink: #ECEFF1; --ink-2: #B4BABD; --rule: rgb(236 239 241 / .14);
+  --field: radial-gradient(at 30% 100%, #03523B, transparent 60%), radial-gradient(at 100% 100%, #025050, transparent 65%), #0A4C65; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --page: #101315; --surface: #1A1D20; --ink: #ECEFF1; --ink-2: #B4BABD; --rule: rgb(236 239 241 / .14);
+  --field: radial-gradient(at 30% 100%, #03523B, transparent 60%), radial-gradient(at 100% 100%, #025050, transparent 65%), #0A4C65; color-scheme: dark }
+
+body { background: var(--page); color: var(--ink); font: 400 16px/1.5 var(--font); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+main { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1 { font-size: clamp(36px, 6vw, 56px); line-height: 1.05; letter-spacing: -.02em; font-weight: 600; margin: 0; text-wrap: balance; }
+h2 { font-size: 24px; line-height: 1.2; letter-spacing: -.01em; font-weight: 600; margin: 0 0 12px; text-wrap: balance; }
+h3 { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+p { margin: 0 0 12px; max-width: 68ch; }
+.second { color: var(--ink-2); }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+code { background: var(--surface); padding: 1px 5px; border-radius: 6px; }
+a { color: inherit; text-underline-offset: 3px; }
+
+.hero { background: var(--field); border-radius: 0 0 36px 36px; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 56px max(16px, env(safe-area-inset-left, 0px)) 40px; }
+.hero > div { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.hero p { font-size: 19px; line-height: 1.45; margin: 0; }
+.tally { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.tally span { background: var(--page); border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 500; }
+
+.diagram { overflow-x: auto; border: 1px solid var(--rule); border-radius: 20px; padding: 16px; background: var(--page); }
+.diagram svg { display: block; min-width: 760px; width: 100%; height: auto; }
+.diagram text { fill: var(--ink); font-family: var(--font); }
+.diagram .lbl { font-size: 13px; font-weight: 600; }
+.diagram .sub { font-size: 11px; fill: var(--ink-2); font-family: var(--mono); }
+.diagram .layer { font-size: 11px; fill: var(--ink-2); letter-spacing: .06em; }
+.diagram .line { stroke: var(--ink); stroke-width: 1.25; fill: none; }
+.diagram .loop { stroke: var(--ink); stroke-width: 1.25; fill: none; stroke-dasharray: 4 4; }
+.diagram .box { stroke: var(--rule); stroke-width: 1; }
+
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-top: 1px solid var(--rule); }
+th { font-weight: 600; font-size: 12px; color: var(--ink-2); letter-spacing: .04em; border-top: 0; }
+td:first-child { white-space: nowrap; }
+.tag { display: inline-block; border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 500; color: var(--on); }
+
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.step { background: var(--surface); border-radius: 20px; padding: 16px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.step .n { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.step p { margin: 0; font-size: 14px; }
+.step code { background: var(--page); }
+
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 700px) { .two { grid-template-columns: 1fr; } }
+ul { margin: 0; padding-left: 18px; } li { margin-bottom: 6px; max-width: 68ch; }
+</style>
+
+<main>
+<header class="hero"><div>
+  <h1>How the secondhand brand system is built</h1>
+  <p>Every rule is written once, in plain words. Then it is held three ways: a script that fails a render, a line a fresh judge is handed, or Ben’s own eye. The same rules run on the app, the website, a deck, a post and a story. Only one table of numbers changes between them.</p>
+  <div class="tally"><span>142 rules</span><span>69 held by a script</span><span>69 by the judge</span><span>4 by Ben</span><span>141 render tests</span></div>
+</div></header>
+
+<section>
+  <h2>The whole thing on one page</h2>
+  <p class="second">Read it top to bottom. Each layer only takes from the one above it, so a change starts where it belongs and flows down. The dashed line is how the system learns.</p>
+  <div class="diagram">
+  <svg viewBox="0 0 900 640" role="img" aria-label="Ben's words flow into picks, then rules, then values, then outputs, then checks, which feed findings back as new rules and edge states">
+    <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--ink)"/></marker></defs>
+    <!-- layer labels -->
+    <text class="layer" x="0" y="44">WORDS</text>
+    <text class="layer" x="0" y="144">DECISIONS</text>
+    <text class="layer" x="0" y="244">RULES</text>
+    <text class="layer" x="0" y="344">VALUES</text>
+    <text class="layer" x="0" y="444">OUTPUT</text>
+    <text class="layer" x="0" y="544">CHECKS</text>
+
+    <!-- words -->
+    <rect class="box" x="110" y="20" width="250" height="52" rx="14" style="fill:var(--surface)"/>
+    <text class="lbl" x="126" y="42">What Ben and Nate said</text><text class="sub" x="126" y="60">product/words.md, verbatim</text>
+    <rect class="box" x="400" y="20" width="250" height="52" rx="14" style="fill:var(--surface)"/>
+    <text class="lbl" x="416" y="42">Research, every claim marked</text><text class="sub" x="416" y="60">research/…/*.md</text>
+
+    <!-- decisions -->
+    <rect class="box" x="110" y="120" width="540" height="52" rx="14" style="fill:var(--marigold)"/>
+    <text class="lbl" x="126" y="142" style="fill:#0A0A0A">The ledger: what Ben locked, what agents decided, what is open</text><text class="sub" x="126" y="160" style="fill:rgb(10 10 10 / .65)">brand/ledger.md  L1…L52 · A rows · R open</text>
+
+    <!-- rules -->
+    <rect class="box" x="110" y="220" width="250" height="52" rx="14" style="fill:var(--sky)"/>
+    <text class="lbl" x="126" y="242" style="fill:#0A0A0A">The constitution</text><text class="sub" x="126" y="260" style="fill:rgb(10 10 10 / .65)">brand/constitution.md  I–V</text>
+    <rect class="box" x="400" y="220" width="250" height="52" rx="14" style="fill:var(--sky)"/>
+    <text class="lbl" x="416" y="242" style="fill:#0A0A0A">Who holds each rule</text><text class="sub" x="416" y="260" style="fill:rgb(10 10 10 / .65)">.agents/ui-rules.json</text>
+    <rect class="box" x="690" y="220" width="200" height="52" rx="14" style="fill:var(--sky)"/>
+    <text class="lbl" x="706" y="242" style="fill:#0A0A0A">States to draw</text><text class="sub" x="706" y="260" style="fill:rgb(10 10 10 / .65)">.agents/ui-states.json</text>
+
+    <!-- values -->
+    <rect class="box" x="110" y="320" width="250" height="52" rx="14" style="fill:var(--mint)"/>
+    <text class="lbl" x="126" y="342" style="fill:#0A0A0A">Every value, once</text><text class="sub" x="126" y="360" style="fill:rgb(10 10 10 / .65)">brand/tokens.css</text>
+    <rect class="box" x="400" y="320" width="250" height="52" rx="14" style="fill:var(--mint)"/>
+    <text class="lbl" x="416" y="342" style="fill:#0A0A0A">Each medium’s numbers</text><text class="sub" x="416" y="360" style="fill:rgb(10 10 10 / .65)">brand/media.json → media.css</text>
+
+    <!-- output -->
+    <rect class="box" x="110" y="420" width="250" height="52" rx="14" style="fill:var(--lime)"/>
+    <text class="lbl" x="126" y="442" style="fill:#0A0A0A">The app</text><text class="sub" x="126" y="460" style="fill:rgb(10 10 10 / .65)">tokens.generated.ts → app/src/ui</text>
+    <rect class="box" x="400" y="420" width="250" height="52" rx="14" style="fill:var(--lime)"/>
+    <text class="lbl" x="416" y="442" style="fill:#0A0A0A">Mocks, site, deck, post, story</text><text class="sub" x="416" y="460" style="fill:rgb(10 10 10 / .65)">HTML · brand/templates/</text>
+
+    <!-- checks -->
+    <rect class="box" x="110" y="520" width="250" height="60" rx="14" style="fill:var(--surface)"/>
+    <text class="lbl" x="126" y="542">Repo check, every push</text><text class="sub" x="126" y="560">node .agents/check.mjs</text><text class="sub" x="126" y="574">files agree · no drift · CI</text>
+    <rect class="box" x="400" y="520" width="250" height="60" rx="14" style="fill:var(--surface)"/>
+    <text class="lbl" x="416" y="542">Render check, in a browser</text><text class="sub" x="416" y="560">scripts/brand-check.mjs</text><text class="sub" x="416" y="574">→ .agents/checks/render.mjs</text>
+    <rect class="box" x="690" y="520" width="200" height="60" rx="14" style="fill:var(--surface)"/>
+    <text class="lbl" x="706" y="542">Fresh judge, then Ben</text><text class="sub" x="706" y="560">ui-rules.mjs judge deck</text><text class="sub" x="706" y="574">only what no script sees</text>
+
+    <!-- arrows down -->
+    <path class="line" d="M235 72V118" marker-end="url(#a)"/><path class="line" d="M525 72V118" marker-end="url(#a)"/>
+    <path class="line" d="M235 172V218" marker-end="url(#a)"/><path class="line" d="M525 172V218" marker-end="url(#a)"/>
+    <path class="line" d="M235 272V318" marker-end="url(#a)"/><path class="line" d="M300 272L460 318" marker-end="url(#a)"/>
+    <path class="line" d="M235 372V418" marker-end="url(#a)"/><path class="line" d="M330 372L470 418" marker-end="url(#a)"/><path class="line" d="M525 372V418" marker-end="url(#a)"/>
+    <path class="line" d="M525 472V518" marker-end="url(#a)"/><path class="line" d="M235 472V518" marker-end="url(#a)"/>
+    <path class="line" d="M650 246H670V545H688" marker-end="url(#a)"/>
+    <path class="line" d="M790 272V518" marker-end="url(#a)"/>
+    <!-- learning loop -->
+    <path class="loop" d="M650 580C760 625 875 600 880 440C885 330 860 290 830 274" marker-end="url(#a)"/>
+    <text class="sub" x="712" y="618">a miss becomes a check, a state or a judge line</text>
+  </svg>
+  </div>
+</section>
+
+<section>
+  <h2>Each file, what it does and why it is that way</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>File</th><th>What it does</th><th>Why it is built this way</th></tr></thead>
+    <tbody>
+      <tr><td><code>product/words.md</code></td><td>Every product call by Ben or Nate, quoted word for word, append only.</td><td>A rule cites the quote it rests on, so nobody argues from memory and nothing Ben said gets paraphrased into something else.</td></tr>
+      <tr><td><code>brand/ledger.md</code></td><td>Picks Ben locked (L), means agents decided (A), and questions still open (R).</td><td>Taste is Ben’s. Agents can propose, never lock. A locked pick with no rule row fails the repo check.</td></tr>
+      <tr><td><code>brand/constitution.md</code></td><td>Part I the ends. Part II thirteen articles (codes, color, type, space, imagery, voice). Part III each medium. Part IV the check list. Part V how the file changes.</td><td>Written as law: one reading per line. A word like “subtle” or “usually” with no number beside it fails the vague-words check in Articles 4 to 10 and Part III.</td></tr>
+      <tr><td><code>.agents/ui-rules.json</code></td><td>One row per rule: is it a script, a judge line, Ben’s eye, or a lesson seen once.</td><td>So a rule is never only prose. A lesson seen twice fails until it becomes a check or a judge line. A Part IV “Script” row must point at a real check with a failing test.</td></tr>
+      <tr><td><code>.agents/ui-states.json</code></td><td>The states every screen, job and control must be drawn in (new, empty, one, typical, dense, loading, failed, offline), and extreme content to stuff into every slot.</td><td>Mocks only show the happy path. This list grows from what broke: one command adds a case, and every later check runs it.</td></tr>
+      <tr><td><code>brand/tokens.css</code></td><td>Every color, size, space, corner, weight, gradient and part size, in light and dark.</td><td>The only place a value lives. The app gets it through a generated TypeScript file, and the checker reads it, so a value changes everywhere in one edit.</td></tr>
+      <tr><td><code>brand/media.json</code> → <code>media.css</code></td><td>Per medium: canvas, margins, text sizes, the unit that scales space and corners, wordmark place, word limit, layouts.</td><td>The only thing that differs between media. A test fails if it disagrees with the Part III table; <code>media.css</code> is generated so a deck never types a raw number.</td></tr>
+      <tr><td><code>brand/templates/</code></td><td>A deck, a post and a story built from named layouts. Copy one and change the words and photos.</td><td>A maker agent working from rules alone guessed wrong four times. Starting from a file that already passes removes the guessing. A test keeps all three passing.</td></tr>
+      <tr><td><code>scripts/brand-check.mjs</code></td><td>Opens any HTML in Chromium at the medium’s size, in light and dark, and measures every element and line of text.</td><td>Rules about looks are only checkable on a render. It collects facts and judges nothing, so the rules stay separate and testable.</td></tr>
+      <tr><td><code>.agents/checks/render.mjs</code></td><td>The rules, as pure functions over those facts: fonts, sizes, weights, color as ground, contrast on real pixels, margins, one field, part sizes, corners, states, layouts, color blind distance.</td><td>Every message names the rule and its article, so the fix is obvious. Each rule has a test that shows it failing on what it exists to catch.</td></tr>
+      <tr><td><code>.agents/check.mjs</code></td><td>Runs before every push and in CI: files agree, no secrets, no drift, every test passes.</td><td>So nothing depends on an agent remembering to look.</td></tr>
+      <tr><td><code>scripts/ui-rules.mjs judge</code></td><td>Prints the judge lines for one medium, each starting “Fail if”.</td><td>A fresh agent with no context judges what a script cannot see, such as whether a headline makes one point. It gets only the lines, never the whole rulebook.</td></tr>
+      <tr><td>Skills: <code>ui-screen</code>, <code>writing</code>, <code>image-gen</code></td><td>The order to work in: read, build from parts and tokens, run the checks, hand the render to a judge, show Ben.</td><td>Skills say when to do things. Values and rules stay in their own files, so a skill never holds a second copy.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>One rule, from a sentence to a failing screen</h2>
+  <div class="steps">
+    <div class="step"><span class="n">1 · words</span><p>Ben: “everything should be standardized size wise no matter whats in it”. Quoted in <code>words.md</code>.</p></div>
+    <div class="step"><span class="n">2 · decision</span><p>Locked as <code>L37</code> in the ledger: things of a similar size are one width and height.</p></div>
+    <div class="step"><span class="n">3 · rule</span><p>Part IV row <code>B31</code> says how it is measured. <code>ui-rules.json</code> says a script holds it: <code>render:B31</code>.</p></div>
+    <div class="step"><span class="n">4 · value</span><p><code>tokens.css</code> sets <code>--card-decision-h: 156px</code>.</p></div>
+    <div class="step"><span class="n">5 · output</span><p>A mock marks its card <code>data-part="card-decision"</code> and a long title stretches it to 178 px.</p></div>
+    <div class="step"><span class="n">6 · check</span><p><code>brand-check</code> fails it: “is 178 px tall: a [card-decision] is --card-decision-h, 156 px”. The edge state that broke it was already on the list.</p></div>
+  </div>
+</section>
+
+<section class="two">
+  <div>
+    <h2>What stays the same everywhere</h2>
+    <ul>
+      <li>Parts I and II of the constitution: the codes, color, type, space, voice and the ten rules for communicating in any medium.</li>
+      <li>Every token: the same eight hues, the same two faces, the same corners and spacing scale.</li>
+      <li>Every check in <code>render.mjs</code> runs on every medium. It reads the medium’s row and adjusts its numbers, not its logic.</li>
+      <li>Judge lines with no medium named apply to screens; the rest name the media they apply to.</li>
+    </ul>
+  </div>
+  <div>
+    <h2>What changes per medium</h2>
+    <ul>
+      <li>One row in <code>media.json</code>: canvas, margins, sizes, the unit (1 on screens, 2 on a deck, 3 on a post), word limit, wordmark place, layouts.</li>
+      <li>One section in Part III: what the reader is doing there, and the lines specific to it.</li>
+      <li>One template in <code>brand/templates/</code>.</li>
+      <li>Judge lines tagged with that medium.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Adding something new, like a poster or an email</h2>
+  <div class="steps">
+    <div class="step"><span class="n">1</span><p>Add a column to the Part III table and a row to <code>media.json</code> with the same numbers. A test fails until they agree.</p></div>
+    <div class="step"><span class="n">2</span><p>Run <code>node scripts/media-css.mjs</code>. The new medium gets its variables.</p></div>
+    <div class="step"><span class="n">3</span><p>Write its Part III section, one reading per line. The vague-words check holds you to it.</p></div>
+    <div class="step"><span class="n">4</span><p>Build a template from the named layouts and add it to the template test. Every existing rule already runs on it.</p></div>
+  </div>
+</section>
+
+<section class="two">
+  <div>
+    <h2>Why it will not drift</h2>
+    <ul>
+      <li>Each value lives in one file. Copies are generated, and a check fails if a generated file is stale.</li>
+      <li>The Part III table and <code>media.json</code> are compared on every push.</li>
+      <li>Every locked pick needs a row saying who holds it, and every “Script” row needs a real check with a failing test.</li>
+      <li>A commit that fixes a screen and teaches the system nothing gets a warning asking what was learned.</li>
+      <li>CI runs all of it in a real browser, so a green build means the rules ran on renders.</li>
+    </ul>
+  </div>
+  <div>
+    <h2>What it cannot do yet</h2>
+    <ul>
+      <li>The font files are not in the repo, so CI measures in a fallback face and only warns. A render on a machine with the fonts is the real test.</li>
+      <li>An audit agent wrote 63 pages built to break a rule and still pass. The checker catches 42; the 21 it misses (text in pseudo-elements, timers, iframes and the like) are listed in <code>brand/explore/system-audit/</code>.</li>
+      <li>App screens are checked as HTML mocks and web renders, not on the device.</li>
+      <li>A pass means the rules were followed, not that it looks good. The judge and Ben still look.</li>
+    </ul>
+  </div>
+</section>
+</main>

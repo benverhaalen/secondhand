@@ -1,13 +1,11 @@
 // The harness protocol: the one envelope every marketplace call returns (spec/product.md#the-harness-protocol,
 // spec/engines/protocol-and-adapters.md §1, §9). Server only. Site adapters implement `Adapter`; callers use `harness.call`.
 import type { Log } from '../../../../log/index.js';
+import type { Accounts } from '../browser/auth.ts';
 
-export const SITES = ['ebay', 'facebook', 'depop', 'poshmark', 'mercari', 'offerup', 'grailed'] as const;
-export type Site = (typeof SITES)[number];
-
-export const VERBS = ['post', 'revise', 'end', 'relist', 'read_listings', 'read_inbox', 'send_message', 'read_offers',
-  'answer_offer', 'make_offer', 'read_orders', 'read_stats', 'search', 'save'] as const;
-export type Verb = (typeof VERBS)[number];
+import { SITES, VERBS, type Site, type Verb } from './names.ts';
+import { hasVerb } from './platform.ts';
+export { SITES, VERBS, type Site, type Verb };
 
 // A write changes something on the site: it needs operation_id, holds the lease through its read-back, and is never replayed.
 export const WRITE_VERBS = ['post', 'revise', 'end', 'relist', 'send_message', 'answer_offer', 'make_offer', 'save'] as const satisfies readonly Verb[];
@@ -103,8 +101,8 @@ export function classifyRead<T extends Record<string, unknown>>(
 
 export type Harness = { call<T = unknown>(site: Site, verb: Verb, args?: CallArgs): Promise<Envelope<T>> };
 
-export function createHarness({ adapters, log, timeoutMs = 20_000, now = () => performance.now(), siteUrl = defaultSiteUrl }: {
-  adapters: Adapter[]; log?: Log; timeoutMs?: number; now?: () => number; siteUrl?: (site: Site, verb: Verb) => string;
+export function createHarness({ adapters, accounts, log, timeoutMs = 20_000, now = () => performance.now(), siteUrl = defaultSiteUrl }: {
+  adapters: Adapter[]; accounts?: Accounts; log?: Log; timeoutMs?: number; now?: () => number; siteUrl?: (site: Site, verb: Verb) => string;
 }): Harness {
   const routes = new Map<string, Adapter[]>();
   for (const a of adapters) {
@@ -118,6 +116,14 @@ export function createHarness({ adapters, log, timeoutMs = 20_000, now = () => p
     const t0 = now();
     if (!(SITES as readonly string[]).includes(site) || !(VERBS as readonly string[]).includes(verb))
       return { ...fail('no_route', `no route for ${site}.${verb}`, { do: 'handoff', url: '' }), meta: meta(undefined, t0, false) };
+    // A verb the site does not have is a fact of the platform, answered with its reason before any route is tried.
+    const has = hasVerb(site, verb);
+    if (has !== true) return { ...fail('no_route', has.absent, { do: 'handoff', url: siteUrl(site, verb) }), meta: meta(undefined, t0, false) };
+    // Linked accounts only: a call on an account the person did not link (or has no stored sign-in for) runs nothing.
+    if (accounts && typeof args.account_id === 'string') {
+      const a = await accounts.byId(args.account_id);
+      if (!a || a.site !== site) return { ...fail('policy_refused', `account ${args.account_id} is not linked on ${site}`, { do: 'raise_decision', kind: 'link_account' }), meta: meta(undefined, t0, false) };
+    }
     if (isWrite(verb) && !args.operation_id)
       return { ...fail('policy_refused', 'a write needs operation_id', { do: 'raise_decision', kind: 'missing_operation_id' }), meta: meta(undefined, t0, false) };
     const chain = routes.get(`${site}.${verb}`) ?? [];
@@ -198,6 +204,7 @@ export function fakeAdapter(site: Site, verb: Verb, over: Partial<Manifest> = {}
       const row = { id: 'fake-1', title: 'Fake item', price_cents: 2500 };
       if (mode === 'throw') throw new Error('fake adapter threw');
       if (mode === 'hang') return new Promise((_, rej) => signal.addEventListener('abort', () => rej(new Error('aborted'))));
+      if (mode === 'ok' && verb === 'read_storefront') return { ok: true, data: { followers: 120, rating: 4.9, review_count: 33, active_count: 14, sold_count: 51, orders: 3, gross_cents: 18400 }, observation_ids: ['obs-fake-1'] };
       if (mode === 'ok') return { ok: true, data: isWrite(verb) ? { id: 'fake-1', operation_id: args.operation_id } : [row], observation_ids: ['obs-fake-1'] };
       if (mode === 'empty') return classifyRead({ challenge: false, rows: [] }, manifest);
       if (mode === 'soft_block') return classifyRead({ challenge: true, rows: [] }, manifest);
