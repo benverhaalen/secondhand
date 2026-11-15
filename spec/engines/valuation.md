@@ -180,6 +180,21 @@ How the new signals enter: sold comps still set the value (asks never do). The t
 
 The result that counts: coverage and q50 median error per cell against the two baselines, with counts and dates, published to the person as "Ranges like this held 8 in 10".
 
+### The backtest on released sold data, and what it may claim
+
+*agent proposal*, the engines lead, 2026-11-15. This is the run behind the [benchmark's](../benchmark.md) row 7. The engine itself is scored: a Python twin of `comps.ts` (`jobs/valuation/comps.py`, parity-tested against the TypeScript on `app/src/engines/valuation/fixtures/comps-parity.json`), as the contestants `engine_comps` (the D5 weighted quantiles) and `engine_comps_conformal` (widened by each group's `Q_g` from earlier months' misses, as D6 and `check.ts` do), in [jobs/valuation/experiment.py](../../jobs/valuation/experiment.py), beside the 90-day product median a seller looks up.
+
+The rows are data the marketplaces released themselves. The terms of the sites' own sold pages bar collecting them in bulk ([sold-datasets.md](../../research/price/ben/sold-datasets.md); Poshmark §4(b), eBay §3 and §10), so no sold page is read to build a test or training set.
+
+| Dataset | What it is | What a number from it may claim |
+|---|---|---|
+| `dataset:stockx_2019` | 99,956 StockX sales of Off-White x Nike and Yeezy 350, 2017-09-01 to 2019-02-13, new only | pricing deadstock sneakers in 2017 to 2019; the noise floor, since identical pairs in a week sold a median 1.7% apart |
+| `dataset:nber_ebay_bo` | eBay Best Offer listings, sold and unsold, 2012-05 to 2013-06, across eBay's categories (Backus, Blake, Larsen and Tadelis 2020, QJE; research use) | pricing used goods on eBay in 2012 to 2013, by category and condition |
+
+Every result names its dataset, the date range of its sales and the families it covers. No sentence built on these says "accuracy on today's market". Families with no released data at all (Depop, Poshmark, Mercari and Facebook sales; furniture; one-off and unbranded items) are listed in the result as a gap, not left out.
+
+Two current sources fill the gap later, both inside the rules. One is the person's own sales read through their linked accounts, frozen before the sale through the `duel-record` and `duel-score` commands in the runner. The other is eBay's official APIs once developer keys exist ([waiting](../plans/waiting.md)), with the API licence's bar on modelling prices respected: such rows are scored against, never fitted on.
+
 The fixed set: 100 real items, frozen with their sale prices and dates, spread over the price bands and over eBay, Poshmark, Depop, Mercari and Facebook, kept out of every fit.
 
 ## 10. Build tasks
