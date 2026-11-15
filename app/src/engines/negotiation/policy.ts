@@ -5,6 +5,7 @@ import type { ParamStore, Scope } from '../param/param.ts';
 import { resolve, validate, POLICY, type Resolved } from './params.ts';
 import { resolve as resolveEnding } from '../money/params.ts';
 import { fact } from '../../../../spec/sites.mjs';
+import type { LearnedPAccept } from './learn.ts';
 
 export function offer(state: OfferState, pAccept: PAccept, posture: number, policy: Decision['policy'] = 'champion', param_version = 0, params: Resolved = resolve()): Decision {
   assertState(state); // before the accept line is computed from the floor
@@ -59,12 +60,13 @@ export function rollbackPolicy(store: ParamStore, scope: Scope, live: { mean: nu
   return true;
 }
 
-export function offerFromRegistry(state: OfferState, pAccept: PAccept, posture: number, store: ParamStore, scope: Scope): Decision {
+export function offerFromRegistry(state: OfferState, pAccept: PAccept | LearnedPAccept, posture: number, store: ParamStore, scope: Scope): Decision {
   store.declare(POLICY);
   const selected = store.read('negotiation_policy', scope);
   if (selected.value !== 'champion' && selected.value !== 'challenger') throw new TypeError('invalid negotiation policy');
   const params = resolve(store, scope), ending = resolveEnding(store, scope);
-  return offer({ ...state, ending: state.ending ?? ending.values.money_ending }, pAccept, posture, selected.value, selected.version, { ...params, versions: { ...params.versions, ...ending.versions, negotiation_policy: selected.version } });
+  const modelVersions = 'param_versions' in pAccept ? pAccept.param_versions : {};
+  return offer({ ...state, ending: state.ending ?? ending.values.money_ending }, pAccept, posture, selected.value, selected.version, { ...params, versions: { ...params.versions, ...ending.versions, ...modelVersions, negotiation_policy: selected.version } });
 }
 
 // D17: a ceiling is unavailable unless identity, condition, authenticity and valuation pass their gates.

@@ -1977,3 +1977,27 @@ Nate, orchestrator's session, 2026-11-15, about 07:05 Central.
 > Ensure it being wired in is efficiently and expertly evaluated. We;ll establish that we have the full outperforming data retreival built and efficient, benchmarked, and proven amazing. Then we move on to the engines for determining and driving how we calculate and adapt in realtime, which ive already asked we reserach and credibly write up to bolster all of the system and its architecture. When we present it needs to be clear, impressive, and understood by the judges, with databricks utilization also exemplified as that is a track we are entering
 
 Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `bench/README.md` (the retrieval evaluation).
+
+## 2026-11-15 nate no bench reruns until the latency blunders are fixed
+Nate, third integration lead's session, 2026-11-15, morning Central, on the full-answer jump to 9.99 s.
+> dont rerun benches until we have perfectly optimized to correct such blunders like the jump in latency
+
+Used in: [packet 69](../.agents/team/packets/team/69-integration-handoff.md), [joins.md J12](../spec/plans/joins.md#named-fixes-in-build-order): the bench reruns only after an in-process latency test of the composed search passes.
+
+## 2026-11-15 nate the system picks the platform a listing will do best on, or lists on both
+Nate, orchestrator's session, 2026-11-15, about 07:30 Central.
+> The system assess for the user, based on their given linked platforms, the one that it'd perform best on, or to possibly list both but we've accounted for how to handle multiple listings
+
+Used in: `spec/engines/adaptation.md` (AD5, rank sites by expected keep), `spec/plans/engines-queue.md`.
+
+## 2026-11-15 nate show how the engine weighs what it learned, with genie answering and every way databricks helped
+Nate, orchestrator's session, 2026-11-15, about 07:45 Central.
+> So we should exemplify how the engine we built to deliver and determinstically weigh aggregated and learned product information from official and second hand retailers. like if databricks builds stuff for genie to be able to answer questions than we can show off the product, exhbit all the ways databricks helped, the feature set it offered to us, how we expanded on it, and optimized to create what we present
+
+Used in: `databricks/DEMO.md`, `databricks/genie/market.json`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate technology is valued by its parts too, and a custom build is a clarifying question
+Nate, orchestrator's session, 2026-11-15, about 07:55 Central.
+> Also for technology, a userful thing when its being captured and identified, is for the system to perhaps determine the value of its individual pieces. like a desktop computer can have the system understand the ram, of course if its a custom build, I imagine that will be a clarifying question, and stuff like that
+
+Used in: [packet 72](../.agents/team/packets/team/72-capture-handoff.md) (the queue's parts row), `spec/engines/capture.md` (when specced).
