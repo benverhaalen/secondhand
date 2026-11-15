@@ -131,7 +131,7 @@ test('observe moves a beta mean, weighted, with forgetting, and writes a new cha
   const r2 = await run(null, (s) => s.observe('assist_span_open', D, { success: 1, weight: 2, days_since_last: 30 }, AT));
   const k = 0.5;
   const v = r2.read.value as { alpha: number; beta: number };
-  assert.ok(Math.abs(v.alpha - (8 + 2)) < 1e-9 && Math.abs(v.beta - (2 + k)) < 1e-9);
+  assert.ok(Math.abs(v.alpha - (8 * k + 2)) < 1e-9 && Math.abs(v.beta - 3 * k) < 1e-9);
   assert.equal(r2.read.version, 2);
   assert.deepEqual((await db.query("select status from param order by version")).rows.map((x: { status: string }) => x.status), ['retired', 'champion']);
 });
@@ -182,7 +182,7 @@ test('SQL gamma observe, model apply, freeze and guard preserve transactional sc
   await reset();
   await run('usr_1', async (s) => {
     s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 }, guard_hi: 10 });
-    for (let i = 0; i < 3; i++) await s.observe('velocity', D, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, AT);
+    for (const at of ['2026-01-01', '2026-01-31', '2026-03-02']) await s.observe('velocity', D, { count: 1, exposure: 0, weight: 1 }, at);
     assert.deepEqual((await s.read('velocity', D)).value, { shape: 3.75, rate: 4 });
     const person = { ...D, person: 'usr_1' };
     await s.apply('velocity', person, (v) => ({ value: v, weight: 3 }), AT);

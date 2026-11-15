@@ -127,10 +127,10 @@ test('implicit elapsed time halves old counts; explicit elapsed time wins; out-o
   assert.deepEqual(s.observe('assist_span_open', {}, { success: 0, weight: 1, days_since_last: 0 }, DAY30).read.value, { alpha: 10, beta: 4 });
 });
 
-test('gamma sold comps decay evidence while retaining the prior', () => {
+test('gamma sold comps with implicit elapsed time decay evidence while retaining the prior', () => {
   const s = memoryStore();
   s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 }, guard_hi: 2 });
-  for (let i = 0; i < 3; i++) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, DAY0);
+  for (const at of [DAY0, DAY30, '2026-03-02T00:00:00Z']) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1 }, at);
   assert.deepEqual(s.read('velocity', {}).value, { shape: 3.75, rate: 4 });
   assert.equal(s.read('velocity', {}).version, 3, 'all three observations are retained');
 });
@@ -138,7 +138,7 @@ test('gamma sold comps decay evidence while retaining the prior', () => {
 test('gamma apply and observe share the update path; frozen gamma stays unchanged', () => {
   const s = memoryStore();
   s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 } });
-  for (let i = 0; i < 3; i++) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, DAY0);
+  for (const at of [DAY0, DAY30, '2026-03-02T00:00:00Z']) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1 }, at);
   assert.deepEqual(s.read('velocity', {}).value, { shape: 3.75, rate: 4 });
   s.freeze('velocity', {}, true);
   assert.equal(s.observe('velocity', {}, { count: 1, exposure: 1, weight: 1 }, DAY30).reason, 'frozen');

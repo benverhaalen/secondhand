@@ -131,8 +131,9 @@ export function sqlStore(tx: Tx): AsyncParamStore {
       const start = base?.value_or_hyperparams ?? source?.value_or_hyperparams ?? d.prior;
       const prior = base?.prior ?? start;
       const keep = forget(elapsed(base, at, days));
-      const next = step(structuredClone(evidence(d.family, start, prior)), keep);
-      next.value = withPrior(d.family, next.value, prior);
+      // Explicit caller forgetting wins for this update: restoring full prior mass would pin recovery.
+      const next = step(structuredClone(days === undefined ? evidence(d.family, start, prior) : start), keep);
+      if (days === undefined) next.value = withPrior(d.family, next.value, prior);
       const mean = summary(d.family, next.value);
       const lo = base?.guard_lo ?? d.guard_lo ?? null, hi = base?.guard_hi ?? d.guard_hi ?? null;
       const anomaly = mean !== undefined && ((lo !== null && mean < lo) || (hi !== null && mean > hi));

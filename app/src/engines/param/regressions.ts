@@ -15,6 +15,69 @@ const fit = (value: unknown, score = 0.5) => ({ ...declaration, scope, value_or_
   n_eff: 20, fitted_on_ids_hash: 'fitted', metric: null, held_out_score: score, guard_lo: null, guard_hi: null });
 
 export const regressions: Record<string, (s: Store) => Promise<void>> = {
+  'B2 explicit route forgetting recovers after failures stop within one hour': async (s) => {
+    const scope = { site: 'depop', segment: 'read_listings.a' };
+    const names = ['route_success', 'route_completeness'];
+    for (const name of names) s.declare({ name, family: 'beta', prior: { alpha: 9, beta: 1 } });
+    let t = 0, previous: number | undefined;
+    const record = async (success: number) => {
+      const days_since_last = previous === undefined ? 0 : 30 * (t - previous) / 600_000;
+      for (const name of names) await s.observe(name, scope, { success, weight: 1, days_since_last }, new Date(t).toISOString());
+      previous = t;
+    };
+    const score = async () => mean((await s.read(names[0], scope)).value) * mean((await s.read(names[1], scope)).value);
+    for (let i = 0; i < 20; i++) { await record(i % 10 > 2 ? 1 : 0); t += 1000; }
+    assert.ok(await score() < 0.9 ** 2, 'failures must first demote the route');
+    const start = t;
+    while (t - start <= 3_600_000) {
+      if (await score() >= 0.9 ** 2 + 0.05) break;
+      if (t - previous! >= 300_000) await record(1);
+      t += 60_000;
+    }
+    assert.ok(t - start <= 3_600_000, 'B2 retained prior mass pins route success below the recovery margin');
+  },
+  'B2 explicit forgetting discounts prior mass for this update and idle reads return to the prior': async (s) => {
+    s.declare(declaration);
+    await s.observe(declaration.name, scope, { success: 0, weight: 2 }, at);
+    const r = await s.observe(declaration.name, scope, { success: 1, weight: 1, days_since_last: 30 }, at);
+    assert.deepEqual(r.read.value, { alpha: 5, beta: 2 }, 'explicit half-life discounts the complete posterior');
+    assert.equal(r.read.n_eff, 2);
+    const row = (await s.rows(declaration.name, scope)).at(-1)!;
+    assert.deepEqual(row.prior, declaration.prior, 'the idle anchor stays intact');
+    const idle = await s.read(declaration.name, scope, '2126-01-01');
+    assert.deepEqual(idle.value, declaration.prior);
+    const update = await s.observe(declaration.name, scope, { success: 0, weight: 0 }, '2126-01-01');
+    assert.deepEqual(update.read.value, declaration.prior);
+  },
+  'B2 explicit gamma apply uses the complete posterior': async (s) => {
+    s.declare({ name: 'sale_rate', family: 'gamma', prior: { shape: 2, rate: 4 } });
+    await s.observe('sale_rate', scope, { count: 4, exposure: 2, weight: 1 }, at);
+    const r = await s.apply('sale_rate', scope, (v, keep) => {
+      assert.deepEqual(v, { shape: 6, rate: 6 });
+      const x = v as { shape: number; rate: number };
+      return { value: { shape: x.shape * keep + 1, rate: x.rate * keep + 2 }, weight: 1 };
+    }, at, 30);
+    assert.deepEqual(r.read.value, { shape: 4, rate: 5 });
+    assert.deepEqual((await s.read('sale_rate', scope, '2126-01-01')).value, { shape: 2, rate: 4 });
+  },
+  'B2 repeated explicit gamma forgetting retains a small positive rate': async (s) => {
+    s.declare({ name: 'sale_rate', family: 'gamma', prior: { shape: 2, rate: 4 } });
+    for (let i = 0; i < 60; i++) await s.observe('sale_rate', scope, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, at);
+    const v = (await s.read('sale_rate', scope)).value as { shape: number; rate: number };
+    assert.equal(v.rate, 4 * 0.5 ** 60, 'subtracting and restoring the prior must not erase a positive rate');
+    assert.ok(Number.isFinite(v.shape / v.rate));
+  },
+  'B5 retained explicit forgetting preserves positive fitted beta counts and discounts fitted n_eff': async (s) => {
+    s.declare(declaration);
+    await s.propose(fit({ alpha: 1, beta: 9 }), 0);
+    await s.promote(declaration.name, scope, 1, 0, at);
+    const r = await s.observe(declaration.name, scope, { success: 0, weight: 1, days_since_last: 30 }, at);
+    const kept = await s.rollback(declaration.name, scope, at, true);
+    assert.deepEqual(kept.value_or_hyperparams, r.read.value, 'rollback must compose forgetting with the fitted snapshot');
+    assert.deepEqual(kept.value_or_hyperparams, { alpha: 0.5, beta: 5.5 });
+    assert.equal(kept.n_eff, 11);
+    assert.deepEqual((await s.rows(declaration.name, scope))[0].value_or_hyperparams, { alpha: 1, beta: 9 });
+  },
   'B1 unknown scope keys are rejected on reads and writes': async (s) => {
     s.declare(declaration);
     const bad = { site: 'ebay', city: 'x' };
@@ -126,8 +189,8 @@ export const regressions: Record<string, (s: Store) => Promise<void>> = {
     await s.rollback(declaration.name, scope, '2026-01-31');
     await s.observe(declaration.name, scope, { success: 0, weight: 2, days_since_last: 30 }, '2026-01-01');
     const next = await s.rollback(declaration.name, scope, '2026-01-01', true);
-    assert.deepEqual(next.value_or_hyperparams, { alpha: 18, beta: 4 });
-    assert.equal(next.n_eff, 22);
+    assert.deepEqual(next.value_or_hyperparams, { alpha: 9, beta: 3 }, 'retain the explicit forgetting of the fitted snapshot and later evidence');
+    assert.equal(next.n_eff, 12);
   },
   'B5 rollback skips event versions and optionally retains only later event evidence': async (s) => {
     s.declare(declaration);

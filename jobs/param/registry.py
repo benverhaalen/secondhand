@@ -173,8 +173,10 @@ class MemoryStore:
         start = base["value_or_hyperparams"] if base else inherited["value_or_hyperparams"] if inherited else d["prior"]
         prior = base["prior"] if base else start
         keep = forget(_elapsed(base, at, days_since_last))
-        next_value = step(copy.deepcopy(_evidence(d["family"], start, prior)), keep)
-        next_value["value"] = _with_prior(d["family"], next_value["value"], prior)
+        # Explicit caller forgetting wins for this update: restoring full prior mass would pin recovery.
+        next_value = step(copy.deepcopy(_evidence(d["family"], start, prior) if days_since_last is None else start), keep)
+        if days_since_last is None:
+            next_value["value"] = _with_prior(d["family"], next_value["value"], prior)
         mean = _summary(d["family"], next_value["value"])
         lo = base.get("guard_lo") if base else None
         hi = base.get("guard_hi") if base else None
@@ -254,20 +256,9 @@ class MemoryStore:
             return copy.deepcopy(prev)
         if cur["family"] not in {"beta", "gamma"}:
             raise ValueError("keep_evidence supports beta or gamma")
-        value = copy.deepcopy(prev["value_or_hyperparams"])
-        n_eff = prev["n_eff"]
-        factor = forget(_elapsed(events[0], at, None)) if events else 1
-        for row in events:
-            if row["keep"] is None:
-                raise ValueError("event history lacks decay metadata for keep_evidence")
-            base = by_version.get(row["previous_version"])
-            old = _evidence(row["family"], base["value_or_hyperparams"] if base else row["prior"], row["prior"])
-            next_value = _evidence(row["family"], row["value_or_hyperparams"], row["prior"])
-            value = {k: v + (next_value[k] - old[k] * row["keep"]) * factor for k, v in value.items()}
-            n_eff += (row["n_eff"] - (base["n_eff"] if base else 0) * row["keep"]) * factor
-            factor *= row["keep"]
+        retained = _decay(events[0], at) if events else prev
         restored = {**copy.deepcopy(prev), "version": max(r["version"] for r in rows) + 1, "origin": "event", "status": "champion",
-                    "previous_version": prev["version"], "keep": 1, "value_or_hyperparams": value, "n_eff": n_eff, "promoted_at": at}
+                    "previous_version": prev["version"], "keep": 1, "value_or_hyperparams": copy.deepcopy(retained["value_or_hyperparams"]), "n_eff": retained["n_eff"], "promoted_at": at}
         cur["status"] = "retired"
         rows.append(restored)
         return copy.deepcopy(restored)

@@ -1830,5 +1830,211 @@
         "scope": {}
       }
     ]
+  },
+  {
+    "name": "explicit beta forgetting discounts posterior and implicit aging restores the idle prior",
+    "declare": [
+      {
+        "name": "route_success",
+        "family": "beta",
+        "prior": {
+          "alpha": 9,
+          "beta": 1
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 0,
+          "weight": 2
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 1,
+          "weight": 1,
+          "days_since_last": 30
+        }
+      },
+      {
+        "op": "read",
+        "as_of": "2026-01-31"
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 0,
+          "weight": 0
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-04-01",
+        "outcome": {
+          "success": 1,
+          "weight": 1,
+          "days_since_last": 0
+        }
+      },
+      {
+        "op": "read",
+        "as_of": "2126-01-01"
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 5.5,
+          "beta": 1.5
+        },
+        "version": 2,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 7.25,
+          "beta": 1.25
+        },
+        "version": 2,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 7.25,
+          "beta": 1.25
+        },
+        "version": 3,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8.25,
+          "beta": 1.25
+        },
+        "version": 4,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 1
+        },
+        "version": 4,
+        "n_eff": 0,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "explicit gamma apply discounts posterior and implicit aging restores the idle prior",
+    "declare": [
+      {
+        "name": "sale_rate",
+        "family": "gamma",
+        "prior": {
+          "shape": 2,
+          "rate": 4
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "count": 4,
+          "exposure": 2,
+          "weight": 1
+        }
+      },
+      {
+        "op": "apply_gamma",
+        "at": "2026-01-01",
+        "count": 1,
+        "exposure": 2,
+        "weight": 1,
+        "days_since_last": 30
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "count": 0,
+          "exposure": 0,
+          "weight": 0
+        }
+      },
+      {
+        "op": "read",
+        "as_of": "2126-01-01"
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "shape": 6,
+          "rate": 6
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 2,
+        "n_eff": 1.5,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 3,
+          "rate": 4.5
+        },
+        "version": 3,
+        "n_eff": 0.75,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 2,
+          "rate": 4
+        },
+        "version": 3,
+        "n_eff": 0,
+        "from": "row",
+        "scope": {}
+      }
+    ]
   }
 ]

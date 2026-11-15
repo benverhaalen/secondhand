@@ -65,7 +65,7 @@ export class VersionConflict extends Error {}
 export class Unknown extends Error {}
 
 export type Observation = ({ success: number } | { count: number; exposure: number }) & { weight: number; days_since_last?: number };
-// Beta/Gamma callbacks update evidence only; other families receive the complete value.
+// Beta/Gamma callbacks update evidence by default, or the complete posterior with explicit elapsed time.
 export type Step = (value: unknown, keep: number) => { value: unknown; weight: number };
 export type Applied = { applied: boolean; reason: string; anomaly?: boolean; read: Read };
 export type Pooled = { mean: number; n_eff: number; versions: number[] };
@@ -176,21 +176,10 @@ export function rollbackRow(rows: Param[], cur: Param, at: string, keep_evidence
   if (!prev) throw new Error(`${cur.name} has no earlier promoted fitted version`);
   if (!keep_evidence) return { ...prev, status: 'champion', promoted_at: at };
   if (cur.family !== 'beta' && cur.family !== 'gamma') throw new Error('keep_evidence supports beta or gamma');
-  const value = { ...(prev.value_or_hyperparams as Record<string, number>) };
-  let n_eff = prev.n_eff;
-  let factor = events.length ? forget(elapsed(events[0], at)) : 1;
-  for (const row of events) {
-    if (row.keep === null) throw new Error('event history lacks decay metadata for keep_evidence');
-    const base = row.previous_version === null ? undefined : byVersion.get(row.previous_version);
-    const old = evidence(row.family, base?.value_or_hyperparams ?? row.prior, row.prior) as Record<string, number>;
-    const next = evidence(row.family, row.value_or_hyperparams, row.prior) as Record<string, number>;
-    for (const k of Object.keys(value)) value[k] += (next[k] - old[k] * row.keep) * factor;
-    n_eff += (row.n_eff - (base?.n_eff ?? 0) * row.keep) * factor;
-    factor *= row.keep;
-  }
+  const retained = events.length ? decay(events[0], at) : prev;
   // Keep the fitted snapshot immutable; retained evidence is a new event version linked to it.
   return { ...prev, version: Math.max(...rows.map((r) => r.version)) + 1, origin: 'event', status: 'champion',
-    previous_version: prev.version, keep: 1, value_or_hyperparams: value, n_eff, promoted_at: at };
+    previous_version: prev.version, keep: 1, value_or_hyperparams: structuredClone(retained.value_or_hyperparams), n_eff: retained.n_eff, promoted_at: at };
 }
 
 // Fold only the supplied lineage, including its prior: a person never climbs beyond its shared scope.
@@ -283,8 +272,9 @@ export function memoryStore(): ParamStore {
       const start = base?.value_or_hyperparams ?? inherited?.value_or_hyperparams ?? d.prior;
       const prior = base?.prior ?? start;
       const keep = forget(elapsed(base, at, days));
-      const next = step(structuredClone(evidence(d.family, start, prior)), keep);
-      next.value = withPrior(d.family, next.value, prior);
+      // Explicit caller forgetting wins for this update: restoring full prior mass would pin recovery.
+      const next = step(structuredClone(days === undefined ? evidence(d.family, start, prior) : start), keep);
+      if (days === undefined) next.value = withPrior(d.family, next.value, prior);
       const mean = summary(d.family, next.value);
       const lo = base?.guard_lo ?? d.guard_lo, hi = base?.guard_hi ?? d.guard_hi;
       const anomaly = mean !== undefined && ((lo != null && mean < lo) || (hi != null && mean > hi));

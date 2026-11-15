@@ -127,8 +127,8 @@ def test_model_apply_is_local_and_uses_elapsed_time():
 def test_gamma_freeze_guards_and_three_sold_comps():
     s = MemoryStore()
     s.declare({'name': 'velocity', 'family': 'gamma', 'prior': {'shape': 2, 'rate': 4}, 'guard_hi': 10})
-    for _ in range(3):
-        s.observe('velocity', {}, {'count': 1, 'exposure': 0, 'weight': 1, 'days_since_last': 30}, AT)
+    for at in ('2026-01-01', '2026-01-31', '2026-03-02'):
+        s.observe('velocity', {}, {'count': 1, 'exposure': 0, 'weight': 1}, at)
     assert s.read('velocity', {})['value'] == {'shape': 3.75, 'rate': 4}
     s.freeze('velocity', {}, True)
     assert s.observe('velocity', {}, {'count': 1, 'exposure': 1, 'weight': 1}, AT)['reason'] == 'frozen'
@@ -203,6 +203,87 @@ def test_idle_evidence_keeps_prior_and_read_decay():
     result = s.observe('assist_span_open', SCOPE, {'success': 0, 'weight': 0}, '2026-05-01')
     assert result['read']['value'] == aged['value']
     assert result['read']['n_eff'] == aged['n_eff']
+
+
+def test_explicit_route_forgetting_recovers_within_one_hour():
+    s = MemoryStore()
+    scope = {'site': 'depop', 'segment': 'read_listings.a'}
+    names = ('route_success', 'route_completeness')
+    for name in names:
+        s.declare({'name': name, 'family': 'beta', 'prior': {'alpha': 9, 'beta': 1}})
+    t, previous = 0, None
+
+    def record(success):
+        nonlocal previous
+        days = 0 if previous is None else 30 * (t - previous) / 600_000
+        for name in names:
+            s.observe(name, scope, {'success': success, 'weight': 1, 'days_since_last': days}, AT)
+        previous = t
+
+    def score():
+        values = [s.read(name, scope)['value'] for name in names]
+        return (values[0]['alpha'] / sum(values[0].values())) * (values[1]['alpha'] / sum(values[1].values()))
+
+    for i in range(20):
+        record(int(i % 10 > 2))
+        t += 1000
+    assert score() < 0.9 ** 2
+    start = t
+    while t - start <= 3_600_000:
+        if score() >= 0.9 ** 2 + 0.05:
+            break
+        if t - previous >= 300_000:
+            record(1)
+        t += 60_000
+    assert t - start <= 3_600_000, 'B2 retained prior mass pins route success below the recovery margin'
+
+
+def test_explicit_forgetting_discounts_posterior_but_keeps_idle_prior():
+    s = MemoryStore()
+    prior = {'alpha': 8, 'beta': 2}
+    s.declare({'name': 'assist_span_open', 'family': 'beta', 'prior': prior})
+    s.observe('assist_span_open', SCOPE, {'success': 0, 'weight': 2}, AT)
+    r = s.observe('assist_span_open', SCOPE, {'success': 1, 'weight': 1, 'days_since_last': 30}, AT)
+    assert r['read']['value'] == {'alpha': 5, 'beta': 2}, 'explicit half-life discounts the complete posterior'
+    assert r['read']['n_eff'] == 2
+    assert s.champion('assist_span_open', SCOPE)['prior'] == prior
+    assert s.read('assist_span_open', SCOPE, as_of='2126-01-01')['value'] == prior
+    r = s.observe('assist_span_open', SCOPE, {'success': 0, 'weight': 0}, '2126-01-01')
+    assert r['read']['value'] == prior
+
+
+def test_explicit_gamma_apply_uses_complete_posterior():
+    s = MemoryStore()
+    s.declare({'name': 'sale_rate', 'family': 'gamma', 'prior': {'shape': 2, 'rate': 4}})
+    s.observe('sale_rate', SCOPE, {'count': 4, 'exposure': 2, 'weight': 1}, AT)
+
+    def step(v, keep):
+        assert v == {'shape': 6, 'rate': 6}
+        return {'value': {'shape': v['shape'] * keep + 1, 'rate': v['rate'] * keep + 2}, 'weight': 1}
+
+    r = s.apply('sale_rate', SCOPE, step, AT, 30)
+    assert r['read']['value'] == {'shape': 4, 'rate': 5}
+    assert s.read('sale_rate', SCOPE, as_of='2126-01-01')['value'] == {'shape': 2, 'rate': 4}
+
+
+def test_repeated_explicit_gamma_forgetting_retains_small_positive_rate():
+    s = MemoryStore()
+    s.declare({'name': 'sale_rate', 'family': 'gamma', 'prior': {'shape': 2, 'rate': 4}})
+    for _ in range(60):
+        s.observe('sale_rate', SCOPE, {'count': 1, 'exposure': 0, 'weight': 1, 'days_since_last': 30}, AT)
+    assert s.read('sale_rate', SCOPE)['value']['rate'] == 4 * 0.5 ** 60
+
+
+def test_retained_explicit_forgetting_keeps_positive_fitted_beta_and_discounted_n_eff():
+    s = MemoryStore()
+    s.declare({'name': 'assist_span_open', 'family': 'beta', 'prior': {'alpha': 8, 'beta': 2}})
+    s.propose(fit(name='assist_span_open', family='beta', prior={'alpha': 8, 'beta': 2}, value_or_hyperparams={'alpha': 1, 'beta': 9}, n_eff=20), 0)
+    s.promote('assist_span_open', SCOPE, 1, 0, AT)
+    r = s.observe('assist_span_open', SCOPE, {'success': 0, 'weight': 1, 'days_since_last': 30}, AT)
+    kept = s.rollback('assist_span_open', SCOPE, AT, keep_evidence=True)
+    assert kept['value_or_hyperparams'] == r['read']['value'] == {'alpha': 0.5, 'beta': 5.5}
+    assert kept['n_eff'] == 11
+    assert s.history('assist_span_open', SCOPE)[0]['value_or_hyperparams'] == {'alpha': 1, 'beta': 9}
 
 
 def test_guard_keeps_all_counts_and_recovers():
