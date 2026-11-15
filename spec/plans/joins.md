@@ -29,6 +29,9 @@ One item from the camera to the sale, the way the person meets it. A link marked
 | 17 | Numbers shown | `GET /v1/scores`, `/insights`, `/today` → proof layer citations | real; `GET /v1/citations/:id` example | engines lead: basis ids on the default citation |
 | 18 | Survives a restart | every row above | real for events, jobs, decisions and product rows when `SECONDHAND_DATA_DIR` is set (`fileStore`, de71199; `node --test app/src/edge/events/file-store.test.ts`, 8 pass, 2026-11-15); routes still keep items and orders in their own maps until int-runtime-1 | integration; Lakebase needs an async Store port (Databricks lead, through the orchestrator) |
 
+| 19 | Marketing suggestions with a handoff | marketing engine (`engines/marketing/calc.ts`) → a listing's `market_standing.fix {change, points, action_id}` → the app opens the site for the person's tap (Poshmark share, like and relist are never automated: the adapter answers `no_route` with `handoff {url}`) | missing (the marketing engine reaches no route) | engines lead for the suggestion; integration carries it on the listing and `GET /v1/scores` with its reason and url |
+| 20 | Streaming search | `POST /v1/search` → 202 job → one `runPlan` target per site over `intel/fetch.ts` → `job.stage` and `answer.partial` per site | example in all but name: the route waits for every site over a stub fetch with one seeded eBay page | integration (int-search-1) |
+
 ## By feature
 
 Routes come from the feature's spec page (`spec/features/<slug>.md`) checked against §7. "Not in §7" marks a route the feature page names that canon does not have; those go to the orchestrator.
