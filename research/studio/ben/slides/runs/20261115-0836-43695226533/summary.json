@@ -1,0 +1,215 @@
+[
+ {
+  "item": "marquette-tee",
+  "kind": "tee",
+  "seconds": 445.9,
+  "cost": 0.7898,
+  "slides": [
+   "cover:relay",
+   "back:level0",
+   "graphic:level0",
+   "graphic:level0",
+   "graphic:level0",
+   "tag:level0",
+   "measure:level0",
+   "measure:level0",
+   "extra:level0"
+  ],
+  "asks": [],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented dark stain near the viewer's left armhole seam, dark spot just above the chest print",
+     "judge: wear or fading removed"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front crew neckline, visible inner Fruit of the Loom neck tag",
+     "judge: lost back neckline cut, legible fine print inside the number 74"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: printed text changed"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "proportions -15% against the tape",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front crew neckline with interior neck tag (graphic moved from the back of the shirt to the front)",
+     "judge: lost high back neckline, legible micro-text inside the numbers 74"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "proportions -16% against the tape",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front scooped crew neckline, inner neck tag on back collar",
+     "judge: lost legible micro-text inside the numbers 74"
+    ]
+   ],
+   [
+    "back",
+    "gemini-3-pro-image",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front-style scooped neckline, visible Fruit of the Loom neck tag",
+     "judge: lost high back neckline, legible micro-text inside 74"
+    ]
+   ]
+  ]
+ },
+ {
+  "item": "chico-hoodie",
+  "kind": "hoodie",
+  "seconds": 330.7,
+  "cost": 0.4747,
+  "slides": [
+   "cover:relay",
+   "graphic:level0",
+   "tag:level0",
+   "detail:level0",
+   "detail:level0",
+   "detail:level0"
+  ],
+  "asks": [
+   "Turn it over where it lies and take the same photo.",
+   "Get close to the pocket print so the letters fill the screen.",
+   "Lay a tape straight across the pit to pit and take a photo where the numbers are readable."
+  ],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented neck tag inside collar"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented Russell Athletic neck tag inside the collar"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ]
+  ]
+ }
+]
