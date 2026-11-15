@@ -54,17 +54,26 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | A6 | The notice card is gray, or marigold tint when it needs the person. Ben left it to the agent in [round 7](../product/words.md#2026-11-15-round-7-picks) | constitution Art. 5, States |
 | A7 | Where Clofie goes: the wordmark, the screen title, the headline of a moment, web and post headlines. Never a number, never words a person wrote. Ben asked for the classing in [round 8](../product/words.md#2026-11-15-round-8-picks) | constitution Art. 6, [the reasons](explore/round-9/clofie-use.md) |
 
-## Open (Ben picks; round 9)
+## Open (Ben picks; round 10)
 
-Round 8 picks are recorded in [words.md](../product/words.md#2026-11-15-round-8-picks). This round is drawn in code on the [picks page](https://claude.ai/artifact/7a98Pc4VWDoarvKACEhvVP), with every space measured. The Clofie sheets are in [explore/round-9/inputs/](explore/round-9/inputs/).
+Round 9 picks and notes are in [words.md](../product/words.md#2026-11-15-round-9-picks). Round 10 is four screens mocked in code from the tokens ([explore/round-10/mock/](explore/round-10/mock/README.md)), rendered with the real fonts ([explore/round-10/renders/](explore/round-10/renders/)), on the [picks page](https://claude.ai/artifact/7a98Pc4VWDoarvKACEhvVP). What the answers rest on is in [brand-round-10.md](../research/cross-cutting/ben/brand-round-10.md).
+
+Ben did not tap R16 to R19 in round 9. He chose "[Use them in mocks, lock later](../product/words.md#2026-11-15-use-my-four-round-9-calls-in-the-mocks-lock-later)", so the round 10 mocks use the agent's leaning for each and none is locked. On A7 he wrote "im fine with whatever you think is best", so A7 stands as decided above.
 
 | # | Decision | Options | Leaning |
 |---|---|---|---|
-| R16 | The item in a feed. Ben: "definitely B or C", a mix or an in-between, and "im fine possibly amending some decisions earlier" (L16) | A: white box with a hairline. B: gray box, no line. C: the in-between, a lighter gray with a hairline | B (agent) |
-| R17 | Which gradients are in the set, and how soft, how fast and how deep they are | Nine named fields in a loop, and any three ring colors with no two near opposite. Depth, softness and drift are set in the lab on the page, which saves what Ben leaves there | open |
-| R18 | Deeper colors. Ben: "the palette could be lacking deeper colors? i want to know if you agree or disagree" | A: none, as now. B: one stronger point in each gradient and the deep step for small marks. C: deep fills with white text | B (agent) |
-| R19 | Spacing by relationship, and radii that nest | The measured rule on the page, yes or no | yes (agent) |
-| A7 | Where Clofie goes, shown for a veto | A: wordmark only. B: and screen titles. C: and the amount. D: and card headlines | B (agent decision) |
+| R16 | The item in a feed | A: white box with a hairline. B: gray box, no line. C: a lighter gray with a hairline | B (agent), in the mocks |
+| R17 | Which gradients are in the set, and how soft, how fast and how deep they are | Nine named fields in a loop, and any three ring colors with no two near opposite. Ben left the lab at Home, depth 50, softness 55, drift 26 s | As Ben left the lab, in the mocks |
+| R18 | Deeper colors | A: none. B: one stronger point in each gradient and the deep step for the icon in a state tag. C: deep fills with white text | B (agent), in the mocks |
+| R19 | Spacing by relationship, and radii that nest (boxes at 20) | Yes or no | yes (agent), in the mocks |
+| R20 | Human touches, so the brand is not stock. Ben: "we need some sort of unique human touches" | Four behind switches: the second hand, paper tags, the receipt, laid on a table. Keep, drop or redraw each | Keep the hand as an idea and redraw it, tags on photos only, keep the receipt, drop the table (agent) |
+| R21 | The selected tab's label | A: medium, as locked (L29). B: the same weight, so weight never changes with state | B (agent) |
+| R22 | What separates, and when things blend | The six rules in constitution Art. 5, yes or no | yes (agent) |
+| R23 | Which color goes where | The order of seven questions in constitution Art. 5, yes or no | yes (agent) |
+| R24 | Which Neue Montreal file the app loads | A: the first file, with digits added by `scripts/font-tnum.py`. B: PP Neue Montreal 2.6, Book and Medium | B (agent) |
+| R25 | Which gaps to close next | The idea in one line, a symbol and the app icon, the sale's sound and haptic, our own state icons, real photos in the mocks | Ben picks |
+
+Small calls the mocks forced, each one line in [screens.css](explore/round-10/mock/screens.css): a logo's corner is 4 and a filter chip is 36 tall, and neither is in a scale; buttons in a box are 44 and the bar at the foot of a sale is 48; the + in the tab bar is a gray circle with no label; eBay's own icon is unreadable at 20 px and needs a better file.
 
 ## Later
 
