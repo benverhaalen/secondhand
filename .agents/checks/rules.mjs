@@ -33,7 +33,7 @@ export function rules(root) {
     if (!KINDS.includes(r.kind)) { out.push(err(at, `kind is "${r.kind}"; it is one of ${KINDS.join(', ')}`)); continue; }
     if (r.kind === 'check') {
       const by = String(r.by ?? ''), pick = by.match(/^picks:(\w+)$/)?.[1], drawn = by.match(/^render:(\w+)$/)?.[1];
-      if (drawn) { if (!render.includes(`'${drawn}'`) || !renderTests.includes(`['${drawn}', '`)) out.push(err(at, `render:${drawn} needs a check with that id in ${RENDER} and a test named "render ${drawn}:" in ${RENDER_TESTS}`)); }
+      if (drawn) { if (!new RegExp(`\\b(?:E|W|err|warn)\\)?\\('${drawn}'`).test(render) || !renderTests.includes(`['${drawn}', '`)) out.push(err(at, `render:${drawn} needs a check with that id in ${RENDER} and a test named "render ${drawn}:" in ${RENDER_TESTS}`)); }
       else if (pick ? !PICKS[pick] : !HOLDER.test(by) || read(root, by) == null) out.push(err(at, `is held by "${by}", which is not a check that exists: name picks:<id> for a check in .agents/checks/picks.mjs, a file in .agents/checks/, or a test the runner runs`));
       else if (pick && !tests.includes(`picks ${pick}:`)) out.push(err(at, `picks:${pick} has no test named "picks ${pick}:" in ${TESTS}: a check counts once it is shown failing on what it exists to catch`));
     }
@@ -48,9 +48,11 @@ export function rules(root) {
   // Part IV of the constitution names who runs each brand check; this list names the holder. The two agree.
   for (const [, id, runs] of (read(root, BRAND) ?? '').matchAll(/^\|\s*(B\d+)\s*\|.*\|\s*([^|]+?)\s*\|\s*$/gm)) {
     const want = /^Script(?! \(source)/.test(runs) ? 'check' : runs === 'Look' ? 'judge' : null, row = list.find(r => r?.id === id);
-    if (want && row?.kind !== want) out.push(err(`${BRAND} ${id}`, `runs as "${runs}" in Part IV and ${row ? `is "${row.kind}"` : 'has no row'} in ${RULES}: a Script row is a check held by render:${id}, and a Look row is a judge line`));
+    if (want && (row?.kind !== want || want === 'check' && row.by !== `render:${id}`)) out.push(err(`${BRAND} ${id}`, `runs as "${runs}" in Part IV and ${!row ? 'has no row' : row.kind !== want ? `is "${row.kind}"` : `is held by "${row.by}"`} in ${RULES}: a Script row is a check held by render:${id}, and a Look row is a judge line`));
     if (!want && row && /^Not built/.test(runs)) out.push(err(`${BRAND} ${id}`, `is "Not built" in Part IV and has a row in ${RULES}: say who runs it now`));
   }
+  const partIV = new Set([...(read(root, BRAND) ?? '').matchAll(/^\|\s*(B\d+)\s*\|/gm)].map(m => m[1]));
+  if (partIV.size) for (const r of list) if (/^B\d+$/.test(r?.id ?? '') && !partIV.has(r.id)) out.push(err(`${RULES} ${r.id}`, `is not a row in Part IV of ${BRAND}: a brand check is written there first`));
   const ledger = read(root, 'brand/ledger.md');
   for (const id of ledgerIds(ledger ?? '')) if (!seen.has(id))
     out.push(err(`brand/ledger.md ${id}`, `is locked and has no row in ${RULES}: add one that says what holds it. A script if one can (a check in picks.mjs with a failing test), a judge line if not, "ben" if only his eye can`));

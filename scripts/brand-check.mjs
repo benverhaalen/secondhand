@@ -4,8 +4,7 @@
 // It opens the file in headless Chromium at the medium's real size, measures every piece of text, box and color,
 // and runs the constitution's Part IV on what it measured (.agents/checks/render.mjs). Exit code 1 on any error.
 // A view is each element marked data-view (a slide, a post panel, a frame). With none, it is each screenful of the page.
-// Mark a photo that is not an <img> with data-photo, and each kind of repeated thing with data-part="its-name".
-// In an app mock, mark the phone's own status bar and home bar data-chrome; they are skipped.
+// The marks it reads are listed in brand/constitution.md Part IV, under the table.
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
@@ -48,8 +47,8 @@ function measure({ index, rect, faces, medium }) {
       colors: [...new Set([...(bi.match(/rgba?\([^)]*\)/g) ?? []), cs.backgroundColor].filter(c => !clear(c)))] } : null;
     ids.set(el, els.length);
     const logo = tag === 'img' && !photo;
-    els.push({ tag, part: el.dataset.part ?? null, rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
-      alt: tag === 'img' ? el.getAttribute('alt') ?? '' : null, hasText: /\S/.test(el.innerText ?? ''),
+    els.push({ tag, part: el.dataset.part ?? null, item: el.hasAttribute('data-item'), fit: el.dataset.fit ?? null, rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
+      alt: tag === 'img' ? el.getAttribute('alt') : el.getAttribute('aria-label'), noAlt: tag === 'img' && !el.hasAttribute('alt'), hasText: /\S/.test(el.innerText ?? ''),
       bg: clear(cs.backgroundColor) ? null : cs.backgroundColor,
       borders: [...new Set(['Top', 'Right', 'Bottom', 'Left'].filter(s => parseFloat(cs[`border${s}Width`]) > 0 && cs[`border${s}Style`] !== 'none' && !clear(cs[`border${s}Color`])).map(s => cs[`border${s}Color`]))],
       radius: ['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft'].map(c => cs[`border${c}Radius`].split(' ')[0]).filter(v => parseFloat(v) > 0),
@@ -61,7 +60,9 @@ function measure({ index, rect, faces, medium }) {
     if (!/\S/.test(n.data)) continue;
     const p = n.parentElement, cs = getComputedStyle(p); if (!p || !ids.has(p) || ['script', 'style', 'noscript'].includes(p.tagName.toLowerCase())) continue;
     const range = document.createRange(); range.selectNodeContents(n);
-    const rs = [...range.getClientRects()].map(r => clipped(p, r)).filter(inView); if (!rs.length) continue;
+    // A line set tighter than its glyph box (line-height under about 1.2) is measured as the line, so a heading that starts on a margin is on it.
+    const lh = parseFloat(cs.lineHeight), line = r => { const cut = lh && r.height > lh ? (r.height - lh) / 2 : 0; return { left: r.left, right: r.right, top: r.top + cut, bottom: r.bottom - cut, width: r.width, height: r.height - 2 * cut }; };
+    const rs = [...range.getClientRects()].map(r => clipped(p, line(r))).filter(inView); if (!rs.length) continue;
     const box = { left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: Math.max(...rs.map(r => r.bottom)) };
     // What is behind the text, read at the middle of a line that can be seen. Text nothing shows at any point is not on the page.
     const ground = []; let seen = false;
@@ -79,10 +80,13 @@ function measure({ index, rect, faces, medium }) {
     const fx = []; for (let a = p; a && a !== document.body && !a.hasAttribute('data-view'); a = a.parentElement) { const s = getComputedStyle(a);
       if (s.transform !== 'none') fx.push('transformed'); if (s.filter !== 'none') fx.push('filtered'); if (Number(s.opacity) < 1) fx.push('faded'); if (s.animationName !== 'none') fx.push('moving'); }
     if (cs.textShadow !== 'none') fx.push('shadowed'); if (parseFloat(cs.webkitTextStrokeWidth) > 0) fx.push('stroked'); if (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0) fx.push('outlined');
-    const family = first(cs.fontFamily), group = p.parentElement && p.parentElement !== document.body ? p.parentElement : p;
+    const family = first(cs.fontFamily);
+    // An amount is alone when no words sit with it: in its own box, or in the row or block that holds it, up to three boxes out and never the whole view.
+    let group = p; for (let a = p.parentElement, i = 0; a && i < 3 && a !== document.body && !a.hasAttribute('data-view'); a = a.parentElement, i++) { group = a; if (/\p{L}/u.test((a.innerText ?? '').replace(n.data, ''))) break; }
+    const control = !!p.closest('button, a, summary, [role=button], [role=tab], [role=link], [aria-current], [aria-selected="true"]');
     texts.push({ text: n.data, size: Math.round(parseFloat(cs.fontSize) * 10) / 10, weight: Number(cs.fontWeight), family: cs.fontFamily,
       display: family === faces.display, textFace: family === faces.text, color: cs.color, upper: cs.textTransform === 'uppercase',
-      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller),
+      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control,
       alone: !/\p{L}/u.test((group.innerText ?? '').replace(n.data, '')) });
   }
   return { index, w: vw, h: vh, els, texts };
@@ -116,7 +120,9 @@ export async function collect(file, { medium, sheet, tokensCss, browser }) {
       for (const f of ['text', 'display']) { p.style.fontFamily = `var(--font-${f})`; out.faces[f] = cs.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase(); }
       return out; }, names);
     await probe.close(); colors = got.colors;
-    fontsLoaded &&= await page.evaluate(f => document.fonts.check(`16px "${f.text}"`) && document.fonts.check(`16px "${f.display}"`), got.faces);
+    // A face is here when text set in it measures differently from the same text in two generic fallbacks. document.fonts.check() says yes to a face it has never heard of.
+    fontsLoaded &&= await page.evaluate(f => { const g = document.createElement('canvas').getContext('2d'), w = font => { g.font = font; return g.measureText('secondhand $46.95 Wag').width; };
+      return [f.text, f.display].every(face => ['monospace', 'serif'].some(fb => w(`40px "${face}", ${fb}`) !== w(`40px ${fb}`)) && ['monospace', 'serif'].every(fb => w(`40px "${face}", ${fb}`) === w(`40px "${face}", ${fb === 'serif' ? 'monospace' : 'serif'}`))); }, got.faces);
     const marked = await page.evaluate(() => document.querySelectorAll('[data-view]').length);
     const steps = marked || Math.min(12, Math.ceil(await page.evaluate(() => document.documentElement.scrollHeight) / canvas[1]));
     for (let i = 0; i < steps; i++) {
