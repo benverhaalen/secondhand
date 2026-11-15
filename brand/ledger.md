@@ -23,13 +23,20 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L15 | State colors are fills, and each state has its icon | [round 6](../product/words.md#2026-11-14-round-6-picks) |
 | L16 | Feeds are ruled rows with more room. A notice sits in a card and can be dismissed | [round 6](../product/words.md#2026-11-14-round-6-picks) |
 | L17 | Platform logos are square, 1:1, from each site's own icon | [round 6](../product/words.md#2026-11-14-round-6-picks) |
-| L18 | State on a photo is a corner tag, translucent and still readable | [round 6](../product/words.md#2026-11-14-round-6-picks) |
-| L19 | No lines on the gradient. Grain instead | [round 6](../product/words.md#2026-11-14-round-6-picks) |
-| L20 | Marist for the wordmark and headings (agent reading of "marist") | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L18 | State on a photo is a corner tag in a soft gradient of the state's color, still readable | [round 6](../product/words.md#2026-11-14-round-6-picks), [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L19 | The gradient is soft: no lines and no grain | [round 6](../product/words.md#2026-11-14-round-6-picks), [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L20 | Type mirrors QOVES's fonts and how QOVES sets them, without the mono. The wordmark's face is open (R11) | [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L21 | The sale amount is never in Marist | [round 6](../product/words.md#2026-11-14-round-6-picks) |
-| L22 | Light is standard. Dark mode is offered and keeps the feel | [round 6](../product/words.md#2026-11-14-round-6-picks) |
-| L23 | Spacing adapts: airy with few items, standard with many | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L22 | Light is standard. Dark mode comes later, and light and dark differ only in color | [round 6](../product/words.md#2026-11-14-round-6-picks), [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L23 | Grids have one airy default size. The person can pinch them denser or looser, as in Photos, and details drop out as tiles shrink | [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L24 | Every state and action color is defined, from one family | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L25 | The filled button is black, with a little depth, never flat pure black | [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L26 | The gradient sits on one card at rest. On a sale it fills the whole screen as an animation, with a haptic and a sound | [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L27 | The gradient drifts slowly. It is never static | [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L28 | No lime band. A kind of amount looks the same everywhere | [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L29 | The selected tab is the filled icon with a medium label | [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L30 | Motion carries continuity: the photo you tap grows into its page, and buttons feel alive and pressable | [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L31 | The brand says which gradients are allowed and which are not | [round 7](../product/words.md#2026-11-15-round-7-picks) |
 
 ## Decided by agents (means; Ben can veto)
 
@@ -40,20 +47,24 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | A3 | Two weights per face, sizes by role (13, 15, 18, then Ben's 21, 36, 50), the 4-based space scale | constitution Art. 6 and 7 |
 | A4 | The family: every hue has a tint, a fill and a deep, built the same way | constitution Art. 5, The family |
 | A5 | Dark mode flips only the page, the surfaces and the ink | constitution Art. 5, Dark mode |
+| A6 | The notice card is gray, or marigold tint when it needs the person. Ben left it to the agent in [round 7](../product/words.md#2026-11-15-round-7-picks) | constitution Art. 5, States |
 
-## Open (Ben picks; round 7 boards)
+## Open (Ben picks; round 8)
 
-Round 6 picks are recorded in [words.md](../product/words.md#2026-11-14-round-6-picks). The round 7 brief is [explore/round-7/brief.md](explore/round-7/brief.md).
+Round 7 picks are recorded in [words.md](../product/words.md#2026-11-15-round-7-picks). Ben asked for this round without image generation first: colors, gradients and typefaces.
 
 | # | Decision | Options | Leaning |
 |---|---|---|---|
-| R1 | Typefaces | A: Marist headings, Neue Montreal text (the QOVES sans). B: Marist headings, iPhone system text. C: Neue Montreal for everything. D: Clofie semibold headings, Neue Montreal text | A (agent) |
-| R2 | The filled button | A: black. B: a deep step from the family (deep sky). C: lime fill, black label | A (agent) |
-| R3 | The corner tag | A: frosted white, icon and word. B: the state's color at about 85%, icon and word. C: a soft gradient of the state's color | B (agent) |
-| R4 | Grain on the gradient | A: fine grain. B: coarse grain. C: soft, no grain | A (agent) |
-| R5 | Where the gradient goes | A: one card, always. B: one card day to day, the whole screen on a sale. C: color leads everywhere | B (agent) |
-| R6 | The lime band | A: only under the amount you keep. B: a motif (the amount you keep, the selected tab, the price you set). C: no band, size alone | B (agent) |
-| R7 | The selected tab | A: filled icon, medium label. B: a gray pill behind it. C: the lime band under it | open |
-| R8 | Spacing that adapts | A: airy up to 4 items, standard after. B: one in-between spacing always | A (Ben's note) |
-| R9 | The notice card | A: hairline card with an x. B: gray card with an x. C: tint card with an x | A (agent) |
-| R10 | Dark mode | A: near-black page, gradient unchanged. B: near-black page, gradient deepened | A (agent) |
+| R11 | The wordmark's face | A: Marist Book, no Clofie. B: Clofie SemiBold. C: Clofie Regular | open |
+| R12 | The palette | A: as now. B: lighter, the same hues. C: a wider set of hues under one rule | B (agent) |
+| R13 | What a gradient may be | A: one signature gradient only. B: a rule, any neighbors on the color wheel at the same lightness. C: the rule, and a gradient per state | B (agent) |
+| R14 | Depth on the black button | A: near-black, flat. B: lit from above with a soft shadow. C: a faint glow | B (agent) |
+| R15 | The selected tab | A: filled icon only. B: a faint glow under it. C: a soft shadow | open |
+| R16 | The item in a feed | A: ruled row. B: a hairline box. C: a gray box | open |
+
+## Later
+
+| Decision | What it waits for | Ben's words |
+|---|---|---|
+| Dark mode | Research first, from Apple's guidance and Emil Kowalski's, with marks a dark mode has to hit. Only color may change | [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| Platform logos placed on the photo, with corners matched to ours | The next image round | [round 7](../product/words.md#2026-11-15-round-7-picks) |

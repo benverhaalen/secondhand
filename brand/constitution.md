@@ -92,24 +92,26 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 - Video: the end card only, centered, held for at least 1.5 s.
 - Boundary: never in a sentence, never capitalized, never with a tagline attached, never smaller than 14 px (app) or 3% of frame height (video), never recolored except black or white.
 
-**C2. The field.** A textured mesh of sky, mint and lime, with an optional peach corner, sampled from ref-12. It is the brand's one color event.
+**C2. The field.** A soft mesh of sky, mint and lime, with an optional peach corner, sampled from ref-12. It is the brand's one color event. What Ben likes is its pattern and feel more than its exact colors ("the lighter ones", [round 7](../product/words.md#2026-11-15-round-7-picks)).
 - One field per view: one card, one band, one panel, one frame.
-- It always carries texture (grain or fine mesh lines). A flat two-stop CSS gradient is an AI tell.
+- It is soft: several blurred points of color, with no lines and no grain (Ben, rounds 6 and 7). A flat two-stop CSS gradient is an AI tell.
+- It drifts slowly and is never static, and never a loop you can see repeat (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "super ambient but not static").
 - It sits behind the most important thing (the decision that needs you, the hero of a web page, the one stat in a post), never behind long text.
 - Text on the field is black only. Every field color passes 9:1 with black and fails 3:1 with white. State pills on the field are white with a black label, so they don't vanish into it.
-- Boundary: never full-screen in the app, never as a border or text fill, never two fields touching, never animated as a loop.
+- At rest in the app it is one card. On a sale, the biggest moment, it fills the whole screen once as an animation, with a haptic and a sound (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)).
+- Boundary: never a border or text fill, never two fields touching.
 
 **C3. The item leads.** Every item is shown by its photo, and the photo is the largest image in its group. A real photo of the real thing, in daylight, on a plain ground. Ben, 20:17: "for a carhartt jacket, you should probably have a picture of it."
 - Boundary: no item without a photo (use a neutral tile with the category icon only while the photo loads); no illustration of an item; generated photos only in demos, marked as such.
 
-**C4. The black pill is the act.** The one action that moves things forward is a black pill with white text. One per decision, and on the app at most one per card.
+**C4. The black pill is the act.** The one action that moves things forward is a black pill with white text. One per decision, and on the app at most one per card. It is never flat pure black: it has a little depth (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "slight variations to black", "a little more depth or a slight shadow"). How much is open in the [ledger](ledger.md).
 - Boundary: never red, never on the field in anything but black, never two black pills side by side.
 
 **C5. Platform logos, not names.** Where a marketplace is meant, its real logo is shown, from [assets/platforms/](../assets/platforms/). Ben, 19:59.
 - Boundary: unaltered logos only, brand color or black, never redrawn letterforms. VoiceOver and alt text carry the name.
 
-**C6. Plain money.** Amounts are set in the text face with tabular figures, with the currency sign, at the same size as the text around them or one step up. The one peak amount per view (a sale) may be 50 in the app or up to 200 in a post or deck, still in the text face (agent proposal; open as D6 in the [ledger](ledger.md)). The amount you keep is the one number that gets the lime highlight (a band behind the lower 40% of the figures).
-- Boundary: one highlight per view, never inside the field (on the field, the amount stands out by size); never a counter animation; never a big number without what it is ("$46.95" alone fails; "You keep $46.95" passes).
+**C6. Plain money.** Amounts are set in the text face with tabular figures, with the currency sign, at the same size as the text around them or one step up. The one peak amount per view (a sale) may be 50 in the app or up to 200 in a post or deck, still in the text face (agent proposal). No band or highlight sits behind an amount: it stands out by size alone, and one kind of amount looks the same everywhere it appears (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)).
+- Boundary: never a counter animation; never a big number without what it is ("$46.95" alone fails; "You keep $46.95" passes).
 
 ### Article 5. Color
 
@@ -121,7 +123,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 | Ground | Cool gray | `#EFF1F2` (sampled, ref-12) | Secondary fills, photo tiles while loading | Text |
 | Field | Sky | `#90D1EF` / `#4EBAF7` | C2 (`#4EBAF7` is its deep corner), the state "shipping" | Text, lines, icons on white (1.67 and 2.17:1) |
 | Field | Mint | `#88DCB9` | C2, the state "live" | Same |
-| Field | Lime | `#E6EA6A` | C2, and money: the highlight (C6), the states "sold" and "paid" | Same (1.29:1) |
+| Field | Lime | `#E6EA6A` | C2, and money: the states "sold" and "paid" | Same (1.29:1) |
 | Field | Peach | `#FBB383` | C2 corner only | Anywhere else |
 | State | Marigold | `#F9C76F` (sampled, jpg(12)) | The state "needs you" | Category; decoration |
 | Category | Coral, lilac | `#EF956E`, `#B08DF1` (sampled, jpg(12)) | Telling kinds of things apart (collections, post series) | State; mixed with the field in one view |
@@ -154,7 +156,7 @@ Every state a screen can show, decided once so no worker invents one. Fills take
 | Pressed | `--ink-press` | `--gray` fill | `--gray-press` | Scale 0.98, `--t-feedback` |
 | Hover (web) | `--ink-press` | `--gray` fill | `--gray-press` | |
 | Focus | 2 px ink ring, 2 px white gap | same | same | Every control; never removed |
-| Selected | | | | Chips and segments: ink fill, white text (19.8:1). Tabs: ink, weight 500. Grid photos: 2 px ink ring and a check |
+| Selected | | | | Chips and segments: ink fill, white text (19.8:1). Tabs: the filled icon, ink, weight 500 (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)). Grid photos: 2 px ink ring and a check |
 | Disabled | `--gray` fill, `--ink-disabled` text | same | same | Never the only sign; say why nearby |
 | Loading | Spinner in place of the label, width kept | | | Skeletons are `--gray` |
 
@@ -162,11 +164,13 @@ Fields: hairline at rest, 1.5 px ink when focused, 1.5 px brick with a 13 px bri
 Overlays: scrim `--scrim`; sheets white at `--r-sheet`; toasts ink with white text, one at a time.
 Destructive: the confirm in a destructive sheet is a brick pill with white text (5.6:1). Nowhere else is brick a button.
 Tab badge: a marigold dot. No numbers.
+State on a photo: a corner tag in a soft gradient of the state's color, tint to fill, with the icon and the word in black (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)).
+Notice card: gray, or marigold tint when it needs the person, with an x to dismiss (agent decision; Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "your choice"). Sky tint is not used, because sky means on its way.
 Every state carries its icon as well as its color (Ben, [round 6](../product/words.md#2026-11-14-round-6-picks)): live a broadcast signal, needs you a raised hand, sold a banknote, shipping a parcel, paid a check, failed an alert, draft a pencil, ended a clock. Color is never the only sign.
 
 **The family.** Every hue (sky, mint, lime, marigold, lilac, brick) has three steps and no others: a tint, the fill and a deep. They are built the same way in OKLCH (tint at lightness .955, deep at .42, the hue kept), which is what keeps them one family. Tints and fills take black text; deeps take white. A new color is a new hue run through the same three steps, never a hand-picked hex.
 
-**Dark mode** (Ben, round 6: light is standard, dark is offered, the feel stays). Only the page, the surfaces and the ink flip. The field, the fills and black text on color are the same in both modes, so the brand reads the same. Values are in `tokens.css`.
+**Dark mode** comes later (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks): "plan dark mode for later", and "light vs dark should be exclusively color changes"). Light is standard. When it is built, nothing but color changes: only the page, the surfaces and the ink flip. The field, the fills and black text on color are the same in both modes, so the brand reads the same. Values are in `tokens.css`.
 
 The unread dot is the one colored mark allowed on white besides logos and brick, because the blue unread dot is what people already know from Mail and Messages ([words.md: familiar](../product/words.md)).
 
@@ -239,7 +243,7 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 
 1. **Radius scale:** 8 (photos inside cards), 14 (cards), 20 (sheets), pill (buttons, chips).
 2. **Depth:** one of two, chosen per medium and kept: hairline rules (1 px black at 8%) or one soft shadow (`0 1px 2px` plus a wide faint blur). Never both on one surface, never colored glows on white, never glass.
-3. **Texture only on the field** (C2): grain or mesh lines. Nowhere else.
+3. **No texture.** No grain and no lines, on the field or anywhere else (Ben, rounds 6 and 7).
 
 ### Article 10. Icons and logos
 
@@ -274,8 +278,8 @@ Each AI tell is paired with what to reach for, because banning one default moves
 
 | Tell | Reach for |
 |---|---|
-| Purple or blue-to-purple gradients, sparkles, glowing orbs | The textured field (C2), held to one band |
-| A flat two-stop CSS gradient | The sampled mesh with grain or lines |
+| Purple or blue-to-purple gradients, sparkles, glowing orbs | The soft field (C2), held to one card |
+| A flat two-stop CSS gradient | The sampled mesh: several soft points of color |
 | Inter, or one grotesk everywhere at three weights | The type rules in Article 6 |
 | Bold headings with a gray subtitle paragraph under them | One heading with a second phrase; no subtitle |
 | Icon-topped feature cards in a row of three | One real example of the thing, with its photo |
@@ -334,21 +338,21 @@ Each rule has an id, a check, and who runs it. **Script** means a deterministic 
 | B2 | Squint test (E1) | Blur the render 8 px; the first visible mass is an item photo or an amount (except outputs whose job is brand recognition) | Look |
 | B3 | Wordmark lowercase, placed by medium (C1) | Text content equals "secondhand"; app: centered in nav bar ±1 px | Not built |
 | B4 | One field per view (C2) | Count elements using the field token; must be ≤ 1 | Not built |
-| B5 | Field has texture (C2) | The field element has a grain or mesh layer | Not built |
+| B5 | Field is a soft mesh (C2) | The field element has at least three color points and no line or noise layer | Not built |
 | B6 | Text contrast (Art. 5.1) | Every text node ≥ 4.5:1 with what is behind it (≥ 3:1 at 24 px and up). On field, state and category fills, text is ink only. White text only on the black pill and brick | Not built |
 | B7 | No colored text, lines or icons on white (Art. 5.1) | Computed `color`, `border-color`, SVG `stroke` on white grounds are black or black 65%, except logos, brick and the unread dot | Script (colors in source only) |
 | B8 | Color ≤ one third of the view (Art. 5.2) | Pixel share that is non-neutral and non-photo ≤ 33%; translucent black counts as black | Not built |
 | B9 | Every item has a photo (C3) | Every item element contains an `img` with a non-empty `alt` | Not built |
 | B10 | One black pill per decision (C4) | Count primary buttons per card ≤ 1 | Not built |
 | B11 | Logos not names (C5) | No marketplace name as visible text where a logo slot exists; logo `aria-label` present | Not built |
-| B12 | Money: tabular, labelled, one highlight (C6) | Money nodes have `tabular-nums`; ≤ 1 highlight per view; each amount has a label within its group; the highlight is not inside the field | Not built |
+| B12 | Money: tabular, labelled, no highlight (C6) | Money nodes have `tabular-nums` and no background; each amount has a label within its group | Not built |
 | B13 | Two weights per face (Art. 6.1) | Computed `font-weight` values ⊆ {350, 400, 500}; 350 only in the display face; 500 only on buttons and the selected tab | Script (the set only) |
 | B14 | Size steps only (Art. 6.2) | At the default text size, computed sizes ⊆ the medium's set. Web: at 390 and 1440 wide each display size equals its endpoint, and text sizes ⊆ {15, 18}. The wordmark is exempt (its size is in Part III) | Not built |
 | B15 | No banned faces (Art. 6) | Computed `font-family` contains no Inter; loaded fonts match the picks | Script (no literal font names in source) |
 | B16 | Sentence case (Art. 6.5) | No string, other than logos and proper nouns, is all caps or title case | Not built |
 | B17 | Spacing scale (Art. 7.1) | Every gap inside a component ∈ {0, 4, 8, 12, 16, 20, 24, 32, 48, 64}; canvas margins and safe areas come from Part III | Script |
 | B18 | Inside tighter than between (Art. 7.2) | For each card, max internal gap < gap to its sibling | Not built |
-| B19 | No box in a box (Art. 7.3) | No bordered or filled element inside another bordered or filled element, except photos, buttons, state pills and the money highlight | Not built |
+| B19 | No box in a box (Art. 7.3) | No bordered or filled element inside another bordered or filled element, except photos, buttons and state pills | Not built |
 | B20 | Radius scale (Art. 9.1) | Border radii ⊆ {0, 8, 14, 20, 999} | Script |
 | B21 | One depth system (Art. 9.2) | Not both borders and shadows on cards in one view | Not built |
 | B22 | One icon set (Art. 10) | All icons from Hugeicons Stroke Rounded | Not built |

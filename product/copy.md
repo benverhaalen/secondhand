@@ -69,7 +69,7 @@ Principles expert designers use, each turned into a rule for this app. *Agent pr
 
 **Spend attention deliberately (pre-attentive attributes: color, size, position and motion are seen before anything is read).**
 - One focal point per screen: the item photo or the one number that matters. Everything else steps down in size or to 65% black (`var(--ink-2)`).
-- Color is a signal, not decoration. Color appears only as state fills, the one field (C2), the one money highlight (C6) and the brick alert. If everything is colored, nothing is.
+- Color is a signal, not decoration. Color appears only as state fills, the one field (C2) and the brick alert. If everything is colored, nothing is.
 - One primary button per decision, at most one per card (black, full width or rightmost). Secondary actions are quieter. Destructive actions are never primary.
 - The thing that differs gets noticed (isolation effect), so reserve it: a Failed tile is the only red one in a grid of calm tiles.
 - Motion only to show cause and effect: a tile sliding from Live to Sold, a draft filling in. Never as decoration.
