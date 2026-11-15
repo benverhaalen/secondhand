@@ -1373,3 +1373,8 @@ Ben, website thread, 07:34 UTC:
 > i also want the hands to be tighter to the wordmark. the same height and alignment vertically as the wordmark
 
 Used in: [hands-fit.js](../brand/explore/web-home/hands-fit.js), the hero's header and opening, and the hand pose sheets.
+
+Ben, website thread, 07:51 UTC:
+> recall the original set of icons i denied. show me that again
+
+Read as Hugeicons, the app's set, whose waving hand round 11 showed beside the wordmark and Ben asked to be slimmer ([round 11](#2026-11-15-round-11-picks)). Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs).
