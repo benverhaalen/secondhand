@@ -472,3 +472,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate front, back and tag for clothes, lidar for objects, the least extra input
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > front, back, maybe also the tag, no side photos but just clothing tag for clothing? for furniture and objects we can do lidar, like shoes, whatever would be instant and intuitive for capturing and creating the listings, with the least amount of additional input. There still is value in the fact the user just takes some pictures, and we not only add them to each listing on each platform, but control how its described and the listing is created to optimize seo.
+
+## 2026-11-14 nate a framework of fields for every kind of product, filled by the engines
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> well think about all the products that users buy and sell, all things we will make listings on, and imagine the framework we have to create, where each is assigned the necssary fields, our engines use the intelligence and aggregation gathering tools and workflows to find and fill the rest
