@@ -1833,3 +1833,10 @@ Ben, same thread, 09:47 UTC.
 > wait stop on this just focus on deslopping and improving the ai. through this note down where things break and where things need to change and use effective logging
 
 Used in: [brand/constitution.md Art. 7.11 to 7.16](../brand/constitution.md#article-7-space-and-layout), `scripts/composition.mjs` (U9 to U14), [the audit](../research/cross-cutting/ben/why-the-app-missed-the-mocks.md), [the breaks log](../features/app/breaks.md).
+
+## 2026-11-15 show how deep the project goes, and the novel ways we used the technology
+
+Ben, project chat, 09:57 UTC.
+> add more into it for dig deep how we created a project with absurd depth. also absurd depth in how we used the technologies and used them in a novel way.
+
+Used in: [devpost.md](devpost.md#how-deep-we-dug), [pitch.md](pitch.md#how-deep-we-dug).
