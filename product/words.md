@@ -625,6 +625,10 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Give me the questions for ben and we will work through it in person and Ill tell you the answers. The product may read sale emails but preferably we keep it to harness onto the platforms with the users authenticated, like treg does. Ben has my expo account and can use that to build the app. App server routes are hosted on databricks if possible, or we will host on next.js along with our site. Think as well at what information we can deliver to a user, value of what they have in total, how much they've sold, maybe helping build their buying page empowered by what the system determines is its sense of style
 
+## 2026-11-14 nate ben's design is not finished or decided; how the system drives every feature
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after seeing the app mock.
+> Dont consider ben's design to be finished or decided. It's not. I wanted to more so understand how we build the system to drive all the features
+
 ## 2026-11-15 the code understands each app
 Ben, project chat, 01:11 UTC, inside a longer message.
 > also with the brand specific things ensure somewhere in the instruction we end up being able to have the code understand each app. like if depop offers only last 24 hours, whatever depends on that fact should actually depend on that. deeply thought through software intention. finding where things could go wrong and why.
