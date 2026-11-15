@@ -12,7 +12,7 @@ export type Retry = { by: 'auto' | 'user' | 'none'; after_s?: number };
 export type Reply = { status: number; body?: unknown; headers?: Record<string, string> } | Response;
 export type Ctx = {
   user_id: string | null; visitor_id: string | null; request_id: string;
-  params: Record<string, string>; query: URLSearchParams; body: Record<string, unknown>; raw?: Uint8Array; headers: Headers; log: Log;
+  params: Record<string, string>; query: URLSearchParams; body: Record<string, unknown>; readRaw?: () => Promise<Uint8Array>; headers: Headers; log: Log;
 };
 export type Handler = (ctx: Ctx, req: Request) => Promise<Reply> | Reply;
 type Log = ReturnType<typeof createLog>;
@@ -162,12 +162,14 @@ export function route(endpoint: string, handler: Handler, opts: RouteOptions = {
       let params: Record<string, string>;
       try { params = paramsOf(pattern, url.pathname) ?? {}; }
       catch (error) {
+        // A malformed percent escape cannot identify a raw upload credential.
         if (opts.body === 'raw' && error instanceof URIError) throw new ApiError('not_found', 'route not found', 'route');
         throw error;
       }
       const query = new URLSearchParams(url.search); query.delete('user_id');
       let body: Record<string, unknown> = {};
-      const binary = opts.body === 'raw' ? await readRaw(req, opts.max_bytes, log) : undefined;
+      let binary: Promise<Uint8Array> | undefined;
+      const read = opts.body === 'raw' ? () => binary ??= readRaw(req, opts.max_bytes, log) : undefined;
       const raw = opts.body === 'raw' || ['GET', 'DELETE'].includes(method) ? '' : await req.text();
       if (raw) {
         try { body = JSON.parse(raw); } catch { throw new ApiError('invalid', 'body is not JSON', 'parse', { by: 'user' }); }
@@ -182,7 +184,7 @@ export function route(endpoint: string, handler: Handler, opts: RouteOptions = {
         visitor_id = acceptedVisitorId(given);
         visit(deps.connectingAddress(req) ?? visitor_id);
       }
-      const ctx: Ctx = { user_id, visitor_id, request_id, params, query, body, ...(binary === undefined ? {} : { raw: binary }), headers: req.headers, log: log.child({ user: user_id ?? visitor_id ?? 'none' }) };
+      const ctx: Ctx = { user_id, visitor_id, request_id, params, query, body, ...(read ? { readRaw: read } : {}), headers: req.headers, log: log.child({ user: user_id ?? visitor_id ?? 'none' }) };
 
       const key = opts.body !== 'raw' && method === 'POST' ? req.headers.get('Idempotency-Key') : null;
       const slot = key ? `${user_id ?? visitor_id ?? 'none'} ${endpoint} ${key}` : null;

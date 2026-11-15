@@ -3,6 +3,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 import { isPromise } from 'node:util/types';
+import { crc32 } from 'node:zlib';
 import type { Log } from '../../../../log/index.js';
 import type { kv as createKv } from './kv.ts';
 
@@ -25,15 +26,16 @@ export class UploadError extends Error {
   constructor(status: UploadError['status'], message: string) { super(message); this.status = status; }
 }
 
-const receivers = new WeakMap<Blobs, (token: string, bytes: Uint8Array) => Promise<void>>();
-export function receiveUpload(blobs: Blobs, token: string, bytes: Uint8Array): Promise<void> {
+const receivers = new WeakMap<Blobs, (token: string, readRaw: () => Promise<Uint8Array>) => Promise<void>>();
+export function receiveUpload(blobs: Blobs, token: string, readRaw: () => Promise<Uint8Array>): Promise<void> {
   const receive = receivers.get(blobs);
   if (!receive) throw new Error('upload receiver is not bound to this Blobs instance');
-  return receive(token, bytes);
+  return receive(token, readRaw);
 }
 
+const validComponent = (id: string): boolean => /^[a-zA-Z0-9_-]+$/.test(id);
 function component(id: string): string {
-  if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new TypeError('invalid blob id');
+  if (!validComponent(id)) throw new TypeError('invalid blob id');
   return id;
 }
 const missing = (error: unknown): boolean => error instanceof Error && 'code' in error && error.code === 'ENOENT';
@@ -60,6 +62,7 @@ export function createBlobs({ kv, dir, origin, now = Date.now, random = randomBy
       return { url: `${origin}/v1/uploads/${token}`, method: 'PUT', expires_at };
     },
     async read(user_id, photo_id) {
+      if (!validComponent(user_id) || !validComponent(photo_id)) return undefined;
       const file = path(user_id, photo_id);
       const row = kv.get<PhotoRow>('blobs', key(user_id, photo_id));
       if (!row) return undefined;
@@ -69,6 +72,7 @@ export function createBlobs({ kv, dir, origin, now = Date.now, random = randomBy
       }, result => ({ result: { found: result !== undefined, bytes_len: result?.bytes.byteLength } }));
     },
     async remove(user_id, photo_id) {
+      if (!validComponent(user_id) || !validComponent(photo_id)) return;
       const file = path(user_id, photo_id);
       await log.call('tool', 'blobs.remove', { user_id, photo_id }, async () => {
         await fs.rm(file, { force: true });
@@ -78,15 +82,17 @@ export function createBlobs({ kv, dir, origin, now = Date.now, random = randomBy
     },
     onUploaded(listener) { listeners.add(listener); return () => { listeners.delete(listener); }; },
   };
-  receivers.set(blobs, async (token, raw) => {
+  receivers.set(blobs, async (token, readRaw) => {
     if (!/^[a-f0-9]{64}$/.test(token)) throw new UploadError(404, 'upload not found');
-    const row = kv.take<UploadRow>('uploads', token);
+    const row = kv.get<UploadRow>('uploads', token);
     if (!row) throw new UploadError(404, 'upload not found');
+    const raw = await readRaw();
     log.input('api', 'photo.upload', { user_id: row.user_id, capture_id: row.capture_id, photo_id: row.photo_id, bytes_len: raw.byteLength });
     if (raw.byteLength > row.max_bytes) throw new UploadError(413, 'photo exceeds max_bytes');
     const content_type = photoType(raw);
     if (content_type !== row.content_type) throw new UploadError(415, 'photo type differs from upload target');
     const bytes = content_type === 'image/jpeg' ? stripJpeg(Buffer.from(raw)) : stripPng(Buffer.from(raw));
+    if (!kv.take<UploadRow>('uploads', token)) throw new UploadError(404, 'upload not found');
     const file = path(row.user_id, row.photo_id);
     const temp = join(folder(row.user_id), `.${row.photo_id}.${randomUUID()}.tmp`);
     await log.call('tool', 'blobs.write', { user_id: row.user_id, photo_id: row.photo_id, content_type, bytes_len: bytes.length }, async () => {
@@ -192,15 +198,7 @@ function stripJpeg(bytes: Buffer): Buffer {
   return malformed('JPEG');
 }
 
-const droppedChunks = new Set(['eXIf', 'tEXt', 'iTXt', 'zTXt', 'tIME']);
-function crc32(bytes: Uint8Array): number {
-  let crc = 0xffffffff;
-  for (const byte of bytes) {
-    crc ^= byte;
-    for (let bit = 0; bit < 8; bit++) crc = crc >>> 1 ^ (crc & 1 ? 0xedb88320 : 0);
-  }
-  return (crc ^ 0xffffffff) >>> 0;
-}
+const keptChunks = new Set(['IHDR', 'PLTE', 'IDAT', 'IEND', 'tRNS', 'gAMA', 'cHRM', 'sRGB', 'iCCP', 'sBIT', 'pHYs', 'bKGD', 'cICP', 'cLLI', 'mDCV', 'acTL', 'fcTL', 'fdAT']);
 function stripPng(bytes: Buffer): Buffer {
   const kept: Buffer[] = [bytes.subarray(0, 8)];
   let at = 8, idat = false;
@@ -211,7 +209,7 @@ function stripPng(bytes: Buffer): Buffer {
     const type = bytes.toString('ascii', at + 4, at + 8);
     if (!/^[a-zA-Z]{4}$/.test(type) || crc32(bytes.subarray(at + 4, end - 4)) !== bytes.readUInt32BE(end - 4)) return malformed('PNG');
     if (at === 8 && (type !== 'IHDR' || length !== 13)) return malformed('PNG');
-    if (!droppedChunks.has(type)) kept.push(bytes.subarray(at, end));
+    if (keptChunks.has(type)) kept.push(bytes.subarray(at, end));
     if (type === 'IDAT') idat = true;
     if (type === 'IEND') {
       if (length !== 0 || !idat) return malformed('PNG');

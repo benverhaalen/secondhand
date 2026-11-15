@@ -21,7 +21,7 @@ function fixture(t: TestContext) {
 }
 async function put(blobs: ReturnType<typeof createBlobs>) {
   const target = blobs.target(photo);
-  await receiveUpload(blobs, new URL(target.url).pathname.split('/').at(-1)!, jpeg);
+  await receiveUpload(blobs, new URL(target.url).pathname.split('/').at(-1)!, async () => jpeg);
 }
 
 test('a photo id cannot let one person read another person’s stored bytes', async t => {
@@ -81,3 +81,17 @@ test('path components cannot escape the photo data folder', t => {
     assert.throws(() => blobs.target({ ...photo, ...ids }), /id/);
   }
 });
+
+for (const bad of ['', '..', '../ph_fixture', 'ph_fixture/../ph_fixture', 'ph_fixture\\outside', 'ph_fixture%2foutside', 'ph_fixture\0outside']) {
+  for (const field of ['user_id', 'photo_id'] as const) test(`malformed ${field} ${JSON.stringify(bad)} reads as missing and remove does nothing`, async t => {
+    const { blobs, dir, store } = fixture(t);
+    await put(blobs);
+    const ids = { ...photo, [field]: bad };
+    store.set('blobs', JSON.stringify([ids.user_id, ids.photo_id]), { content_type: photo.content_type, capture_id: photo.capture_id });
+    assert.equal(await blobs.read(ids.user_id, ids.photo_id), undefined);
+    assert.equal(await blobs.remove(ids.user_id, ids.photo_id), undefined);
+    assert.ok(store.get('blobs', JSON.stringify([ids.user_id, ids.photo_id])));
+    assert.deepEqual((await blobs.read(photo.user_id, photo.photo_id))!.bytes, Buffer.from(jpeg));
+    assert.deepEqual(readdirSync(join(dir, 'blobs', photo.user_id)), [photo.photo_id]);
+  });
+}

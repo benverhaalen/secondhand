@@ -13,8 +13,8 @@ class UploadApiError extends ApiError {
 
 export function createUploads(blobs: Blobs): Handler {
   return async ctx => {
-    if (!ctx.raw) throw new Error('upload route requires body: raw');
-    try { await receiveUpload(blobs, ctx.params.id, ctx.raw); }
+    if (!ctx.readRaw) throw new Error('upload route requires body: raw');
+    try { await receiveUpload(blobs, ctx.params.id, ctx.readRaw); }
     catch (error) { if (error instanceof UploadError) throw new UploadApiError(error); throw error; }
     return { status: 204 };
   };

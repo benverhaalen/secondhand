@@ -375,7 +375,7 @@ test('finished idempotency slots expire after 24 hours with the injected clock',
 test('raw body decoding cannot corrupt invalid UTF-8 or any byte from 0 to 255', async () => {
   const bytes = Uint8Array.from({ length: 256 }, (_, i) => i);
   let seen: Uint8Array | undefined;
-  const h = route('PUT /v1/raw', ctx => { seen = ctx.raw; return { status: 204 }; }, { auth: 'none', body: 'raw', max_bytes: 256 });
+  const h = route('PUT /v1/raw', async ctx => { seen = await ctx.readRaw!(); return { status: 204 }; }, { auth: 'none', body: 'raw', max_bytes: 256 });
   assert.equal((await call(h, '/v1/raw', { method: 'PUT', token: null, body: bytes })).status, 204);
   assert.deepEqual(seen, bytes);
 });
@@ -386,7 +386,7 @@ for (const length of [undefined, '1']) test(`raw body exceeding max_bytes with $
     pull(c) { pulls++; if (pulls <= 3) c.enqueue(new Uint8Array(3)); else c.close(); },
     cancel() { cancelled = true; },
   }, { highWaterMark: 0 });
-  const h = route('PUT /v1/raw', () => { handled = true; return { status: 204 }; }, { auth: 'none', body: 'raw', max_bytes: 4 });
+  const h = route('PUT /v1/raw', async ctx => { await ctx.readRaw!(); handled = true; return { status: 204 }; }, { auth: 'none', body: 'raw', max_bytes: 4 });
   const req = new Request('http://edge.test/v1/raw', { method: 'PUT', body: stream, duplex: 'half', headers: length ? { 'Content-Length': length } : {} } as RequestInit);
   assert.equal((await h(req)).status, 413);
   assert.equal(handled, false); assert.equal(cancelled, true); assert.equal(pulls, 2);
@@ -395,7 +395,7 @@ for (const length of [undefined, '1']) test(`raw body exceeding max_bytes with $
 test('raw Content-Length above max_bytes is rejected before the stream is read', async () => {
   let pulls = 0;
   const stream = new ReadableStream<Uint8Array>({ pull(c) { pulls++; c.close(); } }, { highWaterMark: 0 });
-  const h = route('PUT /v1/raw', () => ({ status: 204 }), { auth: 'none', body: 'raw', max_bytes: 4 });
+  const h = route('PUT /v1/raw', async ctx => { await ctx.readRaw!(); return { status: 204 }; }, { auth: 'none', body: 'raw', max_bytes: 4 });
   const req = new Request('http://edge.test/v1/raw', { method: 'PUT', body: stream, duplex: 'half', headers: { 'Content-Length': '5' } } as RequestInit);
   assert.equal((await h(req)).status, 413); assert.equal(pulls, 0);
 });
@@ -425,11 +425,22 @@ for (const declared of [false, true]) test(`raw ${declared ? 'Content-Length' : 
     pull(c) { c.enqueue(new Uint8Array(5)); },
     cancel() { return new Promise<void>(resolve => { release = resolve; }); },
   }, { highWaterMark: 0 });
-  const h = route('PUT /v1/raw', () => ({ status: 204 }), { auth: 'none', body: 'raw', max_bytes: 4 });
+  const h = route('PUT /v1/raw', async ctx => { await ctx.readRaw!(); return { status: 204 }; }, { auth: 'none', body: 'raw', max_bytes: 4 });
   const pending = h(new Request('http://edge.test/v1/raw', { method: 'PUT', body: stream, duplex: 'half', headers: declared ? { 'Content-Length': '5' } : {} } as RequestInit));
   await new Promise<void>(resolve => setImmediate(resolve));
   try {
     const response = await Promise.race([pending, Promise.resolve(undefined)]);
     assert.equal(response?.status, 413);
   } finally { release?.(); await pending; }
+});
+
+test('raw handlers can reject a request before reading its body', async () => {
+  let pulls = 0;
+  const stream = new ReadableStream<Uint8Array>({ pull(c) { pulls++; c.enqueue(new Uint8Array(3)); } }, { highWaterMark: 0 });
+  const h = route('PUT /v1/raw', () => ({ status: 404 }), { auth: 'none', body: 'raw', max_bytes: 4 });
+  const req = new Request('http://edge.test/v1/raw', { method: 'PUT', body: stream, duplex: 'half' } as RequestInit);
+  assert.equal((await h(req)).status, 404);
+  assert.equal(pulls, 0);
+  assert.equal(req.bodyUsed, false);
+  await stream.cancel();
 });

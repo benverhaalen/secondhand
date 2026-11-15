@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
-import { mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -91,7 +91,7 @@ function fixture(t: TestContext) {
   const put = (url: string, bytes: Uint8Array = jpeg()) => h(new Request(url, { method: 'PUT', body: new Uint8Array(bytes), headers: { 'Content-Type': 'application/json' } }));
   const target = (options: Partial<Parameters<typeof blobs.target>[0]> = {}) => blobs.target({ ...photo, ...options }).url;
   t.after(() => { Object.assign(deps, previous); db.close(); rmSync(dir, { recursive: true, force: true }); });
-  return { blobs, target, put, dir, sink, log, advance: (ms: number) => { time += ms; } };
+  return { blobs, target, put, h, dir, sink, log, advance: (ms: number) => { time += ms; } };
 }
 
 test('a second PUT cannot reuse the same upload credential', async t => {
@@ -135,12 +135,12 @@ test('JPEG bytes declared as PNG are 415 regardless of the HTTP Content-Type', a
   assert.equal(await f.blobs.read(photo.user_id, photo.photo_id), undefined);
 });
 
-test('body above the row max_bytes is 413, consumes the token and writes no file', async t => {
-  const f = fixture(t), url = f.target({ max_bytes: 5 });
-  assert.equal((await f.put(url)).status, 413);
-  assert.equal((await f.put(url)).status, 404);
+test('body above the row max_bytes is 413, writes no file and allows a valid retry', async t => {
+  const f = fixture(t), url = f.target({ max_bytes: jpeg().length });
+  assert.equal((await f.put(url, jpeg(exif()))).status, 413);
   assert.equal(await f.blobs.read(photo.user_id, photo.photo_id), undefined);
   assert.equal(existsSync(join(f.dir, 'blobs', photo.user_id, photo.photo_id)), false);
+  assert.equal((await f.put(url)).status, 204);
 });
 
 test('Exif GPS, XMP, COM and other APP metadata are removed while JFIF, ICC and scan bytes survive', async t => {
@@ -263,4 +263,66 @@ test('malformed percent escapes in upload credentials return 404 instead of a se
   for (const id of ['%FF', '%ZZ', '%', '%E0%A4%A']) {
     assert.equal((await f.put(`http://edge.test/v1/uploads/${id}`)).status, 404);
   }
+});
+
+for (const credential of ['unknown', 'expired', 'malformed']) test(`${credential} upload returns 404 without reading a 25 MiB body`, async t => {
+  const f = fixture(t);
+  const url = credential === 'expired' ? f.target({ ttl_s: 1 }) : `http://edge.test/v1/uploads/${credential === 'unknown' ? 'f'.repeat(64) : 'bad'}`;
+  if (credential === 'expired') f.advance(1000);
+  let pulls = 0;
+  const stream = new ReadableStream<Uint8Array>({
+    pull(c) { pulls++; if (pulls <= 25) c.enqueue(new Uint8Array(1048576)); else c.close(); },
+  });
+  const req = new Request(url, { method: 'PUT', body: stream, duplex: 'half', headers: { 'Content-Length': '26214400' } } as RequestInit);
+  assert.equal((await f.h(req)).status, 404);
+  assert.ok(pulls <= 1, `rejected credential pulled ${pulls} chunks`);
+  assert.equal(req.bodyUsed, false);
+  await stream.cancel();
+});
+
+for (const [status, bytes] of [[415, Buffer.from('not an image')], [400, Buffer.from([255, 216, 255, 225, 0, 30, 1, 2])]] as const) {
+  test(`${status} leaves the credential usable for a valid retry`, async t => {
+    const f = fixture(t), url = f.target();
+    assert.equal((await f.put(url, bytes)).status, status);
+    assert.equal((await f.put(url)).status, 204);
+    assert.equal((await f.put(url)).status, 404);
+  });
+}
+
+test('concurrent uploads both read before competing for one take and one file', async t => {
+  const f = fixture(t), url = f.target();
+  let readers = 0;
+  let release!: () => void;
+  const ready = new Promise<void>(resolve => { release = resolve; });
+  const put = () => {
+    const body = new ReadableStream<Uint8Array>({
+      async pull(c) { if (++readers === 2) release(); await ready; c.enqueue(jpeg()); c.close(); },
+    }, { highWaterMark: 0 });
+    return f.h(new Request(url, { method: 'PUT', body, duplex: 'half' } as RequestInit));
+  };
+  assert.deepEqual((await Promise.all([put(), put()])).map(r => r.status).sort(), [204, 404]);
+  assert.equal(readers, 2);
+  assert.deepEqual(readdirSync(join(f.dir, 'blobs', photo.user_id)), [photo.photo_id]);
+  assert.equal(f.sink.lines.filter(line => { const e = JSON.parse(line); return e.event === 'call.start' && e.name === 'blobs.write'; }).length, 1);
+});
+
+test('PNG private chunks are stripped while the rendering and animation allowlist stays byte exact', async t => {
+  const f = fixture(t);
+  const types = ['PLTE', 'tRNS', 'gAMA', 'cHRM', 'sRGB', 'iCCP', 'sBIT', 'pHYs', 'bKGD', 'cICP', 'cLLI', 'mDCV', 'acTL', 'fcTL', 'fdAT'];
+  const kept = types.map(type => chunk(type, Buffer.from([0, 1, 128, 255])));
+  const privateChunks = ['caBX', 'vpAg', 'zzZZ'].map(type => chunk(type, Buffer.from('private metadata')));
+  assert.equal((await f.put(f.target({ content_type: 'image/png' }), png(...kept, ...privateChunks))).status, 204);
+  assert.deepEqual(Buffer.from((await f.blobs.read(photo.user_id, photo.photo_id))!.bytes), png(...kept));
+});
+
+test('CRC validation of a near-limit PNG avoids a half-second event loop stall', async t => {
+  const f = fixture(t);
+  const data = chunk('IDAT', Buffer.alloc(25 * 1024 * 1024 - 1024, 0xa5));
+  const source = png(data);
+  const url = f.target({ content_type: 'image/png', max_bytes: 26214400 });
+  const start = performance.now();
+  assert.equal((await f.put(url, source)).status, 204);
+  const elapsed = performance.now() - start;
+  assert.ok(elapsed < 500, `near-limit PNG upload blocked for ${elapsed.toFixed(0)} ms`);
+  assert.deepEqual(Buffer.from((await f.blobs.read(photo.user_id, photo.photo_id))!.bytes), source);
 });
