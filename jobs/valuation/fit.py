@@ -30,7 +30,7 @@ SCHEMA = os.environ.get("SECONDHAND_SCHEMA", "secondhand")
 
 # comp + product to the flat row market.py reads. size and era live in product.spec (json) where identify found them.
 ROWS_SQL = """
-SELECT c.comp_id, c.site, c.price_cents, c.price_type, coalesce(c.sold_at, c.observed_at) AS at, c.condition,
+SELECT c.comp_id, c.product_id, c.site, c.price_cents, c.price_type, coalesce(c.sold_at, c.observed_at) AS at, c.condition,
        p.brand, p.category, p.family_id, get_json_object(p.spec, '$.size') AS size, get_json_object(p.spec, '$.era') AS era, c.url_ref AS url
 FROM {cat}.{sch}.comp c LEFT JOIN {cat}.{sch}.product p ON c.product_id = p.product_id
 WHERE c.price_type IN ('sold', 'asking') AND c.price_cents > 0 AND size(coalesce(c.lot_parts, array())) = 0
@@ -115,14 +115,14 @@ def model_payload(model):
     h = model.hedonic
     return {"design": {"levels": h.design.levels, "t0": h.design.t0, "columns": h.design.columns},
             "beta": h.beta.tolist(), "se": h.se.tolist(), "resid": h.resid.tolist(), "groups": h.groups,
-            "band": model.band, "widen": model.widen, "sold": model.sold, "asks": model.asks}
+            "band": model.band, "widen": model.widen, "sold": model.sold, "asks": model.asks, "anchor": model.anchor}
 
 
 def load_model(payload):
     import numpy as np
     design = market.Design(**payload["design"])
     h = market.Hedonic(design, np.array(payload["beta"]), np.array(payload["se"]), np.array(payload["resid"]), payload["groups"])
-    return market.Model(h, payload["band"], payload["widen"], payload["sold"], payload["asks"])
+    return market.Model(h, payload["band"], payload["widen"], payload["sold"], payload["asks"], payload.get("anchor"))
 
 
 def held_out_report(model, training, held_out):

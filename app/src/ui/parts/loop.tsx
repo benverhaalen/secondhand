@@ -1,6 +1,9 @@
 // Human in the loop, the product's signature (Ben, 04:04: "design around human in the loop to show it off as central to our product").
 // Every page shows what the agent guessed and lets the person change it, calmly, not as a warning:
-//   Guess    text the agent guessed. A dotted underline until the person changes it, then solid: theirs now.
+//   Guess    text the agent guessed. A lilac tint behind it and a dotted underline until the person changes it, then
+//            plain and solid: theirs now (Ben, 08:12: "when its an ai suggested input for like the color of the garment
+//            ... it should be a different color than the user set ones"). Color is a ground, never ink (Art. 9.1), and
+//            never the only sign: the dotted line says it too.
 //   Blank    a field nobody knows yet. A solid underline under the name of what is missing.
 //   Approve  one tap, and the button says exactly what it will do. Price, an address and a pickup always wait for it.
 import { useState } from 'react';
@@ -27,12 +30,15 @@ type Field = {
 };
 
 function Editable({ id, name, value, onChange, look = 'headline', numeric, line, placeholder }: Field & { line: 'dotted' | 'solid'; placeholder?: string }) {
+  // Dotted is the agent's: its value sits on the lilac tint, in the ink every tint takes (Art. 9, The family).
+  const agent = line === 'dotted' && !!value;
   const c = useColors(), ground = useGround();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const t = look === 'headline' ? type.t18 : type.t15;
   const ink = ground === 'field' ? c.onField : c.ink;
-  const underline = { borderBottomWidth: line === 'dotted' ? 1.5 : 1, borderStyle: line, borderColor: line === 'dotted' ? (ground === 'field' ? c.onField2 : c.ink2) : ink } as const;
+  const underline = { borderBottomWidth: line === 'dotted' ? 1.5 : 1, borderStyle: line, borderColor: agent ? c.onColor : line === 'dotted' ? (ground === 'field' ? c.onField2 : c.ink2) : ink } as const;
+  const tint = agent ? { backgroundColor: c.lilacTint, paddingHorizontal: space.s1, borderTopLeftRadius: space.s1, borderTopRightRadius: space.s1 } : null;
   const commit = () => { setEditing(false); if (draft !== value) onChange?.(draft); };
   if (editing) {
     return (
@@ -55,8 +61,8 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
   }
   return (
     <Press id={id} label={`${name}: ${value || placeholder || 'empty'}`} onPress={() => { setDraft(value); setEditing(true); }} round={false} hit={{ top: 12, bottom: 12, left: 4, right: 4 }}>
-      <View style={[{ alignSelf: 'flex-start', paddingBottom: 0 }, underline]}>
-        <Txt role={look} tone={value ? 'ink' : 'ink-2'}>{value || placeholder}</Txt>
+      <View style={[{ alignSelf: 'flex-start', paddingBottom: 0 }, underline, tint]}>
+        <Txt role={look} tone={agent ? 'on-color' : value ? 'ink' : 'ink-2'}>{value || placeholder}</Txt>
       </View>
     </Press>
   );

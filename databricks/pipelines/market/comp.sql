@@ -1,5 +1,6 @@
 CREATE OR REFRESH STREAMING TABLE comp (
   row_id STRING COMMENT 'Frozen source row id, also exposed as comp_id.',
+  data STRING COMMENT 'Writer provenance: dataset:<source> (spec/product.md section 3).',
   source STRING COMMENT 'Frozen dataset name used to join its manifest.',
   licence STRING COMMENT 'Source licence as recorded by the extractor or manifest.',
   site STRING,
@@ -43,6 +44,7 @@ CREATE OR REFRESH STREAMING TABLE comp (
   may_store BOOLEAN COMMENT 'Agent proposal: public contest and research rows may be stored.',
   may_show BOOLEAN COMMENT 'Agent proposal: public contest and research rows may be shown.',
   may_share BOOLEAN COMMENT 'Agent proposal: public contest and research rows are never re-shared.',
+  CONSTRAINT known_data EXPECT (data IS NOT NULL) ON VIOLATION FAIL UPDATE,
   CONSTRAINT positive_price EXPECT (price_cents > 0) ON VIOLATION DROP ROW,
   CONSTRAINT known_price_type EXPECT (price_type IN ('sold', 'asking', 'ended_unsold')) ON VIOLATION DROP ROW,
   CONSTRAINT known_model_rights EXPECT (may_model IS NOT NULL) ON VIOLATION FAIL UPDATE,
@@ -51,7 +53,7 @@ CREATE OR REFRESH STREAMING TABLE comp (
 )
 COMMENT 'Typed public market comps with source evidence and rights (spec/databricks-build.md §3, §7).'
 AS SELECT
-  r.row_id, r.source, coalesce(NULLIF(r.licence, ''), m.licence) AS licence,
+  r.row_id, concat('dataset:', r.source) AS data, r.source, coalesce(NULLIF(r.licence, ''), m.licence) AS licence,
   r.site, r.url, r.kind, r.product_id, r.family_id, r.cluster_id,
   r.brand, r.category, r.condition, r.size, r.era, r.title,
   CAST(NULLIF(r.photo_count, '') AS BIGINT) AS photo_count,

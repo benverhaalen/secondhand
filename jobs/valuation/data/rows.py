@@ -156,8 +156,8 @@ def _grailed_kind(category: str) -> str:
     return "apparel"
 
 
-# eBay meta categories (2012-13 tree) into kind families; ids from the NBER codebook as transcribed in
-# github.com/AndersMunkN/PublicData eBay/materialize.ipynb (the codebook itself did not load for us).
+# eBay meta categories (2012-13 tree) into kind families; NBER Codebook.xlsx, bo_lists D56:D93.
+# https://back.nber.org/appendix/w24306/bargaining/Codebook.xlsx (read 2026-11-15).
 _EBAY_KIND = {
     "1": "cards_collectibles", "220": "toys_lego", "237": "toys_lego", "260": "cards_collectibles", "267": "media",
     "281": "jewellery_watches", "293": "electronics", "550": "lighting_home", "619": "other", "625": "electronics",
@@ -175,12 +175,22 @@ def _int(v: str):
     return int(float(v)) if v not in ("", None) else ""
 
 
+_MONTHS = {m: i for i, m in enumerate(("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), 1)}
+
+
+def _nber_date(v: str) -> str:
+    """The codebook types the NBER dates str9, which fits Stata's 01jun2012 better than 2012-06-01; accept both."""
+    v = (v or "").strip()
+    m = re.fullmatch(r"(\d{1,2})([A-Za-z]{3})(\d{4})", v)
+    return date(int(m[3]), _MONTHS[m[2].lower()], int(m[1])).isoformat() if m else v[:10]
+
+
 def nber_ebay_bo(path: Path, dropped: dict):
     """anon_bo_lists.csv(.gz): eBay Best Offer listings, May 2012 to June 2013, sold and unsold (Backus et al. 2020).
 
     item_price is what the buyer paid, the accepted offer where one was taken; a listing with none ended unsold and
-    is kept as a censored row priced at its last ask. Column meanings beyond their names are *asserted* from the
-    AndersMunkN notebook until someone reads the NBER codebook.
+    is kept as a censored row priced at start_price_usd (the Buy-It-Now price, not a verified last ask).
+    Column meanings: NBER Codebook.xlsx, bo_lists C3:C56; see the sold-datasets follow-up, 2026-11-15.
     """
     with _open(path) as f:
         for r in csv.DictReader(f):
@@ -188,7 +198,7 @@ def nber_ebay_bo(path: Path, dropped: dict):
             if not sold and not r["start_price_usd"]:
                 _drop(dropped, "no_price")
                 continue
-            end = (r["auct_end_dt"] or "")[:10]
+            end = _nber_date(r["auct_end_dt"])
             yield _row(
                 row_id=f"nber_ebay_bo-{r['anon_item_id']}", source="nber_ebay_bo", licence=LICENCE["nber_ebay_bo"],
                 site="ebay", kind=_EBAY_KIND.get(r["meta_categ_id"], "other"), product_id=r["anon_product_id"] or "",
@@ -196,7 +206,7 @@ def nber_ebay_bo(path: Path, dropped: dict):
                 photo_count=_int(r["photo_count"]), seller_feedback=_int(r["fdbk_score_start"]),
                 price_type="sold" if sold else "ended_unsold",
                 price_cents=_cents(r["item_price"] if sold else r["start_price_usd"]),
-                listed_at=(r["auct_start_dt"] or "")[:10], at=end,
+                listed_at=_nber_date(r["auct_start_dt"]), at=end,
                 best_offer=("accepted" if r["bo_ck_yn"] in ("1", "1.0") else "none") if sold else "",
                 views=_int(r["view_item_count"]), watchers=_int(r["wtchr_count"]), may_model=MAY_MODEL["nber_ebay_bo"],
             )
@@ -260,15 +270,15 @@ def mercari_apify_ccby(path: Path, dropped: dict):
 
 
 LICENCE = {
-    "mercari_kaggle": "Kaggle competition data (Mercari Price Suggestion Challenge); rules unread, non-commercial research use asserted",
+    "mercari_kaggle": "Kaggle Mercari Price Suggestion Challenge, Specific Rules A: competition use only (public search index, read 2026-11-15); used for the hackathon demo on Ben's call, 2026-11-15 09:09",
     "stockx_2019": "StockX Data Contest 2019, released by StockX for public analysis; no licence stated",
     "grailed_2021": "third-party scrape, no licence; Grailed's terms bar scraping and ML extraction",
     "nber_ebay_bo": "cleared for public release by eBay.com, research purposes (NBER); cite Backus et al. 2020 QJE",
     "ebay_comps_cc0": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); collected from eBay by a scraping actor",
-    "goodwill_cc0": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); ShopGoodwill buyer API, its terms unread",
+    "goodwill_cc0": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); ShopGoodwill buyer API; terms (Ownership, License, Acceptable Use) restrict reuse and automated extraction (read 2026-11-15)",
     "mercari_apify_ccby": "CC BY 4.0, attribution malekoweis/resale-market-data; collected from Mercari by a scraping actor",
 }
-# True only where the marketplace itself released the rows (research/price/ben/sold-datasets.md, "may_model").
+# True for marketplace-released rows whose terms allow this research use, and for Kaggle Mercari on Ben's call (sold-datasets.md, follow-up).
 MAY_MODEL = {"mercari_kaggle": True, "stockx_2019": True, "nber_ebay_bo": True, "grailed_2021": False,
              "ebay_comps_cc0": False, "goodwill_cc0": False, "mercari_apify_ccby": False}
 

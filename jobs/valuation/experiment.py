@@ -6,7 +6,8 @@ on the same frozen rows as the baselines. Rows follow the schema in FIELDS (plan
 is the item price without shipping, so buyer_shipping_cents is never in the truth (D6 step 3).
 
   python scripts/bench/backtest.py self-test                           the test of the test, on the synthetic market
-  python scripts/bench/backtest.py backtest --rows R --test-from D [--test-to L] --out O
+  python scripts/bench/backtest.py backtest --rows R --test-from D [--test-to L] [--locked] [--deviation WHY] --out O
+  python scripts/bench/backtest.py rescore --log logs/experiment-backtest-*.jsonl --rows R --out O
   python scripts/bench/backtest.py duel-record --live L --rows R --out duel.json
   python scripts/bench/backtest.py duel-score --duel duel.json --outcomes O --out O2
 (The script prints the summary; this module logs it and writes --out.) Tuning runs use --test-to the lock date; the
@@ -21,7 +22,9 @@ import gzip
 import hashlib
 import json
 import os
+import subprocess
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -32,14 +35,14 @@ sys.path.insert(0, str(ROOT / "jobs"))
 sys.path.insert(0, str(ROOT / "log"))
 
 from secondhand_log import create_log, file_sink  # noqa: E402
-from valuation import market  # noqa: E402
+from valuation import ledger, market  # noqa: E402
 from valuation.backtest import BANDS, LeakageError, _band, _wilson, check_leakage  # noqa: E402
 
 FIELDS = ("row_id", "source", "licence", "site", "url", "kind", "product_id", "family_id", "cluster_id", "brand",
           "category", "condition", "size", "era", "title", "photo_count", "seller_feedback", "price_type", "price_cents",
           "buyer_shipping_cents", "listed_at", "at", "best_offer", "views", "watchers", "may_model", "at_ask",
-          "priced_from_our_number")
-INTS = ("price_cents", "buyer_shipping_cents", "photo_count", "seller_feedback", "views", "watchers")
+          "priced_from_our_number", "retail_cents", "released_at")   # retail and release: the depreciation proxies (how-we-price.md §4)
+INTS = ("price_cents", "buyer_shipping_cents", "photo_count", "seller_feedback", "views", "watchers", "retail_cents")
 FLAGS = {"may_model": True, "at_ask": False, "priced_from_our_number": False}   # default when a source has no column
 GAP = timedelta(days=7)          # money D6 step 1
 WINDOW = timedelta(days=90)      # money D6 step 6: the 90-day sold median a seller looks up
@@ -152,6 +155,7 @@ NOT_SHOWN = {"q10": None, "q50": None, "q90": None, "shown": False, "comp_ids": 
 class ProductMedian:
     """The sold median of the same product over the 90 days before the freeze date: what a seller looks up today."""
     name = PRIMARY
+    settings = {"window_days": WINDOW.days}
 
     def fit(self, train):
         pass
@@ -164,6 +168,7 @@ class ProductMedian:
 
 class LastSale:
     name = "last_sale"
+    settings = {}
 
     def fit(self, train):
         pass
@@ -180,8 +185,11 @@ class Model:
     """The Python market model (market.py), fitted once per test month on rows before the month minus the gap.
     Its range is market's calibrated interval; it abstains on market's own counts (fewer than MIN_12M sales of the
     product in 12 months or MIN_90D in 90 days), read from the product index rather than market.estimate's full scan,
-    which is too slow for 100,000 test sales."""
+    which is too slow for 100,000 test sales. Its middle starts from the product's own last sales in the frozen history
+    (market's anchor), and those sales are its comp_ids, so the leak check covers them."""
     name = "model"
+    settings = {k: getattr(market, k) for k in ("ALPHA", "CALIB", "RIDGE", "MIN_LEVEL", "MIN_GROUP", "ANCHOR_K",
+                                                "ANCHOR_DAYS", "MIN_12M", "MIN_90D")}
 
     def fit(self, train):
         self.m = market.fit(train) if len(_sold(train)) >= 2 * market.MIN_GROUP else None
@@ -189,17 +197,19 @@ class Model:
     def predict(self, item, as_of, history):
         if self.m is None:
             return dict(NOT_SHOWN)
-        q10, q50, q90 = self.m.interval(item, as_of)
         now, rs = ts(as_of), history.product(item["product_id"])
+        used = [r for r in rs if (r.get("price_cents") or 0) > 0 and 0 < now - ts(r["at"]) <= market.ANCHOR_DAYS * 86400][-market.ANCHOR_K:] if self.m.anchor else []
+        q10, q50, q90 = self.m.interval(item, as_of, recent=used)
         n12 = sum(now - ts(r["at"]) <= 365 * 86400 for r in rs)
         n90 = sum(now - ts(r["at"]) <= 90 * 86400 for r in rs)
         shown = n12 >= market.MIN_12M and n90 >= market.MIN_90D and q90 - q10 <= q50
-        return {"q10": q10, "q50": q50, "q90": q90, "shown": shown, "comp_ids": []}
+        return {"q10": q10, "q50": q50, "q90": q90, "shown": shown, "comp_ids": [r["row_id"] for r in used]}
 
 
 class Oracle:
     """Plan decision 23: reads the true price. Must score 100%; if it does not, the scorer is broken."""
     name = "oracle"
+    settings = {}
 
     def fit(self, train):
         pass
@@ -214,6 +224,7 @@ class RandomComps:
     name = "random_comps"
 
     def __init__(self, seed=SEEDS["random_comps"]):
+        self.settings = {"k": 5, "seed": seed}
         self.rng = np.random.default_rng(seed)
 
     def fit(self, train):
@@ -259,20 +270,31 @@ def run(rows: list[dict], contestants: list, *, test_from: str, test_to: str | N
         tests = [t for i, t in enumerate(tests) if i in keep]
     if log:
         log.stage("experiment", "tests", n=len(tests), left_out=left_out)
-    out, month = [], None
+    out, month, spent = [], None, {}
     for as_of, basis, item in tests:
         if as_of[:7] != month:
-            month = as_of[:7]
+            if log and month:
+                log.stage("experiment", "month", month=month, seconds=spent)   # cost beside accuracy (datasets.md §5.6)
+            month, spent = as_of[:7], {}
             cutoff = ts(f"{month}-01T00:00:00Z") - GAP.total_seconds()
             train = [r for r in _usable(rows) if ts(r["at"]) < cutoff]
             for c in contestants:
+                t0 = time.perf_counter()
                 c.fit(train)
+                spent[c.name + ".fit"] = round(time.perf_counter() - t0, 3)
             if log:
                 log.stage("experiment", "fit", month=month, train_rows=len(train))
         history = History(index, ts(as_of), item.get("cluster_id"))   # an item's own relists are never its comps (decision 5)
         for c in contestants:
-            out.append({"contestant": c.name, "item_id": item["row_id"], "as_of": as_of, "freeze_basis": basis,
-                        **c.predict(item, as_of, history)})
+            t0 = time.perf_counter()
+            e = {"contestant": c.name, "item_id": item["row_id"], "as_of": as_of, "freeze_basis": basis,
+                 **c.predict(item, as_of, history)}
+            spent[c.name] = round(spent.get(c.name, 0.0) + time.perf_counter() - t0, 3)
+            out.append(e)
+            if log:   # every estimate is an event, so scores replay from the log alone (datasets.md §5.1)
+                log.stage("experiment", "estimate", **e)
+    if log and month:
+        log.stage("experiment", "month", month=month, seconds=spent)
     return out
 
 
@@ -299,6 +321,11 @@ def _metrics(pairs, min_n=1):
         "off_by_over_30": round(float(np.mean(abs(err) > 0.30)), 4),
         "coverage": round(hits / len(shown), 4), "coverage_wilson_95": [round(v, 4) for v in _wilson(hits, len(shown))],
         "median_range_width": round(float(np.median(width)), 4),
+        # Money on sold-only data (money-statistic.md): a sale shows what one buyer paid, so a price at or under it
+        # would have sold and one over it might not have. These bound the money; they do not measure it.
+        "priced_above_the_sale": round(float(np.mean(q50 > y)), 4),
+        "left_on_table_per_sale_dollars": round(float(np.mean(np.maximum(0.0, y - q50))) / 100, 4),
+        "sell_now_floor_share": round(float(np.sum(np.where(q50 <= y, q50, 0.0)) / np.sum(y)), 4),
     }
 
 
@@ -459,11 +486,17 @@ def score_duel(duel: dict, outcomes: list[dict]) -> dict:
 # Command line --------------------------------------------------------------------------------------------------------
 
 def _log(kind, config):
-    (ROOT / "logs").mkdir(exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
-    return create_log(src="job.valuation.experiment", build=os.environ.get("SECONDHAND_BUILD", "dev"),
-                      sink=file_sink(str(ROOT / "logs" / f"experiment-{kind}-{stamp}.jsonl")),
-                      config={"kind": kind, "seeds": SEEDS, "draws": DRAWS, **config})
+    """One log file per run under logs/, with long values (a 90-day median's comp ids) in a blobs folder beside it,
+    so `rescore` reads every estimate back whole."""
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")   # microseconds: two runs never share a file
+    path = ROOT / "logs" / f"experiment-{kind}-{stamp}.jsonl"
+    blobs = path.with_suffix(".blobs")
+    blobs.mkdir(parents=True, exist_ok=True)
+    log = create_log(src="job.valuation.experiment", build=os.environ.get("SECONDHAND_BUILD", "dev"),
+                     sink=file_sink(str(path)), blob=lambda i, text: (blobs / f"{i}.json").write_text(text),
+                     config={"kind": kind, "seeds": SEEDS, "draws": DRAWS, **config})
+    log.path = str(path)
+    return log
 
 
 def self_test(log) -> dict:
@@ -486,12 +519,32 @@ def self_test(log) -> dict:
     return {"data": "synthetic, not real", "checks": checks, "report": rep}
 
 
+LEDGER = ROOT / "scripts" / "bench" / "out" / "ledger.jsonl"
+
+
+def _commit(log) -> str:
+    return log.call("process", "git rev-parse HEAD", {"cwd": str(ROOT)},
+                    lambda: subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip() or "unknown")
+
+
+def from_log(path: str) -> list[dict]:
+    """The estimates a backtest logged, read back so a new metric reruns over the log, not the model."""
+    keep = ("contestant", "item_id", "as_of", "freeze_basis", "q10", "q50", "q90", "shown", "comp_ids")
+    blobs = Path(path).with_suffix(".blobs")
+    whole = lambda v: json.loads((blobs / f"{v['blob']}.json").read_text()) if isinstance(v, dict) and "blob" in v else v
+    with open(path, encoding="utf-8") as f:
+        lines = (json.loads(x) for x in f if x.strip())
+        return [{k: whole(e.get(k)) for k in keep} for e in lines if e.get("event") == "job.stage" and e.get("stage") == "estimate"]
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["self-test", "backtest", "duel-record", "duel-score"])
-    for k in ("--rows", "--live", "--duel", "--outcomes", "--test-from", "--test-to", "--out"):
+    ap.add_argument("cmd", choices=["self-test", "backtest", "rescore", "duel-record", "duel-score"])
+    for k in ("--rows", "--live", "--duel", "--outcomes", "--test-from", "--test-to", "--out", "--log", "--deviation"):
         ap.add_argument(k)
     ap.add_argument("--sample", type=int, help="score a seeded random sample of this many test sales")
+    ap.add_argument("--locked", action="store_true", help="the pre-registered window, scored once (plan decisions 3, 4)")
+    ap.add_argument("--ledger", default=str(LEDGER))
     ap.add_argument("--recorded-at", default=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"))
     a = ap.parse_args(argv)
     log = _log(a.cmd, {k: v for k, v in vars(a).items() if k != "cmd" and v})
@@ -501,8 +554,21 @@ def main(argv=None):
         if a.cmd == "self-test":
             out = self_test(log)
         elif a.cmd == "backtest":
-            rows = load(a.rows)
+            rows, lines = load(a.rows), ledger.read(a.ledger)
+            rows_sha, commit = ledger.sha256_file(a.rows), _commit(log)
+            settings = {c.name: c.settings for c in standard} | {"seeds": SEEDS, "draws": DRAWS, "gap_days": GAP.days}
+            seen = ledger.check(lines, rows_sha256=rows_sha, test_from=a.test_from, test_to=a.test_to, locked=a.locked,
+                                deviation=a.deviation)
+            log.stage("experiment", "ledger", rows_sha256=rows_sha, commit=commit, settings=settings,
+                      second_look_of=[x["run"] for x in seen], deviation=a.deviation)
             out = score(run(rows, standard, test_from=a.test_from, test_to=a.test_to, sample=a.sample, log=log), rows)
+            line = ledger.entry(lines, run=log.session, at=a.recorded_at, rows=a.rows, rows_sha256=rows_sha, commit=commit,
+                                test_from=a.test_from, test_to=a.test_to, sample=a.sample, locked=a.locked,
+                                deviation=a.deviation, settings=settings, result=out)
+            ledger.append(a.ledger, line)
+            out["ledger"] = {k: line[k] for k in ("run", "rows_sha256", "commit", "locked", "settings_tried_on_these_rows", "result_sha256")}
+        elif a.cmd == "rescore":
+            out = score(from_log(a.log), load(a.rows))
         elif a.cmd == "duel-record":
             out = record_duel(load(a.live), load(a.rows), standard, recorded_at=a.recorded_at)
         else:
@@ -523,6 +589,7 @@ def main(argv=None):
     if a.cmd == "self-test":
         brief["overall"] = {k: v["overall"] for k, v in out["report"]["contestants"].items()}
         brief["ceiling"], brief["sentence"] = out["report"]["ceiling"], out["report"].get("sentence")
+    brief["log"] = log.path
     log.job("experiment", a.cmd, "done" if ok else "failed", summary=brief)
     return (0 if ok else 1), brief
 

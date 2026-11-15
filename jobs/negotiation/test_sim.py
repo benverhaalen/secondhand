@@ -8,7 +8,7 @@ ACCEPTED = [0.78, 0.8, 0.82, 0.85, 0.85, 0.88, 0.9, 0.9, 0.92, 0.95]
 
 
 def keep(c):  # the negotiation worked example's eBay keep, in cents
-    return 0.864 * c - 940
+    return int(__import__('math').floor(0.864 * c - 940 + .5))
 
 
 def ending(c):
@@ -76,3 +76,25 @@ def test_compare_is_paired_and_deterministic():
     one, two = compare(a, b), compare(a, b)
     assert one == two and one["n"] == 200
     assert compare(a, a)["mean_gain"] == 0
+
+
+@pytest.mark.parametrize('a,b', [([], []), ([1], [1, 2]), ([float('nan')], [1]), ([1], [float('inf')])])
+def test_compare_refuses_invalid_pairs(a, b):
+    with pytest.raises(ValueError, match='paired'):
+        compare(a, b)
+
+
+def test_shared_bootstrap_draws():
+    import json
+    from pathlib import Path
+    f = json.loads((Path(__file__).resolve().parents[2] / 'app/src/engines/negotiation/twins.json').read_text())
+    for c in f['bootstrap']:
+        assert compare(c['champion'], c['challenger'], draws=c['draws']) == c['expected']
+
+
+def test_simulated_openings_and_concessions_use_endings():
+    from negotiation.ending import endings
+    from negotiation.sim import Buyer, Thread, run_thread
+    t = run_thread(lambda s: {'kind': 'counter_offer', 'amount_cents': 7800}, Thread(8000, 100, 8000, Buyer('haggler', 7500, .73125, .5)))
+    assert t.rounds and t.rounds[0][0] == 5800
+    assert all(endings(r[0], r[0]) == [r[0]] for r in t.rounds)

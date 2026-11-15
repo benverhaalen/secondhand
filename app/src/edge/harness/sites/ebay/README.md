@@ -51,6 +51,36 @@ An empty result is ok and empty.
 
 The current licence page was not fetched (it returned 403). Read it before production use. The harness keeps hashes, not buyer names, so a deletion notice has little to remove. The deletion subscription is still required before the first user call.
 
+## Public pages: served to a browser that intercepts nothing (2026-11-15)
+
+The page lane exists by Nate's decision of 2026-11-15, "read ebay pages anyway" (`product/words.md`), and the official API replaces it the day keys exist. `ebayPageAdapters(client)` gives `ebay.search.page` and `ebay.read_storefront.page` (route_kind `page`, 6 a minute). Register them after `ebayAdapters`, so the API serves when keyed and the page route serves otherwise. One listing and the still-listed check are `readItemPage` and `stillUpPage`. Prices are integer cents with their currency.
+
+| Read | Route | Result, live 2026-11-15 | Load ms |
+|---|---|---|---|
+| search, ebay.com | `/sch/i.html?_nkw=` | 60 rows, USD | 4,468 |
+| search, ebay.co.uk with `_salic=1&LH_LocatedIn=1` | fallback when ebay.com answers its error page | 60 rows, GBP, `converted: true` | about 4,060 |
+| sold search | `needs_session` | `auth_expired`, `do: relink`, no page loaded | 0 |
+| one listing | `/itm/<id>`, JSON-LD Product | 1 row, USD, with watchers | about 4,280 |
+| still listed | `/itm/<id>` | `live`; a 404 is `gone` | about 3,490 |
+| storefront | `/usr/<name>` | rating, reviews, sold, followers, member since | about 3,290 |
+
+Times are the page load alone; the run waits 5 s between loads and 5 s more before a second host. Recorded, masked pages are in `fixtures/page-*.html` and the tests in `page.test.ts`. `recon.ts <out-dir> [query]` records them again, with the out-dir outside the repo, and they are masked before they become fixtures. The live check is `node --no-warnings app/src/edge/harness/sites/ebay/live-page.ts [query]` (about six loads). Run note: `research/cross-cutting/nate/runs/ad-ebay-page.md`.
+
+- **Nothing is intercepted on eBay.** The first browser run blocked images, media and fonts with `page.route`, and every page came back as eBay's error page: 403, 1,892 B, titled "Error Page | eBay", "SORRY Something went wrong on our end". With nothing intercepted the same pages load. The blocking lived in the scripts, not in the kernel or pool, so `platform.ts` is unchanged.
+- **A plain request is refused.** curl with a Chrome User-Agent got 403 (1,739 B, about 110 ms) on search and sold search. It was not tried again.
+- **The direct URL beats the search box.** Typing the query into the home page box also works (79 items, 4,037 ms after a 3,047 ms home page), but the direct URL is one load, not two.
+- **Sold listings need the person's sign-in on every host.** An anonymous sold search gets the "Sign in or Register" page on ebay.com, ebay.co.uk and ebay.ie. It is read as `auth_expired` with `do: relink`, never as zero results or `page_changed`. The sold parser is designed but untested, since no signed-in page can be recorded.
+- **Zero results is an empty list.** eBay fills a no-match page with "Results matching fewer words"; everything after that marker is ignored.
+- **Regional hosts are data** (`PAGE_HOSTS`): ebay.com first, then ebay.co.uk with eBay's US location filter. Search moves on only when a host answers the error page. Each row records its `host`, because the kernel's `Meta` has no host field. A regional price is in that host's currency with `converted: true`, never as US cents. A search row leaves the US price absent. That id's listing read on ebay.com gives the USD price. The ebay.co.uk item page has JSON-LD in GBP and also shows a "US $" amount, which is not parsed. The regional run is in `research/cross-cutting/nate/runs/ebay-when-it-serves.md`, "eBay's regional sites".
+- A bot check or captcha is `blocked` with `do: pause_session` and ends the run. It is never solved: `solveCaptchas` stays false.
+
+**Terms, all read 2026-11-15.**
+- [robots.txt](https://www.ebay.com/robots.txt), version `v30.2_COM_August_2026`, `User-agent: *` group: `Disallow: /sch/`, `Disallow: /sch/i.html?_nkw=`, `Disallow: /sch/i.html?*_nkw=*&`, `Disallow: /*_kw`. Plain `/itm/<id>`, `/str/<name>` and `/usr/<name>` are not disallowed (only query variants such as `/itm/*_nkw`, `/itm/*_pgn=`, `/str/*_sacat`, `/usr/*/followers`).
+- The robots.txt header: "The use of robots or other automated means to access the eBay site without the express permission of eBay is strictly prohibited", "Automated scraping, buy-for-me agents, LLM-driven bots, … is strictly prohibited", and "Approved enterprise integrations must use our official API and comply with our API License Agreement".
+- [User Agreement](https://www.ebay.com/help/policies/member-behaviour-policies/user-agreement?id=4259), "effective as of June 28, 2026": you may not "use any robot, spider, scraper, data mining tools, data gathering and extraction tools, or other automated means (including, without limitation buy-for-me agents, LLM-driven bots, or any end-to-end flow that attempts to place orders without human review) to access our Services for any purpose, except with the prior express permission of eBay".
+
+With no keyset an API read answers `no_route`. The kernel moves to the next route on `no_route` (`protocol.ts`), so the page route serves behind it.
+
 ## Nate's setup: keyset and RuName
 
 1. Sign in at [developer.ebay.com](https://developer.ebay.com) and join the Developers Program.

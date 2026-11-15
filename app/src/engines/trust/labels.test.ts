@@ -16,11 +16,11 @@ const lab = (over: Partial<LabelIn> = {}): LabelIn => ({
 });
 const q = (s: ReturnType<typeof setup>, person?: string) => s.store.read('trust_q.off_platform', person ? { site: 'ebay', person } : { site: 'ebay' }).value as { alpha: number; beta: number };
 
-test('worked example: one scam label with the off-site signal moves the weight to about 2.11', () => {
+test('worked example: one scam label with the off-site signal updates q and the all-thread rate together', () => {
   const s = setup();
   s.t.addLabel(lab({ person: undefined }));
   const w = weightOf(s.store, 'off_platform', { site: 'ebay' });
-  assert.ok(Math.abs(w - 2.11) < 0.02, String(w));
+  assert.ok(Math.abs(w - Math.log((6.91124487914452 / 21) / (1.8 / 21))) < .001, String(w));
   assert.ok(Math.abs(q(s).alpha - 6.91) < 0.01);
 });
 

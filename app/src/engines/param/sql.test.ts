@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { VersionConflict } from './param.ts';
+import { memoryStore, VersionConflict } from './param.ts';
 import { sqlStore, type Tx } from './sql.ts';
 import { migrate } from '../../../../db/migrate.mjs';
 
@@ -126,7 +126,7 @@ test('observe moves a beta mean, weighted, with forgetting, and writes a new cha
   const r = await run(null, (s) => s.observe('assist_span_open', D, { success: 0, weight: 1 }, AT));
   assert.deepEqual([r.applied, r.read.value, r.read.version], [true, { alpha: 8, beta: 3 }, 1]);
   const r2 = await run(null, (s) => s.observe('assist_span_open', D, { success: 1, weight: 2, days_since_last: 30 }, AT));
-  const k = Math.exp(-1);
+  const k = 0.5;
   const v = r2.read.value as { alpha: number; beta: number };
   assert.ok(Math.abs(v.alpha - (8 * k + 2)) < 1e-9 && Math.abs(v.beta - 3 * k) < 1e-9);
   assert.equal(r2.read.version, 2);
@@ -160,4 +160,101 @@ test('an undeclared param is Unknown, and observe refuses a non-beta family', as
   await reset();
   await assert.rejects(run(null, (s) => s.read('nope', {})), /not declared/);
   await assert.rejects(run(null, (s) => s.observe('p_min_quick', {}, { success: 1, weight: 1 }, AT)), /beta/);
+});
+
+
+test('SQL and memory use identical half-life, implicit clock, overrides and out-of-order updates', async () => {
+  await reset();
+  await run(null, async (sql) => {
+    const mem = memoryStore();
+    mem.declare({ name: 'assist_span_open', family: 'beta', prior: { alpha: 8, beta: 2 }, guard_lo: 0.02, guard_hi: 0.98 });
+    for (const [at, days] of [['2026-01-01', 0], ['2026-01-16', 15], ['2026-02-15', undefined], ['2026-01-01', undefined], ['2026-05-16', 90]] as const) {
+      const o = { success: 1, weight: 2, days_since_last: days };
+      assert.deepEqual(await sql.observe('assist_span_open', D, o, at), mem.observe('assist_span_open', D, o, at));
+    }
+  });
+});
+
+test('SQL gamma observe, model apply, freeze and guard preserve transactional scope isolation', async () => {
+  await reset();
+  await run('usr_1', async (s) => {
+    s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 }, guard_hi: 10 });
+    for (let i = 0; i < 3; i++) await s.observe('velocity', D, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, AT);
+    assert.deepEqual((await s.read('velocity', D)).value, { shape: 2, rate: 0.5 });
+    const person = { ...D, person: 'usr_1' };
+    await s.apply('velocity', person, (v) => ({ value: v, weight: 3 }), AT);
+    assert.equal((await s.read('velocity', D)).n_eff, 1.75);
+    await s.freeze('velocity', person, true);
+    assert.equal((await s.observe('velocity', person, { count: 1, exposure: 1, weight: 1 }, AT)).reason, 'frozen');
+    assert.equal((await s.observe('velocity', D, { count: 100, exposure: 0, weight: 1 }, AT)).reason, 'guard');
+    s.declare({ name: 'P_accept', family: 'model_ref', prior: { term: 0 }, guard_hi: 0 });
+    await s.apply('P_accept', person, () => ({ value: { term: 2 }, weight: 1 }), '2026-01-01');
+    await s.apply('P_accept', person, (v, keep) => ({ value: { term: (v as { term: number }).term * keep + 1 }, weight: 1 }), '2026-01-31');
+    assert.deepEqual((await s.read('P_accept', person)).value, { term: 2 });
+    assert.equal((await s.read('P_accept', D)).from, 'prior');
+  });
+});
+
+test('SQL promotion only persists a same-set champion score when challenger wins', async () => {
+  await reset();
+  await run(null, async (s) => {
+    await s.propose(fit({ held_out_score: 0.9 }), 0); await s.promote('p_min_quick', D, 1, 0, AT);
+    await s.propose(fit({ held_out_score: 0.5 }), 1);
+    assert.equal((await s.promote('p_min_quick', D, 2, 0.01, AT, 0.6)).promoted, false);
+    assert.equal((await s.rows('p_min_quick', D))[0].held_out_score, 0.9);
+    assert.equal((await s.promote('p_min_quick', D, 2, 0.01, AT, 0.4)).promoted, true);
+    assert.equal((await s.rows('p_min_quick', D))[0].held_out_score, 0.4);
+  });
+});
+
+test('SQL pools beta and gamma along permitted lineage, with configurable global kappa', async () => {
+  await reset();
+  await run('usr_1', async (s) => {
+    for (const family of ['beta', 'gamma'] as const) {
+      const name = family;
+      const value = (m: number) => family === 'beta' ? { alpha: m * 10, beta: (1 - m) * 10 } : { shape: m * 10, rate: 10 };
+      s.declare({ name, family, prior: value(0.8) });
+      for (const [scope, m, n_eff] of [[D, 0.8, 200], [{ ...D, person: 'usr_1' }, 0.2, 3], [{ site: 'ebay', person: 'usr_1' }, 0.2, 200]] as const) {
+        await s.propose(fit({ name, scope, family, value_or_hyperparams: value(m), n_eff }), 0);
+        await s.promote(name, scope, 1, 0, AT);
+      }
+      const r = await s.readPooled(name, { ...D, person: 'usr_1' });
+      assert.ok('mean' in r && Math.abs(r.mean - (3 * 0.2 + 20 * 0.8) / 23) < 1e-12);
+      const dense = await s.readPooled(name, { site: 'ebay', person: 'usr_1' });
+      assert.ok('mean' in dense && Math.abs(dense.mean - 0.2) < 0.06);
+      const absent = await s.readPooled(name, { ...D, state: 'listed', person: 'usr_1' });
+      assert.ok('mean' in absent && absent.mean === 0.8 && absent.versions.length === 0);
+    }
+    assert.equal((await s.read('param_pool_kappa', {})).value, 20);
+    await s.propose(fit({ name: 'param_pool_kappa', scope: {}, value_or_hyperparams: 40 }), 0);
+    await s.promote('param_pool_kappa', {}, 1, 0, AT);
+    const r = await s.readPooled('beta', { ...D, person: 'usr_1' });
+    assert.ok('mean' in r && Math.abs(r.mean - (3 * 0.2 + 40 * 0.8) / 43) < 1e-12);
+    assert.deepEqual(await s.readPooled('p_min_quick', D), await s.read('p_min_quick', D));
+  });
+});
+
+test('SQL pooling recurses through shared ancestors and excludes another person under RLS', async () => {
+  await reset();
+  const declaration = { name: 'sale_rate', family: 'gamma' as const, prior: { shape: 2, rate: 10 } };
+  await run('usr_2', async (s) => {
+    s.declare(declaration);
+    const scope = { kind: 'shoes', site: 'ebay', segment: 'boots', person: 'usr_2' };
+    await s.apply('sale_rate', scope, () => ({ value: { shape: 1000, rate: 1 }, weight: 200 }), AT);
+  });
+  await run('usr_1', async (s) => {
+    s.declare(declaration);
+    for (const [scope, shape, n_eff] of [[{}, 8, 20], [{ kind: 'shoes' }, 4, 40], [{ kind: 'shoes', site: 'ebay', segment: 'boots' }, 9, 3]] as const) {
+      await s.propose(fit({ name: 'sale_rate', family: 'gamma', scope, value_or_hyperparams: { shape, rate: 10 }, n_eff }), 0);
+      await s.promote('sale_rate', scope, 1, 0, AT);
+    }
+    const shared = { kind: 'shoes', site: 'ebay', segment: 'boots' };
+    const r = await s.readPooled('sale_rate', { ...shared, state: 'listed' });
+    const parent = (40 * 0.4 + 20 * ((20 * 0.8 + 20 * 0.2) / 40)) / 60;
+    assert.ok('mean' in r && Math.abs(r.mean - (3 * 0.9 + 20 * parent) / 23) < 1e-12);
+    assert.ok('versions' in r && r.versions.length === 3);
+    const person = await s.readPooled('sale_rate', { ...shared, person: 'usr_1' });
+    assert.ok('mean' in person && Math.abs(person.mean - (3 * 0.9 + 20 * 0.2) / 23) < 1e-12);
+    assert.ok('versions' in person && person.versions.length === 1);
+  });
 });

@@ -13,8 +13,12 @@ export class RecallDeltaRejected extends Error {}
 
 // A UPC with or without its leading zero is the same product: everything is a 14-digit GTIN.
 export function gtin14(raw: string | undefined): string | null {
-  const d = (raw ?? '').replace(/\D/g, '');
-  return d.length >= 8 && d.length <= 14 ? d.padStart(14, '0') : null; // a stripped leading zero (11 digits) still matches
+  const d = (raw ?? '').replace(/[\s-]/g, '');
+  if (!/^[0-9]{8,14}$/.test(d)) return null;
+  const gtin = d.padStart(14, '0');
+  let sum = 0;
+  for (let i = 12; i >= 0; i--) sum += Number(gtin[i]) * (i % 2 === 0 ? 3 : 1);
+  return (10 - sum % 10) % 10 === Number(gtin[13]) ? gtin : null;
 }
 
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
@@ -55,7 +59,7 @@ export function matchRecall(l: Listing, r: RecallRow): Match {
 
 export function matchAll(l: Listing, recalls: RecallRow[]): { match: Match; recall: RecallRow | null } {
   let best: { match: Match; recall: RecallRow | null } = { match: 'none', recall: null };
-  for (const r of recalls) {
+  for (const r of [...recalls].sort((a, b) => a.LastPublishDate < b.LastPublishDate ? 1 : a.LastPublishDate > b.LastPublishDate ? -1 : String(a.RecallID) < String(b.RecallID) ? -1 : String(a.RecallID) > String(b.RecallID) ? 1 : JSON.stringify(a).localeCompare(JSON.stringify(b)))) {
     const m = matchRecall(l, r);
     if (m === 'exact') return { match: m, recall: r };
     if (m === 'name' && best.match === 'none') best = { match: m, recall: r };

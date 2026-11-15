@@ -100,3 +100,12 @@ test('right_90d decides the median: the trusted route wins against a majority of
   const vals = [{ value: 100, route_id: 'weak', source_url: 'a' }, { value: 105, route_id: 'weak', source_url: 'b' }, { value: 300, route_id: 'strong', source_url: 'c' }];
   assert.equal(reconcileNumber(vals, { weak: 0.1, strong: 0.95 }).value, 300);
 });
+
+
+for (const gtin of ['036000291452', '0036000291452', '00036000291452']) {
+  test(`GTIN-14 compares the UPC with ${gtin} without an identifier clash`, async () => {
+    const [judged] = await sameProduct({ title: 'same product', ids: { gtin: '036000291452' } },
+      [r({ id: 'gtin', ids: { gtin } })], async () => { throw new Error('valid equivalent codes must settle without Jev'); });
+    assert.deepEqual([judged.match, judged.keep, judged.by], ['exact', 'keep', 'ids']);
+  });
+}

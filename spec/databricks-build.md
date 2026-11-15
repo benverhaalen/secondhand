@@ -18,6 +18,18 @@ Nate's workspace (`--profile Nate`, id 7474651613371474) is Free Edition (*obser
 
 Nothing on this page creates a paid resource.
 
+Measured on this workspace, 2026-11-15 (*observed*):
+
+| Feature | Works | How it was checked |
+|---|---|---|
+| ABAC: governed tags (tag policies) and catalog row filter and column mask policies | yes; a new governed tag takes about a minute before `CREATE POLICY` accepts it | a probe policy masked `alice` as `a***`; now live as `sh_owner_only`, `sh_mask_handle` |
+| Metric views, including a guarded measure (`CASE WHEN COUNT(1) >= 30 THEN … END`) | yes, created through the Statements API; the CLI's `aitools tools query` drops indented YAML lines, so it cannot create one | probe view over `market.comp` returned per-source medians |
+| AI functions | yes: `ai_classify` answered in 3.7 s | one call on a StockX title |
+| System tables `system.access.table_lineage`, `system.access.audit` | readable | the lineage and audit views return rows |
+| Serverless `spark_python_task` | runs the file with no `__file__`; entrypoints take `--root ${workspace.file_path}` | three jobs failed with NameError, then passed |
+| SQL file tasks | split on every `;`, so a `BEGIN … END` block fails; compound SQL runs from a Python task | the data migration failed, then passed as a Python task |
+| SQL warehouse | the existing Serverless Starter Warehouse, auto-stop 10 minutes | `databricks warehouses get a2d6ba8cc4538aca` |
+
 ## 2. Audit, 2026-11-15
 
 | Piece | State | Evidence |
@@ -131,7 +143,20 @@ The centrepiece. Each row is a promise the app makes, the Databricks feature it 
 
 **Genie space `secondhand market`** over `market.comp`, the `measures` views and the metric view, with instructions to answer the hide reason when n is under the guard, and 10 benchmark questions with verified SQL (*observed*, [Genie Agents](https://docs.databricks.com/genie-agents/)).
 
-## 9. Open
+## 9. What is proved
+
+Read on Nate's workspace, 2026-11-15. Each line names the command that gives it.
+
+| Claim | Number | Command |
+|---|---|---|
+| Public sold rows in the lakehouse | 1,688,603 comps from 6 sets in `market.comp` (1,688,864 bronze, 261 dropped by expectations); 1,581,374 in `comp_for_model` | `SELECT source, count(*) FROM secondhand.market.comp GROUP BY source` |
+| Rights travel with the row | grailed, goodwill, two small CC sets are `may_model = false` and absent from `comp_for_model` | same, on `comp_for_model` |
+| One person cannot read another's rows | 7 of 14 guarded numbers visible to Nate, all `usr_nate`; `owner_only('usr_ben')` is false for his principal | `SELECT user_id, count(*) FROM secondhand.core.guarded_number GROUP BY 1` |
+| Handles never shown | `m***` from `observation.seller_handle`, by the catalog policy `sh_mask_handle` on the governed tag `sh_personal` | `SELECT seller_handle FROM secondhand.core.observation LIMIT 2` |
+| One calculation, two languages | 20 of 20 parity cases equal between `proof.ts` and `databricks/proof.py` | `python -m pytest databricks/parity/test_parity.py` |
+| Never-automated actions refuse | 480 policy answers; all 32 never-performed answers `never` on every site, promoted or not | `node databricks/policy-sweep.mjs` |
+
+## 10. Open
 
 - **Claude on the gateway, claim checks at the gateway**: needs a full workspace or Nate's go on a provider; designed, not built.
 - **An App showing "why this price"** from a citation: needs Nate's go (an App is a resource).

@@ -24,10 +24,10 @@ Only `stockx_2019` and `nber_ebay_bo` have sale dates, so only they can run the 
 
 ## The NBER eBay data
 
-`nber_ebay_bo` is eBay's Best Offer listings for May 2012 to June 2013, released through NBER for research: https://www.nber.org/research/data/best-offer-sequential-bargaining. It is too large to rebuild on a laptop in the 90-second run, and this container cannot reach nber.org. From a machine that can:
+`nber_ebay_bo` is eBay's Best Offer listings for May 2012 to June 2013, released through NBER for research: https://www.nber.org/research/data/best-offer-sequential-bargaining. It is 4,451,661,738 bytes compressed and about 98M rows, so it is not part of the 90-second run, and this container cannot reach nber.org. From a machine that can:
 
-    curl -O http://data.nber.org/data/bargaining/anon_bo_lists.csv.gz
-    sha256sum anon_bo_lists.csv.gz            # record it in sources.json under nber_ebay_bo.files
-    cd jobs && PYTHONPATH=../log python3 -m valuation.data.freeze nber_ebay_bo <out_dir>/nber_ebay_bo /path/to/anon_bo_lists.csv.gz
+    curl -O https://back.nber.org/appendix/w24306/bargaining/anon_bo_lists.csv.gz   # data.nber.org now answers 403
+    shasum -a 256 anon_bo_lists.csv.gz        # record it in sources.json under nber_ebay_bo.files
+    cd jobs && PYTHONPATH=../log python3 -m valuation.data.freeze --share=0.05 nber_ebay_bo <out_dir>/nber_ebay_bo /path/to/anon_bo_lists.csv.gz
 
-The reader's column names come from a public notebook that loaded the file. Check them against NBER's `Codebook.xlsx` on the first run; a missing column fails with a `KeyError` naming it. The Databricks route is in [packet 64](../../../.agents/team/packets/data/64-nber-ebay-sold-rows.md).
+`--share` keeps a fixed share of products, chosen by hashing `product_id`, with every listing of a kept product, so histories stay whole and the same share always picks the same products ([datasets.md §3](../../../spec/plans/backtest/datasets.md#3-how-to-sample)). 5% is about the 5 to 10M history rows the sampling plan needs. Column meanings are confirmed against NBER's codebook (the research note's follow-up). The Databricks route is in [packet 64](../../../.agents/team/packets/data/64-nber-ebay-sold-rows.md).

@@ -94,7 +94,7 @@ test('break content holds the extremes', () => {
   assert.ok(e.items.some(i => i.listings.some(l => l.price_cents === AMOUNTS.zero)));
   assert.ok(e.items.some(i => i.title.length > 120));
   assert.deepEqual(['acting', 'failed', 'expired'].filter(s => e.decisions.some(d => d.state === s)), ['acting', 'failed', 'expired']);
-  assert.equal(Object.keys(WORLDS).length, 6);
+  assert.equal(Object.keys(WORLDS).length, 7);
 });
 
 test('formatters', () => {

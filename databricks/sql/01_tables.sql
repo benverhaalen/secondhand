@@ -8,6 +8,7 @@ CREATE SCHEMA IF NOT EXISTS secondhand.governance COMMENT 'Who may see which row
 CREATE SCHEMA IF NOT EXISTS secondhand.measures COMMENT 'Views a judge or a dashboard reads: citation coverage, hides and why, decisions by policy, weight moves.';
 
 CREATE TABLE IF NOT EXISTS secondhand.core.observation (
+  data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   id STRING NOT NULL COMMENT 'Prefixed id (obs_).',
   user_id STRING NOT NULL COMMENT 'Owner. Row filter governance.owner_only applies.',
   created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL COMMENT 'Bumped on each write.',
@@ -28,6 +29,7 @@ CREATE TABLE IF NOT EXISTS secondhand.core.observation (
 TBLPROPERTIES ('delta.appendOnly' = 'true');
 
 CREATE TABLE IF NOT EXISTS secondhand.core.evidence (
+  data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   id STRING NOT NULL, user_id STRING NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL,
   shape STRING NOT NULL COMMENT 'attribute or comp (spec/product.md sub-shapes).',
   kind STRING COMMENT 'attribute shape: image_region, depth, label_text, lookup, owner.',
@@ -42,6 +44,7 @@ CREATE TABLE IF NOT EXISTS secondhand.core.evidence (
 ) COMMENT 'What a fact rests on. Hackathon build: rights recorded, not enforced; public launch enforces the same tags.';
 
 CREATE TABLE IF NOT EXISTS secondhand.core.citation (
+  data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   id STRING NOT NULL COMMENT 'cit_ plus the first 16 hex of basis_hash (app/src/engines/proof/proof.ts).',
   user_id STRING NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL,
   metric STRING NOT NULL, filters STRING COMMENT 'JSON.',
@@ -54,6 +57,7 @@ CREATE TABLE IF NOT EXISTS secondhand.core.citation (
 ) COMMENT 'Enough to recompute a shown number as of its date.';
 
 CREATE TABLE IF NOT EXISTS secondhand.core.guarded_number (
+  data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   id STRING NOT NULL, user_id STRING NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL,
   item_id STRING NOT NULL, metric STRING NOT NULL,
   value_cents BIGINT, lo_cents BIGINT, hi_cents BIGINT, currency STRING,
@@ -64,6 +68,7 @@ CREATE TABLE IF NOT EXISTS secondhand.core.guarded_number (
 ) COMMENT 'Every number the app shows, as guarded by proof.ts answer(): a shown one carries citation_id, a hidden one says why.';
 
 CREATE TABLE IF NOT EXISTS secondhand.core.claim_check (
+  data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   id STRING NOT NULL, user_id STRING NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL,
   subject STRING NOT NULL COMMENT 'message_id draft or listing draft.',
   claims STRING NOT NULL COMMENT 'JSON array of {text, state backed or unbacked, attribute_id or evidence_ref}.',
@@ -84,6 +89,7 @@ CREATE TABLE IF NOT EXISTS secondhand.core.param (
 TBLPROPERTIES ('delta.enableChangeDataFeed' = 'true');
 
 CREATE TABLE IF NOT EXISTS secondhand.core.event (
+  data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   id STRING NOT NULL, user_id STRING NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL,
   item_id STRING, actor STRING NOT NULL COMMENT 'user, auto, site.', action STRING NOT NULL, why STRING,
   observed_at TIMESTAMP NOT NULL, effective_at TIMESTAMP, operation_id STRING, trace_id STRING,
@@ -91,6 +97,7 @@ CREATE TABLE IF NOT EXISTS secondhand.core.event (
 ) COMMENT 'The one log and the one why source, written through the logger.';
 
 CREATE TABLE IF NOT EXISTS secondhand.core.job (
+  data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   id STRING NOT NULL, user_id STRING NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL,
   kind STRING NOT NULL, item_id STRING, stages STRING COMMENT 'JSON array of {name, state, started_at, ended_at}.',
   state STRING NOT NULL, result STRING COMMENT 'JSON.', error STRING, trace_id STRING, event_id STRING COMMENT 'The event that started it.',
@@ -98,6 +105,7 @@ CREATE TABLE IF NOT EXISTS secondhand.core.job (
 ) COMMENT 'A unit of work the system runs for a person.';
 
 CREATE TABLE IF NOT EXISTS secondhand.core.decision (
+  data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   id STRING NOT NULL, user_id STRING NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL,
   kind STRING NOT NULL COMMENT 'spec/product.md §5 decision kinds.', item_id STRING, action STRING NOT NULL, actor STRING NOT NULL,
   price_cents BIGINT, floor_cents BIGINT, site STRING,
@@ -107,6 +115,7 @@ CREATE TABLE IF NOT EXISTS secondhand.core.decision (
 ) COMMENT 'Every outward verb with the policy decision that allowed, asked or refused it. A model never decides it.';
 
 CREATE TABLE IF NOT EXISTS secondhand.core.storefront_snapshot (
+  data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   id STRING NOT NULL, user_id STRING NOT NULL, created_at TIMESTAMP NOT NULL, updated_at TIMESTAMP NOT NULL, version INT NOT NULL,
   account_id STRING NOT NULL, site STRING NOT NULL, as_of TIMESTAMP NOT NULL,
   shop STRING COMMENT 'JSON {followers, rating, active_count, sold_count, ...}.', totals STRING COMMENT 'JSON {views, likes, orders, gross_cents, ...}.',
@@ -114,6 +123,7 @@ CREATE TABLE IF NOT EXISTS secondhand.core.storefront_snapshot (
 ) COMMENT 'What each linked storefront reports about itself, per person and site.';
 
 CREATE TABLE IF NOT EXISTS secondhand.core.log_event (
+  data STRING NOT NULL COMMENT 'Writer provenance: synthetic, example, dataset:<name> or live:<site>; immutable (spec/product.md section 3).',
   user_id STRING NOT NULL, ts TIMESTAMP NOT NULL, session STRING NOT NULL, seq INT NOT NULL, src STRING, level STRING,
   event STRING NOT NULL COMMENT 'spec/events.json names: call.start, call.end, job.state, decision.answer, event.received, ...',
   item STRING, job STRING, call STRING, trace STRING, body STRING COMMENT 'The rest of the envelope as JSON.'
