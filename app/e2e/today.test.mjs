@@ -10,7 +10,7 @@ let app;
 before(async () => { app = await start(); });
 after(async () => { await app?.stop(); });
 
-const ROUTE = { clearing: '/?world=clearing', new: '/?world=new', flipper: '/?world=flipper', stops: '/?world=stops' };
+const ROUTE = { clearing: '/?world=clearing', new: '/?state=new', flipper: '/?state=dense', stops: '/?world=stops' };
 const open = (route = ROUTE.clearing) => app.open(route);
 const count = (s, sel) => s.page.locator(sel).count();
 const text = s => s.page.locator('body').innerText();
@@ -20,7 +20,15 @@ const STATES = {
   typical: async () => { const s = await open(); for (const t of ['Since yesterday', '$97.33', '2 sold, after fees', 'When you can', 'Good to know', 'Keep the lot', 'Accept $85', 'Counter $92', 'Buy 2 labels', 'Took 2 listings down, and 1 more']) await s.shows(t); },
   new: async () => { const s = await open(ROUTE.new); await s.shows('Link a site'); await s.shows('What’s something worth?'); assert.equal(await count(s, '[data-part="card-decision"]'), 0); },
   dense: async () => { const s = await open(ROUTE.flipper); await s.shows('Since this morning'); await s.shows('5 to ship'); await s.shows('40 to post'); await s.shows('Review 40'); assert.equal(await count(s, '[data-part="card-stack"]'), 1); },
-  empty: async () => { const s = await open('/?world=one'); await s.shows('Nothing needs you'); },
+  empty: async () => {
+    const s = await open('/?state=empty'); await s.shows('Nothing needs you');
+    for (const sel of ['[data-part="top-slot"]', '[data-part="card-decision"]', '[data-part="notice"]']) assert.equal(await count(s, sel), 0, sel);
+  },
+  one: async () => { const s = await open('/?state=one'); await s.shows('$97.33'); await s.shows('Keep the lot'); assert.equal(await count(s, '[data-part="card-decision"]'), 1); },
+  'did not load': async () => {
+    const s = await open('/?state=failed'); await s.shows('Today didn’t load'); assert.equal(await count(s, '[data-part="card-decision"]'), 0);
+    await s.tap('retry'); await s.shows('Keep the lot');
+  },
   loading: async () => { const s = await open('/?state=loading'); await s.page.locator('[data-skeleton="true"]').first().waitFor({ timeout: 3000 }); assert.equal(await count(s, '[data-skeleton="true"]'), 3); assert.equal(await count(s, '[data-part="top-slot"]'), 0); },
   working: async () => { const s = await open(); await s.tap('dec_jacket-acc'); await s.shows('Accepting'); },
   done: async () => {
@@ -37,7 +45,10 @@ const STATES = {
     const s = await open(ROUTE.flipper); await s.tap('queue-first_post-review'); await s.shows('Ready to post'); await s.shows('1 of 40');
     await s.tap('queue-approve'); await s.shows('2 of 40', { timeout: 4000 });
   },
-  offline: async () => { const s = await open('/?state=offline'); await s.tap('dec_jacket-acc'); await s.shows('Waiting for signal'); },
+  offline: async () => {
+    const s = await open('/?state=offline'); await s.shows('Waiting for signal'); await s.tap('dec_jacket-acc');
+    await s.page.getByTestId('dec_jacket-acc').getByText('Waiting for signal').waitFor({ timeout: 3000 });
+  },
   stops: async () => {
     const s = await open(ROUTE.stops); for (const t of ['Sold twice', 'Both paid, $42 and $40', '3 sold, after fees', 'Do the Joy-Cons drift?', 'The tag photo is blurry', 'The site shows $44, not your $48']) await s.shows(t);
     await s.tap('dec_double-compare'); await s.shows(/workpants_jo paid \$42, first/); await s.shows(/Cancelling here marks your seller record/);
@@ -62,7 +73,7 @@ const BEFORE = {
   'log-all': ['handled'], 'dec_double-keep-first': ['dec_double-compare'], 'dec_jacket-elsewhere': ['dec_jacket-more'], 'queue-approve': ['queue-first_post-review'], 'queue-skip': ['queue-first_post-review'], 'nav-back': ['queue-first_post-review'],
 };
 for (const c of table.controls) test(`today: ${c.id} ${c.on_tap}`, async () => {
-  const s = await open(ROUTE[c.world ?? 'clearing']);
+  const s = await open(c.route ?? ROUTE[c.world ?? 'clearing']);
   for (const id of BEFORE[c.id] ?? []) await s.tap(id);
   await s.tap(c.id);
   await s.saw({ type: 'tap', id: c.id });
@@ -75,4 +86,12 @@ test('today: a counter under the lowest asks once', async () => {
   await s.page.getByTestId('amount-value-input').fill('60'); await s.page.getByTestId('amount-value-input').press('Enter');
   await s.tap('amount-send'); await s.shows('Under your lowest, $70. Tap again to send it.');
   await s.tap('amount-send'); await s.shows('Sending');
+});
+
+// One black pill per view (C4): the lead card, nearest its deadline, and any card due within the hour; the rest lead light.
+for (const [route, lead] of [['/?world=clearing', 'dec_addr'], ['/?state=dense', null]]) test(`today: ${route} has one black pill per view (C4)`, async () => {
+  const s = await open(route); await s.page.locator('[data-part="card-decision"]').first().waitFor();
+  const black = s.page.locator('[data-part="pill-card"][data-kind="primary"]');
+  assert.equal(await black.count(), 1);
+  if (lead) assert.equal(await s.page.getByTestId(`${lead}-open`).locator('[data-part="pill-card"][data-kind="primary"]').count(), 1);
 });

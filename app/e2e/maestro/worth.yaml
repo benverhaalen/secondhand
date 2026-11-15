@@ -1,0 +1,35 @@
+# What's it worth (app/behavior/worth.json) on a phone or simulator: the same states and flows as app/e2e/worth.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/worth.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/worth.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+# glance: a rough range, still checking.
+- launchApp
+- openLink: ${URL}/--/worth?stage=glance
+- extendedWaitUntil:
+    visible: "Rough guess"
+    timeout: 30000
+# check: the range, its source, what you keep per site.
+- openLink: ${URL}/--/worth
+- extendedWaitUntil:
+    visible: "You keep"
+    timeout: 15000
+- tapOn: { id: "worth-sources" }
+- back
+# kept, then undo.
+- tapOn: { id: "worth-keep" }
+- assertVisible: "Kept"
+- tapOn: { id: "worth-keep-undo" }
+- assertVisible: { id: "worth-keep" }
+# unsure: type the model number.
+- openLink: ${URL}/--/worth?stage=unsure
+- extendedWaitUntil:
+    visible: "Which one is it?"
+    timeout: 15000
+- tapOn: { id: "worth-model-field" }
+- inputText: "HEG-001"
+- pressKey: Enter
+- assertVisible: "You keep"

@@ -55,3 +55,8 @@ export const stopsWorld: World = {
   // The tree stopped before the Switch was drafted, so its first post is not on the feed yet.
   decisions: [...base.decisions.filter(d => d.id !== 'dec_post' && d.id !== 'dec_reply'), ...stops],
 };
+
+// Today with one card (the state "one", .agents/ui-states.json): the clearing person on a day only the pickup waits. The
+// demo's own "one" world has a single item and nothing to decide, which on Today is the empty state, so one card is drawn
+// from clearing instead. Open it with /?state=one.
+export const oneCardWorld: World = { ...base, name: 'one-card', decisions: base.decisions.filter(d => d.id === 'dec_addr'), notices: [], events: [] };

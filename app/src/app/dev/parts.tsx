@@ -4,8 +4,9 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
-  Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Guess, IconButton, ItemCard, Line, List, Nav, Notice, Pill,
-  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type TabKey, type TagState,
+  Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Nav, Notice, Pill,
+  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
+  BarPill, CamButton, CamNote, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
   Feed, QueueView,
 } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
@@ -13,6 +14,10 @@ import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { WeekBars } from '@/ui/parts/week-bars';
+import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
+import { Shelf, Tile } from '@/ui/parts/tile';
+import { KeepRow, Range } from '@/ui/parts/worth';
+import { photo } from '@/demo/photos';
 
 const HOUR = 3600000;
 // Deadlines are fixed offsets from the moment the sheet opens, so each strength of a state gradient shows.
@@ -41,7 +46,7 @@ function Sheetful() {
   const [fed, setFed] = useState(['f-a', 'f-b']);
   const [queued, setQueued] = useState<string[] | null>(null);
   return (
-    <Screen name="parts" state="all" wash nav={<Nav inbox={{ count: 2 }} />}>
+    <Screen name="parts" state="all" sheet="parts" wash nav={<Nav inbox={{ count: 2 }} />}>
       <TopSlot news={{ since: 'Since yesterday', kept: 96.2, line: '2 sold, after fees' }} />
 
       <Section title="Decision card, the lead (state gradients, by time left)">
@@ -152,6 +157,37 @@ function Sheetful() {
         <Amount value={46.95} what="You keep, after fees" />
       </Section>
 
+      <Section title="Grid tile, shelf, filter row (Sell)">
+        <FilterRow>
+          <Chip id="c-sort" icon="sorting-01" label="Latest" onPress={() => {}} />
+          <Chip id="c-all" label="All" picked onPress={() => {}} />
+          <Chip id="c-need" label="Needs you" count={8} onPress={() => {}} />
+          <Chip id="c-ebay" site="ebay" onPress={() => {}} />
+        </FilterRow>
+        <Shelf id="p-need" title="Needs you" count={8} onAll={() => {}}>
+          <Grid columns={2}>
+            <Tile id="p-t-idle" title="Carhartt Detroit jacket" photo={photo('carhartt-jacket') as PhotoSrc} state="need" word="Offer" sites={['ebay', 'depop']} fact={{ label: 'Offered', amount: '$85' }} onPress={() => {}} />
+            <Tile id="p-t-faded" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} state="ended" word="Unsold" faded fact={{ label: 'Worth', amount: '$60 to $80' }} onPress={() => {}} />
+            <Tile id="p-t-on" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} state="live" sites={['poshmark']} select="on" fact={{ label: 'Listed at', amount: '$58' }} onPress={() => {}} />
+            <Tile id="p-t-picked" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} state="paid" word="Paid" select="picked" fact={{ label: 'In your bank' }} onPress={() => {}} />
+          </Grid>
+        </Shelf>
+        <Shelf id="p-kept" title="Kept" count={3} folded onOpen={() => {}} />
+      </Section>
+
+      <Section title="Range, keep rows, choices (What's it worth)">
+        <Range low="$60" high="$80" what="What similar ones sold for lately" />
+        <List>
+          <KeepRow site="ebay" keep="$52 to $70" line="Sells in about 6 days" />
+          <KeepRow site="poshmark" line="Too few sales here" note="Not linked" />
+        </List>
+        <List>
+          <Choice id="p-c-pick" label="Price, high" picked onPress={() => {}} />
+          <Choice id="p-c-leads" icon="store-01" label="See the sales" leads onPress={() => {}} />
+          <Choice id="p-c-off" icon="search-01" label="Looking deeper" line="It lands on Today when it’s done." disabled onPress={() => {}} />
+        </List>
+      </Section>
+
       <Section title="Sheet, toast">
         <Line><Pill id="s-open" kind="second" label="Open a sheet" onPress={() => setSheet(true)} /></Line>
         <UndoToast id="t-undo" text="Offer accepted" onUndo={() => {}} />
@@ -170,6 +206,33 @@ function Sheetful() {
 
       <Section title="Top slot, a new person">
         <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: 'Connect a site' }} />
+      </Section>
+
+      <Section title="New and the camera (on the bar)">
+        <FeedSwatch>
+          <ChoiceCapsule id="nc-sell" label="Sell this" icon="tag-01" lead index={0} shown />
+          <ChoiceCapsule id="nc-worth" label="What’s it worth" icon="money-03" index={1} shown />
+          <Line>
+            <BarPill id="nc-link" icon="link-01" label="Paste a link" />
+            <BarPill id="nc-describe" icon="pencil-edit-02" label="Describe it" />
+          </Line>
+          <StageBubbles stages={[{ name: 'Kind', state: 'done' }, { name: 'Photos', state: 'now' }, { name: 'Label', state: 'skipped' }, { name: 'Measure', state: 'later' }, { name: 'Condition', state: 'later' }]} />
+          <Instruction text="Closer on the tag" />
+          <Chips>
+            <FactChip id="nc-brand" name="Brand" value="Carhartt" />
+            <FactChip id="nc-size" name="Size" />
+            <CamNote icon="clock-01" text="2 photos waiting for signal" />
+            <FixChip id="nc-clean" label="Clean up" on onPress={() => {}} />
+            <FixChip id="nc-ai" label="Enhance with AI" on={false} onPress={() => {}} />
+          </Chips>
+          <Modes modes={[{ mode: 'sell', label: 'Sell', icon: 'tag-01' }, { mode: 'worth', label: 'Worth', icon: 'money-03' }, { mode: 'find', label: 'Find', icon: 'search-01' }]} current="sell" onPick={() => {}} />
+          <Line gap="group">
+            <CamButton id="nc-library" icon="image-01" label="Choose photos" />
+            <Shutter id="nc-shutter" />
+            <Shutter id="nc-shutter-wait" waiting />
+            <CamWord id="nc-skip" label="Skip" />
+          </Line>
+        </FeedSwatch>
       </Section>
 
       <Section title="You: tab nav, list rows, switch, goal, week bars">

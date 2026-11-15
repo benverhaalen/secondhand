@@ -4,37 +4,33 @@
   "states": [
     "all"
   ],
+  "skip": "",
+  "catalog": true,
   "status": "fail",
   "findings": [
     {
-      "level": "error",
+      "level": "warn",
       "id": "B4",
       "where": "screen 1",
       "msg": "has 4 gradients: one field per view (C2)"
     },
     {
-      "level": "error",
+      "level": "warn",
       "id": "B8",
       "where": "screen 1",
       "msg": "is 62% color, with a wash that covers 28%: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)"
     },
     {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 <button>",
-      "msg": "is a button with no fill and no outline: a button is a pill or a filled shape"
-    },
-    {
-      "level": "error",
+      "level": "warn",
       "id": "B35",
       "where": "screen \"parts\"",
       "msg": "is drawn in the state \"all\", which is not on the list: add it with node scripts/ui-states.mjs state screen all \"<where it came up>\", so every screen is asked about it"
     },
     {
       "level": "error",
-      "id": "B35",
-      "where": "screen \"parts\"",
-      "msg": "is not drawn in the states new, empty, one, typical, dense, loading, failed, offline: draw each, or say why it can't happen with data-skip=\"new: why\""
+      "id": "U1",
+      "where": "screen 2 <button>",
+      "msg": "is a button with no fill and no outline: a button is a pill or a filled shape"
     },
     {
       "level": "warn",
@@ -45,35 +41,23 @@
     {
       "level": "warn",
       "id": "U4",
-      "where": "screen 4",
-      "msg": "--mint and --marigold-tint are 0.041 apart to an eye with no red cones: two colors that mark different things in one view stay .05 apart in Oklab"
+      "where": "screen 5",
+      "msg": "--marigold-tint and --mint are 0.041 apart to an eye with no red cones: two colors that mark different things in one view stay .05 apart in Oklab"
     },
     {
-      "level": "error",
+      "level": "warn",
       "id": "B12",
-      "where": "screen 5 \"$45\"",
+      "where": "screen 6 \"$45\"",
       "msg": "is an amount with nothing beside it saying what it is: \"You keep $46.95\", not \"$46.95\" (C6)"
-    },
-    {
-      "level": "error",
-      "id": "B34",
-      "where": "screen 6 \"$46.95\"",
-      "msg": "spills out of [amount]: a thing holds what is in it (ledger L37)"
-    },
-    {
-      "level": "error",
-      "id": "A7",
-      "where": "screen 7",
-      "msg": "has 2 display headings (\"Nothing needs you\", \"Connect a site\"): one per view besides the wordmark (Art. 6)"
     },
     {
       "level": "warn",
       "id": "L2",
-      "where": "screen 7",
+      "where": "screen 8",
       "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
     },
     {
-      "level": "error",
+      "level": "warn",
       "id": "B8",
       "where": "dark screen 1",
       "msg": "is 64% color, with a wash that covers 28%: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)"
@@ -81,7 +65,7 @@
     {
       "level": "warn",
       "id": "L2",
-      "where": "dark screen 5",
+      "where": "dark screen 6",
       "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
     }
   ]

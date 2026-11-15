@@ -1,16 +1,41 @@
 {
   "screen": "new",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "New, the ＋: the one way a thing gets in. The ink button grows into a circle that covers the screen and its three choices rise out of it. spec/pages.md §6.4, spec/ways-out.md §6.4.",
+  "frame": {
+    "who": "Every seller, many times a week; Clearing out most (a pile, fast), Testing the water (What's it worth), the hunter (Find this).",
+    "came_to": "Say what this thing is for in one tap, then point the camera at it.",
+    "costly_mistake": "Picking the wrong door and losing the shots: the camera switches between Sell, Worth and Find without losing them, and × always returns the way it came.",
+    "ways_out": "Paste a link to a listing that already exists; describe a thing that cannot be photographed; photos already taken come in from the camera's library button.",
+    "in_the_loop": "Nothing here acts for the person: every choice is theirs; a pasted link or a description becomes a draft they review, never a post."
+  },
+  "decisions": [
+    "The takeover draws on the camera's bar: ink black in light, so the ＋ visibly grows into the circle, and the dark page in dark, so a full-screen light circle never flashes at night. It is the door to the camera, which wears the same ground.",
+    "The last choice used sits nearest the ×, so the thumb's shortest reach is the likeliest choice; it rises first and its icon well is the one ink circle (one emphasis per view).",
+    "Paste a link and Describe it sit above the three choices as two quiet pills, one tap off the main path, because a person who cannot photograph the thing should not have to open the camera first.",
+    "Capsules are 88 tall with a 56 icon well: 88 less 2 × 16 padding is 56, so the well's corner nests in the capsule's (Art. 9.1).",
+    "Choosing opens the camera out of the touched capsule's icon well, so the camera comes from what the finger touched (E24), in 300 ms.",
+    "A link or a description can arrive from outside (a share sheet): ?link= and ?what= prefill the sheet.",
+    "Describe it reads the words with spelling tolerance and shows the product it found under them, spelled the catalog's way (\"carhart detroit\" reads Carhartt Detroit Jacket J97), so a typo never reaches a title (edge-cases §3).",
+    "A typed price more than 3 times the top of the sold range, or under a third of the bottom, asks once with the range on the sheet, and the button says the price it will use; the next tap makes the draft. A price inside the range asks nothing (edge-cases §3)."
+  ],
   "states": [
-    {
-      "state": "stub",
-      "shows": "the nav and the screen title"
-    }
+    { "state": "typical", "shows": "the circle over the screen, the × where the ＋ was, Sell this, What’s it worth and Find this as large capsules, and Paste a link and Describe it above them" },
+    { "state": "link", "shows": "a sheet titled Paste a link with a Link blank and Bring it in" },
+    { "state": "describe", "shows": "a sheet titled Describe it with a What it is blank, a Your price blank and Make a draft" },
+    { "state": "ask", "shows": "the Describe it sheet with a price far outside the sold range: Similar ones sold for $85 to $115. List at $500? and the button List at $500" }
   ],
   "controls": [
-    {
-      "control": "Back",
-      "on_tap": "goes back to the screen it came from"
-    }
-  ]
+    { "control": "×", "id": "new-close", "on_tap": "the choices sink, the circle shrinks back into the ＋, and the screen behind returns", "does": "closes New", "goes": "/" },
+    { "control": "Sell this", "id": "new-sell", "on_tap": "the camera opens out of the capsule in Sell mode", "does": "opens the camera to sell", "goes": "/camera" },
+    { "control": "What’s it worth", "id": "new-worth", "on_tap": "the camera opens out of the capsule in Worth mode", "does": "opens the camera to value", "goes": "/camera" },
+    { "control": "Find this", "id": "new-find", "on_tap": "the camera opens out of the capsule in Find mode", "does": "opens the camera to search", "goes": "/camera" },
+    { "control": "Paste a link", "id": "new-link", "on_tap": "opens the Paste a link sheet", "does": "opens the link sheet" },
+    { "control": "Describe it", "id": "new-describe", "on_tap": "opens the Describe it sheet", "does": "opens the describe sheet" },
+    { "control": "Link", "id": "link-field", "on_tap": "edits the link in place", "does": "edits the link", "sheet": "link" },
+    { "control": "Bring it in", "id": "link-go", "on_tap": "the listing becomes a draft in Sell’s In progress", "does": "imports the listing", "goes": "/sell", "sheet": "link" },
+    { "control": "What it is", "id": "describe-field", "on_tap": "edits the description in place", "does": "edits the description", "sheet": "describe" },
+    { "control": "Your price", "id": "describe-price", "on_tap": "edits the price in place; blank means priced from sold data", "does": "edits the price", "sheet": "describe" },
+    { "control": "Make a draft", "id": "describe-go", "on_tap": "the words become a draft in Sell’s In progress, priced from sold data or at the typed price; a typed price far outside the sold range asks once first", "does": "makes a draft", "goes": "/sell", "sheet": "describe" }
+  ],
+  "back": "× or the system back: the circle shrinks into the ＋ and the screen behind returns"
 }

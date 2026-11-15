@@ -330,6 +330,13 @@ browserTest('render: a pill drawn on the child of its pressable, and a large amo
   assert.deepEqual((await ids(app('<div data-part="amount" style="margin:16px 20px;height:52px;overflow:visible"><span style="font-size:50px;line-height:52px;display:block">$46.95</span></div>'), 'app')).filter(o => o.startsWith('B34')), []);
 });
 CASES.push(['U1', 'a pressable whose child fill covers only part of it', app('<div role="button" style="margin:16px 20px;width:160px;height:48px;cursor:pointer"><div style="width:80px;height:24px;background:var(--gray)"><span style="font-size:15px">Counter</span></div></div>'), /U1 .*no fill and no outline/, 'app']);
+// From the Sell builder (05:47): a grid of tiles with a hot tag on two of them under one decision card, and a logo on each tile.
+const HOT = '<span data-part="tag" style="display:inline-block;height:20px;padding:0 8px;border-radius:999px;font-size:13px;color:var(--on-color);background:var(--hot-2) linear-gradient(120deg,var(--hot-1),var(--hot-2))">Hot</span>';
+test('render: tag gradients on tiles under a field are not more fields, and logos on separate tiles are not one row', { skip: !pw }, async () => {
+  const tile = `<div style="width:167px;height:96px;padding:12px;background:var(--gray);border-radius:20px">${HOT}${HOT.replace('var(--hot-2) linear-gradient(120deg,var(--hot-1),var(--hot-2))', 'linear-gradient(var(--sky),var(--mint))')}<img alt="eBay" data-logo src="${pathToFileURL(join(root, 'assets/platforms/square/ebay.png')).href}" style="width:20px;height:20px;display:block;margin-top:12px"></div>`;
+  const found = await ids(app(`<div class="f" style="margin:16px 20px;height:96px"></div><div style="display:flex;gap:16px;margin:0 20px">${tile}${tile}</div>`), 'app');
+  assert.deepEqual(found.filter(o => /^B(4|33) /.test(o)), []);
+});
 // Each case renders in its own page of the one browser, so they run side by side.
 describe('render: in a real browser, side by side', { concurrency: 4 * availableParallelism() }, () => {
   for (const a of browserTests) test(...a);
