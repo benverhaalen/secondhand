@@ -52,7 +52,7 @@ The briefs are in the side-session notes folder of the orchestrator's group (`bu
    - choose `assist_effort` by the bench README's rule
    - put both runs' numbers here and in features/assist; send the orchestrator one line
    The sold reads need `SECONDHAND_LIVE_SITES=mercari,poshmark` in the env for the run.
-5. The web: `cd web && npx next build`, the design-critic pass, `SECONDHAND_API_ORIGIN` from the integration lead's host. A Vercel deploy is public: ask Nate first.
+5. The web: a follow-up to `buy-web-1`. Behind the Vercel rewrite, poll `GET /v1/jobs/:id` every 2 s by default and use the event stream only when the API is called on its own origin (integration lead, 2026-11-15: the rewrite does not document stream pass-through and times out at 120 s). Also, http.ts now answers 503 `unavailable` where it said `waking` (J2, 12a24f33), so the page's failed state covers `unavailable`. Then `cd web && npx next build`, the design-critic pass, `SECONDHAND_API_ORIGIN` from the integration lead's host. A Vercel deploy is public: ask Nate first.
 
 ## Waiting on others
 
