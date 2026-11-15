@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>secondhand screens, round 10, for the brand checker</title>
+<!-- The four screens with nothing around them, one under the other: node scripts/brand-check.mjs brand/explore/round-10/mock/check.html --medium app -->
+<link rel="stylesheet" href="../../../tokens.css">
+<link rel="stylesheet" href="fonts.local.css">
+<link rel="stylesheet" href="screens.css">
+<style>body { margin: 0; }</style>
+<body>
+<script src="icons.js"></script>
+<script src="screens.js"></script>
+<script>document.body.innerHTML = Object.values(SH.screens).map(make => make()).join('');</script>

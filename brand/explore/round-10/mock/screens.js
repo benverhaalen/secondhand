@@ -17,14 +17,14 @@
   const tag = (s, word, cls = '') => `<span class="tag s-${s} ${cls}">${ic(ST[s][0])}${word || ST[s][1]}</span>`;
   const line = inner => `<div class="ln">${H(20)}<div class="fx">${inner}</div>${H(20)}</div>`;
   const box = (cls, inner) => `<div class="bx ${cls}">${V(12)}<div class="ln">${H(12)}<div class="fx">${inner}</div>${H(12)}</div>${V(12)}</div>`;
-  const phone = (cls, inner) => `<div class="sh ${cls}">${inner}</div>`;
+  const phone = (cls, inner) => `<div class="sh ${cls}"${cls === 'strip' ? '' : ' data-view'}>${inner}</div>`;
 
   const OSR = '<svg viewBox="0 0 78 12" fill="currentColor" aria-hidden="true"><rect y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" width="3" height="12" rx="1"/><path d="M32 2.6c2.6 0 5 1 6.8 2.7l-1.3 1.4A7.9 7.9 0 0 0 32 4.5c-2.1 0-4 .8-5.5 2.2l-1.3-1.4A9.8 9.8 0 0 1 32 2.6zm0 3.6c1.6 0 3.1.6 4.2 1.7l-1.3 1.4a4.2 4.2 0 0 0-5.8 0l-1.3-1.4A6 6 0 0 1 32 6.2zm0 3.4c.7 0 1.3.3 1.8.7L32 12l-1.8-1.7c.5-.4 1.1-.7 1.8-.7z"/><rect x="48.5" y=".5" width="24" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="50" y="2" width="21" height="8" rx="2"/><rect x="74" y="4" width="2" height="4" rx="1" opacity=".4"/></svg>';
-  const os = () => `<div class="os"><span>9:41</span>${OSR}</div>`;
+  const os = (cls = '') => `<div class="os ${cls}" data-chrome><span>9:41</span>${OSR}</div>`;
   const nav = (l = '', r = '') => `<div class="nav"><span>${l}</span><span class="wm">secondhand<i class="hand" aria-hidden="true"></i></span><span>${r}</span></div>`;
   const tabs = cur => `<nav class="tabs" aria-label="Tabs">${[['today', 'Today'], ['sell', 'Sell'], ['add', ''], ['buy', 'Buy'], ['you', 'You']].map(([k, w]) =>
     k === 'add' ? `<button class="tab add" aria-label="Add an item"><i>${ic('add')}</i></button>`
-      : `<button class="tab"${k === cur ? ' aria-current="page"' : ''}>${ic(k)}${w}</button>`).join('')}</nav><i class="home"></i>`;
+      : `<button class="tab"${k === cur ? ' aria-current="page"' : ''}>${ic(k)}${w}</button>`).join('')}</nav><i class="home" data-chrome></i>`;
 
   // The decision: one field, one black pill with the amount, an outline, and the rest under More (C2, C4).
   const offer = full => box('field', `${full ? `<div class="ln mid">${ph('carhartt-jacket', 'p72', 'Carhartt Detroit jacket')}${H(12)}` : '<div class="ln">'}<div class="fx">
@@ -32,7 +32,9 @@
       ${full ? `<div class="t13 one">Carhartt Detroit jacket, M</div>${V(4)}` : ''}<div class="t13">Ends tomorrow, 6 pm</div>
       ${full ? '' : `${V(4)}<div class="t13">Similar ones sold for $36 to $52</div>`}</div></div>${V(12)}
     <div class="ln"><button class="pill">Accept $38</button>${H(8)}<button class="pill out">Counter</button>${H(8)}<button class="pill dot" aria-label="More">${ic('more')}</button></div>`);
-  const notice = () => box('need', `<div class="ln mid">${logo('ebay')}${H(12)}<div class="fx"><div class="t15">Signed you out</div>${V(4)}<div class="t13">Sign in to keep 3 listings live</div></div>${H(8)}${ib('close', 'Dismiss')}</div>`);
+  // A thing that needs the person is one kind of box, whatever is in it: the 72 slot, two or three lines, then its actions (L37). 152 tall.
+  const notice = () => box('need', `<div class="ln mid"><span class="slot">${logo('ebay')}</span>${H(12)}<div class="fx"><div class="t18">Signed out</div>${V(4)}<div class="t13">Sign in to keep 3 listings live</div></div></div>${V(12)}
+    <div class="ln"><button class="pill">Sign in</button>${H(8)}<button class="pill out">Not now</button></div>`);
   const item = (pic, name, sub, state, sites) => box('gray', `<div class="ln mid">${ph(pic, 'p72', name)}${H(12)}<div class="fx">
       <div class="ln mid"><div class="t15 one fx">${name}</div>${H(8)}${tag(state)}</div>${V(4)}<div class="t13 i2">${sub}</div>${V(8)}${logos(sites)}</div></div>`);
 
@@ -42,16 +44,16 @@
     ${line(item('brass-lamp', 'Brass desk lamp', 'Sold for $36.81', 'ship', ['ebay']))}${V(16)}
     ${line(item('levis-501', 'Levi’s 501, 32 × 32', 'You keep $44.10', 'paid', ['poshmark']))}${tabs('today')}`);
 
-  // name, price, state, sites, then the photo's own shape and lean, used only by the "laid on a table" touch
+  // name, what the amount is, state, sites, then the photo's own shape and lean, used only by the "laid on a table" touch
   const ITEMS = [
-    ['nike-dunks', 'Nike Dunk Low, 10.5', '$45', 'live', ['ebay', 'depop'], '1', -1.2],
-    ['carhartt-jacket', 'Carhartt Detroit jacket, M', '$45', 'need', ['ebay', 'poshmark'], '4/5', 1],
-    ['brass-lamp', 'Brass desk lamp', '$36.81', 'ship', ['ebay'], '4/5', .8],
-    ['patagonia-fleece', 'Patagonia Synchilla, L', '$58', 'live', ['depop', 'poshmark', 'mercari'], '1', -.6],
+    ['nike-dunks', 'Nike Dunk Low, 10.5', 'Listed at $45', 'live', ['ebay', 'depop'], '1', -1.2],
+    ['carhartt-jacket', 'Carhartt Detroit jacket, M', 'Offered $38', 'need', ['ebay', 'poshmark'], '4/5', 1],
+    ['brass-lamp', 'Brass desk lamp', 'Sold for $36.81', 'ship', ['ebay'], '4/5', .8],
+    ['patagonia-fleece', 'Patagonia Synchilla, L', 'Listed at $58', 'live', ['depop', 'poshmark', 'mercari'], '1', -.6],
     ['kindle', 'Kindle Paperwhite', '', 'draft', ['ebay'], '5/4', -1],
-    ['levis-501', 'Levi’s 501, 32 × 32', '$52', 'paid', ['poshmark'], '4/5', 1.4],
-    ['switch-oled', 'Switch OLED', '$210', 'live', ['ebay', 'mercari', 'facebook'], '1', .6],
-    ['ikea-chair', 'IKEA Poäng chair', '$40', 'ended', ['facebook'], '4/5', -.8],
+    ['levis-501', 'Levi’s 501, 32 × 32', 'You keep $44.10', 'paid', ['poshmark'], '4/5', 1.4],
+    ['switch-oled', 'Switch OLED', 'Listed at $210', 'live', ['ebay', 'mercari', 'facebook'], '1', .6],
+    ['ikea-chair', 'IKEA Poäng chair', 'Listed at $40', 'ended', ['facebook'], '4/5', -.8],
   ];
   const tile = ([pic, name, price, state, sites, ar, rot]) => `<div class="tile"><span class="shot" style="--ar:${ar};--rot:${rot}deg">${ph(pic, '', name)}${tag(state)}</span>${V(8)}
     <div class="t15 one">${name}</div>${V(4)}<div class="ln mid">${price ? `<span class="t13 i2 fx">${price}</span>` : `<span class="t13 i2">Pricing</span>${H(8)}<i class="hand inline" aria-hidden="true"></i><span class="fx"></span>`}${logos(sites)}</div></div>`;
@@ -66,14 +68,14 @@
     ${V(12)}<hr>${V(12)}<div class="ln ${big ? 't15' : 't18'}"><span>${total[0]}</span><span class="lead"></span><span class="${big ? 'a50' : 'num'}">${total[1]}</span></div></div>`;
   const fee = `${logo('ebay')}${H(8)}fee`;
 
-  const itemPage = () => phone('', `${os()}<div class="hero">${ph('carhartt-jacket', '', 'Carhartt Detroit jacket')}
+  const itemPage = () => phone('', `<div class="hero">${ph('carhartt-jacket', '', 'Carhartt Detroit jacket')}${os('float')}
       <div class="over">${ib('back', 'Back', 'white')}<span class="ln">${ib('share', 'Share', 'white')}${H(8)}${ib('more', 'More', 'white')}</span></div></div>${V(16)}
     ${line(`<div class="ln"><div class="fx"><div class="t18">Carhartt Detroit jacket, M</div>${V(4)}<div class="t13 i2">Listed at $45</div></div>${H(8)}${tag('need')}</div>`)}${V(16)}
     ${line(offer(false))}${V(16)}
     ${line(sum('If you accept', [['Offer', '$38.00'], [fee, '−$5.57'], ['Shipping', 'Buyer pays']], ['You keep', '$32.43']))}${V(32)}
     ${line(`<div class="t13 i2">Listed</div>${V(8)}<div class="rows">
       <div class="ln">${logo('ebay')}${H(12)}<span class="t15 fx">1 offer</span>${tag('need')}</div>
-      <div class="ln">${logo('poshmark')}${H(12)}<span class="t15 fx">Listed 3 days ago</span>${tag('live')}</div></div>`)}${V(32)}<i class="foldmark"></i><i class="home"></i>`);
+      <div class="ln">${logo('poshmark')}${H(12)}<span class="t15 fx">Listed 3 days ago</span>${tag('live')}</div></div>`)}${V(32)}<i class="foldmark"></i><i class="home" data-chrome></i>`);
 
   // The sale: the one time the field fills the screen (L26). One Clofie headline, and the amount at 50 in the text face.
   const sold = () => phone('fixed sold', `<i class="fieldbg field"></i>${os()}${nav('', ib('close', 'Close'))}${V(32)}
@@ -82,7 +84,7 @@
       <div class="only-receipt">${sum('', [['Sold for', '$36.81'], [fee, '−$5.41']], ['You keep', '$31.40'], true)}</div>`)}
     <div class="grow"></div>
     ${line(`<div class="ln">${tag('ship', 'Ship by Tue', 'white')}</div>${V(12)}<div class="ln"><button class="pill tall grow">${ic('print')}Print label</button>${H(8)}<button class="pill out tall">Drop-off spots</button>${H(8)}<button class="pill dot tall" aria-label="More">${ic('more')}</button></div>`)}
-    ${V(16)}<i class="sp v" style="--n:34"></i><i class="home"></i>`);
+    ${V(16)}<i class="sp v" style="--n:34"></i><i class="home" data-chrome></i>`);
 
   window.SH = {
     screens: { today, sell, item: itemPage, sold },

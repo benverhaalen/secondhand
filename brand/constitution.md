@@ -91,6 +91,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 - Post: top center or bottom center, small, the same place on every post in a series.
 - Video: the end card only, centered, held for at least 1.5 s.
 - Boundary: never in a sentence, never capitalized, never with a tagline attached, never smaller than 14 px (app) or 3% of frame height (video), never recolored except black or white.
+- The kit (agent proposal, round 10, from [brand-systems-from-studios.md](../research/cross-cutting/ben/brand-systems-from-studios.md); open in the [ledger](ledger.md) as R26). One unit is half the wordmark's type size. Nothing but its ground sits within one unit of it on any side. It is live text in the display face, never an image and never redrawn. It is never transformed, shadowed, outlined, stroked, filtered or faded, has no fill or box of its own, never moves, never sits on a photo, and appears once per view. If Ben keeps the second hand (R20), the hand is part of the wordmark and is the one thing allowed inside that space and the one part that moves.
 
 **C2. The field.** A soft mesh of three colors from the ring (Article 5) that sit near each other. Home is sky, mint and lime, the heart of the brand. It is the brand's one color event. What Ben likes is its pattern and feel more than its exact colors ("the lighter ones", [round 7](../product/words.md#2026-11-15-round-7-picks)).
 - A set, by rule (Ben, [round 8](../product/words.md#2026-11-15-round-8-picks): "A set but a larger set"). Three colors from the ring make a field when no two of them are near opposite each other (agent proposal: at most 140 degrees apart on the wheel, which allows 24 fields). Nothing else does: never dark or saturated, never opposites (they meet in mud), never hard stops, never two flat stops, never more than three colors.
@@ -102,6 +103,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 - Text on the field is black only. Every field color passes 13:1 with black and fails 3:1 with white. State pills on the field are white with a black label, so they don't vanish into it.
 - At rest in the app it is one card. On a sale, the biggest moment, it fills the whole screen once as an animation, with a haptic and a sound (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)).
 - Boundary: never a border or text fill, never two fields touching.
+- Where the medium cannot move (a post, a printed deck, a sticker), the field is one frozen frame of the same code (agent proposal, R26).
 
 **C3. The item leads.** Every item is shown by its photo, and the photo is the largest image in its group. A real photo of the real thing, in daylight, on a plain ground. Ben, 20:17: "for a carhartt jacket, you should probably have a picture of it."
 - Boundary: no item without a photo (use a neutral tile with the category icon only while the photo loads); no illustration of an item; generated photos only in demos, marked as such.
@@ -111,6 +113,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 
 **C5. Platform logos, not names.** Where a marketplace is meant, its real logo is shown, from [assets/platforms/](../assets/platforms/). Ben, 19:59.
 - Boundary: unaltered logos only, brand color or black, never redrawn letterforms. VoiceOver and alt text carry the name.
+- In a row, logos share one height and one gap, and none is taller than the wordmark's type size. Corners stay as the file has them: rounding a logo alters it (agent proposal, R26).
 
 **C6. Plain money.** Amounts are set in the text face with tabular figures, with the currency sign, at the same size as the text around them or one step up. The one peak amount per view (a sale) may be 50 in the app or up to 200 in a post or deck, still in the text face (agent proposal). No band or highlight sits behind an amount: it stands out by size alone, and one kind of amount looks the same everywhere it appears (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)).
 - Boundary: never a counter animation; never a big number without what it is ("$46.95" alone fails; "You keep $46.95" passes).
@@ -132,9 +135,9 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 
 Rules:
 1. **Color is a ground, never ink.** Every state and category color is a fill behind black text (each passes 13:1). White text only on the black pill (C4) and brick. No colored text, colored lines or colored icons on white, except platform logos (C5), the alert brick and the unread dot. Text over a photo or footage sits on the field or a white bar, in black; never white with a shadow.
-2. **Color covers at most a third of any view.** Measured as the share of pixels that are not white, black, gray or photo. The references sit at 12% (ref-12), 25% (Sana) and up to 50% (Docket); a third is the ceiling.
+2. **Color covers at most a third of any view.** Measured as the share of pixels that are not white, black, gray or photo. The references sit at 12% (ref-12), 25% (Sana) and up to 50% (Docket); a third is the ceiling. A view the field fills is exempt: the sale in the app (C2), one view in any other output, and two in a deck (agent proposal, R26).
 3. **A color means one thing everywhere.** Mint is live. Lime is money: sold, paid and the amount you keep. Marigold needs you. Sky is on its way. Brick failed. Gray ended. The full set, with every interaction state, is the table below.
-4. **Photos bring their own color.** When a view has item photos, the field shrinks or moves away from them; it never sits behind a photo.
+4. **Photos bring their own color.** When a view has item photos, the field shrinks or moves away from them. The one exception is the thing the field is there for: the photo of the item in the field's own card, or in the sale that fills the screen, sits on the field with its own corner and edge, as in every offer card Ben has picked since round 7. The field never shows through a photo, never tints one, and never sits behind a grid of photos (agent proposal, R26).
 
 #### States (agent decision 2026-11-14, Ben can veto on round 6 board D1)
 

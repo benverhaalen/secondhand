@@ -74,8 +74,9 @@ Ben did not tap R16 to R19 in round 9. He chose "[Use them in mocks, lock later]
 | R23 | Which color goes where | The order of seven questions in constitution Art. 5, yes or no | yes (agent) |
 | R24 | Which Neue Montreal file the app loads | A: the first file, with digits added by `scripts/font-tnum.py`. B: PP Neue Montreal 2.6, Book and Medium | B (agent) |
 | R25 | Which gaps to close next | The idea in one line, a symbol and the app icon, the sale's sound and haptic, our own state icons, real photos in the mocks | Ben picks |
+| R26 | Wording that came from building the mocks and from the thread "Build the brand system for everything": the wordmark's clear space and misuse list (C1), a frozen frame of the field where nothing can move (C2), logos in a row and their corners (C5), a view the field fills is exempt from the one-third rule (Art. 5.2), and a photo may sit on the field in the field's own card (Art. 5.4) | Each is marked as a proposal where it sits in the constitution. Yes, or reword | yes (agent) |
 
-Small calls the mocks forced, each one line in [screens.css](explore/round-10/mock/screens.css): a logo's corner is 4 and a filter chip is 36 tall, and neither is in a scale; buttons in a box are 44 and the bar at the foot of a sale is 48; the + in the tab bar is a gray circle with no label; eBay's own icon is unreadable at 20 px and needs a better file.
+Small calls the mocks forced, each one line in [screens.css](explore/round-10/mock/screens.css): a filter chip is 36 tall, which is in no scale; buttons in a box are 44 and the bar at the foot of a sale is 48; the + in the tab bar is a gray circle with no label; eBay's own icon is unreadable at 20 px and needs a better file. Today has two box sizes, after Ben's [standard sizes](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) note (L37): an item is 96 tall, and anything that needs the person is 152, because it carries its actions. The mocks run through the brand checker with `node scripts/brand-check.mjs brand/explore/round-10/mock/check.html --medium app`.
 
 ## Later
 
