@@ -62,7 +62,7 @@ So **2,000 test sales per kind in the tuning windows and 1,200 per kind in the l
 
 | Cost | Size | How to keep it down |
 |---|---|---|
-| Compute, the runner as it is | *Observed*: the full StockX run from 2018-11-01 (about 41k test sales × 4 contestants) ran past 23 CPU minutes without finishing. The baselines rescan the whole history for every test sale, so cost grows with tests × history | Index the history by product once and bisect by date. The baselines then cost a lookup per test sale, which should take the StockX run to seconds (*inferred*). The model refits once per month, which is already cheap |
+| Compute, the runner as it is | *Observed*: the full StockX run from 2018-11-01 (about 41k test sales × 4 contestants) ran past 23 CPU minutes without finishing. The baselines rescan the whole history for every test sale, so cost grows with tests × history | Index the history by product once and bisect by date. The baselines then cost a lookup per test sale, which the benchmark thread did: the full StockX run (41,988 test sales) now takes about 4 minutes (*observed*, plan.md §9). The model refits once per month, which is already cheap |
 | Compute, NBER | The load and sample run in Spark on Nate's workspace. The runner then sees about 26k test sales and their products' histories: single-node work after the indexing fix | Sample in Spark, never ship 98M rows to Python |
 | Money | The four current contestants make no model calls, so a run costs only compute. A contestant that calls a model (pricing from a photo or a title through an LLM) costs calls × price: 2,000 items is 2,000 calls per run per setting | Run a paid contestant only on the locked sample and a fixed tuning subsample, and cache its answers by (item, as_of, prompt hash), so a rerun costs nothing |
 | People | Nate: about an hour to pull NBER. Ben: a minute to read the Kaggle rules | |
@@ -83,7 +83,7 @@ The repo's logging rule ([log/README.md](../../../log/README.md)) is that from t
 
 ## 6. Order of work
 
-1. Index the baselines' history in the runner (owner: the benchmark thread), then run StockX in full and record the noise floor and the time-adjustment result.
+1. Done: the runner indexes history by product, and the full StockX run is in plan.md §9. The last sale was within 20% 97% of the time, the 90-day median 89%, and `market.py` 68%, because it ignores product identity. That's the first finding: when the product is known, comps must outrank the attribute model (A over B), so the model needs a product-level term or a blend with comps before NBER.
 2. Nate pulls NBER (packet 64). Then: the thickness strata, the two-stage sample, the four planted cases, and the tuning windows only.
 3. The Mercari grouped split and the from-a-title contestant.
 4. Pre-register (decision 25) and score the NBER locked month once. Then leave-one-kind-out.
