@@ -3,26 +3,36 @@
 // it is the default); the lowest price is suggested from sold prices and set by the person, never by us; Clean up is on and
 // Enhance with AI is off (spec/edge-cases.md §6: two kinds of photo help); replies are drafted in the person's own voice
 // (spec/features/messages.md); the pickup spot is the only pickup default, with no hours (spec/edge-cases.md §16).
+// Prices across sites is the account's cross-listing rule, Same take-home unless the person switches it (decisions.md,
+// 2026-11-15): each rule is its name and one plain reason, and the numbers for one jacket sit a tap under it (Ben 06:53).
+// One item can still use its own rule, on its Plan.
 import { useState } from 'react';
 import { connectionState, type Site } from '@/demo';
 import { Blank, Guess, Line, List, Nav, Pill, Screen, Section, Sheet, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
+import { Choice } from '@/ui/parts/chip';
+import { Choices } from '@/ui/parts/pick';
+import { KeepRow } from '@/ui/parts/worth';
+import { DEFAULT_SPREAD, SPREADS, type Spread } from '../engines/listing/spreads';
 import { Switch } from '@/ui/parts/switch';
 import { PageStatus } from './page-status';
-import { changed, drawn, PAGES, SITE_ORDER, useGo, usePage } from './state';
+import { EXAMPLE, example } from './spread-example';
+import { cash, changed, drawn, PAGES, SITE_ORDER, useGo, usePage } from './state';
 
 const PLAN = { sell: 'Sell it', fast: 'Gone fast', best: 'Best price', reserve: 'Only at my price', check: 'Just checking' } as const;
 const HAND = { ship: 'Ship', pickup: 'Pickup', both: 'Ship or pickup' } as const;
 const FLOOR = { suggest: 'Suggested from sold prices', ask: 'Ask me each time' } as const;
 const VOICE = { you: 'Like you', plain: 'Short and plain' } as const;
 const UNITS = { in: 'Inches', cm: 'Centimeters' } as const;
-type Pick = 'plan' | 'sites' | 'hand' | 'floor' | 'voice' | 'units';
+type Pick = 'plan' | 'sites' | 'spread' | 'numbers' | 'hand' | 'floor' | 'voice' | 'units';
+const RULES = (Object.keys(SPREADS) as Spread[]).map(k => ({ id: k, label: SPREADS[k].name, does: SPREADS[k].says }));
 
 export function Defaults() {
   const { w, asked } = usePage(), go = useGo();
   const linked = SITE_ORDER.filter(s => { const c = w.connections.find(x => x.site === s); return c && connectionState(c) === 'connected'; });
   const [plan, setPlan] = useState<keyof typeof PLAN>('sell');
   const [sites, setSites] = useState<Record<string, boolean>>(() => Object.fromEntries(linked.map(s => [s, true])));
+  const [spread, setSpread] = useState<Spread>(DEFAULT_SPREAD);
   const [hand, setHand] = useState<keyof typeof HAND>(w.limits.handover.length === 2 ? 'both' : w.limits.handover[0] ?? 'both');
   const [spot, setSpot] = useState(w.limits.saved_spot?.label ?? '');
   const [floor, setFloor] = useState<keyof typeof FLOOR>('suggest');
@@ -50,6 +60,7 @@ export function Defaults() {
           <List>
             <ListRow id="default-plan" label="How it sells" value={PLAN[plan]} onPress={() => setOpen('plan')} />
             <ListRow id="default-sites" label="Sites" value={linked.length ? `${onSites} of ${linked.length} linked` : 'None linked yet'} onPress={linked.length ? () => setOpen('sites') : () => go.to('/you/connections')} />
+            <ListRow id="default-spread" label="Prices across sites" value={SPREADS[spread].name} onPress={() => setOpen('spread')} />
             <ListRow id="default-hand" label="Ship or pickup" value={HAND[hand]} onPress={() => setOpen('hand')} />
             <ListRow id="default-spot-row" label="Pickup spot" trail={<Line>{spot
               ? <Guess id="default-spot" name="Pickup spot" value={spot} look="body" onChange={v => { setSpot(v); changed('limits', 'saved_spot', 'set'); }} />
@@ -79,6 +90,19 @@ export function Defaults() {
       </PageStatus>
 
       <Sheet open={open === 'plan'} title="How it sells" onClose={() => setOpen(null)}>{pills('plan', PLAN, plan, choose('default_plan', setPlan))}</Sheet>
+      <Sheet open={open === 'spread'} title="Prices across sites" onClose={() => setOpen(null)}>
+        <Choices id="spread" choices={RULES} value={spread} onPick={k => { setSpread(k as Spread); changed('setting', 'crosslist_spread', k); }} />
+        <Txt role="caption">One item can still use its own, on its plan.</Txt>
+        <Choice id="spread-numbers" label="See the numbers" line={`A ${cash(EXAMPLE.price_cents)} jacket on each site`} leads onPress={() => setOpen('numbers')} />
+      </Sheet>
+      <Sheet open={open === 'numbers'} title={SPREADS[spread].name} onClose={() => setOpen(null)}>
+        <Txt role="caption">One jacket at {cash(EXAMPLE.price_cents)} where it’s listed now: what each site shows, its fees, and what you get.</Txt>
+        <List>
+          {example(spread, linked).map(r => <KeepRow key={r.site} site={r.site} line={r.home ? `${cash(r.price_cents)} now` : `Lists at ${cash(r.price_cents)}`}
+            note={`${cash(r.fee_cents)} in fees${r.too_few ? '. Too few sales here' : ''}`} keep={`You get ${cash(r.get_cents)}`} />)}
+        </List>
+        <Choice id="spread-rules" label="Back to the rules" onPress={() => setOpen('spread')} />
+      </Sheet>
       <Sheet open={open === 'hand'} title="Ship or pickup" onClose={() => setOpen(null)}>{pills('hand', HAND, hand, choose('handover', setHand))}</Sheet>
       <Sheet open={open === 'floor'} title="Lowest price" onClose={() => setOpen(null)}>{pills('floor', FLOOR, floor, choose('floor_default', setFloor))}</Sheet>
       <Sheet open={open === 'voice'} title="Replies sound" onClose={() => setOpen(null)}>{pills('voice', VOICE, voice, choose('voice', setVoice))}</Sheet>
