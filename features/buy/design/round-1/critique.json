@@ -1,0 +1,96 @@
+{
+  "images": [
+    {
+      "file": "../buy-hunting/image.png",
+      "person": "Someone seeking one specific used thing who wants an alert instead of another search.",
+      "verdict": "pass",
+      "failures": [],
+      "serves": [
+        {"element": "Find something used, Take a photo, Paste a link", "want": "Three recognizable ways to describe the thing without learning a search language."},
+        {"element": "Found for you, New, and View match", "want": "Presents the result of the app's work and a short next action. The camera photo is the largest element in the card."},
+        {"element": "Alerts on. We'll keep looking. and Watching", "want": "Reassures the person that leaving the app does not stop the search. Watching gives the saved search a home."},
+        {"element": "$820 delivered and Fair range $780–$900", "want": "Lets the person assess the match without first opening the marketplace. The price and range have labels; the small eBay logo identifies the source."}
+      ],
+      "costs": [
+        {"person": "Quick price checker", "issue": "Paste a link is easy to find, but the screen does not promise a price check or show a clear fair-price verdict. They must infer what pasting does."},
+        {"person": "Casual browser", "issue": "One large match takes nearly all the available content space. There is no visible variety or size filter. The desire for that browsing experience is not yet observed behavior."}
+      ]
+    },
+    {
+      "file": "../buy-price/image.png",
+      "person": "Someone checking whether one used listing is fairly priced before buying; this want is not yet observed behavior.",
+      "verdict": "pass",
+      "failures": [],
+      "serves": [
+        {"element": "Is it a fair price? and Type or paste a link", "want": "Names the proposed job immediately and gives it a direct entry. Making this the whole tab's opening promise leans on an unproven want."},
+        {"element": "Large camera photo, Fujifilm X100V, Good condition, and eBay logo", "want": "Lets the person confirm which item and condition the estimate concerns before trusting the answer."},
+        {"element": "Fair price with a check, $1,050 Asking · delivered, and $980–$1,120 Fair range · delivered", "want": "Answers the question in two words and makes the comparison explicit. The verdict is conveyed by words and an icon, not color alone. The single gradient belongs to this decision."},
+        {"element": "View listing and Watch price", "want": "Offers an immediate purchase route or a way to wait without repeatedly checking. These are useful proposed behaviors, not demonstrated demand."}
+      ],
+      "costs": [
+        {"person": "Specific-item hunter", "issue": "The headline assumes they already found a listing. Watching is near the bottom, and Watch price sounds like tracking this listing rather than searching for another matching item."},
+        {"person": "Casual browser", "issue": "One appraisal occupies the screen. Since you checked supplies only a small history-based suggestion, not a selection to explore; that proposed return behavior is also unproven."}
+      ]
+    },
+    {
+      "file": "../buy-browsing/image.png",
+      "person": "Someone browsing good used things in their size for ten spare minutes; this want is not yet observed behavior.",
+      "verdict": "fail",
+      "failures": [
+        {"rule": "Any text is misspelled or too small to read on a phone", "place": "The two lower product cards: US 9 · Good and M · Very good; the small coverage line beneath search", "issue": "At approximately 390 points wide, these lines shrink to roughly 10–11-point text. Condition and size are needed to judge the items, yet they are substantially smaller than the readable secondary copy in Image 4. These are visual estimates from the raster, not measured source font sizes."}
+      ],
+      "serves": [
+        {"element": "Fresh finds, your size and Size M · US 9", "want": "Offers relevant discovery without typing a specific query. Both the browsing habit and the value of this personalization remain unproven."},
+        {"element": "One featured fleece followed by two photo-led cards", "want": "Provides a starting point and visible variety for someone exploring. Every item has a photographic image larger than its individual text elements, and source logos remain small."},
+        {"element": "$48 delivered, Fair range $45–60, See find, and Watch price", "want": "Makes the featured item's cost and next actions quick to understand. The gradient stays on that one featured item."},
+        {"element": "Watching, Bought, and Still looking for your watches", "want": "Keeps existing searches accessible while browsing, although watches could be read as wristwatches."}
+      ],
+      "costs": [
+        {"person": "Specific-item hunter", "issue": "An unsolicited clothing feature takes precedence over their saved search. Watching remains accessible, but they must move past discovery to see whether their actual target has turned up."},
+        {"person": "Quick price checker", "issue": "The link icon is available, but Find anything does not explain that it can appraise a listing. Clothing and size cues make the tab look narrower than the service."}
+      ]
+    }
+  ],
+  "merge": {
+    "keep": [
+      {"from": "Design 1", "what": "Use the saved-search return state as the default: New finds, Watching, Bought, with a new match first and an explicit searching status when none has arrived.", "why": "It serves the established person who wants the app to do the repeated work. Do not imply a new match exists when there is none."},
+      {"from": "Design 2", "what": "Use one search field for words or a pasted listing, with a camera action. Label it Find an item or paste a link.", "why": "Keeps finding and checking within one entry without requiring an appraisal headline above every visit. A pasted listing opens its appraisal directly; words begin a search."},
+      {"from": "Design 2", "what": "Put a short price verdict, delivered asking price, and delivered fair range in the main item's card, with View listing as the primary action.", "why": "A hunter and a browser also benefit from understanding the price. Keep the comparison inside the existing card rather than adding another featured panel."},
+      {"from": "Design 1", "what": "Retain visible confirmation that the saved search is active.", "why": "A short status line saves a return check and does not require the other people to act."},
+      {"from": "Design 3", "what": "Keep photo-led discovery cards and an editable size filter inside optional browsing, below saved matches when browsing is enabled.", "why": "Offers variety to people who choose it without putting speculative recommendations ahead of an active search. Do not assign sizes without the person's input."},
+      {"from": "All three, aligned to Image 4", "what": "Keep the lowercase wordmark, pale neutral surface, outline icons, small marketplace logos, rounded cards, black primary action, and one restrained gradient emphasis.", "why": "These provide a shared visual language. Photographs and short actions remain the content, while the gradient identifies the one current priority."}
+    ],
+    "conflicts": [
+      {"between": "A hunter wants a finished search result; a browser wants an ongoing stream.", "resolved": "Default to saved matches. Add one persistent setting, Show suggested finds, off by default. Turning it on reveals browsing below matches, including the size filter. This gives the unproven browsing want a place without spending everyone else's attention."},
+      {"between": "A price checker wants an appraisal now; a hunter wants the app to find something first.", "resolved": "Let the input determine the result: a listing link opens an appraisal; a description or item photo begins finding matches. On ordinary return, restore the saved-search view. Do not make people choose a mode before entering their item."},
+      {"between": "The browser's featured discovery and the hunter's new match both want the gradient and first position.", "resolved": "The new saved-search match wins. During an explicit listing check, the appraisal wins. Only when there is no new match and suggested finds are enabled may a discovery take the single gradient position. All other cards stay white."},
+      {"between": "A heart, Watch price, and Watching suggest overlapping kinds of saving.", "resolved": "Remove the separate heart action. Use Watch price for one listing and Save search for a wanted item; group both under Watching with plain status labels. Saving a search must make continuing to look explicit."},
+      {"between": "The proposed price checker and browser could reshape the whole tab before their wants are observed.", "resolved": "Keep price checking accessible through the shared input and browsing optional. Treat repeated price checks and voluntary use of suggested finds as evidence to seek, not evidence supplied by these mockups."}
+    ]
+  },
+  "exact_fixes": [
+    "Use a 390-point-wide review layout. The following are proposed implementation targets, not font measurements recovered from the images.",
+    "In Design 3, raise condition, size, coverage, fair-range, and bottom-navigation labels to at least 14 points; use 17 points for body copy and action labels. Allow cards to grow or scroll instead of shrinking text to fit.",
+    "Use 20-point outer margins, 16-point card padding, and 16-point gaps between cards. Match Image 4's spacious rhythm rather than squeezing every section above navigation.",
+    "Replace the separate search/photo/link rows of Design 1 with a 56-point-high field reading Find an item or paste a link. Give the camera action a 44-by-44-point hit area and an accessible Take a photo label.",
+    "Replace View match and See find with View listing when the destination is the marketplace listing. If the destination is an internal comparison, use View match consistently instead.",
+    "Label the comparison Asking · delivered and Fair range · delivered, as in Design 2. Use the same delivered basis for both figures.",
+    "Replace Still looking for your watches with Still searching. In the saved-search view, replace Alerts on. We'll keep looking. with Search active · Alerts on, only when both states are true.",
+    "Set marketplace badges to 28-by-28 points with an 8-point inset from the photo edge. Keep the logo, including eBay's wordmark inside its square badge; do not replace it with a marketplace text label.",
+    "Use the pale neutral background of Image 4, approximately #F2F3F4, with #FFFFFF secondary cards, #0A0A0A primary text, and #606060 secondary text. Confirm final colors against the source design; these are proposed values.",
+    "Use one gradient card only, with proposed stops #9FE1F8, #A9E7D3, and #E6EF9C to approach Image 4. Keep other cards white and avoid making every surface a highlight.",
+    "Keep product photos at least 40 points taller than their accompanying information-and-action area in the merged card. Grow the photo or move secondary detail into the item view if enlarged type reverses that hierarchy.",
+    "Use 32-point card corners and 48-point-high pill actions. Keep the shared bottom navigation and central plus at Image 4's proportions; do not enlarge the plus to compete with the active item.",
+    "Name the single browsing setting Show suggested finds, default off. Show Size M · US 9 only after those sizes have been supplied; otherwise label the control Set sizes."
+  ],
+  "feel_notes": [
+    "Design 1 should feel like work completed on the person's behalf. Its main weakness is excess celebration: Found for you, a checked bell, New, and the large gradient all repeat the same announcement. Simplify that cluster without treating ordinary hierarchy as several separate bold moves.",
+    "Design 2 should feel decisive and trustworthy. Its short verdict is strong, but a crisp estimate can imply more certainty than the image establishes. Make the comparison basis available from the result rather than adding an essay to the card.",
+    "Design 3 should feel like optional exploration. Its density and fashion-specific opening pull it toward a shopping feed; neither is a reason to assume everyone wants to browse.",
+    "Image 4 is calmer and lighter in its typography. Borrow its breathing room and restrained emphasis. The merged card should not acquire Design 1's oversized heading, Design 2's oversized question, and Design 3's discovery headline together.",
+    "The single bold move is the gradient-backed priority item or price decision. Black buttons, normal selected states, and the shared plus are established controls, not automatically extra bold moves. None of the three warrants failing merely for using them.",
+    "The visible prices are labeled, the message badge's 2 has a recognizable context, and the coverage line explains its 5. No marketplace is substituted by plain text, and no visible decision depends on color alone. These are reviews of the supplied mockups, not verification of listing authenticity, market prices, or actual marketplace coverage.",
+    "The current brief and four supplied images govern this review. Earlier recorded wording about large readable text supports the type correction, but does not turn the two speculative wants into observed behavior. Phone-size legibility remains a visual assessment until checked in a rendered interface."
+  ],
+  "best": "Design 1 is the best base: it most directly serves finding a wanted thing with the least repeat work. It passes the stated rules. Borrow Design 2's concise appraisal and offer Design 3's browsing through one optional setting; do not average their three opening promises."
+}
