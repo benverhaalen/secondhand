@@ -5,6 +5,7 @@
 //   fill  the second button is a light fill, not a black outline (R33)
 //   one   one black pill per view, on the field; every other card's buttons are light fills (R34)
 //   more  the sum is open (the item page only)
+//   wm    'center' draws the wordmark centered, as L3 locks it; otherwise it is left with the inbox right (R41)
 // Parts and sizes are the ones Ben approved (constitution Art. 7.8), and each carries data-part so the checker can hold one kind to one size.
 // Demo content: the items are the generated demo photos, and the amounts are made up for the mock (the fee uses 13.6% plus $0.40).
 (function () {
@@ -26,7 +27,7 @@
   const logos = ns => `<span class="logos">${ns.map(logo).join('')}</span>`;
   const tag = (s, word, cls = '') => `<span class="tag s-${s} ${cls}" data-part="tag">${ic(ST[s][0])}${lb(word || ST[s][1])}</span>`;
   const line = inner => `<div class="ln">${H(20)}<div class="fx">${inner}</div>${H(20)}</div>`;
-  const phone = (cls, o, inner) => `<div class="sh ${cls} sep-${o.sep}"${/strip/.test(cls) ? '' : ' data-view'}>${inner}</div>`;
+  const phone = (cls, o, inner) => `<div class="sh ${cls} sep-${o.sep}${o.wm === 'center' ? ' wm-center' : ''}"${/strip/.test(cls) ? '' : ' data-view'}>${inner}</div>`;
 
   // The buttons of a card. The first is the act (the black pill) on the field, and off it too until "one" is on.
   // Every other button is a light fill, or round 10's black outline until "fill" is on.
@@ -53,7 +54,7 @@
   const notice = `<button class="notice" data-part="notice">${ic('paid')}<span class="t15 grow">Handled 6 things today</span>${ic('next').replace('class="ic"', 'class="ic chev"')}</button>`;
 
   // Today, as Ben approved it: the wash, the nav, the week's money, then cards by kind. The one on the field is the decision.
-  const today = (o = NEXT) => phone('fixed', o, `<i class="wash"></i>${os()}${nav(`<button class="ib" aria-label="Messages, 2 new" data-part="nav-icon">${ic('chat')}<span class="count" data-part="count">2</span></button>`)}${V(8)}
+  const today = (o = NEXT) => phone('fixed', o, `<i class="wash"></i>${os()}${nav(`<button class="ib" aria-label="Messages, 2 new" data-part="nav-icon">${ic('chat')}<span class="count" data-part="count">${lb('2')}</span></button>`)}${V(8)}
     ${line(`<div class="a36">$96.20</div><div class="t15 i2">Kept this week, 3 sold</div>`)}${V(32)}
     ${line(decision(o, true, ['carhartt-jacket', 'Carhartt Detroit jacket', 'depop', 'need', 'Offer', '3h 40m', 'You keep', '$33.44'], [lb('Accept $38'), 'Counter']))}${V(16)}
     ${line(decision(o, false, ['nike-dunks', 'Nike Dunks', 'depop', 'sold', 'Sold', 'Ship in 21h', 'You keep', '$31.40'], [lb('Print label'), 'Drop-off spots', { more: false }]))}${V(16)}
