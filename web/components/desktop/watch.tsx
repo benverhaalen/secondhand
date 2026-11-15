@@ -52,7 +52,7 @@ export function WatchForm({ initial = '', want, close }: { initial?: string; wan
 }
 
 export function Watch({ want, close }: { want: Want; close: () => void }) {
-  const resource = useResource('want:' + want.id, async signal => { const [detail, matches] = await Promise.all([api<WatchDetails>(`/v1/wants/${encodeURIComponent(want.id)}`, undefined, 'GET', signal), collection<Offer>(`/v1/wants/${encodeURIComponent(want.id)}/matches`, signal)]); return { detail, matches }; });
+  const resource = useResource('want:' + want.id, async signal => { const [detail, matches] = await Promise.all([api<WatchDetails>(`/v1/wants/${encodeURIComponent(want.id)}`, undefined, 'GET', signal), collection<Offer>(`/v1/wants/${encodeURIComponent(want.id)}/matches`, signal)]); return { detail, matches: matches.map(match => ({ ...match, title: match.title || detail.text })) }; });
   const [error, setError] = useState<string>(), [busy, setBusy] = useState(false), [editing, setEditing] = useState(false);
   async function change() {
     if (!resource.data) return;

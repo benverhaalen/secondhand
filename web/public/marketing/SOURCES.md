@@ -15,3 +15,5 @@ The phone images show the current app routes at `22f37f6dc29e275a940e4a72357143f
 | ship.png | Sale details and marketplace handoff for a sample Kindle |
 
 The Carhartt jacket and Kindle are nonpersonal demo items. The jacket image also appears on What’s Next. See the [demo image provenance](../../../assets/demo-items/README.md). The prices, transactions, comparable sales and shipping values are sample data. The Kindle sale is separate from the jacket example. The historical pricing chart comes from `scripts/bench/out/backtest-stockx.json`.
+
+GitHub header mark: [official GitHub brand assets](https://github.com/primer/octicons/blob/main/icons/mark-github-16.svg), used only to link to the project repository.

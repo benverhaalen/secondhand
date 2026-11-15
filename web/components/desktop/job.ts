@@ -1,10 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api, message, subscribeStream } from '../../lib/desktop-api';
 
 export type WorkspaceJob<T = unknown> = { id: string; state: string; item_id?: string; result?: T; error?: { message?: string }; reason?: string };
 export const jobFinished = (state?: string) => !!state && ['done', 'failed', 'cancelled'].includes(state);
-export function useJob<T>(id?: string) {
+export function useJob<T>(id?: string, receive?: (event: string, value: Record<string, unknown>) => void) {
+  const receiver = useRef(receive); receiver.current = receive;
   const [job, setJob] = useState<WorkspaceJob<T>>(), [error, setError] = useState<string>(), [revision, setRevision] = useState(0);
   useEffect(() => {
     setJob(undefined); setError(undefined);
@@ -23,7 +24,7 @@ export function useJob<T>(id?: string) {
     }
     void read().then(() => {
       if (controller.signal.aborted || terminal) return;
-      stop = subscribeStream(`/v1/jobs/${encodeURIComponent(id)}/events`, () => void read());
+      stop = subscribeStream(`/v1/jobs/${encodeURIComponent(id)}/events`, (event, value) => { receiver.current?.(event, value); if (event !== 'assist.text' && event !== 'assist.tool') void read(); });
       timer = setInterval(() => void read(), 15000);
     });
     return () => { controller.abort(); stop(); clearInterval(timer); };
