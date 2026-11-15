@@ -44,3 +44,12 @@ test('a purchase is not a sale in the ledger', () => {
   assert.equal(b.apply(read('paid', { kind: 'purchase', external_order_id: 'P-1' })).new_sale, false);
   assert.equal(ledger(b.all()).length, 0);
 });
+
+
+test('unknown fees never show the full sale price as kept', () => {
+  const b = orderBook();
+  b.apply(read('paid', { fees_cents: null }));
+  const [row] = ledger(b.all());
+  assert.equal(row.fees_cents, null);
+  assert.equal(row.kept_cents, null);
+});

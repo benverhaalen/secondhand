@@ -180,10 +180,7 @@
               "amount_cents": 9620,
               "currency": "USD"
             },
-            "fees_cents": {
-              "amount_cents": 1278,
-              "currency": "USD"
-            },
+            "fees_cents": null,
             "shipping_cents": {
               "amount_cents": 840,
               "currency": "USD"
