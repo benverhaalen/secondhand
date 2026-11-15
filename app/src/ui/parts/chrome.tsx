@@ -134,7 +134,7 @@ export function TabBar({ current, badges = {}, onTab }: {
     <OnGround ground="card">
       <View style={{ backgroundColor: c.page, paddingHorizontal: space.s4, paddingTop: space.s2, paddingBottom: below }}>
         <View {...mark('tab-bar')} accessibilityRole="tablist"
-          style={{ height: size.tabH, borderRadius: size.tabH / 2, backgroundColor: c.surface, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.s1 }}>
+          style={{ height: size.tabH, borderRadius: size.tabH / 2, borderCurve: 'continuous', backgroundColor: c.surface, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.s1 }}>
           {TABS.map(t => (t.key === 'new' ? <NewSlot key="new" onPress={() => onTab('new')} /> : (
             <TabSlot key={t.key} word={t.word} icon={t.icon} on={t.key === current} dot={!!badges[t.key]} onPress={() => onTab(t.key)} id={`tab-${t.key === 'index' ? 'today' : t.key}`} />
           )))}
@@ -144,10 +144,11 @@ export function TabBar({ current, badges = {}, onTab }: {
   );
 }
 
-// A tab: its icon over its word, centered in the capsule's height. The tab you are on sits in a lighter capsule of its own,
-// as iOS 26 marks it, with the icon filled and the word in ink (Ben, 03:22: "a less subtle way to show what section you are on").
-const SLOT_H = size.tabH - space.s2;
-const slot: ViewStyle = { height: SLOT_H, alignItems: 'center', justifyContent: 'center', gap: 2, borderRadius: SLOT_H / 2 };
+// A tab: its icon over its word, centered in the capsule's height, the slot the capsule's full height (B31). The tab you are
+// on is its filled icon on a 56 by 32 pill of --tab-on, behind the icon only, with its word in ink at the same weight
+// (L29; Ben, 03:22: "a less subtle way to show what section you are on"). The pill is drawn behind the icon in a box every
+// state shares, so nothing moves when the tab changes (U7).
+const PILL = { w: 56, h: 32 };
 
 function TabSlot({ id, word, icon, on, dot, onPress }: { id: string; word: string; icon: IconName; on: boolean; dot: boolean; onPress: () => void }) {
   const c = useColors();
@@ -159,10 +160,12 @@ function TabSlot({ id, word, icon, on, dot, onPress }: { id: string; word: strin
           {...({ 'aria-current': on ? 'page' : undefined } as object)}
           accessibilityRole="tab"
           accessibilityState={{ selected: on }}
-          style={[slot, { backgroundColor: on ? c.tabOn : 'transparent' }]}>
-          <View>
-            <Icon name={icon} filled={on} tone={on ? 'ink' : 'ink-2'} />
-            {dot ? <View style={{ position: 'absolute', top: -2, right: -4, width: 8, height: 8, borderRadius: radius.pill, backgroundColor: c.marigold }} /> : null}
+          style={{ height: size.tabH, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: PILL.w, height: PILL.h, borderRadius: PILL.h / 2, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center', backgroundColor: on ? c.tabOn : 'transparent' }}>
+            <View>
+              <Icon name={icon} filled={on} tone={on ? 'ink' : 'ink-2'} />
+              {dot ? <View style={{ position: 'absolute', top: -2, right: -4, width: 8, height: 8, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.marigold }} /> : null}
+            </View>
           </View>
           <Txt role="caption" tone={on ? 'ink' : 'ink-2'}>{word}</Txt>
         </View>
@@ -186,7 +189,7 @@ function NewCircle({ pressed }: { pressed: boolean }) {
   // aligned"). 48 across: the black that marks the one act that starts everything.
   const d = 48;
   return (
-    <View {...mark('new-button')} style={{ width: d, height: d, borderRadius: radius.pill, backgroundColor: pressed ? c.inkPress : c.ink, alignItems: 'center', justifyContent: 'center' }}>
+    <View {...mark('new-button')} style={{ width: d, height: d, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: pressed ? c.inkPress : c.ink, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name="add-01" tone="page" />
     </View>
   );

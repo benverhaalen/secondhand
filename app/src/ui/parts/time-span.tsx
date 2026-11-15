@@ -61,7 +61,7 @@ export function TimeSpan({ id, day, words, value, onChange, from = 16, to = 42, 
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={e => set(which, value[which] + (e.nativeEvent.actionName === 'increment' ? 1 : -1))}
       hitSlop={{ top: (size.controlMin - KNOB) / 2, bottom: (size.controlMin - KNOB) / 2, left: space.s1, right: space.s1 }}
-      style={{ position: 'absolute', top: space.s1, left: at, width: KNOB, height: KNOB, borderRadius: radius.pill, backgroundColor: c.surface, cursor: 'grab', ...FLAT } as object} />
+      style={{ position: 'absolute', top: space.s1, left: at, width: KNOB, height: KNOB, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.surface, cursor: 'grab', ...FLAT } as object} />
   );
 
   return (
@@ -71,8 +71,8 @@ export function TimeSpan({ id, day, words, value, onChange, from = 16, to = 42, 
         <Txt role="body" tabular lines={1}>{words}</Txt>
       </View>
       <View {...mark('time-span')} onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width)}
-        style={{ height: size.pillCardH, borderRadius: radius.pill, backgroundColor: c.gray, ...FLAT }}>
-        {w ? <View style={{ position: 'absolute', top: 0, bottom: 0, left, width: right - left, borderRadius: radius.pill, backgroundColor: c.ink }} /> : null}
+        style={{ height: size.pillCardH, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray, ...FLAT }}>
+        {w ? <View style={{ position: 'absolute', top: 0, bottom: 0, left, width: right - left, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink }} /> : null}
         {w ? knob('start', left + space.s1) : null}
         {w ? knob('end', right - KNOB - space.s1) : null}
       </View>

@@ -35,8 +35,8 @@ export function Switch({ id, label, on, onChange, disabled = false }: {
     <Press id={id} label={label} role="switch" checked={on} disabled={disabled} onPress={() => onChange?.(!on)} hit={slop(W, H)}>
       <View
         {...mark('switch', { on: on ? 'true' : 'false' })}
-        style={{ width: W, height: H, borderRadius: radius.pill, padding: IN, backgroundColor: on && !disabled ? c.ink : c.gray, opacity: disabled ? 0.5 : 1 }}>
-        <Animated.View style={[{ width: KNOB, height: KNOB, borderRadius: radius.pill, backgroundColor: on && !disabled ? c.page : c.ink2 }, knob]} />
+        style={{ width: W, height: H, borderRadius: radius.pill, borderCurve: 'continuous', padding: IN, backgroundColor: on && !disabled ? c.ink : c.gray, opacity: disabled ? 0.5 : 1 }}>
+        <Animated.View style={[{ width: KNOB, height: KNOB, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: on && !disabled ? c.page : c.ink2 }, knob]} />
       </View>
     </Press>
   );

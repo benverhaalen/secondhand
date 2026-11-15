@@ -149,15 +149,15 @@ test('recall: an exact match is never cleared by a confirmation; the buy side dr
 });
 
 test('counterfeit: missing proof asks, unsupported numbers and site floors hide, cheap stock from a young seller asks', () => {
-  const base = { proofPhoto: true, site: 'other' as const, shoes: false, stockPhoto: false, priceUsd: 300, q50: 310 };
+  const base = { proofPhoto: true, site: 'other' as const, shoes: false, stockPhoto: false, price_cents: 30000, q50_cents: 31000 };
   assert.equal(counterfeit({ ...base, brand: 'Gucci', proofPhoto: false }, pa).action, 'ask');
-  const cheap = counterfeit({ ...base, brand: 'Gucci', priceUsd: 120 }, pa);
+  const cheap = counterfeit({ ...base, brand: 'Gucci', price_cents: 12000 }, pa);
   assert.equal(cheap.action, 'warn');
   assert.equal(cheap.price, null);
   assert.match(cheap.reasons.join(' '), /below comparable/);
-  assert.equal(counterfeit({ ...base, site: 'poshmark', priceUsd: 500, brand: 'Coach' }, pa).action, 'none');
-  assert.equal(counterfeit({ ...base, site: 'ebay', shoes: true, priceUsd: 75 }, pa).action, 'none');
-  assert.equal(counterfeit({ ...base, brand: 'Gucci', priceUsd: 120, stockPhoto: true, buy: true, sellerAgeDays: 10 }, pa).action, 'ask');
-  assert.equal(counterfeit({ ...base, brand: 'Gucci', priceUsd: 120, stockPhoto: true, buy: true, sellerAgeDays: 400 }, pa).action, 'warn');
+  assert.equal(counterfeit({ ...base, site: 'poshmark', price_cents: 50000, brand: 'Coach' }, pa).action, 'none');
+  assert.equal(counterfeit({ ...base, site: 'ebay', shoes: true, price_cents: 7500 }, pa).action, 'none');
+  assert.equal(counterfeit({ ...base, brand: 'Gucci', price_cents: 12000, stockPhoto: true, buy: true, sellerAgeDays: 10 }, pa).action, 'ask');
+  assert.equal(counterfeit({ ...base, brand: 'Gucci', price_cents: 12000, stockPhoto: true, buy: true, sellerAgeDays: 400 }, pa).action, 'warn');
   assert.equal(counterfeit(base, pa).action, 'none');
 });

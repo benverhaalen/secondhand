@@ -29,8 +29,12 @@ export function Icon({ name, size = 24, tone = 'ink', filled = false, label }: {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" accessibilityLabel={label} accessible={!!label}>
       {(ICONS[name] as readonly (readonly [string, Readonly<Record<string, string>>])[]).map(([tag, a], i) => {
-        const fill = filled && i === 0 ? ink : a.fill ? ink : 'none';
-        const line = filled && i > 0 ? c.page : ink;
+        // Filled: every closed shape fills with the ink and every line stays the ink, so an icon whose outline is not its
+        // first path (search's handle, the person's shoulders) keeps its whole shape (the phone audit, 2026-11-15: Buy
+        // and You lost theirs when later lines were painted in the page color).
+        const closed = tag === 'circle' || /z\s*$/i.test(a.d ?? '');
+        const fill = (filled && closed) || a.fill ? ink : 'none';
+        const line = ink;
         const common = { stroke: line, strokeWidth: stroke, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill };
         return tag === 'circle'
           ? <Circle key={i} cx={a.cx} cy={a.cy} r={a.r} {...common} />

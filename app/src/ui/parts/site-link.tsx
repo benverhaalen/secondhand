@@ -27,8 +27,8 @@ export function SiteLink({ id, site, onPress }: { id: string; site: Site; onPres
       {({ pressed }) => (
         <View {...mark('site-link', { fit: 'content' })}
           style={{ height: size.pillCardH, flexDirection: 'row', alignItems: 'center', gap: space.s2, paddingLeft: space.s2, paddingRight: size.pillCardPad,
-            borderRadius: radius.pill, backgroundColor: pressed ? c.grayPress : c.gray }}>
-          <View style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, overflow: 'hidden', backgroundColor: c.surface }}>
+            borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: pressed ? c.grayPress : c.gray }}>
+          <View style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: c.surface }}>
             <Image source={SITES[site].logo} alt={SITES[site].name} accessibilityLabel={SITES[site].name} style={{ width: '100%', height: '100%' }} contentFit="cover" />
           </View>
           <Txt role="body" lines={1}>Open on the site</Txt>

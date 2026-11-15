@@ -16,7 +16,7 @@ export function Count({ n }: { n: number }) {
     <View
       {...mark('count', { fit: 'content' })}
       accessibilityLabel={`${n} new`}
-      style={{ minWidth: size.badgeH + RING * 2, height: size.badgeH + RING * 2, paddingHorizontal: space.s1, borderRadius: radius.pill, backgroundColor: c.ink, alignItems: 'center', justifyContent: 'center', borderWidth: RING, borderColor: c.page, ...FLAT }}>
+      style={{ minWidth: size.badgeH + RING * 2, height: size.badgeH + RING * 2, paddingHorizontal: space.s1, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink, alignItems: 'center', justifyContent: 'center', borderWidth: RING, borderColor: c.page, ...FLAT }}>
       <Txt role="caption" tone="on-ink" tabular>{n > 99 ? '99+' : String(n)}</Txt>
     </View>
   );
@@ -30,8 +30,8 @@ export function SiteBadge({ site }: { site: Site }) {
     <View
       {...mark('site-badge')}
       accessibilityLabel={SITES[site].name}
-      style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, backgroundColor: ground === 'card' ? c.surface : c.page }}>
-      <View style={{ position: 'absolute', top: 2, left: 2, right: 2, bottom: 2, borderRadius: radius.pill, overflow: 'hidden', backgroundColor: c.surface }}>
+      style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: ground === 'card' ? c.surface : c.page }}>
+      <View style={{ position: 'absolute', top: 2, left: 2, right: 2, bottom: 2, borderRadius: radius.pill, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: c.surface }}>
         <Image source={SITES[site].logo} alt={SITES[site].name} accessibilityLabel={SITES[site].name} style={{ width: '100%', height: '100%' }} contentFit="cover" />
       </View>
     </View>

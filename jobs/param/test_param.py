@@ -348,3 +348,56 @@ def test_rollback_keeps_exact_evidence_with_explicit_clock_override():
     kept = s.rollback('assist_span_open', SCOPE, '2026-01-31', keep_evidence=True)
     assert kept['value_or_hyperparams'] == {'alpha': 19, 'beta': 2}
     assert kept['n_eff'] == 21
+
+
+@pytest.mark.parametrize('keep_evidence', [False, True])
+def test_rollback_of_fit_v5_restores_replaced_event_v4_exactly(keep_evidence):
+    s = MemoryStore()
+    name = 'assist_span_open'
+    s.declare({'name': name, 'family': 'beta', 'prior': {'alpha': 8, 'beta': 2}})
+    s.propose(fit(name=name, family='beta', prior={'alpha': 8, 'beta': 2}, value_or_hyperparams={'alpha': 8, 'beta': 2}, n_eff=40), 0)
+    s.promote(name, SCOPE, 1, 0, '2026-01-01')
+    s.observe(name, SCOPE, {'success': 1, 'weight': 2}, '2026-01-01')
+    s.observe(name, SCOPE, {'success': 0, 'weight': 3}, '2026-01-01')
+    s.observe(name, SCOPE, {'success': 0, 'weight': 0}, '2026-01-31')
+    previous = s.history(name, SCOPE)[3]
+    assert previous['value_or_hyperparams'] == {'alpha': 9, 'beta': 3.5}
+    assert previous['n_eff'] == 22.5
+    s.propose(fit(name=name, family='beta', value_or_hyperparams={'alpha': 18, 'beta': 2}, held_out_score=0.9), 4)
+    assert s.promote(name, SCOPE, 5, 0, '2026-01-31')[0] is True
+    assert s.champion(name, SCOPE)['previous_version'] == 4
+    assert s.rollback(name, SCOPE, '2026-03-02', keep_evidence) == {**previous, 'promoted_at': '2026-03-02'}
+    assert s.read(name, SCOPE) == {'value': previous['value_or_hyperparams'], 'n_eff': previous['n_eff'], 'version': 4, 'from': 'row', 'scope': SCOPE}
+    assert len(s.history(name, SCOPE)) == 5
+    assert [r['version'] for r in s.history(name, SCOPE) if r['status'] == 'champion'] == [4]
+
+
+@pytest.mark.parametrize('keep_evidence', [False, True])
+def test_rollback_of_first_fit_restores_event_only_model_history(keep_evidence):
+    s = MemoryStore()
+    name = 'P_accept'
+    s.declare({'name': name, 'family': 'model_ref', 'prior': {'term': 0}})
+    s.apply(name, SCOPE, lambda v, keep: {'value': {'term': 4}, 'weight': 8}, '2026-01-01')
+    previous = s.history(name, SCOPE)[0]
+    s.propose(fit(name=name, family='model_ref', prior={'term': 0}, value_or_hyperparams={'term': 9}), 1)
+    assert s.promote(name, SCOPE, 2, 0, '2026-01-31')[0] is True
+    assert s.champion(name, SCOPE)['previous_version'] == 1
+    assert s.rollback(name, SCOPE, '2026-01-31', keep_evidence) == {**previous, 'promoted_at': '2026-01-31'}
+    assert s.read(name, SCOPE) == {'value': {'term': 4}, 'version': 1, 'n_eff': 8, 'from': 'row', 'scope': SCOPE}
+    assert len(s.history(name, SCOPE)) == 2
+    assert [r['version'] for r in s.history(name, SCOPE) if r['status'] == 'champion'] == [1]
+
+
+@pytest.mark.parametrize('keep_evidence', [False, True])
+def test_second_rollback_of_fit_v2_over_fit_v1_has_no_earlier_promoted_version(keep_evidence):
+    s = MemoryStore()
+    s.declare({'name': 'p_min_quick', 'family': 'scalar', 'prior': 0.6})
+    s.propose(fit(), 0)
+    s.promote('p_min_quick', SCOPE, 1, 0, '2026-01-01')
+    s.propose(fit(value_or_hyperparams=0.9, held_out_score=0.8), 1)
+    s.promote('p_min_quick', SCOPE, 2, 0, '2026-01-01')
+    assert s.rollback('p_min_quick', SCOPE, '2026-01-31', keep_evidence)['version'] == 1
+    with pytest.raises(ValueError, match='earlier promoted'):
+        s.rollback('p_min_quick', SCOPE, '2026-01-31', keep_evidence)
+    assert s.read('p_min_quick', SCOPE)['version'] == 1
+    assert len(s.history('p_min_quick', SCOPE)) == 2

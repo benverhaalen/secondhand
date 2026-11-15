@@ -37,19 +37,46 @@ def test_plan_preserves_requested_table_order():
     )
 
 
-def test_basis_level_is_added_even_when_data_is_already_migrated_without_backfill_or_check():
+def test_basis_level_is_added_even_when_data_is_already_migrated():
     statements = plan({'guarded_number': 'NO'}, ['guarded_number'], basis_level_exists=False)
-    assert len(statements) == 1
+    assert len(statements) == 2
     assert statements[0].startswith('ALTER TABLE secondhand.core.guarded_number ADD COLUMNS (basis_level STRING COMMENT ')
     assert 'NOT NULL' not in statements[0] and 'CHECK' not in statements[0]
-    assert plan({'guarded_number': 'NO'}, ['guarded_number'], basis_level_exists=True) == []
+    assert statements[1].startswith('UPDATE secondhand.core.guarded_number SET basis_level')
+    assert plan({'guarded_number': 'NO'}, ['guarded_number'], basis_level_exists=True) == [
+        "UPDATE secondhand.core.guarded_number SET basis_level = CASE WHEN basis_count > 0 THEN 'product' ELSE 'prior' END WHERE basis_level IS NULL AND metric LIKE 'valuation.%'"
+    ]
+
+
+def test_basis_level_missing_plan_adds_column_then_backfills():
+    statements = plan({'guarded_number': 'NO'}, ['guarded_number'], basis_level_exists=False)
+    add = next(i for i, statement in enumerate(statements) if 'ADD COLUMNS (basis_level STRING' in statement)
+    backfill = next(i for i, statement in enumerate(statements) if statement.startswith('UPDATE secondhand.core.guarded_number SET basis_level'))
+    assert add < backfill
+
+
+def test_basis_level_present_plan_still_backfills_exactly_once_without_adding_column():
+    statements = plan({'guarded_number': 'NO'}, ['guarded_number'], basis_level_exists=True)
+    assert sum(statement.startswith('UPDATE secondhand.core.guarded_number SET basis_level') for statement in statements) == 1
+    assert not any('ADD COLUMNS (basis_level STRING' in statement for statement in statements)
+
+
+def test_basis_level_backfill_where_protects_existing_and_nonvaluation_rows():
+    statements = plan({'guarded_number': 'NO'}, ['guarded_number'], basis_level_exists=True)
+    backfill = next(statement for statement in statements if statement.startswith('UPDATE secondhand.core.guarded_number SET basis_level'))
+    assert "WHERE basis_level IS NULL AND metric LIKE 'valuation.%'" in backfill
+
+
+def test_basis_level_backfill_is_absent_without_guarded_number():
+    statements = plan({}, ['evidence'], basis_level_exists=False)
+    assert not any(statement.startswith('UPDATE secondhand.core.guarded_number SET basis_level') for statement in statements)
 
 
 def test_basis_level_and_data_migrate_together_and_do_not_touch_other_tables():
     statements = plan({}, ['guarded_number'], basis_level_exists=False)
-    assert len(statements) == 4
-    assert 'basis_level STRING' in statements[-1]
-    assert not any('UPDATE' in s and 'basis_level' in s for s in statements), 'legacy rows must stay nullable'
+    assert len(statements) == 5
+    assert 'basis_level STRING' in statements[-2]
+    assert statements[-1].startswith('UPDATE secondhand.core.guarded_number SET basis_level')
     assert len(plan({}, ['evidence'], basis_level_exists=False)) == 3
 
 

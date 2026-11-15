@@ -5,12 +5,17 @@ import { createAuth, memoryStore } from '../auth.ts';
 import { deps, route } from './http.ts';
 import { example } from './examples.ts';
 import { makeAuthHandlers } from './auth.ts';
+import { createLog, memorySink, observeLogs } from '../../../../log/index.js';
+import { createHash } from 'node:crypto';
 
 const keys = (o: unknown): unknown => Array.isArray(o) ? (typeof o[0] === 'object' ? keys(o[0]) : 'array') : o && typeof o === 'object' ? Object.fromEntries(Object.keys(o).sort().map((k) => [k, keys((o as Record<string, unknown>)[k])])) : typeof o;
 const shape = (name: string) => keys((example(name) as { response: unknown }).response);
 
 function world() {
   let t = Date.parse('2026-11-15T03:00:00Z'); const sent: string[] = [];
+  let peer = '192.0.2.1';
+  deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
+  deps.connectingAddress = () => peer;
   const store = memoryStore();
   const auth = createAuth({
     store, now: () => t,
@@ -28,7 +33,7 @@ function world() {
   };
   const post = (r: (q: Request) => Promise<Response>, path: string, body: unknown, bearer?: string, extra: Record<string, string> = {}) =>
     r(new Request(`http://x${path}`, { method: 'POST', body: JSON.stringify(body), headers: { ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}), ...extra } }));
-  return { routes, post, sent };
+  return { routes, post, sent, advance: (ms: number) => { t += ms; }, peer: (value: string) => { peer = value; } };
 }
 const apple = (w: ReturnType<typeof world>, sub: string, extra = {}) => w.post(w.routes.apple, '/v1/auth/apple', { identity_token: `apple:${sub}`, nonce: 'n', ...extra });
 
@@ -95,4 +100,58 @@ test('the same Idempotency-Key replays the sign-in response', async () => {
   const go = () => w.post(w.routes.apple, '/v1/auth/apple', { identity_token: 'apple:a1', nonce: 'n' }, undefined, k);
   const a = await go(), b = await go();
   assert.equal(b.headers.get('Idempotent-Replayed'), 'true'); assert.equal((await a.json()).access_token, (await b.json()).access_token);
+});
+
+test('the 6th code for one address in an hour is 429 despite changing IP and address case', async () => {
+  const w = world();
+  for (let i = 0; i < 6; i++) {
+    w.peer(`192.0.2.${i}`);
+    const response = await w.post(w.routes.start, '/v1/auth/email/start', { email: i % 2 ? 'SAM@example.com' : 'sam@example.com' });
+    assert.equal(response.status, i < 5 ? 202 : 429, 'sixth code must exhaust the per-address hour');
+    if (i === 5) {
+      const body = await response.json();
+      assert.deepEqual(Object.keys(body).sort(), ['code', 'failed_step', 'message', 'retry']);
+      assert.equal(body.code, 'rate_limited'); assert.ok(body.retry.after_s > 0);
+    }
+    w.advance(30000);
+  }
+  assert.equal(w.sent.length, 5);
+  w.advance(3600000);
+  assert.equal((await w.post(w.routes.start, '/v1/auth/email/start', { email: 'sam@example.com' })).status, 202);
+});
+
+test('the 21st code from one connecting IP is 429 despite changing address, headers and cookies', async () => {
+  const w = world();
+  for (let i = 0; i < 21; i++) {
+    const response = await w.post(w.routes.start, '/v1/auth/email/start', { email: `test${i}@example.com` }, undefined, {
+      'X-Forwarded-For': `198.51.100.${i}`, Cookie: `visitor=${i}`,
+    });
+    assert.equal(response.status, i < 20 ? 202 : 429, 'connecting IP must cap code sends');
+  }
+  assert.equal(w.sent.length, 20);
+  w.peer('192.0.2.2');
+  assert.equal((await w.post(w.routes.start, '/v1/auth/email/start', { email: 'other@example.com' })).status, 202);
+});
+
+test('no @ in any log line of an email sign-in; the address is logged as a lowercase sha256 prefix', async () => {
+  const lines: string[] = [];
+  const stop = observeLogs(line => { lines.push(line); });
+  try {
+    const w = world();
+    await w.post(w.routes.start, '/v1/auth/email/start', { email: 'SAM@example.com' });
+    const response = await w.post(w.routes.verify, '/v1/auth/email/verify', { email: 'SAM@example.com', code: w.sent[0] });
+    assert.equal(response.status, 200);
+    assert.ok(lines.length > 0);
+    for (const line of lines) assert.ok(!line.includes('@'), 'raw email address reached a log line');
+    const prefix = createHash('sha256').update('sam@example.com').digest('hex').slice(0, 12);
+    assert.ok(lines.some(line => JSON.parse(line).email_hash === prefix), 'sign-in log must carry the lowercase sha256 prefix');
+  } finally { stop(); }
+});
+
+test('with no client address bound, codes are limited per address only, never in one shared bucket', async () => {
+  const w = world();
+  deps.connectingAddress = () => null;
+  for (let i = 0; i < 25; i++) assert.equal((await w.post(w.routes.start, '/v1/auth/email/start', { email: `shared${i}@example.com` })).status, 202, 'visitors with no bound address must not share one IP bucket');
+  for (let i = 0; i < 5; i++) await w.post(w.routes.start, '/v1/auth/email/start', { email: 'same@example.com' });
+  assert.equal((await w.post(w.routes.start, '/v1/auth/email/start', { email: 'same@example.com' })).status, 429);
 });
