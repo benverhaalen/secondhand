@@ -328,7 +328,7 @@ export function createAuth(o: AuthOpts) {
         try { await sendCode(p.email, code); }
         catch (error) {
           const failure = new Error('email code delivery failed');
-          failure.name = error instanceof Error ? error.name : typeof error;
+          failure.name = error instanceof Error && /^[A-Za-z]{1,40}$/.test(error.name) ? error.name : 'Error'; // a vendor's name could carry text too
           throw failure;
         }
       });
