@@ -42,8 +42,10 @@ The failure this prevents: code that works today and that the next agent can't f
 
 **7. End with "usable" or "not usable yet" and the unfinished list**, the same words the [UI constitution](../../../product/ui-constitution.md) asks for. Usable means your human can try it now, and you say how. Say "ready to ship" only when the proving command, the tests and the whole user path pass on `main` and the unfinished list is empty. Unfinished parts carry a visible mark in development builds.
 
+**8. Measuring or improving one number** (a benchmark, a latency, a pass rate, a cost): follow [references/playbooks/hill-climb.md](references/playbooks/hill-climb.md) and [references/principles/explain-the-number.md](references/principles/explain-the-number.md). Its `step`, `overlap` and helper commands exist only in Ben's harness. Here the frozen command is a script in `scripts/bench/`, timing goes through `log.timed`, `node log/climb.mjs` ranks it, and each number lands in [product/numbers.md](../../../product/numbers.md) with its mark.
+
 When Ben or Nate corrects code, fix it, then turn the correction into a check if a script can find every instance (the row in [AGENTS.md](../../../AGENTS.md)).
 
 Retire a line here when agents follow it without being told, or when it becomes a check.
 
-Sources. Ben's harness `build` and `clean` skills, which adapt pstack by Lauren Tan (MIT), the deslop skill in cursor-team-kit by Cursor (MIT) and Matt Pocock's skills (MIT). Restated for this repo, not copied.
+Sources. Ben's harness `build` and `clean` skills, which adapt pstack by Lauren Tan (MIT), the deslop skill in cursor-team-kit by Cursor (MIT) and Matt Pocock's skills (MIT). Restated for this repo. The playbooks and principles in `references/` are the harness's copies of pstack, unchanged, with the licences in `references/NOTICE.md` and every change from pstack in `references/CHANGES.md`.
