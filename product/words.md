@@ -2662,3 +2662,27 @@ Nate, the capture lead's session, 2026-11-15, after the trace showed an app capt
 > Yes, wire Lens
 
 Used in: `app/src/edge/identify/compose.ts`, [the capture design](../spec/engines/capture.md) (the paid visual rung).
+
+## 2026-11-15 nate redeploy, three prompts a day, the site to Vercel, an MCP for the search engine, Lens and LiDAR
+Nate, the orchestrator's session, 2026-11-15, between about 15:53 and 16:20 UTC by the machine clock, separate messages.
+> Also send out a seperate subagent with mcp skills to build a complete mcp for any agent to use our intelligent aggregated secondhand marketplace search engine
+
+> Send the packet to ben, as well as our state
+
+> Go
+
+> Lens for the demo and showing how much more data we grab. we need everything perfected, we havent even tested lidar
+
+> try again keeps choices yes if they are trying again in the same create listing or appraisal section
+
+> what else needs fixing before testflight build, have a sonnet sent out to handle it
+
+> give me the commands to drop in terminal and ill click to add like you do
+
+> Redeploy now
+
+> well wait, cap spend to limit to 3 prompts per day per user
+
+> Push the production build of the site to vercel as well
+
+Used in: [mcp/](../mcp/README.md); packet [100](../.agents/team/packets/team/100-state-at-16-00-for-ben.md); the hosted server redeployed (Fly release v5); the chat's cap of three prompts a person a day (in the server audit fixes); the site deployed to Vercel production from main 5691203a.
