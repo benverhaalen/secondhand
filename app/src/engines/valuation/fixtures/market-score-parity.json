@@ -1,0 +1,966 @@
+{
+  "description": "42 handwritten events; narrow accurate additions separate coverage from within_20 and make each median-90d gap nonzero. Expected summary uses experiment.py independently; three arithmetic anchors are written out in parity tests.",
+  "events": [
+    {
+      "frozen": {
+        "q10": 8000,
+        "q50": 10000,
+        "q90": 12000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:0",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-0",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-01T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 10000,
+        "median_90d_cents": 11000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 9000,
+        "q50": 12000,
+        "q90": 13000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:1",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-1",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-02T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 12500,
+        "median_90d_cents": 10000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 7000,
+        "q50": 8000,
+        "q90": 10000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:2",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-2",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-03T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 8000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 10000,
+        "q50": 10000,
+        "q90": 10000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:3",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-3",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-04T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "median_90d_cents": 14000
+      }
+    },
+    {
+      "frozen": {
+        "q10": null,
+        "q50": null,
+        "q90": null,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:4",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-4",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-05T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 10000,
+        "median_90d_cents": 10000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 12000,
+        "q50": 15000,
+        "q90": 17000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:5",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-5",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-06T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 10000,
+        "median_90d_cents": 12000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 6000,
+        "q50": 7000,
+        "q90": 9000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:6",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-6",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-07T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 13000,
+        "median_90d_cents": 9000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 9000,
+        "q50": 11000,
+        "q90": 13000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:7",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-7",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-08T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {}
+    },
+    {
+      "frozen": {
+        "q10": 9500,
+        "q50": 10000,
+        "q90": 10500,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:8",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-8",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-09T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 9000,
+        "median_90d_cents": 10000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 10000,
+        "q50": 13000,
+        "q90": 14000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:9",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-9",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-10T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 12000,
+        "median_90d_cents": 12500
+      }
+    },
+    {
+      "frozen": {
+        "q10": 8000,
+        "q50": 9000,
+        "q90": 11000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:10",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-10",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-11T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 10000,
+        "median_90d_cents": 10000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 8500,
+        "q50": 10500,
+        "q90": 11500,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:11",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-11",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-12T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 14000
+      }
+    },
+    {
+      "frozen": {
+        "q10": null,
+        "q50": null,
+        "q90": null,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:12",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-12",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-13T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "median_90d_cents": 10000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 10000,
+        "q50": 10000,
+        "q90": 11000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:13",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-13",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-14T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 7000,
+        "median_90d_cents": 10000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 11000,
+        "q50": 12000,
+        "q90": 14000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:14",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-14",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-15T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 10000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 5000,
+        "q50": 10000,
+        "q90": 15000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:15",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-15",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-16T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 10000,
+        "median_90d_cents": 10000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 7500,
+        "q50": 9500,
+        "q90": 10500,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:16",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-16",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-17T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "median_90d_cents": 9000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 9000,
+        "q50": 10000,
+        "q90": 11000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:17",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-17",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-18T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 10000,
+        "median_90d_cents": 15000
+      }
+    },
+    {
+      "frozen": {
+        "q10": null,
+        "q50": null,
+        "q90": null,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:18",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-18",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-19T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 9000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 8000,
+        "q50": 10000,
+        "q90": 12000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:19",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-19",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-20T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "last_sale_cents": 10000,
+        "median_90d_cents": 10000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 18000,
+        "q50": 20000,
+        "q90": 22000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:0",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-0",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-01T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 20000,
+        "median_90d_cents": 21000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 20000,
+        "q50": 24000,
+        "q90": 26000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:1",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-1",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-02T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 25000,
+        "median_90d_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 14000,
+        "q50": 16000,
+        "q90": 20000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:2",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-2",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-03T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 16000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 20000,
+        "q50": 20000,
+        "q90": 20000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:3",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-3",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-04T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "median_90d_cents": 28000
+      }
+    },
+    {
+      "frozen": {
+        "q10": null,
+        "q50": null,
+        "q90": null,
+        "basis_level": "variant",
+        "citation": "fixture:depop:4",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-4",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-05T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 20000,
+        "median_90d_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 24000,
+        "q50": 30000,
+        "q90": 34000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:5",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-5",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-06T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 20000,
+        "median_90d_cents": 24000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 12000,
+        "q50": 14000,
+        "q90": 18000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:6",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-6",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-07T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 26000,
+        "median_90d_cents": 18000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 18000,
+        "q50": 22000,
+        "q90": 26000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:7",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-7",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-08T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {}
+    },
+    {
+      "frozen": {
+        "q10": 19000,
+        "q50": 20000,
+        "q90": 21000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:8",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-8",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-09T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 18000,
+        "median_90d_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 20000,
+        "q50": 26000,
+        "q90": 28000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:9",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-9",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-10T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 24000,
+        "median_90d_cents": 25000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 16000,
+        "q50": 18000,
+        "q90": 22000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:10",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-10",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-11T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 20000,
+        "median_90d_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 17000,
+        "q50": 21000,
+        "q90": 23000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:11",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-11",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-12T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 28000
+      }
+    },
+    {
+      "frozen": {
+        "q10": null,
+        "q50": null,
+        "q90": null,
+        "basis_level": "variant",
+        "citation": "fixture:depop:12",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-12",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-13T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "median_90d_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 20000,
+        "q50": 20000,
+        "q90": 22000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:13",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-13",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-14T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 14000,
+        "median_90d_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 22000,
+        "q50": 24000,
+        "q90": 28000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:14",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-14",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-15T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 10000,
+        "q50": 20000,
+        "q90": 30000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:15",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-15",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-16T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 20000,
+        "median_90d_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 15000,
+        "q50": 19000,
+        "q90": 21000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:16",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-16",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-17T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "median_90d_cents": 18000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 18000,
+        "q50": 20000,
+        "q90": 22000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:17",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-17",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-18T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 20000,
+        "median_90d_cents": 30000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 18000,
+        "q50": 23000,
+        "q90": 24000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:18",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-18",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-19T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 18000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 16000,
+        "q50": 20000,
+        "q90": 24000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:19",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-19",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-20T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "last_sale_cents": 20000,
+        "median_90d_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 11000,
+        "q50": 11000,
+        "q90": 11000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:narrow",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-narrow",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-01T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "median_90d_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 22000,
+        "q50": 22000,
+        "q90": 22000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:narrow",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-narrow",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-01T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "median_90d_cents": 40000
+      }
+    }
+  ],
+  "expected": {
+    "overall": {
+      "n": 42,
+      "priced": 37,
+      "hit_rate": 0.881,
+      "within_20": 0.8378,
+      "median_pct_off": 0.1,
+      "coverage": 0.7838,
+      "coverage_wilson_95": [
+        0.628,
+        0.8861
+      ],
+      "median_range_width": 0.3077,
+      "within_20_wilson_95": [
+        0.6886,
+        0.9235
+      ],
+      "vs_last_sale": {
+        "n": 29,
+        "diff": 0.069,
+        "interval_95": [
+          -0.147,
+          0.285
+        ]
+      },
+      "vs_median_90d": {
+        "n": 28,
+        "diff": 0.0714,
+        "interval_95": [
+          -0.1524,
+          0.2952
+        ]
+      }
+    },
+    "{\"site\":\"ebay\",\"kind\":\"shoes\"}": {
+      "n": 21,
+      "priced": 18,
+      "hit_rate": 0.8571,
+      "within_20": 0.8333,
+      "median_pct_off": 0.075,
+      "coverage": 0.7778,
+      "coverage_wilson_95": [
+        0.5478,
+        0.91
+      ],
+      "median_range_width": 0.3246,
+      "within_20_wilson_95": [
+        0.6078,
+        0.9416
+      ],
+      "vs_last_sale": {
+        "n": 14,
+        "diff": 0.0714,
+        "interval_95": [
+          -0.2511,
+          0.394
+        ]
+      },
+      "vs_median_90d": {
+        "n": 14,
+        "diff": 0.0714,
+        "interval_95": [
+          -0.2511,
+          0.394
+        ]
+      }
+    },
+    "{\"site\":\"depop\",\"kind\":\"jacket\"}": {
+      "n": 21,
+      "priced": 19,
+      "hit_rate": 0.9048,
+      "within_20": 0.8421,
+      "median_pct_off": 0.1,
+      "coverage": 0.7895,
+      "coverage_wilson_95": [
+        0.5667,
+        0.9149
+      ],
+      "median_range_width": 0.2857,
+      "within_20_wilson_95": [
+        0.6243,
+        0.9448
+      ],
+      "vs_last_sale": {
+        "n": 15,
+        "diff": 0.0667,
+        "interval_95": [
+          -0.2337,
+          0.3671
+        ]
+      },
+      "vs_median_90d": {
+        "n": 14,
+        "diff": 0.0714,
+        "interval_95": [
+          -0.2511,
+          0.394
+        ]
+      }
+    }
+  }
+}

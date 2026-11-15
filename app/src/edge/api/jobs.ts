@@ -192,6 +192,14 @@ export type JobStore = ReturnType<typeof jobsOn>;
 export const memoryJobs = () => { const database = new DatabaseSync(':memory:'); return jobsOn(sqliteStore(database), database); };
 
 // The contract examples as live data: each example job and stream frame lands in the store, keeping its own ids.
+// The seeded contract jobs: boot recovery leaves them as the examples show them, never requeued into the pipeline.
+export function exampleJobIds(): Set<string> {
+  const ids = new Set<string>();
+  for (const e of EXAMPLES) if (e.endpoint === 'GET /v1/jobs/:id' && e.status === 200) ids.add((e.response as { id: string }).id);
+  for (const name of ['identify_then_valuate', 'visitor_search']) for (const f of STREAMS[name]) if (typeof f.data?.job_id === 'string') ids.add(f.data.job_id);
+  return ids;
+}
+
 export function seedExamples(s: JobStore) {
   if (!s.examples) return;
   for (const e of EXAMPLES) {

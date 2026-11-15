@@ -1,5 +1,5 @@
 // Rests-on: spec/product.md §7 Resources; spec/examples/.
-import { ApiError, type Handler } from './http.ts';
+import type { Handler } from './http.ts';
 import { exampleHandler, manifestFor, fields, text, version, strings, money, oneOf, invalid, reference, sites } from './captures.ts';
 
 import { runtime, engine, list, publicRow, readable } from './runtime.ts';

@@ -45,8 +45,9 @@ export function RangeSkeleton() {
   );
 }
 
-export function KeepRow({ site, keep, line, note }: {
+export function KeepRow({ site, keep, line, note, prominentSite }: {
   site: Site;
+  prominentSite?: boolean;
   // What the person keeps after the fee, as a range: "$61 to $83". None when there are too few sales here.
   keep?: string;
   // How it goes there: "Sells in about 6 days", "Too few sales here", "Checking".
@@ -56,7 +57,7 @@ export function KeepRow({ site, keep, line, note }: {
 }) {
   return (
     <View {...mark('keep-row', { site })} style={{ height: size.noticeH, flexDirection: 'row', alignItems: 'center', gap: space.s3 }}>
-      <SiteBadge site={site} />
+      <SiteBadge site={site} prominent={prominentSite} />
       <View style={{ flex: 1, gap: space.s1 }}>
         <Txt role="body" tone={keep ? 'ink' : 'ink-2'} lines={1}>{line}</Txt>
         {note ? <Txt role="caption" lines={1}>{note}</Txt> : null}

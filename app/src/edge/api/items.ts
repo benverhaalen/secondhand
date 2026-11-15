@@ -59,8 +59,8 @@ export const handlers: Record<string, Handler> = {
       const tile = selectFields((row.tile as Record<string, unknown> | undefined) ?? row, tileExamples);
       data.push({ ...tile, id: row.id, ...(row.price_cents ? { price_cents: row.price_cents } : {}), title: card.item.title, state: card.item.state, quantity: card.item.quantity, version: row.version });
     }
-    const exampleOnly = ctx.user_id === EXAMPLE_USER && examplesServed() && rows.every(row => row.data === 'example');
     const sample = example('items.list').response as { data: { id: string }[]; next_cursor: string | null };
+    const exampleOnly = ctx.user_id === EXAMPLE_USER && examplesServed() && rows.every(row => row.data === 'example') && sample.data.every(tile => rows.some(row => row.id === tile.id));
     if (exampleOnly && sample.next_cursor && ctx.query.get('cursor') === sample.next_cursor) {
       const query = new URLSearchParams(ctx.query);
       query.delete('cursor');

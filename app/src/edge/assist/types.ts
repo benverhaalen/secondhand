@@ -37,6 +37,7 @@ export interface Usage { input_tokens: number; output_tokens: number; cache_read
 export interface Answer {
   state: 'answered' | 'refused' | 'failed';
   reason?: string;
+  not_built?: string[];
   blocks: Block[];
   results: Record<string, ToolResult>;
   sources: WebSource[];

@@ -1,6 +1,50 @@
 # 86: server core handoff
 
-Updated: 2026-11-15, about 08:00 Central (14:00 UTC), by the second server-core lead; first written about 13:15 UTC. Owner: Nate. Agent: Claude Code, the server-core lead (Opus 5.5), handing off at about half context per [packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills). Area: [finalization §2](../../../../spec/plans/finalization.md#2-server-core-lead-server), rows SV0 to SV10. Nothing was deployed, nothing was created on Fly, no secret was set anywhere.
+Updated: 2026-11-15, about 09:30 Central (15:30 UTC), at the halt, by the second server-core lead; first written about 13:15 UTC. Owner: Nate. Agent: Claude Code, the server-core lead (Opus 5.5), handing off at about half context per [packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills). Area: [finalization §2](../../../../spec/plans/finalization.md#2-server-core-lead-server), rows SV0 to SV10. Nothing was deployed, nothing was created on Fly, no secret was set anywhere.
+
+## At the halt, 2026-11-15 about 15:30 UTC (the second server-core lead; read this first)
+
+Nate halted all leads ("we need to stop agents from merging and working on top of eachother"). From now the orchestrator alone merges to main, from the branches below.
+
+**On main from this lead, each rerun on the Mac on a tree merged with main:**
+
+| What | Commit on main |
+|---|---|
+| Production refusals hold unless `NODE_ENV=development` is stated (`development(env)` in `store/db.ts`); keep.ts fails closed | 56e985fd |
+| Frames whose root names a site are stored with their rows (fix of the review's HIGH) | 4a72e9e9 |
+| Encrypted vault, push tokens in it | 5177d340, 28567664 |
+| SV7 observation writer and reads | 03a7737f, 7139cedc |
+| Pipeline passes the job's person to the harness; Depop shop page without `page_info` is the last page (walk 7/7, watcher week green) | e8981d9f |
+| Photo store composed; captured photos get real single-use upload targets; `fly.toml` public origin and Apple ids | eaec5743 |
+| `fly.toml`: `GOOGLE_CLIENT_IDS` (iOS and Web clients, project secondhand-514813), `SECONDHAND_WEB_ORIGINS` (asecondhand.app, www., secondhand-eight.vercel.app) | 2875b02a, 9d9887d1, 2c53871b |
+| Ben's onboarding merge: the twenty red server tests fixed (packet 95) | f5fb5a3e (merged 675eef3e) |
+| A search stream stays open after done while `fill_until` is ahead (late eBay and Facebook), param `job_fill_grace_s` 60 | caf18957 (merged f68ef90a) |
+| Landing fixture: line 1 Facebook through Apify, line 2 brand never modelled | 73644e78 |
+| Boot recovery leaves the seeded example jobs alone (no `no_engine: sweep` at boot) | 8d34eee5 |
+
+**The twenty red server tests after Ben's merge: all fixed** at f5fb5a3e, rerun on the Mac after merging main (accounts 38, conversations 29, items 70, orders 40, routes 6, runtime 47, watch 8, realtime-proof 13, spec/examples 9, search 98, uploads 30; tsc clean): accounts.import (contract example and reconnect replay), accounts.import_preview, accounts.unlink, an import job creates live rows once, import preview labels the stored fallback, offline linked preview reports no_route, a successful empty live preview replaces cached rows, live site provenance on harness listing reads, conversations.list (example and wrong user), conversations.messages, items.list (example and wrong user), orders.list (example and wrong user), order reads use orderBook records, the two orders fee tests, the three routes.test.ts tests, "3: the configured recorded source...", "one --once runs jobs enqueued by the import and unlink routes". None left red. The whole 4,226 gate was not rerun by this lead.
+
+**On Mac branches, not on main:**
+- `w/srv-honest-1`, **ready to land**: committed a9363123, main merged into it at ce501973; on that tree wants, insights, decisions, runtime, watcher, http, spec/examples and server/main all exit 0 on the Mac and tsc is clean. Branch on Windows after `git fetch mac 'refs/heads/w/*:refs/remotes/mac/w/*'`: `mac/w/srv-honest-1`. It holds Ben's packet 91 items 10 (compose `runWant` on the tick), 7 (insights: example only to the example person, `not_built` for a real one), 4 (decision act refuses an unmapped kind, row unchanged). Files: wants, insights, decisions, runtime and their tests. Insights and an unmapped decision act answer 503 `unavailable`; background want watches skip Facebook and Mercari (no background source for them yet; listed as `behind`). Brief: `server-core-briefs/brief-srv-honest-1.txt` in the notes folder.
+- Every other `srv-*` worktree of this lead is merged and removable.
+
+**Half done:** nothing open in the shared checkout. Google sign-in: server side set up; no client code on main or any pushed branch fetches a Google ID token (Nate says Ben has a button, presumably unpushed). Email: Ben's Resend sender needs `RESEND_API_KEY` (secret) and `SECONDHAND_EMAIL_FROM`; fix the two email faults first.
+
+**Next, in order:**
+1. Land `w/srv-honest-1` (the orchestrator).
+2. Brief srv-fix-4 (vault and SV7 review fixes, the Databricks rights rule item h) from `server-core-briefs/brief-srv-fix-4.txt`.
+3. A fresh reviewer on e8981d9f, eaec5743, caf18957, f5fb5a3e (none reviewed yet).
+4. The email faults (a resend resets the guess count; no per-address limit on auth-none routes), then Resend.
+5. CORS headers for the three site origins if the site calls the Fly origin directly; `req.text()` with no size cap before auth.
+6. SV8 for the rest of the example-backed routes (appointments.list, orders.pick_list and others, in the app-wiring map's order); wire the observation writer (engines port, search landing, then the Databricks landing).
+
+**Hosted.** Last deploy: main 9c8eab08 at about 13:49 UTC (later commits not deployed; the Google ids and web origins need a redeploy). The machine stops 5 minutes after each start until Nate adds a card on the Fly account. Start it with:
+
+```
+%USERPROFILE%\.fly\bin\flyctl.exe machine start 8e170ec76731d8 -a secondhand-api
+```
+
+Redeploy (Nate's yes each time) from the clean worktree `C:\dev\secondhand-deploy`: `git checkout --detach origin/main`, then `flyctl deploy --remote-only --ha=false -a secondhand-api`. The campus DNS answers NXDOMAIN for the fly.dev name; probe by IP 66.241.124.170 or from another resolver.
 
 ## At 14:00 UTC, the second server-core lead (read this first; the sections below are the first lead's and still hold unless this says otherwise)
 
