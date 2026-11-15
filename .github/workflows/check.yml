@@ -39,4 +39,4 @@ jobs:
         if: ${{ !cancelled() }}
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
-        with: { name: app-renders, path: features/app/renders/ }
+        with: { name: app-screens, path: features/app/ }
