@@ -1971,3 +1971,15 @@ Nate, adaptation lead's session, 2026-11-15, morning Central, correcting a readi
 > no not just reading poshmark. I meant we only were to apply that one rule to make the poshmark specific things like sharing and liking user inputs the ai agent tells the user to do for best marketing insights. We read everything
 
 Used in: [spec/engines/market-index.md §1](../spec/engines/market-index.md#1-what-may-be-kept-per-source), [spec/engines/adaptation.md](../spec/engines/adaptation.md).
+
+## 2026-11-15 nate retrieval proven first, then the engines, then a presentation the judges understand, with databricks shown
+Nate, orchestrator's session, 2026-11-15, about 07:05 Central.
+> Ensure it being wired in is efficiently and expertly evaluated. We;ll establish that we have the full outperforming data retreival built and efficient, benchmarked, and proven amazing. Then we move on to the engines for determining and driving how we calculate and adapt in realtime, which ive already asked we reserach and credibly write up to bolster all of the system and its architecture. When we present it needs to be clear, impressive, and understood by the judges, with databricks utilization also exemplified as that is a track we are entering
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `bench/README.md` (the retrieval evaluation).
+
+## 2026-11-15 nate no bench reruns until the latency blunders are fixed
+Nate, third integration lead's session, 2026-11-15, morning Central, on the full-answer jump to 9.99 s.
+> dont rerun benches until we have perfectly optimized to correct such blunders like the jump in latency
+
+Used in: [packet 69](../.agents/team/packets/team/69-integration-handoff.md), [joins.md J12](../spec/plans/joins.md#named-fixes-in-build-order): the bench reruns only after an in-process latency test of the composed search passes.
