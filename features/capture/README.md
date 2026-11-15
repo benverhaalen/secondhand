@@ -32,6 +32,8 @@ C: Databricks Volume. Rests on spec/product.md (files V). Wrong if a write from 
 Recommend: A behind the port, because it needs no new service, key or bill and works on the dev server today. Strongest rival: B, which the same port takes later without a route change.
 ```
 
+Agreed with the server lead the same day: the port is theirs, `Blobs` in `app/src/edge/store/blobs.ts` (`target`, `read`, `remove`, `onUploaded`), with a signed single-use `PUT /v1/uploads/:id` on our own server, 25 MB per photo, files under the data folder, EXIF location stripped and the type read from the bytes. Capture calls `target` where `captures.ts` handed out an example address, and starts identify from `onUploaded`.
+
 Research: [capture tech docs, 2026-11](../../research/capture/nate/capture-tech-docs-2026-11.md): Object Capture still needs LiDAR; a LiDAR phone can still fail a scan; expo-camera has no depth; Vision reads UPC-A as EAN-13.
 
 ## Decided
