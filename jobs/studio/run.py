@@ -25,7 +25,7 @@ def cmd_smoke(out_dir: str) -> None:
     for m in ("google/gemini-4-carbon", "google/gemini-4-hydrogen"):
         ans, info = openrouter.read(m, 'Answer JSON {"garment": str, "text_seen": [str]} for this photo.', [src], 800)
         rows.append({"model": m, "answer": ans, **info})
-    for m in ("bytedance-seed/seedream-5-5", "google/gemini-nano-banana-2.1", "google/gemini-3-pro-image"):
+    for m in ("google/gemini-nano-banana-2.1", "google/gemini-3-pro-image", "openai/gpt-5.4-image-2"):
         raw, info = openrouter.render(m, "Return this exact photo with even, soft daylight. Change nothing else.", [src])
         if raw:
             open(os.path.join(out_dir, m.split("/")[1] + ".jpg"), "wb").write(raw)

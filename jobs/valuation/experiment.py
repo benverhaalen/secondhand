@@ -6,7 +6,8 @@ on the same frozen rows as the baselines. Rows follow the schema in FIELDS (plan
 is the item price without shipping, so buyer_shipping_cents is never in the truth (D6 step 3).
 
   python scripts/bench/backtest.py self-test                           the test of the test, on the synthetic market
-  python scripts/bench/backtest.py backtest --rows R --test-from D [--test-to L] --out O
+  python scripts/bench/backtest.py backtest --rows R --test-from D [--test-to L] [--locked] [--deviation WHY] --out O
+  python scripts/bench/backtest.py rescore --log logs/experiment-backtest-*.jsonl --rows R --out O
   python scripts/bench/backtest.py duel-record --live L --rows R --out duel.json
   python scripts/bench/backtest.py duel-score --duel duel.json --outcomes O --out O2
 (The script prints the summary; this module logs it and writes --out.) Tuning runs use --test-to the lock date; the
@@ -17,10 +18,13 @@ from __future__ import annotations
 import argparse
 import bisect
 import csv
+import gzip
 import hashlib
 import json
 import os
+import subprocess
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -31,7 +35,7 @@ sys.path.insert(0, str(ROOT / "jobs"))
 sys.path.insert(0, str(ROOT / "log"))
 
 from secondhand_log import create_log, file_sink  # noqa: E402
-from valuation import market  # noqa: E402
+from valuation import ledger, market  # noqa: E402
 from valuation.backtest import BANDS, LeakageError, _band, _wilson, check_leakage  # noqa: E402
 
 FIELDS = ("row_id", "source", "licence", "site", "url", "kind", "product_id", "family_id", "cluster_id", "brand",
@@ -47,7 +51,7 @@ MIN_PEERS = 3                    # guess: a median of 1 or 2 peers is itself noi
 MIN_CELL = 30                    # money D6 step 2 and plan decision 16: a smaller cell says "too few"
 PRIMARY = "product_90d_median"   # plan decision 10: the headline is paired against the 90-day sold median
 DAY = timedelta(days=1)
-SEEDS = {"random_comps": 3, "bootstrap": 7}   # logged in config, so a run can be replayed
+SEEDS = {"random_comps": 3, "bootstrap": 7, "sample": 5}   # logged in config, so a run can be replayed
 DRAWS = 1000                     # guess: bootstrap draws for the lift interval
 
 
@@ -65,8 +69,9 @@ def _flag(v, default):
 
 def load(path: str) -> list[dict]:
     """CSV or JSONL in the FIELDS schema. Empty cells become None; flags take FLAGS' defaults."""
-    with open(path, newline="") as f:
-        raw = [json.loads(line) for line in f if line.strip()] if path.endswith(".jsonl") else list(csv.DictReader(f))
+    opener = gzip.open if path.endswith(".gz") else open
+    with opener(path, "rt", newline="") as f:
+        raw = [json.loads(line) for line in f if line.strip()] if ".jsonl" in path else list(csv.DictReader(f))
     rows = []
     for r in raw:
         row = {k: (r.get(k) if r.get(k) not in ("", None) else None) for k in FIELDS}
@@ -100,6 +105,42 @@ def freeze_of(row: dict) -> tuple[str, str]:
     return _iso(ts(row["at"]) - DAY.total_seconds()), "sale_date_proxy"
 
 
+# History: what a contestant may see -------------------------------------------------------------------------------
+
+class History:
+    """Usable sales strictly before one freeze date, minus the item's own cluster. Lookups by product are a bisect on
+    an index built once, so a run over 100,000 sales does not rescan every sale for every item."""
+
+    def __init__(self, index, cut, cluster=None):
+        self.index, self.cut, self.cluster = index, cut, cluster
+
+    def _ok(self, rs):
+        return [r for r in rs if not self.cluster or r.get("cluster_id") != self.cluster]
+
+    def product(self, pid):
+        rows, times = self.index["by_product"].get(pid, ([], []))
+        return self._ok(rows[: bisect.bisect_left(times, self.cut)])
+
+    def __len__(self):
+        return bisect.bisect_left(self.index["times"], self.cut)
+
+    def sample(self, rng, k):
+        return self._ok([self.index["sold"][i] for i in rng.choice(len(self), k, replace=False)])
+
+    def latest_at(self):
+        return self.index["times"][len(self) - 1] if len(self) else 0.0
+
+
+def index_of(rows):
+    sold = sorted(_sold(rows), key=lambda r: ts(r["at"]))
+    by = {}
+    for r in sold:
+        rs, tt = by.setdefault(r["product_id"], ([], []))
+        rs.append(r)
+        tt.append(ts(r["at"]))
+    return {"sold": sold, "times": [ts(r["at"]) for r in sold], "by_product": by}
+
+
 # Contestants ---------------------------------------------------------------------------------------------------------
 
 def _range(prices, ids):
@@ -114,33 +155,41 @@ NOT_SHOWN = {"q10": None, "q50": None, "q90": None, "shown": False, "comp_ids": 
 class ProductMedian:
     """The sold median of the same product over the 90 days before the freeze date: what a seller looks up today."""
     name = PRIMARY
+    settings = {"window_days": WINDOW.days}
 
     def fit(self, train):
         pass
 
     def predict(self, item, as_of, history):
         lo = ts(as_of) - WINDOW.total_seconds()
-        rs = [r for r in history if r["product_id"] == item["product_id"] and ts(r["at"]) >= lo]
+        rs = [r for r in history.product(item["product_id"]) if ts(r["at"]) >= lo]
         return _range([r["price_cents"] for r in rs], [r["row_id"] for r in rs]) if rs else dict(NOT_SHOWN)
 
 
 class LastSale:
     name = "last_sale"
+    settings = {}
 
     def fit(self, train):
         pass
 
     def predict(self, item, as_of, history):
-        rs = [r for r in history if r["product_id"] == item["product_id"]]
+        rs = history.product(item["product_id"])
         if not rs:
             return dict(NOT_SHOWN)
-        r = max(rs, key=lambda r: ts(r["at"]))
+        r = rs[-1]
         return {"q10": r["price_cents"], "q50": r["price_cents"], "q90": r["price_cents"], "shown": True, "comp_ids": [r["row_id"]]}
 
 
 class Model:
-    """The Python market model (market.py), fitted once per test month on rows before the month minus the gap."""
+    """The Python market model (market.py), fitted once per test month on rows before the month minus the gap.
+    Its range is market's calibrated interval; it abstains on market's own counts (fewer than MIN_12M sales of the
+    product in 12 months or MIN_90D in 90 days), read from the product index rather than market.estimate's full scan,
+    which is too slow for 100,000 test sales. Its middle starts from the product's own last sales in the frozen history
+    (market's anchor), and those sales are its comp_ids, so the leak check covers them."""
     name = "model"
+    settings = {k: getattr(market, k) for k in ("ALPHA", "CALIB", "RIDGE", "MIN_LEVEL", "MIN_GROUP", "ANCHOR_K",
+                                                "ANCHOR_DAYS", "MIN_12M", "MIN_90D")}
 
     def fit(self, train):
         self.m = market.fit(train) if len(_sold(train)) >= 2 * market.MIN_GROUP else None
@@ -148,13 +197,19 @@ class Model:
     def predict(self, item, as_of, history):
         if self.m is None:
             return dict(NOT_SHOWN)
-        e = self.m.estimate(item, today=as_of)
-        return {"q10": e["low_cents"], "q50": e["median_cents"], "q90": e["high_cents"], "shown": e["shown"], "comp_ids": []}
+        now, rs = ts(as_of), history.product(item["product_id"])
+        used = [r for r in rs if (r.get("price_cents") or 0) > 0 and 0 < now - ts(r["at"]) <= market.ANCHOR_DAYS * 86400][-market.ANCHOR_K:] if self.m.anchor else []
+        q10, q50, q90 = self.m.interval(item, as_of, recent=used)
+        n12 = sum(now - ts(r["at"]) <= 365 * 86400 for r in rs)
+        n90 = sum(now - ts(r["at"]) <= 90 * 86400 for r in rs)
+        shown = n12 >= market.MIN_12M and n90 >= market.MIN_90D and q90 - q10 <= q50
+        return {"q10": q10, "q50": q50, "q90": q90, "shown": shown, "comp_ids": [r["row_id"] for r in used]}
 
 
 class Oracle:
     """Plan decision 23: reads the true price. Must score 100%; if it does not, the scorer is broken."""
     name = "oracle"
+    settings = {}
 
     def fit(self, train):
         pass
@@ -169,6 +224,7 @@ class RandomComps:
     name = "random_comps"
 
     def __init__(self, seed=SEEDS["random_comps"]):
+        self.settings = {"k": 5, "seed": seed}
         self.rng = np.random.default_rng(seed)
 
     def fit(self, train):
@@ -177,7 +233,7 @@ class RandomComps:
     def predict(self, item, as_of, history):
         if len(history) < 5:
             return dict(NOT_SHOWN)
-        picks = [history[i] for i in self.rng.choice(len(history), 5, replace=False)]
+        picks = history.sample(self.rng, 5)
         return _range([r["price_cents"] for r in picks], [r["row_id"] for r in picks])
 
 
@@ -203,30 +259,42 @@ def _tests(rows, test_from, test_to):
     return sorted(out, key=lambda x: ts(x[0])), {k: len(v) for k, v in left_out.items()}
 
 
-def run(rows: list[dict], contestants: list, *, test_from: str, test_to: str | None = None, log=None) -> list[dict]:
+def run(rows: list[dict], contestants: list, *, test_from: str, test_to: str | None = None, sample: int | None = None,
+        log=None) -> list[dict]:
     """One frozen estimate per (test sale, contestant). Each contestant is fitted per freeze month on usable rows
     before the month minus the gap, and predicts from usable sales strictly before the freeze date."""
-    sold = sorted(_sold(rows), key=lambda r: ts(r["at"]))
-    times = [ts(r["at"]) for r in sold]
+    index = index_of(rows)
     tests, left_out = _tests(rows, test_from, test_to)
+    if sample and len(tests) > sample:
+        keep = set(np.random.default_rng(SEEDS["sample"]).choice(len(tests), sample, replace=False).tolist())
+        tests = [t for i, t in enumerate(tests) if i in keep]
     if log:
         log.stage("experiment", "tests", n=len(tests), left_out=left_out)
-    out, month = [], None
+    out, month, spent = [], None, {}
     for as_of, basis, item in tests:
         if as_of[:7] != month:
-            month = as_of[:7]
+            if log and month:
+                log.stage("experiment", "month", month=month, seconds=spent)   # cost beside accuracy (datasets.md §5.6)
+            month, spent = as_of[:7], {}
             cutoff = ts(f"{month}-01T00:00:00Z") - GAP.total_seconds()
             train = [r for r in _usable(rows) if ts(r["at"]) < cutoff]
             for c in contestants:
+                t0 = time.perf_counter()
                 c.fit(train)
+                spent[c.name + ".fit"] = round(time.perf_counter() - t0, 3)
             if log:
                 log.stage("experiment", "fit", month=month, train_rows=len(train))
-        history = sold[: bisect.bisect_left(times, ts(as_of))]
-        if item.get("cluster_id"):   # an earlier sale of the same physical item is not a comp (decision 5)
-            history = [r for r in history if r.get("cluster_id") != item["cluster_id"]]
+        history = History(index, ts(as_of), item.get("cluster_id"))   # an item's own relists are never its comps (decision 5)
         for c in contestants:
-            out.append({"contestant": c.name, "item_id": item["row_id"], "as_of": as_of, "freeze_basis": basis,
-                        **c.predict(item, as_of, history)})
+            t0 = time.perf_counter()
+            e = {"contestant": c.name, "item_id": item["row_id"], "as_of": as_of, "freeze_basis": basis,
+                 **c.predict(item, as_of, history)}
+            spent[c.name] = round(spent.get(c.name, 0.0) + time.perf_counter() - t0, 3)
+            out.append(e)
+            if log:   # every estimate is an event, so scores replay from the log alone (datasets.md §5.1)
+                log.stage("experiment", "estimate", **e)
+    if log and month:
+        log.stage("experiment", "month", month=month, seconds=spent)
     return out
 
 
@@ -378,7 +446,7 @@ def record_duel(live: list[dict], history: list[dict], contestants: list, *, rec
     """Freeze every contestant's answer for live listings now, with each listing's inputs, so a later engine can be
     scored on the same listings (plan.md §8). The hash is the pre-registration."""
     usable = [r for r in _usable(history) if ts(r["at"]) < ts(recorded_at)]
-    past = sorted(_sold(usable), key=lambda r: ts(r["at"]))
+    past = History(index_of(usable), ts(recorded_at))
     for c in contestants:
         c.fit(usable)
     entries = [{"row_id": r["row_id"], "item": {k: r.get(k) for k in FIELDS if k != "price_type"},
@@ -413,11 +481,17 @@ def score_duel(duel: dict, outcomes: list[dict]) -> dict:
 # Command line --------------------------------------------------------------------------------------------------------
 
 def _log(kind, config):
-    (ROOT / "logs").mkdir(exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
-    return create_log(src="job.valuation.experiment", build=os.environ.get("SECONDHAND_BUILD", "dev"),
-                      sink=file_sink(str(ROOT / "logs" / f"experiment-{kind}-{stamp}.jsonl")),
-                      config={"kind": kind, "seeds": SEEDS, "draws": DRAWS, **config})
+    """One log file per run under logs/, with long values (a 90-day median's comp ids) in a blobs folder beside it,
+    so `rescore` reads every estimate back whole."""
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")   # microseconds: two runs never share a file
+    path = ROOT / "logs" / f"experiment-{kind}-{stamp}.jsonl"
+    blobs = path.with_suffix(".blobs")
+    blobs.mkdir(parents=True, exist_ok=True)
+    log = create_log(src="job.valuation.experiment", build=os.environ.get("SECONDHAND_BUILD", "dev"),
+                     sink=file_sink(str(path)), blob=lambda i, text: (blobs / f"{i}.json").write_text(text),
+                     config={"kind": kind, "seeds": SEEDS, "draws": DRAWS, **config})
+    log.path = str(path)
+    return log
 
 
 def self_test(log) -> dict:
@@ -440,11 +514,32 @@ def self_test(log) -> dict:
     return {"data": "synthetic, not real", "checks": checks, "report": rep}
 
 
+LEDGER = ROOT / "scripts" / "bench" / "out" / "ledger.jsonl"
+
+
+def _commit(log) -> str:
+    return log.call("process", "git rev-parse HEAD", {"cwd": str(ROOT)},
+                    lambda: subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip() or "unknown")
+
+
+def from_log(path: str) -> list[dict]:
+    """The estimates a backtest logged, read back so a new metric reruns over the log, not the model."""
+    keep = ("contestant", "item_id", "as_of", "freeze_basis", "q10", "q50", "q90", "shown", "comp_ids")
+    blobs = Path(path).with_suffix(".blobs")
+    whole = lambda v: json.loads((blobs / f"{v['blob']}.json").read_text()) if isinstance(v, dict) and "blob" in v else v
+    with open(path, encoding="utf-8") as f:
+        lines = (json.loads(x) for x in f if x.strip())
+        return [{k: whole(e.get(k)) for k in keep} for e in lines if e.get("event") == "job.stage" and e.get("stage") == "estimate"]
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["self-test", "backtest", "duel-record", "duel-score"])
-    for k in ("--rows", "--live", "--duel", "--outcomes", "--test-from", "--test-to", "--out"):
+    ap.add_argument("cmd", choices=["self-test", "backtest", "rescore", "duel-record", "duel-score"])
+    for k in ("--rows", "--live", "--duel", "--outcomes", "--test-from", "--test-to", "--out", "--log", "--deviation"):
         ap.add_argument(k)
+    ap.add_argument("--sample", type=int, help="score a seeded random sample of this many test sales")
+    ap.add_argument("--locked", action="store_true", help="the pre-registered window, scored once (plan decisions 3, 4)")
+    ap.add_argument("--ledger", default=str(LEDGER))
     ap.add_argument("--recorded-at", default=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"))
     a = ap.parse_args(argv)
     log = _log(a.cmd, {k: v for k, v in vars(a).items() if k != "cmd" and v})
@@ -454,8 +549,21 @@ def main(argv=None):
         if a.cmd == "self-test":
             out = self_test(log)
         elif a.cmd == "backtest":
-            rows = load(a.rows)
-            out = score(run(rows, standard, test_from=a.test_from, test_to=a.test_to, log=log), rows)
+            rows, lines = load(a.rows), ledger.read(a.ledger)
+            rows_sha, commit = ledger.sha256_file(a.rows), _commit(log)
+            settings = {c.name: c.settings for c in standard} | {"seeds": SEEDS, "draws": DRAWS, "gap_days": GAP.days}
+            seen = ledger.check(lines, rows_sha256=rows_sha, test_from=a.test_from, test_to=a.test_to, locked=a.locked,
+                                deviation=a.deviation)
+            log.stage("experiment", "ledger", rows_sha256=rows_sha, commit=commit, settings=settings,
+                      second_look_of=[x["run"] for x in seen], deviation=a.deviation)
+            out = score(run(rows, standard, test_from=a.test_from, test_to=a.test_to, sample=a.sample, log=log), rows)
+            line = ledger.entry(lines, run=log.session, at=a.recorded_at, rows=a.rows, rows_sha256=rows_sha, commit=commit,
+                                test_from=a.test_from, test_to=a.test_to, sample=a.sample, locked=a.locked,
+                                deviation=a.deviation, settings=settings, result=out)
+            ledger.append(a.ledger, line)
+            out["ledger"] = {k: line[k] for k in ("run", "rows_sha256", "commit", "locked", "settings_tried_on_these_rows", "result_sha256")}
+        elif a.cmd == "rescore":
+            out = score(from_log(a.log), load(a.rows))
         elif a.cmd == "duel-record":
             out = record_duel(load(a.live), load(a.rows), standard, recorded_at=a.recorded_at)
         else:
@@ -476,6 +584,7 @@ def main(argv=None):
     if a.cmd == "self-test":
         brief["overall"] = {k: v["overall"] for k, v in out["report"]["contestants"].items()}
         brief["ceiling"], brief["sentence"] = out["report"]["ceiling"], out["report"].get("sentence")
+    brief["log"] = log.path
     log.job("experiment", a.cmd, "done" if ok else "failed", summary=brief)
     return (0 if ok else 1), brief
 

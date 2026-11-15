@@ -77,7 +77,7 @@ The mentor's concern is that an AI-made photo can misstate the item. So the two 
 
 | | Clean up | Enhance with AI |
 |---|---|---|
-| What it does | crop, straighten, exposure, white balance, background blur from a mask (level 0, no generative model) | redraws light, background, and creases at level 2 (Seedream 5.5; Nano Banana 2.1 only as a fallback) |
+| What it does | crop, straighten, exposure, white balance, background blur from a mask (level 0, no generative model) | redraws light, background, and creases at level 2 (Nano Banana 2.1) |
 | Can it change the item | no: the item's pixels are only adjusted, never redrawn | it can, so every result is checked against the original, and a vanished flaw, changed tag text or changed protected area blocks it ([studio § The check](features/studio.md#the-check)) |
 | Label | none needed | tracked as AI in the app and in the render record; no AI tag on the exported photo (Ben, [23:18](../product/words.md#2026-11-14-no-ai-tag-on-exported-photos-track-it-on-our-end)) |
 | Default | offered first, one tap, can be reset | off; the person picks Generate ([studio § Retouch](features/studio.md#retouch-chosen-by-the-person)) |

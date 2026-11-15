@@ -95,7 +95,9 @@ export type StyleFacet = { name: 'brand' | 'category' | 'size' | 'colour' | 'era
 
 // Buy side.
 export type MatchLabel = 'exact' | 'likely_same_model' | 'same_family_other_variant' | 'comparable' | 'unresolved';
-export type Want = { id: string; state: 'active' | 'paused' | 'ended'; text: string; product_id: string | null; fit: { size?: string; condition_floor?: string; radius_mi?: number }; max_total_cents: Cents | null; sites: Site[]; checked: Partial<Record<Site, Iso>>; behind: Site[]; quiet_hours: { from: string; to: string } | null; alert: 'available' | 'under' };
+// Who clothes are cut for. A letter size means a different garment in each (the Brewers trial, research/watch/ben/brewers-alert-trial.md).
+export type Cut = 'mens' | 'womens' | 'youth';
+export type Want = { id: string; state: 'active' | 'paused' | 'ended'; text: string; product_id: string | null; fit: { size?: string; cut?: Cut; condition_floor?: string; radius_mi?: number }; max_total_cents: Cents | null; sites: Site[]; checked: Partial<Record<Site, Iso>>; behind: Site[]; quiet_hours: { from: string; to: string } | null; alert: 'available' | 'under' };
 export type Match = { id: string; state: 'found' | 'alerted' | 'saved' | 'asked' | 'offered' | 'bought' | 'dismissed' | 'gone'; want_id: string | null; source: 'want' | 'search' | 'for_you'; label: MatchLabel; site: Site; title: string; key: PhotoKey; url: string; price_cents: Cents; delivered_cents: Cents; condition: string; seller: string; verdict: 'good' | 'fair' | 'high'; seen_at: Iso; product_id: string | null; size?: string };
 export type RetailOffer = { id: string; product_id: string; relation: 'same_product' | 'successor' | 'functional_equivalent'; store: string; condition: 'new' | 'refurbished'; price_cents: Cents; delivered_cents: Cents; delivery_min_days: number; delivery_max_days: number; warranty_months: number; returns_days: number };
 export type Product = {

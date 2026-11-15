@@ -1,0 +1,5 @@
+{"href":"https://api.ebay.com/sell/inventory/v1/inventory_item?limit=100&offset=0","total":3,"limit":100,
+ "inventoryItems":[
+  {"sku":"SH-0001","product":{"title":"Levi's 501 Jeans 32x30"},"condition":"USED_EXCELLENT","availability":{"shipToLocationAvailability":{"quantity":1}}},
+  {"sku":"SH-0002","product":{"title":"Patagonia Better Sweater M"},"condition":"USED_GOOD","availability":{"shipToLocationAvailability":{"quantity":0}}},
+  {"sku":"SH-0003","product":{"title":"Carhartt Detroit Jacket L"},"condition":"USED_GOOD","availability":{"shipToLocationAvailability":{"quantity":1}}}]}

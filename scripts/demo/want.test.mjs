@@ -31,11 +31,23 @@ test("judge: the site's department and category decide what a title can't", () =
   // a boys' XXL shows as "XXL"; only the department says it's a kid's
   assert.deepEqual(fit({ catalog: { department_obj: { display: 'Kids' }, category_feature_objs: [{ display: 'Jerseys' }] } }).reasons, ['department Kids']);
   assert.deepEqual(fit({ title: 'Milwaukee Brewers Jersey tee', catalog: { department_obj: { display: 'Men' }, category_feature_objs: [{ display: 'Tees' }] } }).reasons, ['cut or kind: \\btee\\b', 'category Tees']);
-  assert.deepEqual(fit({ title: 'Giannis Milwaukee Brewers giveaway jersey' }).reasons, ['cut or kind: \\bgiannis\\b']);
+  assert.equal(fit({ title: 'Giannis Milwaukee Brewers giveaway jersey' }).fits, true); // Ben, 08:36: the Giannis one counts
   assert.deepEqual(fit({ price_amount: { val: '75.0' } }).reasons, ['$75 over $60']);
   assert.deepEqual(fit({ inventory: { status: 'sold_out', size_quantities: [{ size_obj: { display: 'L' } }] } }).reasons, ['sold']);
   // the mislisting case: the title says 2XL, the size field says XL; the field wins, so a person checks before buying
   assert.equal(fit({ title: 'Milwaukee Brewers Jersey 2XL' }).fits, true);
+});
+
+test('judge: "Large", "X-Large" and an MLB chest size of 48 or 52 are the same sizes as L and XL', () => {
+  const fit = size => judge(want, cards(page(card({ inventory: { status: 'available', size_quantities: [{ size_obj: { display: size } }] } })))[0]).fits;
+  assert.deepEqual(['L', 'Large', 'X-Large', "Men's XL", '48', '52', 'M', '44', 'XXL'].map(fit), [true, true, true, true, true, true, false, false, false]);
+});
+
+test('judge: a card titled without the team passes the card check, and the listing description decides', () => {
+  const row = cards(page(card({ title: '1982 Yount #19 jersey' })))[0];
+  assert.deepEqual(judge(want, row).reasons, ['not the team']);
+  assert.equal(judge(want, row, null, { words: false }).fits, true);
+  assert.equal(judge(want, row, { description: 'Brewers 1982 throwback', size: 'XL', department: 'Men', category: 'Jerseys', jsonld_price: 29, available: true }).fits, true);
 });
 
 test('listingFacts: the listing page gives the structured price and its own fields', () => {

@@ -27,12 +27,6 @@
         "id": "want_3ss",
         "state": "active",
         "text": "Carhartt J97 in XL under $80",
-        "product_id": "pr_4hd1",
-        "fit": {
-          "attributes": {
-            "size": "XL"
-          }
-        },
         "max_total_cents": {
           "amount_cents": 8000,
           "currency": "USD"
@@ -42,11 +36,7 @@
           "depop",
           "mercari"
         ],
-        "schedule": {
-          "every_min": 30
-        },
         "alert": "under",
-        "next_check_at": "2026-11-15T05:30:00Z",
         "version": 1
       }
     },
@@ -62,15 +52,11 @@
             "id": "want_3ss",
             "state": "active",
             "text": "Carhartt J97 in XL under $80",
-            "new_matches": 2,
+            "new_matches": 1,
             "checked": {
-              "ebay": "2026-11-15T05:00:00Z",
-              "depop": "2026-11-15T05:00:00Z",
-              "mercari": "2026-11-15T04:31:00Z"
+              "ebay": "2026-11-15T05:00:00Z"
             },
-            "behind": [
-              "mercari"
-            ],
+            "behind": [],
             "version": 1
           }
         ],
@@ -177,8 +163,7 @@
       "status": 200,
       "response": {
         "id": "mt_77",
-        "state": "saved",
-        "decision_id": "dec_sv1"
+        "state": "saved"
       }
     },
     {

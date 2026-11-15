@@ -79,14 +79,22 @@ export function listingFacts(html, site_id) {
   };
 }
 
+// One size name per size: "Large" is L, "X-Large" is XL, and an MLB jersey's chest number maps to its letter
+// (40 S, 44 M, 48 L, 52 XL, 56 XXL, the Majestic and Nike authentic scale; inferred, not read from a size chart today).
+const WORDS = { small: 'S', medium: 'M', large: 'L', 'x-large': 'XL', xlarge: 'XL', 'extra large': 'XL', 'xx-large': 'XXL', xxlarge: 'XXL', '2xl': 'XXL', '3xl': 'XXXL', 'xxx-large': 'XXXL' };
+const CHEST = { 40: 'S', 44: 'M', 48: 'L', 52: 'XL', 56: 'XXL', 60: 'XXXL' };
+export const sizeKey = z => { const t = String(z ?? '').trim().toLowerCase().replace(/^(?:men'?s|us)\s*/, ''); return WORDS[t] ?? CHEST[t] ?? t.toUpperCase(); };
+
 // want: { team: [regex], item: [regex], not: [regex], sizes: ["L", "XL"], cap }. Every reason it fails, so a miss is explainable.
-export function judge(want, row, facts = null) {
+// words: false skips the team and item words, for the search card, whose title alone can miss them ("Milwaukee 1982
+// Yount"); the listing page's title and description are read before an alert.
+export function judge(want, row, facts = null, { words: checkWords = true } = {}) {
   const words = [row.title, facts?.title, facts?.description].filter(Boolean).join(' ');
   const has = list => list.some(p => new RegExp(p, 'i').test(words));
   const size = (facts?.size ?? row.size ?? '').trim();
   const reasons = [];
-  if (!has(want.team)) reasons.push('not the team');
-  if (!has(want.item)) reasons.push('not a jersey');
+  if (checkWords && !has(want.team)) reasons.push('not the team');
+  if (checkWords && !has(want.item)) reasons.push('not a jersey');
   const cut = want.not.find(p => new RegExp(p, 'i').test([row.title, facts?.title, size].filter(Boolean).join(' ')));
   if (cut) reasons.push(`cut or kind: ${cut}`);
   // The site's own department and category beat words in a title: a boys' XXL displays as "XXL".
@@ -94,7 +102,7 @@ export function judge(want, row, facts = null) {
   if (dept && want.departments && !want.departments.includes(dept)) reasons.push(`department ${dept}`);
   if (cat && want.category && cat !== want.category) reasons.push(`category ${cat}`);
   if (!size) reasons.push('size not stated');
-  else if (!size.split(',').some(z => want.sizes.some(s => new RegExp(`^(?:men'?s\\s*|us\\s*)?${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i').test(z.trim())))) reasons.push(`size ${size}`);
+  else if (!size.split(',').some(z => want.sizes.map(sizeKey).includes(sizeKey(z)))) reasons.push(`size ${size}`);
   const price = facts?.jsonld_price ?? row.price;
   if (price == null) reasons.push('no price');
   else if (price > want.cap) reasons.push(`$${price} over $${want.cap}`);

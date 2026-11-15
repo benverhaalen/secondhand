@@ -130,17 +130,18 @@ export function createHarness({ adapters, accounts, log, timeoutMs = 20_000, now
     if (isWrite(verb) && !args.operation_id)
       return { ...fail('policy_refused', 'a write needs operation_id', { do: 'raise_decision', kind: 'missing_operation_id' }), meta: meta(undefined, t0, false) };
     const chain = routes.get(`${site}.${verb}`) ?? [];
-    let last: Envelope<T> | undefined;
+    let last: Envelope<T> | undefined, handoff: Envelope<T> | undefined;
     for (const [i, a] of chain.entries()) {
       const run = () => runOne<T>(a, verb, args, timeoutMs);
       const r = log ? await log.call('harness', `${site}.${verb}`, { route_id: a.route_id, operation_id: args.operation_id }, run,
         (o: AdapterResult<T>) => ({ result: { ok: o.ok, code: o.ok ? 'ok' : o.error.code } })) : await run();
       last = { ...r, meta: meta(a, t0, i > 0, r.observation_ids) } as Envelope<T>;
       delete (last as { observation_ids?: unknown }).observation_ids;
-      // Only a read that the page changed under falls to the next route; a write never switches route.
-      if (r.ok || isWrite(verb) || r.error.code !== 'page_changed') return last;
+      // Only a read that the page changed under, or that this route has no way to answer, falls to the next route; a write never switches route.
+      if (r.ok || isWrite(verb) || (r.error.code !== 'page_changed' && r.error.code !== 'no_route')) return last;
+      if (r.error.code === 'no_route') handoff = last;
     }
-    return last ?? { ...fail('no_route', `no adapter for ${site}.${verb}`, { do: 'handoff', url: siteUrl(site, verb) }), meta: meta(undefined, t0, false) };
+    return handoff ?? last ?? { ...fail('no_route', `no adapter for ${site}.${verb}`, { do: 'handoff', url: siteUrl(site, verb) }), meta: meta(undefined, t0, false) };
   }
   return { call };
 }

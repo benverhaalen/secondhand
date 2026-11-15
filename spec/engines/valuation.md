@@ -71,7 +71,21 @@ A row with `may_model: false` (eBay rows, per [data use](../data-use.md)) can be
 
 **The fast first answer.** Before step 1 returns, the engine answers from the warm table `family_band` (a name the canon lacks): per (product family or category, condition), the weighted p10 and p90 of adjusted sold prices over 90 days, its count, and its date. It is refreshed when a sale lands in the family. The person sees it as a rough band within 2 s. When the full object is ready, the band is replaced in place by the range, which marks what changed. A family with fewer than 20 sales falls back to the category. A category with fewer than 20 shows no band; it says "Pricing this..." until the Check.
 
-**When nothing qualifies:** the states in the cards stand: `too_few`, `too_wide`, D4's "Not enough sales on Depop yet", and D10's "Not enough sales to say how fast". Each still shows the comps found and their count.
+**The fallback order: a price is always given** (*agent proposal*, the engines lead, 2026-11-15, from [Nate](../../product/words.md#2026-11-15-nate-the-system-always-prices-with-fallbacks-and-its-power-is-what-it-weighs-in-real-time): "of course the system must price and have established fallbacks, but the power of the system relies on things being realtime determined and weighed by how the system was designed"). The engine answers from the most specific level its evidence supports and names the level it used, as `basis_level`:
+
+| Step | `basis_level` | The middle and range come from | The range widens by |
+|---|---|---|---|
+| 1 | `variant` | the item's own variant's comps | `Q_g` of its group |
+| 2 | `product` | the product's comps, adjusted for variant (D2) | `Q_g` of the product-level group |
+| 3 | `family` | the family's comps, adjusted (D2) | `Q_g` of the family-level group |
+| 4 | `kind` | the kind's pooled sold distribution, condition-adjusted: `family_band` at the category level, at any count | the kind's measured miss at this level |
+| 5 | `prior` | D7's retail price times the [M10](../determinations/market-insight.md#m10-depreciation-by-category-and-brand) depreciation step for the kind and age, where a retail price is known | the prior's own stated spread, a `param` per kind |
+
+The steps are a blend, not a ladder of thresholds. At every level, each quantile on log price is `(n_eff × local + k × parent) / (n_eff + k)`, with the parent being the next step down. `k` is a `param` per kind (prior 6, D1's old threshold), refitted nightly by empirical Bayes on the between-level variance, so one more comp moves the answer by its weight's share and never by the gap between levels. The width at each step comes from that step's measured misses, so a thin item reads wider. It never reads as hidden.
+
+The guard hides a number only when even step 5 cannot be stated honestly: no kind is known, or the kind has no sold rows and no retail price. Then the card says "Pricing this..." and runs Deep research. `too_wide` no longer hides. It shows the range with its basis level and count. A bar such as auto-pricing's PPE20 decides only whether the system acts without asking, never whether it prices. It is read on the pooled posterior of the cell's live outcomes (`readPooled`, κ = 20, price band to kind and site, then kind, then all), so a thin cell takes its parent's standing at the weight its own evidence earns. D6's cell minimum of 30 applies to what the backtest report prints as a cell, not to what the live system may do.
+
+D4's "Not enough sales on Depop yet" and D10's "Not enough sales to say how fast" become the same ladder for that site and for the curve. The translated or parent answer is shown with its level named.
 
 ## 4. Learning
 
@@ -89,10 +103,13 @@ The written numbers in D1 to D15 are the priors ([real-time weights](../product.
 | D4 site ratios | weekly | recount products sold on both sites | the parent category |
 | D13 discount `d_s,cat` | nightly | the median of `(ask - sold) / ask` on known pairs | 0 |
 
-**The switch rule.** A nightly challenger replaces the champion when all three hold on the D6 backtest over the last three months:
-- every reported cell passes D6, with coverage between 75% and 85%;
-- overall q50 median error improves by at least 1 percentage point;
-- no cell's q50 median error gets worse by more than 2 points.
+**The switch rule.** A nightly challenger replaces the champion when all four hold on the D6 backtest over the last three months (*agent proposal*, the engines lead, 2026-11-15, from the [data-science sweep](../plans/sweep/data-science.md) items 5 and 6; it replaces a rule that a challenger could win by hiding more items, that a calibrated cell failed by chance, and that compared with zero noise):
+- the score is the weighted interval score of the 80% range plus the pinball loss at q50 (Gneiting and Raftery 2007; Bracher et al. 2021), on log price, and an item a contestant hides is charged the best baseline's score on that item;
+- the by-product paired bootstrap 95% lower bound of the challenger's gain is above 0;
+- its hit rate (the share it shows) is not lower than the champion's by more than 2 points;
+- no cell's coverage has a Wilson 95% interval lying wholly outside 75% to 85%.
+
+The winner is chosen by refitting both specifications on the training window, and the winner is then refitted on all rows to serve, so the served model has seen the newest quarter. Both fits are logged.
 
 **Rollback.** One UPDATE of `param_version` restores the champion. It fires on its own when, for a group with 30 or more sales in the trailing 30 days, live coverage leaves 75% to 85%, or the q50 error moves 2 SE past its trailing mean. The anomaly check from [real-time weights](../product.md#real-time-weights-agent-proposal) applies to every per-event update.
 
@@ -179,6 +196,21 @@ How the new signals enter: sold comps still set the value (asks never do). The t
 | Keep | 50 real payouts per site against D9 | median difference at most $0.25 (the D9 check) |
 
 The result that counts: coverage and q50 median error per cell against the two baselines, with counts and dates, published to the person as "Ranges like this held 8 in 10".
+
+### The backtest on released sold data, and what it may claim
+
+*agent proposal*, the engines lead, 2026-11-15. This is the run behind the [benchmark's](../benchmark.md) row 7. The engine itself is scored: a Python twin of `comps.ts` (`jobs/valuation/comps.py`, parity-tested against the TypeScript on `app/src/engines/valuation/fixtures/comps-parity.json`), as the contestants `engine_comps` (the D5 weighted quantiles) and `engine_comps_conformal` (widened by each group's `Q_g` from earlier months' misses, as D6 and `check.ts` do), in [jobs/valuation/experiment.py](../../jobs/valuation/experiment.py), beside the 90-day product median a seller looks up.
+
+The rows are data the marketplaces released themselves. The terms of the sites' own sold pages bar collecting them in bulk ([sold-datasets.md](../../research/price/ben/sold-datasets.md); Poshmark §4(b), eBay §3 and §10), so no sold page is read to build a test or training set.
+
+| Dataset | What it is | What a number from it may claim |
+|---|---|---|
+| `dataset:stockx_2019` | 99,956 StockX sales of Off-White x Nike and Yeezy 350, 2017-09-01 to 2019-02-13, new only | pricing deadstock sneakers in 2017 to 2019; the noise floor, since identical pairs in a week sold a median 1.7% apart |
+| `dataset:nber_ebay_bo` | eBay Best Offer listings, sold and unsold, 2012-05 to 2013-06, across eBay's categories (Backus, Blake, Larsen and Tadelis 2020, QJE; research use) | pricing used goods on eBay in 2012 to 2013, by category and condition |
+
+Every result names its dataset, the date range of its sales and the families it covers. No sentence built on these says "accuracy on today's market". Families with no released data at all (Depop, Poshmark, Mercari and Facebook sales; furniture; one-off and unbranded items) are listed in the result as a gap, not left out.
+
+Two current sources fill the gap later, both inside the rules. One is the person's own sales read through their linked accounts, frozen before the sale through the `duel-record` and `duel-score` commands in the runner. The other is eBay's official APIs once developer keys exist ([waiting](../plans/waiting.md)), with the API licence's bar on modelling prices respected: such rows are scored against, never fitted on.
 
 The fixed set: 100 real items, frozen with their sale prices and dates, spread over the price bands and over eBay, Poshmark, Depop, Mercari and Facebook, kept out of every fit.
 

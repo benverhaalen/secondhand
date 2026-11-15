@@ -7,14 +7,17 @@ name=$1; brief=$2; model=${MODEL:-gpt-6.1-sol}; effort=${EFFORT:-medium}
 main=~/dev/projects/secondhand; wt=~/dev/projects/secondhand-wt/$name
 [ -n "$name" ] && [ -f "$brief" ] || { echo "usage: mac-worker.sh <name> <brief file>"; exit 2; }
 case $effort in low|medium|high) ;; *) echo "effort $effort is not used here without a measured gain: low, medium or high"; exit 2;; esac
-[ "$(pgrep -f 'codex exec' | wc -l | tr -d ' ')" -ge 12 ] && { echo "12 workers already running: not starting $name"; exit 1; }
+[ "$(pgrep -f 'codex exec' | wc -l | tr -d ' ')" -ge 28 ] && { echo "28 workers already running: not starting $name"; exit 1; }
+free=$(memory_pressure 2>/dev/null | awk '/free percentage/ {gsub("%","",$NF); print $NF}')
+[ -n "$free" ] && [ "$free" -lt 25 ] && { echo "only $free% of memory free: not starting $name"; exit 1; }
 if [ -d $wt ]; then
   [ -n "$AGAIN" ] || { echo "worktree $name exists: pick a new name, or AGAIN=1 for a follow-up to the same piece"; exit 1; }
   pgrep -f "codex exec.*-C $wt " >/dev/null && { echo "$name is still running"; exit 1; }
   rm -f $wt/WORKER_REPORT.md
 else
-  cd $main && git pull -q --no-rebase || { echo "PULL FAILED: not starting $name"; exit 1; }
-  git worktree add -q -b w/$name $wt main || exit 1
+  # Cut from origin/main, not the main checkout: a dirty or diverged main checkout must not stop a worker.
+  cd $main && git fetch -q origin || { echo "FETCH FAILED: not starting $name"; exit 1; }
+  git worktree add -q -b w/$name $wt origin/main || exit 1
   ln -sfn $main/.venv $wt/.venv; ln -sfn $main/app/node_modules $wt/app/node_modules; ln -sfn $main/db/node_modules $wt/db/node_modules
 fi
 cd $wt; ulimit -u 1500
