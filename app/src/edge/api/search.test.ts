@@ -319,6 +319,20 @@ test('sameProduct receives the query, labels a look-alike comparable, and drops 
   assert.deepEqual(saved.result.found.dropped_by_reason, { wrong_item: 1, max_delivered_cents: 3 });
 });
 
+test('past the signed-out daily pool a search still answers, without the paid model', async () => {
+  searchParams.declare({ name: 'search_visitor_judged_per_day', family: 'scalar', prior: 0, guard_lo: 0 });
+  try {
+    ports.fetchPage = async u => siteOf(u) === 'poshmark' ? page(fixture('poshmark')) : blocked();
+    let asked = 0;
+    ports.ask = async () => { asked++; return { ok: false, reason: 'no_key', ms: 0 }; };
+    const job = await start(); await ended(job.id);
+    const saved = await (await poll(job.id)).json();
+    assert.equal(saved.state, 'done');
+    assert.equal(saved.result.results.length, 12);
+    assert.equal(asked, 0, 'the model must not be called once the pool is spent');
+  } finally { searchParams.declare({ name: 'search_visitor_judged_per_day', family: 'scalar', prior: 500, guard_lo: 0 }); }
+});
+
 test('Jev without a key keeps every landed row unresolved and reports default identity on partials and the result', async () => {
   ports.fetchPage = async u => siteOf(u) === 'poshmark' ? page(fixture('poshmark')) : blocked();
   ports.ask = async () => ({ ok: false, reason: 'no_key', ms: 0 });

@@ -1,5 +1,5 @@
 // Rests-on: spec/product.md §7 Jobs and the event stream, §8 search budget; int-search-1 brief.
-import { ApiError, type Ctx, type Handler } from './http.ts';
+import { ApiError, deps, type Ctx, type Handler } from './http.ts';
 import { manifestFor, fromEngine, fields, text, bool, strings, money, object, url, invalid, pagination } from './captures.ts';
 import { searchSource, sourceUnavailable, runtimePorts as searchRuntime, type SearchOpts, type SiteSearched, type SearchRow } from '../intel/public/search.ts';
 import { BASE, searchUrl } from '../intel/public/readers.ts';
@@ -437,6 +437,12 @@ export const handlers: Record<string, Handler> = {
     ctx.log.job(job.id, 'search', 'running');
     jobs.append(job.id, 'job.state', { job_id: job.id, kind: 'search', state: 'running', at: started_at });
     const opts = { ...ports, sources: selected };
+    if (!ctx.user_id) {
+      // One shared pool for every signed-out caller: a visitor id is free to mint, so a per-visitor count would cap nothing.
+      const day = String(Math.floor(Date.now() / 86_400_000)), used = deps.kv.get<number>('search_judged', day) ?? 0;
+      if (used >= (searchParams.read('search_visitor_judged_per_day', {}).value as number)) opts.ask = async () => ({ ok: false, reason: 'no_key', ms: 0 });
+      else deps.kv.set('search_judged', day, used + 1, 2 * 86_400_000);
+    }
     const task = Promise.resolve().then(() => search(ctx, job, stages, opts, caller, sources)).catch(e => { ctx.log.error('search.background', e); }).finally(() => searchJobs.pendingSearches.delete(job.id));
     searchJobs.pendingSearches.set(job.id, task);
     return { status: 202, body: { id: job.id, kind: job.kind, state: 'running', stages: structuredClone(stages), stream: `/v1/jobs/${job.id}/events` } };

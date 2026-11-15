@@ -35,6 +35,8 @@ searchParams.declare({ name: 'job_fill_grace_s', family: 'scalar', prior: 60, gu
 
 // A cloud launch includes CDP's 30 s connection bound (browser/cdp.ts); this prior is tunable.
 searchParams.declare({ name: 'search_browser_start_ms', family: 'scalar', prior: 30000, guard_lo: 0 });
+// Signed-out searches a UTC day that may use the paid same-product model; past it they are judged by codes alone.
+searchParams.declare({ name: 'search_visitor_judged_per_day', family: 'scalar', prior: 500, guard_lo: 0 });
 
 // --- single flight and cache ---
 interface SharedCall { result: Promise<RouteOut>; started: Promise<void>; controller: AbortController; callers: number; ended: boolean }
