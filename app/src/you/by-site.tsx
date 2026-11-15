@@ -41,7 +41,7 @@ export function BySite() {
             {n.by_site.map(s => (
               <ListRow key={s.site} id={`site-${s.site}`} site={s.site}
                 label={s.sold ? plural(s.sold, 'sale', 'sales') : 'Nothing sold yet'}
-                detail={s.days_to_sell !== null ? `Sells in about ${plural(s.days_to_sell, 'day', 'days')}` : linked(s.site) ? 'Linked, no sale to measure yet' : 'Sold here before you linked it'}
+                detail={s.days_to_sell !== null ? `Sells in about ${plural(s.days_to_sell, 'day', 'days')}` : linked(s.site) ? undefined : 'Sold here before you linked it'}
                 value={s.sold ? cash(s.kept_cents) : undefined} />
             ))}
           </List>

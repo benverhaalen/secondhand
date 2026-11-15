@@ -5370,15 +5370,15 @@
       "log": "user.input(screen, control=pulse-{r.id}, value=tap); ui.show for the resulting visible state."
     },
     "you-all-live": {
-      "screen": "/you",
-      "intent": "you all live",
+      "screen": "/you/insights",
+      "intent": "See everything live",
       "result": {
         "kind": "push",
         "to": "/sell?filter=live",
         "back": "Open Sell filtered to Live. Back first dismisses keyboard or temporary picker, then follows the screen stack. Edge swipe follows the same rule. Committed changes persist. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
       },
       "press": {
-        "feedback": "highlight",
+        "feedback": "scale",
         "ms": 150
       },
       "motion": {
@@ -5391,7 +5391,7 @@
         "type": "none",
         "when": "Never fires. Never on press-in or scroll."
       },
-      "freq": "tens",
+      "freq": "occasional",
       "states": {
         "disabled": "Never while present.",
         "loading": "No asynchronous local work. Ignore a repeated navigation tap until its route mounts; never stack duplicate routes.",
@@ -5431,9 +5431,40 @@
       "always": true,
       "log": "user.input(screen, control=you-insights, value=tap); ui.show for the resulting visible state."
     },
-    "you-records": {
+    "you-payouts": {
       "screen": "/you",
-      "intent": "Use this control",
+      "intent": "See where the money is",
+      "result": {
+        "kind": "push",
+        "to": "/you/payouts",
+        "back": "Open /you/payouts. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
+      },
+      "press": {
+        "feedback": "highlight",
+        "ms": 150
+      },
+      "motion": {
+        "name": "native default",
+        "ms": 0,
+        "curve": "System duration and curve; 0 means no app-added animation. New navigation or gesture cancels or grabs the live transition.",
+        "reduce": "System Reduce Motion, no added spatial motion."
+      },
+      "haptic": {
+        "type": "none",
+        "when": "Never fires. Never on press-in or scroll."
+      },
+      "freq": "tens",
+      "states": {
+        "disabled": "Never while present.",
+        "loading": "No asynchronous local work. Ignore a repeated navigation tap until its route mounts; never stack duplicate routes.",
+        "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
+      },
+      "always": true,
+      "log": "user.input(screen, control=you-payouts, value=tap); ui.show for the resulting visible state."
+    },
+    "settings-records": {
+      "screen": "/you/settings",
+      "intent": "See every sale this year",
       "result": {
         "kind": "push",
         "to": "/you/records",
@@ -5460,7 +5491,7 @@
         "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
       },
       "always": true,
-      "log": "user.input(screen, control=you-records, value=tap); ui.show for the resulting visible state."
+      "log": "user.input(screen, control=settings-records, value=tap); ui.show for the resulting visible state."
     },
     "you-connections": {
       "screen": "/you",
@@ -5524,9 +5555,9 @@
       "always": true,
       "log": "user.input(screen, control=you-rules, value=tap); ui.show for the resulting visible state."
     },
-    "you-log": {
-      "screen": "/you",
-      "intent": "Use this control",
+    "rules-activity": {
+      "screen": "/you/rules",
+      "intent": "See every step it took, with Undo",
       "result": {
         "kind": "push",
         "to": "/you/log",
@@ -5553,7 +5584,7 @@
         "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
       },
       "always": true,
-      "log": "user.input(screen, control=you-log, value=tap); ui.show for the resulting visible state."
+      "log": "user.input(screen, control=rules-activity, value=tap); ui.show for the resulting visible state."
     },
     "you-notifications": {
       "screen": "/you",
@@ -5933,7 +5964,7 @@
       "result": {
         "kind": "push",
         "to": "/you/settings",
-        "back": "Open /you/settings at Pause selling; the current /you/pause route is not registered. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
+        "back": "Open /you/settings at Pause selling. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
       },
       "press": {
         "feedback": "highlight",
@@ -22604,37 +22635,6 @@
       },
       "always": true,
       "log": "user.input(screen, control=you-on-its-way, value=tap); ui.show for the resulting visible state."
-    },
-    "you-live": {
-      "screen": "/you",
-      "intent": "you live",
-      "result": {
-        "kind": "push",
-        "to": "/sell?filter=live",
-        "back": "Open Sell filtered to Live. Back first dismisses keyboard or temporary picker, then follows the screen stack. Edge swipe follows the same rule. Committed changes persist. Back and edge swipe pop to the exact presenter with scroll, filters and draft retained. Cold entry has its tab root beneath it. Back changes navigation only."
-      },
-      "press": {
-        "feedback": "scale",
-        "ms": 150
-      },
-      "motion": {
-        "name": "native default",
-        "ms": 0,
-        "curve": "System duration and curve; 0 means no app-added animation. New navigation or gesture cancels or grabs the live transition.",
-        "reduce": "System Reduce Motion, no added spatial motion."
-      },
-      "haptic": {
-        "type": "none",
-        "when": "Never fires. Never on press-in or scroll."
-      },
-      "freq": "occasional",
-      "states": {
-        "disabled": "Never while present.",
-        "loading": "No asynchronous local work. Ignore a repeated navigation tap until its route mounts; never stack duplicate routes.",
-        "failed": "No local error; navigation failure retains this screen and draft and shows Cannot open with Retry."
-      },
-      "always": true,
-      "log": "user.input(screen, control=you-live, value=tap); ui.show for the resulting visible state."
     },
     "you-sell": {
       "screen": "/you",

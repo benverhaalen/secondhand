@@ -10,9 +10,8 @@
 // under Rules and limits; Records under Settings.
 // Behavior: app/behavior/(tabs)/you.json.
 import type { ReactNode } from 'react';
-import { View } from 'react-native';
 import { insights, unread } from '@/demo';
-import { EmptyState, List, Screen, Tag } from '@/ui';
+import { EmptyState, Line, List, Screen, Tag } from '@/ui';
 import { Glance, type Stat } from '@/ui/parts/glance';
 import { ListRow } from '@/ui/parts/list-row';
 import { TabNav } from '@/ui/parts/tab-nav';
@@ -56,8 +55,8 @@ export default function You() {
       ) : null}
 
       <List>
-        {/* The wrapper takes the row's center line; a tag alone sets itself to the start. */}
-        {row('connections', signedOut ? <View><Tag state="failed" word="Signed out" quiet /></View> : undefined)}
+        {/* Line takes the row's center line; a tag alone sets itself to the start. */}
+        {row('connections', signedOut ? <Line><Tag state="failed" word="Signed out" quiet /></Line> : undefined)}
         {row('rules')}
         {row('notifications')}
         {row('settings')}

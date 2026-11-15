@@ -15,7 +15,7 @@ const SHOWS = {
   dense: ['You', 'You got from 8 sales, after fees', 'On its way', '16', 'Live', 'Insights', 'Payouts', 'Your sites'],
   one: ['Nothing sold yet', 'Insights', 'Your sites', 'Signed out', 'Settings'],
   loading: ['You'],
-  failed: ['Couldn’t load your numbers', 'The site didn’t answer. Nothing changed.', 'Try again'],
+  failed: ['Couldn’t load your numbers', 'The site didn’t answer.', 'Try again'],
   offline: ['Waiting for signal', 'You got from 4 sales, after fees'],
   new: ['Nothing sold yet', 'Sell something', 'Your sites', 'Rules and limits', 'Settings'],
 };

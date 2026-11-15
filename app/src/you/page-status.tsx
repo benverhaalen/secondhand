@@ -10,13 +10,13 @@ import { ListRow } from '@/ui/parts/list-row';
 export function PageStatus({ asked, what, children }: { asked: ScreenState | null; what: string; children: ReactNode }) {
   if (asked === 'loading') return <Stack><Skeleton of="notice" /><Skeleton of="notice" /><Skeleton of="notice" /></Stack>;
   if (asked === 'failed') {
-    return <EmptyState title={`Couldn’t load ${what}`} line="The site didn’t answer. Nothing changed."
+    return <EmptyState title={`Couldn’t load ${what}`} line="The site didn’t answer."
       action={{ id: 'page-retry', label: 'Try again', onPress: () => router.setParams({ state: '' }) }} />;
   }
   if (asked === 'offline') {
     return (
       <>
-        <ListRow id="page-offline" lead="refresh" label="Waiting for signal" detail="This is the last copy. A change is sent when it’s back" />
+        <ListRow id="page-offline" lead="refresh" label="Waiting for signal" detail="Showing saved data; changes send when the signal returns" />
         {children}
       </>
     );
