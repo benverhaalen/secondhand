@@ -1,0 +1,16 @@
+{
+  "source": "spec/determinations/money.md#d12-best-site-or-set-of-sites",
+  "units": {"keep": "cents", "cancel_cost": "cents", "E": "expected cents", "m_minutes": "D11 expected minutes to sale", "W_minutes": "detection plus delist minutes", "t50_minutes": "D11 median minutes to sale"},
+  "cases": [
+    {"name":"single site has no double-sale risk","sites":{"ebay":{"E":50,"P":0.5,"keep":100,"cancel_cost":90000}},"expected":["ebay"]},
+    {"name":"negative gain picks no site","sites":{"ebay":{"E":-10,"P":0,"keep":100,"cancel_cost":0}},"expected":[]},
+    {"name":"zero gain picks no site","sites":{"ebay":{"E":0,"P":0,"keep":100,"cancel_cost":0}},"expected":[]},
+    {"name":"rank by E before immediate value","sites":{"ebay":{"E":60,"P":0.1,"keep":100,"cancel_cost":0},"poshmark":{"E":20,"P":0.9,"keep":100,"cancel_cost":0}},"expected":["ebay","poshmark"]},
+    {"name":"E tie prefers higher probability","sites":{"ebay":{"E":50,"P":0.4,"keep":100,"cancel_cost":0},"poshmark":{"E":50,"P":0.5,"keep":100,"cancel_cost":0}},"expected":["poshmark","ebay"]},
+    {"name":"complete tie uses site name","sites":{"poshmark":{"E":50,"P":0.5,"keep":100,"cancel_cost":0},"ebay":{"E":50,"P":0.5,"keep":100,"cancel_cost":0}},"expected":["ebay","poshmark"]},
+    {"name":"slow sites both pay","sites":{"ebay":{"E":50,"P":0.5,"keep":100,"cancel_cost":100,"m_minutes":40000,"W_minutes":4},"poshmark":{"E":40,"P":0.4,"keep":100,"cancel_cost":100,"m_minutes":40000,"W_minutes":4}},"expected":["ebay","poshmark"]},
+    {"name":"large cancellation risk rejects extra site","sites":{"ebay":{"E":50,"P":0.5,"keep":100,"cancel_cost":0,"m_minutes":2000,"W_minutes":500},"poshmark":{"E":40,"P":0.4,"keep":100,"cancel_cost":10000,"m_minutes":2000,"W_minutes":500}},"expected":["ebay"]},
+    {"name":"hot item lists on best site alone","sites":{"ebay":{"E":50,"P":0.5,"keep":100,"cancel_cost":0,"m_minutes":60,"t50_minutes":60,"W_minutes":4},"poshmark":{"E":40,"P":0.4,"keep":100,"cancel_cost":0,"m_minutes":40000,"W_minutes":4}},"expected":["ebay"]},
+    {"name":"hidden expected value has no pick","sites":{"ebay":{"E":null,"P":0.5,"keep":100,"cancel_cost":0}},"expected":[]}
+  ]
+}
