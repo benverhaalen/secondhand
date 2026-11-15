@@ -2171,3 +2171,10 @@ Nate, buying-conversation lead's session, 2026-11-15, about 06:10 Central.
 > production and custom domain, we'll do it later. Turning off protection not yet. Setting that yes
 
 Used in: [packet 78](../.agents/team/packets/team/78-buying-conversation-handoff.md) (the Vercel row).
+
+## 2026-11-15 nate rewrite the history; no mention of reverse engineering; make sure Databricks works and accounts for everything planned
+Nate, orchestrator's session, 2026-11-15, about 07:05 Central. The first line answers the orchestrator's question about three Dupe rows left in git history.
+> Rewrite it
+> Please also get rid of any mention of reverse engineering from the repo, rewrite history, and focus on ensuring databricks works, that we've accounted for everything fully planned and currently being built that alligns with the product
+
+Used in: [the finalization spec](../spec/plans/finalization.md), the data lead's brief.
