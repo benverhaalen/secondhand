@@ -1,0 +1,12 @@
+{
+  "title": "Everything you're selling, and what needs you",
+  "shows": "Sell: every item as a photo with its state tag and its sites, filtered to what needs you",
+  "steps": [
+    { "open": "/sell" },
+    { "wait": 1400 },
+    { "tap": "filter-needs_you" },
+    { "wait": 1400 },
+    { "scroll": 380 },
+    { "wait": 1400 }
+  ]
+}
