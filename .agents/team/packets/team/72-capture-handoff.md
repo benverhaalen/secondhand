@@ -1,8 +1,38 @@
 # 72: capture handoff
 
-Updated: November 15, 2026, night Central. Owner: Nate. Agent: Claude Code, the third capture team lead (Opus 5.5), ending at about half its context ([packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills)). Status: row 7's spec (the parts of one item, F17) is reviewed and on main (c7ea4676); its engine half is building on the Mac in worker `cap-parts-1`; its routes brief is written; the LiDAR module (row 5) leads next, by Nate's choice, and is not started; Nate called the wrap-up, so section 0 is the place to start.
+Updated: November 15, 2026, afternoon Central, by the fourth capture lead (section 00); before that, night Central. Owner: Nate. Agent: Claude Code, the third capture team lead (Opus 5.5), ending at about half its context ([packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills)). Status: row 7's spec (the parts of one item, F17) is reviewed and on main (c7ea4676); its engine half is building on the Mac in worker `cap-parts-1`; its routes brief is written; the LiDAR module (row 5) leads next, by Nate's choice, and is not started; Nate called the wrap-up, so section 0 is the place to start.
 
 The design is [spec/engines/capture.md](../../../../spec/engines/capture.md). Read it first: section 1 says what exists, section 8 lists the fixed and open fixes, and section 9 is the order to build in.
+
+## 00. The fourth capture lead (identify, classification, the questions), 2026-11-15 afternoon
+
+Read this section first; sections 0 to 6 below are the third lead's and still hold where this one does not replace them. Owner: Nate. Agent: Claude Code, the fourth capture lead (Opus 5.5). Briefs and reviews are in the session notes folder (`side-session-notes/local_4b3a0b4d-.../`): `brief-cap-identify-1.txt`, `-1b.txt`, `brief-cap-identify-2.txt`, `brief-cap-classify-1.txt`, `-2.txt`, `brief-cap-depth-1.txt`, `cap-identify-review-1.md`, `cap-classify-review-1.md`.
+
+**On main**
+- The design: [capture.md §5](../../../../spec/engines/capture.md#the-identify-job) "The identify job", "The paid visual rung", "Listing classification", "How a question is ordered by what it narrows" (ab4aabb1, c616b4e7, 84dd5896).
+- The research note: [identify from photos](../../../../research/identify/nate/identify-from-photos-2026-11.md), with treg's prices (d5bf3ffe, 84dd5896).
+- Where photo bytes go: [features/capture](../../../../features/capture/README.md) decision brief, agreed with the server lead: their `Blobs` port in `app/src/edge/store/blobs.ts` (`target`, `read`, `remove`, `onUploaded`), a signed single-use `PUT /v1/uploads/:id`, 25 MB, all EXIF but orientation stripped, type from the bytes. They message the commit when it lands.
+- Listing classification and the plan's new order (merge dfcab2c6, worker cap-classify-1, two rounds; a fresh review found no must-fix in round 1, its should-fix items were all fixed in round 2). Mac after merging main: classify 14, aspects 4, build 16, plan 62, walk 11 (every walk's full plan byte-identical, pinned by hash), fields 34, complete 10, select 18, table 17, captures 139, items 69, examples 9; tsc clean in capture and listing (the app's only tsc errors are in `edge/assist/converse.ts`, a missing `@anthropic-ai/sdk`, not capture's).
+
+**On branches (not on main)**
+- `w/cap-identify-1`: the identify engine, `app/src/engines/capture/identify/` (tag parser, the ladder's TypeScript twin, ports, brands, RN and colour tables). Round 1 (f7b51230): parse 12, ladder 8, identify 14; all three real garments confirm by tag with no paid call. The fresh review said fix first (parser states wrong origins and sizes on common tags; a bad phone text or port reply loses every stage). Round 2 (`brief-cap-identify-1b.txt`, also adds `others`) was running at this handoff: read its WORKER_REPORT "Round 2", rerun the three test files and `jobs/identity/test_twins.py`, then a fresh review of round 2 before merging.
+- `w/cap-depth-1`: the LiDAR module (`app/modules/capture-depth/`, gpt-6-astra high), running at this handoff. After it reports: rerun `swift test` in its `geometry/` and `index.test.ts`; then, yourself over SSH (they need the network), `npx expo prebuild --platform ios` in the worktree and an unsigned `xcodebuild` for a generic iOS device (`CODE_SIGNING_ALLOWED=NO`); never commit `ios/`. Then Ben's packet (section 0's three conditions) before it merges, and the exact Xcode steps for Nate to the orchestrator.
+
+**Next, in order**
+1. Land `w/cap-identify-1` round 2 (above).
+2. `brief-cap-identify-2.txt` (written, not started): the route join. Identify runs as a job when the shots end, results through `applyJobResult` with `facts`, `others`, `rests_on`, `candidate_detail`; classification sets `state.site_rows`; PATCH answers site fields; photos carry `text` and `codes`; upload target via the `Blobs` port when composed. Start it from origin/main after step 1, at gpt-6.1-sol high. Its measure: the three real garments open the brand question with the right brand proposed, and questions per item fall from 6 and 7.
+3. The scaffold and Ben's packet: asked the app-wiring lead (`local_76234feb-...`) whether they own the client's capture verbs in `app/src/api/client.ts` and whether the scaffold goes in `app/src/capture/questions.tsx` (render one `plan.questions[0]` with the fixed parts: `Choices`, `ChoiceChips`, `SizePicker`, `QuestionCard`) and `wire.ts`, plus `app/src/app/dev/capture.tsx`. No answer at this handoff. Then a packet with `Owner: Ben`.
+4. The LiDAR module (above), then `cap-parts-1` (section 2 below: three parser tests red; its plan.ts and select.ts now conflict with dfcab2c6, so merge origin/main in its worktree first).
+
+**Waiting on Nate**
+- Whether a person's photo may go to Google through treg and Serper at all (Lens takes a public address; capture.md "The paid visual rung" says what is sent). The caps (3,000 micro per capture, $0.10 a day) and a top-up of the $1.00 balance. No live paid call has run.
+- eBay `searchByImage`: its docs and licence returned 403, and the eBay app keys are not set here. The visual rung abstains until both are settled.
+- RN 14806 is "Carhartt" only from the tag itself; the FTC site has no API or bulk file.
+
+**Learned the hard way**
+- A worker's own "fresh review" missed every parser fault a reader found by running 40 real tag strings. Brief the reviewer to run the parser on edge strings outside the repo, not only to read it.
+- A spec value with no definition (a 0.6 score for "a match inside a longer word run") cost a worker round. Every number in a spec gets its rule and an example, or it is cut.
+- The Bash tool on Windows cannot see `/tmp` from Windows Python; write helper files inside the repo as dot files and delete them.
 
 ## 0. Where capture stands at the wrap-up (2026-11-15, Nate's word to wrap up)
 
