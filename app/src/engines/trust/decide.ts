@@ -3,8 +3,8 @@ import type { ParamStore, Scope } from '../param/param.ts';
 import { evaluateHard, type LockedKind } from './hard.ts';
 import { codeSignals, readModel, SCORED, SCORED_NAMES, type Ctx, type Group, type Msg, type Reading } from './signals.ts';
 
-import { resolve, numeric, priors, priorVersions, type ParamInput } from './params.ts';
-import { cents, dollarsToCents } from './money.ts';
+import { resolve, numeric, priors, priorVersions, liveWeight, type Scored, type ParamInput } from './params.ts';
+import { cents } from './money.ts';
 import { calibrate, type Calib } from './calibration.ts';
 import { publish, type Proof, type Published } from './publication.ts';
 export { calibrate, sigmoid } from './calibration.ts';
@@ -13,7 +13,7 @@ export type { Calib } from './calibration.ts';
 export type RawRead = { signal: string; confidence: number; span: string };
 export type Deps = {
   store?: ParamStore;
-  model: (m: Msg) => Promise<RawRead[]>;
+  model?: (m: Msg) => Promise<unknown>;
   ms?: number;                       // model timeout, default 2000
   version?: string;                  // model version stamped on readings
   logger?: Log;
@@ -23,12 +23,12 @@ export type ThreadIn = {
   msg: Msg; ctx: Ctx; group: Group; person?: string;
   checkout: boolean; orderPaid: boolean; local: boolean;
   keep_q50_cents?: number; refund_asked_cents?: number;
-  keep_q50?: number; refund_asked?: number; draft?: string;
+  draft?: string;
   proof?: Proof;
 };
 export type Action = 'none' | 'warn' | 'ask' | 'block';
 export type Decision = {
-  action: Action; s: number; loss_cents: number; friction_cents: number; line: number;
+  action: Action; checked_by: 'code' | 'code+model'; s: number; loss_cents: number; friction_cents: number; line: number;
   p: number | null; percent: { p: number; checked: number; probability: Published; count: Published } | null;
   locked: LockedKind[]; draft: boolean; draftBlocked: boolean; commitWaits: boolean; reasons: string[]; readings: Reading[];
 };
@@ -55,13 +55,18 @@ const WHY: Record<string, string> = {
   site_banner: 'the site flagged this buyer', script_print_hit: 'the same message went to other sellers', burst_same_text: 'the same text went to many listings',
 };
 
-const weight = (values: Record<string, unknown>, s: string) => {
+const weight = (values: Record<string, unknown>, s: Scored, errors: Error[]) => {
   const model = values.trust_weights as { uri: string; weights: Record<string, number> };
   if (model.uri !== 'none') return numeric(model.weights)(s);
   const q = values[`trust_q.${s}`] as { alpha: number; beta: number };
   const r = values[`trust_r.${s}`] as { alpha: number; beta: number };
-  if (![q?.alpha, q?.beta, r?.alpha, r?.beta].every(x => Number.isFinite(x) && x > 0)) throw new RangeError(`trust_q/r.${s}`);
-  return Math.log(q.alpha / (q.alpha + q.beta) / (r.alpha / (r.alpha + r.beta)));
+  try {
+    return liveWeight(q, r, SCORED[s].w, values);
+  } catch (error) {
+    if (!(error instanceof RangeError) || error.message !== 'trust_q/r') throw error;
+    errors.push(new RangeError(`trust_q/r: ${s}`, { cause: error }));
+    return SCORED[s].w;
+  }
 };
 
 async function withTimeout<T>(f: () => Promise<T>, ms: number): Promise<T> {
@@ -74,32 +79,49 @@ async function withTimeout<T>(f: () => Promise<T>, ms: number): Promise<T> {
 export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
   const scope: Scope = t.person ? { site: t.group, person: t.person } : { site: t.group };
 
-  const resolved = d.store ? resolve(d.store, scope) : { values: priors(), versions: priorVersions() };
+  const resolved = d.store ? resolve(d.store, scope) : { values: priors(), versions: priorVersions(), errors: [] };
   const p = numeric(resolved.values);
-  const keep_cents = t.keep_q50_cents !== undefined ? cents(t.keep_q50_cents, 'keep_q50_cents') : t.keep_q50 !== undefined ? cents(t.keep_q50, 'keep_q50') : t.ctx.price_cents !== undefined ? cents(t.ctx.price_cents, 'price_cents') : dollarsToCents(t.ctx.price_usd, 'price_usd');
-  const refund_cents = t.refund_asked_cents !== undefined ? cents(t.refund_asked_cents, 'refund_asked_cents') : t.refund_asked === undefined ? 0 : dollarsToCents(t.refund_asked, 'refund_asked');
-  const L = loss(keep_cents, refund_cents, p), F = friction(L, p), line = askLine(L, p);
+  const priceUnknown = t.keep_q50_cents === undefined && t.ctx.price_cents === undefined;
+  const keep_cents = t.keep_q50_cents !== undefined ? cents(t.keep_q50_cents, 'keep_q50_cents') : t.ctx.price_cents === undefined ? 0 : cents(t.ctx.price_cents, 'price_cents');
+  const refund_cents = t.refund_asked_cents === undefined ? 0 : cents(t.refund_asked_cents, 'refund_asked_cents');
+  const L = priceUnknown ? cents(p('trust_loss_min_cents'), 'trust_loss_min_cents') : loss(keep_cents, refund_cents, p);
+  const F = friction(L, p), line = askLine(L, p);
   const calib = resolved.values.trust_calib as Calib;
   calibrate(p('trust_b'), calib);
 
   // The model starts first and runs while code signals are read.
   let modelFailed = false;
-  const runModel = () => withTimeout(() => d.model(t.msg), d.ms ?? p('trust_model_timeout_ms'));
-  const modelP = (d.logger ? d.logger.call('model', 'trust.predicates', { message_id: t.msg.id, version: d.version }, runModel, rows => ({ count: rows.length })) : runModel()).catch(error => {
-    modelFailed = true;
-    d.logger?.error('trust.predicates', error);
-    d.log?.({ kind: 'trust_model_failed', thread_id: t.msg.thread_id, error: error instanceof Error ? error.message : String(error) });
-    return [] as RawRead[];
-  });
+  const model = d.model;
+  if (!model) {
+    d.logger?.note('trust scan was code only', { thread_id: t.msg.thread_id });
+    d.log?.({ kind: 'trust_code_only', thread_id: t.msg.thread_id, note: 'trust scan was code only' });
+  }
+  const runModel = async () => {
+    const raw = await withTimeout(() => model!(t.msg), d.ms ?? p('trust_model_timeout_ms'));
+    return readModel(raw, n => p(`trust_thr.${n}`), d.version ?? 'unversioned');
+  };
+  const modelP: Promise<Reading[]> = model
+    ? (d.logger ? d.logger.call('model', 'trust.predicates', { message_id: t.msg.id, version: d.version }, runModel, rows => ({ count: rows.length })) : runModel()).catch(error => {
+      modelFailed = true;
+      d.logger?.error('trust.predicates', error);
+      d.log?.({ kind: 'trust_model_failed', thread_id: t.msg.thread_id, error: error instanceof Error ? error.message : String(error) });
+      return [];
+    })
+    : Promise.resolve([]);
   const code = codeSignals(t.msg, { ...t.ctx, p });
-  const raw = await modelP;
-  const modelReads = modelFailed ? [] : readModel(raw, (n) => p(`trust_thr.${n}`), d.version ?? 'unversioned');
+  const modelReads = await modelP;
   const readings = [...code, ...modelReads];
   const present = new Set(readings.filter((r) => r.present).map((r) => r.signal));
 
   const hard = evaluateHard({ site: t.msg.site, checkout: t.checkout, orderPaid: t.orderPaid, local: t.local, present, draft: t.draft });
 
-  const s = SCORED_NAMES.reduce((a, n) => a + (present.has(n) ? weight(resolved.values, n) : 0), 0);
+  const contributions = SCORED_NAMES.filter(n => present.has(n)).map(signal => ({ signal, weight: weight(resolved.values, signal, resolved.errors) }));
+  for (const error of resolved.errors) {
+    d.logger?.error('trust.params', error);
+    d.log?.({ kind: 'trust_params_failed', thread_id: t.msg.thread_id, error: error.message });
+  }
+  const s = contributions.reduce((sum, r) => sum + r.weight, 0);
+  const strongest = contributions.filter(r => r.weight > 0).sort((a, b) => b.weight - a.weight)[0];
 
   const compatible = (calib.score_model_version ?? 0) === (resolved.versions.trust_weights ?? 0);
   const passed = compatible && gatePassed({ n: calib.n ?? 0, positives: calib.positives ?? 0, ece: calib.ece ?? 1 }, p);
@@ -109,22 +131,30 @@ export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
   const count = passed ? publish(calib.n!, 'trust_checked', proof, resolved.versions, resolved.values) : null;
   const percent = probability && count ? { p: prob, checked: calib.n!, probability, count } : null;
 
-  const why = SCORED_NAMES.filter((n) => present.has(n) && SCORED[n].w > 0).map((n) => WHY[n]);
+  const why = contributions.filter(r => r.weight > 0 && WHY[r.signal]).sort((a, b) => b.weight - a.weight).map(r => WHY[r.signal]);
   const reasons = [...hard.reasons];
   let action: Action = 'none';
   if (hard.action === 'block') action = 'block';
   else if (modelFailed) { action = 'ask'; reasons.push('The check did not finish, so every commit waits for you.'); }
   else if (passed && prob >= p('trust_p_block')) { action = 'block'; reasons.push('This looks like a known scam.'); }
+  else if (priceUnknown) action = 'ask';
   else if (hard.action === 'ask' || s >= line) action = 'ask';
   else if (s >= line - p('trust_warn_gap')) action = 'warn';
 
-  if (action === 'ask' && why.length > 0) reasons.push(`Check before you reply: ${why.join(', ')}.`);
-  if (action === 'warn') reasons.push("Don’t open links from buyers.");
+  if (action === 'ask' || action === 'block') {
+    if (hard.reasons.length === 0 && strongest && WHY[strongest.signal]) reasons.unshift(`Check before you reply: ${WHY[strongest.signal]}.`);
+    if (priceUnknown) reasons.push('The price is not known.');
+    if (action === 'ask' && why.length > 0) {
+      const reason = `Check before you reply: ${why.join(', ')}.`;
+      if (!reasons.includes(reason)) reasons.push(reason);
+    }
+  }
+  if (action === 'warn') reasons.push(strongest && WHY[strongest.signal] ? `Check before you reply: ${WHY[strongest.signal]}.` : "Don’t open links from buyers.");
 
   if (action === 'none') reasons.length = 0;
 
   const out: Decision = {
-    action, s, loss_cents: L, friction_cents: F, line, p: passed ? prob : null, percent, locked: hard.locked, draft: action !== 'block',
+    action, checked_by: model && !modelFailed ? 'code+model' : 'code', s, loss_cents: L, friction_cents: F, line, p: passed ? prob : null, percent, locked: hard.locked, draft: action !== 'block',
     draftBlocked: hard.draftBlocked, commitWaits: action === 'ask' || action === 'block', reasons, readings,
   };
   d.logger?.note('trust decision', { thread_id: t.msg.thread_id, action, s, loss_cents: L, friction_cents: F, modelFailed });

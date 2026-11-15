@@ -19,7 +19,8 @@
 //   CHOICE 88    a choice: large, so the three doors read at a glance. Its icon well is 88 less 2 × 16, so 56, and its
 //                corner nests in the capsule's (Art. 9.1).
 import { useEffect, type ReactNode } from 'react';
-import { View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
+import { useWindow } from '../window';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Icon, type IconName } from '../icon';
@@ -51,7 +52,7 @@ const fill: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, botto
 
 // Where the ＋ sits: centered in the tab bar, standing 12 above its top line (chrome.tsx, NewCircle), under the 1 px rule.
 export function usePlus() {
-  const { width, height } = useWindowDimensions();
+  const { width, height } = useWindow();
   return { x: width / 2, y: height - size.tabH + 1 - space.s3 + PLUS / 2, width, height };
 }
 
@@ -68,7 +69,7 @@ export function CircleStage({ origin, start = PLUS, phase, ground, onSettled, ch
   onSettled?: (phase: CirclePhase) => void;
   children?: ReactNode;
 }) {
-  const b = useBar(), c = useColors(), reduced = useReducedMotion(), { width, height } = useWindowDimensions();
+  const b = useBar(), c = useColors(), reduced = useReducedMotion(), { width, height } = useWindow();
   const r = Math.ceil(Math.max(Math.hypot(origin.x, origin.y), Math.hypot(width - origin.x, origin.y), Math.hypot(origin.x, height - origin.y), Math.hypot(width - origin.x, height - origin.y)));
   const least = start / (2 * r);
   const grow = useSharedValue(phase === 'open' ? 1 : 0);

@@ -1942,3 +1942,111 @@ Ben, thread "Roll the UI system out everywhere", 2026-11-15 10:27 UTC (relayed b
 > each page should have one purpose. not sure if this is defined. for more detailed actions you can go into specific pages. like profile shouldnt have analytics, linking services, tracking things, settings, different types of settings. it should have simple ways to visualize and understand intutitively and go to each thing. also something im noticing is a lot of clutter
 
 Used in: `app/src/app/(tabs)/you.tsx` and `app/behavior/(tabs)/you.json` (the glance and one-line rows; the analytics moved to Insights, `app/src/you/trends.tsx`), `app/src/app/(tabs)/sell.tsx` (a shelf named once).
+Ben, same thread, 10:27 UTC.
+
+> each page should have one purpose. not sure if this is defined. for more detailed actions you can go into specific pages. like profile shouldnt have analytics, linking services, tracking things, settings, different types of settings. it should have simple ways to visualize and understand intutitively and go to each thing. also something im noticing is a lot of clutter
+
+Ben, same thread, 10:30 UTC.
+
+> thinking of all possible interaction states. scrolling up. like because you have 4 parts on the bottom where a user can go to and they look relatively similar, they should be layed out relatively similar in similar primitives you know. but i want you to spawn a few codex agents to do work in parallel and faster for each type of page. understanding what it is and what it isnt. using the principles from those skills to assess and redesign it effectively to fit the skills and the primitives and cohesive family as a whole
+
+Ben, same thread, 10:31 UTC.
+
+> ensuring each checks against what is planned feature wise for each and also noting down what is left to be wired up and such
+
+Used in: [features/app/page-jobs.json](../features/app/page-jobs.json), `scripts/page-jobs.mjs` (J1 to J5).
+## 2026-11-15 nate host the server output on the website's vercel deployment
+Nate, orchestrator's session, 2026-11-15, about 06:15 Central, asked whether the device test should run against a dev client on the LAN or a hosted server.
+> Lets host the server output sure, we can host it on the next.js deployment with vercel the website will live on
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md). The deploy itself is still asked each time.
+
+## 2026-11-15 nate parse more from each read instead of reading one by one
+Nate, orchestrator's session, 2026-11-15, about 06:25 Central, after hearing that eBay is held to one read every ten seconds.
+> well instead of reading one by one, can we build the system to parse and even more effectively ascertain info
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate parsing and decisions driven by code, not a model reading each one
+Nate, orchestrator's session, 2026-11-15, about 06:50 Central.
+> we can parse and build things to be deterministicially or code driven no? would that be more optimized?
+
+Used in: `spec/engines/market-index.md` (the attribute extractor, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate we read everything; the Poshmark rule is only about share, like and repost
+Nate, adaptation lead's session, 2026-11-15, morning Central, correcting a reading limited to Poshmark.
+> no not just reading poshmark. I meant we only were to apply that one rule to make the poshmark specific things like sharing and liking user inputs the ai agent tells the user to do for best marketing insights. We read everything
+
+Used in: [spec/engines/market-index.md §1](../spec/engines/market-index.md#1-what-may-be-kept-per-source), [spec/engines/adaptation.md](../spec/engines/adaptation.md).
+
+## 2026-11-15 nate retrieval proven first, then the engines, then a presentation the judges understand, with databricks shown
+Nate, orchestrator's session, 2026-11-15, about 07:05 Central.
+> Ensure it being wired in is efficiently and expertly evaluated. We;ll establish that we have the full outperforming data retreival built and efficient, benchmarked, and proven amazing. Then we move on to the engines for determining and driving how we calculate and adapt in realtime, which ive already asked we reserach and credibly write up to bolster all of the system and its architecture. When we present it needs to be clear, impressive, and understood by the judges, with databricks utilization also exemplified as that is a track we are entering
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `bench/README.md` (the retrieval evaluation).
+
+## 2026-11-15 nate no bench reruns until the latency blunders are fixed
+Nate, third integration lead's session, 2026-11-15, morning Central, on the full-answer jump to 9.99 s.
+> dont rerun benches until we have perfectly optimized to correct such blunders like the jump in latency
+
+Used in: [packet 69](../.agents/team/packets/team/69-integration-handoff.md), [joins.md J12](../spec/plans/joins.md#named-fixes-in-build-order): the bench reruns only after an in-process latency test of the composed search passes.
+
+## 2026-11-15 nate the system picks the platform a listing will do best on, or lists on both
+Nate, orchestrator's session, 2026-11-15, about 07:30 Central.
+> The system assess for the user, based on their given linked platforms, the one that it'd perform best on, or to possibly list both but we've accounted for how to handle multiple listings
+
+Used in: `spec/engines/adaptation.md` (AD5, rank sites by expected keep), `spec/plans/engines-queue.md`.
+
+## 2026-11-15 nate show how the engine weighs what it learned, with genie answering and every way databricks helped
+Nate, orchestrator's session, 2026-11-15, about 07:45 Central.
+> So we should exemplify how the engine we built to deliver and determinstically weigh aggregated and learned product information from official and second hand retailers. like if databricks builds stuff for genie to be able to answer questions than we can show off the product, exhbit all the ways databricks helped, the feature set it offered to us, how we expanded on it, and optimized to create what we present
+
+Used in: `databricks/DEMO.md`, `databricks/genie/market.json`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate technology is valued by its parts too, and a custom build is a clarifying question
+Nate, orchestrator's session, 2026-11-15, about 07:55 Central.
+> Also for technology, a userful thing when its being captured and identified, is for the system to perhaps determine the value of its individual pieces. like a desktop computer can have the system understand the ram, of course if its a custom build, I imagine that will be a clarifying question, and stuff like that
+
+Used in: [packet 72](../.agents/team/packets/team/72-capture-handoff.md) (the queue's parts row), `spec/engines/capture.md` (when specced).
+
+## 2026-11-15 nate start new leads as needed and work to complete everything
+Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
+> Start all new leads as you see fit, evaluate, fix, address, and efficiently work to complete everything
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md) (the orchestrator starts a replacement lead when one hands off, without asking each time).
+
+## 2026-11-15 nate apify stays out of the latency path; store it and feed the engines from the store
+Nate, orchestrator's session, 2026-11-15, about 08:25 Central.
+> well we dont read apify in full if it affects latency, we can store stuff to then be generated and build the system to aid the models and ai engines in how the data is automatically given to them
+
+Used in: `spec/engines/market-index.md` (MI1, MI2), [packet 69](../.agents/team/packets/team/69-integration-handoff.md) (the Facebook source row).
+
+## 2026-11-15 nate a listing parser dropped onto each site's page, narrowing by type or keyword and checking the name
+Nate, orchestrator's session, 2026-11-15, about 08:35 Central, continuing "we can parse and build things to be deterministicially or code driven".
+> that includes the way we scrape browsers, the system could drop like a listing parser onto every site with the listing that also narrows by the type or keyword and checks for the name, just things to improve accuracy, and efficeincy.
+
+Used in: `app/src/edge/harness/public-client.ts` (the in-page parser, when built), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate the buying side is a conversation: text or a photo in, the broad search and the engines behind it, and general questions too
+Nate, orchestrator's session, 2026-11-15, about 09:20 Central.
+> For our buying side, it should be a sonnet 5.5 on low or medium as a text box, or photo input, which then runs the broad every platform search, can then output general details about the product, but then get into specifics like pricing trends, assess when it'll be best listed and probably where. Also the engine can be used for general knowledge queries that compound its available power and use of the system and whats delivered that I can ask, and want this to be whats best tested, "What are the latest fashion trends millenials are wearing, what about gen z". perhaps databricks could have the built in engine to output a dashboard, or ideally some storage type of all info, that then a conversation model can use almost as a tool calls output to combine with basic internet search and the truly accurate engine and what data we can deliver and can be understood by the agent
+
+Used in: `features/assist/`, `features/buy/` (the conversation, when specced), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate the next.js site on vercel with the buy side as its own page and the home hero demo
+Nate, buying-conversation lead's session, 2026-11-15, about 05:05 Central.
+> Lets get the next.js site looked at if it hasnt been started yet. And we can begin testing the website hosted buy side which is a dedicated page, and on our homepage top hero as a fun visitable demonstration of its power, responsive and built for mobile and web view. Built on next.js and hosted with vercel
+
+Used in: `features/buy/README.md` (the web page and the hero, when specced), `web/` (the site, when built).
+
+## 2026-11-15 nate the conversation drops widgets into its answer: the model writes a tag and the page draws it
+Nate, buying-conversation lead's session, 2026-11-15, about 05:10 Central.
+> With this, we shouid practice the intelligent dynamic ui, dropping widgets and populating fields with text, generated graphs, obviously working on a framework we design like graphs just require the model in its output to out put like "the pricing was [price graph:iphone16-678l iphone17-999] etc
+
+Used in: `features/assist/README.md` (the widget tags, when specced), `web/` (the renderer, when built).
+
+## 2026-11-15 nate build the lidar module before a testflight build
+Nate, capture lead's session, 2026-11-15, evening Central. Asked "can you push to testflight, ill test the lidar"; told the app has no LiDAR code yet, he chose:
+> Build the module first
+
+Used in: `spec/engines/capture.md` §7 (the Swift capture module), `.agents/team/packets/team/72-capture-handoff.md` (queue item 5).

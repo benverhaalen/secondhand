@@ -73,6 +73,16 @@ export function itemPage(test, page, label) {
 export async function reach(ctx, route, steps = []) {
   const s = await ctx.open(route);
   await s.page.locator('[data-screen]').first().waitFor({ state: 'attached', timeout: 8000 });
+  // A route that is a sheet (Plan, Post) rises from the foot: wait until it is up and still, as a person does before
+  // tapping, or a tap meant for a control lands on the scrim the sheet has not covered yet. The page's server copy draws
+  // the sheet below the screen, so this also waits for the page to come alive.
+  await s.page.waitForFunction(() => {
+    const el = document.querySelector('[data-part="sheet"]');
+    if (!el) return true;
+    const top = Math.round(el.getBoundingClientRect().top), still = top < innerHeight && top === globalThis.__sheetTop;
+    globalThis.__sheetTop = top;
+    return still;
+  }, null, { polling: 100, timeout: 8000 }).catch(() => {});
   for (const step of steps ?? []) {
     if (Array.isArray(step)) { const el = s.page.getByTestId(step[0]); await el.waitFor({ state: 'visible', timeout: 3000 }); await el.fill(step[1]); await el.press('Enter'); }
     else await press(s, step);

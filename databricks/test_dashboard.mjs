@@ -39,7 +39,7 @@ function checkWidget(widget) {
     return;
   }
   const { spec } = widget;
-  assert.equal(spec.version, { counter: 2, table: 2, bar: 3, line: 3, 'filter-single-select': 2 }[spec.widgetType],
+  assert.equal(spec.version, { counter: 2, table: 2, bar: 3, line: 3, 'filter-single-select': 2, 'custom-vega-viz': 1 }[spec.widgetType],
     `${widget.name}: wrong widget version`);
   const fields = widget.queries.flatMap(q => q.query.fields.map(f => f.name));
   const templated = [...JSON.stringify(spec.encodings).matchAll(/\{\{(\w+)\}\}/g)].map(m => m[1]);
@@ -110,14 +110,19 @@ test('dashboard parses and every widget has matching fields and supported versio
   }
 });
 
-test('every figure says where it comes from, and every rate carries its count', () => {
-  for (const w of widgets(dashboard()).filter(w => w.spec)) {
+test('every figure says where it comes from, and every headline figure carries its count', () => {
+  const d = dashboard();
+  for (const w of widgets(d).filter(w => w.spec)) {
     if (w.spec.widgetType.startsWith('filter')) continue;
     assert.ok(w.spec.frame?.title && w.spec.frame?.description, `${w.name}: title and description name the data`);
     assert.doesNotMatch(JSON.stringify(w.spec.frame), /—|n=|p50|accuracy on live/i, `${w.name}: plain words`);
-    const value = w.spec.encodings.value;
-    if (value?.format?.type === 'number-percent') assert.match(value.formatTemplate ?? '', /of \{\{\w+\}\}/, `${w.name}: a rate shows its count`);
+    assert.equal(w.spec.encodings.value?.formatTemplate, undefined, `${w.name}: the counter truncates a template; use the stat widget`);
+    if (w.spec.widgetType === 'custom-vega-viz') assert.deepEqual(w.spec.encodings.fields.map(f => f.fieldName), ['value_label', 'sub_label'], w.name);
   }
+  const stats = sql(d, 'stats');
+  for (const key of ['cited', 'rebuilt', 'ours_range', 'locked', 'refused', 'held_back', 'allowed'])
+    assert.match(stats, new RegExp(`'${key}'.*concat\\('of `), `${key}: its count reads "of N"`);
+  assert.match(stats, /coalesce\(concat\(format_number\(within_20 \* 100, 1\), '%'\), 'Too few'\)/, 'a null rate reads Too few, never 0%');
 });
 
 test('the metric view guards every rate the way the app does: null under 30 shown', () => {
@@ -128,7 +133,7 @@ test('the metric view guards every rate the way the app does: null under 30 show
   assert.equal(rates.length, 3);
   for (const [, name, expr] of rates) assert.match(expr, /^CASE WHEN COUNT_IF\(shown\) >= 30 THEN .+ END$/, name);
   const d = dashboard();
-  for (const name of ['price', 'price_week']) assert.match(sql(d, name), /FROM valuation_metrics/);
+  for (const name of ['stats', 'price_band', 'price_range', 'price_week']) assert.match(sql(d, name), /FROM valuation_metrics/);
 });
 
 test('every dataset references existing relations and queryLines concatenate safely', () => {
