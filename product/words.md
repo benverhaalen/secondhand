@@ -2329,3 +2329,11 @@ Nate, orchestrator's session, 2026-11-15, about 08:40 Central, answering "May a 
 > yes
 
 Used in: [the capture design](../spec/engines/capture.md), [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate floating logos that burst into the site, and confirm every harness does every job
+Nate, the app-wiring lead's session, 2026-11-15, about 07:55 Central (machine clock), on the shop takeover with Depop and eBay reading.
+> This view sucks, it should be like floating logos around it, that click to expand into the browser session that links. Like the bubble fills the page white, blue, red, purple, and light blue. then the link loads on the platform , dont wait to fill it, like try to open the browser as soon as majority of screen is filled. Confirm the harnesses work for each of those sites to both search, engine and calculate on, and also monitor and manage and deliver analytics
+
+And, to "Wire the signed-in screens next?": "yes".
+
+Used in: the shop takeover's source bubbles (packet 81), the harness check (packet 83).
