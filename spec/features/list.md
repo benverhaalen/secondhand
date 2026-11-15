@@ -38,7 +38,7 @@ Lives in **Sell**, in the drafting area ([decisions](../../product/decisions.md#
 | Site | Title form | Photo order | Attributes to fill | Price path | Timing | Offers |
 |---|---|---|---|---|---|---|
 | eBay | brand, model, key aspects, 80 chars (asserted) | strongest first, up to 24 | every required and recommended aspect from Taxonomy, condition id and descriptors | price path; markdown by `revise`; relist on day 45 for max_return (new id) | `list_at` from the plan; scheduled listing where needed | Best Offer on for quick and balanced; offer to watchers by `answer_offer` |
-| Facebook | brand, item, size or model; 99 max (asserted), aim under 60 ([listing-seo](../../research/list/ben/listing-seo.md), [facebook-marketplace](../../research/list/ben/platforms/facebook-marketplace.md)) | strongest first, up to 10 (asserted) | condition, brand, category; size and colour where offered | price path by `revise` | `list_at`; counts against 20 new a month (asserted) | none on the site; messages carry offers |
+| Facebook | brand, item, size or model; about 99 on the consumer form (asserted; the partner catalog's 200 is another surface, [settled note, row 11](../../research/watch/nate/open-items-settled-sites-and-rivals.md)), aim under 60 ([listing-seo](../../research/list/ben/listing-seo.md), [facebook-marketplace](../../research/list/ben/platforms/facebook-marketplace.md)) | strongest first, up to 10 (asserted) | condition, brand, category; size and colour where offered | price path by `revise` | `list_at`; counts against 20 new a month (asserted) | none on the site; messages carry offers |
 | Depop | no title; first line of the description | strongest first, up to 8 | department, product type, brand, size set, condition | price path by `revise` | `list_at` | offer to likers by `answer_offer` |
 | Poshmark | "Brand + Product Type + Key Attributes", 80 (asserted) | cover in 3:4, up to 16 | department, category, subcategory, size from the list, brand, NWT | price path by `revise`, paced | `list_at`; never relisted | offer to likers, paced |
 | Mercari | brand, item, key attribute, 80 (asserted) | strongest first, up to 12 | category three levels, brand, condition, size | price path by `revise` (edits over relists) | `list_at` | offer to likers |
@@ -179,7 +179,7 @@ Errors as in [product.md](../product.md#errors): a site refusing the post is `50
 | Photos per listing | every photo the site allows; sale rate rises with count | Tise coefficient 0.049 per extra image; eBay first-photo quality odds ratios 1.17 (shoes) and 1.25 (handbags) ([observing-rank-and-performance](../../research/list/nate/observing-rank-and-performance.md)) |
 | Best Offer on eBay | sale probability at least +3.17% against off, price unchanged | the same note (eBay claims 5%) |
 | Free shipping | sale likelihood +14% against $1 shipping | the same note |
-| Delist after a sale | under 2 min p95 | delist by replay 1 to 3 s against 1 to 4 min in the browser (asserted) |
+| Delist after a sale | the bar in [sold.md](sold.md#how-we-will-know-it-works) | delist by replay 1 to 3 s against 1 to 4 min in the browser (asserted) |
 | Double sales | none | events |
 | Preselected plan kept | more than half of items | our events |
 | Price and timing per objective | days to sell inside the plan's range | no study exists; our own sales decide |

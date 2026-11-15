@@ -15,7 +15,7 @@ Capture lives under ＋ in the bottom bar ([decision](../../product/decisions.md
 | 4 | Sees one instruction, sometimes. | "Closer on the tag", "Turn it over": one per unmet `requirement` row that a view can settle, in priority order, with an arrow or outline per [copy.md](../../product/copy.md). |
 | 5 | Taps the voice button, if they like. | `talk` mode over the same session (below); switching loses nothing. |
 | 6 | Answers a question only if no view can settle it. | Identify's `clarify` inputs arrive as background searches resolve, one at a time, no spinner ([clarifying-inputs](../../research/identify/nate/clarifying-inputs.md) §8). |
-| 7 | Picks Sell this, What's it worth or Find this. | Capture reaches `judged`; the item moves to `researching` ([product.md §10](../product.md#capture-to-item-card)). |
+| 7 | Picks Sell this, What's it worth or Find this. | Capture reaches `judged`; the item moves to `researching` ([product.md §10](../product.md#capture-to-item-card)). What's it worth on a thing they own can end in Just value it: the item stays `owned` with its card and a draft, nothing posted ([appraise](appraise.md); *agent proposal*). |
 
 **How the kind is decided.** The first frames give a provisional class on the phone (Apple Vision classification plus plane, outline softness and LiDAR extent). The first kept still goes to `capture_judge`, which confirms or swaps it and sets `item.category` to one of the 13 kinds in [identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md). A swap keeps every photo; an unsure judgement raises `category_unsure`. The kind loads its `requirement` rows; `coverage.needed[]` holds the unmet row ids and `coverage.kept[]` the met ones.
 
@@ -83,7 +83,7 @@ Capture states, from [product.md](../product.md) §4: `framing`, `shooting`, `up
 | Embeddings | SigLIP 2 or Marqo-Ecommerce (Apache-2.0) on serverless CPU, or a hosted embedding through the gateway; vectors in Lakebase pgvector, since AI Search takes no image embeddings |
 | MLflow 3 | one trace per job carrying refs, never images (a trace over 25 MB is unreadable) |
 
-**Free Edition changes**: no GPU serving, so SAM 3 runs hosted (fal or Roboflow) where the phone mask fails; masks otherwise come from the phone, OCR from the phone and PP-OCRv5 on CPU, embeddings from CPU or a hosted model; 5 concurrent tasks means `capture_judge` queues behind other jobs, so the phone's gates carry the live feedback.
+**Workspace**: the event provides a full workspace, so nothing here is shrunk to Free Edition limits ([Nate](../../product/words.md#2026-11-14-nate-do-not-limit-the-product-to-fit-databricks); [settled note, row 2](../../research/data/nate/open-items-settled-databricks.md)). SAM 3 and the embeddings run on GPU serving in the workspace; the phone's mask and OCR stay the instant pass, and the phone's gates carry the live feedback whatever the job queue does.
 
 **Privacy** ([privacy-and-data](../../research/cross-cutting/nate/privacy-and-data.md)): GPS stays on the phone; EXIF is stripped before upload; faces, mail, house numbers and screens are blurred on the phone; no room mesh is kept; outside providers get the masked item crop, not the room; raw room frames and scans are deleted after cutouts unless `kept_raw`. The talk recording is kept only until the after-pass ends.
 
@@ -136,7 +136,7 @@ No outward marketplace action happens here.
 | Blurry or dark after 2 retakes | shot kept with a flag | `confirm_flaw` asks |
 | Three corrections or 20 s in talk mode | the manual shutter | the after-pass on the recording |
 | Face or two items in view | "One item at a time" | continue when clear |
-| Free Edition queue full | live gates still answer | `capture_judge` runs when a task frees |
+| Job queue full | live gates still answer | `capture_judge` runs when a task frees |
 
 ## How we will know it works
 
@@ -165,7 +165,7 @@ Bars come from Ben's decision-tree targets ([decision-tree-capture](../../resear
 | Fabric photogrammetry gives a lumpy mesh | scan-to-images, *asserted* | |
 | eBay wants your own images, video up to 150 MB, no 3D type; Etsy needs at least one unedited real photo | scan-to-images, *observed* | a site's term on edited or generated photos is a recorded fact and does not shape the build ([decision](../../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build)); no label goes on exported photos ([words](../../product/words.md#2026-11-14-no-ai-tag-on-exported-photos-track-it-on-our-end)). Re-check each site's rule before a public launch |
 | SAM 3 needs a GPU; SigLIP 2, Marqo-Ecommerce and PP-OCRv5 are Apache-2.0; DINOv3 is gated | [identification-technologies](../../research/identify/nate/identification-technologies.md), *observed* | a gated model's terms apply to a commercial product |
-| Free Edition: no GPU serving, 5 concurrent tasks, 3 apps that stop after 24 h | [databricks-platform](../../research/data/nate/databricks-platform.md), *observed* | a paid workspace lifts the limits |
+| The event workspace is a full workspace, with GPU serving; Free Edition limits do not apply | [Nate](../../product/words.md#2026-11-14-nate-do-not-limit-the-product-to-fit-databricks), [settled note, row 2](../../research/data/nate/open-items-settled-databricks.md) | |
 | Selling a recalled product is illegal (CPSA §19); drop-side and pre-June-2011 cribs must be destroyed | [identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md), *observed* | holds now: a recall `lookup` row blocks `post` ([product.md](../product.md#licences-terms-and-the-rules-that-protect-people)) |
 | Marketplaces' EXIF stripping is undocumented; backgrounds are never stripped | [privacy-and-data](../../research/cross-cutting/nate/privacy-and-data.md), *sourced* | holds now: GPS stays on the phone |
 

@@ -16,6 +16,8 @@ All in the You tab. Every number opens its `citation` in one tap: the sales or l
 | 5 | Per product, "Market": similar ones sold, for sale now, who is watching ([market](market.md)) |
 | 6 | Fees and records: fees paid, a downloadable record, a plain note on tax forms |
 | 7 | Ask: a fixed list of questions, and a box for others (see Questions) |
+| 8 | "Your things are worth $A to $B": every `owned` and live item, kept ones included, with how it moved since last week; and the total sold, all time ([Nate](../../product/words.md#2026-11-14-nate-value-from-similar-listings-and-demand-and-worth-knowing-even-if-you-never-sell), [Nate](../../product/words.md#2026-11-14-nate-sale-emails-the-expo-account-where-routes-are-hosted-and-a-buy-page-shaped-by-your-style); *agent proposal*) |
+| 9 | Your style: what the app has learned from what you sell, keep, save, follow and buy, each trait with its reason; edit or remove any one ([buy](buy.md#your-style-profile); *agent proposal*) |
 
 A sale ends on the amount kept: no confetti, streaks, countdowns or guilt copy (Robinhood removed confetti after a regulator cited gamification, [adjacent references](../../research/cross-cutting/ben/adjacent-references.md), *observed*). The payout is one quiet line on Today ([today](today.md)).
 
@@ -53,6 +55,8 @@ Shape: `{value or range, basis_count, as_of, citation_id, state: shown|hidden, h
 | Kept | `order` in `released` or `handed_over`, payout less nothing more | "You kept $X" | no payout recorded; a tap on "Got paid?" counts as `you_said` |
 | On its way | `order` in `paid` to `claim_window`, not refunded | "On its way $Y" | never added to Kept |
 | Could earn | `valuation` range of live items less estimated fees | "Could earn $A to $B" | an item's range is below the minimum basis in [money D1](../determinations/money.md#d1-comparable-set-and-weights) and [D5](../determinations/money.md#d5-fair-value-range-overall-and-per-site); method in [D22](../determinations/money.md#d22-could-earn-across-live-items) |
+| Worth of what you own | sum of each `owned` or live item's `valuation` range, with its change over 7 days | "Your things are worth $A to $B, up $C this week" | an item below the minimum basis in [money D1](../determinations/money.md#d1-comparable-set-and-weights) is left out and counted ("3 not valued yet"); never summed as exact |
+| Total sold | `order` payouts reaching `paid`, all time | "$X sold so far" | never |
 | Listed value | our own `listing` prices | "Listed for $X" | never |
 | Sold count | `order` reaching `paid` | "N sold" | never |
 | Days to sell | our `event`s | "Sold N days after you listed it" | listed outside the app, no list date |

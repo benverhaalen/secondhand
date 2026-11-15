@@ -102,7 +102,7 @@ Read-back before any retry matters most: a delist that reached the site but time
 | Measure | Bar | Source |
 |---|---|---|
 | CDP capture on Browser Use V4 | the first build task: attach, run `end` on a test listing, see its calls | [§1.1](../../research/replay/nate/cloud-browsers-and-detection.md#11-does-browser-use-cloud-expose-the-network-log-or-har); fallback is the harness-only path |
-| Delist speed | under 3 s p95 by replay; 1 to 4 min in the browser | asserted in [crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#the-sold--delist-pipeline); timed replays decide |
+| Delist speed | per action, about 1 to 3 s by replay and 1 to 4 min in the browser; the end-to-end bar is [sold.md](sold.md#how-we-will-know-it-works) | asserted in [crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#the-sold--delist-pipeline); timed replays decide |
 | In-page calls only | no replay from outside the session in any trace | MLflow traces |
 | Ban risk | no warning on test accounts over weeks of replays | test accounts per site |
 | Drift caught | every drift found by `expect` or read-back | events |

@@ -125,7 +125,6 @@ A visitor gets the same marks, but nothing is stored. The spans travel on the se
 - **Inline marks or chips below the input.** No shipped product was found that marks unclear words inline inside the search box. Google's retail guide keeps the free-text bar always active and shows refinements beneath it. Marking words in place is therefore a bet, and a test will decide between it and chips under the input, by comparing how many reformulations each causes.
 - **Ben's reaction.** The design depends on a pending open question for Ben ([assist.md](../../spec/features/assist.md#open-for-ben-and-nate)), and the controls are a proposal until his catalog takes them.
 - **The cap of 3** and every threshold above are starting values.
-- **Old text still around.** [assist.md](../../spec/features/assist.md#design-choices) still lists "one question at a time" among the options. It predates this design.
 - **Slot names.** `keep_for` is now one of the purpose slots. The comparison cards on the buy side also read `must_have[]`, which the slots do not include (see [search and shopping](search-and-shopping.md#what-is-not-settled)).
 - **Cannot be known.** What the person means by "barely worn" or "for travel" is not in the words. The design never claims to know it. It shows what it assumed, and the person decides.
 

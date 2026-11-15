@@ -26,7 +26,7 @@ A Databricks App accepts only Databricks sign-in, so a phone cannot call one dir
 
 ## Not done yet
 
-- Deployed edge: nothing is hosted. A deployed edge needs `DATABRICKS_TOKEN` (a service identity) in its host's secrets and `origin` set for the `expo-router` plugin in `app.json`.
+- Deployed edge: nothing is hosted. Builds use Nate's Expo account. The routes go on Databricks if possible, otherwise on Next.js beside the site; since a Databricks App accepts only Databricks sign-in, the Next.js site can be the edge in front of it either way, and the second workspace probe settles it ([Nate](../product/words.md#2026-11-14-nate-sale-emails-the-expo-account-where-routes-are-hosted-and-a-buy-page-shaped-by-your-style); *agent proposal*). A deployed edge needs `DATABRICKS_TOKEN` (a service identity) in its host's secrets and `origin` set for the `expo-router` plugin in `app.json`.
 - The Databricks App and Lakebase behind the edge do not exist yet; `/v1/health` talks to the SQL warehouse directly.
 - App-side logging (`log.show`, `log.input`, the `api()` helper and `POST /api/log`) from [log/README.md](../log/README.md#wire-a-new-program) is not wired.
 - Checked in a browser against a real workspace. Not yet run on a phone, and no EAS build has been made.

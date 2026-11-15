@@ -87,7 +87,7 @@ This follows [§10 want to match](../product.md#want-to-match-to-saved-listing).
 
 | Call | Shape |
 |---|---|
-| `POST /v1/wants` | `{text?, product_id?, fit, max_total_cents?, sites?, alert}` returns `{want, questions:[{name, options, suggested}]}` |
+| `POST /v1/wants` | `{text?, product_id?, fit, max_total_cents?, sites?, alert}` returns `{want}`; anything unsettled opens `clarify` decisions through [assist](assist.md), never a question list of its own |
 | `GET /v1/wants/:id/matches?state=` | matches with delivered total, `also_on:[{site, url, total}]`, `fit {method: measured or label, delta_cm?}`, score axes and fair range as guarded numbers |
 | `POST /v1/matches/:id/act` | `{action: dismiss, save, not_same, bought}`; save opens `save_match`, and bought creates the purchase order ([buy.md](buy.md)) |
 | `GET /v1/wants` | each want with `checked {site: at}` and `behind[]`; a site enters `behind[]` on the page monitor's `monitor.behind` event and leaves on `monitor.recovered` ([spec/product.md](../product.md)) |

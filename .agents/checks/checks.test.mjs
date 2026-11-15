@@ -61,6 +61,23 @@ test('secrets: keys, tokens and tracked .env files fail', () => {
   assert.match(run(secrets, { 'b.md': 'mail ' + 'someone' + '@gmail.com' }).map(o => o.msg).join(), /personal data/);
 });
 
+test('secrets: a secret the shipped app could carry fails; server routes and public names pass', () => {
+  const bad = errors(run(secrets, {
+    'app/src/sell/price.ts': 'const k = process.env.EXPO_PUBLIC_OPENROUTER_API_KEY;\n',
+    'app/src/app/index.tsx': "import { health } from '../edge/databricks';\n",
+    'app/app.json': '{"expo":{"extra":{"tregToken":"x"}}}',
+  }));
+  assert.match(bad, /price\.ts.*EXPO_PUBLIC_OPENROUTER_API_KEY/);
+  assert.match(bad, /index\.tsx.*edge/);
+  assert.match(bad, /app\.json.*tregToken/);
+  assert.deepEqual(run(secrets, {
+    'app/src/app/v1/health+api.ts': "import { health } from '../../edge/databricks';\n",
+    'app/src/edge/databricks.ts': 'const t = process.env.DATABRICKS_TOKEN;\n',
+    'app/src/app/index.tsx': 'const u = process.env.EXPO_PUBLIC_API_URL, p = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;\n',
+    'app/app.json': '{"expo":{"extra":{"eas":{"projectId":"e9"},"router":{}}}}',
+  }), []);
+});
+
 test('ui: raw colors, literal fonts and em dashes in app code fail; tokens pass', () => {
   const bad = run(ui, { 'app/Today.tsx': 'const s = { color: "#E63339", fontFamily: "Inter" };\nexport const T = () => <h1>Sold — nice</h1>;\n' });
   const e = errors(bad);
@@ -396,4 +413,33 @@ test('rules: a missing list fails, a malformed row does not crash, any file is n
   seen(again, 'The label says "price": twice', 'Today audit');
   assert.equal(again.length, 2);
   assert.equal(again[1].seen.length, 2);
+});
+
+test('picks M1: overriding Reduce Motion fails', async () => {
+  assert.match(await pick('M1', { 'app/src/ui/tile.tsx': 'withSpring(1, { reduceMotion: ReduceMotion.Never });' }), /turned motion off/);
+  assert.equal(await pick('M1', { 'app/src/ui/tile.tsx': 'withSpring(1, { reduceMotion: ReduceMotion.System });' }), '');
+});
+
+test('picks M2: a raw duration in a screen fails; a named motion passes, and the parts may hold numbers', async () => {
+  assert.match(await pick('M2', { 'app/src/app/sell.tsx': 'withTiming(1, { duration: 300 });' }), /raw duration/);
+  assert.equal(await pick('M2', { 'app/src/app/sell.tsx': 'withTiming(1, { duration: MOTIONS.sheet.ms });' }), '');
+  assert.equal(await pick('M2', { 'app/src/ui/sheet.tsx': 'withTiming(1, { duration: 300 });' }), '');
+});
+
+test('picks M3: a scroll listener or transition: all fails; a scroll handler from the library passes', async () => {
+  assert.match(await pick('M3', { 'site/hero.tsx': "window.addEventListener('scroll', onScroll);" }), /never a listener/);
+  assert.match(await pick('M3', { 'site/hero.css': '.a { transition: all .3s; }' }), /animates every property/);
+  assert.equal(await pick('M3', { 'app/src/ui/grid.tsx': 'const h = useAnimatedScrollHandler(e => {});\n<Animated.ScrollView onScroll={h} />', 'site/hero.css': '.a { transition: transform .3s; }' }), '');
+});
+
+test('picks M4: a named motion with no reason fails, and so does a missing list', async () => {
+  const ok = "export const MOTIONS: Record<string, M> = {\n  press: { why: 'feedback', ms: 'spring' },\n};\n";
+  assert.equal(await pick('M4', { 'app/src/ui/motion.ts': ok }), '');
+  assert.match(await pick('M4', { 'app/src/ui/motion.ts': ok.replace('};', "  wiggle: { ms: 400 },\n  glow: { why: 'cool', ms: 200 },\n};") }), /"wiggle" has no reason[\s\S]*"glow" has no reason/);
+  assert.match(await pick('M4', { 'app/src/ui/layout.tsx': 'x' }), /motion\.ts is missing/);
+});
+
+test('picks D5: a straight apostrophe or three dots on a screen fails; the real marks pass', async () => {
+  assert.match(await pick('D5', screen("<Txt>The server didn't answer...</Txt>")), /straight apostrophe in "n't"[\s\S]*three dots/);
+  assert.equal(await pick('D5', screen("<Txt>The server didn’t answer…</Txt>\nconst a = [...items]; const k = 'ebay';")), '');
 });
