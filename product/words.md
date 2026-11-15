@@ -1052,3 +1052,26 @@ Ben, project chat and thread "Roll the UI system out everywhere", 2026-11-15, ti
 > dont use the quote a human always decides use it as a decision when navigating when to hand off to human vs agent.
 
 Used in: [.agents/ui-build/README.md](../.agents/ui-build/README.md) (the page contract, the method, the one intake, the hand-off rule), checks U6 and U7 in [.agents/checks/render.mjs](../.agents/checks/render.mjs), [.agents/vendor/](../.agents/vendor/).
+
+## 2026-11-15 the website: references, story, photography, signed-in web and the buy/sell toggle
+
+Ben, 04:32 UTC, thread "Design the secondhand website with me":
+> i want you to help me ideate on the website design. here are a few things. i have this folder of top to bottom websites. its super effective for looking at great sites (however its static) but its like 30+ images of great sites. each site has its own context about why they designed it in that way. how it conveys and storytells well.
+
+> part of the website might include defining a photography direction for the brand, especially considering who we are marketing towards, and knowing how to effectively tell a story in many mediums is something that can be really good. also using evidence, statistics, etc is really good
+
+> also considering sorta that this is about a hackathon too - but we are pitching this. also great web design and ui and optimal loading and super fast stuff is important and could be a little different compared to say an app.
+
+> the landing page and other miscellaneous pages that are unsigned in pages should all be about this. but then theres the signed in one that should function near identical to the app. but you need to lay it out as an expert web dev would. expert ui ux. for web. think about ways to translate but not lose anything. what features are lost. what features stay. like nate was thinking a toggle for selling or buying. but i want to know what you think.
+
+> using something like the image gen that is the one weve been using through open router over the one on gpt. choosing colors intently, transparency, what tabs, etc. making sure images look really realistic by providing really good reference images.
+
+> also creating other things with images that aren't photos too. or having app screenshots. a unique layout is central too.
+
+> i think the cleo reference is pretty close to what we design like. but its up to you about what you think in our specific situation for our purposes and how we tell the story. communicating the idea super easily.
+
+> understand how to write well and how to make an interactive website that isnt static and moves well and also serves the same functionalities as the app
+
+The board: https://pin.it/69cpIHqRl ("Landing pages", 35 pins). 25 are saved in the project files under secondhand-web/references/.
+
+Used in: the website proposal, https://claude.ai/artifact/QbFh2FStnWRPr1bgEk2dBg (*agent proposal* throughout).
