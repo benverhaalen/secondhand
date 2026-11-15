@@ -4,6 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { plan, goFound } from './deploy.mjs';
+import { execFileSync } from 'node:child_process';
 
 const WORDS = '# words\n\n## 2026-11-15 nate deploy secondhand to the workspace\n> go\n\n## 2026-11-14 ben likes 500\n';
 const fakeRoot = (extra = {}) => {
@@ -45,4 +46,21 @@ test('the real bundle has no secret and keeps prod schedules on, dev in developm
   const yml = readFileSync(new URL('./databricks.yml', import.meta.url), 'utf8');
   assert.match(yml, /dev:\n\s+mode: development/);
   assert.match(yml, /secret_scopes:/);
+});
+
+test('fold accepts catalog and schema flags for an engine that has not landed', () => {
+  const out = execFileSync('python3', ['deploy/tasks/fold.py', 'nosuch', '--catalog', 'a', '--schema', 'b'], { encoding: 'utf8' });
+  assert.equal(JSON.parse(out).state, 'skipped');
+});
+
+test('fold configures the table location before importing the engine', () => {
+  const root = fakeRoot();
+  mkdirSync(join(root, 'deploy/tasks'));
+  mkdirSync(join(root, 'jobs/probe'));
+  writeFileSync(join(root, 'deploy/tasks/fold.py'), readFileSync(new URL('./tasks/fold.py', import.meta.url)));
+  writeFileSync(join(root, 'jobs/probe/fit.py'), 'import os\nLOCATION = [os.environ.get("SECONDHAND_CATALOG"), os.environ.get("SECONDHAND_SCHEMA")]\ndef main():\n    return LOCATION\n');
+  const out = execFileSync('python3', [join(root, 'deploy/tasks/fold.py'), 'probe', '--catalog', 'a', '--schema', 'b'], { encoding: 'utf8' });
+  assert.deepEqual(JSON.parse(out).result, ['a', 'b']);
+  const direct = execFileSync('python3', ['-c', 'import runpy, sys; from pathlib import Path; m = runpy.run_path(sys.argv[1]); assert m["run"]("probe", Path(sys.argv[2]))["state"] == "ran"', join(root, 'deploy/tasks/fold.py'), root]);
+  assert.equal(direct.length, 0);
 });
