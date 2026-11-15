@@ -77,9 +77,9 @@ export function Tile({ id, title, photo, state, word, sites = [], fact, faded = 
               {sites.map(s => <SiteBadge key={s} site={s} />)}
             </View>
           ) : null}
-          {picked ? <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: radius.photo, borderWidth: 2, borderColor: c.ink }} /> : null}
+          {picked ? <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: radius.photo, borderCurve: 'continuous', borderWidth: 2, borderColor: c.ink }} /> : null}
           {picking ? (
-            <View pointerEvents="none" style={{ position: 'absolute', top: space.s2, right: space.s2, width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill,
+            <View pointerEvents="none" style={{ position: 'absolute', top: space.s2, right: space.s2, width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, borderCurve: 'continuous',
               backgroundColor: picked ? c.ink : c.surface, borderWidth: 2, borderColor: picked ? c.page : c.ink2, alignItems: 'center', justifyContent: 'center', ...FLAT }}>
               {picked ? <Icon name="tick-02" size={12} tone="page" /> : null}
             </View>
@@ -107,11 +107,11 @@ export function Tile({ id, title, photo, state, word, sites = [], fact, faded = 
 export function TileSkeleton() {
   const c = useColors();
   const line = (w: `${number}%`, h: number) => (
-    <View style={{ height: 20, justifyContent: 'center' }}><View style={{ width: w, height: h, borderRadius: radius.pill, backgroundColor: c.gray }} /></View>
+    <View style={{ height: 20, justifyContent: 'center' }}><View style={{ width: w, height: h, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} /></View>
   );
   return (
     <View {...mark('tile', { skeleton: 'true' })} accessibilityLabel="Loading" style={{ gap: space.s1 }}>
-      <View style={{ aspectRatio: 1, borderRadius: radius.photo, backgroundColor: c.gray, marginBottom: space.s1 }} />
+      <View style={{ aspectRatio: 1, borderRadius: radius.photo, borderCurve: 'continuous', backgroundColor: c.gray, marginBottom: space.s1 }} />
       {line('80%', 14)}
       {line('50%', 12)}
     </View>

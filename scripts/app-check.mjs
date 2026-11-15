@@ -14,6 +14,7 @@ import { judge } from '../.agents/checks/render.mjs';
 import { scales } from '../.agents/checks/brand.mjs';
 import { find, routes, serve } from '../app/e2e/web.mjs';
 import { compose, INSETS, insetScript, snapshot } from './composition.mjs';
+import { measure, signatures, standards, typeAcross } from './standards.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 export const RENDERS = join(root, 'features/app/renders');
@@ -82,13 +83,18 @@ export async function checkPage(url, { browser, dark = false } = {}) {
   return { findings, screens };
 }
 
+// Each route's type signatures, so one run can say when a size is set two ways across the app (U15).
+export const typeSeen = {};
+
 // How the first screen is composed, judged with the phone's insets (scripts/composition.mjs, Art. 7.11 to 7.16).
 export async function checkComposition(url, { browser, route, typical = true }) {
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   try {
     await page.addInitScript(insetScript(INSETS));
     await page.goto(url, { waitUntil: 'load' }); await settle(page);
-    return compose(await page.evaluate(snapshot, { insetTop: INSETS.top }), { route, typical });
+    const m = await page.evaluate(measure);
+    typeSeen[route] = signatures({ texts: m.texts.filter(t => !t.bar) });
+    return [...compose(await page.evaluate(snapshot, { insetTop: INSETS.top }), { route, typical }), ...standards(m)];
   } finally { await page.close(); }
 }
 
@@ -202,6 +208,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       for (const f of got.findings) say(line(f));
       say(`${n ? `${n} error(s)` : 'ok'}  features/app/renders/${slug(got.route)}${got.screens ? '{.png,-dark.png,.json}' : '.json'}`);
     }
+    // U15 across the app: the same size set two ways on two screens is the same break as on one.
+    const across = report.length > 1 ? typeAcross(typeSeen) : [];
+    if (across.length) { say('\nthe whole app'); for (const f of across) say(line(f)); }
     let sheet = null, gallery = null;
     if (flags.has('--sheet') && report.length) {
       sheet = join(RENDERS, 'contact.png');
@@ -210,7 +219,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     }
     // A full run leaves the gallery current, so Ben sees every screen beside what its checks found.
     if (!asked.length) { gallery = join(root, 'features/app/gallery.html'); writeFileSync(gallery, galleryPage(screens(RENDERS), { renders: relative(dirname(gallery), RENDERS) })); say(`gallery  features/app/gallery.html`); }
-    const errors = report.reduce((n, r) => n + r.findings.filter(f => f.level === 'error').length, 0);
+    const errors = report.reduce((n, r) => n + r.findings.filter(f => f.level === 'error').length, 0) + across.length;
     if (json) process.stdout.write(JSON.stringify({ errors, sheet, gallery, pages: report }, null, 2) + '\n');
     else say(`\n${report.length} screen(s) checked in light and dark, ${errors ? `${errors} error(s).` : 'app checks ok.'} A pass means the rules were followed, not that it looks good: look at the renders, then run break-ui.`);
     process.exitCode = errors ? 1 : 0;

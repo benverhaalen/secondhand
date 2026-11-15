@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   section: { gap: GAP.cards },
   row: { flexDirection: 'row', alignItems: 'center', gap: GAP.group, paddingVertical: space.s3 },
   rowBody: { flex: 1, gap: space.s1 },
-  card: { borderWidth: 1, borderRadius: radius.card, padding: space.s4, gap: GAP.group },
+  card: { borderWidth: 1, borderRadius: radius.card, borderCurve: 'continuous', padding: space.s4, gap: GAP.group },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -space.s2 },
   foot: { paddingHorizontal: space.gutter, paddingTop: space.s3, paddingBottom: space.s4 },
 });
