@@ -18,12 +18,7 @@
 .branch > span:first-child { font-size: var(--t-21); }
 .branchReason { color: var(--ink-2); }
 .jumpLinks { display: flex; flex-wrap: wrap; gap: var(--s-4); align-items: center; margin-top: var(--s-7); }
-.primary, .secondary { display: inline-flex; gap: var(--s-4); align-items: center; min-height: var(--control-min); padding: var(--s-3) var(--s-6); text-decoration: none; border-radius: var(--r-pill); transition: opacity var(--t-feedback) var(--ease-out), transform var(--t-feedback) var(--ease-out); }
-.primary { background: var(--ink); color: var(--page); }
-.secondary { background: var(--gray); }
 .quiet { display: inline-flex; align-items: center; gap: var(--s-4); min-height: var(--control-min); padding: var(--s-3); }
-.primary:hover, .secondary:hover { opacity: .85; }
-.primary:active, .secondary:active { transform: scale(.98); }
 .section { padding-block: 96px; scroll-margin-top: 100px; }
 .sectionIntro { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-9); align-items: end; margin-bottom: var(--s-8); }
 .sectionIntro > p { max-width: 44ch; font-size: var(--t-18); line-height: 1.55; color: var(--ink-2); }

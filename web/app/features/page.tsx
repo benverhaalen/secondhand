@@ -39,8 +39,8 @@ export default function Features() {
           </nav>
         </div>
         <figure className={styles.heroFigure}>
-          <AppPreviewImage name="preview" alt="Secondhand listing review for a Carhartt jacket, with separate eBay and Depop previews and editable prices, ready for a review decision." sizes="(max-width: 1100px) 244px, 268px" eager />
-          <figcaption>Listing review on eBay and Depop<span>App preview · Sample data</span></figcaption>
+          <AppPreviewImage name="preview" alt="Secondhand listing review for a Carhartt jacket, with the photo, item details and asking price." sizes="(max-width: 1100px) 244px, 268px" eager />
+          <figcaption>Listing review<span>App preview · Sample data</span></figcaption>
         </figure>
       </div>
     </section>
@@ -50,12 +50,12 @@ export default function Features() {
       <h2 id="prepare-title">A listing starts with<br/> facts you can check</h2>
       <div className={styles.steps}>
         <article><Icon name="tag-01" /><h3>Read the item</h3><p>Pull the details from your photos. Check the brand, size and condition before they reach a buyer.</p><Source path="spec/engines/capture.md">How capture works</Source></article>
-        <article><Icon name="image-01" /><h3>Prepare each listing</h3><p>Turn the same item facts into a title, photos and price for each marketplace you choose.</p><Source path="spec/features/list.md">The listing design</Source></article>
-        <article><Icon name="checkmark-circle-02" /><h3>You approve</h3><p>Check each preview, compare the expected take-home and edit the details before you approve a listing.</p><Source path="spec/features/list.md">Review and posting</Source></article>
+        <article><Icon name="image-01" /><h3>Prepare the listing</h3><p>Keep the title, photos, condition and price together when preparing a listing.</p><Source path="spec/features/list.md">The listing design</Source></article>
+        <article><Icon name="checkmark-circle-02" /><h3>You approve</h3><p>Check the draft and edit the details. Copy them when you’re ready to finish on the marketplace.</p><Source path="spec/features/list.md">Review and posting</Source></article>
       </div>
-      <div className={styles.reasonBand}><div><h3>One item record. A preview for each marketplace</h3><p>A wrong size or condition can change the price. Keeping the facts together helps each listing describe the same thing, even when the forms differ. This app preview shows the review decision; it does not demonstrate a live marketplace post.</p></div><Source path="spec/engines/protocol-and-adapters.md">Inside the adapters</Source></div>
+      <div className={styles.reasonBand}><div><h3>One record for each item</h3><p>A wrong size or condition can change the price. The adapter design reuses one reviewed record so every marketplace gets the same item facts. The current app hands posting back to you.</p></div><Source path="spec/engines/protocol-and-adapters.md">Inside the adapters</Source></div>
       <details className={styles.disclosure}>
-        <summary><span>What we got wrong: a better-looking photo can change the item.</span><Icon name="add-01" size={20} className={styles.expand} /></summary>
+        <summary><span>Can a photo edit change what you’re selling?</span><Icon name="add-01" size={20} className={styles.expand} /></summary>
         <div className={styles.disclosureBody}><p>A photo edit can remove a flaw that a buyer needs to see. We tested the photo check with deliberately altered images and honest lighting changes.</p><div className={styles.testResults}><p><span>173 / 174</span>planted edits caught across 19 photos</p><p><span>17 / 38</span>honest relights also held for review</p></div><p>Even an honest lighting change can end up in review.</p><Source path="scripts/bench/out/gate.json">Read the full photo test</Source></div>
       </details>
     </section>
@@ -104,7 +104,7 @@ export default function Features() {
             <tr><th scope="row"><a href="https://www.ebay.com/help/selling/selling-tools/product-research?id=4853">eBay Product Research <ExternalArrow/></a></th><td>Researching actual eBay sales, including accepted offers.</td><td><a href="https://www.ebay.com/sellercenter/resources/seller-updates/2024-summer/tools">Free for eligible sellers <ExternalArrow/></a></td></tr>
             <tr><th scope="row"><a href="https://fliptip.ai/">FlipTip Starter <ExternalArrow/></a></th><td>Photo appraisal, sold-price lookup where supported, listing drafts and profit tracking.</td><td>$1.99 <span>US · 40 scans per month</span></td></tr>
             <tr><th scope="row"><a href="https://www.vendoo.co/pricing">Vendoo Starter <ExternalArrow/></a></th><td>Cross-listing, inventory management, sale detection and automatic delisting.</td><td>$14.99 <span>US, billed monthly</span></td></tr>
-            <tr className={styles.ownRow}><th scope="row">secondhand</th><td>An app preview combining pricing, listing review and finding, with decisions returned to the person.</td><td>To be announced <span>Customer pricing is not set</span></td></tr>
+            <tr className={styles.ownRow}><th scope="row">secondhand</th><td>An app preview combining pricing, listing review and finding, with decisions returned to the person.</td><td>Pricing undecided</td></tr>
           </tbody>
         </table>
       </div>

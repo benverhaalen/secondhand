@@ -7,7 +7,7 @@ export function AppPreviewImage({ name, alt, sizes, eager = false }: {
   eager?: boolean;
 }) {
   return <Image
-    src={`/marketing/app/${name}.png`}
+    src={`/marketing/app/${name}.png?v=22f37f6d`}
     alt={alt}
     width={880}
     height={1840}

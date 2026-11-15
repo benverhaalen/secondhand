@@ -30,9 +30,9 @@
 .marketing-nav { display: flex; padding: var(--s-1); background: var(--gray); border-radius: var(--r-pill); }
 .marketing-nav a { padding-inline: var(--s-5); height: var(--control-min); display: flex; align-items: center; font-size: var(--t-15); border-radius: var(--r-pill); }
 .marketing-nav a:hover, .marketing-nav a[aria-current="page"] { background: var(--gray-press); }
-.marketing-menu-trigger { display: none; }
+.marketing-menu { display: none; position: relative; }
 .marketing-header-actions { display: flex; justify-self: end; align-items: center; gap: var(--s-7); white-space: nowrap; }
-.marketing-menu-panel { z-index: 6; min-width: 12rem; padding: var(--s-2); border: 1px solid var(--rule); border-radius: var(--r-photo); background: var(--surface); box-shadow: var(--shadow-card); }
+.marketing-menu-panel { position: absolute; inset-inline-end: 0; top: calc(100% + var(--s-2)); z-index: 6; min-width: 12rem; padding: var(--s-2); border: 1px solid var(--rule); border-radius: var(--r-photo); background: var(--surface); box-shadow: var(--shadow-card); }
 .marketing-menu-panel a { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding-inline: var(--s-4); min-height: var(--control-min); border-radius: var(--r-pill); text-decoration: none; }
 .marketing-menu-panel a:hover, .marketing-menu-panel a[aria-current="page"] { background: var(--gray-press); }
 .github-link { display: inline-flex; min-height: var(--control-min); align-items: center; gap: var(--s-1); font-size: var(--t-15); }
@@ -205,7 +205,9 @@ button.faq-trigger:not(:disabled):hover { background: transparent; color: var(--
   .github-link { font-size: var(--t-13); }
   .github-link > span { display: none; }
   .marketing-nav { display: none; }
-  .marketing-menu-trigger { display: inline-grid; place-items: center; color: var(--ink); background: var(--gray); width: var(--control-min); padding: 0; flex: none; }
+  .marketing-menu { display: block; }
+  .marketing-menu-trigger { display: grid; place-items: center; color: var(--ink); background: var(--gray); width: var(--control-min); height: var(--control-min); padding: 0; border-radius: var(--r-pill); list-style: none; }
+  .marketing-menu-trigger::-webkit-details-marker { display: none; }
   .marketing-hero { overflow: hidden; min-height: max(700px, 100svh); padding-block: var(--s-9); }
   .hero-kicker { max-width: 22ch; margin-inline: auto; font-size: var(--t-21); }
   .marketing-hero h1 { gap: var(--s-5); }
@@ -242,8 +244,16 @@ button.faq-trigger:not(:disabled):hover { background: transparent; color: var(--
   .marketing-footer nav { gap: var(--s-3) var(--s-6); }
   .marketing-footer nav a:last-child { margin-left: 0; }
 }
+@media (max-width: 400px) {
+  .marketing-header { --marketing-gutter: var(--s-5); }
+  .marketing-header-row { column-gap: var(--s-2); }
+  .marketing-header-actions { gap: var(--s-2); }
+  .marketing-header-actions .marketing-pill { padding-inline: var(--s-3); }
+}
 @media (max-width: 359px) {
-  .marketing-home, .marketing-header, .marketing-footer { --marketing-gutter: var(--s-5); }
+  .marketing-home, .marketing-footer { --marketing-gutter: var(--s-5); }
+  .marketing-header { --marketing-gutter: var(--s-3); }
+  .marketing-header-row { column-gap: var(--s-1); }
   .marketing-lockup { font-size: var(--t-18); gap: var(--s-1); }
   .marketing-header-actions { gap: var(--s-2); }
   .marketing-header-actions .marketing-pill { padding-inline: var(--s-3); }

@@ -69,7 +69,7 @@ export default function FAQ() {
     <div className={`${styles.wrap} ${styles.readingWrap}`}>
       <QuestionGroup group={groups[0]} title="Your decisions">
           <Answer id="who-can-post" question="Who can post from my account?">
-            <p>You review the photos, title and price for each marketplace before you approve a listing. Replies to buyers start as drafts, with the exact words waiting for you to send or edit.</p>
+            <p>You review the photos, title and price in secondhand and finish posting on the marketplace you choose. In the messaging design, replies start as drafts you can edit and send.</p>
             <p>The design keeps permission for a listing separate from permission to send a message.</p>
             <Source path="spec/features/list.md">See the listing design</Source>
             <Source path="product/decisions.md#2026-11-15-replies-to-buyers-start-as-drafts-the-person-approves">Why replies start as drafts</Source>

@@ -53,7 +53,7 @@ export default function WhatsNextPage() {
             <div className={styles.photoGround}>
               <Image className={styles.itemPhoto} src={itemPhoto} alt="A sample brown Carhartt jacket laid flat." sizes="(max-width: 760px) calc(100vw - 48px), (max-width: 1100px) 50vw, 480px" preload />
             </div>
-            <figcaption>Sample Carhartt jacket.</figcaption>
+            <figcaption>Sample Carhartt jacket</figcaption>
           </figure>
           <div className={styles.photoQuestions}>
             <p>What would help price this?</p>

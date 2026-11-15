@@ -14,18 +14,18 @@ const sellingSteps = [
   {
     id: 'selling', number: '01', title: 'Start with photos',
     body: 'Add the item and any detail that could change its price, like a label or a flaw.',
-    image: 'capture', alt: 'The app camera frames the whole front of a brown Carhartt jacket.',
+    image: 'capture', alt: 'App review after adding one photo of the sample Carhartt jacket.',
   },
   {
     id: 'price', number: '02', title: 'Review the price',
-    body: 'Check similar items that sold and compare what you’d keep on each site.',
-    image: 'plan', alt: 'Price planning for a Carhartt jacket, with sold-price evidence and estimated proceeds.',
+    body: 'Check similar sales and choose an asking price.',
+    image: 'plan', alt: 'The asking-price screen for the same sample jacket.',
     href: '/data-use', link: 'Where the prices come from',
   },
   {
-    id: 'review', number: '03', title: 'Review each listing',
-    body: 'The app preview shows each site’s photos, price and listing details for you to review.',
-    image: 'preview', alt: 'A Carhartt jacket is ready for review, with separate marketplace listing previews.',
+    id: 'review', number: '03', title: 'Review the listing',
+    body: 'Check the photos, price and item details. Copy the listing details when you’re ready to finish on the marketplace you choose.',
+    image: 'preview', alt: 'The same sample jacket in the listing preview.',
   },
 ];
 
@@ -77,10 +77,10 @@ export default function HowItWorksPage() {
       <div className={`${styles.wrap} ${styles.stepGrid}`}>
         <div className={styles.copy}>
           <p className={styles.label}>After a sale</p>
-          <h2 id="shipping-title">See what needs shipping</h2>
-          <p className={styles.body}>Check the label, drop-off options and next action for a sold item.</p>
+          <h2 id="shipping-title">Check what the sale paid out</h2>
+          <p className={styles.body}>See what the buyer paid and what you kept. Continue on the marketplace for shipping.</p>
         </div>
-        <Phone name="ship" alt="A separate Kindle shipping example shows the shipping label, drop-off options and next action." caption="Separate shipping example · Sample data" />
+        <Phone name="ship" alt="Sale details and a marketplace handoff for a sample e-reader." caption="Separate sale example · Sample data" />
       </div>
     </section>
 
@@ -89,13 +89,13 @@ export default function HowItWorksPage() {
         <div className={styles.copy}>
           <p className={styles.label}>Buying</p>
           <h2 id="buying-title">Tell us what you’re looking for</h2>
-          <p className={styles.body}>Set your budget, fit and whether you can pick it up.</p>
+          <p className={styles.body}>Set your budget, size and preferences.</p>
           <dl className={styles.buyingDetails}>
             <div><dt>Check the listing</dt><dd>Compare the item and delivery cost, then open its marketplace.</dd></div>
           </dl>
           <Link className={styles.textLink} href="/features">How matching works <Arrow /></Link>
         </div>
-        <Phone name="watch" alt="A watch for a Brewers jersey with a delivered-price range, pickup distance, color and fit preferences." />
+        <Phone name="watch" alt="A saved Brewers jersey request with a target price, size and color." />
       </div>
     </section>
 

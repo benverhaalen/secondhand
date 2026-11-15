@@ -51,7 +51,7 @@ export default function DataUsePage() {
           </div>
           <figcaption className={styles.branch}><span aria-hidden="true">↳</span> Excluded or display only <span className={styles.branchReason}>Invalid records are rejected. Model-use permission is checked separately.</span></figcaption>
         </figure>
-        <nav className={styles.jumpLinks} aria-label="On this page"><a className={styles.primary} href="#pipeline">Follow the pipeline <Icon name="arrow-down-01" size={16} /></a><a className={styles.secondary} href="#pricing-result">See the pricing result <Icon name="arrow-down-01" size={16} /></a><a className={styles.quiet} href="#your-data">Your account data <Icon name="arrow-down-01" size={16} /></a></nav>
+        <nav className={styles.jumpLinks} aria-label="On this page"><a className="marketing-pill" href="#pipeline">Follow the pipeline <Icon name="arrow-down-01" size={16} /></a><a className="marketing-pill marketing-pill-secondary" href="#pricing-result">See the pricing result <Icon name="arrow-down-01" size={16} /></a><a className={styles.quiet} href="#your-data">Your account data <Icon name="arrow-down-01" size={16} /></a></nav>
       </div>
     </header>
 
