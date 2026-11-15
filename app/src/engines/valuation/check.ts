@@ -3,7 +3,7 @@ import { resolve, type Resolved } from './params.ts';
 import type { ParamStore, Scope } from '../param/param.ts';
 import { pricePath, ladder, planOf, type Curve, type Objective } from './path.ts';
 import { keep, type FeeSite, type Sale } from './keep.ts';
-import { answer } from '../proof/proof.ts';
+import { answer, type BasisRow } from '../proof/proof.ts';
 import type { FamilyBand } from './fast.ts';
 import { ceiling, MARKS, pointOnSite, type Point } from './posture.ts';
 
@@ -123,7 +123,11 @@ export async function check(x: CheckInput) {
     };
     const range = finalRange(found, x.calibration);
     const cite = (local: typeof found, value: ReturnType<typeof finalRange>, site?: string) => {
-      const rows = value.state === 'hidden' ? [] : local.comps.map(c => ({ id: c.comp_id, source: c.citation, at: c.sold_at, price_cents: c.adjusted_cents, weight: c.w }));
+      const rows: (BasisRow & { sold_at?: string; listed_at?: string; dated_by?: 'sold' | 'listed' })[] = value.state === 'hidden' ? [] : local.comps.map(c => ({
+        id: c.comp_id, source: c.citation, at: c.sold_at, price_cents: c.adjusted_cents, weight: c.w,
+        ...(c.dated_by === 'listed' ? { listed_at: c.listed_at ?? c.sold_at, dated_by: 'listed' as const }
+          : { sold_at: c.sold_at, dated_by: 'sold' as const }),
+      }));
       const weight = local.retail_weight;
       if (value.state !== 'hidden' && weight > 0 && x.retail_cents && x.retail_citation) {
         let id = `retail:${x.product_id}`;
@@ -132,7 +136,7 @@ export async function check(x: CheckInput) {
       }
       const bandUsed = value.q50 === null && value.q10 !== null && value.q90 !== null && warm;
       if (bandUsed) rows.push({ id: `band:${x.product_id}`, source: `family_band:${warm.basis}`, at: warm.as_of, price_cents: warm.low, weight: 1 });
-      const proof = answer(value, rows, { metric: 'valuation', filters: { product_id: x.product_id, target, site, caps: { retail_cents: x.retail_cap_cents, live_ask_cents: x.live_ask_cap_cents }, warm: bandUsed ? warm : undefined, basis_level: value.basis_level, calibration: site ? sites.find(s => s.site === site)?.calibration ?? x.calibration : x.calibration },
+      const proof = answer(value, rows, { metric: 'valuation', filters: { product_id: x.product_id, target, site, comps: rows, caps: { retail_cents: x.retail_cap_cents, live_ask_cents: x.live_ask_cap_cents }, warm: bandUsed ? warm : undefined, basis_level: value.basis_level, calibration: site ? sites.find(s => s.site === site)?.calibration ?? x.calibration : x.calibration },
         table_versions: [], definition_version: 'valuation.D1-D15', code_version: 'va-ablation-1',
         param_versions: { ...resolved.versions, ...params.param_versions }, model_version: null }, x.as_of);
       if (value.state !== 'hidden' && local.comps.length && !proof.ok) throw new CitationError('valuation missing basis');
@@ -140,7 +144,7 @@ export async function check(x: CheckInput) {
       return proof;
     };
     const proof = cite(found, range);
-    const sold = snapshot.filter(c => Object.hasOwn(params.w_type, c.kind) && c.price_cents > 0 && (c.level === 'variant' || c.level === 'product'))
+    const sold = snapshot.filter(c => c.dated_by !== 'listed' && Object.hasOwn(params.w_type, c.kind) && c.price_cents > 0 && (c.level === 'variant' || c.level === 'product'))
       .sort((a, b) => Number(b.level === 'variant') - Number(a.level === 'variant') || Date.parse(b.sold_at) - Date.parse(a.sold_at) || a.comp_id.localeCompare(b.comp_id));
     const last_sale = sold.map(latest => {
       const lastProof = answer(latest.price_cents, [{ id: latest.comp_id, source: latest.citation, at: latest.sold_at, price_cents: latest.price_cents }], {

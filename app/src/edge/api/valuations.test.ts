@@ -216,7 +216,7 @@ test('shown-only sold comps are cited, written with their rights, and read on th
   const first = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
   assert.equal(rows.length, 1); assert.equal(rows[0].rights.may_model, false); assert.equal(rows[0].payload.may_model, false);
   assert.equal(rows[0].kind, 'price'); assert.equal(rows[0].subject_ref, comp().comp_id);
-  assert.equal(rows[0].observed_at, comp().sold_at); assert.equal(rows[0].data, 'live:poshmark');
+  assert.equal(rows[0].observed_at, AS_OF); assert.equal(rows[0].sold_at, comp().sold_at); assert.equal(rows[0].data, 'live:poshmark');
   for (const row of rows) {
     assert.ok(['hackathon_demo', 'product'].includes(row.use_scope), 'loader must accept every written scope');
     assert.equal(row.use_scope, 'hackathon_demo', 'no source is cleared for product; source_rights decides when one is');
@@ -426,3 +426,14 @@ test('a sold site that throws is logged while the other site still answers the v
   assert.equal(priced.n_eff, 1);
   assert.match(sink.text(), /valuation.sold.mercari/); assert.match(sink.text(), /recorded Mercari read fault/);
 }));
+
+test('listed-dated observation writes distinguish read, listing and unknown sale times', async () => {
+  const { observationPort } = await import('./valuations.ts');
+  const rows: import('./valuations.ts').ObservationInput[] = [];
+  const port = observationPort({ read: () => [], write: (_user, batch) => { rows.push(...batch); } }, 'usr_other', deps.log);
+  const listed = { ...comp(), dated_by: 'listed' as const };
+  await port.write([listed], { item_id: 'it_listing_clock', as_of: AS_OF });
+  assert.equal(rows[0].observed_at, AS_OF, 'observed_at is the read clock');
+  assert.equal(rows[0].sold_at, null, 'the listing date is never a sale time');
+  assert.equal(rows[0].listed_at, listed.sold_at, 'retain the listing date separately');
+});

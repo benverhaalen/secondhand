@@ -578,3 +578,27 @@ test('an uncited prior omission is still recorded by a legacy logger without not
   assert.notEqual(out.range.state, 'hidden');
   assert.deepEqual(entries, [{ where: 'valuation.check.retail_uncited', fields: { product_id: 'p1' } }]);
 });
+
+test('last_sale excludes listed-dated variants even before a dated product sale', async () => {
+  const listed = { ...comps[0], comp_id: 'listed:variant', dated_by: 'listed' as const, sold_at: '2026-11-14' };
+  const sold = { ...comps[1], comp_id: 'sold:product', level: 'product' as const, dated_by: 'sold' as const };
+  assert.equal((await check({ ...input(), warm_comps: [listed] })).last_sale, null);
+  const out = await check({ ...input(), warm_comps: [listed, sold] });
+  assert.deepEqual(out.last_sale?.citation.basis_ids, [sold.comp_id]);
+});
+
+test('proof comp rows distinguish listing dates from sale dates', async () => {
+  const listed = { ...comps[0], comp_id: 'listed:variant', dated_by: 'listed' as const };
+  const out = await check({ ...input(), warm_comps: [listed, comps[1]] });
+  assert.ok(out.citation);
+  const filters = out.citation.filters as { comps: Record<string, unknown>[] };
+  assert.ok(Array.isArray(filters.comps), 'the proof must preserve per-comp date provenance');
+  const listedRow = filters.comps.find(c => c.id === listed.comp_id);
+  const soldRow = filters.comps.find(c => c.id === comps[1].comp_id);
+  assert.ok(listedRow); assert.ok(soldRow);
+  assert.equal(Object.hasOwn(listedRow, 'sold_at'), false);
+  assert.equal(listedRow.listed_at, listed.sold_at); assert.equal(listedRow.dated_by, 'listed');
+  assert.equal(soldRow.sold_at, comps[1].sold_at); assert.equal(soldRow.dated_by, 'sold');
+  assert.ok(out.per_site[0].citation);
+  assert.deepEqual((out.per_site[0].citation.filters as { comps: unknown }).comps, filters.comps);
+});

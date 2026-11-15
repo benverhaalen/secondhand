@@ -21,7 +21,7 @@ const soldSites: SoldSite[] = ['mercari', 'poshmark'];
 type Item = Row & { title: string; product_id?: string; kind?: string; condition?: string; attributes?: Attribute[]; category?: string; size?: string; family_id?: string; floor_cents?: number };
 // shortcut: structural SV7 contract until events/observations.ts lands; replace these types with its exports then.
 export type ObservationInput = {
-  kind: 'price'; site: string; product_id?: string; subject_ref: string; observed_at: string;
+  kind: 'price'; site: string; product_id?: string; subject_ref: string; observed_at: string; sold_at: string | null; listed_at?: string;
   payload: Record<string, unknown>; data: `live:${string}`; rights: Rights; source_route: string;
   source_url: string; extractor_version: string;
   may_store: boolean; may_model: boolean; use_scope: 'hackathon_demo' | 'product'; keep_until: string | null; channel: 'secondhand';
@@ -66,9 +66,11 @@ export function observationPort(functions: ObservationFunctions, user_id: string
       if (Object.values(dropped).some(count => count > 0)) log.note('valuation.observations.dropped', dropped);
       return comps;
     },
-    async write(rows) {
+    async write(rows, meta) {
       await functions.write(user_id, rows.map(comp => ({ kind: 'price', site: comp.site, product_id: comp.product_id,
-        subject_ref: comp.comp_id, observed_at: comp.sold_at, payload: { ...comp }, data: `live:${comp.site}`,
+        subject_ref: comp.comp_id, observed_at: comp.observed_at ?? meta.as_of,
+        sold_at: comp.dated_by === 'listed' ? null : comp.sold_at,
+        ...(comp.listed_at || comp.dated_by === 'listed' ? { listed_at: comp.listed_at ?? comp.sold_at } : {}), payload: { ...comp }, data: `live:${comp.site}`,
         rights: { may_store: true, may_model: comp.may_model, may_show: true, may_share: false, ttl: null },
         source_route: 'valuation.sold', source_url: comp.citation, extractor_version: 'valuation.sold',
         may_store: true, may_model: comp.may_model,
