@@ -67,7 +67,10 @@ Nate: "Ensure the team leads are best utilizing codex, understand the proper mod
 | A specified build: owned files, tests named, the pattern already in the folder. Most pieces | `gpt-6.1-sol` (the script's default) | medium |
 | A build with design left inside it: an algorithm, money or state edges, several files that must agree | `gpt-6.1-sol` | high |
 | A long piece run unattended where staying inside the brief decides it: many files, a refactor across an area, anything a worker might fake or wander on | `gpt-6-astra` | high |
+| A straightforward build in volume: one more route like its neighbours, one more adapter verb, a twin of code that exists | `gpt-6.1-terra` | medium |
 | Mechanical work: a rename, fixtures from a stated shape, a doc brought in line with code, lint fixes | `gpt-6-luna` | high |
+
+The whole served list on 2026-11-15 (codex-cli 0.169.0, the newest release): `gpt-6.1-sol` ("latest workhorse", the 6.1 generation and our default), `gpt-6.1-terra` (the 6.1 Codex model, the balanced tier), `gpt-6-astra` (frontier; no 6.1 Astra is served), `gpt-6-luna` (fast and cheap; no 6.1 Luna is served), and the older `gpt-6-sol` and `gpt-5.6-*`, which nothing here should use. `gpt-6.1-terra` has not been measured on this repo: the first lead to use it records how its piece went (rounds to pass, minutes) on the board so the table can be corrected. The list changes; read it fresh with `ssh -n … 'grep -o "\"slug\": *\"[^\"]*\"" ~/.codex-worker/models_cache.json'` before trusting this table on another day.
 
 Astra costs about five times Sol per token, so it is for the pieces that earn it. Efforts above high are not used without a measured gain; the script refuses them. If a model is refused, the worker's log (`/tmp/worker-<name>.log`) says so in its first lines: fall back to `gpt-6.1-sol`.
 
