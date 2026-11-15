@@ -25,6 +25,36 @@ test('every core table has an owner column tag before direct filters disappear',
     `${table}: missing sh_owner tag would expose its rows`)
 })
 
+test('owner filter allows the temporary maintenance mapping and records its window', () => {
+  const sql = read('sql/02_governance.sql')
+  const owner = statements(sql).find(s => s.startsWith('CREATE OR REPLACE FUNCTION secondhand.governance.owner_only('))
+  const body = owner.slice(owner.indexOf('RETURN '))
+  assert.match(body, /m\.principal = current_user\(\)/)
+  assert.match(body, /m\.user_id = '\*'/)
+  const audit = statements(sql).find(s => s.startsWith('CREATE TABLE IF NOT EXISTS secondhand.governance.break_glass '))
+  assert.ok(audit, 'maintenance windows need an audit table')
+  for (const [column, type] of [['id', 'STRING'], ['principal', 'STRING'], ['reason', 'STRING'], ['started_at', 'TIMESTAMP'], ['ended_at', 'TIMESTAMP']]) {
+    assert.match(audit, new RegExp(`\\b${column} ${type}(?: NOT NULL)? COMMENT '[^']+'`))
+  }
+})
+
+test('only migration and loader may write a wildcard principal mapping', () => {
+  const wildcardInsert = /(?:INSERT\s+INTO|MERGE\s+INTO)\s+secondhand\.governance\.principal_map\b[^;]*?['"]\*['"]/i
+  assert.ok(wildcardInsert.test(['INSERT INTO', "secondhand.governance.principal_map VALUES (current_user(), '*')"].join(' ')))
+  assert.ok(wildcardInsert.test(['MERGE INTO', "secondhand.governance.principal_map USING (SELECT '*' AS user_id) s"].join(' ')))
+  function walk(dir, prefix = '') {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const file = prefix + entry.name
+      if (entry.isDirectory()) {
+        if (entry.name !== '__pycache__') walk(new URL(`${entry.name}/`, dir), `${file}/`)
+      } else if (!['tasks/migrate_data.py', 'load/load.mjs'].includes(file)) {
+        assert.doesNotMatch(read(file), wildcardInsert, `${file}: wildcard writes belong only to maintenance code`)
+      }
+    }
+  }
+  walk(root)
+})
+
 test('catalog policies match governed tags created by the tag script', async () => {
   const { wanted } = await import('./tags.mjs')
   const sql = read('sql/02_governance.sql')
