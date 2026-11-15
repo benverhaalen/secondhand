@@ -53,7 +53,7 @@
       "id": "b",
       "label": "B. The line beside the product working",
       "brand_errors": [
-        "B6 view 1 \"Live\" has 2.9:1 contrast with what is behind it; it needs 4.5:1 (Art. 5.1)",
+        "B6 view 1 \"Live\" has 2.1:1 contrast with what is behind it; it needs 4.5:1 (Art. 5.1)",
         "B6 view 2 \"Live\" has 2.1:1 contrast with what is behind it; it needs 4.5:1 (Art. 5.1)"
       ],
       "brand_warnings": 0
