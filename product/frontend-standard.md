@@ -158,7 +158,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: no sentence explains something a pill, badge, number or photo already shows.
 - [ ] Flag: more than one sentence on a card.
 - [ ] Block: a decision card says what kind it is before its title, with a kind tag: a word, an icon and its state color. A deadline sits on the card whose buttons meet it, never in a banner of its own ([note §2](../research/today/ben/today-wants-alerts-and-clickability.md#2-what-today-shows-in-order)).
-- [ ] Flag: in a card's detail line only the money the person keeps is weighted (medium, ink); the rest is secondary ink.
+- [ ] Flag: in a card's detail line only the money the person keeps is in ink; the rest is secondary ink. Weight stays Book (medium is for buttons, brand Art. 6).
 
 ### Attention
 - [ ] Block: the blur test passes (focal point first, next action second).
