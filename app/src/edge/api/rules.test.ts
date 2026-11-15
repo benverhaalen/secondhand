@@ -4,10 +4,16 @@ import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
 import { handlers, manifest } from './rules.ts';
+import { runtime, createRuntime } from './runtime.ts';
+import { memoryStore } from '../events/ports.ts';
+
+process.env.SECONDHAND_LIVE_SITES = '';
 
 const prefixes = ["rules","limits"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
-beforeEach(() => {
+beforeEach(t => {
+  Object.assign(runtime, createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink: memorySink() })));
+  if (t.name.startsWith('rules.delete:')) runtime.store.put('rule', { ...(examples.find(e => e.name === 'rules.promote')!.response as Record<string, unknown>), version: undefined, id: 'ru_b2', user_id: 'usr_8f2k' });
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
@@ -34,7 +40,7 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
   if (e.response === null) assert.equal(await r.text(), '');
   else assert.deepEqual(await r.json(), e.response);
 });
-for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
+for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor' && (e.endpoint.includes(':id') || e.name === 'rules.promote'))) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
 });
@@ -100,4 +106,70 @@ test('rules: owned Expo files bind auth and export the contract method', async (
     assert.ok(source.includes("export const " + method + " = route('" + entry.endpoint + "'"), relative);
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
+});
+
+test('limits update is read back from the Store and the previous version becomes stale', async () => {
+  const update = examples.find(e => e.name === 'limits.put')!;
+  assert.equal((await call(update)).status, 200);
+  assert.equal(runtime.store.get('limits', 'usr_8f2k', 'usr_8f2k')?.data, 'example', 'edits preserve seeded row provenance');
+  const current = await (await call(examples.find(e => e.name === 'limits.get')!)).json();
+  assert.equal(current.ask_every_time, true); assert.equal(current.items[0].floor_cents.amount_cents, 7500);
+  assert.equal((await call(update)).status, 409);
+});
+
+test('new rules are listed, deletion persists, and acceptance below the floor is refused', async () => {
+  const e = examples.find(e => e.name === 'rules.promote')!;
+  const created = await call(e, { body: { kind: 'reply_other', scope: 'it_7c2m' } });
+  assert.equal(created.status, 201);
+  const rule = await created.json();
+  const listed = await (await call(examples.find(e => e.name === 'rules.list')!)).json();
+  assert.ok(listed.data.some((r: { id: string }) => r.id === rule.id));
+  assert.equal((await call(examples.find(e => e.name === 'rules.delete')!, { path: '/v1/rules/' + rule.id })).status, 204);
+  assert.equal((await call(examples.find(e => e.name === 'rules.delete')!, { path: '/v1/rules/' + rule.id })).status, 404);
+  const invalid = await call(e, { headers: { 'Idempotency-Key': 'below-floor' }, body: { kind: 'accept_offer', scope: 'it_7c2m', limits: { always_accept_cents: { amount_cents: 6000, currency: 'USD' } } } });
+  assert.equal(invalid.status, 422); assert.equal((await invalid.json()).code, 'outside_limits');
+});
+
+test('pickup and handover limit edits persist and locked rows cannot be deleted', async () => {
+  const e = examples.find(e => e.name === 'limits.put')!;
+  const response = await call(e, { body: { version: 5, handover: ['pickup'], pickup_windows: [{ weekday: 'sun', from: '10:00', to: '12:00' }], saved_spot: { label: 'Meeting spot' } } });
+  assert.equal(response.status, 200);
+  const current = await (await call(examples.find(e => e.name === 'limits.get')!)).json();
+  assert.deepEqual(current.handover, ['pickup']); assert.equal(current.saved_spot.label, 'Meeting spot');
+  runtime.store.put('rule', { id: 'ru_locked', user_id: 'usr_8f2k', kind: 'share_address', scope: 'all', state: 'auto' });
+  const locked = await call(examples.find(e => e.name === 'rules.delete')!, { path: '/v1/rules/ru_locked' });
+  assert.equal(locked.status, 403); assert.equal((await locked.json()).code, 'locked');
+});
+
+test('a stale rule deletion leaves the rule active', async () => {
+  const response = await call(examples.find(e => e.name === 'rules.delete')!, { path: '/v1/rules/ru_c1', headers: { 'If-Match': '0' } });
+  assert.equal(response.status, 409); assert.equal((await response.json()).code, 'stale');
+  assert.equal(runtime.store.get('rule', 'usr_8f2k', 'ru_c1')!.state, 'auto');
+});
+
+
+test('new people read default limits, create their limits and own rules with mutual isolation', async () => {
+  const byName = (name: string) => examples.find(e => e.name === name)!;
+  const read = await call(byName('limits.get'), { token: 'other' });
+  assert.equal(read.status, 200);
+  const defaults = await read.json();
+  assert.deepEqual(defaults, { handover: [], pickup_windows: [], saved_spot: null, ask_every_time: false, items: [], version: 0 });
+  assert.equal(runtime.store.get('limits', 'usr_other', 'usr_other'), undefined);
+  const update = { version: defaults.version, ask_every_time: true };
+  assert.equal((await call(byName('limits.put'), { token: 'other', body: update })).status, 200);
+  assert.equal((await call(byName('limits.put'), { token: 'other', body: update })).status, 409);
+  assert.equal(runtime.store.get('limits', 'usr_other', 'usr_other')?.data, undefined);
+  assert.equal((await (await call(byName('limits.get'), { token: 'other' })).json()).ask_every_time, true);
+  assert.equal((await (await call(byName('limits.get'))).json()).ask_every_time, false);
+  assert.deepEqual(await (await call(byName('rules.list'), { token: 'other' })).json(), { data: [], next_cursor: null });
+  const created = await call(byName('rules.promote'), { token: 'other', body: { kind: 'reply_other', scope: 'all' } });
+  assert.equal(created.status, 201);
+  const rule = await created.json();
+  assert.equal(runtime.store.get('rule', 'usr_other', rule.id)?.data, undefined);
+  assert.deepEqual((await (await call(byName('rules.list'), { token: 'other' })).json()).data.map((row: { id: string }) => row.id), [rule.id]);
+  assert.equal((await call(byName('rules.delete'), { path: '/v1/rules/' + rule.id })).status, 404);
+  assert.equal((await call(byName('rules.delete'), { token: 'other', path: '/v1/rules/ru_c1' })).status, 404);
+  assert.equal((await call(byName('rules.promote'), { token: 'other', headers: { 'Idempotency-Key': 'foreign-scope' }, body: { kind: 'reply_other', scope: 'it_7c2m' } })).status, 404);
+  assert.equal((await call(byName('rules.delete'), { token: 'other', path: '/v1/rules/' + rule.id })).status, 204);
+  assert.deepEqual(await (await call(byName('rules.list'), { token: 'other' })).json(), { data: [], next_cursor: null });
 });

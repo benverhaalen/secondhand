@@ -29,7 +29,7 @@ def test_mercari_maps_condition_and_drops_free_rows(tmp_path):
     assert set(jeans) == set(rows.COLUMNS)
     assert (jeans["price_cents"], jeans["condition"], jeans["kind"], jeans["buyer_shipping_cents"]) == (2400, "good", "apparel", 0)
     assert (shoes["price_cents"], shoes["condition"], shoes["kind"], shoes["buyer_shipping_cents"]) == (8050, "like_new", "shoes", "")
-    assert jeans["price_type"] == "sold" and jeans["at"] == "" and jeans["may_model"] is True
+    assert jeans["price_type"] == "sold" and jeans["at"] == "" and jeans["may_model"] is False
     assert shoes["description"] == ""   # "No description yet" is Mercari's placeholder, not text
 
 
@@ -67,12 +67,12 @@ def test_nber_unsold_listing_is_censored_not_dropped(tmp_path):
     w = csv.writer(raw)
     w.writerow(cols)
     w.writerow([7, 99, 5, "2012-06-01", "2012-06-09", "120.0", "95.5", 6, 40, 3000, 293, 30, 2, 1])
-    w.writerow([8, 99, 5, "2012-06-02", "2012-06-30", "130.0", "", 4, 40, 1000, 293, 12, 0, ""])
+    w.writerow([8, 99, 5, "02jun2012", "30JUN2012", "130.0", "", 4, 40, 1000, 293, 12, 0, ""])   # codebook: str9
     p = tmp_path / "anon_bo_lists.csv.gz"
     p.write_bytes(gzip.compress(raw.getvalue().encode()))
     sold, unsold = rows.nber_ebay_bo(p, {})
     assert (sold["price_type"], sold["price_cents"], sold["best_offer"], sold["at"]) == ("sold", 9550, "accepted", "2012-06-09")
-    assert (unsold["price_type"], unsold["price_cents"], unsold["at"]) == ("ended_unsold", 13000, "2012-06-30")
+    assert (unsold["price_type"], unsold["price_cents"], unsold["at"], unsold["listed_at"]) == ("ended_unsold", 13000, "2012-06-30", "2012-06-02")
     assert sold["product_id"] == "99" and sold["condition"] == "used" and sold["kind"] == "electronics"
 
 
@@ -85,7 +85,7 @@ def test_freeze_is_byte_identical_on_rerun_and_records_hashes(tmp_path):
     assert (tmp_path / "a" / "rows.csv.gz").read_bytes() == (tmp_path / "b" / "rows.csv.gz").read_bytes()
     m = json.loads((tmp_path / "a" / "manifest.json").read_text())
     assert m["rows"] == 1 and m["output"]["sha256"] == b["output"]["sha256"]
-    assert m["inputs"][0]["sha256"] == a["inputs"][0]["sha256"] and m["may_model"] is True
+    assert m["inputs"][0]["sha256"] == a["inputs"][0]["sha256"] and m["may_model"] is False
 
 
 def test_freeze_refuses_an_input_whose_hash_changed(tmp_path):

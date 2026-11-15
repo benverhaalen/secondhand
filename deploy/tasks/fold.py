@@ -8,7 +8,7 @@ import os
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]  # deploy/tasks/fold.py -> repo root (bundle sync root)
+ROOT = Path(__file__).resolve().parents[2] if '__file__' in globals() else None
 
 
 def find(engine: str, root: Path = ROOT) -> Path | None:
@@ -36,6 +36,7 @@ def run(engine: str, root: Path = ROOT) -> dict:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("engine")
+    parser.add_argument("--root", type=Path, default=ROOT, required=ROOT is None)
     parser.add_argument("--catalog")
     parser.add_argument("--schema")
     args = parser.parse_args()
@@ -43,4 +44,4 @@ if __name__ == "__main__":
         os.environ["SECONDHAND_CATALOG"] = args.catalog
     if args.schema is not None:
         os.environ["SECONDHAND_SCHEMA"] = args.schema
-    print(json.dumps(run(args.engine), default=str))
+    print(json.dumps(run(args.engine, args.root.resolve()), default=str))

@@ -95,6 +95,20 @@ test('a site the thing does not fit: blocked can’t be added and says why; avoi
   assert.equal(added.avoid, false);
 });
 
+test('the plan says why each site is picked, and lists them from where the thing sells best', () => {
+  // Ben, 08:09: "suggesting platform by type or tailoring to each platform ... depop is different from ebay".
+  const { w, item } = get('it_stage', 'stage');
+  const s = planSites(w, item, 4000);
+  assert.deepEqual(s.map(x => x.site), ['ebay', 'depop', 'poshmark', 'mercari', 'facebook'], 'best, good, then ok in the order the sites were linked');
+  assert.ok(s[0].why.startsWith('Best for this: sports memorabilia and fan gear is core here'), s[0].why);
+  assert.ok(s[1].why.startsWith('Sells well: jerseys are named under tops'), s[1].why);
+  assert.match(s[0].why, /\. You get \$\d+(\.\d\d)?$/);
+  assert.deepEqual(s.filter(x => x.on).map(x => x.site), ['ebay', 'depop'], 'best and good post by default; ok waits to be asked');
+  const reach = planSites(w, item, 4000, ['facebook', 'poshmark', 'mercari']);
+  assert.equal(reach.filter(x => x.on).length, 5, 'one draft can go to all five');
+  assert.ok(reach.find(x => x.site === 'mercari')!.why.startsWith('Reach: seasonal'), reach.find(x => x.site === 'mercari')!.why);
+});
+
 test('Approve says exactly what it will do', () => {
   assert.equal(postWords([23500, 23500]), 'Post at $235 on 2 sites');
   assert.equal(postWords([23500, 22500]), 'Post from $225 on 2 sites');

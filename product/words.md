@@ -1406,6 +1406,19 @@ Ben, project chat, 07:42 UTC.
 
 Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), app/src/engines/listing/aspects.ts.
 
+## 2026-11-15 prove the redraw keeps the real size, on LiDAR phones
+
+Ben, project chat (relayed), 07:51 UTC.
+> is there any downside to doing it on the dev acct? also another thing - there could be a hesitation with how the ai enhancement of the shirts or clothing etc dewrinkling and like essentially just ironing them and framing the pictures nicely people could say it lies. how do we prove in some respect it doesnt. by using its actual measurements (of course with a boundary of error) to audit and compare the ai generated outputs against the actual image of the shirt. it looks like it isnt getting rid of wrinkles as much as i thought though. but keeping dimensions super accurate. how do you prove this? we have measurements from the items. can show images are accurate to measurements by knowing what the pit to pit and length on a shirt is and plan on showing this visually somewhere on the website or pitch etc.
+
+Ben, studio thread, 08:14 UTC.
+> no, the marquette listing in the photos shows the actual measurements. also considering it being scrunched and all and estimating some error there but the alternate photos show it with actual measurements and use those to measure size too. like how are you going to detect like in the scrunched photo how you would know the actual pit to pit or top to bottom say it would be flattened. think about solving that problem
+
+Ben, studio thread, 09:00 UTC.
+> how about just allow this feature for lidar phones. assume all phones have lidar. dont overengineer
+
+Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md), jobs/studio/plan.py (`relay_measured`).
+
 ## 2026-11-15 demo the buy side live, Nate posts and my phone pings
 
 Ben, project chat, 07:46 UTC.
@@ -1583,3 +1596,55 @@ Ben, project thread "Prove the Brewers jersey buy alert", 08:36 UTC.
 > nate will register. the giannis one can count. ensure the flow asks and helps me specify what i want considering dynamic ui. color, size, etc. if not done already
 
 Used in: [scripts/demo/wants/brewers-jersey.json](../scripts/demo/wants/brewers-jersey.json), [spec/features/watch.md](../spec/features/watch.md), [app/src/app/want.tsx](../app/src/app/want.tsx), [brewers-alert-trial.md](../research/watch/ben/brewers-alert-trial.md).
+
+## 2026-11-15 the demo runs on nates harness and the cadence is a lever
+Ben, project chat, 08:42 and 08:43 UTC. Two messages.
+> plan to use however nate builds the harness to end up doing the demo. im hearing ebay api takes like a day for approval so im just going to end up using whatever he engineers up. try and see the drawbacks or benefits to levers in our design about how often we do things. so like what is the drawback of making it an hour? we can design a demo mode that never says demo mode for the backend so that we can increase the rate at which it polls or have some mechanism to make it instant. but carefully choosing how often we probe to improve our roi. also from the ways we could make money including proposed ways we need to assess the whole market for such a thing too. ask codex to conduct all this research to save my precious claude usage though just ensure ot prompt it right
+
+> switch research over to codex when you get the chance without setting the research back at all
+
+Used in: [live-buy-demo.md](live-buy-demo.md), [research/watch/ben/codex-briefs/cadence-and-market.md](../research/watch/ben/codex-briefs/cadence-and-market.md).
+## 2026-11-15 research moves to codex
+Ben, project chat, 08:43 UTC.
+> switch research over to codex when you get the chance without setting the research back at all
+
+Used in: [intent ledger](../spec/intent-ledger.md#how-the-work-runs).
+
+## 2026-11-15 nate take ben's asks as ideas, keep what we do better, and read ebay pages anyway
+Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages. The first came after the orchestrator listed what Ben's rulings change, one of them a reply being sent without asking after three unedited sends. The second answered the orchestrator's question after the eBay page lane's builder stopped on eBay's robots.txt and User Agreement.
+> not just three, dont just do stuff that might be thinking in a way we can understand is less than the potential and value already brought, identify which ideas are needed, what we do better, change what we can do better
+
+> read ebay pages anyway
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
+
+## 2026-11-15 nate dimensions come from the published ones first, not from a required tape
+Nate, build session (orchestrator), 2026-11-15 about 06:30 Central, after the orchestrator relayed Ben's studio rule as "no AI redraw without a tape measurement".
+> So bens request wasn't to require that we rely on tape measurement, it was misinterpreted so please don't change that. Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 67](../.agents/team/packets/team/67-nates-rulings-and-where-they-meet-bens-plans.md).
+
+## 2026-11-15 nate the system always prices with fallbacks, and its power is what it weighs in real time
+Nate, build session (orchestrator), 2026-11-15 about 07:00 Central, after the leads confirmed stronger forms of Ben's asks, among them a bar on automatic pricing that needed thirty sales in a cell.
+> Ok, while bens asks are confirmed, and you see autopricing as fair, of course the system must price and have established fallbacks, but the power of the system relies on things being realtime determined and weighed by how the system was designed
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 ben a bug may be fixed if the same system generalizes; claim the most each experiment allows without lying
+Ben, project timeline, 08:49 and 08:54 UTC, after the first StockX backtest and its fix. Two messages.
+> get git back . also you can selectively remove a bug. just ensure the same system generalizes. think about what each dataset proves too. and how we can make the best claims for a given experiment without lying. think about the project evidence skill and how i frame my projects in my get-hired repo
+
+> with the 70 20 rule thing im interested where that came from and why like the logic behind our pricing algorithm. i feel like there could be like proxies in a small dataset possibly where its more realistic to how we price based on the market at the time. idk. again all research use codex from here on out if you need it. but like actually using the harness what data do we ingest essentially and is there some proxy of depreciation.
+
+Used in: [backtest claims](../spec/plans/backtest/claims.md), [how we price](../spec/plans/backtest/how-we-price.md).
+## 2026-11-15 nate ebay does work in cases
+Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the orchestrator reported that eBay refused every public page with a 403.
+> you havent worked out far enough, ebay does work in cases, I've seen it used
+
+Used in: [when eBay serves its public pages](../research/cross-cutting/nate/runs/ebay-when-it-serves.md).
+
+## 2026-11-15 nate there is a way to use browser use cloud we are not considering
+Nate, build session (orchestrator), 2026-11-15 about 08:00 Central, after the eBay finding.
+> Theres some way to browser use cloud you aren't considering
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.

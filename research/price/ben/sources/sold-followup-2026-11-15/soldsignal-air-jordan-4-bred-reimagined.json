@@ -1,0 +1,259 @@
+{
+  "week": "2026-W46",
+  "slug": "air-jordan-4-bred-reimagined",
+  "name": "Air Jordan 4 Retro 'Bred Reimagined'",
+  "category": "sneakers",
+  "price": 247.0,
+  "priceType": "SOLD",
+  "basis": "GOAT median of the last recorded sale in each size, men's sizes 7 to 13 (new, in box)",
+  "sampleSize": 13,
+  "retail": 215.0,
+  "premiumPct": 14.9,
+  "changePct": -1.6,
+  "goatLowestAsk": 165.0,
+  "goatLastSoldMedian": 247.0,
+  "mercariMedianSold": null,
+  "mercariSales": null,
+  "chrono24MedianAsk": null,
+  "chrono24Listings": null,
+  "bestTrackedPlatform": "GOAT",
+  "bestTrackedNetPayout": 212.2,
+  "trackedPlatforms": 2,
+  "updated": "2026-11-09T18:59:36+00:00",
+  "staleSource": false,
+  "lowSample": false,
+  "url": "https://www.aiplannermail.com/sneakers/air-jordan-4-bred-reimagined/",
+  "summary": "As of November 9, 2026, the Air Jordan 4 Retro 'Bred Reimagined' resold for a median of $247, 15% above its $215 retail price. SOLD price from 13 data points; basis: GOAT median of the last recorded sale in each size, men's sizes 7 to 13 (new, in box). Source: SoldSignal weekly resale index.",
+  "cite": "SoldSignal, \"Air Jordan 4 Retro 'Bred Reimagined' resale price\", data as of November 9, 2026. https://www.aiplannermail.com/sneakers/air-jordan-4-bred-reimagined/ (CC BY 4.0)",
+  "license": "CC BY 4.0",
+  "terms": "https://www.aiplannermail.com/terms/",
+  "payouts": [
+    {
+      "platform": "goat",
+      "name": "GOAT",
+      "price": 247.0,
+      "basis": "GOAT median last sale, men's sizes 7 to 13",
+      "net": 212.2,
+      "fee": 34.8
+    },
+    {
+      "platform": "stockx",
+      "name": "StockX",
+      "price": 217.0,
+      "basis": "StockX 90-day average sale",
+      "net": 190.96,
+      "fee": 26.04
+    }
+  ],
+  "feeCompare": [
+    {
+      "platform": "ebay",
+      "name": "eBay",
+      "net": 227.24,
+      "fee": 19.76
+    },
+    {
+      "platform": "mercari",
+      "name": "Mercari",
+      "net": 222.3,
+      "fee": 24.7
+    },
+    {
+      "platform": "stockx",
+      "name": "StockX",
+      "net": 217.36,
+      "fee": 29.64
+    },
+    {
+      "platform": "goat",
+      "name": "GOAT",
+      "net": 212.2,
+      "fee": 34.8
+    }
+  ],
+  "history": [
+    {
+      "week": "2026-W44",
+      "value": 248.0,
+      "type": "SOLD",
+      "src": "goat",
+      "basis": "GOAT median of the last recorded sale in each size, men's sizes 7 to 13 (new, in box)"
+    },
+    {
+      "week": "2026-W45",
+      "value": 251.0,
+      "type": "SOLD",
+      "src": "goat",
+      "basis": "GOAT median of the last recorded sale in each size, men's sizes 7 to 13 (new, in box)"
+    },
+    {
+      "week": "2026-W46",
+      "value": 247.0,
+      "type": "SOLD",
+      "src": "goat",
+      "basis": "GOAT median of the last recorded sale in each size, men's sizes 7 to 13 (new, in box)"
+    }
+  ],
+  "sources": {
+    "stockx": {
+      "title": "Jordan 4 Retro Bred Reimagined",
+      "url": "https://stockx.com/air-jordan-4-retro-bred-reimagined",
+      "type": "SOLD",
+      "avg90": 217.0,
+      "n90": 1663,
+      "lastSale": 239.0,
+      "avgYear": 232.0,
+      "nYear": 8000,
+      "n72h": 55,
+      "volatility": 0.1244,
+      "asks": 1386,
+      "releaseDate": "2024-02-17",
+      "confidence": "high"
+    },
+    "goat": {
+      "title": "Air Jordan 4 Retro 'Bred Reimagined'",
+      "url": "https://www.goat.com/sneakers/air-jordan-4-retro-bred-reimagined-fv5029-006",
+      "type": "ASK",
+      "lowestAsk": 165.0,
+      "instantShipAsk": 187.0,
+      "retail": 215.0,
+      "lastSoldMedian": 247.0,
+      "lastSoldN": 13,
+      "lastSoldCommonSizes": true,
+      "sizesInStock": 25,
+      "releaseDate": "2024-02-17",
+      "sizes": [
+        {
+          "size": "3.5",
+          "ask": 248.0,
+          "lastSold": 279.0
+        },
+        {
+          "size": "4",
+          "ask": 165.0,
+          "lastSold": 331.0
+        },
+        {
+          "size": "4.5",
+          "ask": 178.0,
+          "lastSold": 178.0
+        },
+        {
+          "size": "5",
+          "ask": 178.0,
+          "lastSold": 187.0
+        },
+        {
+          "size": "5.5",
+          "ask": 331.0,
+          "lastSold": 331.0
+        },
+        {
+          "size": "6",
+          "ask": 347.0,
+          "lastSold": 347.0
+        },
+        {
+          "size": "6.5",
+          "ask": 381.0,
+          "lastSold": 358.0
+        },
+        {
+          "size": "7",
+          "ask": 232.0,
+          "lastSold": 236.0
+        },
+        {
+          "size": "7.5",
+          "ask": 266.0,
+          "lastSold": 265.0
+        },
+        {
+          "size": "8",
+          "ask": 250.0,
+          "lastSold": 250.0
+        },
+        {
+          "size": "8.5",
+          "ask": 249.0,
+          "lastSold": 249.0
+        },
+        {
+          "size": "9",
+          "ask": 236.0,
+          "lastSold": 236.0
+        },
+        {
+          "size": "9.5",
+          "ask": 237.0,
+          "lastSold": 237.0
+        },
+        {
+          "size": "10",
+          "ask": 238.0,
+          "lastSold": 238.0
+        },
+        {
+          "size": "10.5",
+          "ask": 240.0,
+          "lastSold": 240.0
+        },
+        {
+          "size": "11",
+          "ask": 247.0,
+          "lastSold": 247.0
+        },
+        {
+          "size": "11.5",
+          "ask": 245.0,
+          "lastSold": 244.0
+        },
+        {
+          "size": "12",
+          "ask": 246.0,
+          "lastSold": 266.0
+        },
+        {
+          "size": "12.5",
+          "ask": 284.0,
+          "lastSold": 322.0
+        },
+        {
+          "size": "13",
+          "ask": 258.0,
+          "lastSold": 257.0
+        },
+        {
+          "size": "13.5",
+          "ask": null,
+          "lastSold": 371.0
+        },
+        {
+          "size": "14",
+          "ask": 290.0,
+          "lastSold": 280.0
+        },
+        {
+          "size": "15",
+          "ask": 403.0,
+          "lastSold": 497.0
+        },
+        {
+          "size": "16",
+          "ask": 406.0,
+          "lastSold": 306.0
+        },
+        {
+          "size": "17",
+          "ask": 381.0,
+          "lastSold": 353.0
+        },
+        {
+          "size": "18",
+          "ask": 543.0,
+          "lastSold": 278.0
+        }
+      ]
+    }
+  }
+}
