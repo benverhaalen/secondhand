@@ -18,13 +18,16 @@ export class ApiFailure extends Error {
   code: string;
   retry: Retry | undefined;
   failed_step: string | undefined;
-  constructor(status: number, code: string, message: string, options: { retry?: Retry; failed_step?: string; cause?: unknown } = {}) {
+  // Which limit a 429 hit, when the server names one: 'daily' is the visitor demo's spend cap (assist).
+  cap: string | undefined;
+  constructor(status: number, code: string, message: string, options: { retry?: Retry; failed_step?: string; cap?: string; cause?: unknown } = {}) {
     super(message, { cause: options.cause });
     this.name = 'ApiFailure';
     this.status = status;
     this.code = code;
     this.retry = options.retry;
     this.failed_step = options.failed_step;
+    this.cap = options.cap;
   }
 }
 
@@ -48,7 +51,7 @@ async function failure(response: Response): Promise<ApiFailure> {
   const error = body && typeof body === 'object' ? body as Record<string, unknown> : {};
   return new ApiFailure(response.status, typeof error.code === 'string' ? error.code : 'http_error',
     typeof error.message === 'string' ? error.message : response.statusText || `HTTP ${response.status}`,
-    { retry: retryOf(error.retry), failed_step: typeof error.failed_step === 'string' ? error.failed_step : undefined });
+    { retry: retryOf(error.retry), failed_step: typeof error.failed_step === 'string' ? error.failed_step : undefined, cap: typeof error.cap === 'string' ? error.cap : undefined });
 }
 
 class StreamInterrupted extends Error {

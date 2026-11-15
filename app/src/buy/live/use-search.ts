@@ -59,5 +59,5 @@ export function useSearch(client: Client = api) {
   }, [client, stop]);
 
   useEffect(() => stop, [stop]);
-  return { reach: view(state), failure: state.failure, run, stop };
+  return { reach: view(state), jobId: state.start?.id ?? null, failure: state.failure, run, stop };
 }
