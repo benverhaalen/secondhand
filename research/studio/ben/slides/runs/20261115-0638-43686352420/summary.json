@@ -1,0 +1,225 @@
+[
+ {
+  "item": "carhartt-pants",
+  "kind": "pants",
+  "seconds": 306.6,
+  "cost": 0.5309,
+  "slides": [
+   "cover:relay",
+   "back:relay",
+   "detail:level0",
+   "graphic:level0",
+   "tag:level0"
+  ],
+  "asks": [
+   "Lay a tape straight across the waist and take a photo where the numbers are readable."
+  ],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    true,
+    []
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: printed text changed"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: printed text changed"
+    ]
+   ],
+   [
+    "back",
+    "gemini-3-pro-image",
+    true,
+    []
+   ]
+  ]
+ },
+ {
+  "item": "chico-hoodie",
+  "kind": "hoodie",
+  "seconds": 107.6,
+  "cost": 0.2763,
+  "slides": [
+   "cover:relay",
+   "graphic:level0",
+   "tag:level0",
+   "detail:level0",
+   "detail:level0",
+   "detail:level0"
+  ],
+  "asks": [
+   "Turn it over where it lies and take the same photo.",
+   "Get close to the pocket print so the letters fill the screen.",
+   "Lay a tape straight across the pit to pit and take a photo where the numbers are readable."
+  ],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented white neck tag peeking out at the base of the hood opening"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented hood drawstrings, neck tag, black dashed outline"
+    ]
+   ]
+  ]
+ },
+ {
+  "item": "marquette-tee",
+  "kind": "tee",
+  "seconds": 317.0,
+  "cost": 0.5457,
+  "slides": [
+   "cover:level0",
+   "back:level0",
+   "graphic:level0",
+   "graphic:level0",
+   "graphic:level0",
+   "tag:level0",
+   "measure:level0",
+   "measure:level0",
+   "extra:level0"
+  ],
+  "asks": [],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented discolored square box around chest logo, blank white neck tag",
+     "judge: lost Fruit of the Loom print on neck tag"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented dark rectangular box artifact around chest logo"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented square discolored patch around the chest logo, red-bordered neck tag replacing the Fruit of the Loom tag"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    false,
+    [
+     "judge: not the same item",
+     "judge: invented faint square discolored box surrounding the chest logo"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front crewneck collar, dark grey inner neck taping, rectangular seam artifact above text",
+     "judge: lost legible micro-text inside the numbers"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented rectangular shading artifact above MARQUETTE",
+     "judge: lost fine printed roster and score text inside the 74 numerals"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented faint rectangular box artifact above the graphic",
+     "judge: lost legible micro-text inside the 74 graphic"
+    ]
+   ],
+   [
+    "back",
+    "gemini-3-pro-image",
+    false,
+    [
+     "proportions -15% against the tape",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front neckline with visible Fruit of the Loom tag, pasted rectangular patch artifact around the graphic",
+     "judge: lost legible micro-text inside the numbers 74, back neckline cut"
+    ]
+   ]
+  ]
+ }
+]
