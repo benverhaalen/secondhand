@@ -2,7 +2,9 @@
 // under the price shows up. Plan, timing and fallbacks: product/live-buy-demo.md.
 //
 //   node scripts/demo/stage-watch.mjs --url 'https://poshmark.com/search?query=carhartt+detroit&sort_by=added_desc' \
-//     --cap 25 --every 10 --for 15 --ntfy https://ntfy.sh/<unguessable-topic> [--click <app url>] [--trust-search-price]
+//     --cap 25 --every 10 --for 15 [--out logs/stage-alerts.json] [--ntfy <topic url>] [--trust-search-price]
+// Ben chose the alert inside the app (decision card, 08:06): the want screen opened with ?live=1 reads --out through
+// GET /v1/stage every 2 s. --ntfy is kept only as a spare.
 //
 // How it decides (spec/features/watch.md, alert rule): the first read seeds silently; after that a listing never seen
 // before, or one that fell 10% or more, is a candidate; the listing's own page is re-read and only a price read from it,
@@ -12,6 +14,8 @@
 //
 // Rests-on: research/watch/ben/page-monitor/monitor.mjs (extract, diff, bot wall), spec/features/watch.md, log/README.md.
 import { parseArgs } from 'node:util';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { createLog } from '../../log/index.js';
 import { fileSink, logPath } from '../../log/node.js';
 import { extractListings, diff, emptyState, blocked, siteOf } from '../../research/watch/ben/page-monitor/monitor.mjs';
@@ -44,7 +48,13 @@ export function check(state, html, { site, now }) {
 export function confirm(candidate, html, cap) {
   const row = extractListings(html, candidate.site).find(r => r.site_id === candidate.site_id && !r.guessed);
   if (!row || row.sold || row.price == null || row.price > cap) return null;
-  return { ...candidate, price: row.price, title: row.title ?? candidate.title, price_guessed: false };
+  const og = /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i.exec(html) ?? /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i.exec(html);
+  return { ...candidate, price: row.price, title: row.title ?? candidate.title, price_guessed: false, image: og ? og[1] : null };
+}
+
+// The file the app's want screen reads through GET /v1/stage (app/src/app/v1/stage+api.ts), in whole cents.
+export function toApp(alerts, cap) {
+  return { alerts: alerts.map(a => ({ id: a.site_id, site: a.site, url: a.url, title: a.title, price_cents: Math.round(a.price * 100), cap_cents: Math.round(cap * 100), image: a.image ?? null, listed_at: a.listed_at, found_at: a.found_at })) };
 }
 
 const usd = n => Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`;
@@ -57,12 +67,13 @@ export function message(a, cap) {
   };
 }
 
-export async function run({ url, cap, every_s = 10, for_min = 15, notify = null, click = null, fetchPage, post, sleep, now, log = null, say = () => {}, trustSearchPrice = false }) {
+export async function run({ url, cap, every_s = 10, for_min = 15, notify = null, click = null, fetchPage, post, sleep, now, log = null, say = () => {}, trustSearchPrice = false, write = () => {} }) {
   if (!(every_s >= MIN_EVERY_S)) throw new Error(`every_s under ${MIN_EVERY_S} would hammer the site`);
   const site = siteOf(url);
   if (!site) throw new Error(`no reader for ${url}`);
   const end = now() + for_min * 60_000, every = every_s * 1000, told = new Set(), alerts = [];
   let state, wait = every, checks = 0;
+  write(toApp([], cap)); // a new run starts the app's list empty, so a rehearsal's alert never shows on stage
   while (now() < end) {
     let html = null;
     try { html = await fetchPage(url); } catch (e) { log?.error('stage_watch.search', e, { url }); }
@@ -91,6 +102,7 @@ export async function run({ url, cap, every_s = 10, for_min = 15, notify = null,
       const m = message(a, cap);
       log?.change('match', c.site_id, 'alerted', { site, price: a.price, cap, listed_at: a.listed_at, found_at: a.found_at });
       say(`${m.title} | ${m.body} | ${a.url}`);
+      write(toApp(alerts, cap));
       if (notify) {
         try { await post(notify, m.body, { Title: m.title, Click: click ?? a.url, Priority: 'high', Tags: 'shopping' }); }
         catch (e) { log?.error('stage_watch.notify', e); say('the phone ping failed; the match is on this screen'); }
@@ -106,8 +118,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const { values: v } = parseArgs({ options: {
     url: { type: 'string' }, cap: { type: 'string' }, every: { type: 'string', default: '10' }, for: { type: 'string', default: '15' },
     ntfy: { type: 'string' }, click: { type: 'string' }, 'trust-search-price': { type: 'boolean', default: false },
+    out: { type: 'string', default: 'logs/stage-alerts.json' },
   } });
-  if (!v.url || !v.cap) { console.error('usage: --url <newest-first search url> --cap <dollars> [--every 10] [--for 15] [--ntfy <topic url>] [--click <url>]'); process.exit(2); }
+  if (!v.url || !v.cap) { console.error('usage: --url <newest-first search url> --cap <dollars> [--every 10] [--for 15] [--out logs/stage-alerts.json] [--ntfy <topic url>]'); process.exit(2); }
   const log = createLog({ src: 'stage-watch', build: 'script', sink: fileSink(logPath({ session: `${Date.now()}` }, 'stage-watch')) });
   const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
   const fetchPage = u => log.call('http', 'marketplace.read', { url: u }, async () => {
@@ -125,6 +138,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const out = await run({
     url: v.url, cap: Number(v.cap), every_s: Number(v.every), for_min: Number(v.for), notify: v.ntfy ?? null, click: v.click ?? null,
     fetchPage, post, sleep: ms => new Promise(r => setTimeout(r, ms)), now: () => Date.now(), log, say, trustSearchPrice: v['trust-search-price'],
+    write: out => { mkdirSync(dirname(v.out), { recursive: true }); writeFileSync(v.out, JSON.stringify(out)); },
   });
   say(`stopped after ${out.checks} reads, ${out.alerts.length} alert(s)`);
 }
