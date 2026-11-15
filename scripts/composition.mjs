@@ -21,14 +21,20 @@ export function snapshot({ insetTop = 0 } = {}) {
   const VH = innerHeight;
   const ITEM = /^(card|tile|sale-row|notice|thread-row|keep-row|pulse-row|money-row|site-row)/;
   const partOf = (el, re) => { for (let n = el; n; n = n.parentElement) if (n.dataset?.part && re.test(n.dataset.part)) return n; return null; };
-  const inBar = el => !!partOf(el, /^(tab-bar|nav)$/);
+  // The bars: the tab bar, a pushed page's nav, and a main tab's title row (page-head, TabNav), which took the nav's place on
+  // the tabs: its title, count and Select are the nav, not lines before the first item (U11).
+  const inBar = el => !!partOf(el, /^(tab-bar|nav|page-head)$/);
   const seen = r => r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < VH;
   const shown = el => { const s = getComputedStyle(el); return s.visibility !== 'hidden' && Number(s.opacity) > 0.05; };
+  // A header is marked (a shelf's head, data-head), or it is a line that is not in an item and has items after it in its own
+  // group, as Section draws its title: an unmarked header is judged as one (Buy's "Needs you" over its cards, 11-15).
+  const hasItem = el => ITEM.test(el.dataset?.part ?? '') || [...el.querySelectorAll('[data-part]')].some(k => ITEM.test(k.dataset.part));
+  const headsItems = el => { const sibs = el.parentElement ? [...el.parentElement.children] : [], i = sibs.indexOf(el); return i >= 0 && sibs.slice(i + 1).some(hasItem); };
   const texts = [...document.querySelectorAll('[data-role]')].filter(shown).map(el => {
     const r = el.getBoundingClientRect(), s = getComputedStyle(el), item = partOf(el, ITEM);
-    const head = el.closest('[data-part="shelf-head"],[data-head]');
+    const head = el.closest('[data-part="shelf-head"],[data-head]') ?? (!item && headsItems(el) ? el : null);
     return { s: el.textContent.trim().slice(0, 60), role: el.dataset.role, color: s.color, size: parseFloat(s.fontSize), y: Math.round(r.top), bottom: Math.round(r.bottom), seen: seen(r),
-      bar: inBar(el), head: !!head, shelf: el.closest('[data-shelf]')?.dataset.shelf ?? null, item: item ? item.dataset.part : null,
+      bar: inBar(el), head: !!head, news: !!el.closest('[data-part="money-news"]'), shelf: el.closest('[data-shelf]')?.dataset.shelf ?? null, item: item ? item.dataset.part : null,
       cut: s.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1 || (s.webkitLineClamp !== 'none' && el.scrollHeight > el.clientHeight + 2) };
   });
   const box = el => { const r = el.getBoundingClientRect(); return { y: Math.round(r.top), bottom: Math.round(r.bottom), seen: seen(r) }; };
@@ -37,7 +43,7 @@ export function snapshot({ insetTop = 0 } = {}) {
   const items = [...document.querySelectorAll('[data-part]')].filter(e => ITEM.test(e.dataset.part) && shown(e) && !partOf(e.parentElement ?? e, ITEM)).map(e => ({ part: e.dataset.part, ...box(e) })).filter(p => p.seen);
   const shelves = [...document.querySelectorAll('[data-shelf]')].map(sh => ({ id: sh.dataset.shelf, head: !!sh.querySelector('[data-part="shelf-head"]'),
     tags: [...sh.querySelectorAll('[data-part="tag"]:not([data-quiet])')].filter(shown).map(t => t.dataset.state) }));
-  const navEl = document.querySelector('[data-part="nav"]'), nav = navEl ? box(navEl) : null;
+  const navEl = document.querySelector('[data-part="nav"]') ?? document.querySelector('[data-part="page-head"]'), nav = navEl ? box(navEl) : null;
   return { vh: VH, insetTop, nav, texts, pills, items, shelves };
 }
 
@@ -69,11 +75,16 @@ export function compose(snap, { route = '', typical = true } = {}) {
   // line, and one header. Ben's approved Today had its first card at 205 on a phone; the app's had five lines and sat at 310.
   if (tab && snap.items.length) {
     const top = snap.nav ? snap.nav.bottom : snap.insetTop, first = Math.min(...snap.items.map(i => i.y));
-    const rows = [...new Set(T.filter(t => t.seen && t.y >= top && t.bottom <= first && !t.item).map(t => Math.round(t.y / 6)))];
+    // The top number reads as one thing with its window over it ("Since yesterday / $97.33"), as Wallet's balance does, so
+    // its caption and figure are one line: the number, its line, one header. The bars (T has none) are where a person is.
+    const before = T.filter(t => t.seen && t.y >= top && t.bottom <= first && !t.item);
+    const row = t => Math.round(t.y / 6), news = [...new Set(before.filter(t => t.news).map(row))].sort((x, y) => x - y);
+    const rows = [...new Set(before.map(t => (t.news && news.length > 2 && row(t) === news[1] ? news[0] : row(t))))];
     if (rows.length > 3) out.push(err('U11', `${rows.length} lines of text come before the first item (at ${first}): a main tab shows the number, its one line and at most one header before the first thing to do, so a person sees what needs them without reading (Art. 7.12)`));
   }
 
   // U12 a screen asks for little at once (Art. 7.13). The approved Today asked for six presses on its first screen.
+  // The bars' own controls (the inbox, the same on all four tabs) are where a person goes, not what this screen asks.
   if (typical && snap.pills.length > 7) out.push(err('U12', `${snap.pills.length} buttons on the first screen: at most 7, so the one that matters is seen. Cards below the first decision show their tag and one act, or fold into a pile (Art. 7.13)`));
 
   // U13 one fact is said once (Art. 7.14). A header that names a group, and a tag on every item in it saying the same state,

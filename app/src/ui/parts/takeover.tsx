@@ -1,6 +1,6 @@
 // New, the ＋ (spec/pages.md §6.4; Ben, 03:17: "it should take over the screen with an animation and once you press the
 // button a subtle animation should go into the camera"). The 56 ink button grows into a circle that covers the screen,
-// its ＋ turns to ×, and three large choices rise out of it one after another. A choice opens the camera out of the circle
+// its ＋ turns to ×, and four large choices rise out of it one after another. A choice opens the camera out of the circle
 // it was touched on. × plays it all back into the button.
 //
 // New's circle grows in the brand's field, sky, mint and lime, and the gradient flows over the whole screen as it grows
@@ -10,13 +10,11 @@
 // full-screen light circle never flashes at night. A choice then opens the camera
 // out of the circle it was touched on, on the camera's own black (useBar in ./camera).
 //
-// The three jobs stand centered on the screen (Ben, 06:19: "center the main action buttons"). Each one opens the camera,
-// and each carries a second way in at its end: type what it is or paste a link (Ben: Paste a link and Describe it "should
-// kind of be integrated in other things").
+// The four jobs stand centered on the screen (Ben, 06:19: "center the main action buttons"). Each one opens the camera.
 //
 // Sizes, each with its reason:
 //   PLUS 48      the tab bar's New button (chrome.tsx, NEW_D), so the circle and the close button start exactly where it is.
-//   CHOICE 88    a choice: large, so the three doors read at a glance. Its icon well is 88 less 2 × 16, so 56, and its
+//   CHOICE 88    a choice: large, so the four doors read at a glance. Its icon well is 88 less 2 × 16, so 56, and its
 //                corner nests in the capsule's (Art. 9.1).
 import { useEffect, type ReactNode } from 'react';
 import { View, type ViewStyle } from 'react-native';
@@ -25,7 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Icon, type IconName } from '../icon';
 import { MOTIONS } from '../motion';
-import { Press, slop } from '../press';
+import { Press } from '../press';
 import { Txt } from '../text';
 import { OnGround, useColors, useScheme } from '../theme';
 import { motion, radius, size, space } from '../tokens.generated';
@@ -40,15 +38,13 @@ const ms = (k: keyof typeof MOTIONS) => { const v = MOTIONS[k].ms; return typeof
 // because the circle is their entrance and their exit.
 export const OVER = { animation: 'none', presentation: 'transparentModal', contentStyle: { backgroundColor: 'transparent' } } as const;
 // The icon of each of New's doors, which the camera's modes carry too.
-export const MODE_ICON = { sell: 'tag-01', worth: 'money-03', find: 'search-01' } as const satisfies Record<string, IconName>;
+export const MODE_ICON = { sell: 'tag-01', worth: 'money-03', track: 'binoculars', find: 'search-visual' } as const satisfies Record<string, IconName>;
 export const PLUS = NEW_D;
 export const CHOICE = 88;
 const WELL_INSET = space.s4;
 const WELL = CHOICE - 2 * WELL_INSET;
 // Each choice rises 30 ms after the one before (emil-design-eng: a stagger of 30 to 80 ms that never blocks).
 const STAGGER = 30;
-// The second way in at a choice's end: the kit's 40 circle, with a 44 reach.
-const TYPE = size.pillCardH;
 const fill: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
 
 // Where the ＋ sits: in the middle of the tab bar's capsule (chrome.tsx, newCenter), so New opens from it and closes into it.
@@ -148,13 +144,12 @@ export function ChoiceColumn({ count, children }: { count: number; children: Rea
   );
 }
 
-// One job: a capsule 88 tall with its icon in a 56 well and its name, raised off the field. Its main part opens the camera;
-// at its end a pencil opens the same job by typing what it is or pasting a link. `lead` is the one used last: its well is
+// One job: a capsule 88 tall with its icon in a 56 well and its name, raised off the field. It opens the camera (the pencil
+// that typed a job in is gone, Ben 11:29). `lead` is the one used last: its well is
 // ink, the one emphasis on the view; the others' wells are gray. It rises out of the button `index` places after the first;
 // `shown` false sinks it back, faster.
-export function ChoiceCapsule({ id, label, icon, lead = false, index, shown, onPress, onType }: {
+export function ChoiceCapsule({ id, label, icon, lead = false, index, shown, onPress }: {
   id: string; label: string; icon: IconName; lead?: boolean; index: number; shown: boolean; onPress?: () => void;
-  onType?: () => void;
 }) {
   const reduced = useReducedMotion(), b = useBar();
   const rise = useSharedValue(0);
@@ -173,19 +168,12 @@ export function ChoiceCapsule({ id, label, icon, lead = false, index, shown, onP
           {({ pressed }) => <CapsuleMain label={label} icon={icon} lead={lead} pressed={pressed} />}
         </Press>
       </View>
-      {onType ? (
-        <View style={{ paddingRight: WELL_INSET }}>
-          <Press id={`${id}-type`} label={`${label}: type it or paste a link`} onPress={onType} hit={slop(size.controlMin, TYPE)}>
-            {({ pressed }) => <TypeBody pressed={pressed} />}
-          </Press>
-        </View>
-      ) : null}
     </Animated.View>
   );
 }
 function CapsuleMain({ label, icon, lead, pressed }: { label: string; icon: IconName; lead: boolean; pressed: boolean }) {
   const b = useBar(), c = useColors(), dark = useScheme() === 'dark';
-  // The name is centered in the room between the well and the pencil, so the three read as one centered column.
+  // The name is centered on the capsule, so the four read as one centered column.
   return (
     <View {...mark('choice', { lead: String(lead) })}
       style={{ height: CHOICE, borderRadius: radius.pill, borderCurve: 'continuous', padding: WELL_INSET, flexDirection: 'row', alignItems: 'center', gap: space.s4, backgroundColor: pressed ? b.raisedPress : b.raised }}>
@@ -193,15 +181,8 @@ function CapsuleMain({ label, icon, lead, pressed }: { label: string; icon: Icon
         <Icon name={icon} tone={lead ? 'page' : 'ink'} />
       </View>
       <View style={{ flex: 1, alignItems: 'center' }}><Txt role="headline">{label}</Txt></View>
-    </View>
-  );
-}
-// The pencil at a capsule's end: a 40 circle in the wells' quiet gray.
-function TypeBody({ pressed }: { pressed: boolean }) {
-  const b = useBar(), c = useColors(), dark = useScheme() === 'dark';
-  return (
-    <View {...mark('choice-type')} style={{ width: TYPE, height: TYPE, borderRadius: radius.pill, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center', backgroundColor: pressed ? b.raisedPress : dark ? c.surface : c.gray }}>
-      <Icon name="pencil-edit-02" size={20} />
+      {/* As wide as the well, so the name sits on the capsule's middle and the four names line up as one column. */}
+      <View style={{ width: WELL }} />
     </View>
   );
 }
