@@ -63,13 +63,15 @@ function setup(messages = fixture()) {
 }
 
 test('tool lifecycle, gated text, sanitized settled answer, and terminal state are appended in order', async () => {
-  const t = setup();
+  const messages = fixture();
+  messages[1].content = [{ type: 'text', text: 'It costs $999. It costs $45 [r1].', citations: null }];
+  const t = setup(messages);
   const answer = await runTurn(t.job.id, { surface: 'buy', text: 'Find a jacket', user_id: 'person-a' }, t.deps);
   assert.equal(answer?.gate.cut, 1);
   const frames = t.jobs.framesAfter(t.job.id, 0);
   assert.deepEqual(frames.map(f => f.event), ['assist.tool', 'assist.tool', 'assist.text', 'assist.settled', 'job.state']);
   assert.deepEqual(frames.slice(0, 2).map(f => f.data.phase), ['start', 'end']);
-  assert.equal(frames[2].data.delta, 'It costs $45.');
+  assert.equal(frames[2].data.delta, 'It costs $45 [r1].');
   assert.ok(!JSON.stringify(frames).includes('$999'));
   const settled = frames[3].data;
   assert.deepEqual((settled.gate as { cut_sentences: string[] }).cut_sentences, []);

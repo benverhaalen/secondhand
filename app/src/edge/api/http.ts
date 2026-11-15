@@ -197,6 +197,12 @@ export function route(endpoint: string, handler: Handler, opts: RouteOptions = {
       } else {
         claimedSlot = slot;
         res = toResponse(await handler(ctx, req), request_id);
+        if (user_id && res.ok && method !== 'GET' && !(method === 'DELETE' && pattern === '/v1/me') && !pattern.startsWith('/v1/auth/') && mode === 'user') {
+          try {
+            const { jobs } = await import('./jobs.ts');
+            jobs.append(`user:${user_id}`, 'resource.changed', { path: url.pathname, method, at: new Date(deps.now()).toISOString() });
+          } catch (error) { log.error('api.invalidate', error, { endpoint }); }
+        }
         if (slot) {
           if (res.status >= 500 || res.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase() === 'text/event-stream') {
             storage.delete('idem', slot);

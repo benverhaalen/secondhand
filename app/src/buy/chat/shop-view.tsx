@@ -7,7 +7,9 @@
 // Every word is in WORDS for the designer; every number is a field of a frame or a count of its rows.
 import { useCallback, useState } from 'react';
 import { Burst, Card, ChatFrame, EmptyState, IconButton, List, Message, money, Pill, Rail, SearchField, SITES, SourceFloat, Stack, Txt, type Point, type Site } from '@/ui';
-import { View } from 'react-native';
+import { AppState, StyleSheet, View } from 'react-native';
+import { useColors } from '@/ui/theme';
+import { markdown } from './markdown';
 import { Chip } from '@/ui/parts/chip';
 import { space } from '@/ui/tokens.generated';
 import { ListRow } from '@/ui/parts/list-row';
@@ -107,6 +109,36 @@ function Found({ reach, query, onOpen }: { reach: Reach; query: string; onOpen: 
   );
 }
 
+// The answer's words, drawn from its own markdown: a heading at the headline size, lists with their marks, a table as
+// rows under a caption header row, hairlines between (Nate, words.md 2026-11-15: "headers, tables, and such").
+function Prose({ text }: { text: string }) {
+  const c = useColors();
+  return (
+    <Stack gap="tight">
+      {markdown(text).map((b, i) => b.type === 'heading' ? <Txt key={i} role="headline">{b.text}</Txt>
+        : b.type === 'para' ? <Txt key={i} role="body">{b.text}</Txt>
+        : b.type === 'list' ? (
+          <Stack key={i} gap="tight">
+            {b.items.map((item, n) => (
+              <View key={n} style={{ flexDirection: 'row', gap: space.s2 }}>
+                <Txt role="body" tone="ink-2" tabular>{b.ordered ? `${n + 1}.` : '•'}</Txt>
+                <View style={{ flex: 1 }}><Txt role="body">{item}</Txt></View>
+              </View>
+            ))}
+          </Stack>
+        ) : (
+          <View key={i}>
+            {[b.head, ...b.rows].map((row, r) => (
+              <View key={r} style={{ flexDirection: 'row', gap: space.s2, paddingVertical: space.s2, ...(r > 0 ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.rule } : {}) }}>
+                {row.map((cell, k) => <View key={k} style={{ flex: 1 }}><Txt role={r === 0 ? 'caption' : 'body'} tabular={r > 0}>{cell}</Txt></View>)}
+              </View>
+            ))}
+          </View>
+        ))}
+    </Stack>
+  );
+}
+
 function Answer({ reply }: { reply: Reply }) {
   const running = reply.state === 'running';
   return (
@@ -114,8 +146,8 @@ function Answer({ reply }: { reply: Reply }) {
       {running ? reply.tools.map(t => (
         <Txt key={t.id} role="caption">{[WORDS.tool[t.tool] ?? t.tool, t.phase === 'end' ? Object.values(t.counts)[0] : null].filter(v => v != null).join(' · ')}</Txt>
       )) : null}
-      {reply.blocks ? reply.blocks.map((b, i) => b.type === 'text' ? <Txt key={i} role="body">{b.text}</Txt> : <Widget key={i} result={reply.results[b.result_id]} widget={b.widget} />)
-        : reply.text ? <Txt role="body">{reply.text}</Txt> : null}
+      {reply.blocks ? reply.blocks.map((b, i) => b.type === 'text' ? <Prose key={i} text={b.text} /> : <Widget key={i} result={reply.results[b.result_id]} widget={b.widget} />)
+        : reply.text ? <Prose text={reply.text} /> : null}
       {reply.state === 'failed' || reply.error ? <Txt role="caption">{reply.error === 'cap_daily' ? WORDS.capDaily : WORDS.answerFailed}</Txt> : null}
     </Stack>
   );
@@ -137,6 +169,7 @@ function Widget({ result, widget }: { result: Reply['results'][string] | undefin
 }
 
 type Bursting = { id: string; at: Point; colour: string; url: string; closing: boolean };
+const BURST_HOLD_MS = 5000;
 
 const SOURCE_CHIPS: { id: string; site?: Site; label?: string }[] = [
   { id: 'depop', site: 'depop' }, { id: 'ebay', site: 'ebay' }, { id: 'poshmark', site: 'poshmark' }, { id: 'mercari', site: 'mercari' },
@@ -158,15 +191,22 @@ export function ShopView({ phase, state, skip, turns, failure, saved, offer, off
     const s = reach.sources.find(x => x.id === id), url = s ? linkOf(s, query) : null, colour = SITE_INFO[id]?.colour;
     if (url && colour && !burst) setBurst({ id, at, url, colour, closing: false });
   };
-  // Most of the page is covered: open the site now, and fold the colour back once the person returns.
+  // The screen is filled: open the site, then fold the colour back after about five seconds or when the person comes back
+  // to the app, whichever is first, so they return to their page (Nate, words.md 2026-11-15). Opening a link resolves as
+  // soon as it is handed off, so its promise cannot say when they return.
+  const fold = useCallback(() => setBurst(b => b && { ...b, closing: true }), []);
   const covered = useCallback(() => {
-    if (burst) onOpen(burst.url, `source-${burst.id}`).finally(() => setBurst(b => b && { ...b, closing: true }));
-  }, [burst, onOpen]);
+    if (!burst) return;
+    const done = () => { clearTimeout(t); away.remove(); fold(); };
+    const t = setTimeout(done, BURST_HOLD_MS);
+    const away = AppState.addEventListener('change', s => { if (s === 'active') done(); });
+    onOpen(burst.url, `source-${burst.id}`);
+  }, [burst, onOpen, fold]);
   return (
     <ChatFrame name="shop" state={state} skip={skip} dropped={phase === 'chat'}
       bar={<SearchField id="shop-bar" focused placeholder={phase === 'chat' ? WORDS.followUp : WORDS.placeholder} working={searching} onSubmit={onAsk} />}
       close={<IconButton id="shop-close" icon="cancel-01" label={WORDS.close} look="plain" onPress={onClose} />}
-      overlay={burst ? <Burst at={burst.at} colour={burst.colour} closing={burst.closing} onCovered={covered} onGone={() => setBurst(null)} /> : null}>
+      overlay={burst ? <Burst at={burst.at} colour={burst.colour} closing={burst.closing} onCovered={covered} onGone={() => setBurst(null)} onBack={fold} /> : null}>
       {phase === 'ask' && onToggleSource ? (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 }}>
           {SOURCE_CHIPS.map(s => <Chip key={s.id} id={`shop-source-${s.id}`} {...(s.site ? { site: s.site } : { label: s.label })} picked={!off.includes(s.id)} onPress={() => onToggleSource(s.id)} />)}

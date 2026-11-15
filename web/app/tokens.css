@@ -63,11 +63,11 @@
   --wash: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--page) 25%, transparent) 45%, color-mix(in srgb, var(--page) 80%, transparent) 80%, var(--page) 100%), linear-gradient(105deg, var(--wash-1), var(--wash-2));
   --wash-h: 236px;
 
-  /* type (Art. 6; Ben, rounds 7, 8 and 10): PP Neue Montreal 2.6 as QOVES sets it, and Clofie SemiBold for the wordmark and the screen title */
+  /* type (Art. 6; Ben, rounds 7, 8 and 10): PP Neue Montreal 2.6 as QOVES sets it, and Clofie SemiBold for the wordmark */
   /* never system-ui: it can resolve to an Inter-derived face. Scripts a face lacks fall to Noto */
   /* the open pair (agent proposal, Nate 2026-11-15): Hanken Grotesk 500 and Outfit 600, bundled in app/assets/fonts-open/, draw wherever the brand files are missing */
   --font-text:    "PP Neue Montreal", "Hanken Grotesk", "Noto Sans", "Noto Sans JP", "Noto Sans Arabic", "Noto Sans Devanagari", -apple-system, sans-serif;
-  --font-display: "Clofie", "Outfit", var(--font-text);                   /* the wordmark and what Art. 6 lists, nothing else */
+  --font-display: "Clofie", "Outfit", var(--font-text);                   /* the wordmark only */
   --w-display: 600;                                               /* Clofie SemiBold, the only display weight */
   --w-text: 500;                                                  /* text in the app has one weight, Medium (Ben, 2026-11-15: "i like 500"). Weight never changes with state */
   --w-regular: 400; --w-medium: 500;                              /* off the app (web, post, story, deck): Book, and Medium on buttons, until Ben rules on those */

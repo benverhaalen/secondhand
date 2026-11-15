@@ -10,7 +10,7 @@ export type Caller = 'person' | 'background';
 export interface Source {
   id: string; site: SourceSite; group: 'platform' | 'osint'; lane: 'public_page' | 'harness' | 'mcp' | 'apify' | 'treg'; covers: readonly string[];
   rights: { may_store: boolean; may_model?: false; use_scope?: 'hackathon_demo' };
-  needs_ask: boolean; person_only?: boolean; on: boolean; reason?: string; pace: Pace;
+  needs_ask: boolean; person_only?: boolean; lands_late?: true; on: boolean; reason?: string; pace: Pace;
 }
 
 function pace(site: string, lane: Source['lane'], per_minute: number, min_gap_ms: number, capped = false): () => Pace {
@@ -39,6 +39,7 @@ searchParams.declare({ name: 'search_apify_runs_per_person_day', family: 'scalar
 searchParams.declare({ name: 'search_apify_runs_per_day', family: 'scalar', prior: 200, guard_lo: 0 });
 // Apify README probe: $0.05 for 10 Facebook rows.
 searchParams.declare({ name: 'search_apify_cost_per_row_usd', family: 'scalar', prior: 0.005, guard_lo: 0 });
+searchParams.declare({ name: 'search_late_window_ms', family: 'scalar', prior: 30000, guard_lo: 0 });
 
 // Nate's source rulings: spec/engines/protocol-and-adapters.md §8 (int-search-1 follow-up).
 export const SOURCES: Source[] = [
@@ -48,7 +49,7 @@ export const SOURCES: Source[] = [
   { get pace() { return poshmarkPace(); }, rights: { may_store: true }, id: 'poshmark', group: 'platform', site: 'poshmark', lane: 'public_page', covers: ['poshmark'], needs_ask: false, on: true },
   { get pace() { return mercariPace(); }, rights: { may_store: true }, id: 'mercari', group: 'platform', site: 'mercari', lane: 'harness', covers: ['mercari'], needs_ask: true, on: true },
   { get pace() { return facebookPace(); }, rights: { may_store: true, may_model: false, use_scope: 'hackathon_demo' }, id: 'facebook', group: 'osint', site: 'facebook', lane: 'apify', covers: ['facebook'], needs_ask: false, person_only: true, on: true },
-  { get pace() { return ebayPace(); }, rights: { may_store: true }, id: 'ebay', group: 'platform', site: 'ebay', lane: 'harness', covers: ['ebay'], needs_ask: false, on: true },
+  { get pace() { return ebayPace(); }, rights: { may_store: true }, id: 'ebay', group: 'platform', site: 'ebay', lane: 'harness', covers: ['ebay'], lands_late: true, needs_ask: false, on: true },
 ];
 
 export const sourcesFor = (caller: Caller = 'background', sources: readonly Source[] = SOURCES) =>

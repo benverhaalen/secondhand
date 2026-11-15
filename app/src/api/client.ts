@@ -145,7 +145,7 @@ export function createClient(options: Options) {
     return call<SearchStart>('POST /v1/search', { body: { text, ...(filters === undefined ? {} : { filters }), ...(sources?.length ? { sources } : {}) } });
   }
 
-  async function jobFrames(jobId: string, { signal, onFrame }: { signal?: AbortSignal; onFrame: (frame: SseFrame) => void }): Promise<void> {
+  async function eventFrames(endpoint: string, { signal, onFrame }: { signal?: AbortSignal; onFrame: (frame: SseFrame) => void }, jobId?: string): Promise<void> {
     let lastId: number | null = null;
     async function consume(response: Response): Promise<boolean> {
       const parser = createSseParser();
@@ -159,7 +159,7 @@ export function createClient(options: Options) {
           lastId = frame.id;
           logger.note('job frame', { job: jobId, frame_id: frame.id, event: frame.event });
           onFrame(frame);
-          terminal ||= frame.event === 'job.state' && (frame.data.state === 'done' || frame.data.state === 'failed');
+          terminal ||= jobId !== undefined && frame.event === 'job.state' && (frame.data.state === 'done' || frame.data.state === 'failed');
           late ||= frame.event === 'answer.late';
         }
         if (parser.skipped > skipped) logger.note('invalid SSE blocks skipped', { job: jobId, count: parser.skipped - skipped });
@@ -201,7 +201,7 @@ export function createClient(options: Options) {
       if (signal?.aborted) return;
       let cause: unknown;
       try {
-        const response = await request(`GET /v1/jobs/${encodeURIComponent(jobId)}/events`, {
+        const response = await request(endpoint, {
           signal, headers: { Accept: 'text/event-stream', ...(lastId === null ? {} : { 'Last-Event-ID': String(lastId) }) },
         }).catch(error => {
           if (error instanceof ApiFailure && error.code === 'unreachable') throw new StreamInterrupted(error);
@@ -215,16 +215,23 @@ export function createClient(options: Options) {
         logger.error('api.stream.read', error, { job: jobId });
       }
       if (signal?.aborted) return;
-      if (reconnects === 3) throw new ApiFailure(0, 'stream_lost', 'Job event stream was lost', { cause });
-      logger.note('reconnecting job event stream', { job: jobId, frame_id: lastId, attempt: reconnects + 1 });
+      if (jobId !== undefined && reconnects === 3) throw new ApiFailure(0, 'stream_lost', 'Job event stream was lost', { cause });
+      logger.note('reconnecting event stream', { endpoint, job: jobId, frame_id: lastId, attempt: reconnects + 1 });
+      if (jobId === undefined) { try { await abortable(() => new Promise(resolve => setTimeout(resolve, 1500)), signal); } catch { return; } }
     }
   }
+
+  const jobFrames = (jobId: string, options: { signal?: AbortSignal; onFrame: (frame: SseFrame) => void }) => eventFrames(`GET /v1/jobs/${encodeURIComponent(jobId)}/events`, options, jobId);
+  const userFrames = (options: { signal?: AbortSignal; onFrame: (frame: SseFrame) => void }) => eventFrames('GET /v1/stream', options);
 
   // The pair an auth route issued is kept until sign-out; signing out forgets it here and on the device.
   const signIn = (t: Tokens) => keep(t);
   const signOut = () => keep(null);
 
-  return { call, search, jobFrames, session, signIn, signOut, ready, subscribe };
+  const photoSource = (path: string) => options.origin !== null && session.token && path.startsWith('/v1/photos/')
+    ? { uri: options.origin.replace(/\/+$/, '') + path, headers: { Authorization: `Bearer ${session.token}` } } : undefined;
+
+  return { call, search, jobFrames, userFrames, photoSource, session, signIn, signOut, ready, subscribe };
 }
 
 export const api = createClient({ origin: platformOrigin, fetch: platformFetch });

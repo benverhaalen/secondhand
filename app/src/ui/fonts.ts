@@ -1,4 +1,4 @@
-// The two faces (Art. 6): PP Neue Montreal Medium for every word, Clofie SemiBold for the wordmark and the screen title.
+// The two faces (Art. 6): PP Neue Montreal Medium for every word, Clofie SemiBold for the wordmark.
 // The files are licensed and never committed (.gitignore). `npm run fonts` in app/ (scripts/fonts.mjs, run before start,
 // ios and android) copies them into app/assets/fonts/ from fonts/ at the repo root or $SECONDHAND_FONTS. When they are
 // missing the app still builds, because the folder is read with require.context, and draws the open pair below.
