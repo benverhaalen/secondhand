@@ -813,3 +813,7 @@ Nate, same session, 2026-11-14, on the Depop design calling it automated access.
 ## 2026-11-14 nate we do not pay for apify; priced tools prove it can be done, and ours is free
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the Apify findings.
 > we arent paying for apify, but we are understanding that even then, there are already existing and priced ways to search these platforms, ours is free
+
+## 2026-11-14 nate not a comparison: we develop our own, on firecrawl, crawl4ai, browser use and jev ultrafast
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the agent wrote Apify's price in as a comparison.
+> no not to compare against ours, just that we can and definitely should develop our own. utilizing the firecrawl web4crawl browser use and jev ultrafast technologies to optimize and perfect the way we gather and delvier information
