@@ -67,7 +67,7 @@ Also `POST /v1/auth/google {id_token}`, `POST /v1/auth/email/start {email}` (202
 From [parallel-build.md](../../../../spec/plans/parallel-build.md):
 
 - The seam is `spec/examples/` (`T0-2`). The pages need it first, so it is the most valuable thing your side can land: one request and response per endpoint, the stream frames for one job, and every error.
-- One catch-all route, `app/src/app/v1/[...path]+api.ts`, answers from the examples any endpoint that has no route file yet (task `W0-1`). Expo Router prefers a specific route file, so when you add a real route the mock steps aside with no switch; `MOCK=<names>` forces it back for a demo. It owns only that file and `app/src/edge/mock/`, never your `app/src/edge/` folders. Nobody waits.
+- The screens call the API through one client in `app/src/api/` (task `W0-1`, Ben's side). When a route does not exist yet, the client answers from `spec/examples/`; when stream 15 adds the route, the real answer flows with no change on either side. `MOCK=<names>` forces the example for a demo. Nothing on Ben's side writes `app/src/app/v1/` or `spec/examples/`, which [workstreams](../../../../spec/plans/workstreams.md) gives to stream 15. Nobody waits.
 - The page waves are timed to your packet 45 clock (21:45, 23:30, 02:00, 03:00 Central), so the thin path is on screen when your wave 1 walk goes green.
 - The website is the same Expo Router codebase on the web (react-native-web is already installed), so the edge stays in the Expo API routes and is hosted with the web build. This replaces "the edge on Next.js" from app/README. Your call; option C there keeps Next.js for the signed-out Home only.
 - The first wave is the thin path both sides already agreed: sign-in, ＋, capture, identify, a price range, one eBay listing, a Today card.
@@ -83,4 +83,4 @@ From [parallel-build.md](../../../../spec/plans/parallel-build.md):
 
 ## Next action
 
-Nate: land `T0-2` with the eight rows above in it, pick the sign-in library and the relink name, and reply here with anything you would shape differently. Ben's agents build the parts kit and the wave 1 pages against the examples meanwhile.
+Nate: have stream 15 land `T0-2` with the rows above in it, pick the sign-in library and the relink name, and reply here with anything you would shape differently. Ben's agents build the parts kit and the wave 1 pages against the examples meanwhile.

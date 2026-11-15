@@ -18,7 +18,7 @@ Three lanes run at once and meet only at the API contract:
 ```
 
 - **The examples are the seam.** `T0-2` in [plans/README §7](README.md#7-first-tasks) already defines them. This plan adds the endpoints the pages need that the canon lacks ([pages §8](../pages.md#8-what-the-pages-need-that-the-canon-does-not-have-yet), sent to Nate as [packet 47](../../.agents/team/packets/team/47-what-the-pages-need-from-the-backend.md)).
-- **The mock lives on the edge.** The app already serves `/v1/*` from Expo Router API routes ([app/README](../../app/README.md)), and Nate's backend code goes under `app/src/edge/` ([start-now](start-now.md)). One catch-all route, `app/src/app/v1/[...path]+api.ts`, answers any endpoint that has no route file of its own from `spec/examples/`. Expo Router prefers a specific route file over a catch-all, so the moment Nate adds a real route the mock steps aside on its own; `MOCK=today,items` forces the mock back for a demo or a broken handler (*agent proposal*). Screens never wait and never change when the backend lands.
+- **The mock lives in the app's API client, not on the edge.** Nate's stream 15 owns `app/src/app/v1/` and `spec/examples/` ([workstreams](workstreams.md)), so the screens' side never writes there. The app calls the API through one client in `app/src/api/`. For an endpoint whose route does not exist yet (the edge answers 404 for the route itself), the client answers from `spec/examples/`; `MOCK=today,items` forces the example for named endpoints in a demo or while a handler is broken (*agent proposal*). When stream 15 adds a real route, the screen gets the real answer with no change on either side.
 - **The stream is mocked too.** `GET /v1/stream` and `GET /v1/jobs/:id/events` replay recorded frames from the examples, so the researching state, the analysis moment and live counts are built against real-shaped events from day one.
 - **Real data over made-up data** (Ben, [words](../../product/words.md#2026-11-15-real-data-over-made-up-data-and-what-the-voice-pairs-mean)): the examples use real items from `T0-3` and real sold prices, not lorem.
 
@@ -41,8 +41,8 @@ Three lanes run at once and meet only at the API contract:
 | **Parts** (first, one writer) | Ben | the parts kit in `app/src/ui/` from the frozen value table: card, tag, pill, tile, sheet, top slot, stack, countdown, site badge, the ＋ menu | brand tokens, [frontend-standard](../../product/frontend-standard.md) | screens |
 | **Screens** (one task per page) | Ben | each page in [pages §6](../pages.md#6-the-pages) through the loop (§4), phone and web together | parts, examples | parts (asks the parts task), the API |
 | **Site** | Ben | the signed-out Home, the web-only files, hosting the web build | parts, examples | phone-only screens |
-| **Contract** | shared, Nate leads | `spec/examples/`, the contract test, `events.json` additions | product.md §7, packet 47 | screens, handlers |
-| **Backend** | Nate | auth on the edge, Lakebase schema, the job loop, harness adapters, engines, the real handlers | spec, examples | screens, examples (changing one is a shared task) |
+| **Contract** | Nate's stream 15 ([workstreams](workstreams.md)) | `spec/examples/`, the contract test, the `/v1` routes | product.md §7, packet 47 | screens, the app's API client |
+| **Backend** | Nate's streams 0 to 16 | auth on the edge, Lakebase schema, the job loop, harness adapters, engines | spec, examples | screens, `app/src/api/` |
 | **Camera module** | Ben or Nate | the Swift module: auto-shutter gates, LiDAR, Object Capture, inside Expo | capture spec | screens around it |
 
 Rules carried from [plans/README §4](README.md#4-parallelism): one writer per file; two tasks run at once only when their `owns` share no path and no resource; a change to an example is a shared task; the thinnest end-to-end path goes first.
@@ -91,14 +91,14 @@ This is task `IG-1` below, owned by whoever owns the image-gen skill.
 Shape as in [plans/README §2](README.md#2-the-task-shape). They go on the board once Ben or Nate accepts this plan.
 
 ```
-W0-1 Mock the API from the examples on the edge
+W0-1 The app's API client, answering from the examples until a route exists
   lane: shared   owner: Ben   seat: implementer   model: sonnet   effort: medium
-  owns: [app/src/app/v1/[...path]+api.ts, app/src/edge/mock/]
+  owns: [app/src/api/]
   dependsOn: [T0-2]
   rests: [spec/plans/parallel-build.md#1-the-one-idea-build-against-the-contract-not-against-each-other, spec/plans/README.md#7-first-tasks]
   check: { argv: ["npm", "--prefix", "app", "run", "check"], expectExit: 0 }
   accepts:
-    - every endpoint in spec/examples answers its example, and the stream replays its recorded frames
+    - every endpoint in spec/examples answers its example when its route is missing, and the stream replays its recorded frames
     - an endpoint with its own route file is answered by that file; MOCK=<names> forces the mock for those names
     - not: a mocked response that differs from its example passes the test
   done: any screen can be built and demoed with no backend running.
@@ -115,7 +115,7 @@ W0-2 One codebase for phone and web
     - not: a screen that imports the camera module builds for the web
   done: every later screen ships to the phone and the site from one file.
 
-AU-1 Sign in with Apple, Google and an email code on the edge
+AU-1 Sign in with Apple, Google and an email code on the edge (inside stream 15)
   lane: backend   owner: Nate   seat: implementer   model: sonnet   effort: high
   owns: [app/src/app/v1/auth/, app/src/edge/auth.ts, app/src/edge/auth.test.ts]
   dependsOn: [T0-2]
