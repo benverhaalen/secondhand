@@ -1,0 +1,200 @@
+/* secondhand screens, mocked in code for round 10 (Ben: "start using code to mock but make sure the mocks are
+   completely accurate to the decisions so far"). Every value is a token from brand/tokens.css, except the block
+   below. Every gap is a spacer element (.sp), so a gap can be shown and counted. */
+
+/* Not locked. Ben: "Use them in mocks, lock later" (product/words.md, 2026-11-15). One line each, so a change is one edit. */
+.sh {
+  --r-box: var(--r-sheet);        /* R19: a box is 20, so a photo's 8 and the 12 around it share a center */
+  --sky-strong: #57CDFE;          /* R18: the stronger step of sky (L .80, C .13), the anchor of the Home field */
+  --field-depth: 50%;             /* R17: how much of the stronger step the anchor takes. Ben left the lab at 50 */
+  --soft-1: 55%; --soft-2: 60%; --soft-3: 65%; --drift: 26s;   /* R17: softness and drift as Ben left the lab */
+  --photo-edge: var(--rule);      /* agent proposal: a 1 px inner edge, so a pale photo cannot merge with the page */
+  --r-logo: 4px;                  /* off the radius scale. A 20 px logo at 8 reads as a circle. Needs a ruling */
+  --pill-h: var(--control-min);   /* buttons inside a box are 44. The bar at the foot of a moment is --button-h, 48 */
+  --chip-h: 36px;                 /* a filter chip is 36 tall with a 44 touch area. Not in the tokens yet */
+  --press: .97;                   /* frontend-standard says .97, constitution Art. 5 says .98. This follows the standard */
+}
+
+.sh { width: 390px; min-height: 844px; position: relative; overflow: hidden; flex: none; display: flex; flex-direction: column;
+  background: var(--page); color: var(--ink); font: var(--w-regular) var(--t-15)/var(--lh-15) var(--font-text);
+  text-align: start; -webkit-font-smoothing: antialiased; }
+.sh.fixed { height: 844px; }
+.sh.strip { min-height: 0; height: var(--tab-h); }               /* a specimen that shows the tab bar alone */
+.sh *, .sh *::before, .sh *::after { box-sizing: border-box; }
+.sh button { font: inherit; color: inherit; margin: 0; }
+.sh .ln { display: flex; }
+.sh .mid { align-items: center; }
+.sh .fx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.sh .grow { flex: 1; }
+.sh .sp { flex: none; position: relative; display: block; }
+.sh .sp.v { height: calc(var(--n) * 1px); }
+.sh .sp.h { width: calc(var(--n) * 1px); }
+.measure .sh .sp { background: rgb(255 0 128 / .13); }
+.measure .sh .sp::after { content: attr(data-n); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3;
+  font: 500 9px/1 ui-sans-serif, sans-serif; color: #B0125A; background: #fff; border-radius: 3px; padding: 1px 2px; }
+
+/* The phone's own parts, not ours: the status bar and the home bar are drawn in the system face. */
+.sh .os { height: 54px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 8px 32px 0 48px;
+  font: 600 16px/1 -apple-system, "Helvetica Neue", sans-serif; position: relative; z-index: 4; }
+.sh .os svg { height: 12px; width: auto; display: block; }
+.sh .os::after { content: ""; position: absolute; left: 50%; top: 11px; width: 124px; height: 36px; margin-left: -62px; border-radius: var(--r-pill); background: #000; }
+.sh .home { position: absolute; left: 50%; bottom: 8px; width: 134px; height: 5px; margin-left: -67px; border-radius: var(--r-pill); background: var(--ink); z-index: 6; }
+
+/* type, by role (Art. 6) */
+.sh .t13 { font-size: var(--t-13); line-height: var(--lh-13); }
+.sh .t15 { font-size: var(--t-15); line-height: var(--lh-15); }
+.sh .t18 { font-size: var(--t-18); line-height: var(--lh-18); letter-spacing: var(--tr-18); }
+.sh .i2 { color: var(--ink-2); }
+.sh .one { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sh .num { font-variant-numeric: tabular-nums; }               /* only where an amount changes in place or sits in a column */
+.sh .wm { font: var(--w-display) var(--t-21)/var(--lh-21) var(--font-display); letter-spacing: var(--tr-21); position: relative; }
+.sh .h36 { font: var(--w-display) var(--t-36)/var(--lh-36) var(--font-display); letter-spacing: var(--tr-36); margin: 0; }
+.sh .a50 { font-size: var(--t-50); line-height: var(--lh-50); letter-spacing: var(--tr-50); }
+
+/* nav bar: the wordmark is centered whatever sits beside it (C1) */
+.sh .nav { height: var(--nav-h); flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 8px; position: relative; z-index: 4; }
+.sh .nav > :first-child { justify-self: start; }
+.sh .nav > :last-child { justify-self: end; }
+.sh .ic { width: 24px; height: 24px; display: block; flex: none; }
+.sh .ib { width: var(--control-min); height: var(--control-min); border: 0; border-radius: var(--r-pill); background: none; display: grid; place-items: center; cursor: pointer; flex: none;
+  transition: transform var(--t-feedback) var(--ease-out), background-color var(--t-feedback); }
+.sh .ib.gray { background: var(--gray); }
+.sh .ib.white { background: var(--page); }
+.sh .ib:active { transform: scale(var(--press)); }
+.sh .ib.gray:active { background: var(--gray-press); }
+
+/* boxes: one fill is the edge. No line (R16, B). Corners nest: 8 + 12 = 20 */
+.sh .bx { border-radius: var(--r-box); display: flex; flex-direction: column; }
+.sh .bx.gray { background: var(--gray); }
+.sh .bx.need { background: var(--marigold-tint); }
+.sh .field { color: var(--on-color); position: relative;
+  background: radial-gradient(at 0% 0%, color-mix(in oklab, var(--sky), var(--sky-strong) var(--field-depth)), transparent var(--soft-1)),
+              radial-gradient(at 30% 100%, var(--mint), transparent var(--soft-2)),
+              radial-gradient(at 100% 100%, var(--lime), transparent var(--soft-3)), var(--sky);
+  background-size: 220% 220%, 200% 200%, 240% 240%, auto; animation: sh-drift var(--drift) ease-in-out infinite alternate; }
+@keyframes sh-drift { from { background-position: 0% 0%, 30% 100%, 100% 100%, 0 0; } to { background-position: 70% 40%, 0% 30%, 40% 60%, 0 0; } }
+
+/* photos lead (C3). The inner edge is a proposal */
+.sh .ph { display: block; object-fit: cover; flex: none; border-radius: var(--r-photo); outline: 1px solid var(--photo-edge); outline-offset: -1px; background: var(--gray); }
+.sh .p72 { width: var(--photo-card); height: var(--photo-card); }
+.sh .logo { width: 20px; height: 20px; border-radius: var(--r-logo); display: block; flex: none; }
+.sh .logos { display: flex; gap: var(--s-1); }
+
+/* buttons (C4): one black pill per decision, with the glow. The next most likely is an outline. The rest sit under More */
+.sh .pill { height: var(--pill-h); padding: 0 var(--s-4); border: 0; border-radius: var(--r-pill); background: var(--ink); color: var(--page);
+  font: var(--w-medium) var(--t-15)/var(--lh-15) var(--font-text); white-space: nowrap; cursor: pointer; box-shadow: var(--pill-glow);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
+  transition: transform var(--t-feedback) var(--ease-out), box-shadow var(--t-feedback), background-color var(--t-feedback); }
+.sh .pill:active { transform: scale(var(--press)); background: var(--ink-press); box-shadow: none; }
+.sh .pill.out { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--outline); }
+.sh .pill.out:active { background: var(--gray); }
+.sh .pill.tall { height: var(--button-h); }
+.sh .pill.dot { width: var(--pill-h); padding: 0; background: var(--page); color: var(--ink); box-shadow: none; }
+.sh .pill.dot.tall { width: var(--button-h); }
+.sh button:focus-visible { outline: 0; box-shadow: var(--focus-ring); }
+
+/* states (Art. 5): a fill, an icon and a word. The icon takes the hue's deep step (R18, B: not locked) */
+.sh .tag { display: inline-flex; align-items: center; gap: var(--s-1); height: 20px; padding: 0 var(--s-2); border-radius: var(--r-pill); flex: none;
+  font-size: var(--t-13); line-height: var(--lh-13); white-space: nowrap; background: var(--c, var(--gray)); color: var(--ink); }
+.sh .tag .ic { width: 14px; height: 14px; color: var(--d, currentColor); }
+.sh .tag .ic path, .sh .tag .ic circle { stroke-width: 2; }      /* 1.5 at 24 is 0.9 at 14; 2 keeps the stroke near 1.2 px */
+.sh .s-live { --c: var(--mint); --t: var(--mint-tint); --d: var(--mint-deep); }
+.sh .s-need { --c: var(--marigold); --t: var(--marigold-tint); --d: var(--marigold-deep); }
+.sh .s-sold, .sh .s-paid { --c: var(--lime); --t: var(--lime-tint); --d: var(--lime-deep); }
+.sh .s-ship { --c: var(--sky); --t: var(--sky-tint); --d: var(--sky-deep); }
+.sh .s-fail { --c: var(--brick-tint); --t: var(--brick-tint); --d: var(--brick); }
+.sh .s-ended { --c: var(--gray); --t: var(--gray); color: var(--ink-2); }
+.sh .s-draft { --c: var(--page); --t: var(--page); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--rule); }
+.sh .tag.white { background: var(--page); }                      /* on the field a state is white, so it does not vanish (C2) */
+.sh .shot { position: relative; display: block; }
+.sh .shot .tag { position: absolute; left: var(--s-2); top: var(--s-2); background: linear-gradient(120deg, var(--t), var(--c)); }
+
+/* tab bar: places only. The selected tab is the filled icon and a medium label, and nothing under it (L29) */
+.sh .tabs { position: absolute; left: 0; right: 0; bottom: 0; height: var(--tab-h); background: var(--page); border-top: var(--card-border);
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: start; padding: 4px var(--s-2) 0; z-index: 5; }
+.sh .tab { height: 46px; border: 0; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer;
+  font-size: var(--t-13); line-height: var(--lh-13); color: var(--ink-2); }
+.sh .tab[aria-current] { color: var(--ink); font-weight: var(--w-medium); }
+.sh .tab[aria-current] .ic > :first-child { fill: currentColor; }
+.sh .tab[aria-current] .ic > :not(:first-child) { stroke: var(--page); }
+.sh.w-same .tab[aria-current] { font-weight: var(--w-regular); }   /* the other option for L29: the weight never changes with state */
+.sh .tab.add { color: var(--ink); }
+.sh .tab.add i { width: var(--control-min); height: var(--control-min); border-radius: var(--r-pill); background: var(--gray); display: grid; place-items: center; }
+.sh .badge { position: absolute; width: 8px; height: 8px; border-radius: var(--r-pill); background: var(--marigold); margin: -22px 0 0 22px; }
+
+/* chips: the selected one is ink with white text (Art. 5, Selected) */
+.sh .chips { display: flex; gap: var(--s-2); overflow: hidden; }
+.sh .chip { height: var(--chip-h); padding: 0 var(--s-4); border: 0; border-radius: var(--r-pill); background: var(--gray); color: var(--ink); flex: none; position: relative;
+  font: var(--w-regular) var(--t-15)/var(--lh-15) var(--font-text); cursor: pointer; display: inline-flex; align-items: center; gap: var(--s-1); }
+.sh .chip::after { content: ""; position: absolute; inset: -4px 0; }
+.sh .chip[aria-pressed="true"] { background: var(--ink); color: var(--page); }
+.sh .chip .logo { width: 20px; height: 20px; }
+
+/* Sell: the photo grid (L12, L23), two columns at the airy size */
+.sh .grid { display: flex; gap: var(--s-4); align-items: flex-start; }
+.sh .gcol { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.sh .tile .ph { width: 100%; height: auto; aspect-ratio: 1; }
+.sh .tile .ln.mid { min-height: 20px; }
+
+/* ruled rows, for plain lists (L16) */
+.sh .rows > .ln { min-height: var(--control-min); align-items: center; border-top: var(--card-border); }
+.sh .rows > .ln:last-child { border-bottom: var(--card-border); }
+
+/* the sum: what you keep */
+.sh .sum .ln { align-items: baseline; }
+.sh .sum .lead { flex: 1; }
+.sh .sum hr { border: 0; border-top: var(--card-border); margin: 0; }
+.sh .paper { display: flex; flex-direction: column; }
+
+/* the item page */
+.sh .hero { position: relative; flex: none; margin-top: -54px; }
+.sh .hero .ph { width: 390px; height: 390px; border-radius: 0; outline: 0; }
+.sh .hero .over { position: absolute; left: var(--s-2); right: var(--s-2); top: 54px; display: flex; justify-content: space-between; }
+
+/* the sale: the field fills the screen once (C2, L26) */
+.sh.sold { color: var(--on-color); }
+.sh .fieldbg { position: absolute; inset: 0; z-index: 0; }
+.sh.sold > :not(.fieldbg):not(.home) { position: relative; z-index: 1; }
+.sh .p240 { width: 240px; height: 240px; }
+.sh .foldmark { position: absolute; left: 0; right: 0; top: 844px; border-top: 1px dashed var(--ink-disabled); z-index: 7; pointer-events: none; }
+.sh .foldmark::after { content: "the screen ends here"; position: absolute; right: 8px; top: 4px; font: 400 11px/1 ui-sans-serif, sans-serif; color: var(--ink-2); background: var(--page); padding: 2px 4px; border-radius: 3px; }
+.bare .sh .foldmark { display: none; }
+
+/* ---- The human touches. Each is a proposal behind a class on .sh, off by default. ---- */
+
+/* 1. The second hand. A clock hand after the wordmark. It rests at one o'clock and ticks only while the app is doing work for the person. */
+.sh .hand { display: none; position: absolute; left: 100%; top: 50%; width: 12px; height: 12px; margin: -7px 0 0 5px; transform: rotate(30deg); }
+.sh .hand::before { content: ""; position: absolute; left: 50%; bottom: 50%; width: 1.5px; height: 9px; margin-left: -.75px; background: currentColor; border-radius: 1px; }
+.sh .hand::after { content: ""; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: var(--r-pill); background: currentColor; }
+.sh.t-hand .hand { display: block; animation: sh-tick 60s steps(60, end) infinite; }
+.sh .hand.inline { position: relative; left: auto; top: auto; margin: 0; flex: none; }
+@keyframes sh-tick { from { transform: rotate(30deg); } to { transform: rotate(390deg); } }
+/* On a sale the field turns once a minute. The turning layer is a square wider than the screen's diagonal (930), so no corner shows. */
+.sh.t-hand.sold .fieldbg { inset: auto; left: 50%; top: 50%; width: 960px; height: 960px; margin: -480px 0 0 -480px; animation: sh-drift var(--drift) ease-in-out infinite alternate, sh-turn 60s linear infinite; }
+@keyframes sh-turn { to { transform: rotate(360deg); } }
+
+/* 2. Paper tags. A state is a cut paper tag with a punched hole. On a photo it hangs a few degrees off level. */
+.sh.t-tags .tag { border-radius: 0; height: 22px; padding: 0 var(--s-2) 0 18px;
+  clip-path: polygon(9px 0, 100% 0, 100% 100%, 9px 100%, 0 calc(100% - 7px), 0 7px);
+  -webkit-mask: radial-gradient(circle at 10px 50%, transparent 2.2px, #000 2.8px); mask: radial-gradient(circle at 10px 50%, transparent 2.2px, #000 2.8px); }
+.sh.t-tags .s-draft { box-shadow: none; background: var(--gray); }
+.sh.t-tags .shot .tag { transform: rotate(-4deg); transform-origin: 10px 50%; }
+.sh.t-tags .tile:nth-child(even) .shot .tag { transform: rotate(3deg); }
+
+/* 3. The receipt. The sum is a slip of paper: dotted leaders, and a torn foot. */
+.sh.t-receipt .paper { background: var(--gray); padding: var(--s-4) var(--s-4) var(--s-6);
+  -webkit-mask: conic-gradient(from -45deg at bottom, transparent, #000 1deg 89deg, transparent 90deg) 50% / 12px 100%; mask: conic-gradient(from -45deg at bottom, transparent, #000 1deg 89deg, transparent 90deg) 50% / 12px 100%; }
+.sh.t-receipt.sold .paper { background: var(--page); }
+.sh.t-receipt .sum .lead { border-bottom: 1.5px dotted var(--ink-disabled); margin: 0 var(--s-2); transform: translateY(-4px); }
+.sh.t-receipt .sum hr { border-top: 1.5px dashed var(--ink-disabled); }
+.sh:not(.t-receipt) .only-receipt { display: none; }
+.sh.t-receipt .not-receipt { display: none; }
+
+/* 4. Laid on a table. Photos keep their own shape and sit a degree off level, as if put down by hand. */
+.sh.t-table .tile .ph { aspect-ratio: var(--ar, 1); }
+.sh.t-table .tile .shot { transform: rotate(var(--rot, 0deg)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sh .field, .sh.t-hand .hand, .sh.t-hand.sold .fieldbg { animation: none; }
+  .sh .pill:active, .sh .ib:active { transform: none; }
+}
