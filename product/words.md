@@ -821,3 +821,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate host all engines ourselves, and can the person's own device do the work
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Can the user use their own compute? I feel its best to host all engines ourselves. Like we cant host remote cloud based browser sessions on the phone app can we? if we can and they perform just as well awesome
+
+## 2026-11-14 nate the entire product is finished by 3 am, with leeway to 7 am
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, about 21:00 Central.
+> When you say tonights settled items, understand that the entire product must be finished by 3 am, with some leeway up to 7 am
