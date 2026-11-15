@@ -398,6 +398,17 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 2. On offer-norm sites (eBay Best Offer, Poshmark, Mercari): `list = start / (1 - d_{s,cat})`, capped at the D5 high.
 3. Round to the site's price ending (the price ending most common among that site's sold comps in the category).
 
+4. Comparison with Ben's fixed multipliers (*agent proposal*; [packet 31](../../.agents/team/packets/list/31-platform-fit.md), "Price"). At a $40 target payout, fee on the item price only, buyer pays shipping, no offer room added:
+
+| Site | Formula output: price that keeps $40 | Ben's multiplier | Ben's price |
+|---|---|---|---|
+| eBay | $46.76 (`(40 + 0.40) / (1 - 0.136)`) | target x 1.10 | $44.00 |
+| Depop | $41.83 (`(40 + 0.45) / (1 - 0.033)`; 0% selling fee) | target / 0.85 | $47.06 |
+| Poshmark | $50.00 (`40 / (1 - 0.20)`) | target / 0.85 | $47.06 |
+| Mercari | $44.44 (`40 / (1 - 0.10)`) | target x 1.18 | $47.20 |
+
+They differ because the formula follows each site's fee rows (D9) and the learned offer discount `d_{s,cat}` (step 2), so it moves with price and category (Poshmark's $2.95 under $15, eBay's fixed fee, a shipping base) and carries no offer room until `d` is learned; Ben's multipliers are one fixed number per site that mixes fee and offer room (*inferred*). Which one sets the list price is open question J10 in [open-questions.md](../open-questions.md); this card does not decide it.
+
 **Why this method**: on offer-heavy sites the list price is an opening ask and buyers expect room, so listing at the target loses the margin to the first offer (*inferred*). The discount is learned per site, not assumed. The alternative, list at q50, ignores speed and fees.
 
 **When it is not shown**: when D5 or D10 is hidden, no price is suggested. The person types one and sees D9 for it.
@@ -452,6 +463,8 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 
 Poshmark relist is never promotable ([price.md](../features/price.md)), so on Poshmark the age m step always asks.
 
+The three plans (quick, balanced, max_return) differ only in start rung and horizon (steps 1 and 3). Their steps are the age table above, not fixed day drops. Older fixed paths (quick: 10% drops on days 3 and 5; balanced: 7% on days 10 and 20; max_return: 5% on day 21 and a relist on day 45) in [list.md](../features/list.md) and [selling runs itself](../../docs/how-it-works/selling-runs-itself.md) are superseded by this card.
+
 **Why this method**: a markdown that follows the price-speed curve lowers price only when time has shown the higher rung failed (*inferred*). The relist rule separates a pricing problem from a visibility problem, using interest relative to comparable listings of the same age. The alternative, a fixed 10% weekly cut, gives away margin on items that were only buried.
 
 **When it is not shown**: with no ladder, there is no automatic markdown; the person is reminded at day 14 with the comps.
@@ -470,13 +483,13 @@ Poshmark relist is never promotable ([price.md](../features/price.md)), so on Po
 
 **Method** (arithmetic on keep, not on price)
 1. If `keep(o) >= keep(always_accept)`: accept (auto inside limits).
-2. If `keep(floor) <= keep(o) < keep(always_accept)`: accept if `keep(o) >= V`; else counter at `c = round_to_ending((o + current price) / 2)`, the split-the-difference norm (*asserted* starting rule, until we have accept rates per counter level).
-3. If `keep(o) < keep(floor)`: counter at the floor (auto). Going below the floor always asks the person.
+2. If `keep(floor) <= keep(o) < keep(always_accept)`: accept if `keep(o) >= V`; else counter at `c = round_to_ending(max(floor, (o + current price) / 2))`. This is the one counter rule: the midpoint between the offer and the current price, never below the floor (*agent proposal*, a starting value from the split-the-difference norm, *asserted*, until we have accept rates per counter level).
+3. If `keep(o) < keep(floor)`: the offer is never auto-accepted. It becomes an ask (`price_below_floor`, [product/decisions.md](../../product/decisions.md)) that proposes the counter `c` of rule 2; the person decides. Going below the floor always asks.
 4. A bundle offer is judged on the summed keep against the summed V.
 
 **Why this method**: the same $5 off costs more on Poshmark (fee on item) than its face value once fees and shipping are in, so comparing price alone misjudges offers (*inferred* from D9). Comparing against the value of waiting is the optimal-stopping rule (*inferred*). The alternative is site tools that accept at a fixed floor (eBay auto-decline, Depop auto-respond, *observed* in [price.md](../features/price.md)); they cannot see V.
 
-**When it is not shown**: with no V (D10 hidden), only rules 1 and 3 run, with the person's own lines.
+**When it is not shown**: with no V (D10 hidden), only rules 1 and 3 run, with the person's own lines. [Managing and buyers card 7](managing-and-buyers.md#7-how-to-answer-an-offer) must use the same counter rule.
 
 **How it is explained**: "Offer $35: you'd keep $28, less than waiting is likely to bring; we countered at $40." Tap: keep at the offer, at the counter, and the plan's expected keep.
 

@@ -252,7 +252,7 @@ Thresholds named here live in the `thresholds` row ([product.md §3](../product.
 
 ## 10. The buyer's purpose slots, and what is inferred before asking
 
-**Determines** the `intent` slots: use, for whom, budget, size, compatibility, deadline, condition tolerance. Buy, Watch and Market read them; their comparison is theirs ([buy](../features/buy.md), [watch](../features/watch.md), [market](../features/market.md)).
+**Determines** the `intent` slots: use, for whom, budget, size, compatibility, deadline, condition tolerance, and `keep_for` (how long the person means to keep the thing, in months; read by [M27, M28 and M29](market-insight.md#m28-net-cost-of-ownership), *agent proposal*). `keep_for` follows the same sources, weights and provenance as the other slots, and is only assumed, never raised as a span, unless the prompt mentions it. Buy, Watch and Market read them; their comparison is theirs ([buy](../features/buy.md), [watch](../features/watch.md), [market](../features/market.md)).
 
 **Sources and weights** (starting values)
 
