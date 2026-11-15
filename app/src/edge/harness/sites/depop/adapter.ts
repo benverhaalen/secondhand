@@ -130,7 +130,13 @@ async function getJson(c: Client, path: string, s: AbortSignal): Promise<{ ok: t
 }
 const listingRow = (o: Obj) => {
   const slug = str(o.slug);
-  return { external_id: str(o.id), slug, url: slug && listingUrl(slug), state: stateOf(o.status), currency: str(at(o, 'pricing', 'currency')),
+  const description = typeof o.description === 'string' ? o.description : undefined;
+  const pictures = Array.isArray(o.pictures) ? o.pictures : [];
+  const photos = pictures.flatMap(picture => {
+    const url = typeof picture === 'string' ? picture : str(at(picture, 'url')) ?? str(at(picture, 'formats', 'P0', 'url'));
+    return url && /^https?:\/\//.test(url) ? [url] : [];
+  });
+  return { title: description?.split('\n')[0], description, photos, photo_url: photos[0], external_id: str(o.id), slug, url: slug && listingUrl(slug), state: stateOf(o.status), currency: str(at(o, 'pricing', 'currency')),
     price_cents: cents(at(o, 'pricing', 'current_price', 'price_breakdown', 'price', 'amount')), brand: str(o.brand_name), likes: num(o.like_count),
     listed_at: str(o.created_at), sku: typeof o.sku === 'string' ? o.sku : undefined }; // unobserved
 };
@@ -139,15 +145,30 @@ const listingRow = (o: Obj) => {
 async function readListings(c: Client, a: CallArgs, s: AbortSignal): Promise<AdapterResult> {
   const shop = str(a.shop_id);
   if (!shop) return refuse('missing_input', 'read_listings needs the linked shop_id');
-  // shortcut: the first page of 24 per status only, follow page_info.last as offset when a shop has more.
   const which = a.status === 'sold' ? ['sold'] : a.status === 'active' ? ['products'] : ['products', 'sold'];
-  const rows = [];
+  const rows = new Map<string, ReturnType<typeof listingRow>>();
   for (const w of which) {
-    const r = await getJson(c, w === 'sold' ? PATHS.sold(shop) : PATHS.products(shop), s); if (!r.ok) return r;
-    const objs = objects(r.body); if (!objs) return changed(`${w} objects`);
-    rows.push(...objs.map(listingRow));
+    const base = w === 'sold' ? PATHS.sold(shop) : PATHS.products(shop);
+    let path = base;
+    const cursors = new Set<string>();
+    while (true) {
+      s.throwIfAborted();
+      const r = await getJson(c, path, s); if (!r.ok) return r;
+      const objs = objects(r.body); if (!objs) return changed(`${w} objects`);
+      for (const obj of objs) {
+        const row = listingRow(obj);
+        if (!row.external_id) return changed(`${w} product id`);
+        rows.set(row.external_id, row);
+      }
+      const page = at(r.body, 'page_info');
+      if (at(page, 'has_more') === false) break;
+      const cursor = str(at(page, 'last'));
+      if (at(page, 'has_more') !== true || !cursor || cursors.has(cursor)) return changed(`${w} pagination cursor`);
+      cursors.add(cursor);
+      path = `${base}&offset=${encodeURIComponent(cursor)}`;
+    }
   }
-  return classifyRead({ challenge: false, rows }, M.read_listings);
+  return classifyRead({ challenge: false, rows: [...rows.values()] }, M.read_listings);
 }
 
 async function shopSeller(c: Client, username: string, s: AbortSignal): Promise<{ ok: true; seller: Obj } | Extract<AdapterResult, { ok: false }>> {

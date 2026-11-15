@@ -1,3 +1,5 @@
+import { useLiveData } from '@/data/live';
+import { DataStatus } from '@/data/status';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Linking } from 'react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -21,7 +23,7 @@ const go = (to: string) => router.push(to as Href);
 const pic = (key: Parameters<typeof photo>[0] | null) => (key ? (photo(key) as PhotoSrc) : null);
 const cents = (s: string) => Math.round(Number(s.replace(/[^0-9.]/g, '')) * 100);
 
-export default function Today() {
+function DemoToday() {
   const { state: asked, name: picked } = useScreen();
   const params = useLocalSearchParams<{ world?: string; fail?: string }>();
   const offline = asked === 'offline', loading = asked === 'loading';
@@ -64,7 +66,6 @@ export default function Today() {
     { tier: 'when_you_can', label: 'Can Wait' },
     { tier: 'good_to_know', label: 'Good to Know' },
   ].map(t => ({ ...t, cards: feed.filter(c => c.tier === t.tier) }));
-  // The one card nearest its deadline takes its state's gradient (Art. 5, State gradients rule 2).
   const lead = feed.find(c => c.due != null && (status[c.key]?.s ?? c.status) !== 'failed')?.key;
 
   const unread = inbox(w);
@@ -247,4 +248,50 @@ export default function Today() {
       />
     </Screen>
   );
+}
+
+export default function Today() {
+  const { demo } = useScreen();
+  return demo ? <DemoToday /> : <LiveToday />;
+}
+
+function LiveToday() {
+  const { w, loading, refreshing, refresh, answer, problems } = useLiveData();
+  const [acting, setActing] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [review, setReview] = useState<string | null>(null);
+  const submit = async (id: string, option: string) => {
+    if (acting) return;
+    setActing(id); setError(null);
+    try { await answer(id, option); setReview(null); }
+    catch (failure) { log.error('today.answer', failure, { decision: id }); setError(failure instanceof Error ? failure.message : 'The action did not go through.'); }
+    finally { setActing(null); }
+  };
+  const tiers = [{ id: 'now', label: 'Needs You' }, { id: 'when_you_can', label: 'Can Wait' }, { id: 'good_to_know', label: 'Good to Know' }];
+  const reviewed = w.decisions.find(decision => decision.id === review);
+  return <Screen name="today" state={loading ? 'loading' : 'typical'} wash nav={<TabNav title="Today" inbox={{ count: inbox(w) }} />} refreshing={refreshing} onRefresh={refresh}>
+    <DataStatus resources={['account', 'today']} />
+    {error ? <Txt role="body">{error}</Txt> : null}
+    {loading ? <Skeleton of="card-decision" /> : problems.today ? null : tiers.map(tier => {
+      const decisions = w.decisions.filter(decision => decision.feed === tier.id && ['open', 'acting', 'failed'].includes(decision.state));
+      return <Section key={tier.id} title={tier.label}><TodayRail id={tier.id}>
+        {decisions.map(decision => {
+          const item = w.items.find(item => item.id === decision.item_id);
+          const selected = decision.options.find(option => option.id === decision.suggested) ?? decision.options[0];
+          const other = decision.options.find(option => option !== selected);
+          const pending = acting === decision.id || decision.state === 'acting';
+          return <DecisionCard key={decision.id} id={decision.id} kind="need" word="Needs you" title={item?.title ?? decision.why} photo={item?.photos[0]?.key ?? null}
+            fact={{ label: item ? decision.why : '' }} status={pending ? 'working' : decision.state === 'failed' ? 'failed' : 'open'} step={pending ? 'Working' : undefined}
+            primary={{ id: `${decision.id}-answer`, label: selected?.label ?? 'Refresh', onPress: () => selected ? void submit(decision.id, selected.id) : void refresh() }}
+            second={other ? { id: `${decision.id}-other`, label: other.label, onPress: () => void submit(decision.id, other.id) } : undefined}
+            more={decision.options.length > 2 ? { id: `${decision.id}-details`, label: 'Review', onPress: () => setReview(decision.id) } : undefined} />;
+        })}
+        {!decisions.length ? <Txt role="body" tone="ink-2">Nothing here</Txt> : null}
+      </TodayRail></Section>;
+    })}
+    <Section title="Other"><TodayRail id="other"><Notice id="activity" icon="clock-01" text="Activity" onPress={() => go('/you/log')} /></TodayRail></Section>
+    <Sheet open={!!reviewed} title={reviewed?.why} onClose={() => setReview(null)}>
+      {reviewed?.options.map(option => <FootButton key={option.id} id={`${reviewed.id}-${option.id}`} kind="second" label={option.label} state={acting ? 'disabled' : 'idle'} onPress={() => void submit(reviewed.id, option.id)} />)}
+    </Sheet>
+  </Screen>;
 }
