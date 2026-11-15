@@ -43,6 +43,16 @@ test('sell: Select sits in the title row, and Done takes its place while picking
   await screen.page.locator('[data-part="page-head"] [data-testid="select-done"]').waitFor({ state: 'visible', timeout: WAIT });
 });
 
+// U19, Ben 10:27 ("a lot of clutter"): the shelves name themselves, so their chips show only once one shelf is open alone.
+test('sell: a shelf is named once: no shelf chip on the whole page, the chips after See all', async () => {
+  const screen = await app.open('/sell?world=clearing');
+  await screen.page.locator('[data-shelf="needs_you"]').waitFor({ state: 'visible', timeout: WAIT });
+  for (const id of ['filter-all', 'filter-needs_you', 'filter-live']) assert.equal(await screen.page.getByTestId(id).count(), 0, id);
+  await screen.tap('shelf-needs_you-all');
+  for (const id of ['filter-all', 'filter-needs_you', 'filter-live']) await screen.page.getByTestId(id).waitFor({ state: 'visible', timeout: WAIT });
+  assert.equal(await screen.page.locator('[data-part="shelf-head"]').count(), 0, 'a shelf open alone has no header to repeat');
+});
+
 // Art. 7.14: a shelf whose every tile would wear one tag shows none; the header already names them (the flipper's Sold, all Paid).
 test('sell: a shelf of one state wears no tags; a shelf of kinds keeps them', async () => {
   const screen = await app.open('/sell?world=flipper');

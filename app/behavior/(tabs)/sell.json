@@ -95,14 +95,14 @@
       "on_tap": "shows only what needs the person",
       "id": "filter-needs_you",
       "does": "shows only what needs the person",
-      "at": "/sell?world=clearing"
+      "at": "/sell?world=flipper&filter=live"
     },
     {
       "control": "Live",
       "on_tap": "shows only live things",
       "id": "filter-live",
       "does": "shows only live things",
-      "at": "/sell?world=clearing"
+      "at": "/sell?world=flipper&filter=live"
     },
     {
       "control": "eBay logo in the filter row",
@@ -231,8 +231,8 @@
       "why": "The round 11 Sell Ben reacted to was two columns; at two the title and the money line fit, and the tag and site logos sit on a photo big enough to read them (Depop and Instagram grids, copy.md). Pinch density in sell/grid.ts is left for the phone build."
     },
     {
-      "decision": "One row of filters: sort, All, each shelf with its count, then each site as its logo",
-      "why": "Ben, round 11: \"you only needed one horizontal y value for the filtering\"; round 10: stage and marketplace are the same primitive. The row scrolls sideways under the gutter so its end shows it continues."
+      "decision": "One row of filters: sort, then each site as its logo; once one shelf is open alone (See all), All and each shelf with its count join it",
+      "why": "Ben, round 11: \"you only needed one horizontal y value for the filtering\". On the whole page the shelves already name themselves with their counts, so a chip per shelf said each one twice (U19, Ben 10:27: \"a lot of clutter\"); alone, a shelf has no header and the chips are the way back and across."
     },
     {
       "decision": "Sort is the first chip and says its pick (\"Latest\", \"Price, high\")",

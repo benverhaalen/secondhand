@@ -215,8 +215,10 @@ export default function Sell() {
       <Stack>
         {loading ? null : <FilterRow>
           <Chip id="filter-sort" icon="sorting-01" label={sortChip} onPress={() => setSorting(true)} />
-          <Chip id="filter-all" label="All" picked={shelf === 'all'} onPress={() => setShelf('all')} />
-          {all.filter(s => s.items.length).map(s => (
+          {/* The shelves are the page's own headers; their chips show only once one shelf is open alone (See all), as the way
+              back to All and to the next shelf, so no shelf's name and count is said twice (U19). */}
+          {shelf === 'all' ? null : <Chip id="filter-all" label="All" onPress={() => setShelf('all')} />}
+          {shelf === 'all' ? null : all.filter(s => s.items.length).map(s => (
             <Chip key={s.id} id={`filter-${s.id}`} label={s.title} count={s.items.length} picked={shelf === s.id} onPress={() => setShelf(s.id)} />
           ))}
           {offered.sites.map(s => (
