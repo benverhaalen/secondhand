@@ -57,7 +57,7 @@ export function Records() {
           </Section>
         </>
       ) : (
-        <EmptyState title="No sales this year" line="Each sale shows here with its fees, ready for tax time." />
+        <EmptyState title="No sales this year" line="Each sale shows here with its fees." />
       )}
       </PageStatus>
     </Screen>

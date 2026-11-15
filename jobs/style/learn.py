@@ -16,6 +16,7 @@ from scipy.special import expit
 from .facets import START
 from .params import resolved
 from .evidence import publish
+from param.registry import complete_row
 
 FEATURES=tuple(START)+('deal','q','exact','likely_same_model','similarity')
 
@@ -154,9 +155,9 @@ def nightly(store, rows, now, scope, *, seed, draws=None, min_impressions=None, 
         diffs=[a-b for a,b in scores]
         boots=sorted(sum(rng.choices(diffs,k=len(diffs)))/len(diffs) for _ in range(draws))
         latest=max((r['version'] for r in store.history(name,scope)),default=0)
-        ch=store.propose(dict(name=name,scope=scope,family='model_ref',value_or_hyperparams=({k:(weight,v['style_'+k+'_size']) for k,weight in value.items()} if name=='style.source_weights' else value),prior=None,
+        ch=store.propose(complete_row(dict(name=name,scope=scope,family='model_ref',value_or_hyperparams=({k:(weight,v['style_'+k+'_size']) for k,weight in value.items()} if name=='style.source_weights' else value),prior=None,
                               n_eff=len(train),metric='ndcg10_saves_14d',held_out_score=sum(a for a,b in scores)/len(scores),
-                              fitted_on_ids_hash=hashlib.sha256('\n'.join(sorted(r['id'] for r in train)).encode()).hexdigest()),latest)
+                              fitted_on_ids_hash=hashlib.sha256('\n'.join(sorted(r['id'] for r in train)).encode()).hexdigest())),latest)
         ok,_=store.promote(name,scope,ch['version'],0,now.isoformat()) if boots[int(v['style_bootstrap_tail']*draws)]>0 else (False,'bootstrap noise')
         results[name]=dict(promoted=ok,interval=(boots[int(v['style_bootstrap_tail']*draws)],boots[min(draws-1,int((1-v['style_bootstrap_tail'])*draws))]))
         if log:

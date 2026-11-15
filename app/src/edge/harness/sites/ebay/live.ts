@@ -19,7 +19,7 @@ const client: Client = {
     const r = await fetch(req.url, { method: req.method, headers: req.headers, body: req.body, signal: s });
     const text = await r.text();
     let body: unknown = text;
-    try { body = JSON.parse(text); } catch { /* XML or empty stays a string */ }
+    try { body = JSON.parse(text); } catch (error) { if (!(error instanceof SyntaxError)) throw error; /* XML or empty stays a string */ }
     return { status: r.status, headers: Object.fromEntries(r.headers), body };
   },
 };

@@ -1,6 +1,7 @@
 Owner: Nate. Written 2026-11-15 by a retriever seat. Status: reference.
 
 # Ranking levers per site
+Researched 2026-11-15 by Nate. Feature: list.
 
 ## Question and what it decides
 

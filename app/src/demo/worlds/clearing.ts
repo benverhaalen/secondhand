@@ -188,7 +188,7 @@ export const clearing: World = {
   ],
   events: [
     { event_id: 'ev_1', item_id: jacket.id, action: 'answer_fact', actor: 'auto', site: 'depop', at: inMinutes(-198), why: 'Answered “blanket lined” from the tag photo', undo: { allowed: false, until: null } },
-    { event_id: 'ev_2', item_id: fleece.id, action: 'listing.posted', actor: 'auto', site: 'depop', at: inDays(-3), why: 'Posted at $110 after you tapped Post', undo: { allowed: true, until: inDays(1) } },
+    { event_id: 'ev_2', item_id: fleece.id, action: 'listing.posted', actor: 'auto', site: 'depop', at: inDays(-3), why: 'Posted at $110', undo: { allowed: true, until: inDays(1) } },
     { event_id: 'ev_3', item_id: kindle.id, action: 'delist_after_sale', actor: 'auto', site: 'facebook', at: inHours(-6), why: 'Took this listing down because it sold on the other site', undo: { allowed: false, until: null } },
     { event_id: 'ev_4', item_id: tee.id, action: 'delist_after_sale', actor: 'auto', site: 'ebay', at: inHours(-10), why: 'Took this listing down because it sold on the other site', undo: { allowed: false, until: null } },
     { event_id: 'ev_5', item_id: lamp.id, action: 'decline_offer', actor: 'auto', site: 'facebook', at: inMinutes(-1818), why: 'Below your lowest of $30, so it countered at $38', undo: { allowed: false, until: null } },
@@ -209,4 +209,9 @@ export const clearing: World = {
   ],
   wants: [{ id: 'want_desk', state: 'active', text: 'Standing desk under $150 within 10 miles', product_id: null, fit: { radius_mi: 10, condition_floor: 'Used, good' }, max_total_cents: 15000, sites: ['facebook', 'ebay', 'mercari'], checked: { facebook: inMinutes(-20), ebay: inMinutes(-20), mercari: inMinutes(-55) }, behind: ['mercari'], quiet_hours: { from: '22:00', to: '08:00' }, alert: 'under' }],
   matches: [], products: PRODUCTS, searches: [SEARCH_DUNKS], retail: RETAIL,
+  // What they looked up and did not keep: a jacket priced at a thrift store, then sneakers a friend asked about.
+  lookups: [
+    { capture_id: 'cap_lk_dunk', kind: 'find', product_id: 'pr_dunk', short_name: 'Grey Nike sneakers', at: inHours(-2) },
+    { capture_id: 'cap_lk_j97', kind: 'worth', product_id: 'pr_j97', short_name: 'Carhartt jacket', at: inDays(-1) },
+  ],
 };

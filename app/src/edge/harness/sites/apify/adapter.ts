@@ -81,7 +81,8 @@ export function createApify({ token, send = (url, init) => fetch(url, init), log
   function statusFail(r: Reply, text: string): ApifyFail | undefined {
     if (r.status === 200 || r.status === 201) return undefined;
     let type = '', msg = '';
-    try { const e = (JSON.parse(text) as Obj).error; if (isObj(e)) { type = str(e.type) ?? ''; msg = str(e.message) ?? ''; } } catch { /* a non-JSON error body: the status alone decides */ }
+    try { const parsed: unknown = JSON.parse(text); const e = isObj(parsed) ? parsed.error : undefined; if (isObj(e)) { type = str(e.type) ?? ''; msg = str(e.message) ?? ''; } }
+    catch (error) { if (!(error instanceof SyntaxError)) throw error; /* a non-JSON error body: the status alone decides */ }
     const m = `apify ${r.status} ${type}: ${msg || text}`;
     if (r.status === 402 || /payment|credit|usage|limit-reached|quota/i.test(`${type} ${msg}`)) return fail('policy_refused', m, { do: 'raise_decision', kind: 'apify_spend' });
     if (r.status === 401 || r.status === 403) return fail('auth_expired', m, { do: 'relink', site: 'apify' });

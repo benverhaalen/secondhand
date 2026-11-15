@@ -66,11 +66,11 @@ try {
   await recordJob();
   const cached = await recordJob();
   assert.equal(reads, 2, 'the second job must refresh the first job’s cached read');
-  write('search-late-cached', ':464–475, a timed-out live refresh keeps fresh indexed offers', cached);
+  write('search-late-cached', ':464 to 475, a timed-out live refresh keeps fresh indexed offers', cached);
 
   setup();
   ports.sources = ports.sources.filter(s => s.id === 'mercari');
-  write('search-needs-account', ':706–721, Mercari without an account is needs_account', await recordJob());
+  write('search-needs-account', ':706 to 721, a site that needs the person’s account is needs_account', await recordJob());
 } finally {
   await Promise.all(searchJobs.pendingSearches.values());
   Object.assign(ports, originalPorts);

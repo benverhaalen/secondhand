@@ -48,7 +48,7 @@ export function ItemParts() {
         toggle={<Switch id="lp-off" label="Post here, off" on={false} />} off />
       <QuestionCard id="q-drift" where="Step 4 of 9: Facts a camera can’t see" question="Do the Joy-Cons drift?"
         options={[{ id: 'no', label: 'No' }, { id: 'yes', label: 'Yes' }, { id: 'dk', label: 'I don’t know' }]} pick={null} onAnswer={() => {}} />
-      <QuestionCard id="q-done" where="7 of 9 steps done. Ready to plan" question={null} />
+      <QuestionCard id="q-done" where="Ready to plan" question={null} />
       <PriceTrack id="pt-ticks" label="Price" min={60} max={150} value={price} ticks={[82, 85, 88, 90, 92, 95, 96, 99, 104, 110, 115, 119]}
         caption="Each tick is a sale like it" onChange={setPrice} />
       <PriceTrack id="pt-none" label="Price" min={20} max={60} value={40} caption="Too few sales to show" onChange={() => {}} />

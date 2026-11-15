@@ -2,18 +2,20 @@
 // Needs you: the offer of theirs that waits on a tap, and a match over their most. New matches: what the wants found.
 // Looking for: each want, drawn as honestly as its search stands (every site in, one still answering, nothing yet, paused).
 // Watching: what they saved. Bought: what they bought. Nothing on this page commits the person without a tap (ways-out).
+// Recent, under the search field: what they looked up and did not keep, finds and appraisals (spec/redesign/new-results.md).
 // The page's reasons and states are in app/behavior/(tabs)/buy.json.
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { cardLine, offerAmounts, offerProblem, wantTag } from '@/buy/read';
+import { RECENT_SHOWN, cardLine, offerAmounts, offerProblem, recent, wantTag } from '@/buy/read';
 import { Failed, Loading, OfflineLine } from '@/buy/states';
 import { href, usePage } from '@/buy/world';
 import { ago, usd, unread, world, type Decision, type Want, type World } from '@/demo';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { shortName } from '@/demo/short-name';
 import { CardGroup } from '@/ui/parts/card-group';
+import { ListRow } from '@/ui/parts/list-row';
 import {
-  DecisionCard, EmptyState, ItemCard, Line, MatchCard, Nav, OfferSheet, Pill, Screen, SearchField, Sheet, Stack, UndoToast,
+  DecisionCard, EmptyState, IconButton, ItemCard, Line, List, MatchCard, OfferSheet, Pill, Screen, SearchField, Sheet, Stack, UndoToast,
 } from '@/ui';
 
 const dollars = (cents: number) => cents / 100;
@@ -22,12 +24,13 @@ const dollars = (cents: number) => cents / 100;
 const wantName = (text: string) => shortName({ title: text.replace(/\s*\b(under|below) \$[\d,.]+/i, '').replace(/\s*\bwithin \d+ (mi|miles?)\b/i, '') });
 
 // The person a state is drawn for (app/src/demo/screen.ts): empty is this person with nothing on the list; one is one want
-// with one match; dense is the hunter's full list (the flipper's world has no wants, so the buyer's stands in).
+// with one match; dense is the hunter's full list (the flipper's world has no wants, so the buyer's stands in, with the
+// flipper's lookups, the longest Recent).
 function drawn(base: World, state: string | null): World {
-  if (state === 'empty') return { ...base, wants: [], matches: [], decisions: base.decisions.filter(d => d.kind !== 'buy_offer' && d.kind !== 'offer_over_ceiling'), orders: base.orders.filter(o => o.kind !== 'purchase') };
+  if (state === 'empty') return { ...base, lookups: [], wants: [], matches: [], decisions: base.decisions.filter(d => d.kind !== 'buy_offer' && d.kind !== 'offer_over_ceiling'), orders: base.orders.filter(o => o.kind !== 'purchase') };
   const full = base.wants.length ? base : world('buyer');
-  if (state === 'dense') return full;
-  if (state === 'one') { const x = full.wants[0]; return { ...full, wants: [x], matches: full.matches.filter((m, i, all) => m.want_id === x.id && all.findIndex(n => n.want_id === x.id) === i), decisions: [], orders: [] }; }
+  if (state === 'dense') return { ...full, lookups: base.lookups };
+  if (state === 'one') { const x = full.wants[0], [l] = full.lookups; return { ...full, lookups: l ? [l] : [], wants: [x], matches: full.matches.filter((m, i, all) => m.want_id === x.id && all.findIndex(n => n.want_id === x.id) === i), decisions: [], orders: [] }; }
   return base;
 }
 
@@ -39,6 +42,8 @@ export default function Buy() {
   const [offering, setOffering] = useState<Decision | null>(null);
   const [more, setMore] = useState<Decision | null>(null);
   const [sending, setSending] = useState<string | null>(null);
+  const [dropped, setDropped] = useState<string[]>([]);
+  const [allRecent, setAllRecent] = useState(false);
 
   const match = (id?: string) => w.matches.find(m => m.id === id) ?? null;
   const asks = w.decisions.filter(d => d.state === 'open' && (d.kind === 'buy_offer' || d.kind === 'offer_over_ceiling') && !gone.includes(d.id) && match(d.match_id));
@@ -47,12 +52,18 @@ export default function Buy() {
   const wants = w.wants.filter(x => x.state !== 'ended');
   const bought = w.orders.filter(o => o.kind === 'purchase');
   const nothing = !asks.length && !fresh.length && !saved.length && !wants.length && !bought.length;
+  const looked = recent(w).filter(r => !dropped.includes(r.capture_id));
   const found = (x: Want) => w.matches.filter(m => m.want_id === x.id && m.state !== 'gone' && m.state !== 'dismissed').length;
 
   // A step that can be undone shows as done with Undo; the offer itself waits 5 s in the toast before it goes (Gmail's Undo Send).
   const leave = (d: Decision, text: string) => {
     setGone(g => [...g, d.id]);
     setToast({ id: `undo-${d.id}`, text, undo: () => { setGone(g => g.filter(x => x !== d.id)); setToast(null); } });
+  };
+  // A lookup removed, or all of them cleared, comes back with Undo, as a skipped card does.
+  const drop = (ids: string[], text: string) => {
+    setDropped(g => [...g, ...ids]);
+    setToast({ id: 'recent-undo', text, undo: () => { setDropped(g => g.filter(x => !ids.includes(x))); setToast(null); } });
   };
   const send = (d: Decision, cents: number) => {
     setSending(d.id);
@@ -89,9 +100,24 @@ export default function Buy() {
   return (
     <Screen name="buy" state={state ?? (nothing ? (w.name === 'new' ? 'new' : 'empty') : 'typical')} wash nav={nav}
       foot={toast ? <UndoToast id={toast.id} text={toast.text} onUndo={toast.undo} onGone={() => setToast(null)} /> : undefined}>
-      <SearchField id="buy-search" placeholder="Find an item or paste a link" onCamera={() => router.push(href(w, '/camera'))}
+      <SearchField id="buy-search" placeholder="Find an item or paste a link" onOpen={() => router.push(href(w, '/shop'))} onCamera={() => router.push(href(w, '/camera'))}
         onSubmit={q => router.push(href(w, `/search?q=${encodeURIComponent(q)}`))} />
       {state === 'offline' ? <OfflineLine /> : null}
+
+      {looked.length ? (
+        <CardGroup label="Recent">
+          <List>
+            {(allRecent ? looked : looked.slice(0, RECENT_SHOWN)).map(r => (
+              <ListRow key={r.capture_id} id={`recent-${r.capture_id}`} photo={r.key} label={r.short_name} detail={r.says} onPress={() => router.push(href(w, r.opens))}
+                trail={<IconButton id={`recent-${r.capture_id}-remove`} icon="cancel-01" label={`Remove ${r.short_name}`} look="plain" onPress={() => drop([r.capture_id], 'Removed')} />} />
+            ))}
+          </List>
+          <Line>
+            {looked.length > RECENT_SHOWN ? <Pill id={allRecent ? 'recent-less' : 'recent-all'} kind="second" label={allRecent ? 'Show less' : 'See all'} onPress={() => setAllRecent(a => !a)} /> : null}
+            <Pill id="recent-clear" kind="second" label="Clear" onPress={() => drop(looked.map(r => r.capture_id), 'Cleared')} />
+          </Line>
+        </CardGroup>
+      ) : null}
 
       {nothing ? <EmptyState title="Nothing on your list" line="Search for something, then watch it to hear when one turns up." /> : null}
 

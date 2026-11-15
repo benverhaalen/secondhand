@@ -50,7 +50,8 @@
         {
           "photosPermission": "secondhand opens your photos when you choose ones you already took."
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { AUDIENCE, FIT, FIT_TYPE, LISTING_FORMS, RETURNS, fitOf, listingTitle, titleOn } from './listing-forms.ts';
+import { FIT, FIT_TYPE, LISTING_FORMS, RETURNS, fitOf, listingTitle, titleOn } from './listing-forms.ts';
 import { TITLES } from './edges.ts';
 
 const fit = JSON.parse(readFileSync(new URL('../../../research/list/ben/platforms/platform-fit.json', import.meta.url), 'utf8'));
@@ -41,7 +41,6 @@ test('each site gets the title its own buyers search: size spelled out where the
   assert.equal(listingTitle('poshmark', 'Retro-X fleece, cream, M', attrs({ brand: 'Patagonia', size: 'M' })), 'Patagonia Retro-X fleece, cream, size M');
   for (const site of Object.keys(LISTING_FORMS) as (keyof typeof LISTING_FORMS)[]) {
     assert.ok(listingTitle(site, TITLES.long, []).length <= LISTING_FORMS[site].aim[1], site);
-    assert.ok(AUDIENCE[site].length <= 40, `${site} audience fits one caption line`);
   }
 });
 

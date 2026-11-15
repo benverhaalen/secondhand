@@ -42,7 +42,7 @@ export async function sweepStorefronts({ accounts, harness, store, person_id, no
   const linked = await accounts.linked(person_id);
   // Every linked account at once, each on its own session; one site failing never holds up another.
   const results = await Promise.all(linked.map(async a => {
-    const e = await harness.call(a.site, 'read_storefront', { account_id: a.account_id });
+    const e = await harness.call(a.site, 'read_storefront', { account_id: a.account_id, person_id: a.person_id });
     if (!e.ok) return { account_id: a.account_id, code: e.error.code };
     const row = toSnapshot(a.account_id, a.site, e.data, { as_of: now().toISOString(), window_days, citation_id: e.meta.observation_ids[0] ?? e.meta.route_id });
     if ('refused' in row) return { account_id: a.account_id, code: 'page_changed' };

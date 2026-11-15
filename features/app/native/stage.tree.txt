@@ -1,191 +1,191 @@
-Attributes: Application, 0x102249300, pid: 85109, label: 'secondhand'
+Attributes: Application, 0x103695350, pid: 20046, label: 'secondhand'
 Element subtree:
- →Application, 0x102249300, pid: 85109, label: 'secondhand'
-    Window (Main), 0x10213ce40, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x10211c790, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x1021785b0, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x1021671b0, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x10219d7f0, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x102196330, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x102174370, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x102159550, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x10216f810, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x10218ff90, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10217fdc0, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x10218add0, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x1021a8890, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x10215bdb0, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x1021194d0, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x1021662f0, {{0.0, 0.0}, {402.0, 874.0}}
-                                    Other, 0x1021633c0, {{0.0, 0.0}, {402.0, 874.0}}
-                                      Other, 0x10218e1f0, {{0.0, 0.0}, {402.0, 874.0}}
-                                        Other, 0x102151010, {{0.0, 0.0}, {402.0, 874.0}}
-                                          Other, 0x102183440, {{0.0, 0.0}, {402.0, 874.0}}
-                                            Other, 0x10224f2a0, {{0.0, 0.0}, {402.0, 874.0}}
-                                              Other, 0x102251bb0, {{0.0, 0.0}, {402.0, 874.0}}
-                                                Button, 0x102251ef0, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'sheet-scrim', label: 'Close'
-                                              Other, 0x102238260, {{0.0, 110.0}, {402.0, 764.0}}
-                                                Other, 0x102250170, {{0.0, 110.0}, {402.0, 764.0}}
-                                                Other, 0x10222af40, {{1.0, 111.0}, {400.0, 68.3}}
-                                                  Other, 0x102242a00, {{1.0, 111.0}, {400.0, 68.3}}
-                                                    Other, 0x1022385c0, {{185.0, 119.0}, {32.0, 4.0}}
-                                                    StaticText, 0x10223f3c0, {{21.0, 139.0}, {360.0, 24.3}}, label: 'Preview'
-                                                      StaticText, 0x1022508d0, {{21.0, 139.0}, {360.0, 24.3}}, label: 'Preview'
-                                                Other, 0x102250cf0, {{1.0, 179.3}, {400.0, 583.7}}
-                                                  ScrollView, 0x10224e6c0, {{1.0, 179.3}, {400.0, 583.7}}
-                                                    Other, 0x10224e7e0, {{1.0, 179.3}, {400.0, 2048.0}}
-                                                      Other, 0x10224e900, {{1.0, 179.3}, {400.0, 2048.0}}
-                                                        Other, 0x102252a70, {{21.0, 179.3}, {360.0, 360.0}}
-                                                          Other, 0x102252b90, {{21.0, 179.3}, {360.0, 360.0}}, label: 'Your photo, enhanced with AI'
-                                                            Image, 0x102252cb0, {{21.0, 179.3}, {360.0, 360.0}}, label: 'Your photo, enhanced with AI'
-                                                          Other, 0x102252dd0, {{21.0, 179.3}, {360.0, 360.0}}
-                                                        StaticText, 0x102252ef0, {{21.0, 563.3}, {296.0, 20.3}}, label: 'Clean up'
-                                                          StaticText, 0x102253010, {{21.0, 563.3}, {296.0, 20.3}}, label: 'Clean up'
-                                                        Switch, 0x102253130, {{329.0, 568.7}, {52.0, 32.0}}, identifier: 'look-clean', label: 'Clean up', value: 1
-                                                        StaticText, 0x102253250, {{21.0, 587.7}, {296.0, 18.3}}, label: 'Light only. The color stays true'
-                                                          StaticText, 0x102253370, {{21.0, 587.7}, {296.0, 18.3}}, label: 'Light only. The color stays true'
-                                                        Other, 0x102253490, {{21.0, 618.0}, {360.0, 85.0}}
-                                                        StaticText, 0x1022535b0, {{21.0, 630.3}, {296.0, 20.3}}, label: 'Enhance with AI'
-                                                          StaticText, 0x102252230, {{21.0, 630.3}, {296.0, 20.3}}, label: 'Enhance with AI'
-                                                        Switch, 0x102252350, {{329.0, 644.7}, {52.0, 32.0}}, identifier: 'look-ai', label: 'Enhance with AI', value: 1
-                                                        StaticText, 0x102252470, {{21.0, 654.7}, {296.0, 36.3}}, label: 'Redrawn, then checked against your photos and scan'
-                                                          StaticText, 0x102252590, {{21.0, 654.7}, {296.0, 36.3}}, label: 'Redrawn, then checked against your photos and scan'
-                                                        Other, 0x1022526b0, {{21.0, 735.0}, {360.0, 214.0}}
-                                                        Other, 0x1022538f0, {{38.0, 752.0}, {72.0, 72.0}}
-                                                          Other, 0x102253a10, {{38.0, 752.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
-                                                            Image, 0x102253b30, {{38.0, 752.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
-                                                          Other, 0x102253c50, {{38.0, 752.0}, {72.0, 72.0}}
-                                                        StaticText, 0x102253d70, {{122.0, 752.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
-                                                          StaticText, 0x10211c370, {{122.0, 752.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
-                                                        Switch, 0x102181340, {{312.0, 772.0}, {52.0, 32.0}}, identifier: 'post-ebay', label: 'Post here', value: 1
-                                                        Other, 0x10216abd0, {{90.0, 804.0}, {24.0, 24.0}}, label: 'eBay'
-                                                        Other, 0x102153c70, {{92.0, 806.0}, {20.0, 20.0}}
-                                                          Other, 0x102164b00, {{92.0, 806.0}, {20.0, 20.0}}, label: 'eBay'
-                                                            Image, 0x1021a1730, {{92.0, 806.0}, {20.0, 20.0}}, label: 'eBay'
-                                                        StaticText, 0x1021a1310, {{122.0, 803.7}, {27.7, 20.3}}, label: '$40'
-                                                          StaticText, 0x1021a58e0, {{122.0, 803.7}, {27.7, 20.3}}, label: '$40'
-                                                        StaticText, 0x1021a5070, {{157.7, 803.7}, {101.0, 20.3}}, label: 'You get $33.78'
-                                                          StaticText, 0x1021a7ac0, {{157.7, 803.7}, {101.0, 20.3}}, label: 'You get $33.78'
-                                                        StaticText, 0x1021a7be0, {{46.0, 836.7}, {310.0, 18.3}}, label: 'Searched by model: specs in the title'
-                                                          StaticText, 0x1021a7d00, {{46.0, 836.7}, {310.0, 18.3}}, label: 'Searched by model: specs in the title'
-                                                        StaticText, 0x1021a7e20, {{46.0, 868.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
-                                                          StaticText, 0x1021a7f40, {{46.0, 868.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
-                                                        StaticText, 0x1021a8060, {{46.0, 902.7}, {310.0, 18.3}}, label: 'Ready'
-                                                          StaticText, 0x1021a8180, {{46.0, 902.7}, {310.0, 18.3}}, label: 'Ready'
-                                                        Button, 0x1021a82a0, {{21.0, 957.0}, {89.7, 40.0}}, identifier: 'edit-ebay', label: 'Edit'
-                                                        Other, 0x1021a83c0, {{21.0, 1013.0}, {360.0, 214.0}}
-                                                        Other, 0x1021a84e0, {{38.0, 1030.0}, {72.0, 72.0}}
-                                                          Other, 0x1021a9800, {{38.0, 1030.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                            Image, 0x1021a9920, {{38.0, 1030.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                          Other, 0x1021a9a40, {{38.0, 1030.0}, {72.0, 72.0}}
-                                                        StaticText, 0x1021a9b60, {{122.0, 1030.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                          StaticText, 0x102253e90, {{122.0, 1030.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                        Switch, 0x102253fb0, {{312.0, 1050.0}, {52.0, 32.0}}, identifier: 'post-depop', label: 'Post here', value: 1
-                                                        Other, 0x1022540d0, {{90.0, 1082.0}, {24.0, 24.0}}, label: 'Depop'
-                                                        Other, 0x1022541f0, {{92.0, 1084.0}, {20.0, 20.0}}
-                                                          Other, 0x102254310, {{92.0, 1084.0}, {20.0, 20.0}}, label: 'Depop'
-                                                            Image, 0x102254430, {{92.0, 1084.0}, {20.0, 20.0}}, label: 'Depop'
-                                                        StaticText, 0x102254550, {{122.0, 1081.7}, {27.3, 20.3}}, label: '$38'
-                                                          StaticText, 0x102254670, {{122.0, 1081.7}, {27.3, 20.3}}, label: '$38'
-                                                        StaticText, 0x1022548e0, {{157.3, 1081.7}, {97.7, 20.3}}, label: 'You get $36.21'
-                                                          StaticText, 0x102254a00, {{157.3, 1081.7}, {97.7, 20.3}}, label: 'You get $36.21'
-                                                        StaticText, 0x102254b20, {{46.0, 1114.7}, {310.0, 18.3}}, label: 'Young, shops a look: size up front'
-                                                          StaticText, 0x102254c40, {{46.0, 1114.7}, {310.0, 18.3}}, label: 'Young, shops a look: size up front'
-                                                        StaticText, 0x102254d60, {{46.0, 1146.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked. The name opens the description'
-                                                          StaticText, 0x102254e80, {{46.0, 1146.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked. The name opens the description'
-                                                        StaticText, 0x102254fa0, {{46.0, 1180.7}, {310.0, 18.3}}, label: 'Ready'
-                                                          StaticText, 0x1022550c0, {{46.0, 1180.7}, {310.0, 18.3}}, label: 'Ready'
-                                                        Button, 0x1022551e0, {{21.0, 1235.0}, {89.7, 40.0}}, identifier: 'edit-depop', label: 'Edit'
-                                                        Other, 0x102255300, {{21.0, 1291.0}, {360.0, 214.0}}
-                                                        Other, 0x102255420, {{38.0, 1308.0}, {72.0, 72.0}}
-                                                          Other, 0x102255540, {{38.0, 1308.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                            Image, 0x102255660, {{38.0, 1308.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                          Other, 0x102255780, {{38.0, 1308.0}, {72.0, 72.0}}
-                                                        StaticText, 0x1022558a0, {{122.0, 1308.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                          StaticText, 0x1022559c0, {{122.0, 1308.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                        Switch, 0x102255ae0, {{312.0, 1328.0}, {52.0, 32.0}}, identifier: 'post-poshmark', label: 'Post here', value: 1
-                                                        Other, 0x102255c00, {{90.0, 1360.0}, {24.0, 24.0}}, label: 'Poshmark'
-                                                        Other, 0x102255d20, {{92.0, 1362.0}, {20.0, 20.0}}
-                                                          Other, 0x102255e40, {{92.0, 1362.0}, {20.0, 20.0}}, label: 'Poshmark'
-                                                            Image, 0x102255f60, {{92.0, 1362.0}, {20.0, 20.0}}, label: 'Poshmark'
-                                                        StaticText, 0x102256080, {{122.0, 1359.7}, {27.3, 20.3}}, label: '$38'
-                                                          StaticText, 0x1022561a0, {{122.0, 1359.7}, {27.3, 20.3}}, label: '$38'
-                                                        StaticText, 0x1022562c0, {{157.3, 1359.7}, {103.0, 20.3}}, label: 'You get $30.40'
-                                                          StaticText, 0x1022563e0, {{157.3, 1359.7}, {103.0, 20.3}}, label: 'You get $30.40'
-                                                        StaticText, 0x102256500, {{46.0, 1392.7}, {310.0, 18.3}}, label: 'Shops brand and size: both first'
-                                                          StaticText, 0x102256620, {{46.0, 1392.7}, {310.0, 18.3}}, label: 'Shops brand and size: both first'
-                                                        StaticText, 0x102256740, {{46.0, 1424.7}, {310.0, 18.3}}, label: '8 photos, cropped taller, AI cover marked'
-                                                          StaticText, 0x102256860, {{46.0, 1424.7}, {310.0, 18.3}}, label: '8 photos, cropped taller, AI cover marked'
-                                                        StaticText, 0x102256980, {{46.0, 1458.7}, {310.0, 18.3}}, label: 'Ready'
-                                                          StaticText, 0x102256aa0, {{46.0, 1458.7}, {310.0, 18.3}}, label: 'Ready'
-                                                        Button, 0x102254790, {{21.0, 1513.0}, {89.7, 40.0}}, identifier: 'edit-poshmark', label: 'Edit'
-                                                        Other, 0x102256de0, {{21.0, 1569.0}, {360.0, 214.0}}
-                                                        Other, 0x102256f00, {{38.0, 1586.0}, {72.0, 72.0}}
-                                                          Other, 0x102257020, {{38.0, 1586.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                            Image, 0x102257140, {{38.0, 1586.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                          Other, 0x102257260, {{38.0, 1586.0}, {72.0, 72.0}}
-                                                        StaticText, 0x102257380, {{122.0, 1586.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                          StaticText, 0x1022574a0, {{122.0, 1586.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
-                                                        Switch, 0x1022575c0, {{312.0, 1606.0}, {52.0, 32.0}}, identifier: 'post-mercari', label: 'Post here', value: 1
-                                                        Other, 0x1022576e0, {{90.0, 1638.0}, {24.0, 24.0}}, label: 'Mercari'
-                                                        Other, 0x102257800, {{92.0, 1640.0}, {20.0, 20.0}}
-                                                          Other, 0x102257920, {{92.0, 1640.0}, {20.0, 20.0}}, label: 'Mercari'
-                                                            Image, 0x102257a40, {{92.0, 1640.0}, {20.0, 20.0}}, label: 'Mercari'
-                                                        StaticText, 0x102257b60, {{122.0, 1637.7}, {27.3, 20.3}}, label: '$38'
-                                                          StaticText, 0x102257c80, {{122.0, 1637.7}, {27.3, 20.3}}, label: '$38'
-                                                        StaticText, 0x102257da0, {{157.3, 1637.7}, {102.0, 20.3}}, label: 'You get $34.20'
-                                                          StaticText, 0x102257ec0, {{157.3, 1637.7}, {102.0, 20.3}}, label: 'You get $34.20'
-                                                        StaticText, 0x102257fe0, {{46.0, 1670.7}, {310.0, 18.3}}, label: 'Wants a deal, shipped: a sharp price'
-                                                          StaticText, 0x102258100, {{46.0, 1670.7}, {310.0, 18.3}}, label: 'Wants a deal, shipped: a sharp price'
-                                                        StaticText, 0x102258220, {{46.0, 1702.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
-                                                          StaticText, 0x102258340, {{46.0, 1702.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
-                                                        StaticText, 0x102258460, {{46.0, 1736.7}, {310.0, 18.3}}, label: 'Ready'
-                                                          StaticText, 0x102258580, {{46.0, 1736.7}, {310.0, 18.3}}, label: 'Ready'
-                                                        Button, 0x1022586a0, {{21.0, 1791.0}, {89.7, 40.0}}, identifier: 'edit-mercari', label: 'Edit'
-                                                        Other, 0x1022587c0, {{21.0, 1847.0}, {360.0, 214.0}}
-                                                        Other, 0x1022588e0, {{38.0, 1864.0}, {72.0, 72.0}}
-                                                          Other, 0x102258a00, {{38.0, 1864.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
-                                                            Image, 0x102258b20, {{38.0, 1864.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
-                                                          Other, 0x102258c40, {{38.0, 1864.0}, {72.0, 72.0}}
-                                                        StaticText, 0x102258d60, {{122.0, 1864.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
-                                                          StaticText, 0x102258e80, {{122.0, 1864.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
-                                                        Switch, 0x102258fa0, {{312.0, 1884.0}, {52.0, 32.0}}, identifier: 'post-facebook', label: 'Post here', value: 1
-                                                        Other, 0x1022590c0, {{90.0, 1916.0}, {24.0, 24.0}}, label: 'Facebook Marketplace'
-                                                        Other, 0x1022591e0, {{92.0, 1918.0}, {20.0, 20.0}}
-                                                          Other, 0x102259300, {{92.0, 1918.0}, {20.0, 20.0}}, label: 'Facebook Marketplace'
-                                                            Image, 0x102259420, {{92.0, 1918.0}, {20.0, 20.0}}, label: 'Facebook Marketplace'
-                                                        StaticText, 0x102259540, {{122.0, 1915.7}, {27.3, 20.3}}, label: '$38'
-                                                          StaticText, 0x102259660, {{122.0, 1915.7}, {27.3, 20.3}}, label: '$38'
-                                                        StaticText, 0x102259780, {{157.3, 1915.7}, {102.3, 20.3}}, label: 'You get $33.93'
-                                                          StaticText, 0x1022598a0, {{157.3, 1915.7}, {102.3, 20.3}}, label: 'You get $33.93'
-                                                        StaticText, 0x1022599c0, {{46.0, 1948.7}, {310.0, 18.3}}, label: 'Nearby, picks up today: pickup price'
-                                                          StaticText, 0x102259ae0, {{46.0, 1948.7}, {310.0, 18.3}}, label: 'Nearby, picks up today: pickup price'
-                                                        StaticText, 0x102259c00, {{46.0, 1980.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
-                                                          StaticText, 0x102259d20, {{46.0, 1980.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
-                                                        StaticText, 0x102259e40, {{46.0, 2014.7}, {310.0, 18.3}}, label: 'Ready'
-                                                          StaticText, 0x102259f60, {{46.0, 2014.7}, {310.0, 18.3}}, label: 'Ready'
-                                                        Button, 0x10225a080, {{21.0, 2069.0}, {89.7, 40.0}}, identifier: 'edit-facebook', label: 'Edit'
-                                                        StaticText, 0x10225a1a0, {{21.0, 2141.0}, {360.0, 18.3}}, label: 'When'
-                                                          StaticText, 0x10225a2c0, {{21.0, 2141.0}, {360.0, 18.3}}, label: 'When'
-                                                        Button, 0x102256bc0, {{21.0, 2171.3}, {62.7, 40.0}}, identifier: 'when-now', label: 'Now', Selected
-                                                        Button, 0x10225a750, {{91.7, 2171.3}, {66.7, 40.0}}, identifier: 'when-other', label: 'Later'
-                                                    Other, 0x10225a870, {{368.0, 179.3}, {30.0, 583.7}}, label: 'Vertical scroll bar, 4 pages', value: 0%
-                                                      Other, 0x1023414c0, {{395.0, 182.3}, {3.0, 164.7}}
-                                                    Other, 0x10237ad70, {{1.0, 730.0}, {400.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                      Other, 0x102382c40, {{4.0, 757.0}, {391.0, 3.0}}
-                                                    Other, 0x10236bd00, {{368.0, 179.3}, {30.0, 583.7}}, label: 'Vertical scroll bar, 4 pages', value: 0%
-                                                      Other, 0x102333cb0, {{395.0, 182.3}, {3.0, 164.7}}
-                                                    Other, 0x10237b550, {{1.0, 730.0}, {400.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                      Other, 0x102382820, {{4.0, 757.0}, {391.0, 3.0}}
-                                                Button, 0x102382400, {{21.0, 775.0}, {360.0, 48.0}}, identifier: 'post', label: 'Post from $38 on 5 sites'
-                                    Other, 0x102381fe0, {{0.0, 0.0}, {402.0, 874.0}}
-                                      Other, 0x102381bc0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x1023817a0, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x102381380, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x103695350, pid: 20046, label: 'secondhand'
+    Window (Main), 0x103694050, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x103696070, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x103696190, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x103695dd0, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x103695ef0, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x103696730, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x1036962b0, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x1036963d0, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x1036964f0, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x103696610, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103696850, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x103696970, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x103696a90, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x103696bb0, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x103696cd0, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x103696df0, {{0.0, 0.0}, {402.0, 874.0}}
+                                    Other, 0x103696f10, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x103697030, {{0.0, 0.0}, {402.0, 874.0}}
+                                        Other, 0x1032906a0, {{0.0, 0.0}, {402.0, 874.0}}
+                                          Other, 0x103292940, {{0.0, 0.0}, {402.0, 874.0}}
+                                            Other, 0x10327b8d0, {{0.0, 0.0}, {402.0, 874.0}}
+                                              Other, 0x10328ae50, {{0.0, 0.0}, {402.0, 874.0}}
+                                                Button, 0x103289ca0, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'sheet-scrim', label: 'Close'
+                                              Other, 0x103278d00, {{0.0, 110.0}, {402.0, 764.0}}
+                                                Other, 0x103272f70, {{0.0, 110.0}, {402.0, 764.0}}
+                                                Other, 0x10327a510, {{1.0, 111.0}, {400.0, 68.3}}
+                                                  Other, 0x103292ff0, {{1.0, 111.0}, {400.0, 68.3}}
+                                                    Other, 0x10327a1a0, {{185.0, 119.0}, {32.0, 4.0}}
+                                                    StaticText, 0x10329cdc0, {{21.0, 139.0}, {360.0, 24.3}}, label: 'Preview'
+                                                      StaticText, 0x103472480, {{21.0, 139.0}, {360.0, 24.3}}, label: 'Preview'
+                                                Other, 0x10342af80, {{1.0, 179.3}, {400.0, 583.7}}
+                                                  ScrollView, 0x1034768f0, {{1.0, 179.3}, {400.0, 583.7}}
+                                                    Other, 0x10348d4c0, {{1.0, 179.3}, {400.0, 2048.0}}
+                                                      Other, 0x10348baa0, {{1.0, 179.3}, {400.0, 2048.0}}
+                                                        Other, 0x10343a220, {{21.0, 179.3}, {360.0, 360.0}}
+                                                          Other, 0x1034450d0, {{21.0, 179.3}, {360.0, 360.0}}, label: 'Your photo, enhanced with AI'
+                                                            Image, 0x103482e90, {{21.0, 179.3}, {360.0, 360.0}}, label: 'Your photo, enhanced with AI'
+                                                          Other, 0x1034772a0, {{21.0, 179.3}, {360.0, 360.0}}
+                                                        StaticText, 0x10348e280, {{21.0, 563.3}, {296.0, 20.3}}, label: 'Clean up'
+                                                          StaticText, 0x103483410, {{21.0, 563.3}, {296.0, 20.3}}, label: 'Clean up'
+                                                        Switch, 0x103453900, {{329.0, 568.7}, {52.0, 32.0}}, identifier: 'look-clean', label: 'Clean up', value: 1
+                                                        StaticText, 0x10348b260, {{21.0, 587.7}, {296.0, 18.3}}, label: 'Light only. The color stays true'
+                                                          StaticText, 0x10348dc20, {{21.0, 587.7}, {296.0, 18.3}}, label: 'Light only. The color stays true'
+                                                        Other, 0x10348d800, {{21.0, 618.0}, {360.0, 85.0}}
+                                                        StaticText, 0x10348a600, {{21.0, 630.3}, {296.0, 20.3}}, label: 'Enhance with AI'
+                                                          StaticText, 0x10348ae40, {{21.0, 630.3}, {296.0, 20.3}}, label: 'Enhance with AI'
+                                                        Switch, 0x103477c50, {{329.0, 644.7}, {52.0, 32.0}}, identifier: 'look-ai', label: 'Enhance with AI', value: 1
+                                                        StaticText, 0x10346c4e0, {{21.0, 654.7}, {296.0, 36.3}}, label: 'Redrawn, then checked against your photos and scan'
+                                                          StaticText, 0x10348aa20, {{21.0, 654.7}, {296.0, 36.3}}, label: 'Redrawn, then checked against your photos and scan'
+                                                        Other, 0x10347d570, {{21.0, 735.0}, {360.0, 214.0}}
+                                                        Other, 0x10348b680, {{38.0, 752.0}, {72.0, 72.0}}
+                                                          Other, 0x103473fc0, {{38.0, 752.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
+                                                            Image, 0x10346b780, {{38.0, 752.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
+                                                          Other, 0x10348ce80, {{38.0, 752.0}, {72.0, 72.0}}
+                                                        StaticText, 0x103484f90, {{122.0, 752.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
+                                                          StaticText, 0x103454140, {{122.0, 752.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
+                                                        Switch, 0x103476c30, {{312.0, 772.0}, {52.0, 32.0}}, identifier: 'post-ebay', label: 'Post here', value: 1
+                                                        Other, 0x10344ded0, {{90.0, 804.0}, {24.0, 24.0}}, label: 'eBay'
+                                                        Other, 0x103450bb0, {{92.0, 806.0}, {20.0, 20.0}}
+                                                          Other, 0x10346d380, {{92.0, 806.0}, {20.0, 20.0}}, label: 'eBay'
+                                                            Image, 0x10346f890, {{92.0, 806.0}, {20.0, 20.0}}, label: 'eBay'
+                                                        StaticText, 0x103453d20, {{122.0, 803.7}, {27.7, 20.3}}, label: '$40'
+                                                          StaticText, 0x103462090, {{122.0, 803.7}, {27.7, 20.3}}, label: '$40'
+                                                        StaticText, 0x1034530a0, {{157.7, 803.7}, {101.0, 20.3}}, label: 'You get $33.78'
+                                                          StaticText, 0x10346cf60, {{157.7, 803.7}, {101.0, 20.3}}, label: 'You get $33.78'
+                                                        StaticText, 0x103454560, {{46.0, 836.7}, {310.0, 18.3}}, label: 'Searched by model: specs in the title'
+                                                          StaticText, 0x10345abd0, {{46.0, 836.7}, {310.0, 18.3}}, label: 'Searched by model: specs in the title'
+                                                        StaticText, 0x1034749d0, {{46.0, 868.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
+                                                          StaticText, 0x103475e70, {{46.0, 868.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
+                                                        StaticText, 0x103486880, {{46.0, 902.7}, {310.0, 18.3}}, label: 'Ready'
+                                                          StaticText, 0x103437ec0, {{46.0, 902.7}, {310.0, 18.3}}, label: 'Ready'
+                                                        Button, 0x103492200, {{21.0, 957.0}, {89.7, 40.0}}, identifier: 'edit-ebay', label: 'Edit'
+                                                        Other, 0x103492320, {{21.0, 1013.0}, {360.0, 214.0}}
+                                                        Other, 0x103492440, {{38.0, 1030.0}, {72.0, 72.0}}
+                                                          Other, 0x103492560, {{38.0, 1030.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                            Image, 0x103492680, {{38.0, 1030.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                          Other, 0x1034927a0, {{38.0, 1030.0}, {72.0, 72.0}}
+                                                        StaticText, 0x1034928c0, {{122.0, 1030.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                          StaticText, 0x1034929e0, {{122.0, 1030.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                        Switch, 0x103492b00, {{312.0, 1050.0}, {52.0, 32.0}}, identifier: 'post-depop', label: 'Post here', value: 1
+                                                        Other, 0x103492c20, {{90.0, 1082.0}, {24.0, 24.0}}, label: 'Depop'
+                                                        Other, 0x103492d40, {{92.0, 1084.0}, {20.0, 20.0}}
+                                                          Other, 0x103492e60, {{92.0, 1084.0}, {20.0, 20.0}}, label: 'Depop'
+                                                            Image, 0x103492f80, {{92.0, 1084.0}, {20.0, 20.0}}, label: 'Depop'
+                                                        StaticText, 0x1034930a0, {{122.0, 1081.7}, {27.3, 20.3}}, label: '$38'
+                                                          StaticText, 0x1034931c0, {{122.0, 1081.7}, {27.3, 20.3}}, label: '$38'
+                                                        StaticText, 0x103493430, {{157.3, 1081.7}, {97.7, 20.3}}, label: 'You get $36.21'
+                                                          StaticText, 0x103493550, {{157.3, 1081.7}, {97.7, 20.3}}, label: 'You get $36.21'
+                                                        StaticText, 0x103493670, {{46.0, 1114.7}, {310.0, 18.3}}, label: 'Young, shops a look: size up front'
+                                                          StaticText, 0x103493790, {{46.0, 1114.7}, {310.0, 18.3}}, label: 'Young, shops a look: size up front'
+                                                        StaticText, 0x1034938b0, {{46.0, 1146.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked. The name opens the description'
+                                                          StaticText, 0x1034939d0, {{46.0, 1146.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked. The name opens the description'
+                                                        StaticText, 0x103493af0, {{46.0, 1180.7}, {310.0, 18.3}}, label: 'Ready'
+                                                          StaticText, 0x103493c10, {{46.0, 1180.7}, {310.0, 18.3}}, label: 'Ready'
+                                                        Button, 0x103493d30, {{21.0, 1235.0}, {89.7, 40.0}}, identifier: 'edit-depop', label: 'Edit'
+                                                        Other, 0x103493e50, {{21.0, 1291.0}, {360.0, 214.0}}
+                                                        Other, 0x103493f70, {{38.0, 1308.0}, {72.0, 72.0}}
+                                                          Other, 0x103494090, {{38.0, 1308.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                            Image, 0x1034941b0, {{38.0, 1308.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                          Other, 0x1034942d0, {{38.0, 1308.0}, {72.0, 72.0}}
+                                                        StaticText, 0x1034943f0, {{122.0, 1308.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                          StaticText, 0x103494510, {{122.0, 1308.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                        Switch, 0x103494630, {{312.0, 1328.0}, {52.0, 32.0}}, identifier: 'post-poshmark', label: 'Post here', value: 1
+                                                        Other, 0x103494750, {{90.0, 1360.0}, {24.0, 24.0}}, label: 'Poshmark'
+                                                        Other, 0x103494870, {{92.0, 1362.0}, {20.0, 20.0}}
+                                                          Other, 0x103494990, {{92.0, 1362.0}, {20.0, 20.0}}, label: 'Poshmark'
+                                                            Image, 0x103494ab0, {{92.0, 1362.0}, {20.0, 20.0}}, label: 'Poshmark'
+                                                        StaticText, 0x103494bd0, {{122.0, 1359.7}, {27.3, 20.3}}, label: '$38'
+                                                          StaticText, 0x103494cf0, {{122.0, 1359.7}, {27.3, 20.3}}, label: '$38'
+                                                        StaticText, 0x103494e10, {{157.3, 1359.7}, {103.0, 20.3}}, label: 'You get $30.40'
+                                                          StaticText, 0x103494f30, {{157.3, 1359.7}, {103.0, 20.3}}, label: 'You get $30.40'
+                                                        StaticText, 0x103495050, {{46.0, 1392.7}, {310.0, 18.3}}, label: 'Shops brand and size: both first'
+                                                          StaticText, 0x103495170, {{46.0, 1392.7}, {310.0, 18.3}}, label: 'Shops brand and size: both first'
+                                                        StaticText, 0x103495290, {{46.0, 1424.7}, {310.0, 18.3}}, label: '8 photos, cropped taller, AI cover marked'
+                                                          StaticText, 0x1034953b0, {{46.0, 1424.7}, {310.0, 18.3}}, label: '8 photos, cropped taller, AI cover marked'
+                                                        StaticText, 0x1034954d0, {{46.0, 1458.7}, {310.0, 18.3}}, label: 'Ready'
+                                                          StaticText, 0x1034955f0, {{46.0, 1458.7}, {310.0, 18.3}}, label: 'Ready'
+                                                        Button, 0x1034932e0, {{21.0, 1513.0}, {89.7, 40.0}}, identifier: 'edit-poshmark', label: 'Edit'
+                                                        Other, 0x103495930, {{21.0, 1569.0}, {360.0, 214.0}}
+                                                        Other, 0x103495a50, {{38.0, 1586.0}, {72.0, 72.0}}
+                                                          Other, 0x103495b70, {{38.0, 1586.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                            Image, 0x103495c90, {{38.0, 1586.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                          Other, 0x103495db0, {{38.0, 1586.0}, {72.0, 72.0}}
+                                                        StaticText, 0x103495ed0, {{122.0, 1586.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                          StaticText, 0x103495ff0, {{122.0, 1586.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, size XL'
+                                                        Switch, 0x103496110, {{312.0, 1606.0}, {52.0, 32.0}}, identifier: 'post-mercari', label: 'Post here', value: 1
+                                                        Other, 0x103496230, {{90.0, 1638.0}, {24.0, 24.0}}, label: 'Mercari'
+                                                        Other, 0x103496350, {{92.0, 1640.0}, {20.0, 20.0}}
+                                                          Other, 0x103496470, {{92.0, 1640.0}, {20.0, 20.0}}, label: 'Mercari'
+                                                            Image, 0x103496590, {{92.0, 1640.0}, {20.0, 20.0}}, label: 'Mercari'
+                                                        StaticText, 0x1034966b0, {{122.0, 1637.7}, {27.3, 20.3}}, label: '$38'
+                                                          StaticText, 0x1034967d0, {{122.0, 1637.7}, {27.3, 20.3}}, label: '$38'
+                                                        StaticText, 0x1034968f0, {{157.3, 1637.7}, {102.0, 20.3}}, label: 'You get $34.20'
+                                                          StaticText, 0x103496a10, {{157.3, 1637.7}, {102.0, 20.3}}, label: 'You get $34.20'
+                                                        StaticText, 0x103496b30, {{46.0, 1670.7}, {310.0, 18.3}}, label: 'Wants a deal, shipped: a sharp price'
+                                                          StaticText, 0x103496c50, {{46.0, 1670.7}, {310.0, 18.3}}, label: 'Wants a deal, shipped: a sharp price'
+                                                        StaticText, 0x103496d70, {{46.0, 1702.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
+                                                          StaticText, 0x103496e90, {{46.0, 1702.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
+                                                        StaticText, 0x103496fb0, {{46.0, 1736.7}, {310.0, 18.3}}, label: 'Ready'
+                                                          StaticText, 0x1034970d0, {{46.0, 1736.7}, {310.0, 18.3}}, label: 'Ready'
+                                                        Button, 0x1034971f0, {{21.0, 1791.0}, {89.7, 40.0}}, identifier: 'edit-mercari', label: 'Edit'
+                                                        Other, 0x103497310, {{21.0, 1847.0}, {360.0, 214.0}}
+                                                        Other, 0x103497430, {{38.0, 1864.0}, {72.0, 72.0}}
+                                                          Other, 0x103497550, {{38.0, 1864.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
+                                                            Image, 0x103497670, {{38.0, 1864.0}, {72.0, 72.0}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
+                                                          Other, 0x103497790, {{38.0, 1864.0}, {72.0, 72.0}}
+                                                        StaticText, 0x1034978b0, {{122.0, 1864.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
+                                                          StaticText, 0x1034979d0, {{122.0, 1864.0}, {178.0, 40.3}}, label: 'Fruit of the Loom Marquette 74 Final Four tee, gold, XL'
+                                                        Switch, 0x103497af0, {{312.0, 1884.0}, {52.0, 32.0}}, identifier: 'post-facebook', label: 'Post here', value: 1
+                                                        Other, 0x103497c10, {{90.0, 1916.0}, {24.0, 24.0}}, label: 'Facebook Marketplace'
+                                                        Other, 0x103497d30, {{92.0, 1918.0}, {20.0, 20.0}}
+                                                          Other, 0x103497e50, {{92.0, 1918.0}, {20.0, 20.0}}, label: 'Facebook Marketplace'
+                                                            Image, 0x103497f70, {{92.0, 1918.0}, {20.0, 20.0}}, label: 'Facebook Marketplace'
+                                                        StaticText, 0x103498090, {{122.0, 1915.7}, {27.3, 20.3}}, label: '$38'
+                                                          StaticText, 0x1034981b0, {{122.0, 1915.7}, {27.3, 20.3}}, label: '$38'
+                                                        StaticText, 0x1034982d0, {{157.3, 1915.7}, {102.3, 20.3}}, label: 'You get $33.93'
+                                                          StaticText, 0x1034983f0, {{157.3, 1915.7}, {102.3, 20.3}}, label: 'You get $33.93'
+                                                        StaticText, 0x103498510, {{46.0, 1948.7}, {310.0, 18.3}}, label: 'Nearby, picks up today: pickup price'
+                                                          StaticText, 0x103498630, {{46.0, 1948.7}, {310.0, 18.3}}, label: 'Nearby, picks up today: pickup price'
+                                                        StaticText, 0x103498750, {{46.0, 1980.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
+                                                          StaticText, 0x103498870, {{46.0, 1980.7}, {310.0, 18.3}}, label: '8 photos, square, AI cover marked'
+                                                        StaticText, 0x103498990, {{46.0, 2014.7}, {310.0, 18.3}}, label: 'Ready'
+                                                          StaticText, 0x103498ab0, {{46.0, 2014.7}, {310.0, 18.3}}, label: 'Ready'
+                                                        Button, 0x103498bd0, {{21.0, 2069.0}, {89.7, 40.0}}, identifier: 'edit-facebook', label: 'Edit'
+                                                        StaticText, 0x103498cf0, {{21.0, 2141.0}, {360.0, 18.3}}, label: 'When'
+                                                          StaticText, 0x103498e10, {{21.0, 2141.0}, {360.0, 18.3}}, label: 'When'
+                                                        Button, 0x103495710, {{21.0, 2171.3}, {62.7, 40.0}}, identifier: 'when-now', label: 'Now', Selected
+                                                        Button, 0x1034992a0, {{91.7, 2171.3}, {66.7, 40.0}}, identifier: 'when-other', label: 'Later'
+                                                    Other, 0x1034993c0, {{368.0, 179.3}, {30.0, 583.7}}, label: 'Vertical scroll bar, 4 pages', value: 0%
+                                                      Other, 0x1034994e0, {{395.0, 182.3}, {3.0, 147.3}}
+                                                    Other, 0x103499600, {{1.0, 730.0}, {400.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                      Other, 0x103499720, {{65.0, 757.0}, {272.0, 3.0}}
+                                                    Other, 0x103499840, {{368.0, 179.3}, {30.0, 583.7}}, label: 'Vertical scroll bar, 4 pages', value: 0%
+                                                      Other, 0x103499960, {{395.0, 182.3}, {3.0, 147.3}}
+                                                    Other, 0x103499a80, {{1.0, 730.0}, {400.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                      Other, 0x103499ba0, {{65.0, 757.0}, {272.0, 3.0}}
+                                                Button, 0x103499cc0, {{21.0, 775.0}, {360.0, 48.0}}, identifier: 'post', label: 'Post from $38 on 5 sites'
+                                    Other, 0x103499de0, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x103499f00, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x10349a020, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10349a140, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x102249300, pid: 85109, label: 'secondhand'
+ →Application, 0x103695350, pid: 20046, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x1021aa0c0, pid: 85109, label: 'secondhand'
+    Application, 0x103367780, pid: 20046, label: 'secondhand'
   }

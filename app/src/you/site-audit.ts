@@ -31,7 +31,7 @@ export function audit(w: World, site: Site): Audit {
     const l = listing(e.item_id), off = ENDED.includes(e.action) && l && l.state !== 'delisted', missing = POSTED.includes(e.action) && l && l.state !== 'live';
     if (off || missing) {
       mismatches.push({ id: `mismatch-${e.event_id}`, item_id: e.item_id, label: title(e.item_id), at: e.at, url: l?.url ?? null,
-        detail: off ? 'We ended it, and the site still shows it' : 'We posted it, and the site doesn’t show it' });
+        detail: off ? 'Recorded as ended; still listed on the site' : 'Recorded as posted; missing from the site' });
     }
     did.push({ id: `did-${e.event_id}`, item_id: e.item_id, label: title(e.item_id) || e.why, at: e.at, url: l?.url ?? null,
       detail: `${e.why}. ${off || missing ? 'The site shows otherwise' : 'Checked on the site after'}` });

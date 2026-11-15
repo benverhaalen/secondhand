@@ -5,6 +5,9 @@ import os
 import sys
 
 import numpy as np
+import pytest
+
+pytest.importorskip("cv2", reason="studio checks require optional OpenCV")
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from studio import check as C  # noqa: E402

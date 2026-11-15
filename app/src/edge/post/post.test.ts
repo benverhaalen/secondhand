@@ -31,6 +31,18 @@ test('dry by default: exact harness plan, no site calls even with first_post app
   assert.deepEqual(r.steps[0].args.listing, target().listing);
   assert.equal(r.steps[1].verb, 'read_listings');
 });
+test('posting refuses another person’s account id and finds the owner’s account', async () => {
+  const s = await setup();
+  const post = createPoster({ leases: memoryLeases(), store: memoryStore(), now: () => 1000, sessions,
+    accounts: s.accounts, harness: createHarness({ adapters: s.adapters }), operations: memoryOperations() });
+  const input = { targets: [target()], approved: ['lst_depop'], go: ['depop'] as const };
+  const [refused] = await post({ ...input, person_id: 'usr_2' });
+  assert.equal(refused.state, 'postFailed');
+  assert.equal(refused.reason, 'not_linked');
+  assert.deepEqual(s.calls, [], 'another person’s account must never post');
+  assert.equal((await post({ ...input, person_id: 'usr_1' }))[0].state, 'live', 'the owner’s account must be found');
+  assert.deepEqual(s.calls, ['depop']);
+});
 test('one call posts every approved site; repeated operation never duplicates', async () => {
   const s = await setup(), post = createPoster({ ...{ leases: memoryLeases(), store: memoryStore(), now: () => 1000 }, sessions, ...s, harness: createHarness({ adapters: s.adapters }), operations: memoryOperations() });
   const input = { person_id: 'usr_1', targets: [target(), target('ebay')], approved: ['lst_depop', 'lst_ebay'], go: ['depop', 'ebay'] as const };
@@ -172,7 +184,7 @@ test('F2/F4: posting through a pool adapter shares the outer lease through read-
   const context = { newPage: async () => { pages++; return { close: async () => {} }; }, close: async () => {}, onClose() {} };
   const pool = createPool({ leases, accounts: s.accounts, profileRoot: '/profiles', launcher: { persistent: async () => context, anonymous: async () => context } });
   const adapters = (['post', 'read_listings'] as const).map(verb => ({ ...fakeAdapter('depop', verb), async run() {
-    const r = await pool.dispatch({ account_id: 'acc_depop', job_id: 'adapter', run: async () => verb === 'post' ? { id: 'site-1' } : [{ id: 'site-1' }] });
+    const r = await pool.dispatch({ user_id: 'usr_1', account_id: 'acc_depop', job_id: 'adapter', run: async () => verb === 'post' ? { id: 'site-1' } : [{ id: 'site-1' }] });
     return r.ok ? { ok: true as const, data: r.value } : fail('policy_refused', 'pool rejected parent lease', { do: 'raise_decision', kind: 'busy' });
   } }));
   const post = createPoster({ leases, store: memoryStore(), sessions, accounts: s.accounts, operations: memoryOperations(), harness: createHarness({ adapters }) });

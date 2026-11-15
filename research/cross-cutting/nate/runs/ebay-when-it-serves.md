@@ -1,4 +1,5 @@
 # When eBay serves its public pages to our browsers
+Researched 2026-11-15 by Nate. Feature: cross-cutting.
 
 Run by the build orchestrator, 2026-11-15 about 07:30 Central, after the eBay page lane's first recon got a 403 on every page and Nate said he has seen eBay work ([words](../../../../product/words.md#2026-11-15-nate-ebay-does-work-in-cases)). Every line below is *observed* in these runs unless marked. One browser at a time, 3 to 4 page loads a run, nothing clicked through, no sign-in. The script is not in the repo; the eBay adapter's recon carries the method.
 

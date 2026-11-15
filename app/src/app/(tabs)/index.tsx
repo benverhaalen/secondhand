@@ -35,7 +35,7 @@ export default function Today() {
   const { state: asked, name: picked } = useScreen();
   const params = useLocalSearchParams<{ world?: string; fail?: string }>();
   const offline = asked === 'offline', loading = asked === 'loading';
-  // empty draws this page with nothing on it; failed (asked for in the URL) is the page that did not load, with Try again.
+  // empty draws this page with nothing on it; failed (asked for in the URL) is the page that did not load, with Retry.
   const bare = asked === 'empty' || asked === 'failed' || loading;
   // stops: the clearing world on a day things went wrong (app/src/today/stops.ts, spec/edge-cases.md §1 and §7). one: one
   // card, since the demo's one world has nothing to decide (stops.ts, oneCardWorld). empty: a quiet month with things live
@@ -172,7 +172,7 @@ export default function Today() {
       {/* Nothing to decide. A new person has the setup step above and one way to start; anyone else is told it is clear. */}
       {offline ? <Txt role="caption" tone="ink-2">Waiting for signal</Txt> : null}
       {top?.rung === 'start' && !feed.length ? null
-        : asked === 'failed' ? <EmptyState title="Today didn’t load" action={{ id: 'retry', label: 'Try again', onPress: () => router.setParams({ state: '' }) }} />
+        : asked === 'failed' ? <EmptyState title="Today didn’t load" action={{ id: 'retry', label: 'Retry', onPress: () => router.setParams({ state: '' }) }} />
         : !feed.length && !loading ? <EmptyState title="Nothing needs you" /> : null}
 
       {loading ? (
