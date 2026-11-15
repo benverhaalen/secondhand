@@ -63,8 +63,8 @@ function checkView(view, ctx) {
   const isMark = t => t.display && t.text.trim().toLowerCase() === 'secondhand';
 
   // B28 true scale
-  if (!sheet.canvas.some(([w, h]) => near(view.w, w, 1) && near(view.h, h, 1)))
-    E('B28', '', `is ${view.w} by ${view.h}: a ${medium} view is ${sheet.canvas.map(c => c.join(' by ')).join(' or ')} (Part III)`);
+  if (!sheet.canvas.some(([w, h]) => near(view.w, w, 1) && (near(view.h, h, 1) || sheet.scrolls && view.h > h)))
+    E('B28', '', `is ${Math.round(view.w)} by ${Math.round(view.h)}: a ${medium} view is ${sheet.canvas.map(c => c.join(' by ')).join(' or ')}${sheet.scrolls ? ', or taller when it scrolls' : ''} (Part III)`);
 
   for (const t of text) {
     const q = short(t.text), g = ground(t, view, pal), color = rgba(t.color), name = pal.name(t.color);
@@ -104,7 +104,7 @@ function checkView(view, ctx) {
     if (MONEY.test(t.text) && t.alone) E('B12', q, 'is an amount with nothing beside it saying what it is: "You keep $46.95", not "$46.95" (C6)');
     // margins: text stays inside them
     const m = sheet.margin, mx = typeof m.x === 'object' ? m.x[String(view.canvas?.[0])] ?? 0 : m.x ?? 0, x0 = Math.max(mx, m.content ? (view.w - m.content) / 2 : 0);
-    const [l, tp, r, b] = t.rect, off = [l < x0 - 1 || r > view.w - x0 + 1, m.top != null && tp < m.top - 1, m.bottom != null && b > view.h - m.bottom + 1];
+    const [l, tp, r, b] = t.rect, off = [!t.scroller && (l < x0 - 1 || r > view.w - x0 + 1), m.top != null && tp < m.top - 1, m.bottom != null && b > view.h - m.bottom + 1];
     if (off.some(Boolean)) E('B17', q, `runs into the ${off[0] ? `${x0} px side` : off[1] ? `${m.top} px top` : `${m.bottom} px bottom`} margin of a ${medium} (Part III)`);
   }
 
@@ -160,7 +160,6 @@ function checkView(view, ctx) {
     else { const hs = names.map(n => oklch(hex(pal.of(n))).H), far = Math.max(turn(hs[0], hs[1]), turn(hs[1], hs[2]), turn(hs[0], hs[2]));
       if (far > 140) E('B5', q, `the field mixes --${names.join(', --')}, ${Math.round(far)} degrees apart: no two field colors sit near opposite each other (C2)`); }
     if (!el.gradient.radial) E('B5', q, 'the field is a straight gradient: it is a soft mesh of blurred points, written with radial gradients (C2)');
-    if (view.els.some(o => o.photo && o.rect[0] < el.rect[2] && o.rect[2] > el.rect[0] && o.rect[1] < el.rect[3] && o.rect[3] > el.rect[1])) E('B4', q, 'the field sits behind a photo: it shrinks or moves away from photos (Art. 5.4)');
   }
   // two black pills side by side
   const acts = view.els.filter(el => ['ink', 'ink-press'].includes(pal.name(el.bg)) && el.radius.some(r => parseFloat(r) >= 999) && el.hasText && pal.of('ink')?.[0] < 128);

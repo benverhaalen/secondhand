@@ -5,7 +5,8 @@
     "margin": { "x": 20 },
     "sizes": { "390": [13, 15, 18, 21, 36, 50] },
     "wordmark": { "sizes": [21], "at": "top-center" },
-    "act": true
+    "act": true,
+    "scrolls": true
   },
   "web": {
     "canvas": [[1440, 900], [390, 844]],
@@ -13,7 +14,8 @@
     "margin": { "x": { "1440": 64, "390": 24 }, "content": 1200 },
     "sizes": { "1440": [15, 18, 24.9, 58.3, 86.5], "390": [15, 18, 21, 36, 50] },
     "wordmark": { "sizes": [21, 86.5], "at": "top-left" },
-    "act": true
+    "act": true,
+    "scrolls": true
   },
   "post": {
     "canvas": [[1080, 1350]],
