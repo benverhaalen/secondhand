@@ -1181,3 +1181,7 @@ Nate, build session (orchestrator), 2026-11-15 between about 00:10 and 01:30 Cen
 > you can update and utilize docker, take advantage of the ram, see all aspects such compute can aid us in performance and efficiency when building, but dont let the fact that the other device isn't fully configured out to affect how we develop, how much we spend, it should optimally follow how you prompt and instruct it
 
 > Now that we fixed the crash, ensure it doesnt happen again and perhaps push further now to handle more, not of course so much that it crashes either this computer or the mac but you understand how to effectively dispatch.
+
+## 2026-11-15 the lower tiers pile and fan out, and the top of Today always shows a flattering number
+
+Ben, 07:12, on the redone Today: "also, i think this is when you should use the collapsable pile where they are layered and an animation expands them. also ensure the actual app knows the top thing should be the most flattering metric. or a flattering metric. say theres zero sales. say potential money you could earn. say people who saw your listing. likes. updates from last time are definitely best but you dont always have updates. what do you say when nothings gone on yet."
