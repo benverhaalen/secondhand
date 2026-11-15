@@ -10,6 +10,18 @@ CITE = {'metric': 'sold_range', 'filters': {}, 'table_versions': [],
 RULES = {'min_n_eff': 6, 'max_age_days': 14}
 
 
+def test_serverless_fold_resolves_explicit_root_and_module_file(serverless_entrypoint, tmp_path, capsys):
+    import json
+
+    folder = tmp_path / 'jobs/probe'
+    folder.mkdir(parents=True)
+    entry = folder / 'fit.py'
+    entry.write_text('def main():\n    return __file__\n')
+    serverless_entrypoint('deploy/tasks/fold.py', ['probe', '--root', str(tmp_path)], spark=False)
+    result = json.loads(capsys.readouterr().out)
+    assert result == {'engine': 'probe', 'state': 'ran', 'result': str(entry)}
+
+
 def rows(n=8, at='2026-11-10'):
     return [{'id': f'obs_{i}', 'source': 'ebay', 'at': at, 'price_cents': 100 + i} for i in range(n)]
 

@@ -7,6 +7,18 @@ from parity.parity import compare, proof_case
 HERE = Path(__file__).parent
 
 
+def test_serverless_parity_resolves_explicit_root(serverless_entrypoint, tmp_path):
+    module = serverless_entrypoint('databricks/tasks/parity_job.py', ['--root', str(tmp_path)])
+    assert module['ROOT'] == tmp_path
+    assert str(tmp_path / 'databricks') in module['sys'].path
+    assert str(tmp_path / 'log') in module['sys'].path
+    folder = tmp_path / 'databricks/parity'
+    (folder / 'fixtures').mkdir(parents=True)
+    (folder / 'fixtures/proof.json').write_text('[]')
+    (folder / 'proof.ts-out.json').write_text('[]')
+    assert module['run']() == []
+
+
 def inputs():
     return (json.loads((HERE / 'fixtures/proof.json').read_text()),
             json.loads((HERE / 'proof.ts-out.json').read_text()))

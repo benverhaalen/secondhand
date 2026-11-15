@@ -34,3 +34,4 @@ A sale is used for row 7 only if it is dated after the record's `asked_at` (`sal
 | Date | Items | Result | Why |
 |---|---|---|---|
 | 2026-11-15 | 10 (the skeleton manifest) | row 1 coverage 0 of 10 (Wilson 95% 0 to 0.28) | every item has no `query` yet; the item set is a row in [waiting.md](../spec/plans/waiting.md) |
+| 2026-11-15 | 20 market items (`--set market`), in process | row 1 coverage 0 of 20 (Wilson 95% 0 to 0.16); 20 of 40 answers empty, 20 `needs_user` (valuation asks a signed-in user); row 2: 0 kinds; row 3: no numbers | the baseline before streaming search: `POST /v1/search` still reads one stub page seeded for one query (int-search-1 replaces it); command `node bench/run.mjs && node bench/score.mjs bench/out/<run_id>` |

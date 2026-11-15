@@ -1583,3 +1583,42 @@ Ben, project thread "Prove the Brewers jersey buy alert", 08:36 UTC.
 > nate will register. the giannis one can count. ensure the flow asks and helps me specify what i want considering dynamic ui. color, size, etc. if not done already
 
 Used in: [scripts/demo/wants/brewers-jersey.json](../scripts/demo/wants/brewers-jersey.json), [spec/features/watch.md](../spec/features/watch.md), [app/src/app/want.tsx](../app/src/app/want.tsx), [brewers-alert-trial.md](../research/watch/ben/brewers-alert-trial.md).
+
+## 2026-11-15 the demo runs on nates harness and the cadence is a lever
+Ben, project chat, 08:42 and 08:43 UTC. Two messages.
+> plan to use however nate builds the harness to end up doing the demo. im hearing ebay api takes like a day for approval so im just going to end up using whatever he engineers up. try and see the drawbacks or benefits to levers in our design about how often we do things. so like what is the drawback of making it an hour? we can design a demo mode that never says demo mode for the backend so that we can increase the rate at which it polls or have some mechanism to make it instant. but carefully choosing how often we probe to improve our roi. also from the ways we could make money including proposed ways we need to assess the whole market for such a thing too. ask codex to conduct all this research to save my precious claude usage though just ensure ot prompt it right
+
+> switch research over to codex when you get the chance without setting the research back at all
+
+Used in: [live-buy-demo.md](live-buy-demo.md), [research/watch/ben/codex-briefs/cadence-and-market.md](../research/watch/ben/codex-briefs/cadence-and-market.md).
+## 2026-11-15 research moves to codex
+Ben, project chat, 08:43 UTC.
+> switch research over to codex when you get the chance without setting the research back at all
+
+Used in: [intent ledger](../spec/intent-ledger.md#how-the-work-runs).
+
+## 2026-11-15 nate take ben's asks as ideas, keep what we do better, and read ebay pages anyway
+Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages. The first came after the orchestrator listed what Ben's rulings change, one of them a reply being sent without asking after three unedited sends. The second answered the orchestrator's question after the eBay page lane's builder stopped on eBay's robots.txt and User Agreement.
+> not just three, dont just do stuff that might be thinking in a way we can understand is less than the potential and value already brought, identify which ideas are needed, what we do better, change what we can do better
+
+> read ebay pages anyway
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
+
+## 2026-11-15 nate dimensions come from the published ones first, not from a required tape
+Nate, build session (orchestrator), 2026-11-15 about 06:30 Central, after the orchestrator relayed Ben's studio rule as "no AI redraw without a tape measurement".
+> So bens request wasn't to require that we rely on tape measurement, it was misinterpreted so please don't change that. Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 67](../.agents/team/packets/team/67-nates-rulings-and-where-they-meet-bens-plans.md).
+
+## 2026-11-15 nate the system always prices with fallbacks, and its power is what it weighs in real time
+Nate, build session (orchestrator), 2026-11-15 about 07:00 Central, after the leads confirmed stronger forms of Ben's asks, among them a bar on automatic pricing that needed thirty sales in a cell.
+> Ok, while bens asks are confirmed, and you see autopricing as fair, of course the system must price and have established fallbacks, but the power of the system relies on things being realtime determined and weighed by how the system was designed
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate ebay does work in cases
+Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the orchestrator reported that eBay refused every public page with a 403.
+> you havent worked out far enough, ebay does work in cases, I've seen it used
+
+Used in: [when eBay serves its public pages](../research/cross-cutting/nate/runs/ebay-when-it-serves.md).

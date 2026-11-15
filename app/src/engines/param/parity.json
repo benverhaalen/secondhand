@@ -1,0 +1,1495 @@
+[
+  {
+    "name": "forgetting 0 days",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01T00:00:00Z",
+        "outcome": {
+          "success": 1,
+          "weight": 1
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-01T00:00:00Z",
+        "outcome": {
+          "success": 0,
+          "weight": 1
+        }
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9.0,
+          "beta": 3.0
+        },
+        "version": 2,
+        "n_eff": 2.0,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "forgetting 15 days",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01T00:00:00Z",
+        "outcome": {
+          "success": 1,
+          "weight": 1
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-16T00:00:00Z",
+        "outcome": {
+          "success": 0,
+          "weight": 1
+        }
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 6.3639610306789285,
+          "beta": 2.414213562373095
+        },
+        "version": 2,
+        "n_eff": 1.7071067811865475,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "forgetting 30 days",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01T00:00:00Z",
+        "outcome": {
+          "success": 1,
+          "weight": 1
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31T00:00:00Z",
+        "outcome": {
+          "success": 0,
+          "weight": 1
+        }
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 4.5,
+          "beta": 2.0
+        },
+        "version": 2,
+        "n_eff": 1.5,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "forgetting 90 days",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01T00:00:00Z",
+        "outcome": {
+          "success": 1,
+          "weight": 1
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-04-01T00:00:00Z",
+        "outcome": {
+          "success": 0,
+          "weight": 1
+        }
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 1.125,
+          "beta": 1.25
+        },
+        "version": 2,
+        "n_eff": 1.125,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "explicit days override clock",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 1,
+          "weight": 1
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 1,
+          "weight": 1,
+          "days_since_last": 0
+        }
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "out-of-order applies without decay",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 1,
+          "weight": 1
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 0,
+          "weight": 1
+        }
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3
+        },
+        "version": 2,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "frozen observation refuses",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 1,
+          "weight": 1
+        }
+      },
+      {
+        "op": "freeze",
+        "on": true
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 1,
+          "weight": 1
+        },
+        "reason": "frozen"
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "guard refusal leaves prior",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "guard_hi": 0.85
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 1,
+          "weight": 1000
+        },
+        "reason": "guard"
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "gamma apply sold comps and observe",
+    "declare": [
+      {
+        "name": "velocity",
+        "family": "gamma",
+        "prior": {
+          "shape": 2,
+          "rate": 4
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "apply_gamma",
+        "count": 1,
+        "exposure": 0,
+        "weight": 1,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "count": 1,
+          "exposure": 0,
+          "weight": 1
+        },
+        "at": "2026-01-01"
+      },
+      {
+        "op": "apply_gamma",
+        "count": 1,
+        "exposure": 2,
+        "weight": 1,
+        "at": "2026-01-31"
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "shape": 3,
+          "rate": 4
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 4
+        },
+        "version": 2,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 3,
+          "rate": 4
+        },
+        "version": 3,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "version conflict leaves challenger invisible",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.7,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.9,
+        "held_out_score": 0.8,
+        "expect_version": 0,
+        "error": "VersionConflict"
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      }
+    ]
+  },
+  {
+    "name": "promote loses within noise",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.7,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.9,
+        "held_out_score": 0.505,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop"
+        },
+        "version": 2,
+        "noise": 0.01,
+        "at": "2026-01-01",
+        "reason": "lost held-out"
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      }
+    ]
+  },
+  {
+    "name": "same-set champion score wins and rollback restores previous promoted",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.7,
+        "held_out_score": 0.9,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.9,
+        "held_out_score": 0.5,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop"
+        },
+        "version": 2,
+        "noise": 0.01,
+        "at": "2026-01-01",
+        "champion_score": 0.4
+      },
+      {
+        "op": "rollback",
+        "scope": {
+          "site": "depop"
+        },
+        "at": "2026-01-02"
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.9,
+        "version": 2,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      }
+    ]
+  },
+  {
+    "name": "same-set champion score can refuse an apparent win",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.7,
+        "held_out_score": 0.1,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.9,
+        "held_out_score": 0.5,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop"
+        },
+        "version": 2,
+        "noise": 0.01,
+        "at": "2026-01-01",
+        "champion_score": 0.6,
+        "reason": "lost held-out"
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      }
+    ]
+  },
+  {
+    "name": "person fallback shared then prior never another person or global",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop",
+          "person": "usr_2"
+        },
+        "value": 0.9,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop",
+          "person": "usr_2"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "propose",
+        "scope": {},
+        "value": 0.65,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {},
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "read",
+        "scope": {
+          "site": "depop",
+          "person": "usr_1"
+        }
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.7,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "read",
+        "scope": {
+          "site": "depop",
+          "person": "usr_1"
+        }
+      },
+      {
+        "op": "read",
+        "scope": {
+          "site": "depop",
+          "person": "usr_1",
+          "state": "listed"
+        }
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.9,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop",
+          "person": "usr_2"
+        }
+      },
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.65,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.65,
+        "version": 1,
+        "n_eff": 40,
+        "from": "parent",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "parent",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "fallback order state segment site kind global",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "scope": {},
+        "value": 0.1,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {},
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "read",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats",
+          "state": "listed"
+        }
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "kind": "shoes"
+        },
+        "value": 0.2,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "kind": "shoes"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "read",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats",
+          "state": "listed"
+        }
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop"
+        },
+        "value": 0.30000000000000004,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "read",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats",
+          "state": "listed"
+        }
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats"
+        },
+        "value": 0.4,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "read",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats",
+          "state": "listed"
+        }
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats",
+          "state": "listed"
+        },
+        "value": 0.5,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats",
+          "state": "listed"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "read",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats",
+          "state": "listed"
+        }
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.1,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.1,
+        "version": 1,
+        "n_eff": 40,
+        "from": "parent",
+        "scope": {}
+      },
+      {
+        "value": 0.1,
+        "version": 1,
+        "n_eff": 40,
+        "from": "parent",
+        "scope": {}
+      },
+      {
+        "value": 0.2,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "kind": "shoes"
+        }
+      },
+      {
+        "value": 0.2,
+        "version": 1,
+        "n_eff": 40,
+        "from": "parent",
+        "scope": {
+          "kind": "shoes"
+        }
+      },
+      {
+        "value": 0.2,
+        "version": 1,
+        "n_eff": 40,
+        "from": "parent",
+        "scope": {
+          "kind": "shoes"
+        }
+      },
+      {
+        "value": 0.30000000000000004,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.30000000000000004,
+        "version": 1,
+        "n_eff": 40,
+        "from": "parent",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.30000000000000004,
+        "version": 1,
+        "n_eff": 40,
+        "from": "parent",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.4,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats"
+        }
+      },
+      {
+        "value": 0.4,
+        "version": 1,
+        "n_eff": 40,
+        "from": "parent",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats"
+        }
+      },
+      {
+        "value": 0.4,
+        "version": 1,
+        "n_eff": 40,
+        "from": "parent",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats"
+        }
+      },
+      {
+        "value": 0.5,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats",
+          "state": "listed"
+        }
+      },
+      {
+        "value": 0.5,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "kind": "shoes",
+          "site": "depop",
+          "segment": "coats",
+          "state": "listed"
+        }
+      }
+    ]
+  },
+  {
+    "name": "rollback skips unpromoted version",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.7,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop"
+        },
+        "version": 1,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.8,
+        "held_out_score": 0.1,
+        "expect_version": 1
+      },
+      {
+        "op": "propose",
+        "scope": {
+          "site": "depop"
+        },
+        "value": 0.9,
+        "held_out_score": 0.8,
+        "expect_version": 2
+      },
+      {
+        "op": "promote",
+        "scope": {
+          "site": "depop"
+        },
+        "version": 3,
+        "noise": 0.01,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "rollback",
+        "scope": {
+          "site": "depop"
+        },
+        "at": "2026-01-02"
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.9,
+        "version": 3,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {
+          "site": "depop"
+        }
+      }
+    ]
+  },
+  {
+    "name": "three sold comps with no elapsed time add three to gamma shape",
+    "declare": [
+      {
+        "name": "sale_rate",
+        "family": "gamma",
+        "prior": {
+          "shape": 2,
+          "rate": 4
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "outcome": {
+          "count": 1,
+          "exposure": 0,
+          "weight": 1
+        },
+        "at": "2026-01-01"
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "count": 1,
+          "exposure": 0,
+          "weight": 1
+        },
+        "at": "2026-01-01"
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "count": 1,
+          "exposure": 0,
+          "weight": 1
+        },
+        "at": "2026-01-01"
+      },
+      {
+        "op": "read"
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "shape": 3,
+          "rate": 4
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 4
+        },
+        "version": 2,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 5,
+          "rate": 4
+        },
+        "version": 3,
+        "n_eff": 3,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 5,
+          "rate": 4
+        },
+        "version": 3,
+        "n_eff": 3,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  }
+]

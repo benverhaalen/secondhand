@@ -71,7 +71,21 @@ A row with `may_model: false` (eBay rows, per [data use](../data-use.md)) can be
 
 **The fast first answer.** Before step 1 returns, the engine answers from the warm table `family_band` (a name the canon lacks): per (product family or category, condition), the weighted p10 and p90 of adjusted sold prices over 90 days, its count, and its date. It is refreshed when a sale lands in the family. The person sees it as a rough band within 2 s. When the full object is ready, the band is replaced in place by the range, which marks what changed. A family with fewer than 20 sales falls back to the category. A category with fewer than 20 shows no band; it says "Pricing this..." until the Check.
 
-**When nothing qualifies:** the states in the cards stand: `too_few`, `too_wide`, D4's "Not enough sales on Depop yet", and D10's "Not enough sales to say how fast". Each still shows the comps found and their count.
+**The fallback order: a price is always given** (*agent proposal*, the engines lead, 2026-11-15, from [Nate](../../product/words.md#2026-11-15-nate-the-system-always-prices-with-fallbacks-and-its-power-is-what-it-weighs-in-real-time): "of course the system must price and have established fallbacks, but the power of the system relies on things being realtime determined and weighed by how the system was designed"). The engine answers from the most specific level its evidence supports and names the level it used, as `basis_level`:
+
+| Step | `basis_level` | The middle and range come from | The range widens by |
+|---|---|---|---|
+| 1 | `variant` | the item's own variant's comps | `Q_g` of its group |
+| 2 | `product` | the product's comps, adjusted for variant (D2) | `Q_g` of the product-level group |
+| 3 | `family` | the family's comps, adjusted (D2) | `Q_g` of the family-level group |
+| 4 | `kind` | the kind's pooled sold distribution, condition-adjusted: `family_band` at the category level, at any count | the kind's measured miss at this level |
+| 5 | `prior` | D7's retail price times the [M10](../determinations/market-insight.md#m10-depreciation-by-category-and-brand) depreciation step for the kind and age, where a retail price is known | the prior's own stated spread, a `param` per kind |
+
+The steps are a blend, not a ladder of thresholds. At every level, each quantile on log price is `(n_eff × local + k × parent) / (n_eff + k)`, with the parent being the next step down. `k` is a `param` per kind (prior 6, D1's old threshold), refitted nightly by empirical Bayes on the between-level variance, so one more comp moves the answer by its weight's share and never by the gap between levels. The width at each step comes from that step's measured misses, so a thin item reads wider. It never reads as hidden.
+
+The guard hides a number only when even step 5 cannot be stated honestly: no kind is known, or the kind has no sold rows and no retail price. Then the card says "Pricing this..." and runs Deep research. `too_wide` no longer hides. It shows the range with its basis level and count. A bar such as auto-pricing's PPE20 decides only whether the system acts without asking, never whether it prices. It is read on the pooled posterior of the cell's live outcomes (`readPooled`, κ = 20, price band to kind and site, then kind, then all), so a thin cell takes its parent's standing at the weight its own evidence earns. D6's cell minimum of 30 applies to what the backtest report prints as a cell, not to what the live system may do.
+
+D4's "Not enough sales on Depop yet" and D10's "Not enough sales to say how fast" become the same ladder for that site and for the curve. The translated or parent answer is shown with its level named.
 
 ## 4. Learning
 
