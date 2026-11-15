@@ -54,7 +54,12 @@ export const handlers: Record<string, Handler> = {
     const next = limits(ctx);
     return { status: 200, body: { ask_every_time: owned('limits', ctx, ctx.user_id!).ask_every_time, items: next.items, version: next.version } };
   }),
-  'GET /v1/rules': engine(ctx => ({ status: 200, body: list(ctx, runtime.store.rows('rule', { user_id: ctx.user_id! }).filter(row => !row.deleted).map(row => publicRow(row, row.created === true)).map(({ created, ...view }) => view)) })),
+  'GET /v1/rules': engine(ctx => ({ status: 200, body: list(ctx, runtime.store.rows('rule', { user_id: ctx.user_id! }).filter(row => !row.deleted).map(row => {
+    const rowFields: Record<string, unknown> = row;
+    const view: Record<string, unknown> = publicRow(row, rowFields.created === true);
+    delete view.created;
+    return view;
+  })) })),
   'POST /v1/rules': engine(ctx => {
     fields(ctx.body, {}, { from_decision_id: text, kind: text, scope: text, limits: object });
     if (!ctx.body.from_decision_id && !(ctx.body.kind && ctx.body.scope)) throw invalid('from_decision_id or kind and scope are required');
@@ -78,7 +83,8 @@ export const handlers: Record<string, Handler> = {
     const { version: ignored, ...seed } = template;
     const row = runtime.store.put('rule', { ...seed, id, user_id: ctx.user_id!, kind, scope, state: 'auto', created: true, ...(Object.keys(ruleLimits).length ? { limits: ruleLimits } : {}) });
     ctx.log.event('state.change', { entity: 'rule', id: id, to: 'auto' });
-    const { created, ...view } = publicRow(row, true);
+    const view: Record<string, unknown> = publicRow(row, true);
+    delete view.created;
     return { status: 201, body: view };
   }),
   'DELETE /v1/rules/:id': engine(ctx => {

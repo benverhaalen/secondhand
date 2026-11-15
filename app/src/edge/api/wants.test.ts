@@ -25,6 +25,7 @@ const call = (e: Example, options: { body?: unknown; raw?: string; path?: string
     body: options.raw ?? (options.body !== undefined ? JSON.stringify(options.body) : e.request?.body === undefined ? undefined : JSON.stringify(e.request.body)),
   }));
 };
+const reloadWants = (query: string): Promise<typeof import('./wants.ts')> => import(new URL('./wants.ts?' + query, import.meta.url).href);
 test('wants: every specified endpoint is registered and declares its answer source', () => {
   assert.deepEqual(Object.keys(handlers).sort(), [...new Set(examples.filter(e => e.status < 400).map(e => e.endpoint))].sort());
   assert.deepEqual(manifest.map(m => m.endpoint).sort(), Object.keys(handlers).sort());
@@ -171,7 +172,7 @@ test('wants: repeated seeding and imports preserve edited rows without duplicate
   assert.equal(store.get('want', 'usr_8f2k', row.id)?.state, 'ended');
   const { store: shared } = await import('./store.ts');
   const before = structuredClone(shared.rows('want', { user_id: 'usr_8f2k' }));
-  await import('./wants.ts?seed-again=1'); await import('./wants.ts?seed-again=2');
+  await reloadWants('seed-again=1'); await reloadWants('seed-again=2');
   assert.deepEqual(shared.rows('want', { user_id: 'usr_8f2k' }), before);
 });
 

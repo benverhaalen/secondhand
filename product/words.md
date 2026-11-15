@@ -1666,3 +1666,11 @@ Nate, build session (orchestrator), 2026-11-15 about 08:20 to 08:45 Central. Two
 > Well we only really need to read right? we can't have the dom substrate run on the ios phone can we? understand and engineer around this
 
 Used in: the read-lanes design, `spec/engines/protocol-and-adapters.md` when it is written.
+
+## 2026-11-15 nate browser use's own benchmark shows a way through on ebay
+Nate, build session (orchestrator), 2026-11-15 about 09:00 Central. Two messages, each a link.
+> https://browser-use.com/benchmarks/consumer/sites/ebay Here, theres a work around
+
+> https://browser-use.com/benchmarks/consumer
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
