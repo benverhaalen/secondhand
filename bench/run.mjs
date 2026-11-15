@@ -38,11 +38,13 @@ export function mapValue(body) {
 }
 export function makeAsk({base,dispatch} = {}) {
   let visitor = `vis_${randomUUID().replaceAll('-','').slice(0,16)}`;
-  return async (endpoint,init={}) => {
+  const ask = async (endpoint,init={}) => {
     const headers=new Headers(init.headers); headers.set('X-Visitor-Id',visitor); headers.set('X-Request-Id',`rq_${randomUUID().replaceAll('-','').slice(0,16)}`); if(init.body) headers.set('Content-Type','application/json');
     const req=new Request(new URL(endpoint,base ?? 'http://localhost'),{...init,headers});
     const response=dispatch ? await dispatch(req) : await fetch(req); visitor=response.headers.get('X-Visitor-Id') ?? visitor; return response;
   };
+  ask.stream = Boolean(dispatch);
+  return ask;
 }
 async function inProcess() {
   const [{route,paramsOf},search,market,valuations,jobs]=await Promise.all([import('../app/src/edge/api/http.ts'),import('../app/src/edge/api/search.ts'),import('../app/src/edge/api/market.ts'),import('../app/src/edge/api/valuations.ts'),import('../app/src/edge/api/jobs.ts')]);
@@ -70,7 +72,7 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
     });
   }
   async function question(item,question,endpoint,init,mapper,errorBefore) {
-    const asked=new Date(); let first=null, full=null, error=errorBefore ?? null, responseBody=null; const raw=[]; const searched=new Map(); let usage;
+    const asked=new Date(); let first=null, full=null, timeSource='poll', error=errorBefore ?? null, responseBody=null; const raw=[]; const searched=new Map(); let usage;
     function observe(body) {
       const result=body.result ?? body;
       for(const read of result.searched ?? []) searched.set(JSON.stringify([read.site,read.kind,read.url]),read);
@@ -80,6 +82,18 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
       let res=await log.call('http',path,{method:options?.method ?? 'GET'},()=>ask(path,options),r=>({result:{status:r.status}})); let body=await res.json(); raw.push({endpoint:path,status:res.status,body});
       if(res.status===429) { await sleep(Math.max(0,Number(body.retry?.after_s ?? 0))*1000); res=await log.call('http',path,{method:options?.method ?? 'GET'},()=>ask(path,options),r=>({result:{status:r.status}})); body=await res.json(); raw.push({endpoint:path,status:res.status,body}); }
       observe(body); return {res,body};
+    }
+    async function follow(path, remaining) {
+      const res=await log.call('http',path,{method:'GET'},()=>ask(path,{}),r=>({result:{status:r.status}}));
+      if(!res.ok) throw new Error(`http_${res.status}`);
+      const reader=res.body.getReader(); const decoder=new TextDecoder(); let text='', timer;
+      try {
+        const timeout=new Promise(resolve=>{timer=setTimeout(()=>resolve(false),remaining);});
+        const consume=(async()=>{while(true) {const part=await reader.read(); if(part.done) return true; text+=decoder.decode(part.value,{stream:true});}})();
+        const finished=await Promise.race([consume,timeout]);
+        raw.push({endpoint:path,status:res.status,body:text});
+        return finished;
+      } finally {clearTimeout(timer); await reader.cancel();}
     }
     if(!error) {
       try {
@@ -105,11 +119,16 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
           else if(body.kind && body.id && body.state) {
             const deadline=asked.getTime()+timeoutS*1000;
             while(true) {
-              if(!first && (body.result?.results?.length>0 || body.result?.found?.results_used>0 || body.stages?.some(s=>s.found?.results_used>0))) first=new Date().toISOString();
-              if(body.state==='done') {full=new Date().toISOString(); responseBody=body.result ?? {}; break;}
+              const stages=(body.stages ?? []).filter(s=>s.ended_at);
+              const firstStage=stages.filter(s=>s.found?.results_used>0).sort((a,b)=>Date.parse(a.ended_at)-Date.parse(b.ended_at))[0];
+              if(firstStage) {first=firstStage.ended_at; timeSource='job';}
+              else if(stages.length) first=null;
+              else if(!first && (body.result?.results?.length>0 || body.result?.found?.results_used>0 || body.stages?.some(s=>s.found?.results_used>0))) first=new Date().toISOString();
+              if(body.state==='done') {full=stages.length?stages.reduce((last,s)=>Date.parse(s.ended_at)>Date.parse(last)?s.ended_at:last,stages[0].ended_at):new Date().toISOString(); if(stages.length) timeSource='job'; responseBody=body.result ?? {}; break;}
               if(['failed','cancelled'].includes(body.state)) {error=body.error?.code ?? body.state; break;}
               const remaining=deadline-Date.now(); if(remaining<=0) {error='timeout'; break;}
-              await sleep(Math.min(2000,remaining)); if(Date.now()>=deadline) {error='timeout'; break;}
+              if(ask.stream) {if(!await follow(`/v1/jobs/${encodeURIComponent(body.id)}/events`,remaining)) {error='timeout'; break;}}
+              else {await sleep(Math.min(2000,remaining)); if(Date.now()>=deadline) {error='timeout'; break;}}
               ({res,body}=await request(`/v1/jobs/${encodeURIComponent(body.id)}`,{})); responseBody=body;
               if(!res.ok) {error=body.code ?? `http_${res.status}`; break;}
             }
@@ -126,7 +145,7 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
     const reads=readsOf([...searched.values()]);
     const cost=tool==='baseline'?answerCost(reads,{browser_s:0,proxy_bytes:0,model_calls:0}):answerCost(reads,usage);
     const cited_facts=mappedAnswer.numbers.filter(n=>n.citation_id || n.evidence.length).length;
-    const record={run_id:runId,tool,item_id:item.id,manifest_sha256:hash,question,asked_at:asked.toISOString(),first_at:first,full_at:full,ok:!error,error, ...mappedAnswer,reads,cost,cited_facts,...(tool==='baseline'?{lane:'plain'}:{}),delist:null,raw_ref:rawRef};
+    const record={run_id:runId,tool,item_id:item.id,manifest_sha256:hash,question,asked_at:asked.toISOString(),first_at:first,full_at:full,time_source:timeSource,ok:!error,error, ...mappedAnswer,reads,cost,cited_facts,...(tool==='baseline'?{lane:'plain'}:{}),delist:null,raw_ref:rawRef};
     log.change('benchmark_answer',`${item.id}:${question}`,error ?? 'done'); records.push(record); await appendFile(join(dir,'records.jsonl'),JSON.stringify(record)+'\n'); return {record,body:responseBody};
   }
   for(const item of manifest[set === 'market' ? 'market_items' : 'items']) {

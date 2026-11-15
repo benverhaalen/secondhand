@@ -199,3 +199,4 @@ Ben, 06:40: show it working first, then the engineering. The three hard calls go
 - [ ] No judge's field named and none of its jargon (E4's list); Part IV's words used.
 - [ ] Every number has its mark; the honesty gate passes.
 - [ ] The person it's for is named in one breath.
+- [ ] Every designed thing (slides, video cards, diagrams, Devpost images, thumbnails) starts from `brand/templates/`, takes colors from `brand/tokens.css`, sets type in Clofie and PP Neue Montreal, shows UI only as the app's own screens, and passes `node scripts/brand-check.mjs <file> --medium <medium>` ([Ben, 09:25](words.md#2026-11-15-every-designed-thing-uses-the-apps-design-system)).
