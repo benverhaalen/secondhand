@@ -32,7 +32,7 @@ const NA = (why: string) => ({ absent: why });
 const ALL = (over: Partial<Record<Verb, Absent>> = {}) => Object.fromEntries(VERBS.map(v => [v, over[v] ?? true])) as Record<Verb, true | Absent>;
 const SEARCH_ONLY = (why: string) => ALL({ post: POSTING_PLANNED, revise: POSTING_PLANNED, end: POSTING_PLANNED, relist: POSTING_PLANNED,
   read_listings: NA(why), read_inbox: NA(why), send_message: NA(why), read_offers: NA(why), answer_offer: NA(why),
-  make_offer: NA('a link-out to the site (spec/product.md route table: n/a, a link-out)'), read_orders: NA(why) });
+  make_offer: NA('a link-out to the site (spec/product.md route table: n/a, a link-out)'), read_orders: NA(why), read_storefront: NA(why) });
 
 // Verbs per site: the route table in spec/product.md#the-harness-protocol. Storefront figures: Ben's platform notes, marked.
 const BASE: Record<Site, Pick<SiteProfile, 'verbs' | 'storefront'>> = {

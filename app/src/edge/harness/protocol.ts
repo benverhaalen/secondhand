@@ -198,6 +198,7 @@ export function fakeAdapter(site: Site, verb: Verb, over: Partial<Manifest> = {}
       const row = { id: 'fake-1', title: 'Fake item', price_cents: 2500 };
       if (mode === 'throw') throw new Error('fake adapter threw');
       if (mode === 'hang') return new Promise((_, rej) => signal.addEventListener('abort', () => rej(new Error('aborted'))));
+      if (mode === 'ok' && verb === 'read_storefront') return { ok: true, data: { followers: 120, rating: 4.9, review_count: 33, active_count: 14, sold_count: 51, orders: 3, gross_cents: 18400 }, observation_ids: ['obs-fake-1'] };
       if (mode === 'ok') return { ok: true, data: isWrite(verb) ? { id: 'fake-1', operation_id: args.operation_id } : [row], observation_ids: ['obs-fake-1'] };
       if (mode === 'empty') return classifyRead({ challenge: false, rows: [] }, manifest);
       if (mode === 'soft_block') return classifyRead({ challenge: true, rows: [] }, manifest);

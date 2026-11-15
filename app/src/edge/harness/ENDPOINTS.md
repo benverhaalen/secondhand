@@ -172,6 +172,20 @@ Reads per-listing figures.
 | offerup | `/offerup/stats` | GET | yes | unknown |
 | grailed | `/grailed/stats` | GET | yes | unknown |
 
+## /storefront (`read_storefront`)
+
+Reads the shop's own figures: followers, rating, totals.
+
+| site | endpoint | method | available | session |
+|---|---|---|---|---|
+| ebay | `/ebay/storefront` | GET | yes | unknown |
+| facebook | `/facebook/storefront` | GET | yes | unknown |
+| depop | `/depop/storefront` | GET | yes | unknown |
+| poshmark | `/poshmark/storefront` | GET | yes | unknown |
+| mercari | `/mercari/storefront` | GET | yes | unknown |
+| offerup | `/offerup/storefront` | GET | no: OfferUp is search and price only for now (spec/product.md route table: n/a) | unknown |
+| grailed | `/grailed/storefront` | GET | no: Grailed is search and price only for now (spec/product.md route table: n/a) | unknown |
+
 ## /search (`search`)
 
 Searches the market.

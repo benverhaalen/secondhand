@@ -11,7 +11,7 @@ import { SITES, VERBS, isWrite, type Manifest, type Site, type Verb } from './pr
 export const PATHS: Record<Verb, string> = {
   post: '/write-listing', revise: '/edit-listing', end: '/end-listing', relist: '/relist', read_listings: '/listings',
   read_inbox: '/inbox', send_message: '/send-message', read_offers: '/offers', answer_offer: '/answer-offer', make_offer: '/make-offer',
-  read_orders: '/orders', read_stats: '/stats', search: '/search', save: '/save',
+  read_orders: '/orders', read_stats: '/stats', read_storefront: '/storefront', search: '/search', save: '/save',
 };
 
 const SAYS: Record<Verb, string> = {
@@ -19,7 +19,7 @@ const SAYS: Record<Verb, string> = {
   relist: 'Puts an ended listing back up as a new listing.', read_listings: 'Reads the account\'s listings and their state.',
   read_inbox: 'Reads message threads.', send_message: 'Sends a message in a thread.', read_offers: 'Reads open offers.',
   answer_offer: 'Accepts, counters or declines an offer.', make_offer: 'Sends an offer to a buyer or a seller.',
-  read_orders: 'Reads sales and orders.', read_stats: 'Reads per-listing figures.', search: 'Searches the market.', save: 'Saves or likes a listing.',
+  read_orders: 'Reads sales and orders.', read_stats: 'Reads per-listing figures.', read_storefront: "Reads the shop's own figures: followers, rating, totals.", search: 'Searches the market.', save: 'Saves or likes a listing.',
 };
 
 export type Endpoint = { site: Site; verb: Verb; path: string; method: 'GET' | 'POST'; write: boolean; available: true | string;

@@ -3,5 +3,5 @@ export const SITES = ['ebay', 'facebook', 'depop', 'poshmark', 'mercari', 'offer
 export type Site = (typeof SITES)[number];
 
 export const VERBS = ['post', 'revise', 'end', 'relist', 'read_listings', 'read_inbox', 'send_message', 'read_offers',
-  'answer_offer', 'make_offer', 'read_orders', 'read_stats', 'search', 'save'] as const;
+  'answer_offer', 'make_offer', 'read_orders', 'read_stats', 'read_storefront', 'search', 'save'] as const;
 export type Verb = (typeof VERBS)[number];
