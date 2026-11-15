@@ -47,14 +47,14 @@ The record of what is built, joined, real and reviewed is capture's row in [comp
 
    Two or more pieces wrap the class in `set_bundle`; `inner_class` keeps the class inside it.
 3. **Process.** `processFor` gives the shot list. A scan becomes the 8-still ring when `object_capture` is false. A `small_hard` or `soft_goods` item gets the `front_still` step instead of a scan. A bundle starts with the `group` step, then the family's list once per piece, keyed `tag.1`, `tag.2` and so on.
-4. **Fields.** The `root` rows, then the family's, then the kind's (`electronics.phones_laptops`), then the class's `dimensions` row. A later row replaces an earlier one with the same name. In a bundle, rows marked `per_piece` repeat per piece as `size_label.1`, `size_label.2`, the way `flaw.<n>` is named, and `lot_count` is added.
+4. **Fields.** The `root` rows, then the family's, then the kind's (`electronics.phones`), then the kind's parts (`components`, section 2), then the class's `dimensions` row. A later row replaces an earlier one with the same name. In a bundle, rows marked `per_piece` repeat per piece as `size_label.1`, `size_label.2`, the way `flaw.<n>` is named, and `lot_count` is added.
 
 | Class | Default families | Dimensions, in ladder order | Condition checks | Weight tier |
 |---|---|---|---|---|
 | `flat_garment` | apparel | pit to pit, length: measured on the front still, else asked | stains, holes, pilling, fading, print cracking | under 1 lb |
 | `footwear` | shoes | none (the size is the label) | sole wear, creasing, heel drag, scuffs | 1 to 3 lb |
 | `bag` | bags | width, height, depth: lookup, measured, asked | corner wear, handle darkening, hardware scratches, lining stains | 1 to 3 lb |
-| `small_hard` | jewellery_watches, phones and laptops, media, cards_collectibles | none (the matched product's spec) | scratches, dents, cracks | under 1 lb |
+| `small_hard` | jewellery_watches, phones, laptops, media, cards_collectibles | none (the matched product's spec) | scratches, dents, cracks | under 1 lb |
 | `medium_hard` | electronics, lighting_home, appliances_tools, toys_lego | width, height, depth: lookup, measured, asked | scratches, dents, missing parts | 3 to 10 lb |
 | `large_bulky` | furniture, bikes_sports, baby_gear | width, depth, height: lookup, measured, asked; required on every site | stains, scratches, tears, loose joints | over 10 lb |
 | `soft_goods` | other, when not rigid | width, height: asked | stains, holes, fading | under 1 lb |
@@ -103,6 +103,57 @@ Identify can return close variants of one product, `state.variants.dimensions = 
 
 Until settled, the field is `waiting` while a step or lookup can still fill it, and `missing` after. Either way the reading shows as its value.
 
+### The parts of one item
+
+*Agent proposal*, from Nate (2026-11-15): "for technology, a userful thing when its being captured and identified, is for the system to perhaps determine the value of its individual pieces. like a desktop computer can have the system understand the ram, of course if its a custom build, I imagine that will be a clarifying question" ([words](../../product/words.md#2026-11-15-nate-technology-is-valued-by-its-parts-too-and-a-custom-build-is-a-clarifying-question)), and "we can parse and build things to be deterministicially or code driven". Not built yet: fix F17, with its tests in section 8. A fresh seat reviewed it against the code (`cap-parts-review-1.md` in the session notes), and this text carries its corrections.
+
+**A part is not a piece.** Pieces are separate items sold together (`pieces`, `set_bundle`, `size_label.2`). Parts are inside one item: a desktop's graphics card, its memory. A part row is never `per_piece`. A camera body and its lens are pieces, never parts, because each is sold and identified on its own.
+
+**The kinds.** A kind is a key `<family>.<kind>` of `process.json`. A capture's `kind` is valid when its key is in `types`, `fields` or `components` for the capture's family.
+
+| Kind | Process and class | Parts, in ask order | Asked when unread |
+|---|---|---|---|
+| `electronics.desktops` (new) | the family's (scan, model_plate) and `medium_hard`, by fallback | graphics, processor, memory, storage, power_supply, board, case | graphics, processor, memory, storage |
+| `electronics.laptops` (new) | about_screenshot, front_screen_on, back; `small_hard` (its own `types` and `family_class` rows) | memory, storage: the parts a person can swap | none, an exception to the ladder below: memory and storage are read from the about screenshot or looked up by model, and the soldered processor and graphics are the model's attributes |
+| `electronics.phones` (`phones_laptops` renamed, since laptops leave it) | unchanged | none | |
+
+The same block would serve, with rows only, a games console's internal storage or a bike's groupset, wheels and fork.
+
+**Where the kind comes from** (F17). Before this, no route set `kind`, so `phones_laptops` was reached only by the walks. Now:
+- the phone's suggestion `{family, p, second_p, kind?}` at open;
+- a type pick, `PATCH {type, kind?}`; a type change without `kind` clears it;
+- an identify result with `action: confirm`, whose first member's `kind` is used when the capture has none and the member's `family` is the capture's.
+
+**The table holds parts as data.** `process.json` gains `components`, keyed by kind: `{read?: <step>, after?: [field], parts: [<field row>]}`. `read` is a step row like a process step plus its `words`: the desktop's is `{step: system_info, kind: series, role: screenshot, needs_lidar: false, seconds: 15, words: "Photo of the system information screen"}`, offered as below. When `read` names a step already in the kind's process (the laptop's `about_screenshot`), there is no offer: that photo's text is parsed when it is kept. `after` lists field names of the kind. A part's row has its bare name in `field`. `select.ts` appends it after the kind's rows as `part.<name>`, with `rank` its 1-based place in the list. The list order is the ask order, from the part that moves the price most. `validateTable` reads a kind's process as `types[<kind>]`, falling back to the family's, as `processFor` already does, so a kind with no `types` row of its own loads. It checks three things about `components`: each key is a kind; each part's label view is a step of the kind's process or its `read` step; `after` names fields of the kind. No part is named in code. The twin `process.py` needs no change, because it reads `types` and `components` does not touch them. The rename does touch `jobs/capture/test_process.py` (its phones test) and `walks.ts` (walk D's input), and walk D's output stays byte-identical. No param row is stored under the old scope, because nothing learns yet (F7), so nothing migrates. The laptop's `fields` rows are copies of the phones' rows without `carrier_lock`: they are the laptop's own facts, and they may diverge.
+
+**A part row** is an ordinary field row, so the known rule, the six states, the cap and the site form apply unchanged:
+- its `min_conf` params are `capture_min_conf.part.<name>.<way>`, scoped `{kind: <family>.<kind>}` like a kind's own row (section 3), so `fields.ts` looks the part up in `components` as well as `fields`;
+- `type` and `values` or `unit`: graphics, processor, board and case are `text`; memory and storage are `enum` in GB over the sizes listed in the row; power_supply is a `number` in W;
+- `ways`: `lookup` (min_conf 0.9), then `label` on the read step (min_conf 0.9), then `asked` for the parts that move the price. The others have no `asked` way, so unread they are `unobtainable` and never asked. A phone module that has not passed the fixed set sends confidence 0 (section 7), so its part reads are proposals, asked to confirm under the cap;
+- `confirm: auto`, `required: []`, `recommended: "all"`: a part changes the value on every site, not one site's form;
+- `labels`: the words a system screen prints before the value ("Processor", "Chip", "Installed RAM", "Memory", "Graphics Card", "Graphics", "Storage").
+
+Reading a part's own sticker (a memory stick's label) needs a step of its own and is not in this design.
+
+**`custom_build`** is a desktop row: `bool`, ways `lookup` (min_conf 0.9) then `asked`, `confirm: auto`, `required: []`, `recommended: "all"` (like a part, it is there for the value), `ask` `yes_no` "Custom build?", and `shapes: true`. The desktop's `model` row gains a first way `{way: derived, when: custom_build, value: "Custom build", min_conf: 0.9}`. While `custom_build` is known true, that value is the model's fact ahead of any read or lookup. A custom build has no model, and a plate on its case names the case.
+
+**The ladder** (the dimension ladder again):
+1. **A prebuilt identified by its model.** Identify's confirm names the product with `components` (`{<part>: value}`) from its published specification. Each value that fits its part row becomes a `lookup` fact at the member's `c`; at or past the part's lookup `min_conf` it is known, and under it the part is a proposal, asked to confirm under the cap. One that does not fit is dropped with a logged part name and reason, as phone reads are (F10). `custom_build` becomes a `lookup` fact `false` at `c`. When `c` passes the bar, nothing about parts is asked.
+2. **Otherwise one question, "Custom build?".** A no leaves the model to be asked (eBay requires it), and the model's lookup can still fill the parts.
+3. **Then the parts wait for the build and the read.** For a kind with `after`, a part that is not known stays `waiting` until every `after` field is known or refused and no lookup is running. Then the plan offers the `read` step once: a `shot` with reason `add`, `field` the step's name, and the step's own `words` ("Photo of the system information screen"). The person may take it or skip it (section 6). A desktop sold without a screen loses only the offer. Until the offer is kept or skipped, the parts stay `waiting`.
+4. **Only an unread part that moves the price is asked**, in the kind's order, under the cap. A part the person cannot name is refused, like any field.
+
+**Order and cap.** `custom_build` sorts with `type` and `lot_count`, and the parts by their `rank` ([the order](#the-questions)). The offer is not a field row: while shown it takes one optional slot, and once kept or skipped it takes none. Take a custom desktop with eBay and Facebook linked, no screen, and its colour seen on the scan. Its optional questions are `custom_build`, then the offer, then after the skip `part.graphics` and `part.processor`, because the answered build used one of the three slots. Required fields (`condition`, `function`, and `model` on the "no" path) are asked as always, outside the cap.
+
+**The parser** (`parts.ts`, `readParts(lines, rows, slack)`, pure). The phone sends the read step's recognized text as `text: [{line, confidence}]` (section 7). For each part row, the first line whose first word or words equal one of its `labels` gives the value from the rest of the line. Labels match whole words, so "Processors" is not "Processor". The value is read by the row's type:
+- `text`: trademark marks (`(R)`, `(TM)`, `®`, `™`), the words "CPU" and "Processor", and a trailing clock speed (`@ 2.90GHz`, `2.90 GHz`) are cut. "Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz 2.90 GHz" becomes "Intel Core i7-10700".
+- a size in GB: the number with its unit after the last " of " when the line has one ("123 GB used of 476 GB" reads 476), else the first. TB counts 1000 GB. The value is the smallest listed size at or above the reading, kept only when the reading is at least `1 − capture_part_size_slack` of it. Windows prints a 512 GB drive as 476.9 GB (0.93 of 512) and a 2 TB drive as 1.82 TB (0.91 of 2000); 300 GB is 0.6 of 500 and is dropped. The listed sizes leave out 480, so a 500 GB drive (465.7) reads 500; a 480 GB drive (447) is 0.89 of 500, is dropped, and is asked.
+- a number in W: the number before "W".
+
+Each read is `{field: part.<name>, value, source: label, confidence: the line's}`. A part that no line matches is not read. That is not `not_read`, because no gate failed. The lines are never stored or logged, because the same screen shows the device name and product ID; only the parsed values are kept.
+
+**Each part carries its own confidence and source**, as every fact does. For a part, what the item shows outranks the published specification (section 6), because a prebuilt may have been upgraded. Finish writes known parts to the item's attributes under the same names, with evidence `ref` `<capture>/<step>` (F4's path). The value of the parts is the engines lead's ([packet 77](../../.agents/team/packets/team/77-parts-contract-for-engines.md)).
+
 ### The questions
 
 `plan.ts`.
@@ -116,24 +167,25 @@ Until settled, the field is `waiting` while a step or lookup can still fill it, 
 
 **Which fields get a question.** A field gets one when it is `proposed`, or `missing` with an `asked` way. A field whose next way is a view gets a `shot` instead:
 - a kept view that returned `not_read` gets a retake;
-- a view outside the process is added only when a linked site requires the field and asking is not one of its ways (a tap is cheaper than a shot).
+- a view outside the process is added only when a linked site requires the field and asking is not one of its ways (a tap is cheaper than a shot), or when it is a kind's `read` offer (the parts of one item, above).
 
 **Never asked:**
 - a field that is `known`, `waiting` or `refused`;
 - condition when the purpose is `find`;
 - a field no linked site requires or recommends.
 
-While shots are pending, only `type`, `lot_count` and retakes of kept shots are asked. A known value that a site's form rejects is asked again, with no proposal.
+While shots are pending, only `type`, `lot_count` and retakes of kept shots are asked; the read offer and the parts wait too. A known value that a site's form rejects is asked again, with no proposal.
 
 **Kind and options.** A field with fixed `values` is a pick over them. Free text is only for a field with neither values nor candidates.
 
 **Order.** A total sort, in key order:
-1. `type`, then `lot_count`, because their answers change which fields exist;
+1. `type`, then `lot_count`, then any row with `shapes: true` (`custom_build`), because their answers change which fields exist;
 2. `unlocks.required`, descending;
 3. `ready_after` count, descending;
 4. recommended (site, field) pairs settled, descending;
-5. effort, ascending (`capture_effort_<kind>`);
-6. the field name.
+5. `rank` ascending: a kind's read offer at 0, its parts by their place in the list, every row without a rank after all ranked rows (no existing walk has a rank, so their output does not move);
+6. effort, ascending (`capture_effort_<kind>`);
+7. the field name.
 
 **Cap.** A field a linked site requires is asked until it is known or refused (Nate: every needed field gets its own select, [words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). Other questions stop at `capture_question_cap` per item. The count includes this plan's rows that are already answered, confirmed or refused.
 
@@ -186,6 +238,7 @@ Every bound is a `param` row read through `app/src/engines/param` with the prior
 | `capture_dims_match_cm`, `capture_dims_match_pct` | 2, 0.03 | *agent proposal*, from LiDAR's ±1 cm on objects over 10 cm ([adaptive-capture §1](../../research/capture/nate/adaptive-capture.md#1-depth-sensor-facts-arkit-scene-depth)) |
 | `capture_effort_yes_no`, `_pick_one`, `_pick_many`, `_number_with_unit`, `_text`, `_shot` | 1, 1, 2, 3, 3, 4 | card 17's effort tiebreak |
 | `capture_label_sharp_min` | 0.5 | *agent proposal*, on `score.py`'s 0 to 1 sharpness part |
+| `capture_part_size_slack` | 0.1 | *agent proposal*: a drive's size in GiB is about 7% under its size in GB, and a 2 TB drive reads 0.91 of 2000; 0.1 keeps both (the parser, section 2) |
 
 The confidence each ladder rung needs (`min_conf`) is a column of the versioned `requirement` row in `process.json`. Rows default to 0.9 for `label` and `lookup` and 0.8 for `seen` and `measured`; each row's own value is in the table. Each is read as the param `capture_min_conf.<field>.<way>` (`table.ts` `minConf()`), with the row's value as its prior and the scope `{kind: <family>}`, or `{kind: <family>.<kind>}` for a kind's own row, so a promoted row moves the known rule for that family alone. Bundle pieces (`size_label.2`) read their base field's param.
 
@@ -223,7 +276,7 @@ The screen never decides what to ask or when to stop. Layout, motion and the wor
 
 | `kind` | Shape (from) | Effect |
 |---|---|---|
-| `identify` | `{action, set: [{product_id, family, brand?, model?, c, label?, dimensions?}]}` (`jobs/identity/ladder.py` `action()` and the conformal set) | Sets the suggestion when the phone gave none, the brand and model candidates, and the dimension variants, or a dimensions fact when the action is confirm with one product. Sets `lookups: done`. |
+| `identify` | `{action, set: [{product_id, family, kind?, brand?, model?, c, label?, dimensions?, components?}]}` (`jobs/identity/ladder.py` `action()` and the conformal set) | Sets the suggestion when the phone gave none, the brand and model candidates, and the dimension variants, or a dimensions fact when the action is confirm with one product. With confirm, `kind` sets the capture's kind when none is set, and `components` (`{<part>: value}`, checked against the kind's part rows) become `lookup` part facts and `custom_build` false (F17). Sets `lookups: done`. |
 | `studio_plan` | `{plan: {kind, asks}}` (`manifest.json`) | Studio asks, held until Generate. |
 | `photo_score` | `{photos: [{key, role, score, parts}]}` (`jobs/photo/score.py` `score()`) | A tag, care label or screenshot photo whose `parts.sharpness` is under `capture_label_sharp_min` becomes a `not_read` read on its step, so the plan asks a retake. |
 
@@ -240,7 +293,9 @@ Rules the routes enforce:
 - Each person sees only their own captures.
 - A finished capture refuses photos and PATCH, and its version does not move.
 - An answer must be one of the plan's current questions and must fit its row; otherwise 422.
-- A `not_read` read never replaces a fact. A real read replaces one only from the same or a higher source (`seen` < `label` < `measured`). A `you_said` value is never replaced.
+- A refusal names one of the plan's current questions. A `shot` question may be refused only when it is a kind's `read` offer; the step's name goes into `refused`. A retake or a process step cannot be refused.
+- A `not_read` read never replaces a fact. A real read replaces one only from the same or a higher source (`seen` < `label` < `measured` < `lookup`). A `you_said` value is never replaced.
+- A part (`part.<name>`) is the exception: a `label` read replaces a `lookup` part, and identify writes a part only where none is held or the held one is `lookup` (the parts of one item, section 2).
 - Device flags default to false.
 
 ## 7. What the phone sends (the Swift capture module's contract)
@@ -251,10 +306,11 @@ The native module (Swift, in the Expo development build; Ben's [decision](../../
 - `has_lidar` is `ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)`.
 - `object_capture` is `ObjectCaptureSession.isSupported`. It turns false for the rest of the capture when a session fails; iPhone 17 Pro sessions fail on iOS 26.4 and 26.5.
 
-The phone also sends the first frame's suggestion `{family, p, second_p}` and its size `{extent_cm, extent_conf, rigid}`.
+The phone also sends the first frame's suggestion `{family, p, second_p, kind?}` and its size `{extent_cm, extent_conf, rigid}`.
 
 **Per kept photo.** `{role, step, key, content_type, bytes, depth_ref?, pose_ref?, reads[]}`:
 - `depth_ref` points to the frame's ARKit depth and confidence maps. It is never sent for a room frame.
+- A photo of a `read` step (section 2, the parts of one item) also carries `text: [{line, confidence}]`, Vision's recognized lines in reading order. The route parses them into part reads and keeps none of the lines.
 - Each read is `{field, value, source (seen, label, measured), confidence}`, or `{field, value: null, unknown_reason: not_read}` when a gate failed on a view meant to read that field.
 - Text and codes come from Vision's `RecognizeTextRequest` and `DetectBarcodesRequest`. An EAN-13 with a leading 0 is also sent as UPC-A.
 - The gates are sharpness, exposure, coverage, glare on the label region, `CalculateImageAestheticsScoresRequest.isUtility` and, on iOS 26, `DetectLensSmudgeRequest`.
@@ -301,6 +357,7 @@ Open:
 | F11 | Open ignores the size `{extent_cm, extent_conf, rigid}` from section 7, and drops a scan's `{scan_ok, extent_cm}` and `depth_ref` | Open with a 130 cm rigid lamp selects `large_bulky`; a scan's extent becomes a measured proposal under `min_conf` |
 | F12 | The colour maximum of 2 is written in the route. The table side is done: list rows carry `max` and `table.ts` validates it (cap-param-1) | The route reads `row.max` and no longer names colour (cap-route-2 round 2) |
 | F16 | `GET /v1/items/:id` shows each captured attribute with its source and evidence, but `items.ts:29` reads every attribute's confidence as 0 and `items.ts:70` drops the field (integration's file, found by cap-route-2) | The item card shows the confidence the capture recorded |
+| F17 | No route sets a capture's `kind`, so `electronics.phones_laptops` is reached only by the walks; and an item's parts are not captured (section 2, the parts of one item) | `walk.test.ts`, each walk run twice with identical output, the nine existing walks' counts unchanged and walk D's output byte-identical after the rename: a prebuilt desktop identified with its components asks no part and not `custom_build`; a custom desktop (eBay, Facebook) with its colour seen and no screen asks, outside the required fields, exactly `custom_build`, the offer, then after the skip `part.graphics` and `part.processor`; with the screen read at 0.95 it asks no part; a custom build derives `model` "Custom build" and never asks it; a laptop reads memory and storage from its about screenshot and asks no part. `parts.test.ts`: constructed Windows 11 and macOS screen lines parse to the expected parts; 476.9 GB reads 512, 1.82 TB reads 2000, 300 GB is dropped; "Processors" does not match "Processor"; no output holds a device name or product ID line. `captures.test.ts`: `kind` is accepted only for its family and cleared by a type change; a label part replaces a lookup part and identify does not overwrite a label part; a skipped offer is never offered again and a retake cannot be refused; the lines are in no stored row and no log; two people's captures stay apart |
 | F14 | Studio asks are checked loosely: a `measure` ask without its name, or a `flaw` without its zone, is accepted | Each ask type's required fields enforced at `applyJobResult` |
 
 The seeded example user's first open replaces the example row. That is by design, so the contract examples stay the engine's output, and `captures.test.ts` asserts it.
