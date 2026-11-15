@@ -97,7 +97,7 @@ Weight of comp i: `w_i = w_type x w_match x w_age x w_extract`. All numbers are 
 
 **Why this method**: it is the appraiser's sales-comparison approach: close, recent, adjusted sales, written out. MMR does the same with recency weighting and an abstain rule (*observed*, [adjacent-valuation.md](../../research/price/ben/adjacent-valuation.md)). The usual alternative is a pure regression over all listings, which is harder to explain to the person and gives no shown evidence. Here the regression comes later (D5) and uses these comps as features (*inferred*). Exponential decay is chosen over a hard 90-day window so that one old sale does not count as much as a new one at the window's edge (*inferred*).
 
-**When it is not shown**: at the family level with `n_eff < 6`, or with fewer than 2 sold in 90 days, the result is `too_few_sales`. The person sees "Not enough sales to price this yet" and the nearest coarser band labelled as such, plus Deep research.
+**When it is not shown**: at the family level with `n_eff < 6`, or with fewer than 2 sold in 90 days, the basis is thin. A thin basis first starts a `gather_request` to the intelligence engine ([intelligence-api §3.5](../engines/intelligence-api.md#35-gathering-more)), which widens the search as a background job. Only if gathering still leaves it thin is the result `too_few`: the person then sees "Not enough sales to price this yet" and the nearest coarser band labelled as such, plus Deep research.
 
 **How it is explained**: "Based on 14 sales, last 90 days." Tap: each comp with its photo, site, date, sold or asking, the adjustments written out, and its weight shown as "counts a lot", "counts some" or "counts a little".
 
@@ -200,7 +200,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 
 **Why this method**: weighted quantiles of comps describe the spread of comps, not the error of a prediction for a new item. The one public tool measured at 75.3% of 81 in a range meant to hold 8 in 10, and its own earlier range from "measured spread" held "about half" (*observed*, [range-calibration.md](../../research/price/nate/range-calibration.md) section 6). Quantile heads plus conformal correction give stated coverage with ranges that adapt to how hard an item is (*observed* CQR, arXiv 1905.03222). The alternative, an LLM estimate, measured $30 to $43 typical miss on $100 (*observed* via the same page) and cannot state coverage. Both figures are the vendor's own, and its method is not sound, so they show the failure, not a bar ([published-price-tests-and-their-flaws.md](../../research/price/nate/published-price-tests-and-their-flaws.md)).
 
-**When it is not shown**: `too_few_sales` (D1). `too_wide` when `high - low > q50` (the range is wider than the value itself). The person sees "Not enough sales to price this" or "Prices for this vary too much to say", plus the comps and Deep research.
+**When it is not shown**: `too_few` (D1, after its gather request still leaves the basis thin). `too_wide` when `high - low > q50` (the range is wider than the value itself). The person sees "Not enough sales to price this" or "Prices for this vary too much to say", plus the comps and Deep research.
 
 **How it is explained**: "Most sell for $32 to $48 on eBay, based on 14 sales, last 90 days." Tap: the comps (D1), then how often ranges like this held (D6).
 
@@ -491,7 +491,7 @@ The three plans (quick, balanced, max_return) differ only in start rung and hori
 
 **Method** (arithmetic on keep, not on price)
 1. If `keep(o) >= keep(always_accept)`: accept (auto inside limits).
-2. If `keep(floor) <= keep(o) < keep(always_accept)`: accept if `keep(o) >= V`; else counter at `c = round_to_ending(max(floor, (o + current price) / 2))`. This is the one counter rule: the midpoint between the offer and the current price, never below the floor (*agent proposal*, a starting value from the split-the-difference norm, *asserted*, until we have accept rates per counter level).
+2. If `keep(floor) <= keep(o) < keep(always_accept)`: accept if `keep(o) >= V`; else counter at `c`, chosen by the [negotiation engine](../engines/negotiation.md#3-the-calculation), never below the floor. Its starting prior and first champion is the midpoint `round_to_ending(max(floor, (o + current price) / 2))` (*agent proposal*, from the split-the-difference norm, *asserted*); the learned policy replaces it per (site, category) only when it passes the engine's [switch rule](../engines/negotiation.md#4-learning).
 3. If `keep(o) < keep(floor)`: the offer is never auto-accepted. It becomes an ask (`price_below_floor`, [product/decisions.md](../../product/decisions.md)) that proposes the counter `c` of rule 2; the person decides. Going below the floor always asks.
 4. A bundle offer is judged on the summed keep against the summed V.
 
@@ -665,7 +665,7 @@ For resellers, the verdict is Buy when `a <= max_pay` (D17).
 
 **Why this method**: these are the two figures resale sellers already read (*asserted*). Both are counts, so they can be checked by anyone. The alternative, raw sold counts, hides how much supply competes.
 
-**When it is not shown**: below the D1 minimum basis, or panel coverage stale (`panel_stale`).
+**When it is not shown**: below M6's own minimum count for sell-through, or fewer than 6 ask and sold pairs for `share_of_asking` (the method above; D1's comp basis does not apply), or panel coverage stale (`panel_stale`).
 
 **How it is explained**: "About 4 in 10 listed ones sold in the last 3 months." Tap: the counts and their dates.
 
@@ -852,7 +852,7 @@ For resellers, the verdict is Buy when `a <= max_pay` (D17).
 | D2 Adjustments | price | paired sales, hedonic fit | shrunk log-linear category factors | comp over 25% adjusted dropped |
 | D3 Time | price | repeat sales | repeat-sales monthly category index | under 30 pairs: factor 1 |
 | D4 Site translation | price | cross-site same products | median cross-site price ratio | under 20 shared products |
-| D5 Fair value range | price | D1 to D4 | quantile model plus conformal | too_few_sales, too_wide |
+| D5 Fair value range | price | D1 to D4 | quantile model plus conformal | too_few, too_wide |
 | D6 Calibration | price | held-out sales | Mondrian CQR with ACI tracker | not checked: parent, labelled |
 | D7 Original retail | price, market | market-insight M2 | M2's method, read as `launch_retail` and `price_new_today` | M2's hide rule |
 | D8 Shipping | price | measure, rate tables | package size times site rates | no size, no default |

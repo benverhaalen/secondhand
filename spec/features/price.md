@@ -74,7 +74,7 @@ Fee table: one row per site and version, `{site, fee_pct, fixed_cents, base: ite
 |---|---|---|
 | checked | the category's backtest coverage, lower 95% bound, is at least 70% at n of 30 or more | the range |
 | not checked yet | below that, parent group used | the parent's wider range, labelled |
-| hidden `too_few_sales` | the minimum basis in [money D1](../determinations/money.md#d1-comparable-set-and-weights) | no number |
+| hidden `too_few` | the minimum basis in [money D1](../determinations/money.md#d1-comparable-set-and-weights) | no number |
 | hidden `too_wide` | width over the point value | no number |
 
 **You keep.** `net = price - fee(base) - fixed - seller_shipping - processing`. Ben's $16.88 (eBay) and about $18.90 (Depop) on a $20 sale ([pitch-evidence](../../research/cross-cutting/ben/pitch-evidence.md)) hold with no shipping in the fee base. Nate's note puts shipping and tax in the base and gets $16.06 and $18.69 ([fees-and-taxes](../../research/price/nate/fees-and-taxes.md)). The engine uses each site's own base.

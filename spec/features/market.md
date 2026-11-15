@@ -38,7 +38,7 @@ Every number is a guarded number; tapping it opens its `citation`: the rows behi
 | Same-purpose relations | `same_product`, `successor`, `functional_equivalent` | [M24](../determinations/market-insight.md#m24-same-purpose-match) |
 | Condition | one scale across new, refurbished and used | [M25](../determinations/market-insight.md#m25-one-condition-scale) |
 | Delivered price, stock, ships | price plus shipping plus tax; stock; ships from and to | [M26](../determinations/market-insight.md#m26-delivered-price) |
-| Official offers | read on demand from Shopify Catalog (grouped by its product id; prices cached 10 minutes, no standing copy, no redistribution) and Klarna's product feed, plus M2's retailers | `retail_offer` |
+| Official offers | read on demand from Shopify Catalog (grouped by its product id; prices cached 10 minutes, no standing copy, no redistribution) and Klarna's product feed, plus M2's retailers and Amazon. Availability, variant, delivered price and delivery time are checked per offer, and product and seller reviews are read where a site shows them, each with sources, by the buying engine ([intelligence-api](../engines/intelligence-api.md#1-what-it-decides)) | `retail_offer` |
 
 Best tools for the catalog, not Databricks-bound: Shopify Catalog and Klarna for official offers, the states' published rate tables for a labelled tax estimate (no paid tax service, [Nate](../../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)), AI Search for similarity; Delta keeps only what each source's `rights` allow.
 

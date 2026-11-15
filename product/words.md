@@ -726,3 +726,54 @@ Ben, in the thread "Build the brand system for everything", 2026-11-15 02:01 UTC
 ## 2026-11-15 a standard for edge states, known and learned while building
 Ben, in the thread "Build the brand system for everything", 2026-11-15 02:03 UTC.
 > also im really concerned about how the system thinks about defining standard for different states. edge states. ones that aren't there in the original. and find a way to know these in it and continuously update and learn when building.
+
+## 2026-11-14 nate capture opens on the type pick, a confident suggestion may skip the tap, and the tutorial is animated steps
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering the capture questions.
+> Lets do on the type pick, A confident type suggestion can skip the tap entirely, but ideally the tap makes it easier to identify, we can try both ways. The tutorial will be a helpful step by step of animations for capturing the image, similar to other apps and how they show what to do like id verfiication platforms do sometimes
+
+## 2026-11-14 nate each type gets its own select for every field its process needs
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering whether electronics may have a fourth follow-up input.
+> yes electronics and all other needed fields that differ in the process get their own select type
+
+## 2026-11-14 nate pricing weighs every platform's top listings, official listings and credible discounts, with a slider and a free note
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> the system should aggregate all top listings from each second hand platform, all official market listings, if there are discounts from credible sources, all to help it weigh its suggested pricing, with a range of lowball to hard to negoitate the user can use a slider to select their preference. Theres also the option to type or text additional info before you generate the full listing, anything you want to add like where you got it, the user can even repeat things the system already identified
+
+## 2026-11-14 nate the price slider defaults to the middle
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering whether the price slider defaults to the middle or to the person's last choice.
+> default to the middle for the suggested option.
+
+## 2026-11-14 nate show what sold prices say, and expert research sessions that first name what must be determined
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the price slider was specified.
+> its probably also helpful to see what sold prices say. Ideally, I want expert /research sessions focusing on all things first identifying what needs to be determined, then how to best do it and all things to consider . From a professionals input
+
+## 2026-11-15 round 10 picks
+Ben, on the round 10 picks page, saved 2026-11-15 01:53 UTC; he wrote "done with round 10." in the thread "Set the secondhand brand identity" at 01:58. He tapped four things: "Drop" under laid on a table, "Same weight, selected or not" under the tab label, "Yes, this rule" under what separates, and "PP Neue Montreal 2.6" under the font file. He left the four screens, the second hand, paper tags, the receipt, the color order and the gaps untapped. The quotes are the notes he typed.
+
+**Touch 3: the receipt** (no pick).
+> Yes and no. the goal is to use hierarchy and colors and organization and boxes to essentially make it super intuitive. rather than saying it explicitly. making every page like the one above feel the same. also only showing as much info as needed for the common user is good. like not doing too much. choosing the colors carefully. like what color is associated with live the most, of the ones you can pick from. a deep red vs a light red are different. but like minimizing the amount of info and allowing the user to see more info if needed truly. i like the B. the receipt thing. i think the composition of the page could use work. i think you need consider footers too. and spacing. and all the sub options that might need to be at the bottom of pages. improve your rules and your ui constitution as well you should continuously update it. using color, spacing, borders, when to use bold or italics or when to use the wordmark vs the logo. when to notice something is wrong. like how the ebay icon blends in with the receipt color.  ensure all the updates are thought about carefully using the harness rules and understanding exactly how to really make sure what i mean not what i say reaches everything.
+
+**Touch 4: laid on a table** (Drop).
+> i think the selections at the top could use some improvement using colors well. sorting by type and having dropdowns. so think live vs needs you vs sold are all the same primitive. then things like type or marketplace. use color well to show hierarchy. also i think subtle color differences even in whites and blacks can be super useful. also super worried about components not being well enough on like a grid. like the padding for the live little sticker over the patagonia vest feels a little off if you look close enough. it doesnt feel balanced. also think about the most important info to getting the user to take action well from a company standpoint. like the ui of instagram encourages people to scroll more and get data to instagram or ads. what are we optimizing for in the long run and how to do it implicitly and in a way barely noticable.
+
+**More touches** (a note, no pick asked).
+> i like the handoff thing. if there is a way to create an svg animation for that. with a hand actually. and using fable 5.2 to create it in the style of the product. also another thought about ai. when you are looking at the price that the model wants to set or thinks about we have a lot of considerations to make. but a main principle in this app is human in the loop behind decisions. this is how we are justifying automated access to the judges for demo purposes. but if you could work alongside me to design a hand logo thats svg and moldable. there could be hand models out there or different animations or sprites or svg. research them and find them rather than making your own for the time being. but use rdd and iae to look at things possibly oss or something like higgsfield for doing this well or different packages designed to let claude fable 5.2 do these things well. also i think we have yet to pick a central color or standalone main colors for it. yes we have a bunch of colors, but does expert ui ux research suggest for branding purposes choosing carefully. for your own photos thing, it should be whatever the listing has. i think the central sound for it should be a snap sound. find and research packages or libraries and find very satisfying snap sounds. because its a hand yk. then for state icons, leave these for now.
+
+**The tab label** (Same weight, selected or not).
+> for any of the apple or really good designer decisions use what the expert would.
+
+**What decides which color goes where** (no pick).
+> sold mint, live as in blue like twitch kinda, needs you yellow or lime as in like a warning. and shipping im not sure. whatever people associate with shipping. also in the ended thing and the failed they kinda blend in a bit.
+
+**Which Neue Montreal file** (PP Neue Montreal 2.6).
+> just ensure to tailor the little things in the font and set it and all. like they seem not centered. and ensure this is extrapolated to everything else with the fonts. you need to tailor them for their quirks to be great in ui.
+
+**Gaps** (nothing ticked).
+> really engineer the missing one line idea well. focus on the second hand as in another hand to help you. the second hand for second hand. but written better and in a way where its instantly knowable what that actually means. a second hand to help sell your secondhand. i think i discussed hand as a mark earlier. you do your own investigation into it and ideation and i can end up doing my own logo design. the sale should be a snap. give me options to pick from for it. for icons leave them they are fine. i think a drifting gradient is a bit standard as a device. think of possible other devices when thinking about intuition and product. like the underline thing is one but it felt a little ai slop. i think its really needed. i think we just need a great standard way where an ai cannot create bad ai and a way to easily check work for it. some other agents might be working on this too
+
+**Polish details** (a note, no pick asked).
+> thats fine. integrate them. 
+
+## 2026-11-15 a constitution with little wiggle room, the heavy black, the black outline and the gray box
+Ben, thread "Set the secondhand brand identity", 01:58 UTC, with his round 10 picks.
+> done with round 10. ensure in the system that each choice in the brand consitution and the different parts of it - like you can create sections for app or web or etc based on best practices from research etc. and it all gives little wiggle room for ambiguity or the system will learn a system that has little wiggle room. also, in the mock like the first one i want to know what you think about the only really heavy black use in light mode also how buttons either are black or have black outline and essentially nothing else from what im seeing has that black outline and how it feels to me like the gray background on say the nike dunk lows in that one image doesn't feel as separate. at least to me.

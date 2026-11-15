@@ -11,13 +11,13 @@
   --gray:        #EFF1F2;               /* filled secondary buttons, photo tiles (ref-12, ref-15) */
   --rule:        rgb(10 10 10 / .08);   /* hairlines */
   /* the ring (Art. 5; Ben, round 8): eight light hues under one rule, in ring order. A field is three neighbors on it */
-  --lilac:       #DDCEFE;               /* category */
-  --sky:         #A5E1FE;               /* state "shipping" */
-  --aqua:        #91EAE9;               /* category */
-  --mint:        #A1EACB;               /* state "live" */
-  --lime:        #EBF08F;               /* money: states "sold" and "paid" */
+  --lilac:       #DDCEFE;               /* state "shipping", until Ben picks (R28) */
+  --sky:         #A5E1FE;               /* state "live" (Ben, round 10) */
+  --aqua:        #91EAE9;               /* the field only */
+  --mint:        #A1EACB;               /* state "sold" (Ben, round 10) */
+  --lime:        #EBF08F;               /* state "paid" */
   --marigold:    #F5D297;               /* state "needs you" only */
-  --peach:       #FECCAA;               /* category */
+  --peach:       #FECCAA;               /* the field only */
   --pink:        #FEC6D2;               /* category */
   --brick:       #C52B17;               /* failed; destructive confirm; white text on it 5.6:1 */
   /* the family (Art. 5, The family): every hue has three steps, built in OKLCH with the hue kept.
@@ -45,12 +45,13 @@
   --field-mesh: radial-gradient(at 30% 100%, var(--mint), transparent 60%), radial-gradient(at 100% 100%, var(--lime), transparent 65%);
   --field: var(--field-mesh), var(--sky);
 
-  /* type (Art. 6; Ben, rounds 7 and 8): Neue Montreal as QOVES sets it, and Clofie SemiBold for the wordmark and the screen title */
+  /* type (Art. 6; Ben, rounds 7, 8 and 10): PP Neue Montreal 2.6 as QOVES sets it, and Clofie SemiBold for the wordmark and the screen title */
   /* never system-ui: it can resolve to an Inter-derived face. Scripts a face lacks fall to Noto */
-  --font-text:    "Neue Montreal", "Noto Sans", "Noto Sans JP", "Noto Sans Arabic", "Noto Sans Devanagari", -apple-system, sans-serif;
+  --font-text:    "PP Neue Montreal", "Noto Sans", "Noto Sans JP", "Noto Sans Arabic", "Noto Sans Devanagari", -apple-system, sans-serif;
   --font-display: "Clofie", var(--font-text);                     /* the wordmark and what Art. 6 lists, nothing else */
   --w-display: 600;                                               /* Clofie SemiBold, the only display weight */
-  --w-regular: 400; --w-medium: 500;                              /* text face; medium only on buttons and the selected tab */
+  --w-regular: 400; --w-medium: 500;                              /* text face: Book and Medium. Medium only on buttons; weight never changes with state */
+  --nudge-display: .12em;                                         /* Clofie sits this far above center in its line; move it down where text cannot be trimmed (Art. 6.10) */
   /* app sizes by role (Art. 6 roles); line heights are ratios so they grow with the text setting */
   --t-13: 13px; --lh-13: 1.385;                   /* caption, time, tab label */
   --t-15: 15px; --lh-15: 1.333;                   /* body, rows, buttons */
