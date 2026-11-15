@@ -2337,3 +2337,9 @@ Nate, the app-wiring lead's session, 2026-11-15, about 07:55 Central (machine cl
 And, to "Wire the signed-in screens next?": "yes".
 
 Used in: the shop takeover's source bubbles (packet 81), the harness check (packet 83).
+
+## 2026-11-15 nate fix everything, fast
+Nate, server-core lead's session, 2026-11-15, about 08:30 Central, after the lead reported a commit that had overwritten the server's request-state fix.
+> LEts fix everything to be fast
+
+Read by the server-core lead as: land the fixes now and run the remaining queued ones at once rather than one after another. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md) (the restore ff56bbda and three workers started in parallel).
