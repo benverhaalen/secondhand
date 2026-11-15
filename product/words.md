@@ -620,3 +620,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate the ui shows the work: animation and findings as they arrive
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Our ui should be intuitive, designed well, but explanatory, like we show an animation for when we are searching across industries, with pop ups displaying findings, like 1000 similar products found, prices weighed, a way to indicate the process and help exhibit the amount we consider with each answer.
+
+## 2026-11-14 nate sale emails, the expo account, where routes are hosted, and a buy page shaped by your style
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Give me the questions for ben and we will work through it in person and Ill tell you the answers. The product may read sale emails but preferably we keep it to harness onto the platforms with the users authenticated, like treg does. Ben has my expo account and can use that to build the app. App server routes are hosted on databricks if possible, or we will host on next.js along with our site. Think as well at what information we can deliver to a user, value of what they have in total, how much they've sold, maybe helping build their buying page empowered by what the system determines is its sense of style
