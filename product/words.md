@@ -616,3 +616,7 @@ Ben, project chat, 00:50 UTC.
 ## 2026-11-14 nate speed with real-time accuracy, and score what to build and test first
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the agent proposed a "just value it" path, a figure for what your things are worth, and a notice when an owned item's value moves.
 > Im sure there are way more intuitive and genius ways to design out things to account for speed, while also maintaining the accuracy and focus realtime calculations give us. I love the gap things you said you would add, look at all aspects of the app, score what we have designed and should start building and testing to validate what we already expect will work and draft it out to me, score what might work, and ill help direct with you how to get it working
+
+## 2026-11-14 nate the ui shows the work: animation and findings as they arrive
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Our ui should be intuitive, designed well, but explanatory, like we show an animation for when we are searching across industries, with pop ups displaying findings, like 1000 similar products found, prices weighed, a way to indicate the process and help exhibit the amount we consider with each answer.
