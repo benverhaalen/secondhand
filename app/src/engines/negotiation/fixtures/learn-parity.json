@@ -1,0 +1,3646 @@
+{
+  "feature_order": [
+    "gap_ratio",
+    "counter_ask_ratio",
+    "round",
+    "days_listed",
+    "last_concession_share",
+    "response_latency_hours",
+    "watcher_count",
+    "like_count"
+  ],
+  "sequences": [
+    {
+      "name": "ordered-0",
+      "initial": {
+        "terms": {
+          "global": -0.75,
+          "site:poshmark": 0.0,
+          "category:jackets": 0.2,
+          "cell:poshmark:jackets": -0.1,
+          "site:ebay": 0.3
+        },
+        "weights": [
+          0.5,
+          0.0,
+          0.1,
+          -0.1,
+          0.0,
+          0.05,
+          0.0,
+          -0.02
+        ],
+        "prior_terms": null,
+        "prior_weights": null,
+        "precision": {}
+      },
+      "at": "2026-01-01T00:00:00+00:00",
+      "events": [
+        {
+          "at": "2026-01-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              0.0,
+              0.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -1.1108497173780612,
+              "site:poshmark": -0.36084971737806115,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -0.35643319538020735,
+              0.1,
+              -0.1,
+              -0.08915055098410604,
+              0.025,
+              -0.36084971737806115,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": -0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.24751657271186,
+              "site:poshmark": 1.24751657271186,
+              "category:jackets": 1.24751657271186,
+              "cell:poshmark:jackets": 1.24751657271186,
+              "site:ebay": 1.0,
+              "w:0": 1.2004884238966065,
+              "w:1": 1.2377149164324703,
+              "w:2": 1.0,
+              "w:3": 1.0,
+              "w:4": 1.0099006629084744,
+              "w:5": 1.24751657271186,
+              "w:6": 1.24751657271186,
+              "w:7": 1.24751657271186
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              1.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.375,
+              "site:poshmark": 0.4385931356025968,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.75,
+              0.43362096177284576,
+              0.15000000000000002,
+              -0.05,
+              0.10873210679267484,
+              0.07500000000000001,
+              0.4385931356025968,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": -0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2386232548123197,
+              "site:poshmark": 1.2386232548123197,
+              "category:jackets": 1.2386232548123197,
+              "cell:poshmark:jackets": 1.2386232548123197,
+              "site:ebay": 1.0,
+              "w:0": 1.1889452304004857,
+              "w:1": 1.228269308671748,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.2386232548123197,
+              "w:6": 1.2386232548123197,
+              "w:7": 1.2386232548123197
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              2.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -1.125,
+              "site:poshmark": -0.34028294720051405,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -0.33648991649065946,
+              0.05,
+              -0.15000000000000002,
+              -0.08696104634320814,
+              0.025,
+              -0.34028294720051405,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": -0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2582232548123198,
+              "site:poshmark": 1.2582232548123198,
+              "category:jackets": 1.2582232548123198,
+              "cell:poshmark:jackets": 1.2582232548123198,
+              "site:ebay": 1.0,
+              "w:0": 1.2048212304004857,
+              "w:1": 1.247093148671748,
+              "w:2": 1.0392000000000001,
+              "w:3": 1.0392000000000001,
+              "w:4": 1.0015679999999998,
+              "w:5": 1.2582232548123198,
+              "w:6": 1.2582232548123198,
+              "w:7": 1.2582232548123198
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-02-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              3.0,
+              31.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.375,
+              "site:poshmark": 0.7910197661015868,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.75,
+              0.7744106435317154,
+              0.15000000000000002,
+              -0.05,
+              0.15236593320659547,
+              0.07500000000000001,
+              0.7910197661015868,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": -0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-05-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              4.0,
+              121.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -1.125,
+              "site:poshmark": -0.8622837689391454,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -0.8458542713355807,
+              0.05,
+              -0.15000000000000002,
+              -0.1768007147273751,
+              0.025,
+              -0.8622837689391454,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": -0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-05-03T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              5.0,
+              122.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.375,
+              "site:poshmark": 0.1185720592639059,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.75,
+              0.116120668698797,
+              0.15000000000000002,
+              -0.05,
+              0.023083875556045547,
+              0.07500000000000001,
+              0.1185720592639059,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": -0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.03635846515553983
+          }
+        }
+      ]
+    },
+    {
+      "name": "ordered-1",
+      "initial": {
+        "terms": {
+          "global": -0.5,
+          "site:poshmark": 0.0,
+          "category:jackets": 0.2,
+          "cell:poshmark:jackets": -0.1,
+          "site:ebay": 0.3
+        },
+        "weights": [
+          -0.5,
+          0.0,
+          0.1,
+          -0.1,
+          0.0,
+          0.05,
+          0.0,
+          -0.02
+        ],
+        "prior_terms": null,
+        "prior_weights": null,
+        "precision": {}
+      },
+      "at": "2026-01-01T00:00:00+00:00",
+      "events": [
+        {
+          "at": "2026-01-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              0.0,
+              0.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.25,
+              "site:poshmark": 0.5790898341446554,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.571431820654303,
+              0.1,
+              -0.1,
+              0.13894753186359418,
+              0.07500000000000001,
+              0.5790898341446554,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": -0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2097728213598251,
+              "site:poshmark": 1.2097728213598251,
+              "category:jackets": 1.2097728213598251,
+              "cell:poshmark:jackets": 1.2097728213598251,
+              "site:ebay": 1.0,
+              "w:0": 1.1699159853014582,
+              "w:1": 1.2014658176339759,
+              "w:2": 1.0,
+              "w:3": 1.0,
+              "w:4": 1.008390912854393,
+              "w:5": 1.2097728213598251,
+              "w:6": 1.2097728213598251,
+              "w:7": 1.2097728213598251
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              1.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.75,
+              "site:poshmark": -0.24961974381177388,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.24675152495291086,
+              0.05,
+              -0.15000000000000002,
+              -0.06007249052835345,
+              0.025,
+              -0.24961974381177388,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": -0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2017415719325755,
+              "site:poshmark": 1.2017415719325755,
+              "category:jackets": 1.2017415719325755,
+              "cell:poshmark:jackets": 1.2017415719325755,
+              "site:ebay": 1.0,
+              "w:0": 1.1590710672678926,
+              "w:1": 1.1928481404340414,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.2017415719325755,
+              "w:6": 1.2017415719325755,
+              "w:7": 1.2017415719325755
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              2.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.25,
+              "site:poshmark": 0.5527765902860727,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.5458722342066996,
+              0.15000000000000002,
+              -0.05,
+              0.13562066260752953,
+              0.07500000000000001,
+              0.5527765902860727,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": -0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2213415719325755,
+              "site:poshmark": 1.2213415719325755,
+              "category:jackets": 1.2213415719325755,
+              "cell:poshmark:jackets": 1.2213415719325755,
+              "site:ebay": 1.0,
+              "w:0": 1.1749470672678926,
+              "w:1": 1.2116719804340415,
+              "w:2": 1.0392000000000001,
+              "w:3": 1.0392000000000001,
+              "w:4": 1.0015679999999998,
+              "w:5": 1.2213415719325755,
+              "w:6": 1.2213415719325755,
+              "w:7": 1.2213415719325755
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-02-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              3.0,
+              31.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.75,
+              "site:poshmark": -0.6847729445588073,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.6697194846736954,
+              0.05,
+              -0.15000000000000002,
+              -0.12803612507443476,
+              0.025,
+              -0.6847729445588073,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": -0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-05-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              4.0,
+              121.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.25,
+              "site:poshmark": 0.8755646216319928,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.8589406661928332,
+              0.15000000000000002,
+              -0.05,
+              0.17984194074389517,
+              0.07500000000000001,
+              0.8755646216319928,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": -0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-05-03T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              5.0,
+              122.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.75,
+              "site:poshmark": -0.10559454166578319,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.10333316751316612,
+              0.05,
+              -0.15000000000000002,
+              -0.020112111237741398,
+              0.025,
+              -0.10559454166578319,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": -0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        }
+      ]
+    },
+    {
+      "name": "ordered-2",
+      "initial": {
+        "terms": {
+          "global": -0.25,
+          "site:poshmark": 0.0,
+          "category:jackets": 0.2,
+          "cell:poshmark:jackets": -0.1,
+          "site:ebay": 0.3
+        },
+        "weights": [
+          0.5,
+          0.0,
+          0.1,
+          -0.1,
+          0.0,
+          0.05,
+          0.0,
+          -0.02
+        ],
+        "prior_terms": null,
+        "prior_weights": null,
+        "precision": {}
+      },
+      "at": "2026-01-01T00:00:00+00:00",
+      "events": [
+        {
+          "at": "2026-01-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              0.0,
+              0.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.375,
+              "site:poshmark": -0.4616004501036358,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -0.4559149699245063,
+              0.1,
+              -0.1,
+              -0.11377596415797003,
+              0.025,
+              -0.4616004501036358,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": -0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.244458311690746,
+              "site:poshmark": 1.244458311690746,
+              "category:jackets": 1.244458311690746,
+              "cell:poshmark:jackets": 1.244458311690746,
+              "site:ebay": 1.0,
+              "w:0": 1.1980112324695043,
+              "w:1": 1.2347777625477923,
+              "w:2": 1.0,
+              "w:3": 1.0,
+              "w:4": 1.00977833246763,
+              "w:5": 1.244458311690746,
+              "w:6": 1.244458311690746,
+              "w:7": 1.244458311690746
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              1.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.125,
+              "site:poshmark": 0.3420570900199385,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.75,
+              0.3382427123633223,
+              0.15000000000000002,
+              -0.05,
+              0.08466913883302164,
+              0.07500000000000001,
+              0.3420570900199385,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": -0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2356348445694643,
+              "site:poshmark": 1.2356348445694643,
+              "category:jackets": 1.2356348445694643,
+              "cell:poshmark:jackets": 1.2356348445694643,
+              "site:ebay": 1.0,
+              "w:0": 1.1865246181037727,
+              "w:1": 1.2253992394745095,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.2356348445694643,
+              "w:6": 1.2356348445694643,
+              "w:7": 1.2356348445694643
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              2.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.375,
+              "site:poshmark": -0.4386733081519926,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -0.43364459293053176,
+              0.05,
+              -0.15000000000000002,
+              -0.11102401430286134,
+              0.025,
+              -0.4386733081519926,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": -0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2552348445694643,
+              "site:poshmark": 1.2552348445694643,
+              "category:jackets": 1.2552348445694643,
+              "cell:poshmark:jackets": 1.2552348445694643,
+              "site:ebay": 1.0,
+              "w:0": 1.2024006181037727,
+              "w:1": 1.2442230794745095,
+              "w:2": 1.0392000000000001,
+              "w:3": 1.0392000000000001,
+              "w:4": 1.0015679999999998,
+              "w:5": 1.2552348445694643,
+              "w:6": 1.2552348445694643,
+              "w:7": 1.2552348445694643
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-02-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              3.0,
+              31.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.125,
+              "site:poshmark": 0.7418245856258474,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.75,
+              0.7258333053117793,
+              0.15000000000000002,
+              -0.05,
+              0.14033444922676885,
+              0.07500000000000001,
+              0.7418245856258474,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": -0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-05-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              4.0,
+              121.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.375,
+              "site:poshmark": -0.8684331664986128,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -0.8519264386130727,
+              0.05,
+              -0.15000000000000002,
+              -0.17830465022485342,
+              0.025,
+              -0.8684331664986128,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": -0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-05-03T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              5.0,
+              122.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.125,
+              "site:poshmark": 0.11256311413880704,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.75,
+              0.11018718991359544,
+              0.15000000000000002,
+              -0.05,
+              0.021614289992802488,
+              0.07500000000000001,
+              0.11256311413880704,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": -0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.043127907258271495
+          }
+        }
+      ]
+    },
+    {
+      "name": "ordered-3",
+      "initial": {
+        "terms": {
+          "global": 0.0,
+          "site:poshmark": 0.0,
+          "category:jackets": 0.2,
+          "cell:poshmark:jackets": -0.1,
+          "site:ebay": 0.3
+        },
+        "weights": [
+          -0.5,
+          0.0,
+          0.1,
+          -0.1,
+          0.0,
+          0.05,
+          0.0,
+          -0.02
+        ],
+        "prior_terms": null,
+        "prior_weights": null,
+        "precision": {}
+      },
+      "at": "2026-01-01T00:00:00+00:00",
+      "events": [
+        {
+          "at": "2026-01-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              0.0,
+              0.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.47212781392326947,
+              "site:poshmark": 0.47212781392326947,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.46628906868171754,
+              0.1,
+              -0.1,
+              0.11619642259188735,
+              0.07500000000000001,
+              0.47212781392326947,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 0.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2424973950225002,
+              "site:poshmark": 1.2424973950225002,
+              "category:jackets": 1.2424973950225002,
+              "cell:poshmark:jackets": 1.2424973950225002,
+              "site:ebay": 1.0,
+              "w:0": 1.196422889968225,
+              "w:1": 1.232894498179609,
+              "w:2": 1.0,
+              "w:3": 1.0,
+              "w:4": 1.0096998958009,
+              "w:5": 1.2424973950225002,
+              "w:6": 1.2424973950225002,
+              "w:7": 1.2424973950225002
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              1.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.3330019839486564,
+              "site:poshmark": -0.3330019839486564,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.32928432160414933,
+              0.05,
+              -0.15000000000000002,
+              -0.08230396374613859,
+              0.025,
+              -0.3330019839486564,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2337187152998192,
+              "site:poshmark": 1.2337187152998192,
+              "category:jackets": 1.2337187152998192,
+              "cell:poshmark:jackets": 1.2337187152998192,
+              "site:ebay": 1.0,
+              "w:0": 1.18497255339536,
+              "w:1": 1.2235589889239422,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.2337187152998192,
+              "w:6": 1.2337187152998192,
+              "w:7": 1.2337187152998192
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              2.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.44892202950195587,
+              "site:poshmark": 0.44892202950195587,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.4437463237339109,
+              0.15000000000000002,
+              -0.05,
+              0.11338918938974439,
+              0.07500000000000001,
+              0.44892202950195587,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 0.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2533187152998193,
+              "site:poshmark": 1.2533187152998193,
+              "category:jackets": 1.2533187152998193,
+              "cell:poshmark:jackets": 1.2533187152998193,
+              "site:ebay": 1.0,
+              "w:0": 1.20084855339536,
+              "w:1": 1.2423828289239423,
+              "w:2": 1.0392000000000001,
+              "w:3": 1.0392000000000001,
+              "w:4": 1.0015679999999998,
+              "w:5": 1.2533187152998193,
+              "w:6": 1.2533187152998193,
+              "w:7": 1.2533187152998193
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-02-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              3.0,
+              31.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.7367002249508658,
+              "site:poshmark": -0.7367002249508658,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.7207824399100897,
+              0.05,
+              -0.15000000000000002,
+              -0.13915186168332733,
+              0.025,
+              -0.7367002249508658,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-05-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              4.0,
+              121.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.8690737115829855,
+              "site:poshmark": 0.8690737115829855,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.8525577967882839,
+              0.15000000000000002,
+              -0.05,
+              0.1784524736677836,
+              0.07500000000000001,
+              0.8690737115829855,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 0.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-05-03T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              5.0,
+              122.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": -0.11193719912438072,
+              "site:poshmark": -0.11193719912438072,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.10957025197903536,
+              0.05,
+              -0.15000000000000002,
+              -0.021469842841975006,
+              0.025,
+              -0.11193719912438072,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        }
+      ]
+    },
+    {
+      "name": "ordered-4",
+      "initial": {
+        "terms": {
+          "global": 0.25,
+          "site:poshmark": 0.0,
+          "category:jackets": 0.2,
+          "cell:poshmark:jackets": -0.1,
+          "site:ebay": 0.3
+        },
+        "weights": [
+          0.5,
+          0.0,
+          0.1,
+          -0.1,
+          0.0,
+          0.05,
+          0.0,
+          -0.02
+        ],
+        "prior_terms": null,
+        "prior_weights": null,
+        "precision": {}
+      },
+      "at": "2026-01-01T00:00:00+00:00",
+      "events": [
+        {
+          "at": "2026-01-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              0.0,
+              0.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.125,
+              "site:poshmark": -0.568390287272145,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -0.560936773244546,
+              0.1,
+              -0.1,
+              -0.13682417551111364,
+              0.025,
+              -0.568390287272145,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2139096965202945,
+              "site:poshmark": 1.2139096965202945,
+              "category:jackets": 1.2139096965202945,
+              "cell:poshmark:jackets": 1.2139096965202945,
+              "site:ebay": 1.0,
+              "w:0": 1.1732668541814384,
+              "w:1": 1.2054388725380907,
+              "w:2": 1.0,
+              "w:3": 1.0,
+              "w:4": 1.0085563878608117,
+              "w:5": 1.2139096965202945,
+              "w:6": 1.2139096965202945,
+              "w:7": 1.2139096965202945
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              1.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.375,
+              "site:poshmark": 0.2573410067461017,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.75,
+              0.254394939047876,
+              0.15000000000000002,
+              -0.05,
+              0.062147349354717996,
+              0.07500000000000001,
+              0.2573410067461017,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2057839607337961,
+              "site:poshmark": 1.2057839607337961,
+              "category:jackets": 1.2057839607337961,
+              "cell:poshmark:jackets": 1.2057839607337961,
+              "site:ebay": 1.0,
+              "w:0": 1.1623454021968813,
+              "w:1": 1.1967304506387337,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.2057839607337961,
+              "w:6": 1.2057839607337961,
+              "w:7": 1.2057839607337961
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              2.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.125,
+              "site:poshmark": -0.5424083219566723,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -0.5356972908066551,
+              0.05,
+              -0.15000000000000002,
+              -0.13354580378116498,
+              0.025,
+              -0.5424083219566723,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2253839607337962,
+              "site:poshmark": 1.2253839607337962,
+              "category:jackets": 1.2253839607337962,
+              "cell:poshmark:jackets": 1.2253839607337962,
+              "site:ebay": 1.0,
+              "w:0": 1.1782214021968813,
+              "w:1": 1.2155542906387338,
+              "w:2": 1.0392000000000001,
+              "w:3": 1.0392000000000001,
+              "w:4": 1.0015679999999998,
+              "w:5": 1.2253839607337962,
+              "w:6": 1.2253839607337962,
+              "w:7": 1.2253839607337962
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-02-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              3.0,
+              31.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.375,
+              "site:poshmark": 0.6899570787235076,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.75,
+              0.6748069563737176,
+              0.15000000000000002,
+              -0.05,
+              0.12907355448761704,
+              0.07500000000000001,
+              0.6899570787235076,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-05-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              4.0,
+              121.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.125,
+              "site:poshmark": -0.8749166048614053,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -0.8583047322303304,
+              0.05,
+              -0.15000000000000002,
+              -0.17971226206724739,
+              0.025,
+              -0.8749166048614053,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-05-03T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              5.0,
+              122.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.375,
+              "site:poshmark": 0.10622775771287529,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.75,
+              0.10395457672389152,
+              0.15000000000000002,
+              -0.05,
+              0.020238828049321145,
+              0.07500000000000001,
+              0.10622775771287529,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 0.25,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.0644303129500997
+          }
+        }
+      ]
+    },
+    {
+      "name": "ordered-5",
+      "initial": {
+        "terms": {
+          "global": 0.5,
+          "site:poshmark": 0.0,
+          "category:jackets": 0.2,
+          "cell:poshmark:jackets": -0.1,
+          "site:ebay": 0.3
+        },
+        "weights": [
+          -0.5,
+          0.0,
+          0.1,
+          -0.1,
+          0.0,
+          0.05,
+          0.0,
+          -0.02
+        ],
+        "prior_terms": null,
+        "prior_weights": null,
+        "precision": {}
+      },
+      "at": "2026-01-01T00:00:00+00:00",
+      "events": [
+        {
+          "at": "2026-01-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              0.0,
+              0.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.75,
+              "site:poshmark": 0.3704713460305607,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.36594721285096277,
+              0.1,
+              -0.1,
+              0.09160313301619502,
+              0.07500000000000001,
+              0.3704713460305607,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.248599006677543,
+              "site:poshmark": 1.248599006677543,
+              "category:jackets": 1.248599006677543,
+              "cell:poshmark:jackets": 1.248599006677543,
+              "site:ebay": 1.0,
+              "w:0": 1.2013651954088098,
+              "w:1": 1.2387544860131123,
+              "w:2": 1.0,
+              "w:3": 1.0,
+              "w:4": 1.0099439602671016,
+              "w:5": 1.248599006677543,
+              "w:6": 1.248599006677543,
+              "w:7": 1.248599006677543
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              1.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.25,
+              "site:poshmark": -0.42851620273980795,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.4236781069575752,
+              0.05,
+              -0.15000000000000002,
+              -0.10633554181161638,
+              0.025,
+              -0.42851620273980795,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2396809659520587,
+              "site:poshmark": 1.2396809659520587,
+              "category:jackets": 1.2396809659520587,
+              "cell:poshmark:jackets": 1.2396809659520587,
+              "site:ebay": 1.0,
+              "w:0": 1.1898019764236742,
+              "w:1": 1.2292851344503535,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.2396809659520587,
+              "w:6": 1.2396809659520587,
+              "w:7": 1.2396809659520587
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              2.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.75,
+              "site:poshmark": 0.34970567664759866,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.34580598430372206,
+              0.15000000000000002,
+              -0.05,
+              0.0893576113242666,
+              0.07500000000000001,
+              0.34970567664759866,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2592809659520587,
+              "site:poshmark": 1.2592809659520587,
+              "category:jackets": 1.2592809659520587,
+              "cell:poshmark:jackets": 1.2592809659520587,
+              "site:ebay": 1.0,
+              "w:0": 1.2056779764236742,
+              "w:1": 1.2481089744503535,
+              "w:2": 1.0392000000000001,
+              "w:3": 1.0392000000000001,
+              "w:4": 1.0015679999999998,
+              "w:5": 1.2592809659520587,
+              "w:6": 1.2592809659520587,
+              "w:7": 1.2592809659520587
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-02-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              3.0,
+              31.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.25,
+              "site:poshmark": -0.7863084013780444,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.7697526096251841,
+              0.05,
+              -0.15000000000000002,
+              -0.15116765071606622,
+              0.025,
+              -0.7863084013780444,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-05-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              4.0,
+              121.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.75,
+              "site:poshmark": 0.8628726895295882,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.846436525573897,
+              0.15000000000000002,
+              -0.05,
+              0.17695050003869126,
+              0.07500000000000001,
+              0.8628726895295882,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-05-03T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              5.0,
+              122.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.25,
+              "site:poshmark": -0.11799658963833848,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.11555171316566315,
+              0.05,
+              -0.15000000000000002,
+              -0.022937511345967942,
+              0.025,
+              -0.11799658963833848,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.5,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        }
+      ]
+    },
+    {
+      "name": "ordered-6",
+      "initial": {
+        "terms": {
+          "global": 0.75,
+          "site:poshmark": 0.0,
+          "category:jackets": 0.2,
+          "cell:poshmark:jackets": -0.1,
+          "site:ebay": 0.3
+        },
+        "weights": [
+          0.5,
+          0.0,
+          0.1,
+          -0.1,
+          0.0,
+          0.05,
+          0.0,
+          -0.02
+        ],
+        "prior_terms": null,
+        "prior_weights": null,
+        "precision": {}
+      },
+      "at": "2026-01-01T00:00:00+00:00",
+      "events": [
+        {
+          "at": "2026-01-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              1000000000000.0,
+              0.98,
+              0.0,
+              0.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.375,
+              "site:poshmark": -0.9611612397018438,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -0.9426556017770451,
+              0.1,
+              -0.1,
+              -0.19584645637819953,
+              0.025,
+              -0.9611612397018438,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.0196,
+              "w:1": 1.01882384,
+              "w:2": 1.0,
+              "w:3": 1.0,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              1000000000000.0,
+              0.98,
+              1.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.40318054734127706,
+              "site:poshmark": -0.919592751143155,
+              "category:jackets": 0.1218995386606947,
+              "cell:poshmark:jackets": -0.12924246291759306,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.27532554339555776,
+              -0.9018874486528011,
+              0.11961553550411928,
+              -0.08038446449588073,
+              -0.18737645067578243,
+              0.045186536293263135,
+              -0.919592751143155,
+              -0.010156064180223183
+            ],
+            "prior_terms": {
+              "global": 0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.0196,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              1000000000000.0,
+              0.98,
+              2.0,
+              1.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.375,
+              "site:poshmark": -1.862625853529606,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -1.827442450134614,
+              0.05,
+              -0.15000000000000002,
+              -0.38306960381166544,
+              0.025,
+              -1.862625853529606,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0392000000000001,
+              "site:poshmark": 1.0392000000000001,
+              "category:jackets": 1.0392000000000001,
+              "cell:poshmark:jackets": 1.0392000000000001,
+              "site:ebay": 1.0,
+              "w:0": 1.0392000000000001,
+              "w:1": 1.03764768,
+              "w:2": 1.0392000000000001,
+              "w:3": 1.0392000000000001,
+              "w:4": 1.0015679999999998,
+              "w:5": 1.0392000000000001,
+              "w:6": 1.0392000000000001,
+              "w:7": 1.0392000000000001
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-02-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              1000000000000.0,
+              0.98,
+              3.0,
+              31.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.5821155355041193,
+              "site:poshmark": -0.9116973912606837,
+              "category:jackets": 0.16961553550411929,
+              "cell:poshmark:jackets": -0.10538446449588072,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.39461553550411926,
+              -0.8944833556432856,
+              0.09461553550411929,
+              -0.10538446449588072,
+              -0.18753793544913477,
+              0.05711553550411928,
+              -0.9116973912606837,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.0196,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-05-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              1000000000000.0,
+              0.98,
+              4.0,
+              121.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.375,
+              "site:poshmark": -1.0751234136094292,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.25,
+              -1.054466021232456,
+              0.05,
+              -0.15000000000000002,
+              -0.2192886983093414,
+              0.025,
+              -1.0751234136094292,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.0196,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-05-03T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              1000000000000.0,
+              0.98,
+              5.0,
+              122.0,
+              0.2,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.40318054734127706,
+              "site:poshmark": -1.0309520254013893,
+              "category:jackets": 0.1218995386606947,
+              "cell:poshmark:jackets": -0.12924246291759306,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              0.27532554339555776,
+              -1.01114411459847,
+              0.07075753708240698,
+              -0.12924246291759306,
+              -0.21028327106124498,
+              0.045186536293263135,
+              -1.0309520254013893,
+              -0.010156064180223183
+            ],
+            "prior_terms": {
+              "global": 0.75,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.0196,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.000784,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        }
+      ]
+    },
+    {
+      "name": "ordered-7",
+      "initial": {
+        "terms": {
+          "global": 1.0,
+          "site:poshmark": 0.0,
+          "category:jackets": 0.2,
+          "cell:poshmark:jackets": -0.1,
+          "site:ebay": 0.3
+        },
+        "weights": [
+          -0.5,
+          0.0,
+          0.1,
+          -0.1,
+          0.0,
+          0.05,
+          0.0,
+          -0.02
+        ],
+        "prior_terms": null,
+        "prior_weights": null,
+        "precision": {}
+      },
+      "at": "2026-01-01T00:00:00+00:00",
+      "events": [
+        {
+          "at": "2026-01-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              0.0,
+              0.0,
+              -1000000000000.0,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 1.2799120063935254,
+              "site:poshmark": 0.2799120063935255,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.27632615087077766,
+              0.1,
+              -0.1,
+              -0.2799120063935255,
+              0.07500000000000001,
+              0.2799120063935255,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 1.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2253477146110539,
+              "site:poshmark": 1.2253477146110539,
+              "category:jackets": 1.2253477146110539,
+              "cell:poshmark:jackets": 1.2253477146110539,
+              "site:ebay": 1.0,
+              "w:0": 1.1825316488349535,
+              "w:1": 1.216423945112456,
+              "w:2": 1.0,
+              "w:3": 1.0,
+              "w:4": 1.2253477146110539,
+              "w:5": 1.2253477146110539,
+              "w:6": 1.2253477146110539,
+              "w:7": 1.2253477146110539
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              1.0,
+              1.0,
+              -1000000000000.0,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.5,
+              "site:poshmark": -0.5317660079587017,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.5253707684326744,
+              0.05,
+              -0.15000000000000002,
+              0.5317660079587017,
+              0.025,
+              -0.5317660079587017,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 1.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2169607341303128,
+              "site:poshmark": 1.2169607341303128,
+              "category:jackets": 1.2169607341303128,
+              "cell:poshmark:jackets": 1.2169607341303128,
+              "site:ebay": 1.0,
+              "w:0": 1.17139858864806,
+              "w:1": 1.2074646238087485,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.2169607341303128,
+              "w:5": 1.2169607341303128,
+              "w:6": 1.2169607341303128,
+              "w:7": 1.2169607341303128
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-01-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              2.0,
+              1.0,
+              -1000000000000.0,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 1.2925207173016415,
+              "site:poshmark": 0.26075470934293987,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.2578054811563322,
+              0.15000000000000002,
+              -0.05,
+              -0.26075470934293987,
+              0.07500000000000001,
+              0.26075470934293987,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 1.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.2365607341303129,
+              "site:poshmark": 1.2365607341303129,
+              "category:jackets": 1.2365607341303129,
+              "cell:poshmark:jackets": 1.2365607341303129,
+              "site:ebay": 1.0,
+              "w:0": 1.18727458864806,
+              "w:1": 1.2262884638087486,
+              "w:2": 1.0392000000000001,
+              "w:3": 1.0392000000000001,
+              "w:4": 1.2365607341303129,
+              "w:5": 1.2365607341303129,
+              "w:6": 1.2365607341303129,
+              "w:7": 1.2365607341303129
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-02-01T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              3.0,
+              31.0,
+              -1000000000000.0,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.5,
+              "site:poshmark": -0.8307838850303738,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.813752861198879,
+              0.05,
+              -0.15000000000000002,
+              0.8307838850303738,
+              0.025,
+              -0.8307838850303738,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 1.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.0196,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        },
+        {
+          "at": "2026-05-02T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              4.0,
+              121.0,
+              -1000000000000.0,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 1,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 1.5,
+              "site:poshmark": 0.857313254073047,
+              "category:jackets": 0.30000000000000004,
+              "cell:poshmark:jackets": -0.05,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.25,
+              0.8409364941271852,
+              0.15000000000000002,
+              -0.05,
+              -0.857313254073047,
+              0.07500000000000001,
+              0.857313254073047,
+              -0.01
+            ],
+            "prior_terms": {
+              "global": 1.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.0196,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.98
+          }
+        },
+        {
+          "at": "2026-05-03T00:00:00+00:00",
+          "row": {
+            "site": "poshmark",
+            "category": "jackets",
+            "features": [
+              0.9,
+              0.98,
+              5.0,
+              122.0,
+              -1000000000000.0,
+              2.0,
+              10.0,
+              5.0
+            ],
+            "accepted": 0,
+            "may_model": true
+          },
+          "expected": {
+            "terms": {
+              "global": 0.5274187445152793,
+              "site:poshmark": -0.12342904741356442,
+              "category:jackets": 0.1,
+              "cell:poshmark:jackets": -0.15000000000000002,
+              "site:ebay": 0.3
+            },
+            "weights": [
+              -0.75,
+              -0.12092612372051936,
+              0.05,
+              -0.15000000000000002,
+              0.12342904741356442,
+              0.025,
+              -0.12342904741356442,
+              -0.03
+            ],
+            "prior_terms": {
+              "global": 1.0,
+              "site:poshmark": 0.0,
+              "category:jackets": 0.2,
+              "cell:poshmark:jackets": -0.1,
+              "site:ebay": 0.3
+            },
+            "prior_weights": [
+              -0.5,
+              0.0,
+              0.1,
+              -0.1,
+              0.0,
+              0.05,
+              0.0,
+              -0.02
+            ],
+            "precision": {
+              "global": 1.0196,
+              "site:poshmark": 1.0196,
+              "category:jackets": 1.0196,
+              "cell:poshmark:jackets": 1.0196,
+              "site:ebay": 1.0,
+              "w:0": 1.015876,
+              "w:1": 1.01882384,
+              "w:2": 1.0196,
+              "w:3": 1.0196,
+              "w:4": 1.0196,
+              "w:5": 1.0196,
+              "w:6": 1.0196,
+              "w:7": 1.0196
+            },
+            "p": 0.02
+          }
+        }
+      ]
+    }
+  ]
+}
