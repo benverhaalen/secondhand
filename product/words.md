@@ -2702,3 +2702,22 @@ Nate, the native-walks lead's session, 2026-11-15, about 16:15 UTC, relayed by t
 > no just keep whats there, we'll treat it like we do other responses where the ai begins outputting even though it hasnt recieved all outpuits yet
 
 Used in: the chat keeps answering from the rows that have arrived when asked. Separate from this: on the hosted server one answer counted 64 listings for a finished search of 346 (it read the stored copy of the frames, which leaves out rows we may not keep); that is for an update branch.
+
+## 2026-11-15 nate finalize everything is there a build
+Nate, the orchestrator's session, 2026-11-15, between about 16:20 and 16:36 UTC.
+> a card is addded to fly.io
+
+> can we set it to just google and apple
+
+> Finalize everything. is there a build uploadable and testable\
+
+> any dependencies i need to top off?
+
+Relayed by leads from their sessions the same hour:
+> does appraisal work? the chat?
+
+> Please fix the hosted server
+
+Then Nate pasted the EAS build's refusal: "Project archive is too big. Maximum allowed size is 2.0 GB."
+
+Used in: Sign in with Apple in the app (f88ad5ad); an appraise capture's finish starts a valuation and names the item (3c8b50b4); agent worktrees ignored so the EAS archive fits (f896b0fe). Google sign-in on the phone is not built.
