@@ -2,6 +2,7 @@
 import { auth as defaultAuth, iso, store as defaultStore, type Auth, type AuthStore, type Facet, type Notify, type User } from '../auth.ts';
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { runtime as defaultRuntime } from './runtime.ts';
+import { captureRows } from './captures.ts';
 import type { Store, JobKind } from '../events/ports.ts';
 import type { AuthVault, StorageState } from '../browser/auth.ts';
 import { deleteUser as deleteWorkspaceUser, type Db, type Vault } from '../data/data.ts';
@@ -99,7 +100,10 @@ export function makeMeHandlers(o: {
       if (user.push_token_ref) refs.add(user.push_token_ref);
       while (!(await store.putUser({ ...user, push_token_ref: null, version: user.version + 1, updated_at: iso(now()) }, user.version))) user = await mine(c);
       const counts = runtime.store.deleteUser(user_id);
-      c.log.event('state.change', { entity: 'user', id: user_id, to: 'deleted', ...counts });
+      // Captures still live in their own map (captures.ts), outside the store: a deleted person's go with them.
+      let captures = 0;
+      for (const [id, row] of captureRows) if (row.user_id === user_id) { captureRows.delete(id); captures++; }
+      c.log.event('state.change', { entity: 'user', id: user_id, to: 'deleted', ...counts, captures });
       const failures: unknown[] = [];
       for (const ref of refs) {
         try { await call('db', 'vault.delete', () => runtime.vault.delete(ref), () => ({ count: 1 })); }

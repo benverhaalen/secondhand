@@ -34,9 +34,35 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
   if (e.response === null) assert.equal(await r.text(), '');
   else assert.deepEqual(await r.json(), e.response);
 });
-for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
+for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor' && e.name !== 'insights.get')) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
+});
+
+test('insights: a real person receives unavailable without example figures', async () => {
+  const response = await call(examples.find(e => e.name === 'insights.get')!, { token: 'other' });
+  assert.equal(response.status, 503);
+  const body = await response.json();
+  assert.deepEqual(body, { code: 'unavailable', message: 'Insights are not available yet', failed_step: 'read', retry: { by: 'none' } });
+});
+
+test('insights: examples off refuses the example person too', async t => {
+  const previous = process.env.SECONDHAND_EXAMPLES;
+  t.after(() => { if (previous === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = previous; });
+  process.env.SECONDHAND_EXAMPLES = '0';
+  const response = await call(examples.find(e => e.name === 'insights.get')!);
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).code, 'unavailable');
+});
+
+test('insights: examples on preserves the example person’s contract figures', async t => {
+  const previous = process.env.SECONDHAND_EXAMPLES;
+  t.after(() => { if (previous === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = previous; });
+  process.env.SECONDHAND_EXAMPLES = '1';
+  const e = examples.find(e => e.name === 'insights.get')!;
+  const response = await call(e);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), e.response);
 });
 for (const e of examples.filter(e => e.status < 400 && e.endpoint.includes(':id'))) test(e.name + ': unknown resource is 404', async () => {
   const pattern = e.endpoint.split(' ')[1].split('/'), parts = e.path.split('?')[0].split('/');

@@ -133,6 +133,17 @@ test('wants: malformed field values name the validation failure', async () => {
   }
 });
 
+test('wants: invalid schedule minutes are refused before they can block recurring work', async () => {
+  const e = examples.find(e => e.name === 'wants.patch')!;
+  const before = store.get('want', 'usr_8f2k', 'want_3ss');
+  for (const schedule of [{}, { every_min: 0 }, { every_min: -1 }, { every_min: '30' }]) {
+    const response = await call(e, { body: { version: 1, schedule } });
+    assert.equal(response.status, 400, JSON.stringify(schedule));
+    assert.deepEqual((await response.json()).fields, ['schedule']);
+    assert.deepEqual(store.get('want', 'usr_8f2k', 'want_3ss'), before);
+  }
+});
+
 test('wants: owned Expo files bind auth and export the contract method', async () => {
   const { readFileSync } = await import('node:fs');
   for (const entry of manifest) {
@@ -216,6 +227,22 @@ test('watch: real matches and monitor checkpoints persist and paused wants do no
   const row = (await response.json()).data[0]; assert.deepEqual(row.checked, opts.checked); assert.deepEqual(row.behind, opts.behind);
   const want = store.get('want', 'usr_8f2k', 'want_3ss')!; store.put('want', { ...want, state: 'paused' });
   assert.deepEqual(runWant(store, want.id, listings, [], opts).push, []);
+});
+
+test('watch: paused, ended and deleted wants do not write checkpoints or matches', () => {
+  for (const edits of [{ state: 'paused' }, { state: 'ended' }, { deleted: true }]) {
+    const row = store.get('want', 'usr_8f2k', 'want_3ss')!;
+    store.put('want', { ...row, state: 'active', ...edits });
+    const before = JSON.stringify(store.exportUser('usr_8f2k'));
+    runWant(store, row.id, [], [], { user_id: 'usr_8f2k', now: new Date(), localHour: 12, checked: { ebay: new Date().toISOString() } });
+    assert.equal(JSON.stringify(store.exportUser('usr_8f2k')), before, JSON.stringify(edits));
+  }
+});
+
+test('watch: an unavailable site cannot mark its stored matches gone', () => {
+  const match = store.get('match', 'usr_8f2k', 'mt_77')!;
+  runWant(store, 'want_3ss', [], [], { user_id: 'usr_8f2k', now: new Date(), localHour: 12, behind: [String(match.site)] });
+  assert.deepEqual(store.get('match', 'usr_8f2k', match.id), match);
 });
 
 test('watch: generated matches keep API money envelopes', async () => {

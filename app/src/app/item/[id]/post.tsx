@@ -44,14 +44,14 @@ export default function ItemPost() {
   const found = state === 'failed' ? null : M.find(String(id), world);
   if (state === 'loading') {
     return (
-      <RouteSheet name="item-post" state="loading" skip={skip('loading')} title="Preview" onClosed={() => router.back()}>
+      <RouteSheet flow name="item-post" state="loading" skip={skip('loading')} title="review your listings" onClosed={() => router.back()}>
         <Stack gap="cards"><Skeleton of="card-item" /><Skeleton of="card-item" /></Stack>
       </RouteSheet>
     );
   }
   if (!found) {
     return (
-      <RouteSheet name="item-post" state="failed" skip={skip('failed')} title="Preview" onClosed={() => router.back()}>
+      <RouteSheet flow name="item-post" state="failed" skip={skip('failed')} title="review your listings" onClosed={() => router.back()}>
         <EmptyState title="Can’t open this item" line={state === 'failed' ? 'This item didn’t load' : 'This item is no longer available'}
           action={state === 'failed' ? { id: 'post-retry', label: 'Retry', onPress: () => router.replace(`/item/${id}/post` as Href) } : undefined} />
       </RouteSheet>
@@ -61,7 +61,7 @@ export default function ItemPost() {
   const m = M.momentOf(found.w, found.item);
   if (m === 'sold' || m === 'done') {
     return (
-      <RouteSheet name="item-post" state="empty" skip={skip('empty').replace('empty: a preview is of an item that exists; ', '')} title="Preview" onClosed={() => router.back()}>
+      <RouteSheet flow name="item-post" state="empty" skip={skip('empty').replace('empty: a preview is of an item that exists; ', '')} title="review your listings" onClosed={() => router.back()}>
         <EmptyState title="Sold. Nothing to post" />
       </RouteSheet>
     );
@@ -96,6 +96,7 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
   const [need, setNeed] = useState(false);
   const [waiting, setWaiting] = useState(false);
   // Each site's own words and price, once the person edits them for that site only (ways-out §6.8).
+  const [photoSettings, setPhotoSettings] = useState(false);
   const [editing, setEditing] = useState<Site | null>(null);
   const [own, setOwn] = useState<Partial<Record<Site, { title?: string; price?: number }>>>({});
   const missing = M.fields(item).find(f => f.value === null);
@@ -128,7 +129,7 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
   // A failed recall check blocks the post and says why (pages §6.8): no Post, only the reason.
   if (recalled) {
     return (
-      <RouteSheet name="item-post" state="failed" skip={skip('failed')} title="Preview" onClosed={() => router.back()}>
+      <RouteSheet flow name="item-post" state="failed" skip={skip('failed')} title="review your listings" onClosed={() => router.back()}>
         <EmptyState title="Can’t post a recalled item" line="The maker recalled this model, and the sites take recalled items down." />
       </RouteSheet>
     );
@@ -150,10 +151,17 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
   );
 
   return (
-    <RouteSheet name="item-post" state={offline ? 'offline' : state} skip={skip(state)} title="Preview" foot={foot} onClosed={() => router.back()}>
+    <RouteSheet flow name="item-post" state={offline ? 'offline' : state} skip={skip(state)} title="review your listings" foot={foot} onClosed={() => router.back()}>
       {offline ? <Line><Icon name="refresh" size={12} tone="ink-2" /><Txt role="caption">{waiting ? 'Waiting for signal. It posts when you’re back.' : 'Offline. It posts when you’re back.'}</Txt></Line> : null}
       {need && needing && missing ? <Line><Icon name="alert-02" size={12} tone="brick" /><Txt role="caption">{`Fill in ${missing.name} first. ${needing === 1 ? '1 site needs' : `${needing} sites need`} it.`}</Txt></Line> : null}
-      {lookable ? (
+      <Stack>
+        <Row lead={<Photo src={cover} label={item.title} />}>
+          <Txt role="headline" lines={2}>{item.title}</Txt>
+          <Txt role="caption">{`${photos} ${photos === 1 ? 'photo' : 'photos'} · ${on.length} ${on.length === 1 ? 'marketplace' : 'marketplaces'}`}</Txt>
+        </Row>
+        {lookable ? <Line><Pill id="photo-settings" label={photoSettings ? 'Hide photo options' : 'Photo options'} kind="second" onPress={() => setPhotoSettings(x => !x)} /></Line> : null}
+      </Stack>
+      {lookable && photoSettings ? (
         <Stack>
           <Photo src={cover} label={look === 'original' ? 'Your photo' : look === 'clean' ? 'Your photo, cleaned up' : 'Your photo, enhanced with AI'} fit="fill" />
           <List>
@@ -168,6 +176,7 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
           </List>
         </Stack>
       ) : null}
+      <Txt role="headline">Where it will go</Txt>
       <Stack gap="cards">
         {planned.map(s => {
           const isOn = on.includes(s.site), form = LISTING_FORMS[s.site];

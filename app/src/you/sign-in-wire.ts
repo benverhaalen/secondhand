@@ -24,3 +24,19 @@ export function emailSignIn(client: Client = api) {
     },
   };
 }
+
+export type GoogleTokenProvider = () => Promise<string | null>;
+
+export class GoogleSignInUnavailable extends Error {}
+
+export const requestGoogleIdToken: GoogleTokenProvider = async () => {
+  throw new GoogleSignInUnavailable('Google sign-in is not available yet. Continue with email.');
+};
+
+export async function googleSignIn(requestIdToken: GoogleTokenProvider = requestGoogleIdToken, client: Client = api): Promise<boolean> {
+  const id_token = await requestIdToken();
+  if (!id_token) return false;
+  const issued = await client.call<SignedIn>('POST /v1/auth/google', { body: { id_token } });
+  await client.signIn({ access_token: issued.access_token, refresh_token: issued.refresh_token, expires_at: issued.expires_at });
+  return true;
+}

@@ -1,8 +1,34 @@
 # 72: capture handoff
 
-Updated: November 15, 2026, afternoon Central, by the fourth capture lead (section 00); before that, night Central. Owner: Nate. Agent: Claude Code, the third capture team lead (Opus 5.5), ending at about half its context ([packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills)). Status: row 7's spec (the parts of one item, F17) is reviewed and on main (c7ea4676); its engine half is building on the Mac in worker `cap-parts-1`; its routes brief is written; the LiDAR module (row 5) leads next, by Nate's choice, and is not started; Nate called the wrap-up, so section 0 is the place to start.
+Updated: November 15, 2026, afternoon, by the fifth capture lead, halted (section 000); before that by the fourth (section 00); before that, night Central. Owner: Nate. Agent: Claude Code, the third capture team lead (Opus 5.5), ending at about half its context ([packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills)). Status: row 7's spec (the parts of one item, F17) is reviewed and on main (c7ea4676); its engine half is building on the Mac in worker `cap-parts-1`; its routes brief is written; the LiDAR module (row 5) leads next, by Nate's choice, and is not started; Nate called the wrap-up, so section 0 is the place to start.
 
 The design is [spec/engines/capture.md](../../../../spec/engines/capture.md). Read it first: section 1 says what exists, section 8 lists the fixed and open fixes, and section 9 is the order to build in.
+
+## 000. The fifth capture lead, halted 2026-11-15 by Nate's word (read first)
+
+Owner: Nate. Agent: Claude Code, the fifth capture lead (Opus 5.5). Halted on Nate's "we need to stop agents from merging and working on top of eachother" (relayed by the orchestrator): from now the orchestrator alone merges to main, one change at a time. Briefs and reviews are in the session notes folder (`side-session-notes/local_4b3a0b4d-.../`).
+
+**On main**
+- The identify engine, round 6 (b56afe79): tag parser by whole-line grammar, the ladder twin, ports, tables. Mac after merging main: parse 557, identify 80, ladder 10, plan 62, captures 141, test_twins 4, tsc clean. Review 4 found 12 wrong of 311 facts, all brand; round 6 fixed brand (must start its line). Review 5 (`cap-identify-review-5.md`, 249 new tags): fix first. 23 hard-wrong facts of 375 stated (18 brands, 2 shoe sizes, 2 origins, 1 style; fabric and colour none), and 18 wrong brands reach confirm at 0.72; no wrong model does. The three real garments are right in 19 of 19 variants. Must-fix for the follow-up round: (1) a parent, licensor or distributor named on the next line after "DISTRIBUTED BY", "Licensed by", "OFFICIALLY LICENSED" or "MADE FOR", after "A NIKE COMPANY", after © or ™ &, or a common-word brand followed by another word ("APPLE BOTTOMS"), counts as the maker; (2) a shoe width before or after the size line ("NIKE / M / 9.5") reads as a letter size; (3) a YOUTH, TALL or PETITE qualifier on the next line is dropped; (4) a component origin ("FABRIC / MADE IN JAPAN / SEWN IN USA") wins over the assembly line. A simpler safe rule for the round: abstain on brand when the tag holds any of those label lines, and on size or origin when any qualifier line is present.
+- Photo uploads (8531048a), joined to `captures.ts` by the server lead (eaec5743). The LiDAR module round 2 (0031af5a). The shared `Ask` type in `plan.ts` (d88c8706).
+- Spec and packets: capture.md section 4 (Ask block agreed with the engines lead; questions read `intent`), section 7a (the shot guide); packets 87, 89, 90 for Ben; packet 86's hosting section. The server is on Fly at https://secondhand-api.fly.dev.
+
+**On Mac branches (`~/dev/projects/secondhand-wt/<name>`, branch `w/<name>`)**
+- `w/cap-lens-1` at cd311209: Lens port, spend port, single-use address route, `jimp-compact` declared, the route in `routes.ts` and `spec/examples/routes.json`. Main merged in before the halt: routes 6, lens 3, identify/lens 18, spend 6, captures 141, server main 8, examples 9, tsc clean. Not composed anywhere (off without `TREG_TOKEN`). Review 1 (`cap-lens-review-1.md`): fix first, three must-fix still open at cd311209 (its manifest and `jimp-compact` points were fixed in cd311209): (1) `spend.ts` settle must count max(reserved, header cost), so a header of 0 or a low one never frees the cap (the lead's decision: the brief's "2900 leaves 2900" test changes to 3000); (2) `lens.ts` reads PNG IHDR and JPEG SOF dimensions and refuses above 40 MP before any decode; (3) `ladder.ts` gives `identify_spend_cap_capture_micro` guard_hi 3000 and `identify_spend_cap_day_micro` guard_hi 100000. One worker round (AGAIN=1 in the same worktree) fixes all three. Not merged, by the orchestrator's word.
+- `w/cap-join-2`: the route join, running (`brief-cap-identify-2.txt`), cut from main after identify. Its done: one capture end to end (photos, real upload targets, PUT, finish, identify job, brand question with Carhartt proposed, answer) and a second person who reads none of it. When it reports: rerun captures, identify, plan, walk, routes, items, examples and tsc, commit on its branch, leave it.
+- `w/cap-depth-2` at 375cf21f: depth round 3 (stray-pixel guard, extent log on change, safe cast, `distance_m`). swift test 31, index 3, tsc clean; module files only; not reviewed.
+- `w/cap-parts-1` at 9ac1f14b: the parts engine, green when main was merged at d1c3b03f (parts 25, plan 71, walk 15, select 21, fields 40, table 23, complete 10, process 4, classify 14); needs main merged again, a fresh review, then the routes half (`brief-cap-parts-2.txt`) and the canon rows.
+- `w/cap-ask-1`: parked, never merge (Ben's client is the one client).
+
+**Half done**
+- The route join (running). Lens composition is part of it once Lens lands: compose only when `TREG_TOKEN` is present and `SECONDHAND_PUBLIC_ORIGIN` is set.
+- On Ben's live app a photo still cannot reach identify: identify starts only once the route join is on main and Fly is redeployed.
+
+**Next, in order (for the orchestrator's merges)**
+1. Identify's follow-up from review 5, if it finds must-fix.
+2. The route join (`w/cap-join-2`), then a packet for Ben with the commit and what his client receives, then a Fly redeploy from a clean worktree.
+3. Lens (`w/cap-lens-1`), after its review; the first live call is Nate's yes and the treg top-up.
+4. Depth round 3, then parts.
 
 ## 00. The fourth capture lead (identify, classification, the questions), 2026-11-15 afternoon
 

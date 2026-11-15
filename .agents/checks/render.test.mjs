@@ -109,7 +109,7 @@ const CASES = [
   ['B3', 'a wordmark that moves between post panels', '<section class="p" data-view><p class="m" style="font-size:40px;text-align:center">secondhand</p></section><section class="p" data-view><p class="m" style="font-size:40px;text-align:center;margin-top:96px">secondhand</p></section>', /B3 .*moves between views/, 'post'],
 ];
 // An app mock: the phone's own bars are skipped, a screen may be taller than the phone, a row may scroll past the margin, and text an ancestor clips is not on the page.
-const app = (inner, h = 844) => `<section data-view style="width:390px;height:${h}px;position:relative;overflow:hidden"><div data-chrome style="height:54px;font:600 16px Arial">9:41</div><p class="m" style="font-size:21px;text-align:center">secondhand</p>${inner}</section>`;
+const app = (inner, h = 844) => `<section data-view style="width:390px;height:${h}px;position:relative;overflow:hidden"><div data-chrome style="height:54px;font:600 16px Arial">9:41</div><p class="m" style="font-size:21px;padding-left:20px">secondhand</p>${inner}</section>`;
 browserTest('render: an app mock with a status bar, a tall screen, a scrolling row and clipped text passes', { skip: !pw }, async () => {
   assert.deepEqual(await ids(app(`<div style="overflow-x:auto;white-space:nowrap;padding:0 20px;margin-top:16px"><span style="font-size:15px">Draft</span>${'<span style="font-size:15px;padding:0 64px">Live</span>'.repeat(6)}</div>
     <div style="height:20px;overflow:hidden;padding:0 20px"><p style="font-size:15px;height:20px">Carhartt jacket</p><p style="font-size:15px">Hidden below the fold of its box</p></div>
@@ -203,7 +203,7 @@ browserTest('render: a tile of a fixed size that ends long text with an ellipsis
     <img data-fill="photo" alt="A jacket" src="${PX}" style="width:72px;height:72px;flex:none;background:var(--gray)"><div style="min-width:0;flex:1"><p data-fill="title" style="${SLOT}">Nike Dunks</p>
     <p style="${SLOT}">Offer <span data-fill="amount">$38</span> from <span data-fill="name">Sam</span></p></div></div>`), 'app'), []);
 });
-const SCREEN = (attrs, inner = '') => `<section data-view ${attrs} style="width:390px;height:844px;padding:20px"><p class="m" style="font-size:21px;text-align:center">secondhand</p><div class="f" style="height:64px;margin-top:32px"></div>${inner}</section>`;
+const SCREEN = (attrs, inner = '') => `<section data-view ${attrs} style="width:390px;height:844px;padding:20px"><p class="m" style="font-size:21px">secondhand</p><div class="f" style="height:64px;margin-top:32px"></div>${inner}</section>`;
 browserTest('render: a screen that draws a state and says why the others cannot happen passes', { skip: !pw }, async () => {
   assert.deepEqual(await ids(SCREEN('data-screen="about" data-state="typical" data-skip="new: it is the same on day one; empty: it holds no list; one: it holds no list; dense: it holds no list; loading: it is built in; failed: it is built in; offline: it is built in"'), 'app'), []);
 });
@@ -358,6 +358,13 @@ test('render: a row cut by the fold and text in a sideways scroller are judged w
 browserTest('render: a pressable photo tile drawn as a background image, with no icon, passes U1', { skip: !pw }, async () => {
   const found = await ids(app(`<div role="button" style="margin:16px 20px;width:167px;height:200px;cursor:pointer"><div data-photo aria-label="A jacket" style="width:167px;height:167px;border-radius:20px;background:url(${PX}) center/cover"></div><p style="font-size:15px">Carhartt jacket</p></div>`), 'app');
   assert.deepEqual(found.filter(o => /^U1 /.test(o)), []);
+});
+browserTest('render B32: a tag image inside the brand-mark wrapper belongs to the lockup', { skip: !pw }, async () => {
+  const body = `<section class="s" data-view><div style="display:flex;align-items:center;gap:8px"><span data-part="brand-mark" style="display:block;width:24px;height:24px;position:relative"><span style="display:block;height:0"><img src="${PX}" alt="" style="position:absolute;top:0;left:0;width:24px;height:24px"></span></span><p class="m">secondhand</p></div></section>`;
+  const found = await ids(body);
+  assert.deepEqual(found.filter(o => /^B32 /.test(o)), []);
+  const broken = await ids(body.replace('data-part="brand-mark"', ''));
+  assert.ok(broken.some(o => /^B32 /.test(o)));
 });
 // Each case renders in its own page of the one browser, so they run side by side.
 describe('render: in a real browser, side by side', { concurrency: 4 * availableParallelism() }, () => {
