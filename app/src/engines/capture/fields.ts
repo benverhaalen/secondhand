@@ -1,9 +1,9 @@
 import { CONDITION } from '../../../../spec/sites.mjs';
-import { bound, classFor, linked, type FieldRow, type Site } from './table.ts';
+import { bound, classFor, linked, minConf, table, type FieldRow, type Site } from './table.ts';
 import { select, suggestionPasses, targets, type State, type Fact } from './select.ts';
-import type { ParamStore } from '../param/param.ts';
+import type { ParamStore, Scope } from '../param/param.ts';
 export function known(row: FieldRow, fact: Fact|undefined, mode: State['confirm_mode'], params: ParamStore,
-  suggestion?: State['suggestion']): {known:boolean;auto_accepted?:true} {
+  suggestion?: State['suggestion'], scope: Scope = {}): {known:boolean;auto_accepted?:true} {
   if (!fact || fact.value === null || fact.value === undefined) return {known:false};
   if (fact.source === 'you_said' || fact.confirmed) return {known:true};
   if (row.confirm === 'always') return {known:false};
@@ -12,7 +12,7 @@ export function known(row: FieldRow, fact: Fact|undefined, mode: State['confirm_
       suggestion.p-suggestion.second_p+Number.EPSILON >= bound(params,'capture_type_auto_margin') : fact.confidence >= bound(params,'capture_auto_accept');
     return mode === 'auto' && accept ? {known:true,auto_accepted:true} : {known:false};
   }
-  return {known:row.ways.some(w=>w.way===fact.source && fact.confidence >= (w.min_conf ?? 0))};
+  return {known:row.ways.some(w=>w.way===fact.source && fact.confidence >= (minConf(params,row,w,scope) ?? 0))};
 }
 export type FieldStatus = 'known'|'proposed'|'waiting'|'missing'|'unobtainable'|'refused';
 export type Resolution = {state:FieldStatus; reason:string; fact?:Fact; auto_accepted?:true; shot?:{step:string;reason:'retake'|'add'}};
@@ -20,6 +20,10 @@ export function viewsFor(view: string, keys: string[]): string[] {
   return view==='*' ? keys : view.startsWith('*.') ? keys.filter(key=>key.endsWith(view.slice(1))) : [view];
 }
 export function fieldState(row: FieldRow,state: State,processKeys: string[],params: ParamStore): Resolution {
+  const family=state.type ?? (suggestionPasses(state,params) ? state.suggestion!.family : 'other');
+  const kind=`${family}.${state.kind}`;
+  const field=row.field.replace(/\.\d+$/, '');
+  const scope={kind:table.fields[kind]?.some(candidate=>candidate.field===field) ? kind : family};
   let fact=state.facts[row.field];
   if(row.field==='type') {
     if(state.type)fact={value:state.type,source:'you_said',confidence:1};
@@ -30,14 +34,15 @@ export function fieldState(row: FieldRow,state: State,processKeys: string[],para
     let value: unknown;
     if(w.from==='profile.handover')value=state.profile?.handover;
     if(w.from==='class_weight') { const s=select(state,params); value=classFor(s.inner_class ?? s.dimension_class as Exclude<typeof s.dimension_class,'set_bundle'>).weight; }
-    if(value!==undefined) {fact={value,source:'derived',confidence:w.min_conf ?? 0};break;}
+    if(value!==undefined) {fact={value,source:'derived',confidence:minConf(params,row,w,scope) ?? 0};break;}
   }
   let unresolvedVariants=false;
   if(row.field==='dimensions' && (state.variants?.dimensions?.length ?? 0)>=2 &&
-    !(fact && (fact.source!=='measured' || fact.confirmed) && known(row,fact,state.confirm_mode,params).known)) {
+    !(fact && (fact.source!=='measured' || fact.confirmed) && known(row,fact,state.confirm_mode,params,state.suggestion,scope).known)) {
     const variants=state.variants!.dimensions!;
-    const measuredFloor=row.ways.find(way=>way.way==='measured')?.min_conf;
-    const floor=row.ways.find(way=>way.way==='lookup')?.min_conf ?? measuredFloor;
+    const measured=row.ways.find(way=>way.way==='measured'),lookup=row.ways.find(way=>way.way==='lookup');
+    const measuredFloor=measured ? minConf(params,row,measured,scope) : undefined;
+    const floor=(lookup ? minConf(params,row,lookup,scope) : undefined) ?? measuredFloor;
     const confident=variants.filter(variant=>floor!==undefined && variant.p>=floor);
     let chosen=confident.length===1?confident[0]:undefined;
     let reading=false;
@@ -51,7 +56,7 @@ export function fieldState(row: FieldRow,state: State,processKeys: string[],para
     unresolvedVariants=true;
   }
   const availableWays = row.ways.filter(way => way.way !== 'measured' || state.has_lidar);
-  const k=known({...row,ways:availableWays},fact,state.confirm_mode,params,state.suggestion);
+  const k=known({...row,ways:availableWays},fact,state.confirm_mode,params,state.suggestion,scope);
   if(!unresolvedVariants && k.known)return {state:'known',reason:'accepted',fact,...(k.auto_accepted ? {auto_accepted:true as const} : {})};
   const hasAsked=row.ways.some(w=>w.way==='asked');
   for(const w of row.ways) {
