@@ -2442,3 +2442,33 @@ Nate, the search lead's session, 2026-11-15, about 14:03 UTC, answering whether 
 > well, no, if we can't determine price, we maybe grab details on how many lsitings are there, and that indicates something, perhaps that none are being sold, that it was popular, theres alot there
 
 Used in: [packet 88](../.agents/team/packets/team/88-search-handoff.md).
+
+## 2026-11-15 nate systems working before the look
+Nate, the app's native-walks lead session, 2026-11-15, about 14:05 UTC, while the walks were reading screenshots against the brand card.
+> dont focus on ui as much as you should getting every system to work. then we can return
+
+Used in: section 6 of [finalization.md](../spec/plans/finalization.md) (the native walk table lists each failing system with its owner; the look findings are parked for Ben).
+
+## 2026-11-15 nate the browser sign-in window works end to end
+Nate, the app's native-walks lead session, 2026-11-15, about 13:40 UTC.
+> ensure the browser actions work, like the sesion window pops up for the user to authenticate, answer 2fa if needed, etc
+
+Used in: the connect walk in section 6 of [finalization.md](../spec/plans/finalization.md); `app/src/account/services.tsx`, `app/src/edge/connect/hosted.ts`.
+
+## 2026-11-15 nate check the lens capture is wired to the expo app
+Nate, the orchestrator's session, 2026-11-15, about 14:14 UTC.
+> Check the lens capture is also wired to the expo app, ben is testing and his model says its not wired
+
+Checked by the orchestrator on main the same minute: it is not wired. The app's photo step stops at an example upload address; identify and the Lens step are on Mac branches. Sent to the capture lead with a new order: identify merged as it is, the route join started at once, Lens behind it, a packet for Ben when the join lands.
+
+## 2026-11-15 nate working code reaches main regularly, and we develop with Opus directly
+Nate, the orchestrator's session, 2026-11-15, about 14:20 UTC.
+> Ensure all main pushes and fixes dont just live on the mac, but sync, that it regularly pushes the working code, we are being way too slow when audits and just full review to develop with you and opuses would fix this
+
+Read by the orchestrator as: work that passes lands on main at once instead of waiting on Mac branches for review rounds; an audit and one full review, then the orchestrator and the Opus leads write the code directly; Codex workers for bulk and for driving tests. Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate stop agents merging on top of each other; halt at good points; full focus on the needed fixes
+Nate, the orchestrator's session, 2026-11-15, about 14:24 UTC.
+> we need to stop agents from merging and working on top of eachother. ensure they halt at good poitns and we full focus on developing and carving out the needed fixes
+
+Acted on at once: every lead told to finish the step it is in, park the rest on its branch, write its handoff and stop; from then the orchestrator is the only one who merges to main, one change at a time.

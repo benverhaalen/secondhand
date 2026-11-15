@@ -1,0 +1,14 @@
+[
+ {"kill":true}, {"launch":true}, {"wait":{"id":"tab-new"},"timeout":30000},
+ {"tap":"tab-new"}, {"wait":{"id":"new-sell"}}, {"sleep":800}, {"shot":"f01-new"},
+ {"tap":"new-sell"}, {"sleep":2500}, {"shot":"f02-camera"},
+ {"tap":{"label":"Allow camera","exact":true},"timeout":4000,"optional":true},
+ {"wait":"would like to access","timeout":6000,"optional":true}, {"sleep":1200}, {"tap":{"label":"Allow","exact":true},"timeout":3000,"optional":true},
+ {"sleep":1500}, {"shot":"f03-camera-allowed"},
+ {"tap":"cam-library"}, {"sleep":3500}, {"shot":"f04-picker"},
+ {"tap":{"x":201,"y":378}}, {"sleep":800}, {"tap":{"x":363,"y":110}}, {"mark":"picked"},
+ {"sleep":4000}, {"shot":"f05-after-pick"},
+ {"wait":{"id":"cam-done"},"timeout":30000}, {"shot":"f06-ready"},
+ {"tap":"cam-done"}, {"mark":"done_tapped"}, {"sleep":8000}, {"shot":"f07-draft"},
+ {"sleep":12000}, {"shot":"f08-draft-later"}
+]

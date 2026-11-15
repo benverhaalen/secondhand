@@ -31,6 +31,7 @@ export const normalize = (q: string) => q.toLowerCase().normalize('NFKC').replac
 export const searchParams = memoryStore();
 searchParams.declare({ name: 'search_cache_max', family: 'scalar', prior: 500, guard_lo: 0 });
 searchParams.declare({ name: 'search_frame_ttl_s', family: 'scalar', prior: 3600, guard_lo: 0 });
+searchParams.declare({ name: 'job_fill_grace_s', family: 'scalar', prior: 60, guard_lo: 0 });
 
 // A cloud launch includes CDP's 30 s connection bound (browser/cdp.ts); this prior is tunable.
 searchParams.declare({ name: 'search_browser_start_ms', family: 'scalar', prior: 30000, guard_lo: 0 });

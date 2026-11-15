@@ -109,7 +109,7 @@ const CASES = [
   ['B3', 'a wordmark that moves between post panels', '<section class="p" data-view><p class="m" style="font-size:40px;text-align:center">secondhand</p></section><section class="p" data-view><p class="m" style="font-size:40px;text-align:center;margin-top:96px">secondhand</p></section>', /B3 .*moves between views/, 'post'],
 ];
 // An app mock: the phone's own bars are skipped, a screen may be taller than the phone, a row may scroll past the margin, and text an ancestor clips is not on the page.
-const app = (inner, h = 844) => `<section data-view style="width:390px;height:${h}px;position:relative;overflow:hidden"><div data-chrome style="height:54px;font:600 16px Arial">9:41</div><p class="m" style="font-size:21px;text-align:center">secondhand</p>${inner}</section>`;
+const app = (inner, h = 844) => `<section data-view style="width:390px;height:${h}px;position:relative;overflow:hidden"><div data-chrome style="height:54px;font:600 16px Arial">9:41</div><p class="m" style="font-size:21px;padding-left:20px">secondhand</p>${inner}</section>`;
 browserTest('render: an app mock with a status bar, a tall screen, a scrolling row and clipped text passes', { skip: !pw }, async () => {
   assert.deepEqual(await ids(app(`<div style="overflow-x:auto;white-space:nowrap;padding:0 20px;margin-top:16px"><span style="font-size:15px">Draft</span>${'<span style="font-size:15px;padding:0 64px">Live</span>'.repeat(6)}</div>
     <div style="height:20px;overflow:hidden;padding:0 20px"><p style="font-size:15px;height:20px">Carhartt jacket</p><p style="font-size:15px">Hidden below the fold of its box</p></div>
@@ -203,7 +203,7 @@ browserTest('render: a tile of a fixed size that ends long text with an ellipsis
     <img data-fill="photo" alt="A jacket" src="${PX}" style="width:72px;height:72px;flex:none;background:var(--gray)"><div style="min-width:0;flex:1"><p data-fill="title" style="${SLOT}">Nike Dunks</p>
     <p style="${SLOT}">Offer <span data-fill="amount">$38</span> from <span data-fill="name">Sam</span></p></div></div>`), 'app'), []);
 });
-const SCREEN = (attrs, inner = '') => `<section data-view ${attrs} style="width:390px;height:844px;padding:20px"><p class="m" style="font-size:21px;text-align:center">secondhand</p><div class="f" style="height:64px;margin-top:32px"></div>${inner}</section>`;
+const SCREEN = (attrs, inner = '') => `<section data-view ${attrs} style="width:390px;height:844px;padding:20px"><p class="m" style="font-size:21px">secondhand</p><div class="f" style="height:64px;margin-top:32px"></div>${inner}</section>`;
 browserTest('render: a screen that draws a state and says why the others cannot happen passes', { skip: !pw }, async () => {
   assert.deepEqual(await ids(SCREEN('data-screen="about" data-state="typical" data-skip="new: it is the same on day one; empty: it holds no list; one: it holds no list; dense: it holds no list; loading: it is built in; failed: it is built in; offline: it is built in"'), 'app'), []);
 });

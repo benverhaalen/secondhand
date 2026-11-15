@@ -13,11 +13,11 @@ import { searchParams } from '../intel/run.ts';
 
 export type SseFrame = { id: number; event: string; data: Record<string, unknown> };
 export const streamOpts = { heartbeatMs: 15000 };
-const TERMINAL = new Set(['done', 'failed']);
+const TERMINAL = new Set(['done', 'failed', 'cancelled']);
 const EXAMPLE_USER = 'usr_8f2k', EXAMPLE_VISITOR = 'vis_example01';
 const INTERNAL = ['user_id', 'event_id', 'idempotency_key', 'args', 'attempts', 'created_at', 'ended_at'];
 
-export type ApiJobRow = Omit<JobRow, 'kind'> & { kind: JobRow['kind'] | 'assist'; ended_at?: string };
+export type ApiJobRow = Omit<JobRow, 'kind'> & { kind: JobRow['kind'] | 'assist'; ended_at?: string; fill_until?: string };
 
 const liveJobs = () => ({ log: new Map<string, SseFrame[]>(), results: new Map<string, unknown>(), ears: new Map<string, Set<() => void>>() });
 type LiveJobs = ReturnType<typeof liveJobs>;
@@ -192,6 +192,14 @@ export type JobStore = ReturnType<typeof jobsOn>;
 export const memoryJobs = () => { const database = new DatabaseSync(':memory:'); return jobsOn(sqliteStore(database), database); };
 
 // The contract examples as live data: each example job and stream frame lands in the store, keeping its own ids.
+// The seeded contract jobs: boot recovery leaves them as the examples show them, never requeued into the pipeline.
+export function exampleJobIds(): Set<string> {
+  const ids = new Set<string>();
+  for (const e of EXAMPLES) if (e.endpoint === 'GET /v1/jobs/:id' && e.status === 200) ids.add((e.response as { id: string }).id);
+  for (const name of ['identify_then_valuate', 'visitor_search']) for (const f of STREAMS[name]) if (typeof f.data?.job_id === 'string') ids.add(f.data.job_id);
+  return ids;
+}
+
 export function seedExamples(s: JobStore) {
   if (!s.examples) return;
   for (const e of EXAMPLES) {
@@ -219,25 +227,47 @@ const lastId = (h: Headers) => Number(h.get('Last-Event-ID')) || 0;
 const encode = (f: SseFrame) => `id: ${f.id}\nevent: ${f.event}\ndata: ${JSON.stringify(f.data)}\n\n`;
 
 // One SSE response over a frame log: replay after `from`, then wake on append, beat every heartbeatMs, and (for a job)
-// close once the job is done or failed and every frame is sent. Cancel removes the listener and both timers.
+// drain terminal jobs, keeping done open for fill_until within job_fill_grace_s. Cancel releases every timer and listener.
 function sse(s: JobStore, key: string, from: number, closeWhenDone: boolean): Response {
-  const enc = new TextEncoder(); let stop = (_close = true) => {};
+  const enc = new TextEncoder(); let stop = (_close = true, _reason = 'client cancelled') => {};
   const body = new ReadableStream<Uint8Array>({
     start(c) {
-      let cursor = from, closed = false;
+      let cursor = from, closed = false, filling = false;
+      let doneAt: number | undefined, fillTimer: ReturnType<typeof setTimeout> | undefined;
       const pump = () => {
         if (closed) return;
         const send = () => { for (const f of s.framesAfter(key, cursor)) { c.enqueue(enc.encode(encode(f))); cursor = f.id; } };
         send();
         const row = s.get(key, s.owner(key) ?? '');
-        if (closeWhenDone && row && TERMINAL.has(row.state)) { send(); stop(); }
+        if (!closeWhenDone || !row || !TERMINAL.has(row.state)) return;
+        send();
+        if (row.state !== 'done') { stop(true, row.state); return; }
+        const now = Date.now();
+        doneAt ??= now;
+        const fillUntil = row.fill_until ? Date.parse(row.fill_until) : now;
+        const graceUntil = doneAt + (searchParams.read('job_fill_grace_s', {}).value as number) * 1000;
+        const deadline = Math.min(fillUntil, graceUntil);
+        if (now >= deadline) { stop(true, fillUntil <= graceUntil ? 'fill_until passed' : 'grace reached'); return; }
+        if (!filling) {
+          filling = true;
+          deps.log.note('Job stream waiting for fill', { job: key, reason: 'fill pending' });
+        }
+        clearTimeout(fillTimer);
+        fillTimer = setTimeout(pump, deadline - now);
+        fillTimer.unref?.();
       };
       const off = s.listen(key, pump);
       const timer = setInterval(() => { if (!closed) c.enqueue(enc.encode(': heartbeat\n\n')); }, streamOpts.heartbeatMs);
       const poll = setInterval(pump, 1000);
       timer.unref?.();
       poll.unref?.();
-      stop = (close = true) => { if (closed) return; closed = true; clearInterval(timer); clearInterval(poll); off(); if (close) c.close(); };
+      stop = (close = true, reason = 'client cancelled') => {
+        if (closed) return;
+        closed = true;
+        clearInterval(timer); clearInterval(poll); clearTimeout(fillTimer); off();
+        if (filling) deps.log.note('Job stream fill closed', { job: key, reason });
+        if (close) c.close();
+      };
       pump();
     },
     cancel() { stop(false); },
