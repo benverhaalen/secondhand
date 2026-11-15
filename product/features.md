@@ -19,5 +19,9 @@ Status moves: idea → researching → designing → building → demo-ready. Ch
 | [messages](../features/messages/) | Buyer chats, offers, meetups | idea | — |
 | [watch](../features/watch/) | Fuzzy wants, Exa alerts, deal check | idea | — |
 | [data](../features/data/) | Databricks backbone | idea | — |
+| [buy](../features/buy/) | One search across marketplaces and official retail; the better official option | designing | — |
+| [insights](../features/insights/) | You: earned, could earn, goals and seller analytics | designing | — |
+| [market](../features/market/) | Product pages, price history and trends anyone can open | designing | — |
+| [score](../features/score/) | Scoring engine: financial, quality, visibility and trend, and the best plan per site | designing | — |
 
 Ideas that wait until the product works are on the [ideas board](../ideas/README.md).

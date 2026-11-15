@@ -4,16 +4,15 @@ Status: a list kept by Nate's session, *agent proposal* throughout. Written 2026
 
 ## For Nate
 
+Answered 2026-11-14 ([words](../product/words.md#2026-11-14-nate-answers-on-the-databricks-file-the-workspace-and-feature-pages)): the event provides a full workspace, so Free Edition limits are temporary; `spec/databricks.md` may be public; buy, insights, market, score and assist get feature pages.
+
 | # | Question | Agent's recommendation | What depends on it |
 |---|---|---|---|
-| N1 | Is the Free Edition workspace the one the hackathon entry is built on, or does the track provide a full workspace? | Find out first. Free Edition limits outbound internet to trusted domains, has no GPU serving, 3 apps that stop after 24 hours and 1 Lakebase project ([open-facts-databricks.md](../research/data/nate/open-facts-databricks.md)) | Where market data is collected, which models read images, the whole build order |
 | N2 | Has the track published judging criteria? | Share them if so | What the demonstration leads with |
-| N3 | May the Databricks explanation (`spec/databricks.md`, written but not committed) live in this public repo? | Yes; the build plans cite it | Whether Ben's sessions can read it |
 | N4 | Install the official Databricks and MLflow skills into your harness for every session? The installer adds three local hooks; no network calls were found | Yes, for Claude Code only: `databricks aitools install --agents claude-code --scope global` | Whether future sessions have the skills without fetching them |
 | N5 | The explanations written for people are in a new top-level folder, [docs/how-it-works/](../docs/how-it-works/README.md). Say if they belong elsewhere | Keep it | Where the documentation lives |
 | N11 | The Expo app is at `app/` and is linked to the EAS project under your Expo account. Should the project be owned by an organisation that Ben can also build from? | Yes, before the first device build | Who can make builds |
 | N12 | The app reaches Databricks through server routes inside the Expo project ([app/README.md](../app/README.md)). A deployed build needs a host for those routes and a service identity in the workspace | EAS Hosting for the routes; a service principal if the workspace allows one (to be checked with N1) | Anything running off your laptop |
-| N6 | Give `buy`, `insights`, `market` and `score` their own pages under `features/` and rows in `product/features.md`? They have specs but no feature page | Yes | Packets and the layout check for those four |
 | N7 | Sites without webhooks are detected mainly through the sale and message emails they send. May the product read a seller's mail for that? | Yes, with a narrow scope, and state it at connect time ([email-and-notification-detection.md](../research/sold/nate/email-and-notification-detection.md)) | How fast a sale or reply is seen on Poshmark, Mercari and Facebook |
 | N8 | Which real marketplace accounts carry the risk of automation during the build (yours, Ben's, or fresh ones)? | Fresh accounts | Every live action by the harness |
 | N9 | Taking the marketplaces' apps apart to learn their ranking | Do not: ranking runs on their servers, so it would not show the algorithm. Controlled experiments on users' own listings instead ([score.md](features/score.md)) | Nothing is blocked by this |

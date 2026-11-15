@@ -454,3 +454,9 @@ Ben, project chat, 23:31 UTC, inside a longer message.
 ## 2026-11-14 nate the assistant asks through inputs, not questions
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering which of Ben's projects he meant.
 > No its not his ui factory, what we need done though is the input and actions with the ai are intutivive, theres a chat to ask questions in the secondhand shop section, theres also a chat aspect to the search engine for buying and just searching industries and markets, so an ai assistant can drive all searches. But when capturing a product, or searching something up even with the chat, it doesnt output questions you have to respond to. or has any ui already there that may be left unused. It takes advantage of free area that generates in and out inputs of all varieties depending on the question. If it detects the name of something but can't determine exactly what it is, then the users prompt has the words or details inputted that need clarification highlighted, when they press the word the widget appear below their focused input that remains on screen, with preselected options, as well as an input box that appears when they seelect other, similar to how claude code does it. Radio, select, its all dynamic depending on teh qeustion being asked. Dimensions, you can have it be a grid that you drag to select height and width, everything makes sense
+
+## 2026-11-14 nate answers on the databricks file, the workspace and feature pages
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14. These are options he picked from questions the agent put to him, not sentences he wrote.
+> May spec/databricks.md be pushed to the public repo? "Yes, push it"
+> Which Databricks workspace is the hackathon entry built on? "The event gives a full one"
+> Give buy, insights, market, score and assist their own feature pages and rows in product/features.md? "Yes, add all five"
