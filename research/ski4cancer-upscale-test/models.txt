@@ -1,0 +1,1 @@
+microsoft/mai-image-2.7 bytedance-seed/seedream-5-5 google/gemini-nano-banana-2.1 minimax/minimax-h3-image krea/k3-edit
